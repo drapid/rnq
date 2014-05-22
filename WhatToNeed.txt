@@ -1,0 +1,13 @@
+Нужные компоненты:
+ICS v8 - http://www.overbyte.be
+
+Рекомендуется для компиляции Delphi XE6.
+
+Действия:
+1) Прописать путь до исходников ICSv8
+  IcsV8\Source\ZOBJ125
+  IcsV8\Source\
+2) В ICS\Source\Include\OverbyteIcsDefs.inc включить {$DEFINE USE_SSL}
+3) Установить пакет For.rnq
+4) Скомпилировать саму R&Q
+Можно запускать...
