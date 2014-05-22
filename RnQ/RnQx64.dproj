@@ -1,0 +1,393 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{94E0A466-1C1B-48B7-B4DC-61F2C1EBC94C}</ProjectGuid>
+        <MainSource>RnQx64.dpr</MainSource>
+        <Base>True</Base>
+        <Config Condition="'$(Config)'==''">Release</Config>
+        <TargetedPlatforms>3</TargetedPlatforms>
+        <AppType>Application</AppType>
+        <FrameworkType>VCL</FrameworkType>
+        <ProjectVersion>15.4</ProjectVersion>
+        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
+        <Base_Win32>true</Base_Win32>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
+        <Base_Win64>true</Base_Win64>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
+        <Cfg_1>true</Cfg_1>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
+        <Cfg_1_Win32>true</Cfg_1_Win32>
+        <CfgParent>Cfg_1</CfgParent>
+        <Cfg_1>true</Cfg_1>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win64)'!=''">
+        <Cfg_1_Win64>true</Cfg_1_Win64>
+        <CfgParent>Cfg_1</CfgParent>
+        <Cfg_1>true</Cfg_1>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
+        <Cfg_2>true</Cfg_2>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+        <Cfg_2_Win32>true</Cfg_2_Win32>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win64)'!=''">
+        <Cfg_2_Win64>true</Cfg_2_Win64>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base)'!=''">
+        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\VTV\Source;..\For.rnq\AES;..\For.rnq\Flash;..\For.rnq\RTL;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <SanitizedProjectName>RnQx64</SanitizedProjectName>
+        <DCC_UsePackage>rtl;$(DCC_UsePackage)</DCC_UsePackage>
+        <Manifest_File>None</Manifest_File>
+        <DCC_DcuOutput>Units</DCC_DcuOutput>
+        <DCC_IOChecking>false</DCC_IOChecking>
+        <VerInfo_Build>1122</VerInfo_Build>
+        <DCC_ExeOutput>..\Distro\</DCC_ExeOutput>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_MajorVer>0</VerInfo_MajorVer>
+        <Icon_MainIcon>RnQx64_Icon.ico</Icon_MainIcon>
+        <VerInfo_Release>9999</VerInfo_Release>
+        <DCC_Define>RNQ;ICQ_ONLY;$(DCC_Define)</DCC_Define>
+        <VerInfo_MinorVer>11</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1122;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Locale>1049</VerInfo_Locale>
+        <DCC_ImageBase>00400000</DCC_ImageBase>
+        <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_N>false</DCC_N>
+        <DCC_S>false</DCC_S>
+        <DCC_K>false</DCC_K>
+        <DCC_E>false</DCC_E>
+        <DCC_F>false</DCC_F>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <DCC_UsePackage>vcl;ExceptionExpert16;$(DCC_UsePackage)</DCC_UsePackage>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <DCC_Namespace>System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win64)'!=''">
+        <DCC_UsePackage>vcl;$(DCC_UsePackage)</DCC_UsePackage>
+        <DCC_Namespace>System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1)'!=''">
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1121;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q x64;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
+        <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+        <DCC_DebugInformation>0</DCC_DebugInformation>
+        <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <Manifest_File>None</Manifest_File>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1123;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q x64;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Build>1123</VerInfo_Build>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <DCC_DebugInformation>true</DCC_DebugInformation>
+        <DCC_MapFile>3</DCC_MapFile>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2)'!=''">
+        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+        <DCC_Optimize>false</DCC_Optimize>
+        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <VerInfo_Build>1122</VerInfo_Build>
+        <DCC_UsePackage>EurekaLogCore;$(DCC_UsePackage)</DCC_UsePackage>
+        <VerInfo_Debug>true</VerInfo_Debug>
+        <Manifest_File>None</Manifest_File>
+        <Icon_MainIcon>RnQx64_Icon.ico</Icon_MainIcon>
+        <DCC_MapFile>3</DCC_MapFile>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1122;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11;Comments=</VerInfo_Keys>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
+        <Debugger_CWD>P:\RnQ.010\Distro</Debugger_CWD>
+        <Icon_MainIcon>..\RnQ.1200\Res\MAINICON_Lite.ico</Icon_MainIcon>
+        <DCC_RemoteDebug>true</DCC_RemoteDebug>
+        <DCC_Optimize>true</DCC_Optimize>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1121;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11;Comments=</VerInfo_Keys>
+    </PropertyGroup>
+    <ItemGroup>
+        <DelphiCompile Include="$(MainSource)">
+            <MainSource>MainSource</MainSource>
+        </DelphiCompile>
+        <RcCompile Include="Res\WinXP2.rc">
+            <Form>WinXP2.res</Form>
+        </RcCompile>
+        <DCCReference Include="mainDlg.pas">
+            <Form>RnQmain</Form>
+        </DCCReference>
+        <DCCReference Include="..\For.rnq\RTL\RDGlobal.pas"/>
+        <DCCReference Include="..\For.rnq\RTL\RnQBinUtils.pas"/>
+        <DCCReference Include="..\For.rnq\RTL\RnQGraphics32.pas"/>
+        <DCCReference Include="..\For.rnq\RnQGlobal.pas"/>
+        <DCCReference Include="..\For.rnq\RQUtil.pas"/>
+        <DCCReference Include="..\For.rnq\RnQLangs.pas"/>
+        <DCCReference Include="..\For.rnq\RnQStrings.pas"/>
+        <DCCReference Include="..\For.rnq\VTV\Source\VirtualTrees.pas"/>
+        <DCCReference Include="..\For.rnq\RQThemes.pas"/>
+        <DCCReference Include="..\For.rnq\RQmsgs.pas">
+            <Form>msgsFrm</Form>
+        </DCCReference>
+        <DCCReference Include="..\For.rnq\RnQNet.pas"/>
+        <DCCReference Include="..\For.rnq\RQMenuItem.pas"/>
+        <DCCReference Include="..\For.rnq\RQlog.pas">
+            <Form>logFrm</Form>
+        </DCCReference>
+        <DCCReference Include="..\For.rnq\RnQDialogs.pas"/>
+        <DCCReference Include="..\For.rnq\RnQPrefsLib.pas"/>
+        <DCCReference Include="addContactDlg.pas">
+            <Form>addContactFrm</Form>
+        </DCCReference>
+        <DCCReference Include="roasterLib.pas"/>
+        <DCCReference Include="ThemesLib.pas"/>
+        <DCCReference Include="globalLib.pas"/>
+        <DCCReference Include="history.pas"/>
+        <DCCReference Include="events.pas"/>
+        <DCCReference Include="aboutDlg.pas">
+            <Form>aboutFrm</Form>
+        </DCCReference>
+        <DCCReference Include="selectcontactsDlg.pas">
+            <Form>selectCntsFrm</Form>
+        </DCCReference>
+        <DCCReference Include="usersDlg.pas">
+            <Form>usersFrm</Form>
+        </DCCReference>
+        <DCCReference Include="iniLib.pas"/>
+        <DCCReference Include="utilLib.pas"/>
+        <DCCReference Include="authreqDlg.pas">
+            <Form>authreqFrm</Form>
+        </DCCReference>
+        <DCCReference Include="changepwddlg.pas">
+            <Form>changePwdFrm</Form>
+        </DCCReference>
+        <DCCReference Include="historyVCL.pas"/>
+        <DCCReference Include="chatDlg.pas">
+            <Form>chatFrm</Form>
+        </DCCReference>
+        <DCCReference Include="pluginLib.pas"/>
+        <DCCReference Include="outboxLib.pas"/>
+        <DCCReference Include="outboxDlg.pas">
+            <Form>outboxFrm</Form>
+        </DCCReference>
+        <DCCReference Include="lockDlg.pas">
+            <Form>lockFrm</Form>
+        </DCCReference>
+        <DCCReference Include="uinlistlib.pas"/>
+        <DCCReference Include="automsgDlg.pas">
+            <Form>automsgFrm</Form>
+        </DCCReference>
+        <DCCReference Include="groupsLib.pas"/>
+        <DCCReference Include="langLib.pas"/>
+        <DCCReference Include="pwdDlg.pas">
+            <Form>msgFrm</Form>
+        </DCCReference>
+        <DCCReference Include="RnQdbDlg.pas">
+            <Form>RnQdbFrm</Form>
+        </DCCReference>
+        <DCCReference Include="menusUnit.pas"/>
+        <DCCReference Include="RnQMacros.pas"/>
+        <DCCReference Include="prefDlg.pas">
+            <Form>prefFrm</Form>
+        </DCCReference>
+        <DCCReference Include="Prefs\connection_fr.pas">
+            <Form>connectionFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Prefs\start_fr.pas">
+            <Form>startFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Prefs\design_fr.pas">
+            <Form>designFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Prefs\autoaway_fr.pas">
+            <Form>autoawayFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Prefs\security_fr.pas">
+            <Form>securityFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Prefs\hotkeys_fr.pas">
+            <Form>hotkeysFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Prefs\other_fr.pas">
+            <Form>otherFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Prefs\antispam_fr.pas">
+            <Form>antispamFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Prefs\events_fr.pas">
+            <Form>eventsFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Prefs\plugins_fr.pas">
+            <Form>pluginsFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Prefs\chat_frOld.pas">
+            <Form>chatFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Prefs\update_fr.pas">
+            <Form>updateFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Prefs\tips_fr.pas">
+            <Form>TipsFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Prefs\themedit_fr.pas">
+            <Form>themeditFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="RnQ_Avatars.pas"/>
+        <DCCReference Include="hook.pas"/>
+        <DCCReference Include="tipDlg.pas"/>
+        <DCCReference Include="RnQTips.pas"/>
+        <DCCReference Include="HistAllSearch.pas">
+            <Form>AllHistSrchForm</Form>
+        </DCCReference>
+        <DCCReference Include="MenuSmiles.pas">
+            <Form>FSmiles</Form>
+        </DCCReference>
+        <DCCReference Include="RnQProtocol.pas"/>
+        <DCCReference Include="visibilityDlg.pas">
+            <Form>visibilityFrm</Form>
+        </DCCReference>
+        <DCCReference Include="Protocols_all.pas"/>
+        <DCCReference Include="NewAccount.pas">
+            <Form>NewAccFrm</Form>
+        </DCCReference>
+        <DCCReference Include="ICQ\icq_fr.pas">
+            <Form>icqFr</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="ICQ\ICQcontacts.pas"/>
+        <DCCReference Include="ICQ\RQCodes.pas"/>
+        <DCCReference Include="ICQ\RQ_ICQ.pas"/>
+        <DCCReference Include="ICQ\viewinfoDlg.pas">
+            <Form>viewinfoFrm</Form>
+        </DCCReference>
+        <DCCReference Include="ICQ\ICQv9.pas"/>
+        <DCCReference Include="ICQ\ICQConsts.pas"/>
+        <DCCReference Include="StatusForm.pas">
+            <Form>xStatusForm</Form>
+        </DCCReference>
+        <DCCReference Include="ICQ\wpDlg.pas">
+            <Form>wpFrm</Form>
+        </DCCReference>
+        <DCCReference Include="ICQ\Protocol_ICQ.pas"/>
+        <DCCReference Include="ICQ\viewSSI.pas">
+            <Form>SSIForm</Form>
+        </DCCReference>
+        <DCCReference Include="ICQ\ICQflap.pas"/>
+        <DCCReference Include="ICQ\filetransferDlg.pas">
+            <Form>filetransferFrm</Form>
+        </DCCReference>
+        <DCCReference Include="ICQ\sendfileDlg.pas">
+            <Form>sendfileFrm</Form>
+        </DCCReference>
+        <DCCReference Include="..\For.rnq\RDtrayLib.pas"/>
+        <DCCReference Include="ICQ\ICQClients.pas"/>
+        <DCCReference Include="..\For.rnq\RnQLangFrm.pas">
+            <Form>FrmLangs</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <None Include="..\For.rnq\RnQConfig.inc"/>
+        <BuildConfiguration Include="Debug">
+            <Key>Cfg_2</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Base">
+            <Key>Base</Key>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Release">
+            <Key>Cfg_1</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Delphi.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Delphi.Personality>
+                <Source>
+                    <Source Name="MainSource">RnQx64.dpr</Source>
+                </Source>
+                <VersionInfo>
+                    <VersionInfo Name="IncludeVerInfo">False</VersionInfo>
+                    <VersionInfo Name="AutoIncBuild">False</VersionInfo>
+                    <VersionInfo Name="MajorVer">1</VersionInfo>
+                    <VersionInfo Name="MinorVer">0</VersionInfo>
+                    <VersionInfo Name="Release">0</VersionInfo>
+                    <VersionInfo Name="Build">0</VersionInfo>
+                    <VersionInfo Name="Debug">False</VersionInfo>
+                    <VersionInfo Name="PreRelease">False</VersionInfo>
+                    <VersionInfo Name="Special">False</VersionInfo>
+                    <VersionInfo Name="Private">False</VersionInfo>
+                    <VersionInfo Name="DLL">False</VersionInfo>
+                    <VersionInfo Name="Locale">1049</VersionInfo>
+                    <VersionInfo Name="CodePage">1251</VersionInfo>
+                </VersionInfo>
+                <VersionInfoKeys>
+                    <VersionInfoKeys Name="CompanyName"/>
+                    <VersionInfoKeys Name="FileDescription"/>
+                    <VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+                    <VersionInfoKeys Name="InternalName"/>
+                    <VersionInfoKeys Name="LegalCopyright"/>
+                    <VersionInfoKeys Name="LegalTrademarks"/>
+                    <VersionInfoKeys Name="OriginalFilename"/>
+                    <VersionInfoKeys Name="ProductName"/>
+                    <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+                    <VersionInfoKeys Name="Comments"/>
+                </VersionInfoKeys>
+                <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k200.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp200.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                </Excluded_Packages>
+            </Delphi.Personality>
+            <Platforms>
+                <Platform value="Win32">True</Platform>
+                <Platform value="Win64">True</Platform>
+            </Platforms>
+        </BorlandProject>
+        <ProjectFileVersion>12</ProjectFileVersion>
+    </ProjectExtensions>
+    <Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
+    <Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
+</Project>
