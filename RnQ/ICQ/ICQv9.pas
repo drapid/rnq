@@ -2339,6 +2339,8 @@ var
   l : RawByteString;
   myInf : TRnQContact;
 begin
+  inherited SetPrefs(pp);
+
   pp.getPrefStr('oscar-uid', sU);
   if sU > '' then
     MyAccount := sU;
@@ -2486,6 +2488,7 @@ begin
                              ICQ_SECURE_LOGIN_SERVER0);
   fOscarProxyServer := pp.getPrefStrDef('oscar-proxy-server',
                              AOL_FILE_TRANSFER_SERVER0);
+
 end;
 
 

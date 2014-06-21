@@ -3532,6 +3532,7 @@ mainfrmHandleUpdate;
 //     bar.BevelEdges := [];
      bar.BevelKind := bkNone;
      roster.DoubleBuffered := True;
+     TCustomControl(roster).DoubleBuffered := True;
     end;
 // Self.DoubleBuffered := GlassFrame.SheetOfGlass;
 // roster.DoubleBuffered := Self.GlassFrame.SheetOfGlass;
