@@ -32,6 +32,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure msgListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure FormResize(Sender: TObject);
 //  public
 //    function kind2iconIndex(kind:TMsgDlgType):integer;
    protected
@@ -251,7 +252,7 @@ begin
   with OkBtn do
   begin
     Parent := self;
-    Left := 130;
+    Left := Round((Self.ClientWidth - Width) / 2);
     Top := Self.ClientHeight - BottomHeight + ((BottomHeight-25) div 2);
     Width := 89;
     Height := 25;
@@ -302,9 +303,14 @@ begin
    OkBtnClick(nil);
 end;
 
+procedure TmsgsFrm.FormResize(Sender: TObject);
+begin
+  OkBtn.Left := Round((ClientWidth - OkBtn.Width) / 2);
+end;
+
 procedure TmsgsFrm.FormShow(Sender: TObject);
 begin
-  caption:=getTranslation('R&Q for %s',[rnquser]);
+  caption := getTranslation('R&Q for %s',[rnquser]);
   OkBtn.Caption := SMsgDlgOK + ' (' + IntToStr(FSeconds) + ')';
   FTimer.Enabled := True;
 end;

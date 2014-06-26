@@ -19,7 +19,7 @@ uses
   {$ENDIF NOT_USE_GDIPLUS}
   windows, controls, classes,
   sysutils, graphics, forms, stdctrls, ExtCtrls,
-  messages, strutils, Themes,
+  messages, strutils,
   RDGlobal, history, RnQProtocol, events;
 
 type

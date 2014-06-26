@@ -46,8 +46,7 @@ uses
   mainDlg,
 //  menusUnit,
  {$IFNDEF RNQ_LITE}
-  themedit_fr
-  ,
+  themedit_fr,
  {$ENDIF}
   RnQProtocol,
  {$IFDEF PROTOCOL_ICQ}
@@ -87,7 +86,7 @@ mainFrm.roaster.background.bitmap.ReleaseHandle;}
        begin
          paintoptions:=paintoptions+[toShowBackground];
         end
-   end     
+   end
      else
         paintoptions:=paintoptions-[toShowBackground];
 //   RnQmain.roaster.TreeOptions.PaintOptions

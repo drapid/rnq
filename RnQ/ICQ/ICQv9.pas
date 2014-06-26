@@ -1230,7 +1230,7 @@ begin
   Directed := False;
 //  mode := dm_init;
   sock.addr:='0.0.0.0';
-//  sock.Port:= '0';
+  sock.Port:= '0';
   s := false;
   for I := 0 to portsListen.PortsCount do
    try
@@ -1243,7 +1243,8 @@ begin
    end;
   if not s then
    begin
-     sock.getFreePort;
+//     sock.getFreePort;
+     sock.Port:= '0';
      sock.listen;
    end;
   logMsg(0, getTranslation('Listening port: %s', [sock.Port]));
@@ -2311,7 +2312,11 @@ begin
   pp.addPrefStr('starting-visibility', visib2str[TVisibility(RnQstartingVisibility)]);
 
   pp.addPrefStr('last-set-status', status2Img[lastStatusUserSet]);
-{
+
+
+  inherited GetPrefs(pp);
+
+// Added here to safe MD5 hash
   if not dontSavePwd //and not locked
   then
     begin
@@ -2326,9 +2331,7 @@ begin
     begin
       pp.DeletePref('crypted-password64');
     end;
-  pp.DeletePref('crypted-password');
-}
-  inherited GetPrefs(pp);
+
 end;
 
 procedure TicqSession.SetPrefs(pp : TRnQPref);

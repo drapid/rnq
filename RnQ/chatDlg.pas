@@ -747,8 +747,8 @@ begin
   sbar.DoubleBuffered := ThemeServices.ThemesEnabled;
 //  pagectrl.t
   DragAcceptFiles(self.handle, True);
- applyFormXY;
- applyTaskButton(self);
+  applyFormXY;
+  applyTaskButton(self);
 end;
 
 procedure TchatFrm.setTab(idx:integer);
@@ -1144,10 +1144,10 @@ end; // pageIdxAt
 
 procedure TchatFrm.pagectrl00MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  diff:TdateTime;
-  i:integer;
-  ev:Thevent;
-  b:boolean;
+  diff: TDateTime;
+  i: integer;
+  ev: Thevent;
+  b: boolean;
 begin
   case button of
    mbRight:
@@ -3688,7 +3688,7 @@ begin
      control.Canvas.TextOut(r.Right - 8, r.Top, intToStr(TabIndex));
      control.Canvas.Font.Size := i;
    end;
-}   
+}
 end;
 
 procedure TchatFrm.ShowTabHint(X, Y: integer);

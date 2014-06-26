@@ -1039,7 +1039,7 @@ begin
     end;
   PaintBuffer := 0;
   progress := 0;
-  if progStart >0 then
+  if progStart > 0 then
     progress := progStart
    else
     if Assigned(Account.AccProto) then
@@ -3502,7 +3502,7 @@ procedure TRnQmain.FormCreate(Sender: TObject);
 begin
   self.CreateMenus;
   PntBar := TRnQPntBox.Create(bar);
-//  PntBar.ControlStyle := [csOpaque]
+//  PntBar.ControlStyle := [csOpaque];
   PntBar.Parent := bar;
 //  PntBar.Align := alRight;
   PntBar.Align := alClient;
