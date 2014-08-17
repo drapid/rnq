@@ -21,9 +21,10 @@ This file is part of &RQ.
 This file is part of R&Q.
 Under same license
 }
+unit groupsLib;
 {$I Compilers.inc}
 {$I RnQConfig.inc}
-unit groupsLib;
+{$I NoRTTI.inc}
 
 interface
 

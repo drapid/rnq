@@ -2,9 +2,10 @@
 This file is part of R&Q.
 Under same license
 }
+unit security_fr;
 {$I Compilers.inc}
 {$I RnQConfig.inc}
-unit security_fr;
+{$I NoRTTI.inc}
 
 interface
 

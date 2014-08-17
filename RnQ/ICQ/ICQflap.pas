@@ -2,14 +2,10 @@
 This file is part of R&Q.
 Under same license
 }
+unit ICQflap;
 {$I Compilers.inc}
 {$I RnQConfig.inc}
-unit ICQflap;
-
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 interface
 

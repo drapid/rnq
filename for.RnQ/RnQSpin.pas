@@ -2,11 +2,7 @@ unit RnQSpin;
 
 interface
 {$I ForRnQConfig.inc}
-
- {$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
- {$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 uses Windows, Classes, StdCtrls, ExtCtrls, Controls, Messages, SysUtils,
   Forms, Graphics, //Menus,

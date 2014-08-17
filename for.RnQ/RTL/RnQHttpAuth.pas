@@ -15,11 +15,7 @@ unit RnQHTTPAuth;
 
 interface
 {$I Compilers.inc}
-
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 uses
   SysUtils,

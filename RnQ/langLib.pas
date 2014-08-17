@@ -19,6 +19,7 @@ This file is part of &RQ.
 }
 unit langLib;
 {$I RnQConfig.inc}
+{$I NoRTTI.inc}
 
 interface
 

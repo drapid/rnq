@@ -126,7 +126,7 @@ uses
    { $SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_DEBUG_STRIPPED
      or IMAGE_FILE_LINE_NUMS_STRIPPED or IMAGE_FILE_LOCAL_SYMS_STRIPPED}
 {
-IMAGE_FILE_RELOCS_STRIPPED - отрезал релоки 
+IMAGE_FILE_RELOCS_STRIPPED - отрезал релоки
 IMAGE_FILE_DEBUG_STRIPPED - Выбросил из ехе Debug информацию
 IMAGE_FILE_LINE_NUMS_STRIPPED - Выбросил из exe информацию о номерах строк
 IMAGE_FILE_LOCAL_SYMS_STRIPPED - Выбросил local symbols

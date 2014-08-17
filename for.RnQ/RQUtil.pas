@@ -5,11 +5,7 @@ Under same license
 (* $IMPORTEDDATA ON *)
 unit RQUtil;
 {$I ForRnQConfig.inc}
-
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 interface
  uses
@@ -93,7 +89,7 @@ function TxtFromInt(Int: Integer {3 digits}): String;
 
 type
   Pmsg = ^Tmsg;
-  Tmsg=record
+  Tmsg = record
      text:string;
      UID : AnsiString;
      kind:TMsgDlgType;

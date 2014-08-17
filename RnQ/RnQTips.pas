@@ -5,6 +5,7 @@ Under same license
 unit RnQTips;
 {$I Compilers.inc}
 {$I RnQConfig.inc}
+{$I NoRTTI.inc}
 
 interface
 

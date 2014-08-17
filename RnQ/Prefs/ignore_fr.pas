@@ -3,11 +3,7 @@ unit ignore_fr;
 interface
 {$I Compilers.inc}
 {$I RnQConfig.inc}
-
- {$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
- {$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,

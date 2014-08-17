@@ -5,10 +5,7 @@ Under same license
 unit usersDlg;
 {$I RnQConfig.inc}
   { $UNDEF RNQ_FULL}
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 interface
 

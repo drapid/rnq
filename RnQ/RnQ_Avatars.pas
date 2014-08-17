@@ -5,11 +5,7 @@ Under same license
 unit RnQ_Avatars;
 {$I Compilers.inc}
 {$I RnQConfig.inc}
-
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 interface
 
@@ -56,11 +52,8 @@ function LoadAvtByHash(const hash : RawByteString; var bmp : TRnQBitmap;
                        var hasAvatar : Boolean; var pPicFile : String) : Boolean;
 procedure updateAvatar(c : TRnQContact{; pWriteLog : boolean = false});
 
-const
-  JPEG_HDR  = AnsiString(#$FF#$D8#$FF#$E0);
-  JPEG_HDR2 = AnsiString(#$FF#$D8#$FF#$E1);
-
  {$IFDEF PROTOCOL_MRA}
+const
   MRA_PHOTO_URL = 'http://obraz.foto.mail.ru/%s/%s/_mrimavatar';
   MRA_PHOTO_THUMB_URL = 'http://obraz.foto.mail.ru/%s/%s/_mrimavatarsmall';
  {$ENDIF PROTOCOL_MRA}

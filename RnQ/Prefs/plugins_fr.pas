@@ -2,9 +2,10 @@
 This file is part of R&Q.
 Under same license
 }
+unit plugins_fr;
 {$I Compilers.inc}
 {$I RnQConfig.inc}
-unit plugins_fr;
+{$I NoRTTI.inc}
 
 interface
 

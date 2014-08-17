@@ -7,10 +7,7 @@ unit iniLib;
 {$I RnQConfig.inc}
 {$WARN SYMBOL_PLATFORM OFF}
 
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 interface
 

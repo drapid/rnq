@@ -9,10 +9,7 @@ unit RQThemes;
  { $DEFINE USE_32Aplha_Images}
   { $DEFINE NOT_USE_GDIPLUS}
 
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 {$WRITEABLECONST OFF} // Read-only typed constants
 

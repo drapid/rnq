@@ -20,6 +20,7 @@ This file is part of &RQ.
 unit hook;
 {$I Compilers.inc}
 {$I RnQConfig.inc}
+{$I NoRTTI.inc}
 
 interface
 

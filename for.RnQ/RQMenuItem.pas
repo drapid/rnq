@@ -4,13 +4,10 @@ Under same license
 }
 unit RQMenuItem;
 {$I ForRnQConfig.inc}
+{$I NoRTTI.inc}
 
 { $define MirandaSupport}
  { $DEFINE NOT_USE_GDIPLUS}
- {$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
- {$ENDIF COMPILER_14_UP}
 
 interface
 uses

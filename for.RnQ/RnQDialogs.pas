@@ -1,14 +1,10 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RnQDialogs;
 {$I ForRnQConfig.inc}
-
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 {$DEFINE usesVCL}
 
@@ -37,7 +33,6 @@ const
   mbAbortRetryIgnore = [mbAbort, mbRetry, mbIgnore];
   mbAbortIgnore = [mbAbort, mbIgnore];
 }
-
 
 {$IFDEF usesVCL}
 resourcestring

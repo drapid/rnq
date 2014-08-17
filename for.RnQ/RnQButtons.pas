@@ -39,14 +39,10 @@
 
 unit RnQButtons;
 {$I ForRnQConfig.inc}
+{$I NoRTTI.inc}
 
 {$S-,W-,R-,H+,X+}
 {$C PRELOAD}
-
- {$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
- {$ENDIF COMPILER_14_UP}
 
 interface
 

@@ -41,11 +41,7 @@ the full implications and legal ramifications of using the LZW compression.
 interface
 
 {$I forRnQConfig.inc}
-
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 uses
   {$ifdef UseCLX}

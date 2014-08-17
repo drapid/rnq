@@ -26,6 +26,9 @@ uses
   StdCtrls, RnQButtons, ExtCtrls, Menus,
   RnQProtocol;
 
+{$I RnQConfig.inc}
+{$I NoRTTI.inc}
+
 type
   TauthreqFrm = class(TForm)
     Label1: TLabel;

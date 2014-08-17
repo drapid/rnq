@@ -20,6 +20,7 @@ This file is part of &RQ.
 unit pwdDlg;
 {$I Compilers.inc}
 {$I RnQConfig.inc}
+{$I NoRTTI.inc}
   { $DEFINE USE_TKB}
 interface
 

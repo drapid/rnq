@@ -2,8 +2,9 @@
 This file is part of R&Q.
 Under same license
 }
-{$I RnQConfig.inc}
 unit selectcontactsDlg;
+{$I RnQConfig.inc}
+{$I NoRTTI.inc}
 
 interface
 

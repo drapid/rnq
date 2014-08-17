@@ -2,9 +2,9 @@
 This file is part of R&Q.
 Under same license
 }
+unit pluginLib;
 {$I Compilers.inc}
 {$I RnQConfig.inc}
-unit pluginLib;
 
 {$IFDEF COMPILER_12_UP}
   {$WARN IMPLICIT_STRING_CAST OFF}
@@ -12,10 +12,7 @@ unit pluginLib;
   {$WARN SUSPICIOUS_TYPECAST ERROR}
 {$ENDIF}
 
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 interface
 

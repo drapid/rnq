@@ -4,12 +4,9 @@ Under same license
 }
 unit ICQContacts;
 {$I RnQConfig.inc}
+{$I NoRTTI.inc}
 {$I-}
 
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
 
 {$X+}
 interface

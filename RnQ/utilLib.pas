@@ -4,15 +4,12 @@ Under same license
 }
 unit utilLib;
 {$I RnQConfig.inc}
+{$I NoRTTI.inc}
 
  {$IFDEF RNQ_FULL}
 // {$ELSE}
 //    {$UNDEF CHECK_INVIS}
  {$ENDIF}
- {$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
- {$ENDIF COMPILER_14_UP}
 
 interface
 
@@ -284,8 +281,6 @@ uses
   RQMenuItem, RQThemes, RQLog, RnQDialogs,
   RnQLangs, RnQButtons, RnQBinUtils, RnQGlobal, RnQCrypt, RnQPics,
   RDtrayLib, RnQTips,
- {$IFDEF RNQ_FULL}
- {$ENDIF RNQ_FULL}
    {$IFDEF RNQ_FULL2}
      converthistoriesDlg,
    {$ENDIF}

@@ -3,10 +3,7 @@ unit RnQNet;
 {$I forRnQConfig.inc}
 { $I RnQConfig.inc}
 
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 interface
  uses

@@ -1,10 +1,6 @@
 unit RnQGraphics32;
 {$I ForRnQConfig.inc}
-
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 { $DEFINE DELPHI_9_UP}
 {$IFDEF FPC}
@@ -30,11 +26,11 @@ type
 type
   TPAFormat = (PA_FORMAT_UNK, PA_FORMAT_BMP, PA_FORMAT_JPEG,
                PA_FORMAT_GIF, PA_FORMAT_PNG, PA_FORMAT_XML,
-               PA_FORMAT_SWF, PA_FORMAT_ICO);
+               PA_FORMAT_SWF, PA_FORMAT_ICO, PA_FORMAT_TIF);
 
 const
-  PAFormat : array [TPAFormat] of string = ('.dat','.bmp','.jpeg','.gif','.png', '.xml', '.swf', '.ico');
-  PAFormatString : array [TPAFormat] of string = ('Unknoun','Bitmap','JPEG','GIF','PNG', 'XML', 'SWF', 'ICON');
+  PAFormat : array [TPAFormat] of string = ('.dat','.bmp','.jpeg','.gif','.png', '.xml', '.swf', '.ico', '.tif');
+  PAFormatString : array [TPAFormat] of string = ('Unknoun','Bitmap','JPEG','GIF','PNG', 'XML', 'SWF', 'ICON', 'TIF');
 
 type
   TAniDisposalType = (dtUndefined,   {Take no action}
@@ -266,6 +262,9 @@ type
 const
   JPEG_HDR  = RawByteString(#$FF#$D8#$FF#$E0);
   JPEG_HDR2 = RawByteString(#$FF#$D8#$FF#$E1);
+  TIF_HDR : array [0 .. 3] of AnsiChar = #$49#$49#$2A#$00;
+  TIF_HDR2: array [0 .. 3] of AnsiChar = #$4D#$4D#$00#$2A;
+
 const
  IID_IPicture  : TGUID = '{7BF80980-BF32-101A-8BBB-00AA00300CAB}';
 
@@ -818,6 +817,7 @@ function  loadPic(var str : TStream; var bmp : TRnQBitmap; idx : Integer = 0; ff
 var
 //  png : TPNGGraphic;
   png : TPNGObject;
+  TIF: TWICImage;
 //  aniImg : TRnQAni;
   NonAnimated : Boolean;
 //  vJpg : TJPEGImage;
@@ -1136,7 +1136,36 @@ begin
         if Assigned(bmp) then
           Result := True;
        exit;
-     end
+     end;
+    PA_FORMAT_TIF:
+      begin
+        TIF := TWICImage.Create;
+        TIF.LoadFromStream(str);
+        if not TIF.empty then
+        begin
+          if not Assigned(bmp) then
+            bmp := TRnQBitmap.Create
+          else
+            bmp.Clear;
+          bmp.f32Alpha := false;
+          bmp.fFormat := ff;
+
+          begin
+            if not Assigned(bmp.fBmp) then
+              bmp.fBmp := TBitmap.Create;
+            bmp.fBmp.PixelFormat := pf24bit;
+            bmp.f32Alpha := false;
+            bmp.fBmp.Assign(TIF);
+            bmp.fWidth := bmp.fBmp.Width;
+            bmp.fHeight := bmp.fBmp.Height;
+          end;
+
+          TIF.Free;
+          str.Free;
+          str := NIL;
+          Result := True;
+        end;
+      end;
 //   PA_FORMAT_XML: ;
 //   PA_FORMAT_SWF: ;
 //   PA_FORMAT_UNK: ;
@@ -2656,6 +2685,8 @@ begin
     Result:= PA_FORMAT_SWF
   else if AnsiStartsText(AnsiString('‰PNG'), s) then
     Result:= PA_FORMAT_PNG
+  else if (s = TIF_HDR) or (s = TIF_HDR2) then
+    Result := PA_FORMAT_TIF
   else
     Result:= PA_FORMAT_UNK;
 end;

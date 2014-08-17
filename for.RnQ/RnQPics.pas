@@ -4,14 +4,9 @@ Under same license
 }
 unit RnQPics;
 {$I RnQConfig.inc}
-
+{$I NoRTTI.inc}
 
 {$WRITEABLECONST OFF} // Read-only typed constants
-
-{$IFDEF COMPILER_14_UP}
-  {$WEAKLINKRTTI ON}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
-{$ENDIF COMPILER_14_UP}
 
 interface
 
