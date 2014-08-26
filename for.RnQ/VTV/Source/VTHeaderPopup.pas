@@ -88,7 +88,8 @@ uses
 type
   TVTHeaderPopupOption = (
     poOriginalOrder, // Show menu items in original column order as they were added to the tree.
-    poAllowHideAll   // Allows to hide all columns, including the last one.
+    poAllowHideAll,   // Allows to hide all columns, including the last one.
+    poResizeToFitItem // Adds an item which, if clicks, resizes all columns to fit by callung TVTHeader.AutoFitColumns
   );
   TVTHeaderPopupOptions = set of TVTHeaderPopupOption;
 
@@ -135,13 +136,15 @@ type
 
 implementation
 
-uses
+uses Windows,
   {$ifdef TNT}
     TnTClasses
   {$else}
     Classes
   {$endif TNT};
 
+const
+  cResizeToFitMenuItemName = 'VT_ResizeToFitMenuItem';
 type
   TVirtualTreeCast = class(TBaseVirtualTree); // Necessary to make the header accessible.
 
@@ -169,7 +172,11 @@ end;
 procedure TVTHeaderPopupMenu.OnMenuItemClick(Sender: TObject);
 
 begin
-  if Assigned(PopupComponent) and (PopupComponent is TBaseVirtualTree) then
+  if Assigned(PopupComponent) and (PopupComponent is TBaseVirtualTree) then begin
+    if TVTMenuItem(Sender).Name = cResizeToFitMenuItemName then begin
+      TVirtualTreeCast(PopupComponent).Header.AutoFitColumns();
+    end
+    else begin
     with TVTMenuItem(Sender),
       TVirtualTreeCast(PopupComponent).Header.Columns.Items[Tag] do
     begin
@@ -180,14 +187,16 @@ begin
 
        DoColumnChange(TVTMenuItem(Sender).Tag, not Checked);
     end;
+    end;//else
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTHeaderPopupMenu.Popup(x, y: Integer);
-
+resourcestring
+  sResizeToFit = '&Resize All Columns To Fit';
 var
-  I: Integer;
   ColPos: TColumnPosition;
   ColIdx: TColumnIndex;
 
@@ -201,12 +210,14 @@ begin
   if Assigned(PopupComponent) and (PopupComponent is TBaseVirtualTree) then
   begin
     // Delete existing menu items.
-    I := Items.Count;
-    while I > 0 do
-    begin
-      Dec(I);
-      Items[I].Free;
-    end;
+    while Items.Count > 0 do
+      Items[0].Free;
+
+    if poResizeToFitItem in Self.Options then begin
+      NewMenuItem := NewItem(sResizeToFit, 0, False, True, OnMenuItemClick, 0, cResizeToFitMenuItemName);
+      Items.Add(NewMenuItem);
+      Items.Add(NewLine());
+    end;//poResizeToFitItem
 
     // Add column menu items.
     with TVirtualTreeCast(PopupComponent).Header do

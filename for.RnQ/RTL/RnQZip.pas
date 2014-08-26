@@ -1103,7 +1103,7 @@ begin
     lFN := ExtractFileName(pFileName)
    else
     lFN := name;
-  AddFile(lFN, FAttribute, pPass, buf);
+  result := AddFile(lFN, FAttribute, pPass, buf);
   buf := '';
 end;
 

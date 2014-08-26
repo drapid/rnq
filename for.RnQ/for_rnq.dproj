@@ -150,6 +150,7 @@
         <DCCReference Include="RQUtil.pas"/>
         <DCCReference Include="RnQSysUtils.pas"/>
         <DCCReference Include="RnQStrings.pas"/>
+        <DCCReference Include="RTL\Base64.pas"/>
         <None Include="VTV\Source\Compilers.inc"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>

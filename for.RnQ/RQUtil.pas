@@ -137,10 +137,10 @@ uses
 
 function absPath(const fn:string):boolean;
 begin
-  result:=(length(fn)>2) and ((fn[2]=':') or (fn[1]=PathDelim) and (fn[2]=PathDelim))
+  result := (length(fn)>2) and ((fn[2]=':') or (fn[1]=PathDelim) and (fn[2]=PathDelim))
 end;
 
-function ExtractFileNameOnly(const fn : String) : String;
+function ExtractFileNameOnly(const fn: String): String;
 var
   I, K: Integer;
 begin
@@ -152,7 +152,7 @@ begin
     Result := Copy(fn, I + 1, MaxInt);
 end;
 
-function str2html(const s:string):string;
+function str2html(const s: string): string;
 begin
 result:=template(s, [
   '&', '&amp;',
@@ -165,7 +165,7 @@ result:=template(s, [
 ]);
 end; // str2html
 
-function strFromHTML(const s:string):string;
+function strFromHTML(const s: string): string;
 begin
 result:=template(s, [
   '&amp;', '&',
@@ -207,7 +207,7 @@ begin
  {$ENDIF RNQ}
 end; // msgDlg
 
-procedure showForm(frm:Tform);
+procedure showForm(frm: Tform);
 begin
   if frm=NIL then exit;
 {
@@ -220,22 +220,22 @@ if frm = mainFrm then
 //  ShowWindow(application.handle,SW_HIDE)
 end;
 
-procedure drawTxt(hnd:Thandle; x,y:integer; const s:string);
+procedure drawTxt(hnd: Thandle; x, y: integer; const s: string);
 begin textOut(hnd, x,y, PChar(s), length(s)) end;
 
-procedure drawTxtL(hnd:Thandle; x,y:integer; const s:pchar; L:integer);
+procedure drawTxtL(hnd: Thandle; x, y: integer; const s: pchar; L: integer);
 begin textOut(hnd, x,y, s, L) end;
 
-function txtSize(hnd:Thandle; const s:string):Tsize;
+function txtSize(hnd: Thandle; const s: string): TSize;
 begin GetTextExtentPoint32(hnd, pchar(s), length(s), result) end;
 
-function txtSizeL(hnd:Thandle; s:pchar; L:integer):Tsize;
+function txtSizeL(hnd: Thandle; s: pchar; L: integer): TSize;
 begin GetTextExtentPoint32(hnd,s,l,result) end;
 
-function mousePos:Tpoint;
+function mousePos: Tpoint;
 begin getCursorPos(result) end;
 
-function into(p:Tpoint; r:Trect):boolean;
+function into(p: Tpoint; r: Trect): boolean;
 begin result:=(r.Left <= p.x) and (r.right >= p.x) and (r.top <= p.y) and (r.bottom >= p.y) end;
 
 
@@ -259,7 +259,7 @@ var
 begin
   TranslitList := TStringList.create;
   TranslitList.Sorted := false;
-  txt:=loadfileA(myPath+ 'translit.txt');
+  txt:= loadfileA(myPath+ 'translit.txt');
   while txt>'' do
    try
     v:=chopline(txt);
@@ -327,7 +327,7 @@ begin
 	if HIWORD(BASS_GetVersion) <> BASSVERSION then
    begin
     Unload_BASSDLL;
-    audioPresent:=FALSE;
+    audioPresent:= FALSE;
     msgDlg('BASS version 2.4 was not loaded!', True, mtError);
 //    halt(1);
    end
@@ -356,7 +356,7 @@ begin
 end;
 
 
-procedure SoundPlay(fn:string);
+procedure SoundPlay(fn: string);
 begin
  if masterMute or disablesounds or (not playSounds) then exit;
 if length(fn) < 2 then
@@ -920,7 +920,7 @@ while i<=l do
   end;
 end; // drawCoolText
 
-function datetimeToStrMinMax(dt:Tdatetime; min:Tdatetime; max:Tdatetime):string; overload;
+function datetimeToStrMinMax(dt: Tdatetime; min: Tdatetime; max: Tdatetime): string; overload;
 begin
 if dt=0 then
   result:=''
@@ -931,7 +931,7 @@ else
     result:=formatDatetime(timeformat.info, dt);
 end; // datetimeToStrMinMax
 
-function dateTocoolstr(d:Tdatetime):string;
+function dateTocoolstr(d: Tdatetime): string;
 begin
 case trunc(now)-trunc(d) of
   0: result:=getTranslation('Today');
@@ -948,7 +948,7 @@ case trunc(now)-trunc(d) of
   end
 end; // dateToCoolstr
 
-function logTimestamp:string;
+function logTimestamp: string;
 begin result:=formatDatetime(timeformat.log, now)+'> ' end;
 
 

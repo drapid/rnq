@@ -26,11 +26,13 @@ type
 type
   TPAFormat = (PA_FORMAT_UNK, PA_FORMAT_BMP, PA_FORMAT_JPEG,
                PA_FORMAT_GIF, PA_FORMAT_PNG, PA_FORMAT_XML,
-               PA_FORMAT_SWF, PA_FORMAT_ICO, PA_FORMAT_TIF);
+               PA_FORMAT_SWF, PA_FORMAT_ICO,
+               PA_FORMAT_TIF, PA_FORMAT_WEBP // From WIC
+               );
 
 const
-  PAFormat : array [TPAFormat] of string = ('.dat','.bmp','.jpeg','.gif','.png', '.xml', '.swf', '.ico', '.tif');
-  PAFormatString : array [TPAFormat] of string = ('Unknoun','Bitmap','JPEG','GIF','PNG', 'XML', 'SWF', 'ICON', 'TIF');
+  PAFormat : array [TPAFormat] of string = ('.dat','.bmp','.jpeg','.gif','.png', '.xml', '.swf', '.ico', '.tif', '.webp');
+  PAFormatString : array [TPAFormat] of string = ('Unknoun','Bitmap','JPEG','GIF','PNG', 'XML', 'SWF', 'ICON', 'TIF', 'WEBP');
 
 type
   TAniDisposalType = (dtUndefined,   {Take no action}
@@ -241,6 +243,7 @@ implementation
     ExtCtrls,
    {$ENDIF RNQ_FULL}
     CommCtrl,
+    wincodec,
     ActiveX,
     RnQpngImage,
    RDUtils,
@@ -264,6 +267,7 @@ const
   JPEG_HDR2 = RawByteString(#$FF#$D8#$FF#$E1);
   TIF_HDR : array [0 .. 3] of AnsiChar = #$49#$49#$2A#$00;
   TIF_HDR2: array [0 .. 3] of AnsiChar = #$4D#$4D#$00#$2A;
+  CLSID_WICWEBPDecoder : TGUID = '{C747A836-4884-47B8-8544-002C41BD63D2}';
 
 const
  IID_IPicture  : TGUID = '{7BF80980-BF32-101A-8BBB-00AA00300CAB}';
@@ -271,6 +275,8 @@ const
 var
  supExts : array[0..9] of string = ('bmp', 'wbmp', 'wbm', 'ico','icon',
                  'gif', 'png', 'jpg', 'jpe', 'jpeg');//, 'tif', 'dll')
+ isWEBPSupport : Boolean;
+ isTIFFSupport : Boolean;
 
   var
     ThePalette: HPalette;       {the rainbow palette for 256 colors}
@@ -817,7 +823,7 @@ function  loadPic(var str : TStream; var bmp : TRnQBitmap; idx : Integer = 0; ff
 var
 //  png : TPNGGraphic;
   png : TPNGObject;
-  TIF: TWICImage;
+  WICpic: TWICImage;
 //  aniImg : TRnQAni;
   NonAnimated : Boolean;
 //  vJpg : TJPEGImage;
@@ -1137,33 +1143,36 @@ begin
           Result := True;
        exit;
      end;
-    PA_FORMAT_TIF:
+    PA_FORMAT_TIF, PA_FORMAT_WEBP:
       begin
-        TIF := TWICImage.Create;
-        TIF.LoadFromStream(str);
-        if not TIF.empty then
-        begin
-          if not Assigned(bmp) then
-            bmp := TRnQBitmap.Create
-          else
-            bmp.Clear;
-          bmp.f32Alpha := false;
-          bmp.fFormat := ff;
-
+        WICpic := TWICImage.Create;
+        try
+          WICpic.LoadFromStream(str);
+          if not WICpic.empty then
           begin
-            if not Assigned(bmp.fBmp) then
-              bmp.fBmp := TBitmap.Create;
-            bmp.fBmp.PixelFormat := pf24bit;
+            if not Assigned(bmp) then
+              bmp := TRnQBitmap.Create
+            else
+              bmp.Clear;
             bmp.f32Alpha := false;
-            bmp.fBmp.Assign(TIF);
-            bmp.fWidth := bmp.fBmp.Width;
-            bmp.fHeight := bmp.fBmp.Height;
-          end;
+            bmp.fFormat := ff;
 
-          TIF.Free;
+            begin
+              if not Assigned(bmp.fBmp) then
+                bmp.fBmp := TBitmap.Create;
+              bmp.fBmp.PixelFormat := pf24bit;
+              bmp.f32Alpha := false;
+              bmp.fBmp.Assign(WICpic);
+              bmp.fWidth := bmp.fBmp.Width;
+              bmp.fHeight := bmp.fBmp.Height;
+            end;
+
+            Result := True;
+          end;
+         finally
+          WICPic.Free;
           str.Free;
           str := NIL;
-          Result := True;
         end;
       end;
 //   PA_FORMAT_XML: ;
@@ -2608,6 +2617,27 @@ begin
    result:=createBitmap(right-left+1, bottom-top+1);
 end;
 
+procedure checkWICCodecs;
+var
+  FImagingFactory : IWICImagingFactory;
+  ctInfo : IWICComponentInfo;
+begin
+  isTIFFSupport := false;
+  isWEBPSupport := false;
+
+  if Succeeded( CoCreateInstance(CLSID_WICImagingFactory, nil, CLSCTX_INPROC_SERVER or
+      CLSCTX_LOCAL_SERVER, IUnknown, FImagingFactory)) then
+  begin
+    isTIFFSupport := true;
+    if Succeeded( FImagingFactory.CreateComponentInfo(CLSID_WICWEBPDecoder, ctInfo) ) then
+      begin
+       ctInfo := NIL;
+       isWEBPSupport := true;
+      end;
+  end;
+
+
+end;
 
 function  getSupPicExts:String;
 var
@@ -2617,9 +2647,14 @@ var
 //  l : TStrings;
 begin
 //  FileFormatList.GetExtensionList(l);
- s := '';
- for I := low(supExts) to High(supExts) do
-  s := S + '*.' + supExts[i] + '; ';
+  s := '';
+  for I := low(supExts) to High(supExts) do
+    s := S + '*.' + supExts[i] + '; ';
+  if isTIFFSupport then
+    s := S + '*.tif; *.tiff; ';
+  if isWEBPSupport then
+    s := S + '*.webp; ';
+
   result := 'All images' + '|' + s;// + '|';
 //  result := FileFormatList.GetGraphicFilter([], fstDescription,
 //            [foCompact, foIncludeAll, foIncludeExtension], nil);
@@ -2639,7 +2674,10 @@ begin
     fn := Copy(fn, 2, Length(fn)-1);
     if (fn = 'bmp')or(fn = 'wbmp')or(fn = 'wbm')or(fn = 'gif')or
         (fn = 'ico')or(fn = 'icon')or(fn='png')or(fn='jpg')or(fn='jpeg')or
-        (fn='tif')or(fn='dll') then
+        (fn='dll')or
+        (isWEBPSupport and (fn='webp'))or
+        (isTIFFSupport and ((fn='tiff')or (fn='tiff')))
+    then
      begin
       result := true;
       exit;
@@ -2669,7 +2707,8 @@ var
 begin
   str.Seek(0, soFromBeginning);
 //  str.Position := 0;
-  str.Read(s, 4);
+  if str.Read(s, 4) < 4 then Result := PA_FORMAT_UNK
+  else
 //  s := Copy(pBuffer, 1, 4);
   if s = 'GIF8' then
     Result:= PA_FORMAT_GIF
@@ -2687,6 +2726,14 @@ begin
     Result:= PA_FORMAT_PNG
   else if (s = TIF_HDR) or (s = TIF_HDR2) then
     Result := PA_FORMAT_TIF
+  else if (s= 'RIFF') then
+    begin
+      if str.Read(s, 4) < 4 then Result := PA_FORMAT_UNK
+      else
+      if str.Read(s, 4) < 4 then Result := PA_FORMAT_UNK
+      else if s = 'WEBP' then
+         Result := PA_FORMAT_WEBP;
+    end
   else
     Result:= PA_FORMAT_UNK;
 end;
@@ -4164,26 +4211,27 @@ var
   ColorBits: Byte;
 
 initialization
-DC := GetDC(0);
-try
-  ColorBits := GetDeviceCaps(DC, BitsPixel)*GetDeviceCaps(DC, Planes);
+  DC := GetDC(0);
+  try
+    ColorBits := GetDeviceCaps(DC, BitsPixel)*GetDeviceCaps(DC, Planes);
 
-  if ColorBits <= 4 then
-    ColorBits := 4
-  else if ColorBits <= 8 then
-    ColorBits := 8
-  else  ColorBits := 24;
+    if ColorBits <= 4 then
+      ColorBits := 4
+    else if ColorBits <= 8 then
+      ColorBits := 8
+    else  ColorBits := 24;
 
-  ThePalette := 0;
-  if ColorBits = 8 then
-    CalcPalette(DC);
-finally
-  ReleaseDC(0, DC);
+    ThePalette := 0;
+    if ColorBits = 8 then
+      CalcPalette(DC);
+   finally
+    ReleaseDC(0, DC);
   end;
+  checkWICCodecs;
 
 finalization
-if ThePalette <> 0 then
-  DeleteObject(ThePalette);
+  if ThePalette <> 0 then
+    DeleteObject(ThePalette);
 
 
 end.

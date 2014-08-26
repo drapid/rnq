@@ -13,57 +13,57 @@ interface
 function  IfThen(AValue: Boolean; const ATrue: Integer; const AFalse: Integer = 0): Integer; overload;
 function  IfThen(AValue: Boolean; const s1, s2: RawByteString): RawByteString; overload; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
 
-function  packArray(a:array of integer; zero:integer):TintegerDynArray;
-function  compareInt(a,b:integer):Smallint; OverLoad;
-function  compareInt(a,b:int64):Smallint; OverLoad;
-function  CompareDate(a, b : TDateTime): Smallint;
-function  boundInt(var i:integer; min,max:integer):integer;
-function  bound(i:integer; min,max:integer):integer;
-function  within(pt:Tpoint; x,y,w,h:integer):boolean; overload; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
-function  within(a,b,c:integer):boolean; overload; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+function  packArray(a:array of integer; zero: integer): TintegerDynArray;
+function  compareInt(a,b: integer): Smallint; OverLoad;
+function  compareInt(a,b: int64):Smallint; OverLoad;
+function  CompareDate(a, b: TDateTime): Smallint;
+function  boundInt(var i: integer; min, max: integer): integer;
+function  bound(i: integer; min, max: integer): integer;
+function  within(pt: Tpoint; x, y, w, h: integer): boolean; overload; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+function  within(a, b, c: integer): boolean; overload; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
 // strings
-function  isURL(const s:string; ofs:integer=1):boolean;
-function  ipos(const ss:string; const s:string):integer;
-function  capitalize(const s:string):string;
-procedure convertAllNewlinesToCRLF(var s:string);
-function  separated(const sep:string; ss:array of string):string;
-function  template(const src:string; table:array of string):string;
+function  isURL(const s: string; ofs: integer=1): boolean;
+function  ipos(const ss: string; const s: string): integer;
+function  capitalize(const s: string): string;
+procedure convertAllNewlinesToCRLF(var s: string);
+function  separated(const sep: string; ss: array of string): string;
+function  template(const src: string; table: array of string): string;
  {$IFDEF UNICODE}
  overload;
-function  template(const src: AnsiString; table:array of AnsiString): AnsiString;overload;
+function  template(const src: AnsiString; table: array of AnsiString): AnsiString; overload;
  {$ENDIF UNICODE}
 //function  TLV(code:integer; data:string):string;
-function  newline2slashn(s:string):string;
-function  excludeTrailingCRLF(const s:string):string;
-function  dupAmperstand(const s:string):string;
-function  onlyDigits(const s:string):string; overload;
-function  matches(const s:string; from:integer; const sub:string):boolean; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
-function  matchesA(const s:RawByteString; from:integer; const sub:RawByteString):boolean; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
-function  Imatches(const s:string; from:integer; const sub:string):boolean;
-function  dupString(const s:AnsiString):AnsiString; {$IFDEF UNICODE}overload; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
-function  dupString(const s:String):String; overload; inline;
+function  newline2slashn(s: string): string;
+function  excludeTrailingCRLF(const s: string): string;
+function  dupAmperstand(const s: string): string;
+function  onlyDigits(const s: string): string; overload;
+function  matches(const s: string; from: integer; const sub: string): boolean; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+function  matchesA(const s: RawByteString; from: integer; const sub: RawByteString): boolean; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+function  Imatches(const s: string; from: integer; const sub: string): boolean;
+function  dupString(const s: AnsiString): AnsiString; {$IFDEF UNICODE}overload; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+function  dupString(const s: String): String; overload; inline;
                                               {$ENDIF UNICODE}
-function  trailing(const s,ss:string):boolean;
-procedure swap4(var a,b:integer); overload;
-procedure swap4(var src,dest; count:dword; cond:boolean); overload;
+function  trailing(const s, ss: string): Boolean;
+procedure swap4(var a, b: Integer); overload;
+procedure swap4(var src, dest; count: dword; cond: Boolean); overload;
 // Convert
 function  ip2str(ip:integer):String; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
 function  str2ip(s:RawByteString):integer;
-function  qword_BE2verU(d:UInt64):String;
-function  qword_LE2verU(d:UInt64):String;
-function  bool2str(const b:boolean): RawByteString;
-  function ABCD_ADCB(d:dword):dword; assembler;
-  function str2color(const s: AnsiString):Tcolor;
-  function color2str(color:Tcolor): AnsiString;
+function  qword_BE2verU(d: UInt64): String;
+function  qword_LE2verU(d: UInt64): String;
+function  bool2str(const b: boolean): RawByteString;
+  function ABCD_ADCB(d: dword): dword; assembler;
+  function str2color(const s: AnsiString): Tcolor;
+  function color2str(color: Tcolor): AnsiString;
   function IntToHexA(Value: Integer; Digits: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}{$ENDIF UNICODE}
   function IntToStrA(Value: Integer) : AnsiString; {$IFNDEF UNICODE}{$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}{$ENDIF UNICODE}  overload;
-  function intToStrA(i,d:integer): AnsiString; overload;
-  function intToStr(i,d:integer):string; overload;
+  function intToStrA(i, d: integer): AnsiString; overload;
+  function intToStr(i, d: integer): string; overload;
 
 // Strings
   function WideBEToUTF8(const Value: RawByteString): RawByteString;
-// function unUTF(const s : AnsiString) : AnsiString;
-  function UnUTF(const s : RawByteString) : String;
+// function unUTF(const s: AnsiString) : AnsiString;
+  function UnUTF(const s: RawByteString): String;
   function StrToUTF8(const Value: AnsiString): RawByteString; OverLoad;
   function StrToUnicode(const Value: AnsiString): RawByteString; overload;
   function StrToUnicodeLE(const Value: AnsiString): AnsiString; overload;
@@ -88,16 +88,16 @@ function RnQEndsText(const ASubText, AText: UnicodeString): Boolean; inline;
 
 // strings
  {$IFDEF UNICODE}
-  function  findInStrings(const s:AnsiString;ss:Tstrings):integer; overload;
+  function  findInStrings(const s: AnsiString;ss:Tstrings):integer; overload;
  {$ENDIF UNICODE}
-  function  findInStrings(const s:AnsiString;ss:array of AnsiString):integer; overload;
-  function  findInStrings(const s:AnsiString;ss,separator:RawByteString):integer; overload;
-  function  findInStrings(const s:String;ss:Tstrings):integer; overload;
+  function  findInStrings(const s: AnsiString;ss:array of AnsiString):integer; overload;
+  function  findInStrings(const s: AnsiString;ss,separator:RawByteString):integer; overload;
+  function  findInStrings(const s: String;ss:Tstrings):integer; overload;
 
-  function  chop(i:integer; var s:RawByteString):RawByteString; overload; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
-  function  chop(i,l:integer; var s:RawByteString):RawByteString; overload;
-  function  chop(const ss:RawByteString; var s:RawByteString):RawByteString; overload;
-  function  chopline(var s:RawByteString):RawByteString; overload;
+  function  chop(i: integer; var s: RawByteString): RawByteString; overload; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+  function  chop(i,l: integer; var s: RawByteString): RawByteString; overload;
+  function  chop(const ss: RawByteString; var s: RawByteString): RawByteString; overload;
+  function  chopline(var s: RawByteString): RawByteString; overload;
 
  {$IFDEF UNICODE}
   function chop(const ss:String; var s:UnicodeString):String; overload;
@@ -107,46 +107,46 @@ function RnQEndsText(const ASubText, AText: UnicodeString): Boolean; inline;
  {$ENDIF UNICODE}
 
  {$IFDEF UNICODE}
-  function  isOnlyDigits(const s: AnsiString):boolean; overload;
-  function  isOnlyDigits(const s: UnicodeString):boolean; overload;
+  function  isOnlyDigits(const s: AnsiString): boolean; overload;
+  function  isOnlyDigits(const s: UnicodeString): boolean; overload;
  {$ELSE ~UNICODE}
   function  isOnlyDigits(const s: AnsiString):boolean;
  {$ENDIF UNICODE}
 //  function  UnDelimiter(s : String) :String;
-  function  BetterStr(const s : AnsiString): AnsiString;
-  function BetterStrS(const s : String): String;
+  function  BetterStr(const s: AnsiString): AnsiString;
+  function BetterStrS(const s: String): String;
 
  function IsEqualGUID(const guid1, guid2: TGUID): Boolean; stdcall;
 {$EXTERNALSYM IsEqualGUID}
 
 
 // convert
-  function str2valor(const s:Ansistring): Int64;
-  function hex2Str(const s:RawByteString):RawByteString;
-  function hex2StrSafe(const s: RawByteString):RawByteString;
+  function str2valor(const s: Ansistring): Int64;
+  function hex2Str(const s: RawByteString): RawByteString;
+  function hex2StrSafe(const s: RawByteString): RawByteString;
 
-  function hex2StrU(const s : String) : RawByteString;
+  function hex2StrU(const s: String): RawByteString;
 
   function PacketToHex(Buffer: Pointer; BufLen: Word): AnsiString;
-  function  hexDump(const data:RawByteString):AnsiString;
-  function  hexDumpS(const data:RawByteString): String;
+  function  hexDump(const data: RawByteString): AnsiString;
+  function  hexDumpS(const data: RawByteString): String;
 
-  function str2hex(const s: RawByteString) : AnsiString; overload;
-  function str2hexU(const s:AnsiString): String; overload;
+  function str2hex(const s: RawByteString): AnsiString; overload;
+  function str2hexU(const s: AnsiString): String; overload;
   function str2hex(const s: RawByteString; const Delim : AnsiChar) : AnsiString; overload;
-  function  str2fontstyle(const s: AnsiString):Tfontstyles;
-  function  fontstyle2str(fs:Tfontstyles):AnsiString;
+  function  str2fontstyle(const s: AnsiString): Tfontstyles;
+  function  fontstyle2str(fs: Tfontstyles): AnsiString;
   function  hexToInt(const s: RawByteString): Cardinal;
-  function  strings2str(const split:string; ss:Tstrings):string; overload;
-  function  strings2str(const split:string; const ss:array of string):string; overload;
-  procedure str2strings(const split : String; src:string; var ss:Tstrings);
-  function  size2str(sz : Int64) : String;
+  function  strings2str(const split: string; ss: Tstrings): string; overload;
+  function  strings2str(const split: string; const ss: array of string):string; overload;
+  procedure str2strings(const split: String; src: string; var ss: Tstrings);
+  function  size2str(sz: Int64): String;
 
 //  function  bmp2wbmp(bmp : TBitmap) : String;
 //  procedure wbmp2bmp(Stream: TStream; var pic : TBitmap);
 //  procedure wbmp2bmp(s: String; pic : TBitmap);
 
-  function  Rgb2Gray(RGBColor : TColor) : byte;
+  function  Rgb2Gray(RGBColor: TColor): byte;
 
 { $IFNDEF UNICODE }
 var
@@ -690,18 +690,18 @@ begin if a > b then result:=a else result:=b end;
 function min(a,b:double):double;
 begin if a < b then result:=a else result:=b end;
  }
-procedure swap4(var a,b:integer);
+procedure swap4(var a, b: integer);
 var
-  bak:integer;
+  bak: integer;
 begin
-  bak:=a;
-  a:=b;
-  b:=bak;
+  bak := a;
+  a := b;
+  b := bak;
 end; // swap
 
-procedure swap4(var src,dest; count:dword; cond:boolean);
+procedure swap4(var src, dest; count: dword; cond: boolean);
 var
-  temp:pointer;
+  temp: pointer;
 begin
 if not cond then exit;
 getmem(temp, count);
@@ -725,9 +725,9 @@ end; // swapMem
 
 
  {$IFDEF UNICODE}
-function ip2str(ip:integer):String; inline;
+function ip2str(ip: integer): String; inline;
 begin
-  result:=dword_LE2ipU(ip)
+  result := dword_LE2ipU(ip)
 end;
  {$ELSE nonUNICODE}
 function ip2str(ip:integer):RawByteString; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
@@ -743,18 +743,18 @@ begin
 result:=0;
  try
   repeat
-  result:=result shl 8;
-  i:=pos(AnsiString('.'),s);
-  if i > 0 then
-    begin
+    result := result shl 8;
+    i := pos(AnsiString('.'),s);
+    if i > 0 then
+     begin
       v := strToInt(copy(s,1,i-1));
 //      Val(copy(s,1,i-1), v, cd);
 //      if cd <> 0 then
 //        v := 0;
 
       inc(result, v);
-      delete(s,1,i);
-    end;
+      delete(s, 1, i);
+     end;
   until i = 0;
   // BY Rapid
   if s <> '' then
@@ -1735,23 +1735,23 @@ begin
   end;
 end; // hexDump
 
-function hexDumpS(const data:RawByteString): String;
+function hexDumpS(const data: RawByteString): String;
 const
-  cols=16;
+  cols = 16;
 var
-  ofs,i:integer;
-  s,s2: String;
+  ofs, i: integer;
+  s, s2: String;
 begin
- result:='';
- ofs:=0;
+ result := '';
+ ofs := 0;
  while ofs < length(data) do
   begin
-    s:='';
-    s2:='';
+    s := '';
+    s2 := '';
     for i:=1 to cols do
       if ofs+i <= length(data) then
         begin
-          s:=s+IntToHex(byte(data[ofs+i]),2);
+          s := s+IntToHex(byte(data[ofs+i]),2);
           if i=8 then
             s:=s+'  '
            else
@@ -1771,18 +1771,18 @@ function isOnlyDigits(const s: AnsiString):boolean;
 var
   i:integer;
 begin
-result:=FALSE;
-i:=1;
-while i <= length(s) do
-  if s[i] in ['0'..'9'] then
-    inc(i)
-  else
-    exit;
-if i > 1 then result:=TRUE;
+  result := FALSE;
+  i := 1;
+  while i <= length(s) do
+    if s[i] in ['0'..'9'] then
+      inc(i)
+     else
+      exit;
+  if i > 1 then result:=TRUE;
 end; // isOnlyDigits
 
 {$IFDEF UNICODE}
-function  isOnlyDigits(const s: UnicodeString):boolean;
+function  isOnlyDigits(const s: UnicodeString): boolean;
 var
   i:integer;
 begin

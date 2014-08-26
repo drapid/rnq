@@ -10,13 +10,13 @@ package for_rnq;
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS OFF}
-{$LOCALSYMBOLS OFF}
+{$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
 {$OPTIMIZATION ON}
 {$OVERFLOWCHECKS OFF}
 {$RANGECHECKS OFF}
-{$REFERENCEINFO OFF}
+{$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
 {$STACKFRAMES OFF}
 {$TYPEDADDRESS OFF}
@@ -24,6 +24,7 @@ package for_rnq;
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
+{$DEFINE DEBUG}
 {$DEFINE RNQ}
 {$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'For R&Q'}
@@ -62,7 +63,8 @@ contains
   RnQMenu in 'RnQMenu.pas',
   RQUtil in 'RQUtil.pas',
   RnQSysUtils in 'RnQSysUtils.pas',
-  RnQStrings in 'RnQStrings.pas';
+  RnQStrings in 'RnQStrings.pas',
+  Base64 in 'RTL\Base64.pas';
 
 end.
 

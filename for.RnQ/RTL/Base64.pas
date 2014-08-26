@@ -45,10 +45,10 @@ begin
   if (InSize mod 4 <> 0) then
     Exit;
   Result := InSize div 4 * 3;
-  if (PByte(DWord(InBuffer) + InSize - 2)^ = Ord(Base64Filler)) then
+  if (PByte(PByte(InBuffer) + InSize - 2)^ = Ord(Base64Filler)) then
     Dec(Result, 2)
   else
-  if (PByte(DWord(InBuffer) + InSize - 1)^ = Ord(Base64Filler)) then
+  if (PByte(PByte(InBuffer) + InSize - 1)^ = Ord(Base64Filler)) then
     Dec(Result);
 end;
 
