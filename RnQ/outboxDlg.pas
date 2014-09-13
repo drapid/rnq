@@ -389,7 +389,7 @@ end;
 procedure ToutboxFrm.FormCreate(Sender: TObject);
 begin
   list.NodeDataSize := SizeOf(TOEvent);
-  Bevel.Visible := not( ThemeServices.ThemesEnabled and DwmCompositionEnabled );
+  Bevel.Visible := not (StyleServices.Enabled and DwmCompositionEnabled);
 end;
 
 function ToutboxFrm.selectedContact:TRnQContact;

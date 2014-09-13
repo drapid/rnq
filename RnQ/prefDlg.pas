@@ -533,7 +533,7 @@ begin
       Self.GlassFrame.Bottom := resetBtn.height + GAP_SIZE shl 1 + 2;
     end;
 
-  Bevel.Visible := not( ThemeServices.ThemesEnabled and DwmCompositionEnabled );
+  Bevel.Visible := not(StyleServices.Enabled and DwmCompositionEnabled);
 
   sortPrefPages;
   try
@@ -590,7 +590,8 @@ end;
 
 procedure TprefFrm.SetBtnEnable(Value: Boolean);
 begin
-  if not Assigned(Self) then Exit;
+  if not Assigned(Self) then
+    Exit;
 
   resetBtn.Enabled := Value;
   okBtn.Enabled := Value;

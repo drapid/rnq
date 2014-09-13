@@ -54,7 +54,7 @@ uses
 
 constructor TchangePwdFrm.Create(const proto : TRnQProtocol; isAccPass : Boolean);
 begin
-  inherited create(Application);
+  inherited Create(Application);
   if not isAccPass then
     begin
       curProto := proto;
@@ -67,18 +67,17 @@ begin
     end
      ;
   theme.pic2ico(RQteFormIcon, PIC_KEY, icon);
-  oldpwdbox.text:='';
-  newpwd1box.text:='';
-  newpwd2box.text:='';
-  oldpwdbox.onKeyDown  := RnQmain.pwdBoxKeyDown;
-  newpwd1box.onKeyDown := RnQmain.pwdBoxKeyDown;
-  newpwd2box.onKeyDown := RnQmain.pwdBoxKeyDown;
+  oldpwdBox.text := '';
+  newpwd1Box.text := '';
+  newpwd2Box.text := '';
+  oldpwdBox.onKeyDown := RnQmain.pwdBoxKeyDown;
+  newpwd1Box.onKeyDown := RnQmain.pwdBoxKeyDown;
+  newpwd2Box.onKeyDown := RnQmain.pwdBoxKeyDown;
 end;
-
 
 procedure TchangePwdFrm.FormShow(Sender: TObject);
 begin
-  oldpwdbox.setfocus;
+  oldpwdBox.setfocus;
   applyTaskButton(self);
 end;
 
@@ -87,11 +86,11 @@ const
   ErrIncr = 'The password you entered is incorrect';
   ErrMist = 'You mistyped the new password. Re-type it, please.';
 begin
-  if (newpwd1box.text <> newpwd2box.text) then
+  if (newpwd1Box.text <> newpwd2Box.text) then
    begin
      msgDlg(ErrMist, True, mtWarning);
-     newpwd1box.text:='';
-     newpwd2box.text:='';
+     newpwd1Box.text := '';
+     newpwd2Box.text := '';
      newpwd1box.setFocus;
      exit;
    end;
@@ -105,30 +104,30 @@ begin
      if not curProto.pwdEqual(oldPwdBox.text) then
        begin
         msgDlg(ErrIncr, True, mtError);
-        oldpwdbox.text:='';
+        oldpwdbox.text := '';
         oldpwdbox.setFocus;
         exit;
        end;
-     if (trim(newpwd1box.text)='') then
+     if (trim(newpwd1Box.text)='') then
      begin
       msgDlg(ErrMist, True, mtWarning);
-      newpwd1box.text:='';
-      newpwd2box.text:='';
+      newpwd1Box.text := '';
+      newpwd2Box.text := '';
       newpwd1box.setFocus;
       exit;
      end;
-     curProto.pwd:=newpwd1box.text;
+     curProto.pwd:= newpwd1Box.text;
     end
    else
     begin
      if oldPwdBox.text <> AccPass then
        begin
         msgDlg(ErrIncr, True, mtError);
-        oldpwdbox.text:='';
-        oldpwdbox.setFocus;
+        oldpwdBox.text:='';
+        oldpwdBox.setFocus;
         exit;
        end;
-      AccPass := newpwd1box.text;
+      AccPass := newpwd1Box.text;
       saveCfgDelayed := True;
     end;
  close;

@@ -32,7 +32,7 @@ type
 
 const
   PAFormat : array [TPAFormat] of string = ('.dat','.bmp','.jpeg','.gif','.png', '.xml', '.swf', '.ico', '.tif', '.webp');
-  PAFormatString : array [TPAFormat] of string = ('Unknoun','Bitmap','JPEG','GIF','PNG', 'XML', 'SWF', 'ICON', 'TIF', 'WEBP');
+  PAFormatString : array [TPAFormat] of string = ('Unknown', 'Bitmap', 'JPEG', 'GIF', 'PNG', 'XML', 'SWF', 'ICON', 'TIF', 'WEBP');
 
 type
   TAniDisposalType = (dtUndefined,   {Take no action}
@@ -62,10 +62,10 @@ type
 
   TAniFrameList = class(TList)
   private
-    function GetFrame(I: integer): TAniFrame;
+    function GetFrame(I: Integer): TAniFrame;
   public
     {note: Frames is 1 based, goes from [1..Count]}
-    property Frames[I: integer]: TAniFrame read GetFrame; default;
+    property Frames[I: Integer]: TAniFrame read GetFrame; default;
   end;
 
 //--------------------------------------------------------------------------
@@ -117,7 +117,7 @@ type
     procedure MaskDraw(DC : HDC; const DX, DY: Integer); Overload;
     procedure Draw(DC: HDC; DX, DY: Integer); Overload;
 //    procedure Draw(DC: HDC; DestR : TRect; SrcX, SrcY, SrcW, SrcH : Integer; pEnabled : Boolean= True; isCopy : Boolean= false); Overload;
-    procedure Draw(DC: HDC; DestBnd, SrcBnd : TGPRect; pEnabled : Boolean= True; isCopy32 : Boolean= false); Overload;
+    procedure Draw(DC: HDC; DestBnd, SrcBnd: TGPRect; pEnabled : Boolean= True; isCopy32: Boolean = false); Overload;
 //    procedure Draw(DC: HDC; DestR, SrcR: TRect); Overload;
     procedure Draw(DC: HDC; DestR: TGPRect); Overload;
 //    function  Clone(x, y, pWidth, pHeight: Integer): TRnQBitmap;
@@ -136,16 +136,16 @@ type
     property  CurrentFrame: Integer read FCurrentFrame write SetCurrentFrame;
   end;
 
-   procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; DestR, SrcR : TGPRect); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-   procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; DestR : TGPRect); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-   procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-   procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; X, Y : Integer); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR, SrcR: TGPRect); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR: TGPRect); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; X, Y: Integer); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 //    procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; DestRect : TRect; SrcX, SrcY, SrcW, SrcH : Integer; pEnabled : Boolean= True); OverLoad; inline;
-   procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; DestR, SrcR : TGPRect;
-                       pEnabled : Boolean= True; isCopy : Boolean = false); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR, SrcR: TGPRect;
+                       pEnabled: Boolean= True; isCopy: Boolean = false); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 
-   function  loadPic(const fn:string; var bmp : TRnQBitmap; idx : Integer = 0):boolean; Overload;
-   function  loadPic(var str : TStream; var bmp : TRnQBitmap; idx : Integer = 0; ff : TPAFormat = PA_FORMAT_UNK; name : string = ''):boolean; Overload;
+   function  loadPic(const fn:string; var bmp : TRnQBitmap; idx: Integer = 0): Boolean; Overload;
+   function  loadPic(var str: TStream; var bmp: TRnQBitmap; idx: Integer = 0; ff: TPAFormat = PA_FORMAT_UNK; name: string = ''): Boolean; Overload;
  {$IFDEF RNQ}
    function  loadPic(pt: TThemeSourcePath; fn : string; var bmp:TRnQBitmap; idx : Integer = 0):boolean; overload;
  {$ENDIF RNQ}
@@ -185,14 +185,14 @@ type
   procedure DrawTransparentBitmap(dc:HDC;DrawBitmap: HBitmap; DestBnd:TGPRect; srcW, srcH : Integer; cTransparentColor:COLORREF);
  {$ENDIF NO_WIN98}
 
-  function wbmp2bmp(Stream: TStream; var pic : TBitmap; CalcOnly : Boolean = false) : TSize;
+  function wbmp2bmp(Stream: TStream; var pic: TBitmap; CalcOnly: Boolean = False): TSize;
 
   function  createBitmap(dx,dy:integer):Tbitmap; overload;
   function  createBitmap(cnv:Tcanvas):Tbitmap; overload;
 
 // Color
 type
-  Thls=record h,l,s:double; end; // H=[0,6] L=[0,1] S=[0,1]
+  Thls=record h,l,s: double; end; // H=[0,6] L=[0,1] S=[0,1]
 
 //  function GPtranspPColor(cl : Cardinal): Cardinal;
 //  function transpColor(cl : TColor; alpha : Byte): TColor;

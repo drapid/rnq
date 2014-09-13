@@ -95,17 +95,17 @@ type
   pTCE = ^TCE;
   TCE= packed record
 //    history0:Tobject;  // a probably wanted history, won't be saved to disk
-    notes:string;
-    lastAutoMsg:string;
-    lastEventTime:Tdatetime;
-    lastMsgTime:TdateTime;
-    lastOncoming:Tdatetime;
-    lastPriority:integer;
-    node:Tnode;
-    keylay:integer;
-    askedAuth:boolean;
-    dontdelete:boolean;
-    toquery:boolean;
+    notes: String;
+    lastAutoMsg: String;
+    lastEventTime: Tdatetime;
+    lastMsgTime: TdateTime;
+    lastOncoming: Tdatetime;
+    lastPriority: integer;
+    node: Tnode;
+    keylay: Integer;
+    askedAuth: Boolean;
+    dontdelete: Boolean;
+    toquery: Boolean;
    end;
 
 
@@ -430,7 +430,7 @@ const
 
 
 var
-  outboxprocessChk : Boolean = True;
+  outboxprocessChk: Boolean = True;
 
   ContactsTheme : TRQtheme;
 //  ICQ :TicqSession;

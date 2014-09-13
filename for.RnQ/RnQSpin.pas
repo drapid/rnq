@@ -250,7 +250,7 @@ begin
   ControlStyle := ControlStyle - [csAcceptsControls, csSetCaption] +
     [csFramed, csOpaque];
   { Frames don't look good around the buttons when themes are on }
-  if ThemeServices.ThemesEnabled then
+  if StyleServices.Enabled then
     ControlStyle := ControlStyle - [csFramed];
   FUpButton := CreateButton;
   FUpButton.ImageName := 'scroll.up';

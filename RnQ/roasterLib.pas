@@ -1614,10 +1614,10 @@ case n.kind of
         Options.dwFlags := DTT_COMPOSITED or DTT_TEXTCOLOR;
 //        Options.iGlowSize := 2;
         Options.crText := ColorToRGB(cnv.Font.Color);
-          with ThemeServices.GetElementDetails(twCaptionActive) do
-            DrawThemeTextEx(ThemeServices.Theme[teWindow], cnv.Handle, Part, State,
-//            with ThemeServices.GetElementDetails(teEditTextNormal) do
-//              DrawThemeTextEx(ThemeServices.Theme[teEdit], Memdc, Part, State,
+          with StyleServices.GetElementDetails(twCaptionActive) do
+            DrawThemeTextEx(StyleServices.Theme[teWindow], cnv.Handle, Part, State,
+//            with StyleServices.GetElementDetails(teEditTextNormal) do
+//              DrawThemeTextEx(StyleServices.Theme[teEdit], Memdc, Part, State,
                 PWideChar(WideString(s)), TextLen, TextFlags, @TextRect, Options);
 }
 

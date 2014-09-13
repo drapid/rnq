@@ -479,7 +479,7 @@ var
 begin
   cnv:=(Sender as TPaintBox).Canvas;
   R := (Sender as TPaintBox).ClientRect;
-    PaintOnGlass := ThemeServices.ThemesEnabled and DwmCompositionEnabled and
+    PaintOnGlass := StyleServices.Enabled and DwmCompositionEnabled and
       not (csDesigning in ComponentState);
     if PaintOnGlass then
     begin
@@ -530,11 +530,11 @@ begin
     //      Options.
           Options.crText := ColorToRGB(cnv.Font.Color);
 
-//          with ThemeServices.GetElementDetails(twCaptionActive) do
-          with ThemeServices.GetElementDetails(tttBaloonLink) do
-            DrawThemeTextEx(ThemeServices.Theme[element], MemDC, Part, State,
-//            with ThemeServices.GetElementDetails(teEditTextNormal) do
-//              DrawThemeTextEx(ThemeServices.Theme[teEdit], Memdc, Part, State,
+//          with StyleServices.GetElementDetails(twCaptionActive) do
+          with StyleServices.GetElementDetails(tttBaloonLink) do
+            DrawThemeTextEx(StyleServices.Theme[element], MemDC, Part, State,
+//            with StyleServices.GetElementDetails(teEditTextNormal) do
+//              DrawThemeTextEx(StyleServices.Theme[teEdit], Memdc, Part, State,
 //                PWideChar(WideString(RnQVer)), TextLen, TextFlags, @TextRect, Options);
                 PWideChar(RnQVer), TextLen, TextFlags, TextRect, Options);
         end
@@ -751,7 +751,7 @@ begin
 //  UsersBox.DoubleBuffered := True;
   Self.GlassFrame.Right := ClientWidth - UsersBox.Width;
   Self.GlassFrame.Enabled := Self.GlassFrame.Enabled //and not PrefsPnl.Visible
-    and ThemeServices.ThemesEnabled;
+    and StyleServices.Enabled;
 //  PrefsPnl.DoubleBuffered := True;
 //  Panel1.DoubleBuffered := True;
 end;
@@ -777,7 +777,7 @@ end;
 
 function TusersFrm.CheckPass : Boolean;
 var
-  a : Boolean;
+//  a : Boolean;
   pt : String;
 //  newAccPass : AnsiString;
 begin

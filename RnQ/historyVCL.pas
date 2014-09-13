@@ -89,17 +89,17 @@ type
 //    hasDownArrow: Boolean;
 //    hDownArrow: Integer;
   protected
-    procedure DoBackground(cnv0: Tcanvas; vR : TRect; var SmlBG : TBitmap);
+    procedure DoBackground(cnv0: Tcanvas; vR: TRect; var SmlBG: TBitmap);
 //    procedure DoBackground(DC: HDC);
     procedure WMEraseBkgnd(var Msg: TWmEraseBkgnd); message WM_ERASEBKGND;
     procedure WMVScroll(var Msg: TWMVScroll); message WM_VSCROLL;
     procedure CreateParams(var Params: TCreateParams); override;
-    function  getAutoScroll : Boolean;
-    procedure setAutoScrollForce(vAS : Boolean);
+    function  getAutoScroll: Boolean;
+    procedure setAutoScrollForce(vAS: Boolean);
 //    procedure setAutoScroll(vAS : Boolean);
 //    procedure wmPaint(var msg : TWMPaint); message WM_PAINT;
-    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X,Y:Integer); override;
-    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X,Y:Integer); override;
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X,Y: Integer); override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X,Y: Integer); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
     procedure Click; override;
     function  triggerLink(item:ThistoryItem):boolean;
@@ -114,7 +114,7 @@ type
     history: Thistory;
     margin: Trect;
     whole:boolean;         // see whole history
-    rsb_visible : Boolean;
+    rsb_visible: Boolean;
     rsb_position : integer;
     rsb_rowPerPos : integer;
     newSession:integer;    // where, in the history, does start new session
@@ -138,8 +138,8 @@ type
     constructor Create(owner_: Tcomponent); override;
     destructor Destroy; override;
     procedure Paint(); override;
-    procedure paintOn(cnv: Tcanvas; vR : TRect; const JustCalc : Boolean = false);
-    procedure go2end(const calcOnly : Boolean = False; const precalc : Boolean = False);
+    procedure paintOn(cnv: Tcanvas; vR: TRect; const JustCalc: Boolean = false);
+    procedure go2end(const calcOnly: Boolean = False; const precalc: Boolean = False);
     function  getSelText(): string;
     function  getSelBin(): AnsiString;
     function  getSelHtml(smiles: boolean):string;
@@ -154,15 +154,15 @@ type
     procedure select(from,to_:integer);
     procedure deselect();
 
-    procedure updateRSB(SetPos : Boolean; pos : Integer = 0; doRedraw : Boolean = true);
+    procedure updateRSB(SetPos: Boolean; pos: Integer = 0; doRedraw: Boolean = true);
     procedure addEvent(ev : Thevent);
-    function  historyNowCount:Integer;
-    function  historyNowOffset:Integer;
+    function  historyNowCount: Integer;
+    function  historyNowOffset: Integer;
     procedure trySetNot2go2end;
     procedure histScrollEvent(d:integer);
     procedure histScrollLine(d:integer);
     procedure Scroll;
-    function  getQuoteByIdx(var pQuoteIdx : Integer) : String;
+    function  getQuoteByIdx(var pQuoteIdx: Integer) : String;
   end; // ThistoryBox
 
 const
@@ -175,6 +175,8 @@ const
 //    dStyle: TDrawStyle = dsGlobalBuffer2;
 //    dStyle: TDrawStyle = dsNone;
     hisBGColor, myBGColor : TColor;
+    MaxChatImgWidthVal : Integer = 100;
+    MaxChatImgHeightVal : Integer = 100;
 
 implementation
 
@@ -247,12 +249,12 @@ begin
   end
 end;
 
-constructor ThistoryBox.create(owner_:Tcomponent);
+constructor ThistoryBox.Create(owner_: Tcomponent);
 begin
-  inherited create(owner_);
+  inherited Create(owner_);
 //  avoidErase:=FALSE;
-  tabStop:=FALSE;
-  P_lastEventIsFullyVisible:=FALSE;
+  tabStop := False;
+  P_lastEventIsFullyVisible := False;
   onPainted:=NIL;
 //  autoscroll:=TRUE;
   fAutoScrollState := ASS_FULLSCROLL;
@@ -300,8 +302,10 @@ var
 
   procedure newLine(var x, y : Integer);
   begin
-    if bodySkipCounter <= 0 then inc(y, lineHeight)
-    else inc(skippedLines);
+    if bodySkipCounter <= 0 then
+      inc(y, lineHeight)
+     else
+      inc(skippedLines);
     x := margin.left;
     lineHeight := 0;
     inc(Nrows);
@@ -313,7 +317,7 @@ var
     j: integer;
     existsDot: boolean;
   begin
-    result := FALSE;
+    result := False;
     j := start;
   // try to find the @
     while (j <= length(s)) and (s[j] in EMAILCHARS) and (j - start < 30) do
@@ -321,12 +325,12 @@ var
     if s[j] <> '@' then exit;
   // @ found, now skip the @ and search for .
     inc(j);
-    existsDot := FALSE;
+    existsDot := False;
     while (j < length(s)) and (s[j+1] in EMAILCHARS) do
     begin
       if s[j] = '.' then
       begin
-        existsDot := TRUE;
+        existsDot := True;
         break;
       end;
       inc(j);
@@ -339,11 +343,11 @@ var
     end_:=j-1;
     if s[end_] = '.' then dec(end_);
     //while s[start-1] in emailChar do dec(start);
-    result:=TRUE;
+    result := True;
   end; // isEmailAddress
 
   function isUIN(const s: string; start: integer; var end_: integer): boolean;
-    function isdig(ch: char) : Boolean; inline;
+    function isdig(ch: char): Boolean; inline;
     begin
      {$IFDEF UNICODE}
       Result := TCharacter.IsDigit(ch);
@@ -354,7 +358,7 @@ var
   var
     i: integer;
   begin
-    result := FALSE;
+    result := False;
     i := start;
     if (i > 0)and isdig(s[i-1]) then
       Exit;
@@ -367,7 +371,7 @@ var
     if i - start > 5 then
     begin
       end_ := i - 1;
-      result := TRUE;
+      result := True;
     end;
   end; // isUIN
 
@@ -460,14 +464,14 @@ var
           foundLink.from:=i;
           foundLink.to_:=end_;
           foundLink.kind:=lk;
-          inc(foundlink.id);
-          result:=TRUE;
+          inc(foundLink.id);
+          result := True;
         end;
 
       var
         e:integer;
       begin
-        result:=FALSE;
+        result := False;
         if linkTheWholeBody > '' then
           begin
           setResult(LK_WWW, length(BodyText));
@@ -492,15 +496,15 @@ var
             end;
       end; // findLink
 
-      function findFidonet(sym:Char):boolean;
+      function findFidonet(sym: Char): boolean;
       var
         j:integer;
       begin
-        result:=FALSE;
+        result := False;
         if (BodyText[i] <> sym)
         or ((i>1) and not (BodyText[i-1] in WHITESPACES)) // word begin
         or (i+2 > length(BodyText)) then exit;
-        j:=i+1;
+        j := i+1;
         while (j<length(BodyText)) and
  {$IFDEF UNICODE}
            TCharacter.IsLetterOrDigit(BodyText[j])
@@ -511,7 +515,7 @@ var
           inc(j);
         if (BodyText[j]<>sym) or (j-i=1) then
           exit; // ends with sym, and no 2 sym bound
-        result:=TRUE; 
+        result := True;
       end; // findFidonet
 
       function findSmile(): boolean;
@@ -523,7 +527,7 @@ var
  {$ENDIF UNICODE}
         SmileObj: TSmlObj;
       begin
-         result := FALSE;
+         result := False;
  {$IFDEF UNICODE}
         sA := BodyText[i];
         if not (sA[1] in firstCharactersForSmiles) then exit;
@@ -561,7 +565,7 @@ var
                  fndSmileI := k;
                fndSmileN := theme.GetSmileName(k);
     //           foundSmileIdx:=k;
-               result:=TRUE;
+               result := True;
              end;
            end;
          end;
@@ -571,74 +575,69 @@ var
       var
         k:integer;
       begin
-        result:=FALSE;
-        if (BodyBin[i] <> '<') then exit;
+        result := False;
+        if (BodyBin[i] <> '<') then
+          exit;
 //        foundRnQPic := '';
         FreeAndNil(RnQPicStream);
         if matches(BodyBin,i, RnQImageTag) then
           begin
             k := PosEx(RnQImageUnTag, BodyBin, i+10);
-            if k <= 0 then exit;
+            if k <= 0 then
+              exit;
             foundPicSize := k-i-10;
             RnQPicStream := TMemoryStream.Create;
             RnQPicStream.SetSize(foundPicSize);
             RnQPicStream.Write(BodyBin[i+10], foundPicSize);
 //            foundRnQPic:=Copy(s, i+10, k-i-10);
-            result:=TRUE;
+            result := True;
           end;
       end; // findRnQPic
 
       function findRnQPicEx():boolean;
+      const
+        Length_RnQImageExTag = Length(RnQImageExTag);
       var
         k:integer;
-//        tmps : string;
         OutSize: DWord;
         PIn, POut: Pointer;
       begin
-        result:=FALSE;
-        if (BodyBin[i] <> '<') then exit;
+        result := False;
+        if (BodyBin[i] <> '<') then
+          exit;
 //        foundRnQPic:='';
         FreeAndNil(RnQPicStream);
         if matches(BodyBin,i, RnQImageExTag) then
           begin
-            k := PosEx(RnQImageExUnTag, BodyBin, i+12);
-            if k <= 0 then exit;
-            foundPicSize := k-i-12;
+            k := PosEx(RnQImageExUnTag, BodyBin, i + Length_RnQImageExTag);
+            if k <= 0 then
+              exit;
+            foundPicSize := k-i- Length_RnQImageExTag;
             if (foundPicSize > 0) then
             begin
               try
-//               tmps:=Base64DecodeString(Copy(s, i+12, foundPicSize));
-//              InText := Copy(s, i+12, k-i-12);
-                // get size of source
-//                InSize := foundPicSize;
+                PIn := @BodyBin[i+ Length_RnQImageExTag];
                 // calculate size for destination
-//                PIn := @InText[1];
-                PIn := @BodyBin[i+12];
                 OutSize := CalcDecodedSize(PIn, foundPicSize);
                 // prepare string length to fit result data
                 RnQPicStream := TMemoryStream.Create;
-//                SetLength(tmps, OutSize);
                 RnQPicStream.SetSize(OutSize);
                 RnQPicStream.Position := 0;
-//                FillChar(tmps[1], OutSize, '.');
-//                FillChar(RnQPicStream.Memory^, OutSize, '.');
-//                POut := @tmps[1];
                 POut := RnQPicStream.Memory;
                 // decode !
 //                Base64Decode(PIn, foundPicSize, POut);
                 Base64Decode(PIn^, foundPicSize, POut^); // Since EurekaLog 6.22 need "^"
-                result:=TRUE;
+                result := True;
               except
                   try
                     FreeAndNil(RnQPicStream);
                     result:=false;
                    except
                   end;
-//               tmps := '';
               end;
             end;
           end;
-      end; // findRnQPic
+      end; // findRnQPicEx
 
   var
     quoteCounting: boolean;
@@ -714,7 +713,7 @@ var
     fndSmlT2 : TPicName;
     fndSmlIT : Integer; fndAniSmlT : Boolean;
     first, bool, wasInsideSelection: boolean;
-    SelectionStartPos, SelectionEndPos : Integer;
+    SelectionStartPos, SelectionEndPos: Integer;
 
 
 //    vDBPic: TBitmap;
@@ -728,7 +727,7 @@ var
 //    gr : TGPGraphics;
     vRnQpicEx : TRnQBitmap;
     hnd : HDC;
-    pt : TPoint;
+    pt: TPoint;
 
   begin
     x := margin.left;
@@ -801,14 +800,14 @@ var
   foundLink.from:=0;
   lastLineStart:=1;
   lineHeight:=0;
-  x:=margin.left;
+  x := margin.left;
   cnv.brush.color := TextBGColor; //history.bgcolor;
 //  cnv.font.assign(ev.font);
-  wasInsideSelection:=FALSE;
+  wasInsideSelection := False;
   len:=length(BodyText);
-  quoteCounting:=TRUE;
-  nowBold:=FALSE;
-  nowUnderline:=FALSE;
+  quoteCounting := True;
+  nowBold := False;
+  nowUnderline := False;
   nowLink := False;
   // loop until there's text to be painted
   while (y < bottomLimit) and (i <= len) do
@@ -818,7 +817,7 @@ var
       _nothing:
         begin
         applyFont();
-        j:=x;
+        j := x;
         // go forth, until sth special is found
         while i <= len do
           begin
@@ -845,8 +844,16 @@ var
           // things to consider only outside a link
           if foundLink.from = 0 then
             begin
-            if BodyCurChar in [#10,#13] then begin whatFound:=_return; break end;
-            if useSmiles and findSmile() then begin whatFound:=_smile; break end;
+                if BodyCurChar in [#10, #13] then
+                begin
+                  whatFound := _return;
+                  break
+                end;
+                if useSmiles and findSmile() then
+                begin
+                  whatFound := _smile;
+                  break
+                end;
 //            if findRnQPic() then begin whatFound:=_RnQPic; break end;
 //            if findRnQPicEx() then begin whatFound:=_RnQPicEx; break end;
             if BodyCurChar < #32 then
@@ -869,17 +876,23 @@ var
                 { or a non-single blankspace is found or a non-">"-preceeded
                 { blankspace is found }
                 if (BodyCurChar<>' ') or (quoteCounter=0) or (i=1) or (BodyText[i-1]<>'>') then
-                  quoteCounting:=FALSE;
+                  quoteCounting := False;
             if fontstylecodes.enabled then
               begin
               if (BodyCurChar='*') and (nowBold or findFidonet('*')) then
-                 begin whatFound:=_bold; break end;
+                  begin
+                    whatFound := _bold;
+                    break
+                  end;
               if (BodyCurChar='_') and (nowUnderline or findFidonet('_')) then
-                 begin whatFound:=_underline; break end;
+                  begin
+                    whatFound := _underline;
+                    break
+                  end;
               end;
             end;
           applyFont();
-          size:=txtSizeL(Cnv.Handle, @BodyText[i], 1);
+          size := txtSizeL(Cnv.Handle, @BodyText[i], 1);
           inc(j, size.cx);
           if j > rightLimit then // no more room
             begin
@@ -900,7 +913,7 @@ var
             end;
           if not JustCalc then
            begin
-            r:=rect(j-size.cx,y,j,y+size.cy);
+            r := rect(j-size.cx, y, j, y+size.cy);
             if bodySkipCounter<=0 then
               if withinTheLink(i) then
                 addItem(PK_LINK, i,1, r)
@@ -910,11 +923,12 @@ var
           inc(i);
           end;//while
         // no text, suddenly a break comes
-          if i = chunkStart then continue;
+            if i = chunkStart then
+              continue;
 
           j:=i-chunkStart; // = length of text
           applyFont();
-          size:=txtSizeL(Cnv.Handle, @BodyText[chunkStart], j); // size on screen
+          size := txtSizeL(Cnv.Handle, @BodyText[chunkStart], j); // size on screen
         // is it a link?
           if withinTheLink(chunkStart)
             and (evIdx = linkToUnderline.evIdx)
@@ -936,15 +950,16 @@ var
         begin
           if not withinTheSelection(chunkStart) then
           begin
-            oldMode:= SetBKMode(Cnv.Handle, TRANSPARENT);
-            textOut(Cnv.Handle, x,y, @BodyText[chunkStart], j);
+            oldMode := SetBKMode(Cnv.Handle, TRANSPARENT);
+            textOut(Cnv.Handle, x, y, @BodyText[chunkStart], j);
 //            SetBKMode(cnv.Handle, oldMode);
           end
           else
-            textOut(Cnv.Handle, x,y, @BodyText[chunkStart], j);
+            textOut(Cnv.Handle, x, y, @BodyText[chunkStart], j);
         end;
         inc(x, size.cx);
-        if (i > foundLink.to_) then foundLink.from:=0;
+            if (i > foundLink.to_) then
+              foundLink.from := 0;
         continue;
         end;
       _link:
@@ -976,14 +991,14 @@ var
             end;
           if nowBold or nowUnderline or nowLink or (quoteCounter > 0) then
            begin
-            nowBold:=FALSE;
-            nowUnderline:=FALSE;
+            nowBold := False;
+            nowUnderline := False;
             nowLink := False;
             quoteCounter:=0;
             PntFontIdx := 100;
            end;
 
-          quoteCounting:=TRUE;
+          quoteCounting := True;
           newLineHeight('I');
           lastLineStart:=i;
           newLine(x, y);
@@ -1026,7 +1041,7 @@ var
             size := tempSize;
             inc(size.cx);
             cnv.brush.color:=selectedClr;
-            first:=TRUE;
+            first := True;
             while smileCount > 0 do
               begin
               if x+size.cx > rightLimit then
@@ -1039,7 +1054,7 @@ var
               if not first then j:=1;
               if not JustCalc then
                begin
-                r:=rect(x,y,x+size.cx,y+size.cy + 1);
+                r := rect(x, y, x+size.cx, y+size.cy + 1);
                 if bodySkipCounter<=0 then
                   begin
                    addItem( PK_SMILE, chunkStart,j, r);
@@ -1078,7 +1093,7 @@ var
                     ;
                   {$ENDIF RNQ_FULL}
 //                     if not JustCalc then
-                      theme.drawPic(Cnv.Handle, x,y+(lineHeight-size.cy) div 2, fndSmileN);
+                      theme.drawPic(Cnv.Handle, x, y+(lineHeight-size.cy) div 2, fndSmileN);
   //                    cnv.draw(x,y+(lineHeight-size.cy) div 2, vDBPic);
                    end;
                   end;
@@ -1086,7 +1101,7 @@ var
 //          inc(chunkStart);
           inc(chunkStart, j);
           inc(x, size.cx);
-          first:=FALSE;
+          first := False;
           dec(smileCount);
           end;
 //         freeAndNil(vDBPic);
@@ -1115,7 +1130,7 @@ var
 //    foundLink.from:=0;
 //    lastLineStart:=1;
     lineHeight:=0;
-    x:=margin.left;
+    x := margin.left;
 //    cnv.brush.color := TextBGColor; //history.bgcolor;
   //  cnv.font.assign(ev.font);
 //    wasInsideSelection:=FALSE;
@@ -1126,7 +1141,7 @@ var
       case whatFound of
         _nothing:
           begin
-          j:=x;
+          j := x;
           // go forth, until sth special is found
           while i <= len do
            begin
@@ -1139,9 +1154,18 @@ var
               end;}
             // things to consider only outside a link
 //              if BodyBin[i] in [#10,#13] then begin whatFound:=_return; break end;
-              if findRnQPic() then begin whatFound:=_RnQPic; break end;
-              if findRnQPicEx() then begin whatFound:=_RnQPicEx; break end;
-              if BodyBin[i] < #32 then BodyBin[i]:=#32; // convert control chars
+                if findRnQPic() then
+                 begin
+                  whatFound := _RnQPic;
+                  break
+                 end;
+                if findRnQPicEx() then
+                 begin
+                  whatFound := _RnQPicEx;
+                  break
+                 end;
+                if BodyBin[i] < #32 then
+                  BodyBin[i] := #32; // convert control chars
   {          if j > rightLimit then // no more room
               begin
               // search backward for a good place where to split
@@ -1159,7 +1183,8 @@ var
              inc(i);
            end;//while
           // no text, suddenly a break comes
-            if i = chunkStart then continue;
+              if i = chunkStart then
+                continue;
 {
             if withinTheSelection(chunkStart) then
               cnv.brush.color := selectedClr
@@ -1179,14 +1204,14 @@ var
               end;
             if nowBold or nowUnderline or nowLink or (quoteCounter > 0) then
              begin
-              nowBold:=FALSE;
-              nowUnderline:=FALSE;
+              nowBold := False;
+              nowUnderline := False;
               nowLink := False;
               quoteCounter:=0;
               PntFontIdx := 100;
              end;
 
-            quoteCounting:=TRUE;
+            quoteCounting := True;
             newLineHeight('I');
             lastLineStart:=i;
             newLine(x, y);
@@ -1194,7 +1219,7 @@ var
         _RnQPic:
           begin
             vRnQPic :=NIL;
-            inc(i, foundPicSize + 21);
+              inc(i, foundPicSize + length(RnQImageTag) + length(RnQImageUnTag));
             size := wbmp2bmp(RnQPicStream, vRnQPic, JustCalc);
             if Assigned(vRnQPic) or JustCalc then
             begin
@@ -1204,15 +1229,15 @@ var
               begin
                cnv.brush.color:=selectedClr;
                 // only the first one has full length
-                r:=rect(x,y,x+size.cx + 1,y+size.cy);
+                r := rect(x, y, x+size.cx + 1, y+size.cy);
                 if bodySkipCounter<=0 then
                   begin
-                    j := foundPicSize + 21;
+                    j := foundPicSize + length(RnQImageTag) + length(RnQImageUnTag);
                     addItem( PK_RQPIC, chunkStart,j, r);
                     if withinTheSelection(chunkStart) then
                       cnv.fillRect(r);
   //                  if not JustCalc then
-                     cnv.draw(x,y+(lineHeight-size.cy) div 2, vRnQPic);
+                     cnv.draw(x, y+(lineHeight-size.cy) div 2, vRnQPic);
                   end;
               end;
               inc(chunkStart);
@@ -1225,7 +1250,8 @@ var
           end;
         _RnQPicEx:
           begin
-           inc(i, foundPicSize + 25);
+              inc(i, foundPicSize + length(RnQImageExTag) + length(RnQImageExUnTag));
+
   //        RnQPicStream := TMemoryStream.Create;
   //        RnQPicStream.SetSize(foundPicSize);
   //        RnQPicStream.Write(foundRnQPic[1], Length(foundRnQPic));
@@ -1235,15 +1261,16 @@ var
   //          RnQPicStream.position := 0;
            if loadPic(TStream(RnQPicStream), vRnQpicEx, 0, PA_FORMAT_UNK, 'RnQImageEx') then
            begin
-             size.cx:=vRnQpicEx.getWidth+1;
-             size.cy:=vRnQpicEx.getHeight;
+//             size.cx:=vRnQpicEx.getWidth+1;
+//             size.cy:=vRnQpicEx.getHeight;
+            size := BoundsSize(vRnQpicEx.getWidth + 1, vRnQpicEx.getHeight, MaxChatImgWidthVal, MaxChatImgHeightVal);
             newLineHeight(size.cy+1);
              // paint
             if not JustCalc then
              begin
               cnv.brush.color:=selectedClr;
               // only the first one has full length
-              r:=rect(x,y, x+size.cx,y+size.cy);
+              r := rect(x, y, x+size.cx, y+size.cy);
               if bodySkipCounter<=0 then
                 begin
                   j:=foundPicSize + 25;
@@ -1253,7 +1280,8 @@ var
                      if withinTheSelection(chunkStart) then
                        cnv.fillRect(r);
                      cnv.Lock;
-                     DrawRbmp(Cnv.Handle, vRnQpicEx, x,y+(lineHeight-size.cy) div 2);
+                     DrawRbmp(Cnv.Handle, vRnQpicEx,
+                              MakeRect(x, y+(lineHeight-size.cy) div 2, size.cx, size.cy));
   //                   gr := TGPGraphics.Create(cnv.Handle);
   //                   gr.DrawImage(vRnQpicEx, x,y+(lineHeight-size.cy) div 2, size.cx, size.cy);
   //                   gr.Free;
@@ -1303,7 +1331,7 @@ var
      ev.PaintHeight := Result;
   if eventFullyPainted and (i > len) and (y <= bottomLimit) then
     begin
-     eventFullyPainted:=TRUE;
+     eventFullyPainted := True;
      exit;
     end;
   // downward arrows
@@ -1312,11 +1340,11 @@ var
   vPicElm.Element := RQteDefault;
   with theme.GetPicSize(vPicElm) do
    begin
-    x:=margin.left;
-    y:=bottomLimit - cy;
+    x := margin.left;
+    y := bottomLimit - cy;
     if not JustCalc then
      begin
-      r:=rect(x,y, rightLimit, y+cy);
+      r := rect(x, y, rightLimit, y+cy);
       while (Nitems > 0) and intersectRect(intersect, items[Nitems-1].r, r) do
         dec(Nitems);
       addItem(PK_ARROWS_DN, 0,0, r);
@@ -1335,9 +1363,9 @@ var
   end; // drawBody
 
 //  function drawHeader(cnv: Tcanvas; pTop : Integer) : Integer;
-  function drawHeader(pTop : Integer) : Integer;
+  function drawHeader(pTop: Integer): Integer;
   var
-    curX, curY, i, LeftX : Integer;
+    curX, curY, LeftX: integer;
     sa : RawByteString;
     b : Byte;
     st : byte;
@@ -1455,8 +1483,8 @@ var
   i, ii: Integer;
 //  gr : TGPGraphics;
 //  dc : HDC;
-   hls: Thls;
-   y : Integer;
+  hls: Thls;
+  y : Integer;
   vFullR : TRect;
   smlRefresh : Boolean;
   ch : AnsiChar;
@@ -1470,9 +1498,9 @@ begin
      or (history.themeToken <> theme.token)or(history.SmilesToken <> theme.token) then
    begin
     inc(history.fToken);
-    history.themeToken  := theme.token;
-    smlRefresh := history.SmilesToken <> theme.token;
-    history.SmilesToken := theme.token;
+    history.themeToken := theme.Token;
+    smlRefresh := history.SmilesToken <> theme.Token;
+    history.SmilesToken := theme.Token;
     lastWidth   := Self.Width;
 //    lastHeight  := Self.Height;
    end;
@@ -1561,22 +1589,23 @@ begin
 // sort startsel and endSel
   if minor(startSel, endSel) then
   begin
-    SOS := startsel;
+    SOS := startSel;
     EOS := endSel;
   end
   else
   begin
     SOS := endSel;
-    EOS := startsel;
+    EOS := startSel;
   end;
   if not JustCalc then
   begin
   // calculates a darker/brighter color
     hls := color2hls(TextBGColor);
-    with hls do if l>0.5 then
-      l:=l-0.2
-     else
-      l:=l+0.2;
+    with hls do
+     if l>0.5 then
+       l := l-0.2
+      else
+       l := l+0.2;
     selectedClr := hls2color(hls);
   end;
 //  if selectedClr = TextBGColor then
@@ -1584,19 +1613,24 @@ begin
   margin := rect(2, 2, 2, 2);
   mouse := screenToClient(mousePos);
 
-  rightLimit:=clientWidth-margin.right;
-  bottomLimit:=clientHeight-margin.bottom-2;
+  rightLimit := clientWidth-margin.Right;
+  bottomLimit := clientHeight-margin.Bottom-2;
+  if MainPrefs.getPrefBoolDef('chat-images-limit', True) then
+   begin
+    MaxChatImgWidthVal := MainPrefs.getPrefIntDef('chat-images-width-value', 300);
+    MaxChatImgHeightVal := MainPrefs.getPrefIntDef('chat-images-height-value', 300);
+   end;
 //  bottomLimit := vR.Bottom - vr.Top-margin.bottom - 10;
-  y:=margin.Top;
+  y := margin.Top;
   evIdx:=topVisible;
-  foundlink.id:=0;
+  foundLink.id:=0;
   Nrows:=0;
   if not JustCalc then
     P_topEventNrows:=0;
-firstEvent:=TRUE;
+firstEvent:=True;
 skippedLines:=0;
-pleaseDontDrawUpwardArrows:=FALSE;
-while (y < bottomLimit) and (evIdx < history.count) do
+pleaseDontDrawUpwardArrows:=False;
+while (y < bottomLimit) and (evIdx < history.Count) do
   begin
   ev:=history.getAt(evIdx);
   if ev = nil then
@@ -1604,9 +1638,9 @@ while (y < bottomLimit) and (evIdx < history.count) do
     inc(evIdx);
     continue;
    end;
-  foundlink.ev:=ev;
-  foundlink.evIdx:=evIdx;
-  eventFullyPainted:=FALSE;
+  foundLink.ev:=ev;
+  foundLink.evIdx:=evIdx;
+  eventFullyPainted:=False;
   bodySkipCounter:=0;
 //  s:=ev.getHeaderText;
   if ev.kind = EK_GCARD then
@@ -1616,7 +1650,7 @@ while (y < bottomLimit) and (evIdx < history.count) do
     linkTheWholeBody:=ev.decrittedInfo
  {$ENDIF ~DB_ENABLED}
   else
-    linkTHeWholeBody:='';
+    linkTheWholeBody:='';
 //  inc(y, drawHeader(cnv1, y));
   inc(y, drawHeader(y));
   // if there is enough space for the body
@@ -2283,48 +2317,57 @@ var
   i,j,m,l:integer;
   r:Trect;
 begin
-result.kind:=PK_NONE;
-i:=0;
-l:=length(items)-1;
-if l<0 then exit;
-j:=l;
-m:=-1;
-// search for an item on the same row
-while i<=j do
+  result.kind:=PK_NONE;
+  i:=0;
+  l:=length(items)-1;
+  if l<0 then exit;
+  j:=l;
+  m:=-1;
+  // search for an item on the same row
+  while i<=j do
   begin
-  m:=(i+j) div 2;
-  r:=items[m].r;
-  if within(r.Top, pt.Y, r.bottom) then
-    break;
-  if (pt.y < r.top) or (pt.y < r.bottom) and (pt.x < r.left) then j:=m-1
-  else i:=m+1;
+    m:=(i+j) div 2;
+    r:=items[m].r;
+    if within(r.Top, pt.Y, r.bottom) then
+      break;
+    if (pt.y < r.top) or (pt.y < r.bottom) and (pt.x < r.left) then
+      j:=m-1
+     else
+      i:=m+1;
   end;
 // if no item is matching the Y, move backward until the item is behind PT
-while m > 0 do
+  while m > 0 do
   begin
-  if pt.y < items[m-1].r.top then dec(m)
-  else break
+    if pt.y < items[m-1].r.top then
+      dec(m)
+     else
+      break
   end;
 // without leaving this row, move backward searching for a better matching item
-while m>0 do
+  while m>0 do
   begin
-  r:=items[m-1].r;
-  if within(r.Top, pt.Y, r.bottom) and (pt.X <= r.right) then dec(m)
-  else break
+    r:=items[m-1].r;
+    if within(r.Top, pt.Y, r.bottom) and (pt.X <= r.right) then
+      dec(m)
+     else
+      break
   end;
-// same, but move forward
-while m<l do
+  // same, but move forward
+  while m<l do
   begin
-  r:=items[m+1].r;
-  if within(r.Top, pt.Y, r.bottom) and (pt.X >= r.left) then inc(m)
-  else break
+    r:=items[m+1].r;
+    if within(r.Top, pt.Y, r.bottom) and (pt.X >= r.left) then
+      inc(m)
+     else
+      break
   end;
-// do we have a valid item?
-if m>=0 then
+  // do we have a valid item?
+  if m>=0 then
   begin
-  result:=items[m];
-  // if pt is on the first half of the item then move behind 
-  if pt.X < centerPoint(result.r).x then dec(result.ofs);
+    result:=items[m];
+    // if pt is on the first half of the item then move behind 
+    if pt.X < centerPoint(result.r).x then
+     dec(result.ofs);
   end;
 end; // spaceAt
 
@@ -2510,24 +2553,28 @@ var
   s: string;
 begin
   result := FALSE;
-  if item.kind<>PK_LINK then exit;
+  if item.kind<>PK_LINK then
+    exit;
   s := item.link.str;
   case item.link.kind of
     LK_WWW:
       begin
-        if not (Imatches(s,1,'http://') or Imatches(s,1,'https://')) then s:='http://'+s;
+        if not (Imatches(s,1,'http://') or Imatches(s,1,'https://')) then
+          s:='http://'+s;
 //        if Assigned(onLinkClick) then
 //          onLinkClick(self, s, item.link.str);
         openURL(s);
       end;
     LK_FTP:
       begin
-        if not (Imatches(s,1,'ftp://')or Imatches(s,1,'sftp://')) then s:='ftp://'+s;
+        if not (Imatches(s,1,'ftp://')or Imatches(s,1,'sftp://')) then
+          s:='ftp://'+s;
         openURL(s);
       end;
     LK_EMAIL:
       begin
-        if not Imatches(s,1,'mailto:') then s:='mailto:'+s;
+        if not Imatches(s,1,'mailto:') then
+          s:='mailto:'+s;
         exec(s);
       end;
   end;
@@ -2578,7 +2625,7 @@ begin
  end;
 end;
 
-procedure ThistoryBox.DoBackground(cnv0: Tcanvas; vR : TRect; var SmlBG : TBitmap);
+procedure ThistoryBox.DoBackground(cnv0: Tcanvas; vR: TRect; var SmlBG: TBitmap);
 //procedure ThistoryBox.DoBackground(dc: HDC);
 var
   {$IFNDEF NOT_USE_GDIPLUS}
@@ -3152,8 +3199,10 @@ begin
   with history do
    begin
     // search for a msg to quote
-    if pQuoteIdx < 0 then i:=count-1
-    else i:= pQuoteIdx-1;
+    if pQuoteIdx < 0 then
+      i := Count - 1
+     else
+      i := pQuoteIdx - 1;
     he := NIL;
     if i>=0 then
      begin

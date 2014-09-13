@@ -60,10 +60,10 @@ const
     NTLM      :boolean;
     user, pwd :string;
     end; }
-   Procedure CopyProxy(var pTo : Tproxy; const pFrom : Tproxy);
-   Procedure ClearProxy(var p1 : Tproxy);
-   Procedure CopyProxyArr(var pATo : TarrProxy; const pAFrom : TarrProxy);
-   Procedure ClearProxyArr(var pa : TarrProxy);
+   Procedure CopyProxy(var pTo: Tproxy; const pFrom: Tproxy);
+   Procedure ClearProxy(var p1: Tproxy);
+   Procedure CopyProxyArr(var pATo: TarrProxy; const pAFrom: TarrProxy);
+   Procedure ClearProxyArr(var pa: TarrProxy);
 //procedure proxy_http_Enable(v_icq : TicqSession);
 //   procedure proxy_http_Enable(sock : TRnQSocket);
 

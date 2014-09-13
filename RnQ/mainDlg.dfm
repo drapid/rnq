@@ -161,6 +161,7 @@ object RnQmain: TRnQmain
     ButtonFillMode = fmTransparent
     ButtonStyle = bsTriangle
     BorderWidth = 1
+    Colors.UnfocusedColor = clMedGray
     DragOperations = [doMove]
     Header.AutoSizeIndex = 0
     Header.Font.Charset = DEFAULT_CHARSET

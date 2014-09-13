@@ -99,8 +99,8 @@ function  getXStatusMsgFor(c:TRnQContact):string;
 procedure toggleOnlyOnline;
 procedure toggleOnlyImVisibleTo;
 procedure openURL(const pURL: String); OverLoad;
-function  enterPwdDlg(var pwd:String; const title:string=''; maxLength:integer=0;
-                      AllowNull : Boolean = False):boolean;
+function  enterPwdDlg(var pwd: String; const title: String = ''; maxLength: Integer = 0;
+                      AllowNull: Boolean = False): boolean;
 function  enterUinDlg(const proto : TRnQProtocol; var uin:TUID; const title:string=''):boolean;
 function  sendProtoMsg(var oe:TOevent):boolean;
 procedure SendEmail2Mail(const email : String);
@@ -132,8 +132,8 @@ procedure connect_after_dns(const proto : TRnQProtocol);
 // convert
 function  ints2cl(a:TintegerDynArray):TRnQCList;
 function  event2imgName(e:integer): TPicName;
-function  statusDrawExt(const DC : HDC; const x,y:integer; const s: byte;
-                        const inv:boolean=FALSE; const ExtSts : Byte = 0) : TSize;
+function  statusDrawExt(const DC: HDC; const x, y: Integer; const s: byte;
+                        const inv: Boolean = False; const ExtSts: Byte = 0) : TSize;
 //function  statusDraw(cnv:Tcanvas; x,y:integer; s:Tstatus; inv:boolean=FALSE) : TSize;
 function  beh2str(kind:integer): RawByteString;
 procedure str2beh(const b, s : RawByteString); overload;
@@ -151,11 +151,10 @@ procedure dockSet; overload;
 procedure fixWindowPos(frm:Tform);
 procedure showAuthreq(c:TRnQContact; msg:string);
 procedure showSplash;
-function  viewTextWindow(title,body:string):Tform;
 function  viewHeventWindow(ev:Thevent):Tform;
 procedure hideForm(frm:Tform);
 procedure showForm(whatForm:TwhatForm; const Page: String = ''; Mode: TfrmViewMode = vmFull); overload;
-function  PrefIsVisiblePage(pf : String): Boolean;
+function  PrefIsVisiblePage(const pf : String): Boolean;
 procedure restoreForeWindow;
 procedure applyTransparency(forced:integer=-1);
 procedure applyDocking(Undock : Boolean = false);
@@ -183,9 +182,9 @@ procedure LoadProxies(zp : TZipFile; var pProxys : Tarrproxy);
 //procedure saveOutbox;
 procedure loadOutInBox(zp : TZipFile);
 //procedure saveRetrieveQ;
-function  openSaveDlg(parent:Tform; const Cptn : String; IsOpen : Boolean;
-                      const ext:string = ''; const extCptn : String = '';
-                      const defFile : String =''; MultiSelect : boolean = false):string;
+function  openSaveDlg(parent: Tform; const Cptn: String; IsOpen: Boolean;
+                      const ext: String = ''; const extCptn: String = '';
+                      const defFile: String =''; MultiSelect: boolean = false):string;
 
 function  str2sortby(const s: AnsiString):TsortBy;
 procedure CheckBDays;
@@ -317,6 +316,7 @@ uses
 //  AsyncCalls,
 
   menusUnit, HistAllSearch,
+  ViewHEventDlg,
   OleCtrls;
 
 
@@ -346,7 +346,8 @@ if obj is Tcustomedit then
     begin
     i:=selstart;
     text := onlyDigits(text);
-    if i>length(text) then i:=length(text);
+    if i>length(text) then
+      i := length(text);
     selStart:=i;
     end;
 end; // onlyDigits
@@ -673,7 +674,7 @@ const
   splitMsg='automsg: ';
   autoaway_name='AUTO-AWAY';
 var
-  zf : TZipFile;
+  zf: TZipFile;
 //  ZIP: TZIPWriter;
   procedure AddFile2Zip(const fn : String; const cfg : RawByteString);
 //  var
@@ -1201,41 +1202,12 @@ begin
 end;
 end; // ShowSplash
 
-function viewTextWindow(title,body:string):Tform;
-var
-  form:Tform;
-  memo:Tmemo;
-begin
-  form:=Tform.create(RnQmain);
-  result:=form;
-  form.caption:=title;
-  form.position:=poDefaultPosOnly;
-  memo:=Tmemo.create(form);
-  memo.parent:=form;
-  memo.text:=body;
-  memo.align:=alClient;
-  memo.WordWrap:= bViewTextWrap;
-  if memo.WordWrap then
-    memo.ScrollBars:=ssVertical
-   else
-    memo.ScrollBars:=ssBoth;
-//  form.InsertControl(memo);
-  form.OnClose := RnQmain.onCloseSomeWindows;
-  memo.OnKeyDown := RnQmain.MemoKeyDown; 
-  with desktopworkarea do
-    begin
-    form.width:=(right-left) div 2;
-    form.height:=(bottom-top) div 2;
-    end;
-  applyTaskButton(form);
-  form.show;
-end; // viewTextWindow
-
 function viewHeventWindow(ev:Thevent):Tform;
 begin
-result:=NIL;
-if ev=NIL then exit;
-result:=viewTextWindow(ev.getHeaderText, ev.getBodyText);
+  result:=NIL;
+  if ev=NIL then
+    exit;
+  result := viewTextWindow(ev.getHeaderText, ev.getBodyText, ev.getBodyBin);
 //theme.GetIco2(ev.pic, result.icon);
 theme.pic2ico(RQteFormIcon, ev.pic, result.icon);
 end; // viewHeventWindow
@@ -1526,7 +1498,7 @@ frm.hide;
 ShowWindow(application.handle,SW_HIDE)
 end;
 
-function PrefIsVisiblePage(pf : String): Boolean;
+function PrefIsVisiblePage(const pf: String): Boolean;
 begin
   Result := True;
   if pf = 'ICQ' then
@@ -3866,7 +3838,8 @@ var
 //  begin setupChatButton(newbtn, theme.getPic(pic)) end;
 }
 begin
-if not assigned(chatFrm) then exit;
+  if not assigned(chatFrm) then
+    exit;
 //h:=0;
   chatFrm.sendBtn.Width := 5 + theme.getPicSize(RQteButton, status2imgName(byte(SC_ONLINE))).cx + 5
       + chatFrm.Canvas.TextWidth(chatFrm.sendBtn.Caption) + 5
@@ -3875,7 +3848,7 @@ if not assigned(chatFrm) then exit;
       + chatFrm.Canvas.TextWidth(chatFrm.closeBtn.Caption) + 5
       + chatFrm.closeBtn.DropDownWidth + 5;
   h := theme.getPicSize(RQteDefault, status2imgName(byte(SC_ONLINE)), 16).cy+6;
-  if ThemeServices.ThemesEnabled then
+  if StyleServices.enabled then
     inc(h, 2);
   chatFrm.pagectrl.tabHeight := h;
   chatFrm.closeBtn.left:=chatFrm.SendBtn.boundsrect.right+10;
@@ -3887,7 +3860,8 @@ if not assigned(chatFrm) then exit;
 //  chatfrm.toolbar.Height:=18+theme.GetPicSize(PIC_HISTORY).cy;
   chatfrm.panel.Height:=18+theme.getPicSize(RQteButton, PIC_HISTORY, 16).cy;
   h := chatfrm.panel.Height -18;
-  with chatFrm.toolbar do top:=(chatfrm.panel.ClientHeight-height) div 2;
+  with chatFrm.toolbar do
+    top:=(chatfrm.panel.ClientHeight-height) div 2;
   chatFrm.toolbar.buttonheight:=h+5;
 end; // setupChatButtons
 
@@ -3899,6 +3873,7 @@ begin
      begin
 //       TopLbl.Visible := False;
        borderStyle:=bsSizeToolWin;
+//       BorderWidth := 0;
        showMainBorder := True;
      end
    else
@@ -4347,7 +4322,8 @@ end; // infoToXStatus
 function exitFromAutoaway():boolean;
 begin
   result:=FALSE;
-  if autoaway.triggered=TR_none then exit;
+  if autoaway.triggered=TR_none then
+    exit;
   if autoaway.clearXSts and (autoaway.bakxstatus > 0) then
     begin
 //     setStatusFull(autoaway.bakstatus, autoaway.bakxstatus, Account.AccProto.xStsStringArray[autoaway.bakxstatus]);
@@ -4368,11 +4344,15 @@ function getShiftState():integer;
 var
   keys:TkeyboardState;
 begin
-result:=0;
-if not GetKeyboardState(keys) then exit;
-if keys[VK_SHIFT] >= $80 then	inc(result, 1);
-if keys[VK_CONTROL] >= $80 then	inc(result, 2);
-if keys[VK_MENU] >= $80 then	inc(result, 4);
+  result:=0;
+  if not GetKeyboardState(keys) then
+   exit;
+  if keys[VK_SHIFT] >= $80 then
+    inc(result, 1);
+  if keys[VK_CONTROL] >= $80 then
+    inc(result, 2);
+  if keys[VK_MENU] >= $80 then
+    inc(result, 4);
 end; // getShiftState
 
 procedure addTempVisibleFor(time:integer; c:TRnQContact);

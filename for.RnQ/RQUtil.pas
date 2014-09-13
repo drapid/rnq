@@ -55,13 +55,13 @@ procedure showForm(frm:Tform); overload;
   function absPath(const fn:string):boolean;
   function ExtractFileNameOnly(const fn : String) : String;
 
-  procedure msgDlg(msg:string; NeedTransl : Boolean; kind:TMsgDlgType; const uid : AnsiString = '');
+  procedure msgDlg(msg: string; NeedTransl: Boolean; kind: TMsgDlgType; const uid: AnsiString = '');
   function logTimestamp:string;
 
-  procedure drawTxt(hnd:Thandle; x,y:integer; const s:string);
-  procedure drawTxtL(hnd:Thandle; x,y:integer; const s:pchar; L:integer);
-  function  txtSize(hnd:Thandle; const s:string):Tsize;
-  function  txtSizeL(hnd:Thandle; s:pchar; L:integer):Tsize;
+  procedure drawTxt(hnd: Thandle; x,y: integer; const s: string);
+  procedure drawTxtL(hnd: Thandle; x,y: integer; const s: pchar; L: integer);
+  function  txtSize(hnd: Thandle; const s: string):Tsize;
+  function  txtSizeL(hnd: Thandle; s: pchar; L: integer):Tsize;
   function  mousePos:Tpoint;
   function  into(p:Tpoint; r:Trect):boolean;
 
@@ -81,7 +81,7 @@ function TxtFromInt(Int: Integer {3 digits}): String;
   procedure SoundReset;
   procedure SoundUnInit;
 
-  function ExistsFlash : Boolean;
+  function ExistsFlash: Boolean;
  {$IFNDEF DELPHI_9_UP}
   function ThemeControl(AControl: TControl): Boolean;
  {$ENDIF DELPHI_9_UP}
@@ -202,7 +202,8 @@ begin
    else
     begin
       msgsFrm.AddMsg(msg, kind, now, uid);
-      if BringInfoFrgd then msgsFrm.BringToFront;
+      if BringInfoFrgd then
+        msgsFrm.BringToFront;
     end;
  {$ENDIF RNQ}
 end; // msgDlg
@@ -265,8 +266,8 @@ begin
     v:=chopline(txt);
     v:=trim(chop('#',v));
     if v='' then Continue;
-    k:=trim(chop('-',v));
-    v:=trim(v);
+    k := trim(chop('-', v));
+    v := trim(v);
     if (k='') or (v = '') then Continue;
     so :=TStrObj.Create;
     so.str := v;

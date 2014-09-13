@@ -502,9 +502,6 @@ type
     procedure pwdBoxKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 //    procedure CreateParams(var Params: TCreateParams); override;
      PROCEDURE wmNCHitTest(VAR Msg: TWMNCHitTest); message WM_NCHITTEST;
-    PROCEDURE onCloseSomeWindows(Sender: TObject; var Action: TCloseAction);
-    procedure MemoKeyDown(Sender: TObject; var Key: Word;
-        Shift: TShiftState);
 //    function AddMainMenuItem(wPar: WPARAM; lPar: LPARAM): Integer; cdecl;
     function AddContactMenuItem(pMI : PCLISTMENUITEM ): Integer;// cdecl;
 {    function  AddContactMenuItem(pPluginProc : Pointer; menuIcon: hIcon; menuCaption:String;
@@ -696,15 +693,17 @@ begin
       timeout:=0;
       if docking.Dock2Chat and docking.Docked2chat AND NOT Self.Floating then
         repeat
-         if timeout > 0 then sleep(10);
-         chatFrm.hide;
-         inc(timeout);
+          if timeout > 0 then
+            sleep(10);
+          chatFrm.hide;
+          inc(timeout);
         until not formVisible(chatFrm) or (timeout=100)
        else
         repeat
-         if timeout > 0 then sleep(10);
-         hide;
-         inc(timeout);
+          if timeout > 0 then
+            sleep(10);
+          hide;
+          inc(timeout);
         until not formVisible(self) or (timeout=100);
     end
   else
@@ -880,19 +879,19 @@ end;
 procedure TRnQmain.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   function its(sc:Tshortcut):boolean;
   var
-    k:word;
-    s:TshiftState;
+    k: Word;
+    s: TShiftState;
   begin
    ShortCutToKey(sc, k,s);
    result:=(k=key) and (s=shift);
   end; // its
 var
-  i:integer;
+  i: Integer;
 begin
   if (shift = [ssAlt]) and (key = VK_F4) then
     close
-  else
-  if (shift = [ssCtrl]) and (key = VK_F) then
+   else
+   if (shift = [ssCtrl]) and (key = VK_F) then
    begin
     if not FilterBar.Visible then
      if rosterbarOnTop then
@@ -941,10 +940,10 @@ procedure TRnQmain.sendContactsAction(sender:Tobject);
 var
 //  i:integer;
 //  s : String;
-  s : AnsiString;
-  cnt : TRnQContact;
-  wnd:TselectCntsFrm;
-  cl:TRnQCList;
+  s: AnsiString;
+  cnt: TRnQContact;
+  wnd: TselectCntsFrm;
+  cl: TRnQCList;
 begin
  wnd:=(sender as Tcontrol).parent as TselectCntsFrm;
  cl:=wnd.selectedList;
@@ -992,10 +991,10 @@ end;
 
 procedure TRnQmain.PntBarPaint(Sender: TObject);
 var
-  x, y:integer;
-  cnv:Tcanvas;
-  r : TRect;
-  vImgElm : TRnQThemedElementDtls;
+  x, y: Integer;
+  cnv: Tcanvas;
+  r: TRect;
+  vImgElm: TRnQThemedElementDtls;
 //  thmTkn : Integer;
 //  picLoc : TPicLocation;
 //  picIdx : Integer;
@@ -4673,22 +4672,6 @@ BEGIN
    end;
 
 END;
-
-PROCEDURE TRnQmain.onCloseSomeWindows(Sender: TObject; var Action: TCloseAction);
-BEGIN
-  Inherited;
-//  if sender is TForm then
-  Action := caFree;
-END;
-procedure TRnQmain.MemoKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
- if (Sender is TMemo) and (key = $41) and (ssCtrl in Shift) then
-   TMemo(Sender).SelectAll
-  else
-   Inherited;
-end;
-
 
 (*
 procedure TRnQmain.UpdatePluginPanel;

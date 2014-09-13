@@ -537,7 +537,7 @@ end;
 Function TRnQLang.TranslateString(const Str : AnsiString): String;
 var
 //  Res : String;
-  i : Integer;
+//  i : Integer;
   s : String;
 begin
     if LangsStr.TryGetValue(Str, s) then
@@ -578,7 +578,7 @@ end;
 Function TRnQLang.TranslateString(const Str : UnicodeString): String;
 var
 //  Res : String;
-  i : Integer;
+//  i : Integer;
   s : String;
 begin
     if LangsStr.TryGetValue(Str, s) then
@@ -652,9 +652,9 @@ end;
 
 
 procedure TRnQLang.resetLang;
-var
-  i : Integer;
-  so : TPUStrObj;
+//var
+//  i : Integer;
+//  so : TPUStrObj;
 begin
   if Assigned(LangsStr) then
     begin

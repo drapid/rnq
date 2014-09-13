@@ -74,6 +74,7 @@ uses
   RQUtil, RDGlobal, RQThemes, RnQMenu, menusUnit,
   RnQProtocol,
   globalLib, chatDlg, utilLib, themesLib,
+  ViewHEventDlg,
   icqv9, ICQcontacts,
   Protocol_ICQ, icqConsts;
 
@@ -406,7 +407,7 @@ end;
 
 procedure TRnQdbFrm.deleteC(Sender: TObject);
 var
-  i : Integer;
+//  i : Integer;
   na : TNodeArray;
   n : PVirtualNode;
 begin

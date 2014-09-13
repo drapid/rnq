@@ -556,7 +556,7 @@ type
     procedure getClientPicAndDesc4(cnt:TRnQContact; var pPic : TPicName; var CliDesc : String); OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
     function  maxCharsFor(const c:TRnQContact; isBin : Boolean = false):integer; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
     function  compareStatusFor(cnt1, Cnt2 : TRnqContact) : Smallint; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    procedure sendKeepalive;OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    procedure sendKeepalive; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
     function  canAddCntOutOfGroup : Boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
 
     function  getNewDirect : TProtoDirect; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}

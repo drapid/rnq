@@ -181,6 +181,11 @@ var
 {$R-}
 implementation
 
+ {$IFDEF UNICODE}
+uses
+   AnsiStrings;
+ {$ENDIF}
+
 const
 
   {$ifdef VCL50}
@@ -259,11 +264,11 @@ end;
 procedure AuthIdFree(ai: PSEC_WINNT_AUTH_IDENTITY);
 begin
   if Assigned(ai^.User) then
-    StrDispose(ai^.User);
+    AnsiStrings.StrDispose(ai^.User);
   if Assigned(ai^.Password) then
-    StrDispose(ai^.Password);
+    AnsiStrings.StrDispose(ai^.Password);
   if Assigned(ai^.Domain) then
-    StrDispose(ai^.Domain);
+    AnsiStrings.StrDispose(ai^.Domain);
   fillchar(ai^, sizeof(ai^), 0);
 end;
 
@@ -447,13 +452,13 @@ begin
         CrackUserAndDomain(User, User, Domain);
 
       AuthIdFree(@pAS^.AuthIdentity);
-      pAS^.AuthIdentity.User           := StrNew(PAnsiChar(User));
+      pAS^.AuthIdentity.User           := AnsiStrings.StrNew(PAnsiChar(User));
       pAS^.AuthIdentity.UserLength     := Length(User);
 
-      pAS^.AuthIdentity.Password       := StrNew(PAnsiChar(Password));
+      pAS^.AuthIdentity.Password       := AnsiStrings.StrNew(PAnsiChar(Password));
       pAS^.AuthIdentity.PasswordLength := Length(Password);
 
-      pAS^.AuthIdentity.Domain         := StrNew(PAnsiChar(Domain));
+      pAS^.AuthIdentity.Domain         := AnsiStrings.StrNew(PAnsiChar(Domain));
       pAS^.AuthIdentity.DomainLength   := Length(Domain);
 
       pAS^.AuthIdentity.Flags := SEC_WINNT_AUTH_IDENTITY_ANSI;
@@ -461,13 +466,13 @@ begin
     else
     begin
       pAuthIdentity := @AuthIdentity;
-      AuthIdentity.User           := StrNew(PAnsiChar(nil));
+      AuthIdentity.User           := AnsiStrings.StrNew(PAnsiChar(nil));
       AuthIdentity.UserLength     := 0;
 
-      AuthIdentity.Password       := StrNew(PAnsiChar(nil));
+      AuthIdentity.Password       := AnsiStrings.StrNew(PAnsiChar(nil));
       AuthIdentity.PasswordLength := 0;
 
-      AuthIdentity.Domain         := StrNew(PAnsiChar(nil));
+      AuthIdentity.Domain         := AnsiStrings.StrNew(PAnsiChar(nil));
       AuthIdentity.DomainLength   := 0;
 
       AuthIdentity.Flags := SEC_WINNT_AUTH_IDENTITY_ANSI;

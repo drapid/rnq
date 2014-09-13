@@ -154,7 +154,8 @@ end;
 procedure TRnQPopupMenu.ExecuteOnClose;
 begin
   FIsOpenen := False;
-  if Assigned(FOnClose) then FOnClose(Self);
+  if Assigned(FOnClose) then
+    FOnClose(Self);
 end;
 
 procedure Register;

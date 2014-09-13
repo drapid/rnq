@@ -13,9 +13,9 @@ interface
 uses
   sysutils, types, RDGlobal;
 
-function dword_LE2ip(d:dword):AnsiString;
+function dword_LE2ip(d: dword): AnsiString;
  {$IFDEF UNICODE}
-function dword_LE2ipU(d:dword):UnicodeString;
+function dword_LE2ipU(d: dword): UnicodeString;
  {$ENDIF UNICODE}
 //function invert(d:integer):integer; OverLoad;
 //function invert64(const d:int64):int64; OverLoad; inline;
@@ -24,61 +24,61 @@ function dword_LE2ipU(d:dword):UnicodeString;
 //procedure SwapLong(P: PInteger; Count: Cardinal);
 //function  SwapLong(Value: Cardinal): Cardinal; overload;
 
-function incPtr(p:pointer;d:integer):pointer; inline;
-function findTLV(idx:integer; const s:RawByteString;ofs:integer=1):integer;
-function existsTLV(idx:integer; const s:RawByteString;ofs:integer=1):boolean; inline;
-function deleteTLV(idx:integer; const s:RawByteString;ofs:integer=1):RawByteString;
+function incPtr(p: pointer; d: Integer): Pointer; inline;
+function findTLV(idx: Integer; const s: RawByteString; ofs: Integer=1): Integer;
+function existsTLV(idx: Integer; const s: RawByteString; ofs: Integer=1): Boolean; inline;
+function deleteTLV(idx: Integer; const s: RawByteString; ofs: Integer=1): RawByteString;
 
 // build data
-function qword_LEasStr(d:int64):RawByteString;
-function qword_BEasStr(d:int64):RawByteString;
-function dword_LEasStr(d:dword):RawByteString;
-function dword_BEasStr(d:dword):RawByteString;
-function word_BEasStr(w:word):RawByteString; inline;
-function word_LEasStr(w:word):RawByteString;
-function TLV(t:word; v:dword):RawByteString; overload;
-function TLV(t:word; v:word):RawByteString; overload;
-function TLV(t:word; v:integer):RawByteString; overload;
-function TLV(t:word; v:Int64):RawByteString; overload;
-function TLV(t:word; const v:RawByteString):RawByteString; overload;
-function TLV_LE(t:word; const v:RawByteString):RawByteString;
-function TLV2(code:integer; const data:RawByteString):RawByteString; overload;
-function TLV2(code:integer; const data:TDateTime):RawByteString;overload;
-function TLV2(code:integer; const data:Integer):RawByteString;overload;
-function TLV2(code:integer; const data:Boolean):RawByteString; overload;
-function TLV2_IFNN(code:integer; const data:RawByteString):RawByteString; overload; // if data not null
-function TLV2_IFNN(code:integer; const data:TDateTime):RawByteString;overload; // if data not null
-function TLV2_IFNN(code:integer; data: Integer):RawByteString; overload; // if data not null
-function TLV2U_IFNN(code:integer; const str:String):RawByteString;// overload; // if data not null. Unicode String
-function TLV3(code:integer; const data:RawByteString):RawByteString;
-function TLV3U(code:integer; const Str:UnicodeString):RawByteString;
-function Length_LE(const data:RawByteString):RawByteString;
-function Length_BE(const data:RawByteString):RawByteString;
-function Length_DLE(const data:RawByteString):RawByteString;
-function Length_B(const data:RawByteString):RawByteString;
-function WNTS(const s:RawByteString):RawByteString;
-function WNTSU(const s:String):RawByteString;
+function qword_LEasStr(d: Int64): RawByteString;
+function qword_BEasStr(d: Int64): RawByteString;
+function dword_LEasStr(d: dword): RawByteString;
+function dword_BEasStr(d: dword): RawByteString;
+function word_BEasStr(w: word): RawByteString; inline;
+function word_LEasStr(w: word): RawByteString;
+function TLV(t: word; v: dword): RawByteString; overload;
+function TLV(t: word; v: word): RawByteString; overload;
+function TLV(t: word; v: Integer): RawByteString; overload;
+function TLV(t: word; v: Int64): RawByteString; overload;
+function TLV(t: word; const v: RawByteString): RawByteString; overload;
+function TLV_LE(t: word; const v: RawByteString): RawByteString;
+function TLV2(code: Integer; const data:RawByteString): RawByteString; overload;
+function TLV2(code: Integer; const data:TDateTime): RawByteString;overload;
+function TLV2(code: Integer; const data:Integer): RawByteString;overload;
+function TLV2(code: Integer; const data:Boolean): RawByteString; overload;
+function TLV2_IFNN(code: Integer; const data: RawByteString): RawByteString; overload; // if data not null
+function TLV2_IFNN(code: Integer; const data:TDateTime): RawByteString;overload; // if data not null
+function TLV2_IFNN(code: Integer; data: Integer): RawByteString; overload; // if data not null
+function TLV2U_IFNN(code: Integer; const str:String): RawByteString;// overload; // if data not null. Unicode String
+function TLV3(code: Integer; const data:RawByteString): RawByteString;
+function TLV3U(code: Integer; const Str:UnicodeString): RawByteString;
+function Length_LE(const data: RawByteString): RawByteString;
+function Length_BE(const data: RawByteString): RawByteString;
+function Length_DLE(const data: RawByteString): RawByteString;
+function Length_B(const data: RawByteString): RawByteString;
+function WNTS(const s: RawByteString): RawByteString;
+function WNTSU(const s: String): RawByteString;
 
 // read data
-function Qword_LEat(p:pointer):int64; inline;//{$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
-function Qword_BEat(p:pointer):int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-function dword_BEat(const s:RawByteString; ofs:integer):integer; overload; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-function dword_BEat(p:pointer):LongWord; overload; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-function dword_LEat(p:pointer):LongWord; inline; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-function word_LEat(p:pointer):word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-function word_BEat(p:pointer):word; overload; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-function ptrWNTS(p:pointer):RawByteString;
+function Qword_LEat(p: Pointer): Int64; inline;//{$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+function Qword_BEat(p: Pointer): Int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function dword_BEat(const s: RawByteString; ofs: Integer): Integer; overload; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function dword_BEat(p: Pointer): LongWord; overload; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function dword_LEat(p: Pointer): LongWord; inline; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function word_LEat(p: Pointer): word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function word_BEat(p: Pointer): word; overload; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function ptrWNTS(p: Pointer): RawByteString;
 
-function word_BEat(const s:RawByteString; ofs:integer):word; overload;
+function word_BEat(const s: RawByteString; ofs: Integer): Word; overload;
 //function word_BEat(s:string; ofs:integer):word; overload;
 
-  function readQWORD(const snac : RawByteString; var ofs : integer):Int64;
-  function readWORD(const snac : RawByteString; var ofs : integer):word;
-  function readBEWORD(const snac : RawByteString; var ofs : integer):word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-  function readINT(const snac : RawByteString; var ofs : integer):integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-  function readDWORD(const snac : RawByteString; var ofs : integer):cardinal;
-  function readBEDWORD(const snac : RawByteString; var ofs : integer):cardinal;
-  function readBYTE(const snac : RawByteString; var ofs : integer):byte;
+  function readQWORD(const snac: RawByteString; var ofs: Integer): Int64;
+  function readWORD(const snac: RawByteString; var ofs: Integer): Word;
+  function readBEWORD(const snac: RawByteString; var ofs: Integer): Word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+  function readINT(const snac: RawByteString; var ofs: Integer): Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+  function readDWORD(const snac: RawByteString; var ofs: integer): Cardinal;
+  function readBEDWORD(const snac: RawByteString; var ofs: integer): Cardinal;
+  function readBYTE(const snac: RawByteString; var ofs: Integer): Byte;
 
 //function getBUIN2(const s:RawByteString; var ofs:integer): RawByteString;
 //function getBUIN(const s:RawByteString; var ofs:integer): Integer;
@@ -110,9 +110,9 @@ function getwTLD_DWORD(const s:RawByteString; var ofs:integer): LongWord;
 /////----------------------------
 
 
-  function  int2str(i:integer): RawByteString;
-  function  int2str64(i:Int64): RawByteString;
-  function  dt2str(dt:Tdatetime):RawByteString;
+  function  int2str(i: Integer): RawByteString;
+  function  int2str64(i: Int64): RawByteString;
+  function  dt2str(dt: Tdatetime): RawByteString;
 
   function  str2int(const s:RawByteString):integer; overload;
   function  str2int(p:pointer):integer; overload; inline;

@@ -56,7 +56,6 @@ object chatFrm: TchatFrm
     BevelOuter = bvNone
     FullRepaint = False
     TabOrder = 6
-    ExplicitWidth = 644
     object sendBtn: TRnQToolButton
       Left = 9
       Top = 8
@@ -298,7 +297,6 @@ object chatFrm: TchatFrm
     OnDblClick = sbarDblClick
     OnMouseUp = sbarMouseUp
     OnDrawPanel = sbarDrawPanel
-    ExplicitWidth = 644
   end
   object pagectrl: TPageControl
     Left = 0
@@ -313,12 +311,10 @@ object chatFrm: TchatFrm
     OnChanging = pagectrlChanging
     OnDragDrop = pagectrlDragDrop
     OnDragOver = pagectrlDragOver
-    OnDrawTab = pagectrlDrawTab
     OnMouseDown = pagectrl00MouseDown
     OnMouseLeave = pagectrlMouseLeave
     OnMouseMove = pagectrlMouseMove
     OnMouseUp = pagectrl00MouseUp
-    ExplicitWidth = 639
   end
   object caseChk: TCheckBox
     Left = 427
@@ -329,7 +325,6 @@ object chatFrm: TchatFrm
     Caption = 'Case sensitive'
     TabOrder = 4
     Visible = False
-    ExplicitLeft = 451
   end
   object reChk: TCheckBox
     Left = 535
@@ -340,7 +335,6 @@ object chatFrm: TchatFrm
     Caption = 'Reg.Exp.'
     TabOrder = 5
     Visible = False
-    ExplicitLeft = 559
   end
   object directionGrp: TComboBox
     Left = 302
@@ -359,7 +353,6 @@ object chatFrm: TchatFrm
       'from the end'
       'backward'
       'forward')
-    ExplicitLeft = 326
   end
   object w2sBox: TEdit
     Left = 96
@@ -371,7 +364,6 @@ object chatFrm: TchatFrm
     TabOrder = 2
     Visible = False
     OnKeyDown = w2sBoxKeyDown
-    ExplicitWidth = 224
   end
   object SBSearch: TRnQButton
     Left = 8
@@ -396,7 +388,6 @@ object chatFrm: TchatFrm
     OnDockDrop = CLPanelDockDrop
     OnDockOver = CLPanelDockOver
     OnUnDock = CLPanelUnDock
-    ExplicitLeft = 642
   end
   object histmenu: TPopupMenu
     OwnerDraw = True

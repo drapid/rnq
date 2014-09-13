@@ -31,7 +31,7 @@ type
    public
     hnd:Thandle;
     screenName,
-    filename:string;
+    filename: String;
     fun:TpluginFun;
     funC:TpluginFunC;
     active:boolean;
@@ -57,21 +57,21 @@ type
     procedure load;
     procedure unload;
     function cast(const data:RawByteString):RawByteString; overload;
-    function castEv(ev_id:byte; const uin: TUID; flags:integer; when:Tdatetime; cl:TRnQCList):RawByteString;  overload;
-    function castEv(ev_id:byte; const uin: TUID; flags:integer; when:Tdatetime):RawByteString; overload;
-    function castEv(ev_id:byte; const uin: TUID; flags:integer; when:Tdatetime; const s1:AnsiString):RawByteString; overload;
-    function castEv(ev_id:byte; const uin: TUID; flags:integer; when:Tdatetime; const s1,s2:AnsiString):RawByteString; overload;
-    function castEv(ev_id:byte; when:Tdatetime; const name,addr,text:AnsiString):RawByteString; overload;
-    function castEv(ev_id:byte; const uin: TUID; flags:integer; const s1:AnsiString):RawByteString; overload;
-    function castEv(ev_id:byte; const uin: TUID; const s1:AnsiString):RawByteString; overload;
-    function castEv(ev_id:byte; const uin: TUID; const s1, s2:AnsiString):RawByteString; overload;
-    function castEv(ev_id:byte; const uin: TUID; b1 : Byte; const s1, s2:AnsiString):RawByteString; overload;
-    function castEv(ev_id:byte; const uin: TUID; status,oldstatus: byte; inv,oldInv:boolean ):RawByteString; overload;
-    function castEv(ev_id:byte; const uin: TUID ):RawByteString; overload;
-    function castEv(ev_id:byte; uin: Integer):RawByteString; overload;
-    function castEv(ev_id:byte; const uin: TUID; flags:integer; cl:TRnQCList):RawByteString; overload;
-    function castEv(ev_id:byte ):RawByteString; overload;
-    function castEv(ev_id:byte; const s1,s2,s3:AnsiString; b:boolean; i:integer):RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; cl: TRnQCList): RawByteString;  overload;
+    function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime): RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; const s1: AnsiString): RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; const s1,s2: AnsiString): RawByteString; overload;
+    function castEv(ev_id: byte; when:Tdatetime; const name,addr,text:AnsiString):RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID; flags: Integer; const s1: AnsiString): RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID; const s1:AnsiString):RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID; const s1, s2:AnsiString):RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID; b1: Byte; const s1, s2: AnsiString): RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID; status,oldstatus: byte; inv,oldInv:boolean ):RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID ):RawByteString; overload;
+    function castEv(ev_id: byte; uin: Integer): RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID; flags:integer; cl:TRnQCList):RawByteString; overload;
+    function castEv(ev_id: byte ):RawByteString; overload;
+    function castEv(ev_id: byte; const s1,s2,s3:AnsiString; b:boolean; i:integer):RawByteString; overload;
     function castEvList(ev_id:byte; list:byte; c:TRnQcontact ):RawByteString;
     end;
 

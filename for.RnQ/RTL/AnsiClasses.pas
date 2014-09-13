@@ -181,7 +181,7 @@ type
 implementation
 
 uses
-  Character, RTLConsts, SysConst, Types;
+  Character, RTLConsts, SysConst, Types, AnsiStrings;
 
 
 { TAnsiStrings }
@@ -404,7 +404,7 @@ end;
 
 function TAnsiStrings.GetText: PAnsiChar;
 begin
-  Result := StrNew(PAnsiChar(GetTextStr));
+  Result := AnsiStrings.StrNew(PAnsiChar(GetTextStr));
 end;
 
 function TAnsiStrings.GetTextStr: AnsiString;
@@ -689,7 +689,7 @@ begin
         while P^ <> #0 do
         begin
           Start := P;
-          LB := AnsiStrPos(P, PAnsiChar(LineBreak));
+          LB := AnsiStrings.AnsiStrPos(P, PAnsiChar(LineBreak));
           while (P^ <> #0) and (P <> LB) do Inc(P);
           SetString(S, Start, P - Start);
           Add(S);
@@ -861,7 +861,7 @@ end;
 
 function TAnsiStrings.CompareAnsiStrings(const S1, S2: AnsiString): Integer;
 begin
-  Result := AnsiStrComp(PAnsiChar(S1), PAnsiChar(S2));
+  Result := AnsiStrings.AnsiStrComp(PAnsiChar(S1), PAnsiChar(S2));
 end;
 
 function TAnsiStrings.GetNameValueSeparator: AnsiChar;
@@ -1233,7 +1233,7 @@ end;
 function TAnsiStringList.CompareAnsiStrings(const S1, S2: AnsiString): Integer;
 begin
 //  if CaseSensitive then
-    Result := AnsiStrComp(PAnsiChar(S1), PAnsiChar(S2))
+    Result := AnsiStrings.AnsiStrComp(PAnsiChar(S1), PAnsiChar(S2))
 //  else
 //    Result := AnsiCompareText(S1, S2);
 end;

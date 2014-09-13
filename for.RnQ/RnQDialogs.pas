@@ -60,20 +60,21 @@ resourcestring
  function InputQuery(const ACaption, APrompt: string;
    var Value: string): Boolean;
  function MessageDlg(const Msg: string; DlgType: TMsgDlgType;
-  Buttons: TMsgDlgButtons; HelpCtx: Longint): Integer; Overload;
+  Buttons: TMsgDlgButtons; HelpCtx: Longint): integer; Overload;
  function MessageDlg(const Msg: string; DlgType: TMsgDlgType;
   Buttons: TMsgDlgButtons; HelpCtx: Longint; pDefaultButton: TMsgDlgBtn;
-  Seconds: Integer): Integer; Overload;
+  Seconds: integer): integer; Overload;
 
 {$ENDIF}
 
- function OpenSaveFileDialog(ParentHandle: THandle; const DefExt, Filter, InitialDir,
-   Title: string; var FileNames: string; IsOpenDialog: Boolean; Multi : Boolean = false): Boolean;
+ function OpenSaveFileDialog(ParentHandle: THandle;
+   const DefExt, Filter, InitialDir, Title: string;
+   var FileNames: string; IsOpenDialog: Boolean; Multi: Boolean = false): Boolean;
 
 
 // function OpenDirDialogW(ParentHandle: THandle; Title : WideString; var DirName: WideString) : boolean;
- function OpenDirDialog(ParentHandle: THandle; Title : String; var DirName: String) : boolean;
- function ChooseFontDlg(ParentHandle: THandle; Title : String; var Font: TFont) : boolean;
+ function OpenDirDialog(ParentHandle: THandle; Title: String; var DirName: String): boolean;
+ function ChooseFontDlg(ParentHandle: THandle; Title: String; var Font: TFont): boolean;
 
 implementation
  uses ShlObj,
@@ -101,7 +102,9 @@ implementation
        Result[i] := newChar
  end;
 
- function OpenSaveFileDialog(ParentHandle: THandle; const DefExt, Filter, InitialDir, Title: string; var FileNames: string; IsOpenDialog: Boolean; Multi : Boolean = false): Boolean;
+ function OpenSaveFileDialog(ParentHandle: THandle;
+   const DefExt, Filter, InitialDir, Title: string; var FileNames: string;
+   IsOpenDialog: Boolean; Multi : Boolean = false): Boolean;
  const
    OPENFILENAME_SIZE_VERSION_400 = 76;
  var
@@ -190,7 +193,7 @@ implementation
   end;
  end;
 
-function OpenDirDialog(ParentHandle: THandle; Title : String; var DirName: String) : boolean;
+function OpenDirDialog(ParentHandle: THandle; Title: String; var DirName: String): boolean;
 {$IFNDEF BIF_NONEWFOLDERBUTTON}
 const
   BIF_UAHINT = $100;   // Add a UA hint to the dialog, in place of the edit box. May not be combined with BIF_EDITBOX
@@ -236,8 +239,10 @@ var
   I: Integer;
   Buffer: array[0..51] of Char;
 begin
-  for I := 0 to 25 do Buffer[I] := Chr(I + Ord('A'));
-  for I := 0 to 25 do Buffer[I + 26] := Chr(I + Ord('a'));
+  for I := 0 to 25 do
+    Buffer[I] := Chr(I + Ord('A'));
+  for I := 0 to 25 do
+    Buffer[I + 26] := Chr(I + Ord('a'));
   GetTextExtentPoint(Canvas.Handle, Buffer, 52, TSize(Result));
   Result.X := Result.X div 52;
 end;
@@ -854,7 +859,8 @@ var
   wTitle,wDescription,wContent: array[0..1024] of widechar;
   Btns: TMsgDlgButtons;
   DlgType: TMsgDlgType;
-  TaskDialogProc: function(HWND: THandle; hInstance: THandle; cTitle, cDescription, cContent: pwidechar; Buttons: Integer; Icon: integer;
+  TaskDialogProc: function(HWND: THandle; hInstance: THandle;
+       cTitle, cDescription, cContent: pwidechar; Buttons: Integer; Icon: integer;
        ResButton: pinteger): integer; cdecl stdcall;
 
 begin

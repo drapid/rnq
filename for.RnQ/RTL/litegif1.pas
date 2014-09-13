@@ -1933,7 +1933,7 @@ var
 //  vBottom,
   vTopByte, vLeftByte,
   PixelSize, FileSize: integer;
-  DeltaBytes, vRowDelta : Integer; // Delta between frames
+  DeltaBytes{, vRowDelta} : Integer; // Delta between frames
   Stream, MStream: TMemoryStream;
   PL, MPL: PLayoutType;
   Color: TColor;

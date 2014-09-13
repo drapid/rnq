@@ -315,8 +315,8 @@ begin
 end;
 
 procedure TtrayIcon.update;
-var
-  ic : HICON;
+//var
+//  ic : HICON;
 begin
 { if shown then
    begin

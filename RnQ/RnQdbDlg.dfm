@@ -119,6 +119,7 @@ object RnQdbFrm: TRnQdbFrm
     Width = 290
     Height = 297
     Align = alClient
+    Colors.UnfocusedColor = clMedGray
     Header.AutoSizeIndex = 1
     Header.DefaultHeight = 17
     Header.Font.Charset = DEFAULT_CHARSET
@@ -137,7 +138,6 @@ object RnQdbFrm: TRnQdbFrm
     OnCompareNodes = dbTreeCompareNodes
     OnDrawNode = dbTreeDrawNode
     OnHeaderClick = dbTreeHeaderClick
-    ExplicitWidth = 289
     Columns = <
       item
         Position = 0

@@ -101,7 +101,8 @@ uses
   ICQClients in 'ICQ\ICQClients.pas',
   Vcl.Themes,
   Vcl.Styles,
-  RnQLangFrm in '..\For.rnq\RnQLangFrm.pas' {FrmLangs};
+  RnQLangFrm in '..\For.rnq\RnQLangFrm.pas' {FrmLangs},
+  ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm};
 
 { $R RnQ.RES}
 {$R *.RES}

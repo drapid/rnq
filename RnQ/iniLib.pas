@@ -145,39 +145,39 @@ with RnQmain do
 
   with transparency do
    begin
-    forRoster:=FALSE;
-    forChat:=FALSE;
-    active:=200;
-    inactive:=86;
+    forRoster := False;
+    forChat := False;
+    active := 200;
+    inactive := 86;
     chgOnMouse := True;
-    forTray := false;
+    forTray := False;
     tray := 220;
    end;
 
 splitY:=-1;
 tempBlinkTime:=80;
-okOn2enter_autoMsg:=FALSE;
-useLastStatus:=TRUE;
+okOn2enter_autoMsg := False;
+useLastStatus := True;
   //loginServer:='login.icq.com';
   lastStatusUserSet:= byte(SC_UNK);
 //  RnQStartingStatus:= byte(SC_ONLINE);
   RnQStartingStatus:= -1; // Last used
   RnQStartingVisibility := 0;//VI_NORMAL;
 
-quoting.cursorBelow:=FALSE;
-quoting.width:=300;
-quoting.quoteselected:=TRUE;
+quoting.cursorBelow := False;
+quoting.width := 300;
+quoting.quoteselected := True;
 //     icqdebug   := false;
-inactivehide:=FALSE;
+inactivehide := False;
 inactivehideTime:=50;
-focusOnChatPopup:=TRUE;
+focusOnChatPopup := True;
 bringInfoFrgd := True; // By Rapid D
 checkupdate.lastSerial:=0;
-checkupdate.betas:=FALSE or PREVIEWversion;
-checkupdate.enabled:=False or PREVIEWversion;
+checkupdate.betas := False or PREVIEWversion;
+checkupdate.enabled := False or PREVIEWversion;
 checkupdate.every:=24;
 prefHeight:=390;
-minOnOff:=FALSE;
+minOnOff := False;
 minOnOffTime:=30;
 useSystemCodePage := True;
 
@@ -207,7 +207,7 @@ showVisAndLevelling := False;
   autoRequestXsts := False;
 
   blinkWithStatus := True;
-  showRQP := FALSE;
+  showRQP := False;
 {$IFDEF RNQ_FULL}
  {$IFDEF Use_Baloons}
   showBalloons := True;
@@ -218,12 +218,12 @@ showVisAndLevelling := False;
   usePlugPanel  := True;
   useCtrlNumInstAlt := False; 
 
-rosterbarOnTop:=FALSE;
+rosterbarOnTop:= False;
 filterbarOnTop:=True;
  RnQmain.FilterBar.Visible := False;
 
-doFixWindows:=TRUE;
-animatedRoster:=FALSE;
+doFixWindows := True;
+animatedRoster:= False;
 blinkSpeed:=5;
 userCharSet:=-1;
 logpref.writehistory:=TRUE;
@@ -360,22 +360,22 @@ behaviour[EK_statuschange].trig:=[BE_history];
 behaviour[EK_gcard].trig:=[BE_tray,BE_sound,BE_history,BE_openchat,BE_save];
 behaviour[EK_automsg].trig:=[BE_openchat,BE_history,BE_sound,BE_popup];
  {$IFDEF Use_Baloons}
-behaviour[EK_typingBeg].trig:=[BE_tip, BE_BALLOON];
-behaviour[EK_typingFin].trig:=[BE_tip, BE_BALLOON];
+behaviour[EK_typingBeg].trig := [BE_tip, BE_BALLOON];
+behaviour[EK_typingFin].trig := [BE_tip, BE_BALLOON];
  {$ELSE not Use_Baloons}
-behaviour[EK_typingBeg].trig:=[BE_TIP];
-behaviour[EK_typingFin].trig:=[BE_TIP];
+behaviour[EK_typingBeg].trig := [BE_TIP];
+behaviour[EK_typingFin].trig := [BE_TIP];
  {$ENDIF Use_Baloons}
 behaviour[EK_XstatusMsg].trig:=[BE_history];
 behaviour[EK_Xstatusreq].trig:=[BE_history];
 
 for i:=1 to EK_last do
   begin
-  behaviour[i].tiptimes:=FALSE;
+  behaviour[i].tiptimes := False;
   behaviour[i].tiptime:=50;
   behaviour[i].tiptimeplus:=50;
   end;
-behaviour[EK_msg].tiptimes:=TRUE;
+behaviour[EK_msg].tiptimes := True;
 behaviour[EK_msg].tiptime:=1;
 behaviour[EK_url]:=behaviour[EK_msg];
 behaviour[EK_typingBeg].tiptime := 20;
@@ -450,18 +450,18 @@ begin
   pp.addPrefInt('window-left'+sU, mainRect.left);
   pp.addPrefInt('window-width'+sU, mainRect.Right - mainRect.Left);
 
-  pp.addPrefInt('window-top', mainRect.top);
+  pp.addPrefInt('window-top', mainRect.Top);
   pp.addPrefInt('window-height', mainRect.Bottom - mainRect.Top);
   pp.addPrefInt('window-left', mainRect.left);
   pp.addPrefInt('window-width', mainRect.Right - mainRect.Left);
-  pp.addPrefInt('chat-top', chatfrmXY.top);
+  pp.addPrefInt('chat-top', chatfrmXY.Top);
   pp.addPrefInt('chat-height', chatfrmXY.height);
   pp.addPrefInt('chat-left', chatfrmXY.left);
   pp.addPrefInt('chat-width', chatfrmXY.width);
   pp.addPrefBool('chat-maximized', chatfrmXY.maximized);
   pp.addPrefBool('transparency',transparency.forRoster);
   pp.addPrefBool('transparency-chat', transparency.forChat);
-  pp.addPrefBool('transparency-tray', transparency.fortray);
+  pp.addPrefBool('transparency-tray', transparency.forTray);
   pp.addPrefBool('transparency-chgonmouse', transparency.chgOnMouse);
   pp.addPrefInt('transparency-active', transparency.active);
   pp.addPrefInt('transparency-inactive', transparency.inactive);
@@ -478,12 +478,12 @@ begin
   pp.addPrefStr('proxy-proto', proxyproto2str[MainProxy.proto]);
   pp.addPrefStr('ports-listen', portsListen.getString);
 
-  pp.addPrefBool('auto-size', autosizeRoster);
+  pp.addPrefBool('auto-size', autoSizeRoster);
   pp.addPrefBool('auto-size-full', autosizeFullRoster);
   pp.addPrefBool('auto-size-up', autosizeUp);
   pp.addPrefBool('reopen-chats-on-start', reopenchats);
   pp.addPrefBool('skip-splash', skipSplash);
-  pp.addPrefBool('fix-windows-position', dofixwindows);
+  pp.addPrefBool('fix-windows-position', doFixWindows);
   pp.addPrefBool('start-minimized', startMinimized);
   pp.addPrefBool('auto-reconnect', autoReconnect);
   pp.addPrefBool('auto-reconnect-stop', autoReconnectStop);
@@ -523,7 +523,7 @@ begin
   pp.addPrefBool('ok-double-enter-auto-msg', okOn2enter_autoMsg);
   pp.addPrefBool('auto-check-update', checkupdate.enabled);
   pp.addPrefBool('show-only-online-contacts', showOnlyOnline);
-  pp.addPrefBool('show-only-im-visible-to-contacts', showOnlyImvisibleto);
+  pp.addPrefBool('show-only-im-visible-to-contacts', showOnlyImVisibleTo);
   pp.addPrefBool('show-all-contacts-in-one', OnlOfflInOne);
   pp.addPrefBool('show-unk-as-offline', showUnkAsOffline);
   pp.addPrefBool('show-oncoming-dialog', showOncomingDlg);
@@ -539,8 +539,8 @@ begin
   pp.addPrefInt('blink-speed', blinkSpeed);
   pp.addPrefInt('temp-blink-time', tempBlinkTime);
 
-  pp.addPrefBool('show-statusbar', RnQmain.bar.visible);
-  pp.addPrefBool('show-filterbar', RnQmain.FilterBar.visible);
+  pp.addPrefBool('show-statusbar', RnQmain.bar.Visible);
+  pp.addPrefBool('show-filterbar', RnQmain.FilterBar.Visible);
   pp.addPrefBool('show-contact-tip', RnQmain.roster.ShowHint);
   pp.addPrefInt('show-tips-count', TipsMaxCnt);
   pp.addPrefInt('show-tips-align', byte(TipsAlign));
@@ -587,21 +587,21 @@ begin
   pp.addPrefStr('disabled-plugins', disabledPlugins);
 
   pp.addPrefBool('show-status-on-tabs', showStatusOnTabs);
-  pp.addPrefBool('auto-deselect', autodeselect);
+  pp.addPrefBool('auto-deselect', autoDeselect);
   pp.addPrefBool('single-message-by-default', singledefault);
   pp.addPrefBool('auto-copy', autocopyhist);
   pp.addPrefBool('hist-msg-view-wrap', bViewTextWrap);
   pp.addPrefBool('indent-contact-list', indentRoster);
-  pp.addPrefBool('auto-consume-events', autoconsumeevents);
+  pp.addPrefBool('auto-consume-events', autoConsumeEvents);
   pp.addPrefBool('disable-events-on-closed-groups', DsblEvnt4ClsdGrp);
   pp.addPrefBool('show-disconnected-dialog', showDisconnectedDlg);
   pp.addPrefBool('keep-alive', keepalive.enabled);
   pp.addPrefInt('keep-alive-freq', keepalive.freq);
   pp.addPrefInt('italic-mode', rosterItalic);
   pp.addPrefBool('focus-on-chat-popup', focusOnChatPopup);
-  pp.addPrefBool('bring-info-frgd', BringInfoFrgd);
+  pp.addPrefBool('bring-info-frgd', bringInfoFrgd);
 
-  pp.addPrefBool('enable-ignore-list', enableIgnorelist);
+  pp.addPrefBool('enable-ignore-list', enableIgnoreList);
   pp.addPrefBool('use-contacts-themes', UseContactThemes);
   pp.addPrefInt('preferences-height', prefHeight);
   pp.addPrefBool('docking-enabled', docking.enabled);
@@ -633,21 +633,21 @@ begin
   pp.addPrefBool('spam-warn', spamfilter.warn);
   pp.addPrefBool('spam-add-history', spamfilter.addToHist);
   pp.addPrefInt('spam-uin-greater-than', spamfilter.uingt);
-  pp.addPrefBool('spam-use-bot', spamfilter.usebot);
+  pp.addPrefBool('spam-use-bot', spamfilter.useBot);
   pp.addPrefBool('spam-use-bot-in-invis', spamfilter.useBotInInvis);
-  pp.addPrefBool('spam-use-bot-file', spamfilter.usebotFromFile);
+  pp.addPrefBool('spam-use-bot-file', spamfilter.UseBotFromFile);
   pp.addPrefInt('spam-bot-tryes', spamfilter.BotTryesCount);
   pp.addPrefBool('history-crypt-enabled', histcrypt.enabled);
   pp.addPrefBool('history-crypt-save-password', histcrypt.savePwd);
   pp.addPrefBool('chat-lsb-popup', popupLSB);
   pp.addPrefBool('chat-lsb-show', showLSB);
-  pp.addPrefBool('chat-hints-show', showHintsInChat);
+  pp.addPrefBool('chat-hints-show', ShowHintsInChat);
   pp.addPrefBool('chat-close-on-send', closeChatOnSend);
   pp.addPrefBool('chat-close-page-on-single', ClosePageOnSingle);
 
   pp.addPrefBool('use-default-browser', useDefaultBrowser);
   pp.addPrefStr('browser-command-line', browserCmdLine);
-  pp.addPrefStr('sort-by', sortby2str[sortby]);
+  pp.addPrefStr('sort-by', sortby2str[sortBy]);
 //  pp.addPrefBlob('starting-status', status2Img[TICQStatus(startingStatus)]);
 
 // +'xstatusstr'+curXStatusStr+CRLF
@@ -655,11 +655,11 @@ begin
   pp.addPrefBool('xstatus-auto-request', autoRequestXsts);
   pp.addPrefBool('xstatus-as-main', XStatusAsMain);
   pp.addPrefBool('blink-with-status', blinkWithStatus);
-  pp.addPrefBool('log-events-file', logpref.evts.onfile);
-  pp.addPrefBool('log-events-window', logpref.evts.onwindow);
+  pp.addPrefBool('log-events-file', logpref.evts.onFile);
+  pp.addPrefBool('log-events-window', logpref.evts.onWindow);
   pp.addPrefBool('log-events-clear', logpref.evts.clear);
-  pp.addPrefBool('log-packets-file', logpref.pkts.onfile);
-  pp.addPrefBool('log-packets-window', logpref.pkts.onwindow);
+  pp.addPrefBool('log-packets-file', logpref.pkts.onFile);
+  pp.addPrefBool('log-packets-window', logpref.pkts.onWindow);
   pp.addPrefBool('log-packets-clear', logpref.pkts.clear);
   pp.addPrefBool('font-style-codes', fontstylecodes.enabled);
   pp.addPrefBool('write-history', logpref.writehistory);
@@ -879,7 +879,7 @@ begin
   pp.getPrefStr('roaster-title', rosterTitle);
   pp.getPrefBool('show-main-border', showMainBorder);
   pp.getPrefBool('show-uin-delimiter', ShowUINDelimiter);
-  pp.getPrefBool('fix-windows-position', dofixwindows);
+  pp.getPrefBool('fix-windows-position', doFixWindows);
   pp.getPrefBool('reopen-chats-on-start', reopenchats);
   pp.getPrefBool('connect-on-connection', connectOnConnection);
   pp.getPrefBool('get-offline-msgs', getOfflineMsgs);
@@ -904,15 +904,15 @@ begin
   pp.getPrefBool('lock-on-start', lockOnStart);
   pp.getPrefBool('chat-lsb-popup', popupLSB);
   pp.getPrefBool('chat-lsb-show', showLSB);
-  pp.getPrefBool('chat-hints-show', showHintsInChat);
+  pp.getPrefBool('chat-hints-show', ShowHintsInChat);
   pp.getPrefBool('chat-close-on-send', closeChatOnSend);
   pp.getPrefBool('chat-close-page-on-single', ClosePageOnSingle);
   pp.getPrefBool('popup-automsg', popupAutomsg);
   pp.getPrefBool('animated-roaster', animatedRoster);
   pp.getPrefBool('inactive-hide', inactivehide);
   pp.getPrefBool('font-style-codes', fontstylecodes.enabled);
-  pp.getPrefBool('roaster-bar-on-top', rosterbaronTop);
-  pp.getPrefBool('filter-bar-on-top', filterbaronTop);
+  pp.getPrefBool('roaster-bar-on-top', rosterbarOnTop);
+  pp.getPrefBool('filter-bar-on-top', filterbarOnTop);
   pp.getPrefBool('oncoming-on-away', oncomingOnAway);
   pp.getPrefBool('use-last-status', useLastStatus);
 
@@ -955,18 +955,18 @@ begin
   pp.getPrefBool('quote-selected', quoting.quoteselected);
   pp.getPrefInt('quoting-width', quoting.width);
   pp.getPrefBool('quit-confirmation', quitconfirmation);
-  pp.getPrefBool('log-events-file', logpref.evts.onfile);
-  pp.getPrefBool('log-events-window', logpref.evts.onwindow);
+  pp.getPrefBool('log-events-file', logpref.evts.onFile);
+  pp.getPrefBool('log-events-window', logpref.evts.onWindow);
   pp.getPrefBool('log-events-clear', logpref.evts.clear);
-  pp.getPrefBool('log-packets-file', logpref.pkts.onfile);
-  pp.getPrefBool('log-packets-window', logpref.pkts.onwindow);
+  pp.getPrefBool('log-packets-file', logpref.pkts.onFile);
+  pp.getPrefBool('log-packets-window', logpref.pkts.onWindow);
   pp.getPrefBool('log-packets-clear', logpref.pkts.clear);
   pp.getPrefBool('write-history', logpref.writehistory);
   pp.getPrefBool('indent-contact-list', indentRoster);
   pp.getPrefBool('auto-consume-events', autoConsumeEvents);
   pp.getPrefBool('disable-events-on-closed-groups', DsblEvnt4ClsdGrp);
   pp.getPrefBool('focus-on-chat-popup', focusOnChatPopup);
-  pp.getPrefBool('bring-info-frgd', BringInfoFrgd);
+  pp.getPrefBool('bring-info-frgd', bringInfoFrgd);
   pp.getPrefBool('show-status-on-tabs', showStatusOnTabs);
   pp.getPrefBool('show-disconnected-dialog', showDisconnectedDlg);
   RnQmain.bar.visible := pp.getPrefBoolDef('show-statusbar', True);
