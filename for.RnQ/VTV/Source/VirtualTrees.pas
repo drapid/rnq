@@ -101,7 +101,7 @@ uses
   ;
 
 const
-  VTVersion = '5.3.2';
+  VTVersion = '5.5.0';
 
 {$if CompilerVersion < 20}
 type
@@ -2859,6 +2859,7 @@ type
     procedure ReadNode(Stream: TStream; Version: Integer; Node: PVirtualNode); virtual;
     procedure RedirectFontChangeEvent(Canvas: TCanvas); virtual;
     procedure RemoveFromSelection(Node: PVirtualNode); virtual;
+    procedure UpdateNextNodeToSelect(Node: PVirtualNode); virtual;
     function RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HResult; virtual;
     procedure ResetRangeAnchor; virtual;
     procedure RestoreFontChangeEvent(Canvas: TCanvas); virtual;
@@ -4102,7 +4103,7 @@ procedure GetStringDrawRect(DC: HDC; const S: UnicodeString; var Bounds: TRect; 
 function WrapString(DC: HDC; const S: UnicodeString; const Bounds: TRect; RTL: Boolean;
   DrawFormat: Cardinal): UnicodeString;
 
-function GetUtilityImages: TImageList;  // [IPK] Allow other classes to access UtilityImages
+function GetUtilityImages: TCustomImageList;
 procedure ShowError(Msg: UnicodeString; HelpContext: Integer);  // [IPK] Surface this to interface
 
 procedure SetCurrentThreadName(const Name: Ansistring); // By Rapid D
@@ -4119,14 +4120,15 @@ uses
   TypInfo,                 // for migration stuff
   ActnList,
   StdActns,                // for standard action support
-  {$IFDEF MSAASupport}
-  VTAccessibilityFactory,  // accessibility helper class
-  {$ENDIF MSAASupport}
-  DwmApi, // By Rapid D
   {$ifdef UNICODE}
   AnsiStrings,
   {$endif UNICODE}
-  StrUtils, GraphUtil;
+  StrUtils,
+  DwmApi, // By Rapid D
+  {$IFDEF MSAASupport}
+  VTAccessibilityFactory,  // accessibility helper class
+  {$ENDIF MSAASupport}
+  GraphUtil;
 
 resourcestring
   // Localizable strings.
@@ -4812,7 +4814,7 @@ end;
 
 //----------------- utility functions ----------------------------------------------------------------------------------
 
-function GetUtilityImages: TImageList; // [IPK]
+function GetUtilityImages: TCustomImageList; // [IPK]
 
 begin
   Result := UtilityImages; 
@@ -4977,14 +4979,14 @@ var
 
 begin
   Result := '';
-  Width := Bounds.Right - Bounds.Left;
-  R := Rect(0, 0, 0, 0);
-
   // Leading and trailing are ignored.
   Buffer := Trim(S);
   Len := Length(Buffer);
   if Len < 1 then
     Exit;
+
+  Width := Bounds.Right - Bounds.Left;
+  R := Rect(0, 0, 0, 0);
 
   // Count the words in the string.
   WordCounter := 1;
@@ -6017,7 +6019,6 @@ var
     OffsetY := (IL.Height - DarkCheckImages.Height) div 2;
     for I := 21 to 24 do
     begin
-      BM.Canvas.Brush.Color := MaskColor;
       BM.Canvas.FillRect(Rect(0, 0, BM.Width, BM.Height));
       if Flat then
         FlatImages.Draw(BM.Canvas, OffsetX, OffsetY, I)
@@ -6036,7 +6037,6 @@ var
     ButtonType: Cardinal;
 
   begin
-    BM.Canvas.Brush.Color := MaskColor;
     BM.Canvas.FillRect(Rect(0, 0, BM.Width, BM.Height));
     if Index < 8 then
       ButtonType := DFCS_BUTTONRADIO
@@ -8015,12 +8015,15 @@ procedure TVirtualTreeHintWindow.ActivateHint(Rect: TRect; const AHint: string);
 var
   DC: HDC;
   StopLastAnimation: Boolean;
+  lCursorPos: TPoint;
 //  R:HRGN;
   addMouse : Boolean;
   MonRect : TRect;
   i : Integer;
 begin
-  if IsRectEmpty(Rect) or not Assigned(FHintData.Tree) then
+  if IsRectEmpty(Rect) or not Assigned(FHintData.Tree) or
+     not GetCursorPos(lCursorPos) or not PtInRect(FHintData.Tree.FLastHintRect, FHintData.Tree.ScreenToClient(lCursorPos))
+  then
     Application.CancelHint
   else
   begin
@@ -8823,10 +8826,6 @@ function TVTDragImage.WillMove(P: TPoint): Boolean;
 // target point.
 // Always returns False if the system drag image support is available.
 
-var
-  DeltaX,
-  DeltaY: Integer;
-
 begin
   Result := Visible;
   if Result then
@@ -8834,21 +8833,12 @@ begin
     // Determine distances to move the drag image. Take care for restrictions.
     case FRestriction of
       dmrHorizontalOnly:
-        begin
-          DeltaX := FLastPosition.X - P.X;
-          DeltaY := 0;
-        end;
+        Result := FLastPosition.X <> P.X;
       dmrVerticalOnly:
-        begin
-          DeltaX := 0;
-          DeltaY := FLastPosition.Y - P.Y;
-        end;
+        Result := FLastPosition.Y <> P.Y;
     else // dmrNone
-      DeltaX := FLastPosition.X - P.X;
-      DeltaY := FLastPosition.Y - P.Y;
+      Result := (FLastPosition.X <> P.X) or (FLastPosition.Y <> P.Y);
     end;
-
-    Result := (DeltaX <> 0) or (DeltaY <> 0);
   end;
 end;
 
@@ -9532,8 +9522,10 @@ begin
       if not FCheckBox then
         HeaderGlyphSize := Point(FImages.Width, FImages.Height)
       else
-        with TBaseVirtualTree.GetCheckImageListFor(FHeader.Treeview.CheckImageKind) do
-          HeaderGlyphSize := Point(Width, Height)
+        with Self.Owner.Header.Treeview do begin
+          if Assigned(FCheckImages) then
+            HeaderGlyphSize := Point(FCheckImages.Width, FCheckImages.Height)
+        end
     else
       HeaderGlyphSize := Point(0, 0);
     if UseSortGlyph then
@@ -14177,7 +14169,7 @@ begin
   FColors[13] := clHighlight;     // SelectionRectangleBorderColor
   FColors[14] := clBtnShadow;     // HeaderHotColor
   FColors[15] := clHighlightText; // SelectionTextColor
-  FColors[16] := clMedGray;       // UnfocusedColor  [IPK]
+  FColors[16] := clBtnFace;       // UnfocusedColor  [IPK]
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -14258,7 +14250,7 @@ end;
 function TVTColors.GetNodeFontColor: TColor;
 begin
 {$IF CompilerVersion >= 23 }
-  if FOwner.VclStyleEnabled then
+  if FOwner.VclStyleEnabled and  FOwner.FBackground.Bitmap.Empty then
     StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemNormal), ecTextColor, Result)
   else
 {$IFEND}
@@ -16695,7 +16687,7 @@ begin
 
             if (toVariableNodeHeight in FOptions.FMiscOptions) then begin
               lNodeHeight := Child.NodeHeight;
-              DoMeasureItem(Canvas, Node, lNodeHeight); //
+              DoMeasureItem(Canvas, Child, lNodeHeight);
               Child.NodeHeight := lNodeHeight;
             end;
             Inc(NewHeight, Child.NodeHeight);
@@ -18229,6 +18221,7 @@ end;
 procedure TBaseVirtualTree.CMMouseEnter(var Message: TMessage);
 begin
   DoMouseEnter();
+  inherited;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18322,7 +18315,9 @@ begin
         SetOffsetX(FOffsetX + RTLFactor * ScrollAmount);
       end;
     end;
+
   end;
+
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -19368,7 +19363,8 @@ begin
   inherited;
 
   // Remove hint if shown currently.
-  Application.CancelHint;
+  if tsHint in Self.FStates then
+    Application.CancelHint;
 
   // Stop wheel panning if active.
   StopWheelPanning;
@@ -22733,7 +22729,8 @@ begin
     FOffsetY := Value.Y;
     Result := True;
 
-    Application.CancelHint;
+    if tsHint in Self.FStates then
+      Application.CancelHint;
     if FUpdateCount = 0 then
     begin
       // The drag image from VCL controls need special consideration.
@@ -22809,6 +22806,7 @@ begin
       HandleHotTrack(P.X, P.Y);
 
     DoScroll(DeltaX, DeltaY);
+    Perform(CM_UPDATE_VCLSTYLE_SCROLLBARS,0,0);
   end;
 end;
 
@@ -26610,25 +26608,35 @@ begin
       if FSelectionCount = 0 then
         ResetRangeAnchor;
 
-      if FSelectionCount <= 1 then begin
-        // save a potential node to select after the currently selected node will be deleted.
-        // This will make the VT to behave more like the Win32 TreeView, which always selecta a new node if the currently
-        // selected one gets deleted.
-        if GetNextSibling(Node)<>nil then
-          fNextNodeToSelect := GetNextSibling(Node)
-        else if GetPreviousSibling(Node)<>nil then
-          fNextNodeToSelect := GetPreviousSibling(Node)
-        else if GetNodeLevel(Node)>0 then
-          fNextNodeToSelect := Node.Parent
-        else
-          fNextNodeToSelect := GetFirstChild(Node);
-      end;//if Assigned(Node);
+      if FSelectionCount <= 1 then
+        UpdateNextNodeToSelect(Node);
 
       DoRemoveFromSelection(Node);
       Change(Node);
     end;
   end;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.UpdateNextNodeToSelect(Node: PVirtualNode);
+
+// save a potential node to select after the currently selected node will be deleted.
+// This will make the VT to behave more like the Win32 TreeView, which always selecta a new node if the currently
+// selected one gets deleted.
+
+begin
+  if not (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
+    exit;
+  if GetNextSibling(Node)<>nil then
+    fNextNodeToSelect := GetNextSibling(Node)
+  else if GetPreviousSibling(Node)<>nil then
+    fNextNodeToSelect := GetPreviousSibling(Node)
+  else if GetNodeLevel(Node)>0 then
+    fNextNodeToSelect := Node.Parent
+  else
+    fNextNodeToSelect := GetFirstChild(Node);
+end;//if Assigned(Node);
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -31978,7 +31986,7 @@ begin
     Include(Node.States, vsHeightMeasured);
     if (toVariableNodeHeight in FOptions.FMiscOptions) then begin
       NewNodeHeight := Node.NodeHeight;
-      {$if CompilerVersion > 20} // Anonymous methods help to make this thread safe easily. In Delphi 2007 and lower developers must take care themselves about thread synchronization when consuming the OnMeasureItemHeight event
+      {$if CompilerVersion >= 20} // Anonymous methods help to make this thread safe easily. In Delphi 2007 and lower developers must take care themselves about thread synchronization when consuming the OnMeasureItemHeight event
       if (MainThreadId <> GetCurrentThreadId) then
         TThread.Synchronize(nil,
           procedure begin
@@ -31988,8 +31996,10 @@ begin
         )
       else
       {$ifend}
-      DoMeasureItem(Canvas, Node, NewNodeHeight); //
+      begin
+        DoMeasureItem(Canvas, Node, NewNodeHeight);
         SetNodeHeight(Node, NewNodeHeight);
+      end;
     end;
   end;
 end;
@@ -32236,6 +32246,10 @@ var
   PaintWidth: Integer;
   CurrentNodeHeight: Integer;
   lUseSelectedBkColor: Boolean; // determines if the dotted grid lines need to be painted in selection color of background color
+
+  CellIsTouchingClientRight: Boolean;
+  CellIsInLastColumn: Boolean;
+  ColumnIsFixed: Boolean;
 
 // By Rapid D -->
    PaintOnGlass : Boolean;
@@ -32599,6 +32613,7 @@ begin
                             end
                             else
                               DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right, CellRect.Bottom - 1);
+
                             Dec(CellRect.Bottom);
                             Dec(ContentRect.Bottom);
                           end;
@@ -32606,19 +32621,38 @@ begin
                           if UseColumns then
                           begin
                             // Paint vertical grid line.
-                            // Don't draw if this is the last column and the header is in autosize mode.
-                            if (poGridLines in PaintOptions) and (toShowVertGridLines in FOptions.FPaintOptions) and
-                              (not (hoAutoResize in FHeader.FOptions) or (Position < TColumnPosition(Count - 1))) then
+                            if (poGridLines in PaintOptions) and (toShowVertGridLines in FOptions.FPaintOptions) then
                             begin
-                              if (BidiMode = bdLeftToRight) or not ColumnIsEmpty(Node, Column) then
+                              // These variables and the nested if conditions shall make the logic
+                              // easier to understand.
+                              CellIsTouchingClientRight := PaintInfo.CellRect.Right = Window.Right;
+                              CellIsInLastColumn := Position = TColumnPosition(Count - 1);
+                              ColumnIsFixed := coFixed in FHeader.FColumns[Column].Options;
+
+                            // Don't draw if this is the last column and the header is in autosize mode.
+                              if not ((hoAutoResize in FHeader.FOptions) and CellIsInLastColumn) then
                               begin
-                                Canvas.Font.Color := FColors.GridLineColor;
-                                lUseSelectedBkColor := (poDrawSelection in PaintOptions) and (toFullRowSelect in FOptions.FSelectionOptions) and
+                                // We have to take spanned cells into account which we determine
+                                // by checking if CellRect.Right equals the Window.Right.
+                                // But since the PaintTree procedure is called twice in
+                                // TBaseVirtualTree.Paint (i.e. for fixed columns and other columns.
+                                // CellIsTouchingClientRight does not work for fixed columns.)
+                                // we have to paint fixed column grid line anyway.
+                                if not CellIsTouchingClientRight or ColumnIsFixed then
+                                begin
+                                  if (BidiMode = bdLeftToRight) or not ColumnIsEmpty(Node, Column) then
+                                  begin
+                                    Canvas.Font.Color := FColors.GridLineColor;
+                                    lUseSelectedBkColor := (poDrawSelection in PaintOptions) and (toFullRowSelect in FOptions.FSelectionOptions) and
                                                       (vsSelected in Node.States) and not (toUseBlendedSelection in FOptions.PaintOptions) and not
                                                       (tsUseExplorerTheme in FStates);
-                                DrawDottedVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - 1, lUseSelectedBkColor);
-                              end;                              Dec(CellRect.Right);
-                              Dec(ContentRect.Right);
+                                    DrawDottedVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - 1, lUseSelectedBkColor);
+                                  end;
+
+                                  Dec(CellRect.Right);
+                                  Dec(ContentRect.Right);
+                                end;
+                              end;
                             end;
                           end;
 
@@ -33707,12 +33741,11 @@ begin
     end;
     Result := True;
   end
-  else
+  else if not (coFixed in Header.Columns[Column].Options) then
   begin
     if ColumnRight > ClientWidth then
       NewOffset := FEffectiveOffsetX + (ColumnRight - ClientWidth)
-    else if (ColumnLeft < Header.Columns.GetVisibleFixedWidth) and
-            (ColumnRight > Header.Columns.GetVisibleFixedWidth) then
+    else if (ColumnLeft < Header.Columns.GetVisibleFixedWidth) then
       NewOffset := FEffectiveOffsetX - (Header.Columns.GetVisibleFixedWidth - ColumnLeft);
     if NewOffset <> FEffectiveOffsetX then
     begin
@@ -33722,7 +33755,9 @@ begin
         SetOffsetX(-NewOffset);
     end;
     Result := True;
-  end;
+  end
+  else
+    Result := True;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -34129,7 +34164,8 @@ begin
           if (FUpdateCount = 0) and (toAnimatedToggle in FOptions.FAnimationOptions) and not
              (tsCollapsing in FStates) then
           begin
-            Application.CancelHint;
+            if tsHint in Self.FStates then
+              Application.CancelHint;
             UpdateWindow(Handle);
 
             // animated collapsing
@@ -34276,7 +34312,8 @@ begin
               if (ToggleData.R1.Top < ClientHeight) and ([tsPainting, tsExpanding] * FStates = []) and
                 (toAnimatedToggle in FOptions.FAnimationOptions)then
               begin
-                Application.CancelHint;
+                if tsHint in Self.FStates then
+                  Application.CancelHint;
                 UpdateWindow(Handle);
                 // animated expanding
                 with ToggleData do
@@ -34524,7 +34561,7 @@ var
 begin
   UpdateHorizontalRange;
 
-  if tsUpdating in FStates then
+  if (tsUpdating in FStates) or not HandleAllocated then
     exit;
 
   // Adjust effect scroll offset depending on bidi mode.
@@ -36621,9 +36658,10 @@ begin
       LineStyleText := 'dotted;';
     if toShowHorzGridLines in FOptions.FPaintOptions then
     begin
-      Buffer.Add('.noborder{border-style:');
+      Buffer.Add('.noborder{');
+      Buffer.Add(' border-bottom:1px; border-left: 0px; border-right: 0px; border-top: 1px;');
+      Buffer.Add('border-style:');
       Buffer.Add(LineStyleText);
-      Buffer.Add(' border-bottom:1;border-left:0;border-right:0; border-top:0;');
       Buffer.Add(CellPadding);
       Buffer.Add('}');
     end
@@ -36635,26 +36673,27 @@ begin
     end;
     Buffer.AddNewLine;
 
-    Buffer.Add('.normalborder {border-top:none; border-left:none; vertical-align:top;');
+    Buffer.Add('.normalborder {vertical-align: top; ');
     if toShowVertGridLines in FOptions.FPaintOptions then
-      Buffer.Add('border-right:1 ' + LineStyleText)
+      Buffer.Add('border-right: 1px; border-left: 1px; ')
     else
-      Buffer.Add('border-right:none;');
+      Buffer.Add('border-right: none; border-left:none; ');
     if toShowHorzGridLines in FOptions.FPaintOptions then
-      Buffer.Add('border-bottom:1 ' + LineStyleText)
+      Buffer.Add('border-top: 1px; border-bottom: 1px; ')
     else
-      Buffer.Add('border-bottom:none;');
+      Buffer.Add('border-top:none; border-bottom: none;');
+    Buffer.Add('border-style: ');
+    Buffer.Add(LineStyleText);
     Buffer.Add(CellPadding);
     Buffer.Add('}');
     Buffer.Add('</style>');
     Buffer.AddNewLine;
 
     // General table properties.
-    Buffer.Add('<table class="default" bgcolor=');
+    Buffer.Add('<table class="default" style="border-collapse: collapse;" bgcolor=');
     WriteColorAsHex(Color);
     Buffer.Add(AddHeader);
-    Buffer.Add(' cellspacing="0" cellpadding=');
-    Buffer.Add(IntToStr(FMargin) + '>');
+    Buffer.Add(' cellspacing="0">');
     Buffer.AddNewLine;
 
     Columns := nil;
@@ -36923,6 +36962,7 @@ begin
     Self.OnGetText(Self, Node, 0, ttNormal, lSelectedNodeCaption);
     fPreviouslySelected.Add(lSelectedNodeCaption);
   end;//if
+  UpdateNextNodeToSelect(Node);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -38584,9 +38624,9 @@ begin
         else
           FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
       end;
-
+    CallDefaultProc(TMessage(Msg));
   end;
-  CallDefaultProc(TMessage(Msg));
+
   if not B and (FHorzScrollBarWindow.Visible) or (FVertScrollBarWindow.Visible) then
     PaintScrollBars;
   Handled := True;
