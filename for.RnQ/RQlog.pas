@@ -40,6 +40,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure Clear1Click(Sender: TObject);
     procedure LogListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure FormDestroy(Sender: TObject);
   public
     LogList: TVirtualDrawTree;
 //    procedure DestroyHandle; Override;
@@ -142,6 +143,11 @@ begin
     OnDrawNode := LogListDrawNode;
     OnFreeNode := LogListFreeNode;
   end;
+end;
+
+procedure TlogFrm.FormDestroy(Sender: TObject);
+begin
+  logFrm := nil;
 end;
 
 procedure TlogFrm.FormShow(Sender: TObject);

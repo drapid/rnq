@@ -56,13 +56,14 @@ function  formVisible(frm:Tform):boolean;
                           const pCallbackMessage : Integer;
                           const pIsLeft : Boolean);
   function  IsCanShowNotifications : Boolean;
+  function  GetScaleFactor(hnd : HWND) : Integer;
 
   procedure applyTaskButton(frm:Tform);
 
 implementation
 
 uses
-  wininet, Registry, shellapi,
+  wininet, Registry, shellapi, multimon,
   ComObj, ShlObj, StrUtils,
  {$IFDEF RNQ}
    RQlog,
@@ -81,15 +82,15 @@ function getDefaultBrowser(const proto:string='http'):string;
 var
   reg:Tregistry;
 begin
-result:='';
-reg:=Tregistry.create;
-reg.RootKey:=HKEY_CLASSES_ROOT;
-if reg.openKey(proto+'\shell\open\command', FALSE) then
-  begin
-  result:=reg.readString('');
-  reg.closeKey;
-  end;
-reg.free;
+  result:='';
+  reg:=Tregistry.create;
+  reg.RootKey:=HKEY_CLASSES_ROOT;
+  if reg.openKey(proto+'\shell\open\command', FALSE) then
+    begin
+     result:=reg.readString('');
+     reg.closeKey;
+    end;
+  reg.free;
 end; // getDefaultBrowser
 
   function DSiExecute(const commandLine: string; visibility: integer;
@@ -134,7 +135,7 @@ begin
 // Dir3 := AsyncCallEx(@LoadFromURL2, prm);
 // while (AsyncMultiSync([Dir3], True, 10) < 0)or not Dir3.Finished do
 //    Application.ProcessMessages;
-  shellexecute(0, 'open', pchar(cmd), pchar(pars), NIL, SW_SHOWNORMAL);
+  shellexecute(0, 'open', PChar(cmd), PChar(pars), NIL, SW_SHOWNORMAL);
 {  if pars > '' then
     s := cmd + ' ' + pars
    else
@@ -184,11 +185,12 @@ begin
     prg:=browserCmdLine;
     par:='';
     // search the point where the filename ends (and then come parameters)
-    i := ipos('.exe',prg);
+    i := ipos('.exe', prg);
     if i>0 then
      begin
       inc(i,4);
-      if prg[i]='"' then inc(i);
+      if prg[i]='"' then
+        inc(i);
      end;
     if i<length(prg) then
      begin
@@ -243,7 +245,9 @@ reg.free;
 end; // getSpecialFolder}
 
 function desktopWorkArea:Trect;
-begin SystemParametersInfo(SPI_GETWORKAREA,0,@result,0) end;
+begin
+  SystemParametersInfo(SPI_GETWORKAREA,0,@result,0)
+end;
 
 function ForceForegroundWindow(hwnd:THandle; doRestore:boolean=TRUE):boolean;
 const
@@ -823,11 +827,28 @@ procedure setAppBarSize(const hnd : HWND; const R: TRect;
                         const pIsLeft : Boolean);
 var
   abd:APPBARDATA;
+  scale : Integer;
+  rs : TRect;
 begin
+
+  rs := r;
+  if Application.MainForm.Scaled then
+    begin
+      {TODO -oRapid D -cGeneral : Add support for scaled monitors}
+      scale := RnQSysUtils.GetScaleFactor(hnd);
+      if scale <> 100 then
+       begin
+        rs.Left := MulDiv(r.Left, scale, 100);
+        rs.Top := MulDiv(r.Top, scale, 100);
+        rs.Bottom := MulDiv(r.Bottom, scale, 100);
+        rs.Right := MulDiv(r.Right, scale, 100);
+       end
+    end;
+
   abd.cbsize:=sizeOf(abd);
   abd.hWnd:= hnd;
   abd.uCallbackMessage:= pCallbackMessage;
-  abd.rc := R;
+  abd.rc := rs;
   if pIsLeft then
     abd.uedge:=ABE_LEFT
    else
@@ -848,6 +869,20 @@ begin
    except
 
   end;
+end;
+
+
+function  GetScaleFactor(hnd : HWND) : Integer;
+var
+  hm : HMONITOR;
+  Scale : Integer;
+begin
+      {TODO -oRapid D -cGeneral : Add support for scaled monitors}
+  result := 100;
+//
+//  hm := MonitorFromWindow(hnd, MONITOR_DEFAULTTONEAREST);
+// if SUCCEEDED(GetScaleFactorForMonitor(hm, Scale)) then
+//   Result := Scale;
 end;
 
 {

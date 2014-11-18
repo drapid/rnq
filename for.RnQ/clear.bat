@@ -10,9 +10,9 @@
 @IF EXIST "NativeJpg\Source\*.dcu" del NativeJpg\Source\*.dcu
 @IF EXIST VTV\Source\*.dcu del VTV\Source\*.dcu
 @IF EXIST VTV\Source\*.bak del VTV\Source\*.bak
-@IF EXIST del xml\*.dcu del xml\*.dcu
-@IF EXIST del RSA\*.bak del RSA\*.bak
-@IF EXIST del RSA\*.dcu del RSA\*.dcu
+@IF EXIST xml\*.dcu del xml\*.dcu
+@IF EXIST RSA\*.bak del RSA\*.bak
+@IF EXIST RSA\*.dcu del RSA\*.dcu
 @IF EXIST "xml\__history\*" del /q xml\__history\*
 @IF EXIST "VTV\Source\__history\*" del /q VTV\Source\__history\*
 @IF EXIST Zip\*.dcu @del Zip\*.dcu

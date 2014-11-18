@@ -237,7 +237,7 @@ implementation
    AnsiStrings,
  {$ENDIF UNICODE}
 //  {$IFNDEF RNQ_LITE}
-   {$IFDEF RNQ & RNQ_FULL}
+   {$IFDEF USE_FLASH}
     ShockwaveFlashObjects_TLB,
 //    FlashPlayerControl,
     ExtCtrls,
@@ -605,7 +605,7 @@ end;
 function  loadPic(const fn : string; var bmp : TRnQBitmap; idx : Integer = 0):boolean;
 var
   Stream: TStream;
-   {$IFDEF RNQ & RNQ_FULL}
+   {$IFDEF USE_FLASH}
   swf : TShockwaveFlash;
 //  swf : TTransparentFlashPlayerControl;
 //  swf : TFlashPlayerControl;
@@ -633,7 +633,7 @@ begin
 //  {$IFNDEF RNQ_LITE}
   else if (lowercase(sysutils.ExtractFileExt(fn)) = '.swf') then
      begin
-   {$IFDEF RNQ & RNQ_FULL}
+   {$IFDEF USE_FLASH}
       try
 //       swf :=  TTransparentFlashPlayerControl.Create(Application.MainForm);
 //       pnl := TPanel.Create(Application.MainForm);
