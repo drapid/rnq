@@ -5,14 +5,13 @@ Under same license
 unit historyVCL;
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
-  { $DEFINE NOT_USE_GDIPLUS}
 
 interface
 
 uses
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
    GDIPAPI, GDIPOBJ,
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
   windows, controls, classes,
   sysutils, graphics, forms, stdctrls, ExtCtrls,
   messages, strutils,
@@ -190,17 +189,17 @@ uses
   RQUtil, RQThemes, RnQButtons, RnQGlobal, RnQCrypt, RnQPics,
   globalLib, mainDlg, chatDlg, utilLib,
   roasterLib,
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
 //  KOLGDIPV2,
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 //  historyRnQ,
   Base64,
   ICQConsts, ICQv9,
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     RnQGraphics,
   {$ELSE}
     RnQGraphics32,
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
   themesLib, menusUnit;
 
 var
@@ -2628,18 +2627,18 @@ end;
 procedure ThistoryBox.DoBackground(cnv0: Tcanvas; vR: TRect; var SmlBG: TBitmap);
 //procedure ThistoryBox.DoBackground(dc: HDC);
 var
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
   fnt : TGPFont;
   fmt : TGPStringFormat;
   br  : TGPBrush;
   gr  : TGPGraphics;
   r: TGPRectF;
-  {$ELSE NOT_USE_GDIPLUS}
+  {$ELSE NOT USE_GDIPLUS}
 //  fnt : TFont;
   R: TRect;
   hnd : THandle;
 //   br : hbrush;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
   hasBG0, hasUTP : Boolean;
   uidBG, grpBG : TPicName;
   picElm : TRnQThemedElementDtls;
@@ -2658,7 +2657,7 @@ begin
       uidBG := '';
       grpBG := '';
     end;
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
   gr := TGPGraphics.Create(cnv.Handle);
   gr.GetClipBounds(r);
   if r.X < vr.Left then
@@ -2670,7 +2669,7 @@ begin
   if r.Height > vr.Bottom - vr.Top then
    r.Height := vr.Bottom - vr.Top;
   gr.Clear(theme.GetAColor(ClrHistBG, clWindow));
-{$ELSE NOT_USE_GDIPLUS}
+{$ELSE NOT USE_GDIPLUS}
   r := cnv0.ClipRect;
 
   if not Assigned(SmlBG) then
@@ -2688,7 +2687,7 @@ begin
 //   Br := TGPSolidBrush.Create(theme.GetAColor(ClrHistBG, clWindow));
 //   gr.FillRectangle(br, r);
 //   br.Free;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 {   r.X := ClientRect.Left;
    r.Y := ClientRect.Top;
    r.Width := ClientWidth;
@@ -2910,7 +2909,7 @@ begin
 
 (*
 
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
         Fnt := TGPFont.Create('Arial', 200, FontStyleBold or FontStyleItalic);
         Br := TGPSolidBrush.Create($016666FF);
         fmt := TGPStringFormat.Create(StringFormatFlagsNoClip);//([SFNoWrap, SFNoClip]);
@@ -2937,7 +2936,7 @@ begin
 //    end;
 
   gr.Free;
-  {$ELSE NOT_USE_GDIPLUS}
+  {$ELSE NOT USE_GDIPLUS}
   fnt := TFont.Create;
   fnt.Name := 'Arial';
   fnt.Height := 300;
@@ -2953,7 +2952,7 @@ begin
  {$ENDIF ~DB_ENABLED}
 //      DrawText32(hnd, r, 'R&Q', Font, DT_CENTER or DT_VCENTER);
   fnt.Free;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 
 //  cnv.Font := theme.GetFont('history.his');
 //  DrawTextTransparent(cnv.Handle, clientWidth - 120, 10, 'бла-бла-бла',cnv.Font, 10);

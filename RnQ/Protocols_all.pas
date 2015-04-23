@@ -28,6 +28,9 @@ procedure Protos_auth(cnt : TRnQContact);
 procedure Protos_AuthDenied(cnt : TRnQContact; const msg:string='');
 procedure Protos_DelCntFromSrv(cnt : TRnQContact);
 
+function  status2imgName(s:byte; inv:boolean=FALSE):TPicName; inline;
+function  status2imgNameExt(s: byte; inv:boolean=FALSE; extSts : byte= 0):TPicName; inline;
+
 function  setStatus(const proto : TRnQProtocol; st: byte; isAuto : Boolean = False): byte;
 function  setStatusFull(const proto : TRnQProtocol; st: byte; xSt : byte; xStStr : TXStatStr; isAuto : Boolean = False): byte;
 procedure setVisibility(const proto : TRnQProtocol; vi: byte);
@@ -290,6 +293,28 @@ begin
    end;
  {$ENDIF ICQ_ONLY}
 end;
+
+function  status2imgName(//pr : TRnQProtocol;
+                         s:byte; inv:boolean=FALSE):TPicName;
+begin
+  result := protocol_icq.status2imgName(s, inv);
+end;
+
+//function  status2imgNameExt(pr : TRnQProtocol; s: byte; inv:boolean=FALSE; extSts : byte= 0):TPicName;
+function  status2imgNameExt(s: byte; inv:boolean=FALSE; extSts : byte= 0):TPicName;
+begin
+{ if XStatusAsMain and (extSts > 0) and
+//    Assigned(pr) and (extSts <= High(pr.xStsStringArray))
+   (extSts <= High(XStatusArray))
+ then
+//   result := pr.xStsStringArray[extSts].PicName
+   result := XStatusArray[extSts].PicName
+  else
+   Result := status2imgName(s, inv)
+}
+  Result := protocol_icq.status2imgNameExt(s, inv, extSts);
+end;
+
 
 function setStatus(const proto : TRnQProtocol; st:byte; isAuto : Boolean = False):byte;
 begin

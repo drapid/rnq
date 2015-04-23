@@ -12,23 +12,9 @@ interface
 uses
   Windows, Graphics, Types, Classes, SysUtils, Forms,
   events, RnQProtocol,
-  {$IFNDEF NOT_USE_GDIPLUS}
-//   GDIPAPI, GDIPOBJ,
-  {$ENDIF NOT_USE_GDIPLUS}
   tipDlg;
 
-type
-  TRnQTip = class(TObject)
-   public
-    frm         : TtipFrm;
-//    ev          : Thevent;
-    time        : TDateTime;
-    counter     : Integer;
-    showSeconds : Word;
-    x, y        : Word;
-  end;
 
-  procedure MoveTips;
 //  procedure TipAdd2(ev:Thevent; bmp2 : tbitmap; seconds : Integer = -1);
   procedure TipAdd3(ev:Thevent; bmp2 : tbitmap = NIL; pCnt : TRnQContact = NIL; seconds : Integer = -1);
 //  procedure TipAdd(bmp : Tbitmap; seconds : Integer = -1); overload;
@@ -37,40 +23,114 @@ type
   procedure TipRemove(ev:Thevent); overload;
   procedure TipRemove(cnt : TRnQcontact); overload;
   procedure TipsUpdateByCnt(c : TRnQcontact);
-  procedure TipsHideAll;
-  procedure TipsShowTop;
   procedure TipsProced;
   procedure tipDrawEvent(destDC: HDC; ev : Thevent; pCnt : TRnQContact;
               var maxX,maxY:integer; calcOnly : Boolean);
-
-type
-  TtipsAlign  = (alBottomRight, alBottomLeft, alTopLeft, alTopRight, alCenter);
-  TtipsAlignSet  = set of TtipsAlign;
-var
-  TipsMaxCnt   : Integer;
-  TipsBtwSpace : Integer;
-  TipsAlign    : TtipsAlign;
-  TipHorIndent : Integer;
-  TipVerIndent : Integer;
 
 implementation
 
  uses
    math, StrUtils, Base64,
-   RDGlobal, RQUtil, RnQGraphics32, RnQSysUtils, RnQBinUtils,
-   globalLib, utilLib, RDtrayLib, RnQPics, RQThemes, RnQLangs,
+   RQUtil, RnQGraphics32, RnQSysUtils, RnQBinUtils,
+   RDGlobal, RQThemes, RnQLangs,
+   globalLib, utilLib, RDtrayLib, RnQPics,
  {$IFDEF UNICODE}
    AnsiStrings,
 //   Character,
  {$ENDIF}
    protocol_ICQ, ICQConsts,
+   Protocols_all,
    chatDlg, mainDlg;
 
+procedure TipsDraw(Sender: TtipFrm; mode : Tmodes; info : Pointer; pMaxX, pMaxY : Integer; calcOnly : Boolean);
+begin
+  case mode of
+    TM_EVENT:
+      tipDrawEvent(Sender.Canvas.Handle, Thevent(info), NIL, pMaxX, pMaxY, calcOnly);
+    TM_PIC:
+      Sender.Canvas.Draw(0,0, TBitmap(info));
+    TM_PIC_EX:
+       DrawRbmp(Sender.Canvas.Handle, TRnQBitmap(info));
+    TM_BDay:
+      tipDrawEvent(Sender.Canvas.Handle, NIL, TRnQContact(info), pMaxX, pMaxY, calcOnly);
+  end;
+end;
 
+procedure TipsDestroy(Sender: TtipFrm);
+begin
+  case Sender.info.mode of
+    TM_EVENT:
+      if Assigned(Sender.info.obj) then
+       begin
+        Thevent(Sender.info.obj).Free;
+        Sender.info.obj := NIL;
+       end;
+    TM_PIC:
+      if Assigned(Sender.info.obj) then
+       begin
+         TBitmap(Sender.info.obj).Free;
+         Sender.info.obj := NIL;
+       end;
+    TM_PIC_EX:
+      if Assigned(Sender.info.obj) then
+       begin
+         TRnQBitmap(Sender.info.obj).Free;
+         Sender.info.obj := NIL;
+       end;
+    TM_BDay:
+      if Assigned(Sender.info.obj) then
+       begin
+//         info.cnt.Free;
+         Sender.info.obj := NIL;
+       end;
+  end;
+end;
+
+function CopyPic(BMP : TBitmap) : TBitmap;
+type
+  PColor32 = ^TColor32;
+  TColor32 = type Cardinal;
+function SetAlpha(Color32: TColor32; NewAlpha: Integer): TColor32;
+begin
+  if NewAlpha < 0 then NewAlpha := 0
+  else if NewAlpha > 255 then NewAlpha := 255;
+  Result := (Color32 and $00FFFFFF) or (TColor32(NewAlpha) shl 24);
+end;
 var
-  tipsList: TList = NIL;
-  TipsMaxTop : Integer = 200;
-
+//  R:TRect;
+    r, C:Cardinal;
+    PC:PColor32;
+begin
+  Result := Tbitmap.create;
+   begin
+    Result.PixelFormat      := bmp.PixelFormat;
+    Result.SetSize(bmp.Width, bmp.Height);
+    Result.Transparent      := bmp.Transparent;
+    Result.TransparentColor := bmp.TransparentColor;
+    Result.TransparentMode  := bmp.TransparentMode;
+//      R := Rect(0 ,20, 100, 100);
+//    FillRect(pic.Canvas.Handle, r, CreateSolidBrush(clRed));
+    BitBlt(Result.Canvas.Handle, 0, 0, Result.Width, Result.Height,
+           bmp.Canvas.Handle, 0, 0, SrcCopy);
+    if Result.PixelFormat = pf32bit then
+     begin
+     for R:=0 to bmp.Height-1 do
+      begin
+       PC:=Pointer(Result.ScanLine[r]);
+       for C:=0 to bmp.Width-1 do
+        begin
+          PC^:=SetAlpha(PC^,$FF);
+          Inc(PC);
+        end;
+      end;
+     end;
+//          DrawText(pic.Canvas.Handle, PChar('Привет'), -1, R, DT_SINGLELINE);// or DT_VCENTER);
+   end;
+//  mode:=TM_PIC;
+//counter:=0;
+//time:=now;
+//  ev := NIL;
+end;
 
 procedure TipAdd3(ev:Thevent; bmp2 : tbitmap = NIL; pCnt : TRnQContact = NIL; seconds : Integer = -1);
 var
@@ -79,11 +139,12 @@ var
   tipType : byte; {1 - ev, 2 - pic, 3 - birthday}
 
   item : TRnQTip;
-  cnt, idx: Integer;
-  minX, minY, needW, needH : Integer;
+//  cnt, idx: Integer;
+//  minX, minY,
+  needW, needH : Integer;
   work:Trect;
-  not_ok : Boolean;
-  rt : TRnQTip;
+//  not_ok : Boolean;
+//  rt : TRnQTip;
 
   sR : RawByteString;
   s3m : TMemoryStream;
@@ -91,8 +152,14 @@ var
   i, k : Integer;
   pic : TBitmap;
 
+  ti : TTipInfo;
+  tempPic : TBitmap;
 begin
-  if ( TipsMaxCnt = 0 ) then exit;
+//  if ( TipsMaxCnt = 0 ) then
+  if MainPrefs.getPrefIntDef('show-tips-count', 20)=0 then
+    exit;
+
+  if locked then exit;
 
   if Assigned(ev) then
     tipType := 1
@@ -110,7 +177,6 @@ begin
     1: begin // Show event
         if ( (ev<>NIL) and not (BE_TIP in supportedBehactions[ev.kind])
            ) or
-           ( TipsMaxCnt = 0 ) or
            ( (ev.kind in [EK_msg,EK_url]) // user reading this message in chat window
              and chatFrm.isVisible
              and (ev.who.equals(chatFrm.thisChat.who))
@@ -173,12 +239,11 @@ begin
 
         work  := desktopWorkArea;
         item      := TRnQTip.Create;
-        item.frm  := Ttipfrm.create(NIL);
-        item.frm.alphablend:=transparency.forTray;
-        if transparency.forTray then
-          item.frm.AlphaBlendValue := transparency.tray;
+
         needW := 0; needH := 0;
-        tipDrawEvent(item.frm.Canvas.Handle, ev, NIL, needW, needH, True);
+        tempPic := createBitmap(1, 1);
+        tipDrawEvent(tempPic.Canvas.Handle, ev, NIL, needW, needH, True);
+        tempPic.Free;
         needH := min(work.Bottom - work.Top - TipsMaxTop, needH);
       //  needW := min()
         item.time := ev.when;
@@ -201,10 +266,6 @@ begin
         needW := bmp2.Width;
 
         item      := TRnQTip.Create;
-        item.frm  := Ttipfrm.create(NIL);
-        item.frm.alphablend:=transparency.forTray;
-        if transparency.forTray then
-          item.frm.AlphaBlendValue := transparency.tray;
         item.time := now;
         item.showSeconds := seconds;
         item.counter := seconds;
@@ -214,12 +275,11 @@ begin
 
         work  := desktopWorkArea;
         item      := TRnQTip.Create;
-        item.frm  := Ttipfrm.create(NIL);
-        item.frm.alphablend:=transparency.forTray;
-        if transparency.forTray then
-          item.frm.AlphaBlendValue := transparency.tray;
         needW := 0; needH := 0;
-        tipDrawEvent(item.frm.Canvas.Handle, NIL, pCnt, needW, needH, True);
+
+        tempPic := createBitmap(1, 1);
+        tipDrawEvent(tempPic.Canvas.Handle, NIL, pCnt, needW, needH, True);
+        tempPic.Free;
         needH := min(work.Bottom - work.Top - TipsMaxTop, needH);
       //  needW := min()
         item.time := now;
@@ -230,206 +290,36 @@ begin
      Exit;
   end;
 
-  if not Assigned(tipsList) then
-    tipsList := TList.Create;
-  cnt  := 0;
-//  lastY := work.Bottom;
-  not_ok := True;
-  idx := 0;
-  case TipsAlign of
-    alBottomRight,
-    alBottomLeft:
-      while not_ok do
-      begin
-       minY := work.Bottom;
-       minX := MaxInt;
-       cnt := 0;
-       idx := 0;
-        for I := 0 to tipsList.Count - 1 do
-        begin
-         rt := TRnQTip(tipsList.Items[i]);
-         if (rt <> NIL) and Assigned(rt.frm) then
-          begin
-            inc(cnt);
-            if rt.counter < minX then
-             begin
-              minX := rt.counter;
-              idx  := i;
-             end;
-            if (rt.y < minY) then
-               begin
-  //              lastY := minY;
-                minY := rt.y;
-               end;
-          end;
-        end;
-        if (tipsList.count >0)and
-           ((cnt >= TipsMaxCnt) or (minY - work.Top - TipsMaxTop < needH))
-           and (idx < tipsList.Count) then
-         begin
-           rt := TRnQTip(tipsList.Items[idx]);
-           tipsList.Items[idx] := nil;
-           if Assigned(rt) then
-            begin
-//             rt.frm.Close;
-      //       rt.frm.hide();
-             rt.frm.Free;
-             rt.frm := NIL;
-             rt.Free;
-            end;
-           idx := -1;
-           dec(cnt);
-  //         minY := lastY;
-         end;
-
-        MoveTips;
-
-        for I := 0 to tipsList.Count - 1 do
-        begin
-         rt := TRnQTip(tipsList.Items[i]);
-         if Assigned(rt) and Assigned(rt.frm) then
-           if (rt.x >= 0)and (rt.y >= 0) then
-             minY := min(rt.Y, minY);
-        end;
-        not_ok := (cnt > 0) and (minY - work.Top - TipsMaxTop < needH)
-      end;
-    alTopRight,
-    alTopLeft:
-      while not_ok do
-      begin
-       minY := TipVerIndent;
-       minX := MaxInt;
-       cnt := 0;
-       idx := 0;
-        for I := 0 to tipsList.Count - 1 do
-        begin
-         rt := TRnQTip(tipsList.Items[i]);
-         if (rt <> NIL) and Assigned(rt.frm) then
-          begin
-            inc(cnt);
-            if rt.counter < minX then
-             begin
-              minX := rt.counter;
-              idx  := i;
-             end;
-            if (rt.y + rt.frm.Height > minY) then
-             begin
-  //              lastY := minY;
-              minY := rt.y + rt.frm.Height;
-             end;
-          end;
-        end;
-        if (tipsList.count >0)and
-            ((cnt >= TipsMaxCnt) or (work.Bottom - minY - TipsMaxTop < needH))
-           and (idx < tipsList.Count) then
-           begin
-             rt := TRnQTip(tipsList.Items[idx]);
-             tipsList.Items[idx] := nil;
-             if Assigned(rt) then
-               begin
-                 rt.frm.Close;
-                 rt.frm := NIL;
-          //       rt.frm.hide();
-          //       rt.frm.Free;
-                 rt.Free;
-               end;
-             idx := -1;
-             dec(cnt);
-    //         minY := lastY;
-           end;
-
-        MoveTips;
-
-        for I := 0 to tipsList.Count - 1 do
-        begin
-         rt := TRnQTip(tipsList.Items[i]);
-         if Assigned(rt) and Assigned(rt.frm) then
-           if (rt.x >= 0)and (rt.y >= 0) then
-             minY := max(rt.Y + rt.frm.Height, minY);
-        end;
-        not_ok := (cnt > 0) and (work.Bottom - minY - TipsMaxTop < needH)
-      end;
-  end;
-//  minX :=
-
-  case TipsAlign of
-    alBottomRight,
-    alBottomLeft:
-      begin
-        minY := work.Bottom - TipVerIndent;
-        for I := 0 to tipsList.Count - 1 do
-        begin
-         rt := TRnQTip(tipsList.Items[i]);
-         if Assigned(rt) and Assigned(rt.frm) then
-           if (rt.x >= 0)and (rt.y >= 0) then
-             minY := min(rt.Y, minY);
-        end;
-       item.Y := minY - needH - TipsBtwSpace;
-      end;
-    alTopRight,
-    alTopLeft:
-      begin
-        minY := TipVerIndent;
-        for I := 0 to tipsList.Count - 1 do
-        begin
-         rt := TRnQTip(tipsList.Items[i]);
-         if Assigned(rt) and Assigned(rt.frm) then
-           if (rt.x >= 0)and (rt.y >= 0) then
-             minY := max(rt.Y  + rt.frm.Height, minY);
-        end;
-       item.Y := minY + TipsBtwSpace;
-      end;
-  end;
-
-  case TipsAlign of
-    alBottomRight,
-    alTopRight:
-      begin
-       item.x := work.Right - TipHorIndent - needW;
-      end;
-    alBottomLeft,
-    alTopLeft:
-      begin
-       item.x := TipHorIndent;
-      end;
-  end;
-
-  item.frm.Width := needW;
-  item.frm.Height := needH;
   case tipType of
-    1:
-      item.frm.show(ev, item.x, item.Y);
-    2:
-      item.frm.show(bmp2, item.x, item.Y);
-    3:
-      item.frm.show(pCnt, item.x, item.Y);
-  end;
-
-  tipsList.Add(item);
-//  tipfrm.show(bmp);
-end;
-
-procedure Check4NIL;
-var
-  i : Integer;
-//  rt : TRnQTip;
-  allClear : Boolean;
-begin
-  If Assigned(tipsList) then
-  begin
-    allClear := True;
-    for I := 0 to tipsList.Count - 1 do
-    begin
-     if tipsList.Items[i] <> NIL then
-      begin
-       allClear := false;
-       Break;
+    1: begin
+//        item.frm.show(ev, item.x, item.Y);
+        ti.mode := TM_EVENT;
+        ti.obj := ev.clone;
       end;
-    end;
-    if allClear then
-      FreeAndNil(tipsList);
-  end;
+    2: begin
+//        item.form.show(bmp2, item.x, item.Y);
+        ti.mode := TM_PIC;
+        ti.obj := CopyPic(bmp2);
+      end;
+    3: begin
+//        item.frm.show(pCnt, item.x, item.Y);
+        ti.mode := TM_BDay;
+        ti.obj := pCnt;
+               end;
+      end;
 
+  if AddTip(item, ti, needW, needH) then
+      begin
+     item.form.onPaintTip  := TipsDraw;
+     item.form.OnTipDestroy := TipsDestroy;
+     item.form.alphablend:= MainPrefs.getPrefBoolDef('transparency-tray', False);
+//      transparency.forTray;
+     if item.form.alphablend then
+//       item.form.AlphaBlendValue := transparency.tray;
+       item.form.AlphaBlendValue := MainPrefs.getPrefIntDef('transparency-vtray', 220);
+//      item.form.show(bmp);
+      item.form.showTip;
+      end;
 end;
 
 procedure TipRemove(ev:Thevent);
@@ -442,14 +332,14 @@ begin
     for I := 0 to tipsList.Count - 1 do
     begin
      rt := TRnQTip(tipsList.Items[i]);
-     if Assigned(rt) and Assigned(rt.frm) then
-        if (rt.frm.info.mode = TM_EVENT)and
-           (rt.frm.info.ev = ev)
+     if Assigned(rt) and Assigned(rt.form) then
+        if (rt.form.info.mode = TM_EVENT)and
+           (rt.form.info.obj = ev)
         then
          begin
            tipsList.Items[i] := nil;
-           rt.frm.Close;
-           rt.frm := NIL;
+           rt.form.Close;
+           rt.form := NIL;
            rt.Free;
          end;
     end;
@@ -472,17 +362,18 @@ begin
     for I := 0 to tipsList.Count - 1 do
     begin
      rt := TRnQTip(tipsList.Items[i]);
-     if Assigned(rt) and Assigned(rt.frm) and
-        (((rt.frm.info.mode = TM_EVENT)and Assigned(rt.frm.info.ev) and
-         Assigned(rt.frm.info.ev.who) and rt.frm.info.ev.who.equals(cnt))
+     if Assigned(rt) and Assigned(rt.form) and
+        (((rt.form.info.mode = TM_EVENT)and Assigned(rt.form.info.obj) and
+         Assigned(Thevent(rt.form.info.obj).who) and
+         Thevent(rt.form.info.obj).who.equals(cnt))
          or
-         ((rt.frm.info.mode = TM_BDay)and Assigned(rt.frm.info.cnt) and
-         Assigned(rt.frm.info.cnt) and rt.frm.info.cnt.equals(cnt))
+         ((rt.form.info.mode = TM_BDay)and Assigned(rt.form.info.obj) and
+          TRnQContact(rt.form.info.obj).equals(cnt))
         ) then
           try
            tipsList.Items[i] := nil;
-           rt.frm.Close;
-           rt.frm := NIL;
+           rt.form.Close;
+           rt.form := NIL;
            rt.Free;
           except
           end;
@@ -494,30 +385,6 @@ begin
   MoveTips;
 end;
 
-procedure TipsHideAll;
-var
-  i : Integer;
-  rt : TRnQTip;
-begin
-  If Assigned(tipsList) then
-  begin
-    for I := 0 to tipsList.Count - 1 do
-    begin
-     rt := TRnQTip(tipsList.Items[i]);
-     tipsList.Items[i] := nil;
-     if Assigned(rt) and Assigned(rt.frm) then
-         begin
-           rt.frm.Close;
-           rt.frm := NIL;
-           rt.Free;
-         end;
-    end;
-    FreeAndNil(tipsList);
-//    if tipsList.Count = 0 then
-//      FreeAndNil(tipsList);
-  end;
-end;
-
 procedure TipsUpdateByCnt(c : TRnQcontact);
 var
   i : Integer;
@@ -527,35 +394,14 @@ begin
   for I := 0 to tipsList.Count - 1 do
   begin
    rt := TRnQTip(tipsList.Items[i]);
-   if Assigned(rt) and Assigned(rt.frm) and
-      (rt.frm.info.mode =TM_EVENT) and
-      Assigned(rt.frm.info.ev) and
-      rt.frm.info.ev.who.equals(c) then
+   if Assigned(rt) and Assigned(rt.form) and
+      (rt.form.info.mode =TM_EVENT) and
+      Assigned(rt.form.info.obj) and
+      Thevent(rt.form.info.obj).who.equals(c) then
        begin
-         rt.frm.Repaint;
+         rt.form.Repaint;
        end;
   end;
-end;
-
-procedure TipsShowTop;
-var
-  i : Integer;
-  rt : TRnQTip;
-begin
-  If Assigned(tipsList) then
-  for I := 0 to tipsList.Count - 1 do
-  begin
-   rt := TRnQTip(tipsList.Items[i]);
-   if Assigned(rt) and Assigned(rt.frm) and
-      //formVisible(rt.frm) and
-      not isTopMost(rt.frm) then
-       begin
-         setTopMost(rt.frm, TRUE);
-       end;
-  end;
-// if formVisible(tipFrm) then setTopMost(tipFrm, TRUE);
-//if formVisible(tipfrm) and not isTopMost(tipFrm) then
-//  setTopMost(tipFrm, TRUE);
 end;
 
 
@@ -578,7 +424,7 @@ begin
   rt := TRnQTip(tipsList.Items[i]);
   if Assigned(rt) then
   begin
-   tipFrm := rt.frm;
+   tipFrm := rt.form;
    if assigned(tipFrm) then
    with tipFrm do if not mousedown then
     if actionCount=0 then
@@ -591,7 +437,7 @@ begin
 //          hide();
           tipsList.Items[i] := nil;
           tipFrm.Close;
-          rt.frm := nil;
+          rt.form := nil;
 //          TRnQTip(tipsList.Items[i]).frm.Free;
           rt.Free;
           MoveTips;
@@ -603,13 +449,13 @@ begin
       dec(actionCount);
       if actionCount = 0 then
         begin
-          if (info.mode = TM_EVENT) and (info.ev <> NIL) then
-            cur_ev := info.ev.clone
+          if (info.mode = TM_EVENT) and (info.obj <> NIL) then
+            cur_ev := Thevent(info.obj).clone
            else
             cur_ev := NIL;
           Close;
           tipsList.Items[i] := nil;
-          rt.frm := nil;
+          rt.form := nil;
 //          TRnQTip(tipsList.Items[i]).frm.Free;
           rt.Free;
           MoveTips;
@@ -638,57 +484,6 @@ begin
   end;
 end;
 
-procedure MoveTips;
-var
-  i :  integer;
-  minY : Integer;
-  work:Trect;
-  rt : TRnQTip;
-begin
-//OutputDebugString('Processing MoveTips');
- if Assigned(tipsList) then
- begin
-  work:=desktopWorkArea;
-  case TipsAlign of
-    alBottomRight, alBottomLeft:
-      begin
-        minY := work.Bottom - TipVerIndent;
-        for I := 0 to tipsList.Count - 1 do
-        begin
-         rt := TRnQTip(tipsList.Items[i]);
-         if Assigned(rt) and Assigned(rt.frm) then
-            begin
-              if minY - rt.y  - rt.frm.Height > 10 then
-              begin
-                rt.y := minY - rt.frm.Height;
-      //          AnimateWindow()
-                rt.frm.Top := rt.y;
-              end;
-              minY := rt.y - TipsBtwSpace;
-            end;
-        end;
-      end;
-    alTopLeft, alTopRight:
-      begin
-        minY := TipVerIndent;
-        for I := 0 to tipsList.Count - 1 do
-        begin
-         rt := TRnQTip(tipsList.Items[i]);
-         if Assigned(rt) and Assigned(rt.frm) then
-            begin
-              if rt.y  - minY > 10 then
-              begin
-                rt.y := minY;
-      //          AnimateWindow()
-                rt.frm.Top := rt.y;
-              end;
-              minY := rt.y + rt.frm.Height + TipsBtwSpace;
-            end;
-        end;
-      end;
-  end;
- end;
-end;
 
 procedure tipDrawEvent(destDC: HDC; ev : Thevent; pCnt : TRnQContact;
              var maxX,maxY:integer; calcOnly : Boolean);
@@ -734,12 +529,17 @@ var
 //  proc : Byte;
   RnQPicStream : TMemoryStream;
   vRnQpicEx : TRnQBitmap;
-  p : AnsiString;
     b : Byte;
     st : byte;
   drawAvt : Boolean;
   thisCnt : TRnQContact;
+  stsArr  : TStatusArray;
+//  xStsArr : TXStatStrArr;
+
+  p : TPicName;
+//  picN : TPicName;
   r2 : TGPRect;
+  ms : Integer;
 begin
 //inherited;
   if calcOnly then
@@ -862,11 +662,11 @@ begin
       Rcap.Bottom := 20;
 //      Clr2 := theme.GetAColor('tip.caption', ClrBg);
       Clr2 := theme.GetAColor('tip.caption.' + p, theme.GetColor('tip.caption', ClrBg));
-   {$IFNDEF NOT_USE_GDIPLUS}
+   {$IFDEF USE_GDIPLUS}
        GPFillGradient(DC, Rcap, Clr2, AlphaMask or ABCD_ADCB(ColorToRGB(ClrBg)), gdVertical);
-   {$ELSE NOT_USE_GDIPLUS}
-       FillGradient(DC, Rcap, Clr2, AlphaMask or ColorToRGB(ClrBg), gdVertical);
-   {$ENDIF NOT_USE_GDIPLUS}
+   {$ELSE NOT USE_GDIPLUS}
+       FillGradient(DC, Rcap, Clr2, AlphaMask or Cardinal(ColorToRGB(ClrBg)), gdVertical);
+   {$ENDIF USE_GDIPLUS}
 
     // Info BG
       Rcap.Left := 1;
@@ -875,11 +675,11 @@ begin
       Rcap.Bottom := maxY-1;
 //      Clr2 := theme.GetAColor('tip.info', ClrBg);
       Clr2 := theme.GetAColor('tip.info.' + p, theme.GetColor('tip.info', ClrBg));
-   {$IFNDEF NOT_USE_GDIPLUS}
+   {$IFDEF USE_GDIPLUS}
      GPFillGradient(DC, Rcap, Clr2, AlphaMask or ABCD_ADCB(ColorToRGB(ClrBg)), gdVertical);
-   {$ELSE NOT_USE_GDIPLUS}
-       FillGradient(DC, Rcap, Clr2, AlphaMask or ColorToRGB(ClrBg), gdVertical);
-   {$ENDIF NOT_USE_GDIPLUS}
+   {$ELSE NOT USE_GDIPLUS}
+       FillGradient(DC, Rcap, Clr2, AlphaMask or Cardinal(ColorToRGB(ClrBg)), gdVertical);
+   {$ENDIF USE_GDIPLUS}
     end;
   if calcOnly then
     vSize:=theme.GetPicSize(RQteDefault, p)
@@ -997,25 +797,40 @@ begin
              begin
               st := (str2int(sa));
 
-              if (st >= Low(Account.AccProto.statuses)) and
-                 (st <= High(Account.AccProto.statuses)) then
+              if Assigned(thisCnt) then
+              begin
+                 stsArr := thisCnt.fProto.statuses;
+                 if {(st >= Low(stsArr)) and} (st <=High(stsArr)) then
               begin
                 b := infoToXStatus(sa);
+                p := status2imgName(st, (length(sa)>4) and boolean(sa[5]));
   //              if (not XStatusAsMain) and (st <> SC_ONLINE)and (b>0) then
                 if (st <> byte(SC_ONLINE))or(not XStatusAsMain)or (b=0)  then
+                 begin
                  if calcOnly then
-                   inc(X, theme.GetPicSize(RQteDefault, status2imgNameExt(st, (length(sa)>4) and boolean(sa[5]))).cx+2)
+  //                   inc(X,  statusDrawExt(0, 0, 0, st, (length(sa)>4) and boolean(sa[5])).cx)
+                     inc(X, theme.GetPicSize(RQteDefault, p).cx)
                   else
-                   inc(X, statusDrawExt(DC, X+2, Y, st, (length(sa)>4) and boolean(sa[5])).cx+2)
+  //                   inc(X, statusDrawExt(DC, X+2, Y, st, (length(sa)>4) and boolean(sa[5])).cx)
+                      inc(X, theme.drawPic(DC, X+2, Y, p).cx);
                   ;
+                  inc(X, 2);
+                 end;
   //              with statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s)), (length(s)>4) and boolean(s[5])) do
                 if (b > 0) then
+                begin
+                 if {(b >= Low(xStsArr)) and} (b <=High(XStatusArray)) then
+                 begin
+                  p := XStatusArray[b].PicName;
                  if calcOnly then
-                   inc(X, theme.GetPicSize(RQteDefault, XStatusArray[b].PicName).cx+1)
+                    inc(X, theme.GetPicSize(RQteDefault, p).cx+1)
                   else
-                   theme.drawPic(DC, X+1, Y, XStatusArray[b].PicName);
+                    theme.drawPic(DC, X+1, Y, p);
               end;
              end;
+         end;
+             end;
+         end;
          end;
   inc(x, 4);
 //inc(y, h);
@@ -1181,9 +996,10 @@ begin
       begin
         R2.x := 8;
         R2.y  := y;
-        if TipsMaxAvtSizeUse then
+        if mainprefs.getPrefBoolDef('show-tips-use-avt-size', True) then
           begin
-           with BoundsSize(icon.Bmp.GetWidth, icon.Bmp.GetHeight, TipsMaxAvtSize, TipsMaxAvtSize) do
+           ms := mainPrefs.getPrefIntDef('show-tips-avt-size', 100); //TipsMaxAvtSize
+           with BoundsSize(icon.Bmp.GetWidth, icon.Bmp.GetHeight, ms, ms) do
             begin
              R2.Width := cx;
              R2.Height := cy;

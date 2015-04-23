@@ -551,7 +551,8 @@ uses
   hook,
   OverbyteIcsWSocket,
   RDFileUtil, RDUtils, RnQSysUtils,
-  RnQFileUtil, RQUtil, RQLog, RQThemes, RnQdbDlg, RnQTips, RnQMenu,
+  RnQFileUtil, RQUtil, RQLog, RQThemes, RnQdbDlg,
+  RnQTips, tipDlg, RnQMenu,
 
   Protocols_all, // ICQ, MRA
   ICQv9,
@@ -560,11 +561,11 @@ uses
   ICQcontacts,
 
   RnQLangs, RnQMacros, RnQStrings, RnQNet,
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     RnQGraphics,
   {$ELSE}
     RnQGraphics32,
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
  {$IFDEF RNQ_AVATARS}
   RnQ_Avatars,
  {$ENDIF}

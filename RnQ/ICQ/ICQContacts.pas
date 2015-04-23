@@ -16,13 +16,13 @@ uses
    {$IFDEF RNQ_AVATARS}
     Graphics,
    {$ENDIF RNQ_AVATARS}
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     GDIPAPI,
     GDIPOBJ,
     RnQGraphics,
   {$ELSE}
     RnQGraphics32,
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
    ICQConsts,
    types, RDGlobal, RnQProtocol;
 

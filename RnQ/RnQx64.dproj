@@ -3,11 +3,11 @@
         <ProjectGuid>{94E0A466-1C1B-48B7-B4DC-61F2C1EBC94C}</ProjectGuid>
         <MainSource>RnQx64.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>
-        <ProjectVersion>16.0</ProjectVersion>
+        <ProjectVersion>17.2</ProjectVersion>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -61,16 +61,15 @@
         <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\VTV\Source;..\For.rnq\AES;..\For.rnq\Flash;..\For.rnq\RTL;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <SanitizedProjectName>RnQx64</SanitizedProjectName>
         <DCC_UsePackage>rtl;$(DCC_UsePackage)</DCC_UsePackage>
-        <Manifest_File>None</Manifest_File>
+        <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <DCC_DcuOutput>Units</DCC_DcuOutput>
         <DCC_IOChecking>false</DCC_IOChecking>
         <VerInfo_Build>1122</VerInfo_Build>
         <DCC_ExeOutput>..\Distro\</DCC_ExeOutput>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MajorVer>0</VerInfo_MajorVer>
-        <Icon_MainIcon>RnQx64_Icon.ico</Icon_MainIcon>
         <VerInfo_Release>9999</VerInfo_Release>
-        <DCC_Define>RNQ;ICQ_ONLY;$(DCC_Define)</DCC_Define>
+        <DCC_Define>RNQ;ICQ_ONLY;USE_SSL;ZLIB_OBJ;NO_EXTENDED_RTTI;NO_DEBUG_LOG;NO_HTTP_TUNNEL_AUTHDIGEST;$(DCC_Define)</DCC_Define>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1122;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1049</VerInfo_Locale>
@@ -96,8 +95,10 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1121;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q x64;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
+        <DCC_AssertionsAtRuntime>false</DCC_AssertionsAtRuntime>
+        <VerInfo_Build>1121</VerInfo_Build>
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1121;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q x64;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
         <DCC_DebugInformation>0</DCC_DebugInformation>
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
@@ -107,7 +108,6 @@
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1123;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q x64;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Build>1123</VerInfo_Build>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <DCC_DebugInformation>true</DCC_DebugInformation>
         <DCC_MapFile>3</DCC_MapFile>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
@@ -119,11 +119,8 @@
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <VerInfo_Build>1122</VerInfo_Build>
         <DCC_UsePackage>EurekaLogCore;$(DCC_UsePackage)</DCC_UsePackage>
         <VerInfo_Debug>true</VerInfo_Debug>
-        <Manifest_File>None</Manifest_File>
-        <Icon_MainIcon>RnQx64_Icon.ico</Icon_MainIcon>
         <DCC_MapFile>3</DCC_MapFile>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1122;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
@@ -277,7 +274,6 @@
         </DCCReference>
         <DCCReference Include="RnQ_Avatars.pas"/>
         <DCCReference Include="hook.pas"/>
-        <DCCReference Include="tipDlg.pas"/>
         <DCCReference Include="RnQTips.pas"/>
         <DCCReference Include="HistAllSearch.pas">
             <Form>AllHistSrchForm</Form>
@@ -324,6 +320,7 @@
         </DCCReference>
         <DCCReference Include="..\For.rnq\RDtrayLib.pas"/>
         <DCCReference Include="ICQ\ICQClients.pas"/>
+        <DCCReference Include="..\For.rnq\tipDlg.pas"/>
         <DCCReference Include="..\For.rnq\RnQLangFrm.pas">
             <Form>FrmLangs</Form>
             <FormType>dfm</FormType>
@@ -381,15 +378,15 @@
                     <VersionInfoKeys Name="Comments"/>
                 </VersionInfoKeys>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k200.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp200.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k220.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp220.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>
-            <Deployment>
+            <Deployment Version="1">
                 <DeployFile LocalName="..\Distro\RnQx64.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>RnQx64.exe</RemoteName>
@@ -403,7 +400,7 @@
                     </Platform>
                 </DeployFile>
                 <DeployClass Required="true" Name="DependencyPackage">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
                         <Extensions>.dylib</Extensions>
                     </Platform>
@@ -420,9 +417,13 @@
                         <Operation>1</Operation>
                         <Extensions>.dylib</Extensions>
                     </Platform>
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
                 </DeployClass>
                 <DeployClass Name="DependencyModule">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
                         <Extensions>.dylib</Extensions>
                     </Platform>
@@ -439,12 +440,19 @@
                         <Operation>1</Operation>
                         <Extensions>.dylib</Extensions>
                     </Platform>
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
                 </DeployClass>
                 <DeployClass Name="iPad_Launch2048">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -455,7 +463,11 @@
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectiOSDeviceDebug">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
                         <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
@@ -473,16 +485,19 @@
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectiOSResource">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="iOSSimulator">
                         <Operation>1</Operation>
                     </Platform>
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectOSXEntitlements">
                     <Platform Name="OSX32">
-                        <RemoteDir>Contents</RemoteDir>
+                        <RemoteDir>../</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -493,10 +508,13 @@
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="iPhone_Launch640">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -513,10 +531,13 @@
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="iPhone_Launch320">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -567,7 +588,12 @@
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectiOSEntitlements">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>../</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
+                        <RemoteDir>../</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -591,18 +617,24 @@
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectiOSInfoPList">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="iPad_Launch1024">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -619,24 +651,30 @@
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectiOSDeviceResourceRules">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="iPad_Launch768">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="iOSSimulator">
                         <Operation>1</Operation>
                     </Platform>
-                </DeployClass>
-                <DeployClass Required="true" Name="ProjectOutput">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
                     </Platform>
+                </DeployClass>
+                <DeployClass Required="true" Name="ProjectOutput">
                     <Platform Name="Android">
                         <RemoteDir>library\lib\armeabi-v7a</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="Win32">
@@ -647,6 +685,9 @@
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -663,10 +704,10 @@
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="File">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="Android">
                         <Operation>0</Operation>
                     </Platform>
-                    <Platform Name="Android">
+                    <Platform Name="iOSDevice64">
                         <Operation>0</Operation>
                     </Platform>
                     <Platform Name="Win32">
@@ -679,12 +720,18 @@
                     <Platform Name="iOSSimulator">
                         <Operation>0</Operation>
                     </Platform>
+                    <Platform Name="iOSDevice32">
+                        <Operation>0</Operation>
+                    </Platform>
                 </DeployClass>
                 <DeployClass Name="iPhone_Launch640x1136">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -701,10 +748,13 @@
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="iPad_Launch1536">
-                    <Platform Name="iOSDevice">
+                    <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -725,12 +775,13 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
+                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="iOSDevice" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

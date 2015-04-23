@@ -10,11 +10,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     RnQGraphics,
   {$ELSE}
     RnQGraphics32,
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
   StdCtrls,
   RnQProtocol,
   icqv9, RnQDialogs, RnQButtons, ExtCtrls;

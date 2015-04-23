@@ -66,7 +66,7 @@ object aboutFrm: TaboutFrm
     Lines.Strings = (
       'Thanks to:'
       '- Rejetto for &RQ'
-      '- Embarcadero for Delphi XE6!'
+      '- Embarcadero for Delphi XE8!'
       ''
       'Thanks for help to:'
       '- MadNut, ZlydenGL, ego1st, Sax-mmS, Djumon'
@@ -118,9 +118,9 @@ object aboutFrm: TaboutFrm
     object L5: TLabel
       Left = 12
       Top = 53
-      Width = 71
+      Width = 74
       Height = 13
-      Caption = #169'2005'#8212'2014'
+      Caption = #169'2005'#8212'2015'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -9
@@ -132,8 +132,8 @@ object aboutFrm: TaboutFrm
     object L3: TLabel
       Left = 12
       Top = 37
-      Width = 56
-      Height = 11
+      Width = 74
+      Height = 13
       Caption = #169'2004'#8212'2005'
       Font.Charset = ANSI_CHARSET
       Font.Color = clGray
@@ -146,8 +146,8 @@ object aboutFrm: TaboutFrm
     object RDLbl: TLabel
       Left = 90
       Top = 37
-      Width = 37
-      Height = 11
+      Width = 47
+      Height = 13
       Cursor = crHandPoint
       Hint = 'Send e-mail'
       Caption = 'Rapid D'
@@ -167,8 +167,8 @@ object aboutFrm: TaboutFrm
     object L6: TLabel
       Left = 90
       Top = 53
-      Width = 45
-      Height = 11
+      Width = 61
+      Height = 13
       Cursor = crHandPoint
       Hint = 'Send e-mail'
       Caption = 'R&Q Team'
@@ -189,8 +189,8 @@ object aboutFrm: TaboutFrm
     object L2: TLabel
       Left = 90
       Top = 21
-      Width = 71
-      Height = 11
+      Width = 90
+      Height = 13
       Cursor = crHandPoint
       Caption = 'Massimo Melina'
       Font.Charset = ANSI_CHARSET
@@ -206,8 +206,8 @@ object aboutFrm: TaboutFrm
     object L1: TLabel
       Left = 12
       Top = 21
-      Width = 56
-      Height = 11
+      Width = 74
+      Height = 13
       Caption = #169'2001'#8212'2003'
       Font.Charset = ANSI_CHARSET
       Font.Color = clGray

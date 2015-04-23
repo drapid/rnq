@@ -12,14 +12,14 @@ interface
 uses
   Windows, Forms,
   SysUtils, Classes, Graphics, Controls, ExtCtrls,
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     GDIPAPI,
     GDIPOBJ,
     RnQGraphics,
   {$ELSE}
     RnQGraphics32,
 //    RnQAni,
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
    RDGlobal,
   ICQContacts, RnQProtocol;//, HttpProt;
 
@@ -32,9 +32,9 @@ uses
 
 function FormatAvatarFileName(const APath : String;const AUIN: AnsiString; AFormat: TPAFormat): String;
 //function DetectAvatarFormatBuffer(pBuffer: String): TPAFormat;
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
 function DetectAvatarFormatGUID(fmt: TGUID): TPAFormat;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 function GetDomain(url : String) : String;
 //function get_flashFile_from_xml(const fn : String; const uin : AnsiString) : String;
 //function get_flashFile_from_xml(str: TStream; const uin : AnsiString) : String;
@@ -175,7 +175,7 @@ begin
     Result:= PA_FORMAT_UNK;
 end;
 }
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
 function DetectAvatarFormatGUID(fmt: TGUID): TPAFormat;
 begin
   if IsEqualGUID(fmt, ImageFormatJPEG) then
@@ -195,7 +195,7 @@ begin
    else
     result := PA_FORMAT_UNK;
 end;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 
 function GetDomain(url : String) : String;
 var

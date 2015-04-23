@@ -17,58 +17,66 @@ uses
   ShockwaveFlashObjects_TLB,
 //    FlashPlayerControl,
   RDGlobal,
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     RnQGraphics,
   {$ELSE}
     RnQGraphics32,
 //    RnQAni,
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 //  rnqCtrls,
   RnQProtocol,
   incapsulate, events,
   pluginLib, RQMenuItem, System.Actions;
 
 const
-  minimizedScroll=5;
-  maximizedScroll=16;
+  minimizedScroll = 5;
+  maximizedScroll = 16;
   ClrHistBG = 'history.bg';
+  HintTimer = 1;
 
 type
-  TscrollBarEx=class(Tscrollbar)
+  TscrollBarEx = class(Tscrollbar)
    protected
-    P_entering :boolean;
+    P_entering: boolean;
     procedure CMMouseEnter(var msg: TMessage); message CM_MOUSEENTER;
     procedure CMMouseLeave(var msg: TMessage); message CM_MOUSELEAVE;
    public
-    onEnter, onLeave:procedure of object;
-    property entering:boolean read P_entering;
+    onEnter, onLeave: procedure of object;
+    property entering: boolean read P_entering;
   end;
 
   TAvatr = record
-      AvtPBox : TPaintBox;
-//      Pic  : TRnQBitmap;
-      PicAni : TRnQAni;
-      swf : TShockwaveFlash;
-//      swf : TFlashPlayerControl;
-//      swf : TTransparentFlashPlayerControl;
+      AvtPBox: TPaintBox;
+//      Pic: TRnQBitmap;
+      PicAni: TRnQAni;
+      swf: TShockwaveFlash;
+//      swf: TFlashPlayerControl;
+//      swf: TTransparentFlashPlayerControl;
     end;
+
+  TPanel = class(ExtCtrls.TPanel)
+  private
+    procedure WMEraseBkgnd(var msg: TWMEraseBkgnd); message WM_ERASEBKGND;
+  end;
+
   TChatType = (CT_IM, CT_PLUGING);
 
   PChatInfo = ^TchatInfo;
-  TchatInfo=class
+
+  TchatInfo = class
    public
     ID: integer;
-    chatType : TChatType;
+    chatType: TChatType;
 //    panelID: Integer;
-//    who:Tcontact;
+//    who: Tcontact;
     who: TRnQContact;
-    single:boolean;        // single-message
-//    whole:boolean;         // see whole history
-//    autoscroll:boolean;    // auto scrolls along messages
-//    newSession:integer;    // where, in the history, does start new session
+    single: boolean;        // single-message
+//    whole: boolean;         // see whole history
+//    autoscroll: boolean;    // auto scrolls along messages
+//    newSession: integer;    // where, in the history, does start new session
 //    simpleMsg: Boolean;
-    lastInputText:string;  // last input.text before quoting sequence
-    quoteIdx:integer;
+    lastInputText: String;  // last input.text before quoting sequence
+    quoteIdx: Integer;
     wasTyped  : boolean; // input was not clear?
     historyBox: ThistoryBox;
     splitter  : Tsplitter;
@@ -80,7 +88,7 @@ type
 //    rsb:TscrollBar;
     lsb       : TscrollBarEx;
     constructor create;
-    procedure setAutoscroll(v:boolean);
+    procedure setAutoscroll(v: boolean);
     procedure repaint();
     procedure repaintAndUpdateAutoscroll();
     procedure updateAutoscroll(Sender: TObject);
@@ -88,7 +96,7 @@ type
     procedure CheckTypingTime;
    end; // TchatInfo
 
-  Tchats=class(Tlist)
+  Tchats = class(Tlist)
     function validIdx(i: Integer): Boolean;
     function idxOf(c: TRnQcontact): Integer;
     function idxOfUIN(const uin: TUID): Integer;
@@ -96,12 +104,12 @@ type
     function byContact(c: TRnQContact): TchatInfo;
     procedure CheckTypingTimeAll;
    end; // Tchats
-
+{
   TPageControl = class(ComCtrls.TPageControl)
   protected
     procedure CNDrawitem(var Message: TWMDrawItem); message CN_DRAWITEM;
   end;
-
+}
   TchatFrm = class(TForm)
     pagectrl: TPageControl;
     histmenu: TPopupMenu;
@@ -268,6 +276,7 @@ type
     procedure hAShowSmilesUpdate(Sender: TObject);
     procedure hAShowSmilesExecute(Sender: TObject);
     procedure sbarDblClick(Sender: TObject);
+    procedure StopTimer(ID: Integer);
   {$IFDEF usesDC}
     procedure WMDROPFILES(var Message: TWMDROPFILES);  message WM_DROPFILES;
   {$ENDIF usesDC}
@@ -295,11 +304,11 @@ type
 //  hintwnd: TVirtualTreeHintWindow = nil;
 	hintwnd: TVirtualTreeHintWindow;
   //будем запоминать параметры хинта, чтобы не создавать несколько раз один и тот же хинт
-   LastMousePos: TPoint;
+    LastMousePos: TPoint;
 //	hintTab: Integer;
-   last_tabindex : integer;
-   FAniTimer : TTimer;
-    PagesEnumStr : RawByteString;
+    last_tabindex: Integer;
+    FAniTimer: TTimer;
+    PagesEnumStr: RawByteString;
     procedure TickAniTimer(Sender: TObject);
 //    procedure checkGifTime;
 //    tZers : TShockwaveFlash;
@@ -310,7 +319,7 @@ type
     procedure inputPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure inputKeydown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure onHistoryRepaint(Sender: TObject);
-    procedure searchFrom(const start:integer);
+    procedure searchFrom(const start: Integer);
   public
     chats        : Tchats;
     poppedup     : TPoint;
@@ -329,18 +338,18 @@ type
     MainFormWidth : Integer;
 //    favMenuExt   : TPopupMenu;
 
-    procedure SetSmilePopup(pIsMenu : Boolean);
+    procedure SetSmilePopup(pIsMenu: Boolean);
     procedure UpdatePluginPanel;
-    function  isChatOpen(otherHand:TRnQContact):boolean;
-    function  openchat(otherHand:TRnQContact; ForceActive : Boolean = false;
-                       isAuto : Boolean = false):boolean;
-    function  addEvent_openchat(otherhand:TRnQcontact; ev:Thevent):boolean; // opens chat if not already open
-//    function  addEvent(uin:TUID; ev:Thevent):boolean; overload;// tells if ev has been inserted in a list, or can be freed
-    function  addEvent(c:TRnQcontact; ev:Thevent):boolean; overload; // tells if ev has been inserted in a list, or can be freed
-    procedure openOn(c:TRnQContact; focus:boolean=TRUE; pShow : Boolean = True);
-//    procedure openOn(uid : TUID; focus:boolean=TRUE);
-    procedure open(focus:boolean=TRUE);
-    function  newIMchannel(c:TRnQContact):integer;
+    function  isChatOpen(otherHand: TRnQContact): Boolean;
+    function  openchat(otherHand: TRnQContact; ForceActive: Boolean = false;
+                       isAuto: Boolean = false):boolean;
+    function  addEvent_openchat(otherhand: TRnQcontact; ev: Thevent): Boolean; // opens chat if not already open
+//    function  addEvent(uin: TUID; ev: Thevent): Boolean; overload;// tells if ev has been inserted in a list, or can be freed
+    function  addEvent(c: TRnQcontact; ev: Thevent): Boolean; overload; // tells if ev has been inserted in a list, or can be freed
+    procedure openOn(c: TRnQContact; focus: Boolean = True; pShow: Boolean = True);
+//    procedure openOn(uid : TUID; focus: Boolean = True);
+    procedure open(focus: Boolean = True);
+    function  newIMchannel(c: TRnQContact): Integer;
     function  thisChat: TchatInfo;
     function  thisChatUID: TUID;
     procedure setTab(idx: Integer);
@@ -357,27 +366,27 @@ type
     procedure lsbScroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
     procedure lsbEnter;
     procedure updateContactStatus;
-    procedure quote(qs : String = ''; MakeCarret : Boolean = True);
-    function  pageIdxAt(x,y: Integer):integer;
+    procedure quote(qs: String = ''; MakeCarret: Boolean = True);
+    function  pageIdxAt(x, y: Integer): Integer;
     procedure setCaptionFor(c: TRnQcontact);
     procedure setCaption(idx: Integer);
     procedure updateChatfrmXY;
-    procedure setStatusbar(s:string);
-    function  moveToTime(c: TRnQContact; time: Tdatetime; NeedOpen: Boolean = True) : boolean;
-    function  moveToTimeOrEnd(c: TRnQContact; time: Tdatetime; NeedOpen: Boolean = True) : boolean;
+    procedure setStatusbar(s: String);
+    function  moveToTime(c: TRnQContact; time: Tdatetime; NeedOpen: Boolean = True): boolean;
+    function  moveToTimeOrEnd(c: TRnQContact; time: Tdatetime; NeedOpen: Boolean = True): Boolean;
     procedure sendMessageAction(Sender: TObject);
     procedure send; overload;
-    procedure send(flags_:integer; msg:string=''); overload;
-    procedure select(c:TRnQContact);
-    function  thisContact:TRnQContact;
+    procedure send(flags_: Integer; msg: string = ''); overload;
+    procedure select(c: TRnQContact);
+    function  thisContact: TRnQContact;
     procedure flash;
-    function  grabThisText:string;
-    function  Pages2String : RawByteString;
+    function  grabThisText: String;
+    function  Pages2String: RawByteString;
 //    procedure savePages;
-    procedure loadPages(const s : RawByteString);
+    procedure loadPages(const s: RawByteString);
     procedure updateGraphics;
     procedure addSmileAction(Sender: TObject);
-    procedure setLeftSB(visible:boolean);
+    procedure setLeftSB(visible: Boolean);
     procedure addcontactAction(Sender: TObject);
     procedure AvtPBoxPaint(Sender: TObject);
   end; // TchatFrm
@@ -428,7 +437,7 @@ uses
  {$ENDIF}
 
 {$R *.DFM}
-procedure TPageControl.CNDrawitem(var Message: TWMDrawItem);
+(*procedure TPageControl.CNDrawitem(var Message: TWMDrawItem);
 var
 {  Color1: TColor;
   Color2: TColor;
@@ -467,103 +476,7 @@ begin
   ci := chatFrm.chats.byIdx(Message.DrawItemStruct.itemID);
   if ci = nil then
     exit;
-(*
-  Inc(Rect.Left, 2);
-  Inc(Rect.Top, 2);
 
-  if Message.DrawItemStruct.itemState = 1 then
-  begin
-    Color1 := theme.GetColor('button.bg.selected', clWebLightgrey);
-    Color2 := theme.GetColor('button.frame.selected', clWebGray);;
-
-    if not(ci.chatType = CT_IM) then
-      Inc(Rect.Right, 4);
-
-    FillRect(hnd, Rect, CreateSolidBrush(Color1));
-    FrameRect(hnd, Rect, CreateSolidBrush(Color2));
-  end;
-
-  c := ci.who;
-
-  with Canvas do
-  begin
-    Inc(Rect.Left, 4);
-    Inc(Rect.Top, 4);
-    dec(Rect.Right);
-    // dec(Rect.bottom);
-
-    SetBKMode(hnd, TRANSPARENT);
-    if ci.chatType = CT_IM then
-    begin
-      ev := eventQ.firstEventFor(c);
-      if (ev <> nil) and ((blinking or c.fProto.getStatusDisable.blinking) or not blinkWithStatus) then
-      begin
-        if (blinking or c.fProto.getStatusDisable.blinking) then
-          Inc(Rect.Left, 1 + ev.Draw(hnd, Rect.Left, Rect.Top).cx)
-        else
-          Inc(Rect.Left, 1 + ev.PicSize.cx);
-      end
-      else
-      begin
-{$IFDEF RNQ_FULL}
-        if c.typing.bIsTyping then
-          pic := PIC_TYPING
-        else
-{$ENDIF}
-          if showStatusOnTabs then
-          begin
-{$IFDEF RNQ_FULL}
-{$IFDEF CHECK_INVIS}
-            if c.isInvisible and c.isOffline then
-              pic := status2imgName(byte(SC_ONLINE), true)
-            else
-{$ENDIF}
-{$ENDIF}
-              pic := c.statusImg;
-          end;
-        Inc(Rect.Left, 1 + theme.drawPic(hnd, Rect.Left, Rect.Top, pic).cx)
-      end;
-
-      if UseContactThemes and Assigned(ContactsTheme) then
-      begin
-        ContactsTheme.ApplyFont(TPicName('group.') + TPicName(AnsiLowerCase(groups.id2name(c.group))) + '.' + p, Canvas.Font);
-        ContactsTheme.ApplyFont(TPicName(c.UID2cmp) + '.' + p, Canvas.Font);
-      end;
-    end
-    else
-    begin
-      Inc(Rect.Left, 4 + theme.drawPic(hnd, Rect.Left, Rect.Top,
-        'plugintab' + IntToStrA(chatFrm.chats.byIdx(Message.DrawItemStruct.itemID).ID)).cx);
-    end;
-
-    if (Message.DrawItemStruct.itemState = 1) then
-      p := 'chat.tab.active'
-    else
-      p := 'chat.tab.inactive';
-    theme.ApplyFont(p, Canvas.Font);
-
-    if ci.chatType = CT_IM then
-    begin
-      Inc(Rect.Left, 4);
-      ss := dupAmperstand(c.displayed);
-    end
-    else
-    begin
-      Inc(Rect.Right, 4);
-      ss := dupAmperstand(ci.lastInputText);
-    end;
-
-    dec(Rect.Top, 4);
-    DrawText(hnd, PChar(ss), Length(ss), Rect, DT_LEFT or DT_SINGLELINE or DT_VCENTER);
-  end;
-
-  Rgn := CreateRectRgn(0, 0, 0, 0);
-  SelectClipRgn(Message.DrawItemStruct.HDC, Rgn);
-  DeleteObject(Rgn);
-
-  Message.Result := 1;
-  inherited;
-*)
   r := Rect;
   Active := Message.DrawItemStruct.itemState = 1;
   c := ci.who;
@@ -682,6 +595,7 @@ begin
 //  inherited;
 
 end;
+*)
 
 procedure TscrollBarEx.CMMouseEnter(var msg: TMessage);
 begin
@@ -697,10 +611,16 @@ begin
     onLeave
 end;
 
+procedure TPanel.WMEraseBkgnd(var msg: TWMEraseBkgnd);
+begin
+  msg.Result := 1;
+  msg.msg := 0;
+end;
+
 constructor TchatInfo.create;
 begin
   inherited;
-  quoteIdx:=-1;
+  quoteIdx := -1;
 end;
 
 procedure TchatInfo.setAutoscroll(v: boolean);
@@ -739,55 +659,55 @@ end;
 /////////////////////////// Tchats /////////////////////////////////
 
     {$WARN UNSAFE_CAST OFF}
-function Tchats.idxOfUIN(const uin: TUID):integer;
+function Tchats.idxOfUIN(const uin: TUID): Integer;
 begin
-result:=0;
-while result<count do
+  result := 0;
+  while result < count do
   begin
     if TchatInfo(items[result]).chatType = CT_IM then
      if TchatInfo(items[result]).who.equals(uin) then
       exit;
-  inc(result);
+    inc(result);
   end;
-result:=-1;
+  result := -1;
 end; // idxOfUIN
 
-function Tchats.idxOf(c:TRnQcontact):integer;
+function Tchats.idxOf(c: TRnQcontact): Integer;
 begin
-result:=0;
-while result<count do
-  begin
-   if TchatInfo(items[result]).chatType = CT_IM then
-    if TchatInfo(items[result]).who.equals(c) then
-    exit;
-  inc(result);
-  end;
-result:=-1;
+  result := 0;
+  while result < count do
+   begin
+    if TchatInfo(items[result]).chatType = CT_IM then
+     if TchatInfo(items[result]).who.equals(c) then
+     exit;
+    inc(result);
+   end;
+  result := -1;
 end; // idxOf
 
-function Tchats.byIdx(i:integer):TchatInfo;
+function Tchats.byIdx(i: Integer): TchatInfo;
 begin
-result:=NIL;
-if validIdx(i) then
-  result:=TchatInfo(items[i])
+  result := NIL;
+  if validIdx(i) then
+    result := TchatInfo(items[i])
 end; // byIdx
     {$WARN UNSAFE_CAST ON}
 
-function Tchats.byContact(c:TRnQcontact):TchatInfo;
-begin result:=byIdx(idxOf(c)) end;
+function Tchats.byContact(c: TRnQcontact): TchatInfo;
+begin result := byIdx(idxOf(c)) end;
 
-function Tchats.validIdx(i:integer):boolean;
-begin result:=(i >= 0) and (i < count) end;
+function Tchats.validIdx(i: Integer): boolean;
+begin result := (i >= 0) and (i < count) end;
 
 procedure Tchats.CheckTypingTimeAll;
 var
-  i : Integer;
+  i: Integer;
 begin
   if Assigned(Account.AccProto) then
 
-  if (Account.AccProto.SupportTypingNotif)and(Account.AccProto.isSendTypingNotif) then
+  if (Account.AccProto.SupportTypingNotif) and (Account.AccProto.isSendTypingNotif) then
    if count > 0 then
-    for i:= count-1 downto 0 do
+    for i := count-1 downto 0 do
      if TchatInfo(items[i]).chatType = CT_IM then
        if Assigned(TchatInfo(items[i]).who) then
          TchatInfo(items[i]).CheckTypingTime;
@@ -797,13 +717,13 @@ end;
 
 procedure TchatFrm.FormResize(Sender: TObject);
 var
-  ch:TchatInfo;
+  ch: TchatInfo;
 begin
   if (w2sBox.Left + w2sBox.Width + 6) > directionGrp.Left then
     w2sBox.Width := Max(directionGrp.Left - w2sBox.Left - 6, 10);
 
   updateChatfrmXY;
-  ch:=thisChat;
+  ch := thisChat;
   if ch = NIL then
     exit;
   if ch.chatType = CT_PLUGING then
@@ -821,15 +741,15 @@ begin
            and (ch.input.height > 32) then
           ch.input.height := pagectrl.ActivePage.ClientHeight - 30;
 //   updatea
-      ch.repaint;//AndUpdateAutoscroll();
+      ch.repaint; // AndUpdateAutoscroll();
 //   ch.repaintAndUpdateAutoscroll();
     end;
 end; // formResize
 
-function TchatFrm.addEvent_openchat(otherhand:TRnQcontact; ev:Thevent):boolean;
+function TchatFrm.addEvent_openchat(otherhand: TRnQcontact; ev: Thevent): Boolean;
 begin
-openchat(otherHand);
-result:=addEvent(otherhand, ev);
+  openchat(otherHand);
+  result := addEvent(otherhand, ev);
 end; // addEvent_openchat
 
 {function TchatFrm.addEvent(uin: TUID; ev:Thevent):boolean;
@@ -851,20 +771,20 @@ begin
 //    ch.repaintAndUpdateAutoscroll();
    end
 end; // addEvent }
-function TchatFrm.addEvent(c:TRnQcontact; ev:Thevent):boolean;
+function TchatFrm.addEvent(c: TRnQcontact; ev: Thevent): Boolean;
 // tells if ev has been inserted in a list, or can be freed
 var
-  i : integer;
+  i: Integer;
   ch: TchatInfo;
 begin
-  result:=FALSE;
-  i:=chats.idxOf(c);
-  ch:=chats.byIdx(i);
-  if ch=NIL then
+  result := False;
+  i := chats.idxOf(c);
+  ch := chats.byIdx(i);
+  if ch = NIL then
    ev.free
   else
    begin
-    result:=TRUE;
+    result := True;
     ch.historyBox.addEvent(ev);
 {    if i = pageIndex then
       ch.repaint();
@@ -873,92 +793,92 @@ begin
    end
 end; // addEvent
 
-function TchatFrm.pageIndex:integer;
+function TchatFrm.pageIndex: Integer;
 begin
-if pageCtrl.activePage=NIL then
-  result:=-1
+if pageCtrl.activePage = NIL then
+  result := -1
 else
-  result:=pageCtrl.activePage.pageIndex
+  result := pageCtrl.activePage.pageIndex
 end;
 
 // pageIndex
 
 function TchatFrm.openchat(otherHand: TRnQContact; ForceActive: Boolean = false;
-                           isAuto: Boolean = false):boolean;
+                           isAuto: Boolean = false): Boolean;
 const
   MaxNILpages = 101;
 var
-  i, k : integer;
-  wasEmpty,alreadyThere:boolean;
-  cnt : TRnQContact;
-  firstNILpage, NILcount : Integer;
+  i, k: integer;
+  wasEmpty, alreadyThere: Boolean;
+  cnt: TRnQContact;
+  firstNILpage, NILcount: Integer;
 begin
-wasEmpty:= pageCtrl.pageCount=0;
-i:=chats.idxOf(otherHand);
-alreadyThere:= i=pageIndex;
-result:=i<0;
-if result then
-  i:=newIMchannel(otherHand);
-if wasEmpty then
-  begin
-    setTab(i);
-    if docking.Docked2chat then
-      applyDocking;
-  end
-else
-  begin
-    if not alreadyThere then
-     begin
-      if ForceActive then
+  wasEmpty := pageCtrl.pageCount=0;
+  i := chats.idxOf(otherHand);
+  alreadyThere := i=pageIndex;
+  result := i<0;
+  if result then
+    i := newIMchannel(otherHand);
+  if wasEmpty then
+    begin
+      setTab(i);
+      if docking.Docked2chat then
+        applyDocking;
+    end
+   else
+    begin
+      if not alreadyThere then
        begin
-        pageCtrl.activePageIndex := i;
-        pageCtrlChange(self);
+        if ForceActive then
+         begin
+           pageCtrl.activePageIndex := i;
+           pageCtrlChange(self);
+         end;
        end;
-     end;
-    if isAuto then
-    begin // protection against bruteforce
-      firstNILpage := -1;
-      NILcount := 0;
-      for k := 0 to chats.Count-1 do
-       begin
-         if chats.byIdx(k).chatType = CT_IM then
+      if isAuto then
+       begin // protection against bruteforce
+         firstNILpage := -1;
+         NILcount := 0;
+         for k := 0 to chats.Count-1 do
           begin
-           cnt := chats.byIdx(k).who;
-           if Assigned(cnt) and notInList.exists(cnt) then
+            if chats.byIdx(k).chatType = CT_IM then
              begin
-               inc(NILcount);
-               if firstNILpage <0 then
-                 firstNILpage := k;
+              cnt := chats.byIdx(k).who;
+              if Assigned(cnt) and notInList.exists(cnt) then
+               begin
+                inc(NILcount);
+                if firstNILpage < 0 then
+                  firstNILpage := k;
+               end;
              end;
           end;
+         if (firstNILpage >= 0) and (NILcount > MaxNILpages) then
+           closePageAt(firstNILpage);
        end;
-       if (firstNILpage >= 0) and (NILcount > MaxNILpages) then
-         closePageAt(firstNILpage);
     end;
-  end;
- if ForceActive and not Visible then
-  Visible := True;
+  if ForceActive and not Visible then
+    Visible := True;
 end;
 
 // openchat
 
-function TchatFrm.isChatOpen(otherHand:TRnQcontact):boolean;
-begin result:=chats.idxOf(otherHand) >= 0 end;
+function TchatFrm.isChatOpen(otherHand: TRnQcontact): Boolean;
+begin result := chats.idxOf(otherHand) >= 0 end;
 
 procedure TchatFrm.applyFormXY;
 begin
-with chatfrmXY do
+  with chatfrmXY do
   if width > 0 then
     begin
     if maximized then
       begin
-        SetBounds(left,top,width,height);
-        windowState:=wsMaximized;
+        SetBounds(left, top, width, height);
+        windowState := wsMaximized;
       end
     else
       begin
-      SetBounds(left,top,width,height);
-      windowState:=wsNormal
+      SetBounds(left, top, width, height);
+      windowState := wsNormal
       end;
   end;
 end; // applyFormXY
@@ -978,7 +898,7 @@ begin
 
   sendBtn.DropdownMenu  := sendMenuExt;
   closeBtn.DropdownMenu := closeMenuExt;
-   {$IFDEF USE_SMILE_MENU}
+ {$IFDEF USE_SMILE_MENU}
   smileMenuExt := TRnQPopupMenu.Create(self);
   smileMenuExt.OnPopup := smilesMenuPopup;
   smileMenuExt.OnClose := smilesMenuClose;
@@ -986,7 +906,7 @@ begin
   if Assigned(FSmiles) then
     SetSmilePopup(False)
    else
-   {$ENDIF USE_SMILE_MENU}
+ {$ENDIF USE_SMILE_MENU}
     SetSmilePopup(True);
 //  favMenuExt := TPopupMenu.Create(self);
 //  favMenuExt.OnPopup  := favMenuPopup;
@@ -996,74 +916,75 @@ begin
   hintwnd := nil;
   last_tabindex := -1;
 
-  FAniTimer:= TTimer.Create(nil);
+  FAniTimer := TTimer.Create(nil);
   FAniTimer.Enabled := false;
-  FAniTimer.Interval:= 40;
-  //timer.Enabled:= UseAnime;
-  FAniTimer.OnTimer:= TickAniTimer;
+  FAniTimer.Interval := 40;
+  //timer.Enabled := UseAnime;
+  FAniTimer.OnTimer := TickAniTimer;
 
 //  DoubleBuffered := True;
-  sbar.DoubleBuffered := ThemeServices.ThemesEnabled;
-//  pagectrl.t
+  sbar.DoubleBuffered := StyleServices.Enabled;
   DragAcceptFiles(self.handle, True);
   applyFormXY;
   applyTaskButton(self);
+
+  lastClickIdx := -1;
 end;
 
-procedure TchatFrm.setTab(idx:integer);
+procedure TchatFrm.setTab(idx: Integer);
 var
-  bool:boolean;
+  bool: Boolean;
 begin
-if assigned(pageCtrl.Onchanging) then
-  begin
-  bool:=TRUE;
-  pageCtrl.OnChanging(self, bool);
-  if bool=false then
-    exit;
-  end;
-with pageCtrl do
-  if idx < pageCount then
-    activePage:=pages[idx]
-  else
-    msgDlg('Error: bad page', True, mtError);  // should never reach this
-if assigned(pageCtrl.onChange) then
-  pageCtrl.onChange(self);
+  if Assigned(pageCtrl.Onchanging) then
+   begin
+    bool := True;
+    pageCtrl.OnChanging(self, bool);
+    if bool = false then
+      exit;
+   end;
+  with pageCtrl do
+    if idx < pageCount then
+      activePage := pages[idx]
+     else
+      msgDlg('Error: bad page', True, mtError);  // should never reach this
+  if Assigned(pageCtrl.onChange) then
+    pageCtrl.onChange(self);
 end; // setTab
 
-procedure TchatFrm.userChanged(c:TRnQContact);
+procedure TchatFrm.userChanged(c: TRnQContact);
 var
-  i:integer;
-  ch:TchatInfo;
+  i: Integer;
+  ch: TchatInfo;
 begin
   if c = NIL then Exit;
-  ch:=thisChat;
-  if (ch=NIL) then exit;
+  ch := thisChat;
+  if (ch=NIL) then Exit;
   if c.fProto.isMyAcc(c) then
    begin
     ch.repaint();
 //  ch.repaintAndUpdateAutoscroll();
 //  exit;
    end;
-i:=chats.idxOf(c);
-if i < 0 then exit;
-setCaptionFor(c);
-redrawTab(c);
-updateContactStatus;
-if i = pageIndex then
-  ch.repaint();
+  i := chats.idxOf(c);
+  if i < 0 then exit;
+  setCaptionFor(c);
+  redrawTab(c);
+  updateContactStatus;
+  if i = pageIndex then
+    ch.repaint();
 //  ch.repaintAndUpdateAutoscroll();
 end; // userChanged
 
-procedure TchatFrm.openOn(c:TRnQContact; focus:boolean=TRUE; pShow : Boolean = True);
+procedure TchatFrm.openOn(c: TRnQContact; focus: Boolean = True; pShow: Boolean = True);
 var
-  i:integer;
-  wasEmpty:boolean;
+  i: integer;
+  wasEmpty: Boolean;
 begin
   if c=NIL then exit;
-  wasEmpty:= pageCtrl.pageCount=0;
-  i:=chats.idxOf(c);
+  wasEmpty := pageCtrl.pageCount=0;
+  i := chats.idxOf(c);
   if i < 0 then
-    i:=newIMchannel(c);
+    i := newIMchannel(c);
   setTab(i);
   if wasEmpty then
    if docking.Docked2chat then
@@ -1072,97 +993,96 @@ begin
     open(focus);
 end; // openOn
 
-{procedure TchatFrm.openOn(uid:TUID; focus:boolean=TRUE);
+{procedure TchatFrm.openOn(uid: TUID; focus: Boolean = True);
 var
-  i:integer;
-  cnt : Tcontact;
+  i: Integer;
+  cnt: Tcontact;
 begin
- cnt := contactsDB.get(uid);
-if cnt=NIL then exit;
-i:=chats.idxOf(cnt);
-if i < 0 then
-  i:=newIMchannel(cnt);
-setTab(i);
-open(focus);
+  cnt := contactsDB.get(uid);
+  if cnt=NIL then exit;
+  i := chats.idxOf(cnt);
+  if i < 0 then
+    i:=newIMchannel(cnt);
+  setTab(i);
+  open(focus);
 end; // openOn}
 
-function TchatFrm.newIMchannel(c:TRnQContact):integer;
+function TchatFrm.newIMchannel(c: TRnQContact): Integer;
 var
-  sheet:TtabSheet;
-  chat:TchatInfo;
-  pnl:Tpanel;
+  sheet: TtabSheet;
+  chat: TchatInfo;
+  pnl: Tpanel;
 begin
  {$IFDEF RNQ_FULL}
 //  rqSmiles.ClearAniParams;
   theme.ClearAniParams;
  {$ENDIF RNQ_FULL}
-chat := TchatInfo.create;
-chat.who := c;
-//chat.who := c;
-chat.chatType := CT_IM;
-chat.single:=singleDefault;
-chat.who.typing.bIAmTyping := False;
+  chat := TchatInfo.create;
+  chat.who := c;
+  chat.chatType := CT_IM;
+  chat.single := singleDefault;
+  chat.who.typing.bIAmTyping := False;
 //if not assigned(pTCE(c.data).history0) then
 //  pTCE(c.data).history0:=Thistory.create;
 
-sheet:=TtabSheet.create(self);
-chats.Add(chat);
-sheet.PageControl:=pageCtrl;
-result:=sheet.pageIndex;
-setCaption(Result);
-sheet.ControlStyle := sheet.ControlStyle + [csOpaque]; 
+  sheet := TtabSheet.Create(self);
+  chats.Add(chat);
+  sheet.PageControl := pageCtrl;
+  result := sheet.pageIndex;
+  setCaption(Result);
+  sheet.ControlStyle := sheet.ControlStyle + [csOpaque]; 
 //setCaptionFor(c);
 
 //sheet.ShowHint := True;
 //sheet.Hint := c.display;
 
-pnl:=Tpanel.create(self);
-pnl.parent:=sheet;
-pnl.align:=alClient;
-pnl.BevelInner:=bvNone;
-pnl.BevelOuter:=bvNone;
-pnl.BorderStyle:=bsSingle;
+  pnl := Tpanel.create(self);
+  pnl.parent := sheet;
+  pnl.align := alClient;
+  pnl.BevelInner := bvNone;
+  pnl.BevelOuter := bvNone;
+  pnl.BorderStyle := bsSingle;
 
-  chat.historyBox:=ThistoryBox.create(pnl);
+  chat.historyBox := ThistoryBox.create(pnl);
   with chat.historyBox do
   begin
    chat.historyBox.Parent := pnl;
-   who:=c;
-   color:=theme.getColor(ClrHistBG, clWindow);//history.bgcolor;
+   who := c;
+   color := theme.getColor(ClrHistBG, clWindow); // history.bgcolor;
 //   history:=pTCE(c.data).history as Thistory;
    history := Thistory.create;
 //   history.Token := 101;
    history.Reset;
-   align:=alClient;
+   align := alClient;
    Realign;
-   onDragOver:=chatDragOver;
-   onDragDrop:=chatDragDrop;
-   onPainted:=onHistoryRepaint;
+   onDragOver := chatDragOver;
+   onDragDrop := chatDragDrop;
+   onPainted := onHistoryRepaint;
    OnScroll := chat.updateAutoscroll;
   end;
 
-chat.lsb:=TscrollbarEx.create(pnl);
-with chat.lsb do
+  chat.lsb := TscrollbarEx.create(pnl);
+  with chat.lsb do
   begin
-  parent:=pnl;
-  align:=alLeft;
-  tabStop:=FALSE;
-  onScroll:=lsbScroll;
-  onEnter:=lsbEnter;
-  onLeave:=lsbEnter;
-  Kind:=sbVertical;
-  position:=0;
-  min:=0;
-  max:=0;
-  if popupLSB then
-    width:=minimizedScroll
-  else
-    width:=maximizedScroll;
-  smallChange:=1;
-  largeChange:=5;
-  enabled:=FALSE;
-  visible:=showLSB;
-  hint:=getTranslation('Scrolls the message line by line');
+    parent := pnl;
+    align := alLeft;
+    tabStop := False;
+    onScroll := lsbScroll;
+    onEnter := lsbEnter;
+    onLeave := lsbEnter;
+    Kind := sbVertical;
+    position := 0;
+    min := 0;
+    max := 0;
+    if popupLSB then
+      width := minimizedScroll
+     else
+      width := maximizedScroll;
+    smallChange := 1;
+    largeChange := 5;
+    enabled := False;
+    visible := showLSB;
+    hint := getTranslation('Scrolls the message line by line');
   end;
 
  {$IFDEF RNQ_FULL}
@@ -1180,26 +1100,28 @@ with chat.lsb do
  if avatarShowInChat then
    begin
     chat.inputPnl := TPanel.create(self);
-    chat.inputPnl.parent:=sheet;
-    chat.inputPnl.align:=alBottom;
+    chat.inputPnl.parent := sheet;
+    chat.inputPnl.align := alBottom;
     chat.inputPnl.BorderWidth := 0;
 //  chat.inputPnl.BorderStyle := bsNone;
     chat.inputPnl.BevelOuter := bvNone;
     chat.inputPnl.BevelKind := bkNone;
 //  chat.inputPnl.BevelKind := bkNone;
 ///  chat.inputPnl.BevelWidth := 0;
+    chat.inputPnl.ControlStyle := chat.inputPnl.ControlStyle + [csOpaque];
+    chat.inputPnl.FullRepaint := False;
+    chat.inputPnl.DoubleBuffered := True;
 
     chat.input := Tmemo.create(chat.inputPnl);
     chat.input.parent := chat.inputPnl;
     chat.input.align  := alClient;
-//    sheet.ControlStyle := sheet.ControlStyle + [csOpaque];
+    sheet.ControlStyle := sheet.ControlStyle + [csOpaque];
 //    chat.inputPnl.ControlStyle := chat.inputPnl.ControlStyle + [csOpaque];
-    chat.inputPnl.FullRepaint := False;
-//    chat.inputPnl.DoubleBuffered := True;
+    sheet.DoubleBuffered := true;
     if splitY > 0 then
-      chat.inputPnl.height:=splitY
+      chat.inputPnl.height := splitY
      else
-      chat.inputPnl.height:=50;
+      chat.inputPnl.height := 50;
   //  chat.avtsplitr.cursor:=crVsplit;
   //  chat.avtsplitr.onMoved:=splitterMoved;
   //  chat.avtsplitr.OnCanResize:=splitterMoving;
@@ -1208,19 +1130,19 @@ with chat.lsb do
    begin
     chat.inputPnl := NIL;
     chat.input := Tmemo.create(sheet);
-    chat.input.parent:= sheet;
+    chat.input.parent := sheet;
     chat.input.align := alBottom;
     if splitY > 0 then
-      chat.input.height:=splitY
+      chat.input.height := splitY
      else
-      chat.input.height:=50;
+      chat.input.height := 50;
    end;
 
-  chat.input.WordWrap:=TRUE;
+  chat.input.WordWrap := True;
    theme.ApplyFont('history.my', chat.input.Font);
-  chat.input.ScrollBars:=ssVertical;
-  chat.input.onChange:=inputChange;
-  chat.input.OnContextPopup:=inputPopup;
+  chat.input.ScrollBars := ssVertical;
+  chat.input.onChange := inputChange;
+  chat.input.OnContextPopup := inputPopup;
   chat.input.onKeyDown  := inputKeydown;
   chat.input.onDragOver := chatDragOver;
   chat.input.onDragDrop := chatDragDrop;
@@ -1232,16 +1154,16 @@ with chat.lsb do
     theme.GetPic(PIC_CHAT_BG+'5', chat.input.Brush.Bitmap, false);
    end
   else}
-   chat.input.color := theme.getColor(ClrHistBG, clWindow);//history.bgcolor;
+   chat.input.color := theme.getColor(ClrHistBG, clWindow);  // history.bgcolor;
 
-  chat.splitter:=Tsplitter.create(self);
-  //chat.splitter.ResizeStyle:=rsUpdate;
-  chat.splitter.minsize:=1;
-  chat.splitter.parent:=sheet;
-  chat.splitter.align:=alBottom;
-  chat.splitter.cursor:=crVsplit;
-  chat.splitter.onMoved:=splitterMoved;
-  chat.splitter.OnCanResize:=splitterMoving;
+  chat.splitter := Tsplitter.create(self);
+  //chat.splitter.ResizeStyle:= rsUpdate;
+  chat.splitter.minsize := 1;
+  chat.splitter.parent := sheet;
+  chat.splitter.align := alBottom;
+  chat.splitter.cursor := crVsplit;
+  chat.splitter.onMoved := splitterMoved;
+  chat.splitter.OnCanResize := splitterMoving;
 
   if usePlugPanel and (plugBtns.PluginsTB <> toolbar) then
   begin
@@ -1293,17 +1215,17 @@ end; // newIMchannel
 
 procedure TchatFrm.lsbScroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
 var
-  ch:TchatInfo;
+  ch: TchatInfo;
 begin
  with sender as Tscrollbar do
  begin
   if position = scrollpos then
     exit;
-  ch:=thisChat;
+  ch := thisChat;
   if ch=NIL then exit;
-  ch.historyBox.topOfs:=scrollpos;
+  ch.historyBox.topOfs := scrollpos;
   if ScrollPos > 0 then
-    hideScrollTimer:=0;
+    hideScrollTimer := 0;
   ch.historyBox.repaint();
   ch.updateAutoscroll(nil);
  end;
@@ -1312,35 +1234,35 @@ end; // lsbScroll
 procedure Tchatinfo.updateLSB;
 begin
 //if ch=NIL then exit;
-if (historyBox.topEventNrows<2) then
- begin
-   lsb.enabled:=FALSE;
-   if popupLSB then
-     lsb.width :=minimizedScroll;
+  if (historyBox.topEventNrows<2) then
+    begin
+     lsb.enabled := False;
+     if popupLSB then
+       lsb.width := minimizedScroll;
 //   updateAutoscroll(nil);
- end
-else
-  begin
-  lsb.min:=0;
-  lsb.max:=historyBox.topEventNrows-1;
-  lsb.pagesize:=1;
-  if lsb.position <> historyBox.topOfs then
-    lsb.position:=historyBox.topOfs;
-
-  if lsb.Position > 0 then
-    lsb.width := maximizedScroll
+    end
    else
-    if not lsb.MouseInClient then
-      hideScrollTimer := 10;
-//  if lsb.Position = 0 then
-    lsb.enabled:=TRUE;
+    begin
+     lsb.min := 0;
+     lsb.max := historyBox.topEventNrows-1;
+     lsb.pagesize := 1;
+     if lsb.position <> historyBox.topOfs then
+       lsb.position := historyBox.topOfs;
+
+     if lsb.Position > 0 then
+       lsb.width := maximizedScroll
+      else
+       if not lsb.MouseInClient then
+         hideScrollTimer := 10;
+ //  if lsb.Position = 0 then
+    lsb.enabled := True;
   end;
 end; // updateLSB
 
 procedure Tchatinfo.CheckTypingTime;
 begin
  try
-  if (chatType = CT_IM)and Assigned(who) then
+  if (chatType = CT_IM) and Assigned(who) then
    if (who.typing.bIamTyping) and ((now - who.typing.typingTime)*SecsPerDay > typingInterval) then
     who.fProto.InputChangedFor(who, false, True);
  except
@@ -1348,32 +1270,32 @@ begin
 end;
 
 
-function TchatFrm.thisChat:TchatInfo;
+function TchatFrm.thisChat: TchatInfo;
 begin
-  if (chats.count = 0)or (not Assigned(pageCtrl.ActivePage)) then
-    result:=NIL
+  if (chats.count = 0) or (not Assigned(pageCtrl.ActivePage)) then
+    result := NIL
    else
-    result:=chats.byIdx(pageCtrl.ActivePage.pageIndex)
+    result := chats.byIdx(pageCtrl.ActivePage.pageIndex)
 end;
 
-function TchatFrm.thisContact:TRnQcontact;
+function TchatFrm.thisContact: TRnQcontact;
 var
-  ch : TchatInfo;
+  ch: TchatInfo;
 begin
   ch := thisChat;
  if ch=NIL then
-   result:=NIL
+   result := NIL
   else
    if ch.chatType = CT_IM then
-     thisContact:= ch.who
+     thisContact := ch.who
     else
-     result:=NIL;
+     result := NIL;
 end; // thisContact
 
 
-function TchatFrm.thisChatUID:TUID;
+function TchatFrm.thisChatUID: TUID;
 var
-  cnt : TRnQContact;
+  cnt: TRnQContact;
 begin
   cnt := thisContact;
 
@@ -1386,19 +1308,19 @@ end;
 procedure TchatFrm.sendBtnClick(Sender: TObject);
 begin send end;
 
-function TchatFrm.pageIdxAt(x,y:integer):integer;
+function TchatFrm.pageIdxAt(x, y: Integer): Integer;
 var
-  R:Trect;
+  R: Trect;
 begin
-result:=0;
-while result < chats.count do
-  begin
-  SendMessage(pagectrl.Handle, TCM_GETITEMRECT, result, Longint(@R));
-  if ptInRect(R, point(x,y)) then
-    exit;
-  inc(result);
-  end;
-result:=-1;
+  result := 0;
+  while result < chats.count do
+   begin
+     SendMessage(pagectrl.Handle, TCM_GETITEMRECT, result, Longint(@R));
+     if ptInRect(R, point(x,y)) then
+       exit;
+     inc(result);
+   end;
+  result := -1;
 end; // pageIdxAt
 
 procedure TchatFrm.pagectrl00MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -1411,37 +1333,38 @@ begin
   case button of
    mbRight:
     begin
-    i:=pageIdxAt(x,y);
+    i := pageIdxAt(x, y);
     if i < 0 then exit;
     if i <> pageIndex then
     	begin
-      b:=TRUE;
+      b := TRUE;
       pagectrlChanging(sender, b);
       if b then
       	begin
-	      pagectrl.ActivePage:=pagectrl.Pages[i];
+	      pagectrl.ActivePage := pagectrl.Pages[i];
 	      pagectrlChange(sender);
         end;
       end;
     end;
    mbLeft:
     begin
-     i:=pageIdxAt(x,y);
+     i := pageIdxAt(x, y);
      if i = lastClickIdx then
-       diff:=now-lastClick
+       diff := now-lastClick
       else
-       diff := dblClickTime +1;
-     lastClick:=now;
+       diff := dblClickTime + 1;
+     lastClick := now;
      lastClickIdx := i;
      if diff < dblClickTime then
       begin
-      ev:=eventQ.firstEventFor(thisContact);
+      ev := eventQ.firstEventFor(thisContact);
       if ev<>NIL then
         begin
 //          realizeEvents(ev.kind, ev.who);
 //         eventQ.removeEvent(ev.kind, ev.who);
          eventQ.remove(ev);
          realizeEvent(ev);
+            pagectrl.EndDrag(true);
         end
       else
         closeThisPage;
@@ -1450,7 +1373,7 @@ begin
     end;
    mbMiddle:
     begin
-      i:=pageIdxAt(x,y);
+      i := pageIdxAt(x, y);
       if i < 0 then exit;
       if i = pageIndex then
         closeThisPage
@@ -1465,7 +1388,7 @@ end; // pagectrl mousedown
 
 procedure TchatFrm.closeThisPage;
 Var
-  ClosePgIdx : Integer;
+  ClosePgIdx: Integer;
 begin
  if (pageCtrl.activePage = NIL) or (thisChat = NIL) then exit;
  ClosePgIdx := pageCtrl.activePage.TabIndex;
@@ -1519,51 +1442,51 @@ end;
 
 procedure TchatFrm.updateGraphics;
 var
-  ch:Tchatinfo;
-  i:integer;
+  ch: Tchatinfo;
+  i: integer;
 begin
-  ch:=thisChat;
+  ch := thisChat;
   if ch=NIL then exit;
   if ch.chatType = CT_PLUGING then Exit;
-theme.applyFont('history.my', ch.input.Font);
-smilesBtn.down:=useSmiles;
-historyBtn.down:=ch.historyBox.whole;
-singleBtn.down:=ch.single;
-autoscrollBtn.down:=ch.historyBox.autoScrollVal;
-//SimplMsgBtn.Down := ch.simpleMsg;
-updateContactStatus;
-ch.input.color:=theme.getColor(ClrHistBG, clWindow);
- if Assigned(ch.btnPnl) then
-  if Assigned(plugBtns) then
-    ch.btnPnl.Visible := plugBtns.btnCnt > 0
-  else
-    ch.btnPnl.Visible := false;
-//sbar.panels[0].Width:=80;
+  theme.applyFont('history.my', ch.input.Font);
+  smilesBtn.down := useSmiles;
+  historyBtn.down := ch.historyBox.whole;
+  singleBtn.down := ch.single;
+  autoscrollBtn.down := ch.historyBox.autoScrollVal;
+  //SimplMsgBtn.Down := ch.simpleMsg;
+  updateContactStatus;
+  ch.input.color := theme.getColor(ClrHistBG, clWindow);
+  if Assigned(ch.btnPnl) then
+   if Assigned(plugBtns) then
+     ch.btnPnl.Visible := plugBtns.btnCnt > 0
+    else
+     ch.btnPnl.Visible := false;
+  //sbar.panels[0].Width:=80;
  with theme.getPicSize(RQteDefault, PIC_OUTBOX, 16) do
   begin
-    sbar.panels[1].Width:=cx+8;
-    i:=cy+6;
+    sbar.panels[1].Width := cx+8;
+    i := cy+6;
   end;
  with theme.getPicSize(RQteDefault, PIC_KEY, 16) do
   begin
-    sbar.panels[3].Width:=cx+8;
-    i:=max(i, cy+6);
+    sbar.panels[3].Width := cx+8;
+    i := max(i, cy+6);
   end;
  with theme.getPicSize(RQteDefault, PIC_CLI_QIP, 16) do
   begin
-    sbar.panels[3].Width := sbar.panels[3].Width+ cx+3;
-    i:=max(i, cy+6);
+    sbar.panels[3].Width := sbar.panels[3].Width + cx+3;
+    i := max(i, cy+6);
   end;
  sbar.Height := boundInt(i,22,50);
  sbar.repaint;
  if popupLSB then
    if ch.lsb.Enabled and (ch.lsb.Position > ch.lsb.Min) then
-     ch.lsb.width:=maximizedScroll
+     ch.lsb.width := maximizedScroll
     else
-     ch.lsb.width:=minimizedScroll
+     ch.lsb.width := minimizedScroll
   else
-   ch.lsb.width:=maximizedScroll;
- ch.historyBox.color:=ch.input.color;
+   ch.lsb.width := maximizedScroll;
+ ch.historyBox.color := ch.input.color;
  if chatFrm.visible and not IsIconic(chatFrm.handle) then
   ch.historyBox.repaint;
  panel.Realign;
@@ -1572,19 +1495,19 @@ ch.input.color:=theme.getColor(ClrHistBG, clWindow);
   i := 21;
   with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size) do
   begin
-    i:=max(i, cy+6);
+    i := max(i, cy+6);
   end;
   with theme.GetPicSize(RQteButton, PIC_CLOSE, icon_size) do
   begin
-    i:=max(i, cy+6);
+    i := max(i, cy+6);
   end;
   toolbar.Height := i+2;
   toolbar.ButtonHeight := i;
-  toolbar.Top:=(panel.ClientHeight - toolbar.Height) div 2;
+  toolbar.Top := (panel.ClientHeight - toolbar.Height) div 2;
   SendBtn.Height := i;
   closeBtn.Height := i;
-  SendBtn.Top:=(panel.ClientHeight - SendBtn.Height) div 2;
-  closeBtn.Top:=(panel.ClientHeight - closeBtn.Height) div 2;
+  SendBtn.Top := (panel.ClientHeight - SendBtn.Height) div 2;
+  closeBtn.Top := (panel.ClientHeight - closeBtn.Height) div 2;
 end; // updateGraphics
 
 procedure TchatFrm.pagectrlChanging(Sender: TObject; var AllowChange: Boolean);
@@ -1595,55 +1518,55 @@ begin
     if chatType = CT_PLUGING then
       plugins.castEv(PE_DESELECTTAB, id);
     if Assigned(who) then
-      pTCE(who.data).keylay:=GetKeyboardLayout(0)
+      pTCE(who.data).keylay := GetKeyboardLayout(0)
    end;
 end;
 
 procedure TchatFrm.pagectrlChange(Sender: TObject);
 var
-  ch:TchatInfo;
+  ch: TchatInfo;
   I: Integer;
 begin
  {$IFDEF RNQ_FULL}
 //  rqSmiles.ClearAniParams;
   theme.ClearAniParams;
  {$ENDIF RNQ_FULL}
- ch:=thisChat;
+ ch := thisChat;
  if ch=NIL then exit;
  if ch.chatType = CT_IM then
  begin
-  lastClick:=0;
-  inputChange(self);    // update char counter
-  setLeftSB(showLSB);
-  if autoSwitchKL
-  and assigned(lastContact)
-  and (lastContact<>ch.who)
-  and (pTCE(ch.who.data).keylay<>0) then
-    ActivateKeyboardLayout(pTCE(ch.who.data).keylay,0);
+   lastClick := 0;
+   inputChange(self);    // update char counter
+   setLeftSB(showLSB);
+   if autoSwitchKL
+      and assigned(lastContact)
+      and (lastContact<>ch.who)
+      and (pTCE(ch.who.data).keylay<>0) then
+     ActivateKeyboardLayout(pTCE(ch.who.data).keylay, 0);
 
-  if chatFrm.visible and not IsIconic(chatFrm.handle) then
+   if chatFrm.visible and not IsIconic(chatFrm.handle) then
 {    if ch.historyBox.autoscroll then
       ch.historyBox.go2end
     else}
       ch.historyBox.repaint;
-  updateGraphics;
+   updateGraphics;
    SBSearch.Enabled := True;
-   fp.Visible:=findBtn.Down;
+   fp.Visible := findBtn.Down;
 //   SearchPnl.Visible := findBtn.Down;
-    if usePlugPanel then
-      begin
+   if usePlugPanel then
+     begin
       if plugBtns.PluginsTB <> toolbar then
        begin
         plugBtns.PluginsTB.Parent := ch.btnPnl;
         plugBtns.PluginsTB.Visible := True;
        end;
-      end
-     else
+     end
+    else
      for I := Low(plugBtns.btns) to High(plugBtns.btns) do
       if Assigned(plugBtns.btns[i]) then
        if not plugBtns.btns[i].Enabled then
         plugBtns.btns[i].Enabled := True;
-  lastContact:=NIL;
+   lastContact := NIL;
 //  if Assigned(ch.avtPic.PicAni) then
   if Assigned(ch.avtPic.PicAni) and (ch.avtPic.PicAni.Animated) then
     FAniTimer.Enabled := True
@@ -1676,46 +1599,46 @@ else
     plugins.castEv(PE_SELECTTAB, ch.id);
   end;
 
-sendBtn.enabled := ch.chatType <> CT_PLUGING;
-historyBtn.enabled  := sendBtn.enabled;
-findBtn.enabled     := sendBtn.enabled;
-smilesBtn.enabled   := sendBtn.enabled;
-autoscrollBtn.enabled := sendBtn.enabled;
-infoBtn.enabled     := sendBtn.enabled;
-quoteBtn.enabled    := sendBtn.enabled;
-btnContacts.enabled := sendBtn.enabled;
-singleBtn.enabled   := sendBtn.enabled;
-RnQPicBtn.enabled   := sendBtn.enabled;
+  sendBtn.enabled := ch.chatType <> CT_PLUGING;
+  historyBtn.enabled  := sendBtn.enabled;
+  findBtn.enabled     := sendBtn.enabled;
+  smilesBtn.enabled   := sendBtn.enabled;
+  autoscrollBtn.enabled := sendBtn.enabled;
+  infoBtn.enabled     := sendBtn.enabled;
+  quoteBtn.enabled    := sendBtn.enabled;
+  btnContacts.enabled := sendBtn.enabled;
+  singleBtn.enabled   := sendBtn.enabled;
+  RnQPicBtn.enabled   := sendBtn.enabled;
 //SimplMsgBtn.Enabled := sendBtn.Enabled;
 //panel.visible:=  ch.who.uin <> 5000;
 end; // pageCtrlChange
 
 procedure TchatFrm.inputKeydown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
-  x,y,i:integer;
-  m:Tmemo;
-  s:string;
-  b : Boolean;
+  x, y, i: integer;
+  m: Tmemo;
+  s: String;
+  b: Boolean;
 begin
 if thisChat <> NIL then
 begin
- m:=thisChat.input;
+ m := thisChat.input;
  if shift = [ssCtrl] then
   case key of
     VK_BACK:
       begin
-      x:=m.caretpos.x;
-      y:=m.CaretPos.y;
-      s:=m.lines[y];
+      x := m.caretpos.x;
+      y := m.CaretPos.y;
+      s := m.lines[y];
       if x=0 then
         if y=0 then
           exit
-        else
+         else
           begin
-          m.lines.Delete(y);
-          dec(y);
-          x:=length(m.lines[y]);
-          m.lines[y]:=m.lines[y]+s;
+            m.lines.Delete(y);
+            dec(y);
+            x:=length(m.lines[y]);
+            m.lines[y]:=m.lines[y]+s;
           end
       else
         begin
@@ -1730,34 +1653,34 @@ begin
         while (i>0) and ((i > Length(s)) or ((b) = (s[i] in ALPHANUMERIC))) do
  {$ENDIF UNICODE}
           dec(i);
-        delete(s,i+1,m.caretpos.x-i);
-        m.lines[y]:=s;
-        x:=i;
+        delete(s, i+1, m.caretpos.x-i);
+        m.lines[y] := s;
+        x := i;
         end;
-      m.caretpos:=point(x,y);
-      key:=0;
+      m.caretpos := point(x,y);
+      key := 0;
       end;
     end;
-end;
+  end;
 end;
 
 procedure TchatFrm.inputPopup(Sender: TObject;
-  MousePos: TPoint; var Handled:Boolean);
-begin enterCount:=0 end;
+  MousePos: TPoint; var Handled: Boolean);
+begin enterCount := 0 end;
 
 procedure TchatFrm.inputChange(Sender: TObject);
 var
-  ch : TchatInfo;
+  ch: TchatInfo;
 begin
   ch := thisChat;
-  if ch<>NIL then
+  if ch <> NIL then
   with ch do
   begin
     if not Assigned(who) then
       Exit;
    // send typing notify
-    sbar.panels[0].text:= getTranslation('Chars:')+' '+intToStr(length(input.Text));
-    quoteIdx:=-1;
+    sbar.panels[0].text := getTranslation('Chars:') + ' ' + intToStr(length(input.Text));
+    quoteIdx := -1;
    { $IFDEF RNQ_FULL}
     who.fProto.InputChangedFor(who, length(input.Text) = 0);
    { $ENDIF}
@@ -1769,36 +1692,36 @@ begin closeThisPage end;
 
 procedure TchatFrm.Viewinfo1Click(Sender: TObject);
 var
-  cnt : TRnQContact;
+  cnt: TRnQContact;
 begin
   cnt := thisContact;
   if Assigned(cnt) then
     cnt.ViewInfo;
 end;
 
-function TchatFrm.sawAllhere:boolean;
+function TchatFrm.sawAllhere: Boolean;
 const
-//  clearEvents : array[0..4] of byte = (EK_msg, EK_url, EK_auth, EK_authDenied, EK_addedYou);
+//  clearEvents: array[0..4] of byte = (EK_msg, EK_url, EK_auth, EK_authDenied, EK_addedYou);
   clearEvents = [EK_msg, EK_url, EK_auth, EK_authDenied, EK_addedYou];
 var
-  c:TRnQcontact;
-  ch : TchatInfo;
-//  t : byte;
-  k : Integer;
-  ev0 : Thevent;
-  found : Boolean;
+  c: TRnQcontact;
+  ch: TchatInfo;
+//  t: byte;
+  k: Integer;
+  ev0: Thevent;
+  found: Boolean;
 begin
-  result:= FALSE;
-  found := false;
+  result := False;
+  found := False;
   ch := thisChat;
   if ch=NIL then exit;
    if ch.chatType <> CT_IM then Exit;
-  c:= ch.who;
+  c := ch.who;
 //  for t in clearEvents do
    begin
      k := -1;
      repeat
-       k:=eventQ.getNextEventFor(c, k);
+       k := eventQ.getNextEventFor(c, k);
 //       if (ev0 = nil) then
 //         Break;
 //       if ev0.kind in clearEvents then
@@ -1839,9 +1762,9 @@ begin
     or eventQ.removeEvent(EK_addedYou, c) then}
    if found then
      begin
-      result:=TRUE;
+      result := TRUE;
       roasterLib.redraw(c);
-      saveinboxDelayed:=TRUE;
+      saveinboxDelayed := TRUE;
      end;
 
   TipRemove(c);
@@ -1851,9 +1774,9 @@ end; // sawAllHere
 
 procedure TchatFrm.FormKeyPress(Sender: TObject; var Key: Char);
 var
-  s:string;
-  i, l, k : integer;
-  ch : TchatInfo;
+  s: String;
+  i, l, k: integer;
+  ch: TchatInfo;
 begin
 if key<>#13 then
   enterCount:=0
@@ -1873,21 +1796,21 @@ else
        inc(enterCount);
        if (enterCount=sendOnEnter) then
         begin
-         s:= ch.input.text;
+         s := ch.input.text;
          l := 2*pred(enterCount);
          k := l;
 //         i := 1 + ch.input.SelStart;
          i := ch.input.SelStart;
-         while (l >0)and((s[i] = #10)or(s[i]=#13)) do
+         while (l >0) and ((s[i] = #10)or(s[i]=#13)) do
           begin
            dec(i);
            dec(l);
           end;
          dec(k, l);
 //         delete(s,1 + ch.input.SelStart-l, l);
-         delete(s,1+i, k);
-         ch.input.text:=s;
-         key:=#0;
+         delete(s, 1+i, k);
+         ch.input.text := s;
+         key := #0;
          send;
   //      Exit;
         end;
@@ -1896,7 +1819,7 @@ else
 case key of
   #27:begin close; key := #0; end;
   #127,   // ctrl+bs
-  #10:key:=#0;
+  #10: key := #0;
 //  else
 //   Inherited;
   end;
@@ -1904,24 +1827,24 @@ end;
 
 procedure TchatFrm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
-  ch:TchatInfo;
-  i : Integer;
-  b : Boolean;
+  ch: TchatInfo;
+  i: Integer;
+  b: Boolean;
 //  wm : TWMKey;
 begin
-ch:=thisChat;
+  ch := thisChat;
 //MainDlg.RnQmain.fin
 //if ActiveControl then
 
-if ch = nil then Exit;
-if shift = [] then
+  if ch = nil then Exit;
+  if shift = [] then
   case key of
     VK_APPS:
       if Assigned(ch) and (ch.chatType = CT_IM) then
        begin
-        clickedContact:=ch.who;
+        clickedContact := ch.who;
         with ch.historyBox.ClientToScreen(ch.historyBox.margin.TopLeft) do
-         MainDlg.RnQmain.contactMenu.popup(x,y);
+         MainDlg.RnQmain.contactMenu.popup(x, y);
        end;
     VK_BROWSER_BACK:
       begin
@@ -1937,15 +1860,17 @@ if (shift = [ssAlt]) and (ch.chatType = CT_IM) then
   case key of
     VK_A:
       begin
-      with autoscrollBtn do down:=not down;
-       autoscrollBtnClick(self);
+        with autoscrollBtn do
+          down := not down;
+        autoscrollBtnClick(self);
       end;
     VK_P: prefBtnClick(self);
     VK_I: infoBtnClick(self);
     VK_Q: quote();
     VK_H:
       begin
-      with historyBtn do down:=not down;
+      with historyBtn do
+        down := not down;
       historyBtnClick(self);
       end;
     VK_M:
@@ -2031,7 +1956,7 @@ if shift = [ssCtrl] then
       if ch.chatType = CT_IM then
         if ch.input.selLength=0 then
          if Length(ch.historyBox.getSelText) > 0 then
-           clipboard.asText:=ch.historyBox.getSelText;
+           clipboard.asText := ch.historyBox.getSelText;
     VK_F6: pageCtrl.SelectNextPage(TRUE);
     VK_F4, VK_W: try
             sawAllHere;
@@ -2059,19 +1984,20 @@ if shift = [ssCtrl] then
           selectall1Click(self);
         Key := 0;
        end;
-    VK_F:begin
+    VK_F:
+      begin
            if not({(ActiveControl = MainDlg.RnQmain.roaster) or
                   (ActiveControl = MainDlg.RnQmain.FilterEdit))}
               childParent(getFocus, MainDlg.RnQmain.handle))  then
             begin
-             findbtn.down:=not findbtn.down;
+             findbtn.down := not findbtn.down;
              findBtnClick(self);
              Key := 0;
             end;
-       end;
+      end;
     end;
  if (shift<>[]) or (key <> 13) then
-  enterCount:=0;
+  enterCount := 0;
  if Assigned(ch) and (ch.chatType = CT_PLUGING) then
   begin
    SendMessage(ch.ID, WM_KEYDOWN, Key, 0);
@@ -2084,58 +2010,58 @@ if shift = [ssCtrl] then
   inherited;
 end; // keydown
 
-procedure TchatFrm.open(focus:boolean=TRUE);
+procedure TchatFrm.open(focus: Boolean = TRUE);
 var
-  bak:Thandle;
-  ch : TchatInfo;
+  bak: Thandle;
+  ch: TchatInfo;
 begin
-if chats.count = 0 then
-  exit;
-if not visible then
-  bak:=getForegroundWindow
-else
-  bak:=0;
-showForm(self);
-if (bak>0) and not focus then
-  forceforegroundwindow(bak);
-SetWindowPos(Handle, HWND_TOP, 0,0,0,0, SWP_NOMOVE+SWP_NOSIZE); // bring it atop if it is not
-ch := thisChat;
-if focus then
-  begin
-   bringForeground:=handle;
-   if Assigned(ch) then
-    if ch.chatType = CT_IM then
-     ch.input.setFocus;
-  end
- else
-  if isVisible then
-   if Assigned(ch) then
-    if ch.chatType = CT_IM then
-     ch.input.setFocus;
+  if chats.count = 0 then
+    exit;
+  if not visible then
+    bak := getForegroundWindow
+   else
+    bak := 0;
+  showForm(self);
+  if (bak>0) and not focus then
+    forceforegroundwindow(bak);
+  SetWindowPos(Handle, HWND_TOP, 0,0,0,0, SWP_NOMOVE+SWP_NOSIZE); // bring it atop if it is not
+  ch := thisChat;
+  if focus then
+    begin
+      bringForeground := handle;
+      if Assigned(ch) then
+       if ch.chatType = CT_IM then
+         ch.input.setFocus;
+    end
+   else
+    if isVisible then
+     if Assigned(ch) then
+      if ch.chatType = CT_IM then
+        ch.input.setFocus;
 end; // open
 
 function TchatFrm.isVisible:boolean;
-begin result:=getForegroundWindow=handle end;
+begin result := getForegroundWindow=handle end;
 
-procedure TchatFrm.quote(qs : String = ''; MakeCarret : Boolean = True);
+procedure TchatFrm.quote(qs: String = ''; MakeCarret: Boolean = True);
 var
-  i:integer;
-  AddToInput : Boolean;
-  oldPos:Tpoint;
-  selected,s,result,leading:string;
+  i: Integer;
+  AddToInput: Boolean;
+  oldPos: Tpoint;
+  selected, s, result, leading: String;
 
-  function addquote(s:string):string;
+  function addquote(s: String): String;
   begin
    if (length(leading)>0) and (leading[1] = '>') then
-     result:='>' + s
+     result := '>' + s
     else
-     result:='> '+ s;
+     result := '> ' + s;
   end; // addquote
 begin
  if thisChat=NIL then exit;
  with thisChat do
   begin
-   if Assigned(input) and (input.Visible)and input.Enabled then
+   if Assigned(input) and (input.Visible) and input.Enabled then
     input.setFocus;
    if Length(qs) > 0 then
      begin
@@ -2147,47 +2073,49 @@ begin
       if historyBox.history.count = 0 then  // there's nothing to quote for sure
         exit;
       AddToInput := True;
-      if quoting.quoteselected then selected:=trim(historyBox.getSelText)
-      else selected:='';
+      if quoting.quoteselected then
+        selected := trim(historyBox.getSelText)
+       else
+        selected := '';
       if selected='' then
        begin
         AddToInput := False;
         // save original reply at the beginning of a quoting-cycle
         if quoteIdx < 0 then
-          lastInputText:=input.text;
+          lastInputText := input.text;
 
         selected := historyBox.getQuoteByIdx(quoteIdx);
        end;
      end;
 
-  result:='';
+  result := '';
   while selected > '' do
    begin
-    s:=trimright(chop(#10,selected));
+    s := trimright(chop(#10,selected));
     if s='' then continue;
-    leading:=getLeadingInMsg(s);
+    leading := getLeadingInMsg(s);
     if MakeCarret then
-      s:=wraptext(s, 50);
-    result:=result+addquote(chop(CRLF,s))+CRLF;
+      s := wraptext(s, 50);
+    result := result + addquote(chop(CRLF, s)) + CRLF;
     while s > '' do
-      result:=result+addquote(chop(CRLF,s))+CRLF;
+      result := result + addquote(chop(CRLF, s)) + CRLF;
    end;
-  i:=quoteIdx;
+  i := quoteIdx;
 //  Delete(result, length(result)-1, 2);
-  oldPos:=input.CaretPos;
+  oldPos := input.CaretPos;
   if AddToInput then
     input.SelText := result
   else
    begin
-    input.text:=lastInputText;
+    input.text := lastInputText;
     input.lines.add(result);
     if quoting.cursorBelow then
-      input.selStart:=length(input.text)
+      input.selStart := length(input.text)
     else
-      input.CaretPos:=oldPos;
+      input.CaretPos := oldPos;
    end;
 //  input.SelText := result;
-  quoteIdx:=i;
+  quoteIdx := i;
   end;
 end; // quote
 
@@ -2201,22 +2129,22 @@ end;
 
 procedure TchatFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-updatechatfrmXY;
-//if searchhistFrm <> nil then
-//  searchhistFrm.Close;
+  updatechatfrmXY;
+  //if searchhistFrm <> nil then
+  //  searchhistFrm.Close;
 end; // form close
 
 procedure TchatFrm.selectall1Click(Sender: TObject);
 var
-  ch:TchatInfo;
+  ch: TchatInfo;
 begin
-  ch:=thischat;
+  ch := thischat;
   if ch=NIL then exit;
   with ch.historyBox do
   if historyNowCount > 0 then
    begin
     select(historyNowOffset, history.count-1);
-//  clipboard.asText:=getSelText;
+//  clipboard.asText := getSelText;
     repaint;
     ch.updateAutoscroll(nil);
    end;
@@ -2224,10 +2152,10 @@ end; // select all
 
 procedure TchatFrm.viewmessageinwindow1Click(Sender: TObject);
 begin
-if thisChat=NIL then exit;
-with thisChat.historyBox do
-  if somethingIsSelected then
-    viewTextWindow(getTranslation('selection'), getSelText)
+  if thisChat=NIL then exit;
+  with thisChat.historyBox do
+    if somethingIsSelected then
+      viewTextWindow(getTranslation('selection'), getSelText)
   else
 //    if pointedItem.kind<>PK_NONE then
     if clickedItem.kind<>PK_NONE then
@@ -2236,27 +2164,27 @@ end; // open
 
 procedure TchatFrm.txt1Click(Sender: TObject);
 var
-  fn:string;
+  fn: string;
 begin
-if thisChat=NIL then exit;
-fn:=openSavedlg(self, 'Save text as UTF-8 file', false, 'txt');
-if fn = '' then exit;
-savefile2(fn, StrToUTF8(thisChat.historyBox.getSelText));
+  if thisChat=NIL then exit;
+  fn := openSavedlg(self, 'Save text as UTF-8 file', false, 'txt');
+  if fn = '' then exit;
+  savefile2(fn, StrToUTF8(thisChat.historyBox.getSelText));
 end; // txt
 
 procedure TchatFrm.html1Click(Sender: TObject);
 var
-  fn:string;
+  fn: string;
 begin
-if thisChat=NIL then exit;
-fn:=openSavedlg(self, '', false, 'html');
-if fn = '' then exit;
-savefile2(fn, thisChat.historyBox.getSelHtml2(FALSE));
+  if thisChat=NIL then exit;
+  fn := openSavedlg(self, '', false, 'html');
+  if fn = '' then exit;
+  savefile2(fn, thisChat.historyBox.getSelHtml2(FALSE));
 end; // html
 
 procedure TchatFrm.infoBtnClick(Sender: TObject);
 var
-  cnt : TRnQContact;
+  cnt: TRnQContact;
 begin
   cnt := thisContact;
   if Assigned(cnt) then
@@ -2265,7 +2193,7 @@ end;
 
 procedure TchatFrm.updateContactStatus;
 var
-  cnt : TRnQContact;
+  cnt: TRnQContact;
 begin
   cnt := thisContact;
   if cnt=NIL then
@@ -2296,10 +2224,10 @@ begin
   {$ENDIF RNQ_AVATARS}
 end; // updateSendBtn
 
-procedure TchatFrm.closePageAt(idx:integer);
+procedure TchatFrm.closePageAt(idx: Integer);
 var
-  old:TTabSheet;
-  oldCh : TchatInfo;
+  old: TTabSheet;
+  oldCh: TchatInfo;
 begin
   if (idx<0) or (idx >= pageCtrl.PageCount) then exit;
  {$IFDEF RNQ_FULL}
@@ -2311,7 +2239,7 @@ begin
    begin
     if plugBtns.PluginsTB.Parent = oldCh.btnPnl then
       plugBtns.PluginsTB.Parent := pagectrl;
-    lastContact:= oldCh.who;
+    lastContact := oldCh.who;
 
     if oldCh.chatType = CT_PLUGING then
      begin
@@ -2334,7 +2262,7 @@ begin
        end;
 
     end;
-    old:=pageCtrl.Pages[idx];
+    old := pageCtrl.Pages[idx];
 //    with old do
       begin
 {
@@ -2342,7 +2270,7 @@ begin
 //          FreeAndNil(controls[0]);
           controls[0].free;
 }
-      old.pageControl:=NIL;
+      old.pageControl := NIL;
   //    free;
       end;
     chats.Delete(idx);
@@ -2372,7 +2300,7 @@ begin
     saveListsDelayed := True;
 end; // closePageAt
 
-procedure TchatFrm.closeChatWith(c:TRnQContact);
+procedure TchatFrm.closeChatWith(c: TRnQContact);
 begin closePageAt(chats.idxOf(c)) end;
 
 procedure TchatFrm.FormShow(Sender: TObject);
@@ -2381,18 +2309,18 @@ procedure TchatFrm.FormShow(Sender: TObject);
 begin
 //  theme.getIco2(PIC_MSG, icon);
   theme.pic2ico(RQteFormIcon, PIC_MSG, icon);
-//icon:=getIco2('msg');
+//icon := getIco2('msg');
   applyFormXY;
-  lastContact:=NIL;
+  lastContact := NIL;
   updateContactStatus;
   if thisChat <> NIL then
    thisChat.repaint();
-//  toolbar.buttonheight:=panel.Height -18+5;
-//  toolbar.buttonheight:= 21;
+//  toolbar.buttonheight := panel.Height -18+5;
+//  toolbar.buttonheight := 21;
   if plugBtns.PluginsTB <> toolbar then
    begin
      if Assigned(plugBtns.PluginsTB) then
-      plugBtns.PluginsTB.buttonheight:=21;
+      plugBtns.PluginsTB.buttonheight := 21;
    end;
 
 //  i:=getWindowLong(pagectrl.handle, GWL_EXSTYLE);
@@ -2410,19 +2338,19 @@ begin
      translateWindow(searchHistFrm);
    end;
   showForm(searchHistFrm)}
-  w2sBox.Visible:=findBtn.Down;
-  directionGrp.Visible:=findBtn.Down;
+  w2sBox.Visible := findBtn.Down;
+  directionGrp.Visible := findBtn.Down;
   directionGrp.ItemIndex := 0;
-  caseChk.Visible:=findBtn.Down;
-  reChk.visible:=findBtn.Down;
-  SBSearch.Visible:=findBtn.Down;
+  caseChk.Visible := findBtn.Down;
+  reChk.visible := findBtn.Down;
+  SBSearch.Visible := findBtn.Down;
   if thisChat <> NIL then
    thisChat.historyBox.w2s := '';
-  fp.Visible:=findBtn.Down;
+  fp.Visible := findBtn.Down;
 //  SearchPnl.Visible := findBtn.Down;
   if not (historyBtn.Down) and (findBtn.Down) then
      begin
-       historyBtn.down:=true;
+       historyBtn.down := true;
        historyBtnClick(sender);
     end;
   if w2sBox.Visible then
@@ -2476,27 +2404,27 @@ begin
   enterCount := 0;
 end;
 
-procedure TchatFrm.closeAllPages(isAuto : Boolean = false);
+procedure TchatFrm.closeAllPages(isAuto: Boolean = false);
 begin
   if isAuto then
     PagesEnumStr := Pages2String
    else
     PagesEnumStr := '';
-pagectrl.hide;
-while pagectrl.PageCount > 1 do
-  if pageIndex=0 then
-    closePageAt(1)
-  else
-    closePageAt(0);
-closePageAt(0);
-pagectrl.show;
+  pagectrl.hide;
+  while pagectrl.PageCount > 1 do
+   if pageIndex=0 then
+     closePageAt(1)
+    else
+     closePageAt(0);
+  closePageAt(0);
+  pagectrl.show;
 end;  // closeAllPages
 
 procedure TchatFrm.autoscrollBtnClick(Sender: TObject);
 var
-  ch:Tchatinfo;
+  ch: Tchatinfo;
 begin
-  ch:=thisChat;
+  ch := thisChat;
   if ch=NIL then exit;
   ch.setAutoscroll(autoscrollBtn.down);
   ch.repaint();
@@ -2504,34 +2432,34 @@ begin
     ch.input.SetFocus;
 end;
 
-procedure TchatFrm.redrawTab(c:TRnQcontact);
+procedure TchatFrm.redrawTab(c: TRnQcontact);
 var
-  i:integer;
-  R:Trect;
+  i: Integer;
+  R: Trect;
 begin
- i:=chats.IdxOf(c);
+ i := chats.IdxOf(c);
  if (i < 0) or (i >= pagectrl.PageCount) then exit;
  SendMessage(pagectrl.Handle, TCM_GETITEMRECT, i, Longint(@R));
- R.right:=R.left+30;
+ R.right := R.left + 30;
  inc(r.Top, 1);
  dec(r.Bottom, 1);
  invalidateRect(pagectrl.handle, @R, TRUE);
 end;
 
-procedure TchatFrm.setCaptionFor(c:TRnQContact);
+procedure TchatFrm.setCaptionFor(c: TRnQContact);
 var
-  i:integer;
-  w : Integer;
+  i: Integer;
+  w: Integer;
 begin
-i:=chats.idxOf(c);
-if (i >= 0) AND (i < pagectrl.PageCount) then
- begin
-  w := max(pagectrl.Canvas.TextWidth('_'), 5);
-  pageCtrl.pages[i].caption:=
+  i := chats.idxOf(c);
+  if (i >= 0) AND (i < pagectrl.PageCount) then
+   begin
+     w := max(pagectrl.Canvas.TextWidth('_'), 5);
+     pageCtrl.pages[i].caption :=
      // additional spaces for icon
 //    StringOfChar('_',2+theme.getPicSize(RQteDefault, status2imgName(byte(SC_ONLINE)), 16).cx div w);
-    StringOfChar('_',2+ statusDrawExt(0, 0, 0, byte(SC_ONLINE)).cx div w)
-    +dupAmperstand(c.displayed);
+       StringOfChar('_',2+ statusDrawExt(0, 0, 0, byte(SC_ONLINE)).cx div w)
+       +dupAmperstand(c.displayed);
 
  {$IFDEF RNQ_FULL}
  {$IFDEF CHECK_INVIS}
@@ -2546,24 +2474,24 @@ if (i >= 0) AND (i < pagectrl.PageCount) then
  end;
 end; // setCaptionFor
 
-procedure TchatFrm.setCaption(idx : Integer);
+procedure TchatFrm.setCaption(idx: Integer);
 var
-//  i:integer;
-  c : TRnQcontact;
-  R:Trect;
-  w : Integer;
+//  i: integer;
+  c: TRnQcontact;
+  R: Trect;
+  w: Integer;
 begin
-//i:=chats.idxOf(c);
+//i := chats.idxOf(c);
   if not chats.validIdx(idx) then Exit;
   w := max(pagectrl.Canvas.TextWidth('_'), 5);
   if chats.byIdx(idx).chatType = CT_IM then
   begin
    c := chats.byIdx(idx).who;
    begin
-    pageCtrl.pages[idx].caption:=
+    pageCtrl.pages[idx].caption :=
        // additional spaces for icon
 //      StringOfChar('_',2+theme.getPicSize(RQteDefault, status2imgName(byte(SC_ONLINE)), 16).cx div w);
-      StringOfChar('_',2+ statusDrawExt(0, 0, 0, byte(SC_ONLINE)).cx div w)
+      StringOfChar('_', 2 + statusDrawExt(0, 0, 0, byte(SC_ONLINE)).cx div w)
       +dupAmperstand(c.displayed);
    {$IFDEF RNQ_FULL}
    {$IFDEF CHECK_INVIS}
@@ -2579,31 +2507,31 @@ begin
   end
   else
     begin
-     pageCtrl.pages[idx].caption:= chats.byIdx(idx).lastInputText+    // additional spaces for icon
-      StringOfChar('_',2+theme.getPicSize(RQteDefault, 'plugintab'+IntToStrA(chats.byIdx(idx).ID), 16).cx div w);
+     pageCtrl.pages[idx].caption := chats.byIdx(idx).lastInputText +    // additional spaces for icon
+       StringOfChar('_', 2 + theme.getPicSize(RQteDefault, 'plugintab' + IntToStrA(chats.byIdx(idx).ID), 16).cx div w);
      SendMessage(pagectrl.Handle, TCM_GETITEMRECT, idx, Longint(@R));
-     //R.right:=R.left+20;
+     //R.right := R.left+20;
      invalidateRect(pagectrl.handle, @R, TRUE);
 
     end;
 end; // setCaption
 
 procedure TchatFrm.singleBtnClick(Sender: TObject);
-begin thisChat.single:=singleBtn.down end;
+begin thisChat.single := singleBtn.down end;
 
 procedure TchatFrm.WndProc(var Message: TMessage);
-//var
+var
 //  ShiftState: TShiftState;
-//var
-// ti : TTCItem;
+// ti: TTCItem;
+  P: TPoint;
+  tabindex: Integer;
 begin
  case message.msg of
   WM_SYSCOMMAND:
     updatechatfrmXY;
 
-  WM_mousewheel,
-    WM_VSCROLL:
-   if (Assigned(chats))and(thisChat <> NIL) and (thisChat.chatType = CT_IM) then
+  WM_mousewheel, WM_VSCROLL:
+   if (Assigned(chats)) and (thisChat <> NIL) and (thisChat.chatType = CT_IM) then
     if message.wparam shr 31 > 0 then
       thisChat.historyBox.histScrollEvent(+wheelVelocity)
     else
@@ -2657,8 +2585,35 @@ begin
   TabsChanged;
   
    }
+   WM_TIMER:
+      if TWMTimer(Message).TimerID = HintTimer then
+      begin
+        // determine current mouse position to check if it left the window
+        GetCursorPos(P);
+        P := self.ScreenToClient(P);
+
+        tabindex := pagectrl.IndexOfTabAt(p.X, p.Y);
+
+        if not Assigned(hintwnd) or not hintwnd.Visible or (tabindex <> last_tabindex) then
+          ShowTabHint(P.X, P.Y);
+        StopTimer(HintTimer);
+{        with FColumns do
+        begin
+          if not InHeader(P) or ((FDownIndex > NoColumn) and (FHoverIndex <> FDownIndex)) then
+          begin
+            Treeview.StopTimer(HeaderTimer);
+            FHoverIndex := NoColumn;
+            FClickIndex := NoColumn;
+            FDownIndex := NoColumn;
+            FCheckBoxHit := False;
+            Result := True;
+            Message.Result := 0;
+            Invalidate(nil);
+          end;
+        end;}
+      end;
   end;
-inherited;
+  inherited;
 end; // WMmouseWheel
 
 procedure TchatFrm.copylink2clpbdClick(Sender: TObject);
@@ -2679,14 +2634,14 @@ procedure TchatFrm.btnContactsClick(Sender: TObject);
 begin openSendContacts(thisContact) end;
 
 procedure TchatFrm.chatDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
-begin accept:=source=MainDlg.RnQmain.roster end;
+begin accept := source=MainDlg.RnQmain.roster end;
 
 procedure TchatFrm.chatDragDrop(Sender, Source: TObject; X, Y: Integer);
 var
-  cl:TRnQCList;
+  cl: TRnQCList;
 begin
   if (clickedContact=NIL)or (thisContact = NIL) then exit;
-  cl:=TRnQCList.create;
+  cl := TRnQCList.create;
   cl.add(clickedContact);
    Proto_Outbox_add(OE_contacts, thisContact, 0, cl);
   cl.free;
@@ -2705,33 +2660,33 @@ begin
   if not visible then exit;
   if windowState <> wsMaximized then
     begin
-      chatfrmXY.top:=top;
-      chatfrmXY.left:=left;
-      chatfrmXY.height:=height;
-      chatfrmXY.width:=width;
+      chatfrmXY.top := top;
+      chatfrmXY.left := left;
+      chatfrmXY.height := height;
+      chatfrmXY.width := width;
     end;
   if windowState <> wsMinimized then
-    chatfrmXY.maximized:= windowState=wsMaximized;
+    chatfrmXY.maximized := windowState=wsMaximized;
 end; // updatechatfrmXY
 
 
-procedure TchatFrm.historyAllShowChange(ch : TchatInfo; histBtnDown : Boolean);
+procedure TchatFrm.historyAllShowChange(ch: TchatInfo; histBtnDown: Boolean);
 var
-  olds,news:integer;
-//  i : Integer;
-  oldTime : TDateTime;
-//  ch:TchatInfo;
-//  str : TStream;
+  olds, news: integer;
+//  i: Integer;
+  oldTime: TDateTime;
+//  ch: TchatInfo;
+//  str: TStream;
 begin
 //  ch:=thisChat;
   if ch=NIL then exit;
   with ch.historyBox do
   begin
-    whole:=histBtnDown;
+    whole := histBtnDown;
     autoScroll := autoScrollVal;
     if whole then
      begin
-      offset:=0;
+      offset := 0;
       with history do
       if not loaded then
         begin
@@ -2746,14 +2701,14 @@ begin
 //         str := GetStream(userPath+historyPath + ch.who.uid);
 //         fromSteam(str);
 //         str.Free;
-         news:=Count;
+         news := Count;
          if oldTime > 0 then
           begin
 //            olds := news;
-            while (news >0)and(getAt(news-1).when >= oldTime) do
+            while (news >0) and (getAt(news-1).when >= oldTime) do
              Dec(news);
 //            dec(news, max(0, olds));
-//         news:=count-olds;
+//         news := count-olds;
           end;
 //         with ch.historyBox do
          begin
@@ -2770,7 +2725,7 @@ begin
      end
     else
      begin
-       autoscroll:=TRUE;
+       autoscroll := TRUE;
        offset := newSession;
        if topVisible < offset then
          topVisible := offset;
@@ -2790,17 +2745,17 @@ end;
 
 procedure TchatFrm.historyBtnClick(Sender: TObject);
 var
-//  olds,news:integer;
-  ch:TchatInfo;
+//  olds,news: integer;
+  ch: TchatInfo;
 begin
-  ch:=thisChat;
+  ch := thisChat;
   if ch=NIL then exit;
   historyAllShowChange(ch, historyBtn.down);
 end;
 
 procedure TchatFrm.sbarDblClick(Sender: TObject);
 var
- ch : TchatInfo;
+ ch: TchatInfo;
 begin
   with sbar.ScreenToClient(mousePos) do
  case whatStatusPanel(sbar, x) of
@@ -2821,11 +2776,11 @@ end;
 
 procedure TchatFrm.sbarDrawPanel(StatusBar: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
 var
- Details : TThemedElementDetails;
- ch : TchatInfo;
-// s  : String;
- Arect : TRect;
- agR, r2 : TGPRect;
+ Details: TThemedElementDetails;
+ ch: TchatInfo;
+// s: String;
+ Arect: TRect;
+ agR, r2: TGPRect;
 begin
 //  statusbar.canvas.Brush.Color := clBtnFace
  StatusBar.Canvas.Font.Assign(Screen.MenuFont);
@@ -2838,14 +2793,14 @@ begin
  dec(Arect.Left);
  inc(Arect.Bottom);
  case panel.index of
-  1,2,3:
-     if ThemeServices.ThemesEnabled then
+  1, 2, 3:
+      if StyleServices.Enabled then
       begin
-//        Details := ThemeServices.GetElementDetails(tsGripperPane);
-//        Details := ThemeServices.GetElementDetails(tsStatusDontCare);
-//        Details := ThemeServices.GetElementDetails(tsPane);
-//        Details := ThemeServices.GetElementDetails(tsPane);
-        Details := ThemeServices.GetElementDetails(tsStatusRoot);
+//        Details := StyleServices.GetElementDetails(tsGripperPane);
+//        Details := StyleServices.GetElementDetails(tsStatusDontCare);
+//        Details := StyleServices.GetElementDetails(tsPane);
+//        Details := StyleServices.GetElementDetails(tsPane);
+        Details := StyleServices.GetElementDetails(tsStatusRoot);
 //        ThemeServices.DrawElement();
 //        ThemeServices.DrawElement(statusbar.canvas.Handle, Details, Rect, nil);
         ThemeServices.DrawElement(statusbar.canvas.Handle, Details, Arect, nil);
@@ -2925,8 +2880,11 @@ begin
 
 end;
 
-procedure TchatFrm.setStatusbar(s:string);
-begin with sbar.Panels do items[count-1].text:=s end;
+procedure TchatFrm.setStatusbar(s: String);
+begin
+  with sbar.Panels do
+   items[count-1].text := s
+end;
 
 procedure TchatFrm.FormMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
@@ -2938,7 +2896,7 @@ procedure TchatFrm.FormMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Inte
 //var
 //  tabindex : Integer;
 begin
-  hintMode:=HM_comm;
+  hintMode := HM_comm;
 {  tabindex := pagectrl.IndexOfTabAt(X, Y);
   if tabindex < 0 then
    begin
@@ -2986,14 +2944,14 @@ begin
  end;
 end;
 
-function TchatFrm.moveToTimeOrEnd(c:TRnQcontact; time:Tdatetime; NeedOpen : Boolean = True) : Boolean;
+function TchatFrm.moveToTimeOrEnd(c: TRnQcontact; time: Tdatetime; NeedOpen: Boolean = True): Boolean;
 var
-  ch:TchatInfo;
-  ev:Thevent;
+  ch: TchatInfo;
+  ev: Thevent;
   // i: Integer;
 begin
   Result := False;
-  ch:=chats.byContact(c);
+  ch := chats.byContact(c);
   if ch=NIL then exit;
   if ch.historyBox.history.Count = 0 then
 //    result := True
@@ -3003,10 +2961,10 @@ begin
        begin
       // i := topVisible;
         go2end(True);
-        ev:=history.getAt(topVisible);
+        ev := history.getAt(topVisible);
        end;
       if (ev=NIL) or (ev.when > time) then
-        result := moveToTime(c,time, NeedOpen);
+        result := moveToTime(c, time, NeedOpen);
       if not Result then
         ev := ch.historyBox.history.getAt(ch.historyBox.history.Count-1);
       if (ev <> NIL) then
@@ -3014,15 +2972,15 @@ begin
     end;
 end; // moveToTimeOrEnd
 
-function TchatFrm.moveToTime(c:TRnQContact; time:Tdatetime; NeedOpen : Boolean = True) : boolean;
+function TchatFrm.moveToTime(c: TRnQContact; time: Tdatetime; NeedOpen: Boolean = True): boolean;
 var
-  ch:TchatInfo;
-  h:Thistory;
-  i:integer;
+  ch: TchatInfo;
+  h: Thistory;
+  i: integer;
 
-  function search(ofs : Integer):integer;
+  function search(ofs: Integer): Integer;
   begin
-  result:=h.Count-1;
+  result := h.Count-1;
 //  while result >= 0 do
   while result >= ofs do
     if h.getAt(result).when <= time then
@@ -3033,26 +2991,26 @@ var
    Result := -1;
   if result >= ofs then
     if h.getAt(result).when <> time then
-      result:=-1;
+      result := -1;
   end; // search
 
 begin
   result := False;
-  ch:=chats.byContact(c);
+  ch := chats.byContact(c);
   if ch=NIL then exit;
-  h:=ch.historyBox.history;
-  i:=search(ch.historyBox.offset);
+  h := ch.historyBox.history;
+  i := search(ch.historyBox.offset);
   if NeedOpen and (i < 0) and not ch.historyBox.whole then
     begin
       if ch = thisChat then
-       historyBtn.down:=TRUE;
+       historyBtn.down := TRUE;
       historyAllShowChange(ch, True);
 //    historyBtnClick(self);
-      i:=search(ch.historyBox.offset);
+      i := search(ch.historyBox.offset);
       if i < 0 then
        begin
         if ch = thisChat then
-         historyBtn.down:=FALSE;
+         historyBtn.down := FALSE;
         historyAllShowChange(ch, False);
 //        historyBtnClick(self);
        end;
@@ -3063,7 +3021,7 @@ begin
      Result := True;
       updateRSB(True, i, True);
       topVisible := offset + rsb_position;
-      topOfs:=0;
+      topOfs := 0;
     end;
   ch.historyBox.repaint;
   ch.updateAutoscroll(nil);
@@ -3076,17 +3034,17 @@ end;
 
 procedure TchatFrm.Sendmultiple1Click(Sender: TObject);
 var
-  wnd:TselectCntsFrm;
-  msg:string;
+  wnd: TselectCntsFrm;
+  msg: String;
 begin
 //msg:=grabThisText;
-msg := thisChat.input.text;
-if trim(msg) = '' then
+  msg := thisChat.input.text;
+  if trim(msg) = '' then
   begin
-  msgDlg('Can''t send an empty message', True, mtWarning);
-  exit;
+    msgDlg('Can''t send an empty message', True, mtWarning);
+    exit;
   end;
-wnd:= TselectCntsFrm.doAll(MainDlg.RnQmain,
+  wnd := TselectCntsFrm.doAll(MainDlg.RnQmain,
                               'Send multiple', 'Send message',
                               Account.AccProto,
                               Account.AccProto.readList(LT_ROSTER).clone.add(notinlist),
@@ -3094,23 +3052,23 @@ wnd:= TselectCntsFrm.doAll(MainDlg.RnQmain,
                               [sco_multi,sco_groups,sco_predefined],
                               @wnd
                               );
-wnd.toggle(thisContact);
+  wnd.toggle(thisContact);
 //  theme.getIco2(PIC_MSG, wnd.icon);
   theme.pic2ico(RQteFormIcon, PIC_MSG, wnd.icon);
-//wnd.extra:=Tincapsulate.aString(msg);
-inputChange(self);
+//wnd.extra := Tincapsulate.aString(msg);
+  inputChange(self);
 end;
 
-procedure TchatFrm.sendMessageAction(sender:Tobject);
+procedure TchatFrm.sendMessageAction(sender: Tobject);
 var
-  wnd:TselectCntsFrm;
-  cl:TRnQCList;
-  msg:string;
+  wnd: TselectCntsFrm;
+  cl: TRnQCList;
+  msg: String;
 begin
   msg := grabThisText;
-  wnd:=(sender as Tcontrol).parent as TselectCntsFrm;
-  //msg:=(wnd.extra as Tincapsulate).str;
-  cl:=wnd.selectedList;
+  wnd := (sender as Tcontrol).parent as TselectCntsFrm;
+  //msg := (wnd.extra as Tincapsulate).str;
+  cl := wnd.selectedList;
   wnd.extra.free;
   wnd.close;
   with cl do
@@ -3124,23 +3082,24 @@ end; // sendmessage action
 
 procedure TchatFrm.del1Click(Sender: TObject);
 var
-  st,en:integer;
+  st, en: Integer;
 begin
-with thisChat.historyBox do
-  begin
-  if not wholeEventsAreSelected then exit;
-  st:=startSel.evIdx;
-  en:=endSel.evIdx;
-  if st > en then swap4(st,en);
-//  chatFrm.visible:=FALSE;
-  Visible := false;
+  with thisChat.historyBox do
+   begin
+    if not wholeEventsAreSelected then exit;
+    st := startSel.evIdx;
+    en := endSel.evIdx;
+    if st > en then
+      swap4(st, en);
+//  chatFrm.visible := False;
+    Visible := false;
 //  history.deleteFromTo(userPath+historyPath + thisContact.uid, st,en);
-  history.deleteFromTo(thisContact.uid, st,en);
-  Visible := True;
+    history.deleteFromTo(thisContact.uid, st, en);
+    Visible := True;
 //  chatFrm.visible:=TRUE;
-  deselect();
-  thischat.repaintAndUpdateAutoscroll();
-  end;
+    deselect();
+    thischat.repaintAndUpdateAutoscroll();
+   end;
 end;
 
 procedure TchatFrm.lsbEnter;
@@ -3150,42 +3109,44 @@ begin
    if not entering then
      begin
       if position = 0 then
-        hideScrollTimer:=10
+        hideScrollTimer := 10
      end
    else
      begin
-      hideScrollTimer:=0;
-      width:=maximizedScroll;
+      hideScrollTimer := 0;
+      width := maximizedScroll;
      end;
 end;
 
 procedure TchatFrm.Closeall1Click(Sender: TObject);
-begin closeAllPages end;
+begin
+  closeAllPages
+end;
 
 procedure TchatFrm.Closeallbutthisone1Click(Sender: TObject);
 var
-  i,sel:integer;
+  i, sel: integer;
 begin
-try
-  pagectrl.hide;
-  sel:=pageIndex;
-  for i:=chats.count-1 downto 0 do
-    if i<>sel then
-      closePageAt(i);
-finally
-  pagectrl.show;
-end;
+  try
+    pagectrl.hide;
+    sel := pageIndex;
+    for i := chats.count-1 downto 0 do
+      if i<>sel then
+        closePageAt(i);
+   finally
+    pagectrl.show;
+  end;
 end;
 
 procedure TchatFrm.CloseallOFFLINEs1Click(Sender: TObject);
 var
-  i:integer;
-  c:TRnQcontact;
+  i: Integer;
+  c: TRnQcontact;
 begin
- c:=thisContact;
+  c := thisContact;
  try
   pagectrl.hide;
-  for i:=chats.count-1 downto 0 do
+  for i := chats.count-1 downto 0 do
    if chats.byIdx(i).chatType = CT_IM then
     if chats.byIdx(i).who.isOffline then
       closePageAt(i);
@@ -3195,59 +3156,60 @@ begin
  end;
 end;
 
-function TchatFrm.grabThisText:string;
+function TchatFrm.grabThisText: String;
 begin
-result:=thisChat.input.text;
-thisChat.input.text:='';
-// update char counter
-inputChange(self);
+  result := thisChat.input.text;
+  thisChat.input.text := '';
+  // update char counter
+  inputChange(self);
 end; // grabThisText
 
 procedure TchatFrm.send;
 var
-  s,s1:string;
-  max:integer;
-  flag : Integer;
-  ch : TchatInfo;
+  s, s1: string;
+  max: integer;
+  flag: Integer;
+  ch: TchatInfo;
 begin
-  enterCount:=0;
+  enterCount := 0;
   flag := 0;
 //  if SimplMsgBtn.Down then
 //    flag := IF_Simple;
   ch := thisChat;
   if (ch = nil)or(ch.who = nil) THEN Exit;
 
-  max:= ch.who.fProto.maxCharsFor(ch.who);
+  max := ch.who.fProto.maxCharsFor(ch.who);
   if length(ch.input.text) > max then
    if MessageDlg(getTranslation('Your message is too long. Max %d characters.\n\n                       Split the message?',[max]),
                 mtInformation, [mbYes, mbNo], 0)=mrYes then
   begin
-    s:=grabThisText;
+    s := grabThisText;
     repeat
-      s1:=copy(s,1,max-1);
-      delete(s,1,max-1);
-      send(flag,s1);
+      s1 := copy(s, 1, max-1);
+      delete(s, 1, max-1);
+      send(flag, s1);
     until length(s)<max;
-    send(flag,s);
+    send(flag, s);
     exit;
   end else
 else
   begin
-    s:=grabThisText;
+    s := grabThisText;
     if trim(s)='' then
       begin
        if closeChatOnSend then
         close
       end
     else
-      send(flag,s) end;
+      send(flag, s)
+  end;
 end; // send
 
-procedure TchatFrm.send(flags_:integer; msg:string='');
+procedure TchatFrm.send(flags_: Integer; msg: String = '');
 begin
   if (thisChat=NIL) or not sendBtn.Enabled then exit;
   if msg='' then
-    msg:=grabThisText;
+    msg := grabThisText;
   if trim(msg) = '' then
     begin
     msgDlg('Can''t send an empty message', True, mtWarning);
@@ -3265,37 +3227,38 @@ begin
    end;
 end; // send
 
-procedure TchatFrm.select(c:TRnQcontact);
+procedure TchatFrm.select(c: TRnQcontact);
 var
-  i:integer;
+  i: integer;
 begin
-if c=NIL then exit;
-i:=chats.idxOf(c);
-if i >= 0 then setTab(i);
+  if c=NIL then exit;
+  i := chats.idxOf(c);
+  if i >= 0 then
+   setTab(i);
 end; // select
 
 procedure TchatFrm.flash;
 var
-	rec:FLASHWINFO;
+	rec: FLASHWINFO;
 begin
 //if doFlashChat then
  begin
-  rec.cbSize:=sizeOf(rec);
-  rec.hwnd:=handle;
-  rec.dwFlags:=FLASHW_CAPTION OR FLASHW_TRAY OR FLASHW_TIMERNOFG;
-  rec.dwTimeout:=0;
-  rec.uCount:=dword(-1);
+  rec.cbSize := sizeOf(rec);
+  rec.hwnd := handle;
+  rec.dwFlags := FLASHW_CAPTION OR FLASHW_TRAY OR FLASHW_TIMERNOFG;
+  rec.dwTimeout := 0;
+  rec.uCount := dword(-1);
   flashWindowEx(rec);
  end;
 end; // flash
 
 procedure TchatFrm.chatsendmenuopen1Click(Sender: TObject);
 var
-  i:integer;
-  s:string;
+  i: Integer;
+  s: String;
 begin
  if (thisChat=NIL) or not sendBtn.Enabled then exit;
- s:=grabThisText;
+ s := grabThisText;
  if trim(s) = '' then
   begin
   msgDlg('Can''t send an empty message', True, mtWarning);
@@ -3316,10 +3279,10 @@ begin
   closeThisPage;
 end;
 
-function TchatFrm.Pages2String : RawByteString;
+function TchatFrm.Pages2String: RawByteString;
 var
-//  cl:TRnQCList;
-  i:integer;
+//  cl: TRnQCList;
+  i: integer;
 begin
   if (userTime < 0) and (chats.count=0) then
     result := PagesEnumStr
@@ -3340,9 +3303,9 @@ end;
 
 procedure TchatFrm.savePicMnuClick(Sender: TObject);
 var
- pic : AnsiString;
- p : string;
- i, k : Integer;
+ pic: AnsiString;
+ p: string;
+ i, k: Integer;
  RnQPicStream //, RnQPicStream2
    : TMemoryStream;
 // fmt : TGUID;
@@ -3363,7 +3326,7 @@ begin
             pic := '';
             p := PAFormat[DetectFileFormatStream(RnQPicStream)];
            Delete(p, 1, 1);
-           p:=openSavedlg(self, '', false, p);
+           p := openSavedlg(self, '', false, p);
            if p > '' then
              RnQPicStream.SaveToFile(p);
            RnQPicStream.Free;
@@ -3377,7 +3340,7 @@ begin
       k := PosEx(RnQImageUnTag, pic, i+10);
       if (i > 0) and (k > 5) then
       begin
-        p:=openSavedlg(self, '', false, 'wbmp');
+        p := openSavedlg(self, '', false, 'wbmp');
         if p > '' then
          begin
            RnQPicStream := TMemoryStream.Create;
@@ -3389,12 +3352,12 @@ begin
     end;
 end;
 
-procedure TchatFrm.loadPages(const s : RawByteString);
+procedure TchatFrm.loadPages(const s: RawByteString);
 var
-  i:integer;
-  s1 : RawByteString;
-  ofs : Integer;
-  len : Integer;
+  i: integer;
+  s1: RawByteString;
+  ofs: Integer;
+  len: Integer;
 begin
  ofs := 1;
 // i := 1;
@@ -3423,8 +3386,8 @@ end; // loadPages
 
 procedure TchatFrm.closeBtnClick(Sender: TObject);
 begin
-sawAllHere;
-closeThisPage
+  sawAllHere;
+  closeThisPage
 end;
 
 procedure TchatFrm.prefBtnClick(Sender: TObject);
@@ -3477,22 +3440,22 @@ end;
 
 procedure TchatFrm.histmenuPopup(Sender: TObject);
 begin
- chatshowlsb1.checked:=showLSB;
- chatpopuplsb1.visible:=showLSB;
- chatpopuplsb1.checked:=popupLSB;
+ chatshowlsb1.checked := showLSB;
+ chatpopuplsb1.visible := showLSB;
+ chatpopuplsb1.checked := popupLSB;
 end;
 
 procedure TchatFrm.chatshowlsb1Click(Sender: TObject);
 begin setLeftSB(not showLSB) end;
 
-procedure TchatFrm.setLeftSB(visible:boolean);
+procedure TchatFrm.setLeftSB(visible: boolean);
 var
-  ch : TChatInfo;
+  ch: TChatInfo;
 begin
-  showLSB:=visible;
+  showLSB := visible;
   ch := thisChat;
   if (ch <> NIL)and(ch.lsb <> NIL) then
-    ch.lsb.visible:=showLSB;
+    ch.lsb.visible := showLSB;
 end;
 
 procedure TchatFrm.chathide1Click(Sender: TObject);
@@ -3500,15 +3463,15 @@ begin setLeftSB(FALSE) end;
 
 procedure TchatFrm.chatpopuplsb1Click(Sender: TObject);
 begin
-popupLSB:=not popupLSB;
-updateGraphics;
+  popupLSB := not popupLSB;
+  updateGraphics;
 end;
 
 procedure TchatFrm.FormMouseWheelUp(Sender: TObject; Shift: TShiftState;
   MousePos: TPoint; var Handled: Boolean);
 var
-  p : TPoint;
-  ch : TchatInfo;
+  p: TPoint;
+  ch: TchatInfo;
 begin
  ch := thisChat;
  if Assigned(ch) then
@@ -3543,8 +3506,8 @@ end;
 procedure TchatFrm.FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
   MousePos: TPoint; var Handled: Boolean);
 var
-  p : TPoint;
-  ch : TchatInfo;
+  p: TPoint;
+  ch: TchatInfo;
 begin
  ch := thisChat;
  if Assigned(ch) then
@@ -3573,27 +3536,27 @@ begin
   end;
 end;
 
-procedure TchatFrm.onHistoryRepaint(sender:TObject);
+procedure TchatFrm.onHistoryRepaint(sender: TObject);
 var
-  ch:TchatInfo;
+  ch: TchatInfo;
 begin
-  ch:=thischat;
+  ch := thischat;
   if Assigned(ch) then
   if ch.chatType = CT_IM then
   begin
-    autoscrollBtn.down:=ch.historyBox.autoScrollVal;
+    autoscrollBtn.down := ch.historyBox.autoScrollVal;
     ch.historyBox.updateRSB(false);
     ch.updateLSB;
   end;
 end; // onHistoryRepaint
 
-procedure TchatFrm.addcontactAction(sender:Tobject);
+procedure TchatFrm.addcontactAction(sender: Tobject);
 var
-  cnt : TRnQContact;
+  cnt: TRnQContact;
 begin
   cnt :=  Account.AccProto.getContact(selectedUIN);
   if Assigned(cnt) then
-    addToRoster( cnt, (sender as Tmenuitem).tag, cnt.CntIsLocal)
+    addToRoster(cnt, (sender as Tmenuitem).tag, cnt.CntIsLocal)
 end;
 
 procedure TchatFrm.pagectrl00MouseUp(Sender: TObject; Button: TMouseButton;
@@ -3625,10 +3588,10 @@ end;
 
 var
 	// backup the values of autoscroll in the current chat
-  bakAutoScroll:boolean;
+  bakAutoScroll: boolean;
 
 procedure TchatFrm.splitterMoving(Sender: TObject; var NewSize: Integer; var Accept: Boolean);
-begin bakAutoScroll:=thisChat.historyBox.autoScrollVal end;
+begin bakAutoScroll := thisChat.historyBox.autoScrollVal end;
 
 procedure TchatFrm.SplitterMoved(Sender: TObject);
 begin
@@ -3707,7 +3670,7 @@ end;
 procedure TchatFrm.pagectrlDragOver(Sender, Source: TObject; X, Y: Integer;
   State: TDragState; var Accept: Boolean);
 var
-  i : Integer;
+  i: Integer;
 begin
   Accept := False;
 //  if (sender is TTabSheet)and (Source is TTabSheet) then
@@ -3951,10 +3914,17 @@ begin
 }
 end;
 
+procedure TchatFrm.StopTimer(ID: Integer);
+
+begin
+  if HandleAllocated then
+    KillTimer(Handle, ID);
+end;
+
 procedure TchatFrm.ShowTabHint(X, Y: integer);
 var
   bmp:Tbitmap;
-  r: TRect;
+  hr, r: TRect;
   hintdata: TVTHintData;
   tabindex: integer;
   ch : TchatInfo;
@@ -3989,6 +3959,10 @@ begin
 	//подготовим данные для отрисовки хинта
   hintdata.HintRect := r;
 	hintdata.Tree := MainDlg.RnQmain.roster;
+  hr := pagectrl.TabRect(tabindex);
+  hr.TopLeft :=  HintData.Tree.ScreenToClient(pagectrl.ClientToScreen(hr.TopLeft));
+  hr.BottomRight := HintData.Tree.ScreenToClient(pagectrl.ClientToScreen(hr.BottomRight));
+  hintdata.Tree.LastHintRect := hr;
 
   if Assigned(ch.who.data) and Assigned(TCE(ch.who.data^).node) then
     hintdata.Node := TCE(ch.who.data^).node.treenode
@@ -4017,8 +3991,9 @@ end;
 
 procedure TchatFrm.pagectrlMouseLeave(Sender: TObject);
 var
-  hw : TVirtualTreeHintWindow;
+  hw: TVirtualTreeHintWindow;
 begin
+  StopTimer(HintTimer);
   hw := hintwnd;
   hintwnd := NIL;
   if hw <> nil then
@@ -4044,19 +4019,23 @@ begin
     tabindex := 0;
   if tabindex < 0 then
   	exit;
-  //ShowTabHint(X, Y);
+ // ShowTabHint(X, Y);
   if hintwnd <> nil then
    begin
-    //если хинт существует, переместим его обновим для нового таба
+    // если хинт существует, переместим его обновим для нового таба
     if (tabindex <> last_tabindex) then
      begin
       if (TchatInfo(chats[tabindex]).chatType = CT_PLUGING) then
        FreeAndNil(hintwnd)
       else
        begin
-        last_tabindex := tabindex;
+//        last_tabindex := tabindex;
 //        MousePos := pagectrl.ScreenToClient(Mouse.CursorPos);
-        ShowTabHint(X, Y)
+//        ShowTabHint(X, Y)
+//        hintTimer.X := X;
+//        hintTimer.Y := Y;
+//        hintTimer.Enabled := true;
+         SetTimer(Handle, HintTimer, 100, nil);
        end;
      end;
     if Assigned(hintwnd) then
@@ -4084,7 +4063,13 @@ begin
        begin
          //если хинта еще нет или поменялся таб, создадим новое окно хинта
          if (hintwnd = nil) {or (pagectrl.IndexOfTabAt(MousePos.X, MousePos.Y) <> last_tabindex)} then
+          begin
           ShowTabHint(MousePos.X, MousePos.Y);
+//            hintTimer.X := MousePos.X;
+//            hintTimer.Y := MousePos.Y;
+//            hintTimer.Enabled := true;
+          end;
+
        end;
     end;
 
@@ -4272,9 +4257,9 @@ procedure TchatFrm.hAchatshowlsbUpdate(Sender: TObject);
 begin // 3011
  with TAction(Sender) do
   if showLSB then
-     HelpKeyword:=PIC_RIGHT
+     HelpKeyword := PIC_RIGHT
    else
-     HelpKeyword:='';
+     HelpKeyword := '';
 //    TAction(Sender).HelpKeyword := PIC_CHECKED
 //   else
 //    TAction(Sender).HelpKeyword := PIC_UNCHECKED;
@@ -4283,7 +4268,7 @@ end;
 
 procedure TchatFrm.hAShowSmilesExecute(Sender: TObject);
 var
-  ch :TchatInfo;
+  ch: TchatInfo;
 begin
 //  useSmiles := TAction(Sender).Checked;
   useSmiles := not useSmiles;
@@ -4300,9 +4285,9 @@ begin
   begin
     Checked := useSmiles;
     if useSmiles then
-       HelpKeyword:=PIC_RIGHT
+       HelpKeyword := PIC_RIGHT
      else
-       HelpKeyword:='';
+       HelpKeyword := '';
   end;
 end;
 
@@ -4317,9 +4302,9 @@ procedure TchatFrm.hAchatpopuplsbUpdate(Sender: TObject);
 begin // 3012
  with TAction(Sender) do
   if popupLSB then
-    HelpKeyword:=PIC_RIGHT
+    HelpKeyword := PIC_RIGHT
    else
-    HelpKeyword:='';
+    HelpKeyword := '';
 //    TAction(Sender).HelpKeyword := PIC_CHECKED
 //   else
 //    TAction(Sender).HelpKeyword := PIC_UNCHECKED;}
@@ -4329,7 +4314,7 @@ end;
 
 procedure TchatFrm.CloseallandAddtoIgnorelist1Click(Sender: TObject);
 var
-  i : Integer;
+  i: Integer;
 begin
   if messageDlg(getTranslation('Move to ignorelist all "not in list"?'),
       mtConfirmation, [mbYes,mbNo], 0) <> mrYes then
@@ -4351,12 +4336,12 @@ end;
 
 procedure TchatFrm.RnQPicBtnClick(Sender: TObject);
 var
-  fn : String;
+  fn: String;
   PicMaxSize: Integer;
 //  s, s2 : AnsiString;
-  s, s2 : RawByteString;
+  s, s2: RawByteString;
 //  bmp : TBitmap;
-  fs  : TFileStream;
+  fs: TFileStream;
 begin
   PicMaxSize := round(thisChat.who.fProto.maxCharsFor(thisChat.who, True) * 3 / 4 )- 100;
   if OpenSaveFileDialog(Application.Handle, 'wbmp',
@@ -4426,21 +4411,21 @@ begin
   tZers.Play;
 end;}
 
-procedure TchatFrm.searchFrom(const start:integer);
+procedure TchatFrm.searchFrom(const start: integer);
 var
-  i:integer;
-  w2s,s:string;
+  i: integer;
+  w2s, s: string;
  {$IFNDEF DB_ENABLED}
 //  re:Tregexpr;
   re: TRegEx;
-  l_RE_opt : TRegExOptions;
+  l_RE_opt: TRegExOptions;
  {$ENDIF ~DB_ENABLED}
-  use_re, found:boolean;
+  use_re, found: boolean;
 begin
-use_re:=reChk.checked;
-w2s:=trim(w2sBox.text);
-if not use_re and not caseChk.checked then
-  w2s:=uppercase(w2s);
+  use_re := reChk.checked;
+  w2s := trim(w2sBox.text);
+  if not use_re and not caseChk.checked then
+    w2s := uppercase(w2s);
 if w2s = '' then
   begin
   sbar.simpletext:=getTranslation('Type what you want to search...!');
@@ -4645,8 +4630,8 @@ end;
 
 function CHAT_TAB_ADD(Control: Integer; iIcon: HIcon; const TabCaption: string): Integer;
 var
-  sheet:TtabSheet;
-  chat:TchatInfo;
+  sheet: TtabSheet;
+  chat: TchatInfo;
 //  pnl,
   pnl2: TPanel;
   c: TRnQContact;
@@ -4680,7 +4665,7 @@ begin
 //    if not assigned(pTCE(c.data).history) then
 //      pTCE(c.data).history:=Thistory.create;
 
-    sheet:=TtabSheet.create(chatFrm);
+    sheet := TtabSheet.create(chatFrm);
     chatFrm.chats.Add(chat);
     sheet.PageControl := pageCtrl;
     setCaptionFor(c);
@@ -4691,11 +4676,11 @@ begin
     pnl2.BevelOuter  := bvNone;
     pnl2.BorderStyle := bsNone;
     pnl2.BringToFront;
-    //pnl2.caption:= TabCaption;
+    //pnl2.caption := TabCaption;
     pnl2.Tag := 5000;
 
-//    chat.input.visible:= false;
-//    chat.splitter.visible:= false;
+//    chat.input.visible := false;
+//    chat.splitter.visible := false;
     chat.id := Control;
 //    chatFrm.InsertControl(TWinControl(Control));
     if iIcon <> 0 then
@@ -4713,14 +4698,14 @@ begin
 
     pagectrlChange(pageCtrl);
 
-    result:= Integer(pnl2);
+    result := Integer(pnl2);
   end;
 end;
 
 procedure CHAT_TAB_MODIFY(Control: Integer; iIcon: HIcon; const TabCaption: string);
 var
 //  sheet:TtabSheet;
-  chat:TchatInfo;
+  chat: TchatInfo;
 //  pnl,
 //  pnl2:Tpanel;
 //  c: Tcontact;
@@ -4794,7 +4779,7 @@ var
   ch:TchatInfo;
 begin
   inherited;
-  ch:= thisChat;
+  ch := thisChat;
   if ch = NIL then exit;
   if ch.chatType = CT_PLUGING then
     plugins.castEv(PE_SELECTTAB, ch.id);
@@ -4802,9 +4787,9 @@ end;
 
 procedure TchatFrm.closemenuPopup(Sender: TObject);
 var
-  ch:TchatInfo;
+  ch: TchatInfo;
 begin
-  ch:= thisChat;
+  ch := thisChat;
   if ch = NIL then exit;
 //  chatcloseignore1.visible:= ch.chatType <> CT_PLUGING;
 //  CloseallandAddtoIgnorelist1.visible:= ch.chatType <> CT_PLUGING;
@@ -4814,8 +4799,8 @@ procedure TchatFrm.AvtPBoxPaint(Sender: TObject);
 var
 //  gr : TGPGraphics;
 //  ia : TGPImageAttributes;
-  cnt : TRnQContact;
-  ch  : TchatInfo;
+  cnt: TRnQContact;
+  ch: TchatInfo;
 begin
   {$IFDEF RNQ_AVATARS}
   ch  := thisChat;
@@ -4988,7 +4973,7 @@ const
 var
 //  rWorkArea: TRect;
   rMainRect: TRect;
-  StickAt : Word;
+  StickAt: Word;
 //  Docked: Boolean;
 begin
 //  Docked := FALSE;
@@ -5061,9 +5046,9 @@ end;
  {$ENDIF USE_SECUREIM}
 procedure TchatFrm.EncryptSetPWD(Sender: TObject);
 var
-  ch : TchatInfo;
-  s : String;
-  sA : AnsiString;
+  ch: TchatInfo;
+  s: String;
+  sA: AnsiString;
 begin
 //  if not UseAnime then Exit;
 //  checkGifTime;
@@ -5085,7 +5070,7 @@ end;
 
 procedure TchatFrm.EncryptClearPWD(Sender: TObject);
 var
-  ch : TchatInfo;
+  ch: TchatInfo;
 //  s : AnsiString;
 begin
 //  if not UseAnime then Exit;
@@ -5100,7 +5085,7 @@ begin
 // activeICQ.sendSNAC()
 end;
 
-procedure TchatFrm.SetSmilePopup(pIsMenu : Boolean);
+procedure TchatFrm.SetSmilePopup(pIsMenu: Boolean);
 begin
    {$IFDEF USE_SMILE_MENU}
   if pIsMenu then
@@ -5119,10 +5104,10 @@ end;
  {$IFDEF usesDC}
 procedure TchatFrm.WMDROPFILES(var Message: TWMDROPFILES);
 var
-  ch : TchatInfo;
-  cnt : TRnQContact;
-  i, n:integer;
-  ss:string;
+  ch: TchatInfo;
+  cnt: TRnQContact;
+  i, n: integer;
+  ss: string;
   buffer: array[0..2000] of char;
 begin
   ch := thisChat;
@@ -5134,17 +5119,17 @@ begin
       Exit;
     if cnt is TICQContact then
      begin
-      ss:='';
+      ss := '';
       n := DragQueryFile(Message.Drop, Cardinal(-1), NIL, 0);
       for i:=0 to n-1 do
         begin
         DragQueryFile(Message.Drop, i, @buffer, sizeOf(buffer));
-        ss:=ss+buffer+CRLF;
+        ss := ss + buffer + CRLF;
         end;
       DragFinish(message.Drop);
 //      TsendFileFrm.doAll(self, TICQContact(cnt), ss);
       ICQSendFile(TICQContact(cnt), ss);
-      ss:='';
+      ss := '';
      end; 
    end;
 end; // WMDROPFILES

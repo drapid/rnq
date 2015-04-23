@@ -65,7 +65,7 @@ implementation
  {$IFDEF RNQ_PLAYER}
    uSimplePlayer,
  {$ENDIF RNQ_PLAYER}
-   mainDlg, RnQTips, chatDlg, addContactDlg,
+   mainDlg, RnQTips, tipDlg, chatDlg, addContactDlg,
    wpDlg,
    RnQProtocol;
 {const

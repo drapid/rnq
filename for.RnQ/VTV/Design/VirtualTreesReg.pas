@@ -25,8 +25,7 @@ uses
   {$else}
     DsgnIntf,
   {$endif}                       
-  ColnEdit,
-  VirtualTrees, VTHeaderPopup;
+  ColnEdit, VirtualTrees, VTHeaderPopup;
 
 type
   TVirtualTreeEditor = class (TDefaultEditor)
@@ -46,7 +45,8 @@ uses
   {$else}
     StrEditD4,
   {$endif COMPILER_5_UP}
-  Dialogs, TypInfo, SysUtils, Graphics, CommCtrl, ImgList, Controls;
+  Dialogs, TypInfo, SysUtils, Graphics, CommCtrl, ImgList, Controls,
+  VirtualTrees.ClipBoard;
 
 type
   // The usual trick to make a protected property accessible in the ShowCollectionEditor call below.
@@ -261,7 +261,7 @@ end;
     R: TRect;
     State: Cardinal;
 
-  begin
+begin
     with ACanvas do
     begin
       FillRect(ARect);
@@ -277,27 +277,27 @@ end;
         State := State or DFCS_CHECKED;
       DrawFrameControl(Handle, R, DFC_BUTTON, State);
     end;
-  end;
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
   {$ifdef COMPILER_6_UP}
 
-    procedure TClipboardElement.PropDrawName(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
+procedure TClipboardElement.PropDrawName(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
 
-    begin
+begin
       DefaultPropertyDrawName(Self, ACanvas, ARect);
-    end;
+end;
 
   {$endif COMPILER_6_UP}
 
 //----------------------------------------------------------------------------------------------------------------------
 
-  procedure TClipboardElement.PropDrawValue(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
+procedure TClipboardElement.PropDrawValue(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
 
-  begin
+begin
     DrawBoolean(CompareText(GetVisualValue, 'True') = 0, ACanvas, ARect, ASelected);
-  end;
+end;
 
 {$endif COMPILER_5_UP}
 
@@ -330,14 +330,14 @@ end;
 
 {$ifdef COMPILER_5_UP}
 
-  procedure TClipboardFormatsProperty.PropDrawName(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
+procedure TClipboardFormatsProperty.PropDrawName(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
 
-  var
+var
     S: string;
     Width: Integer;
     R: TRect;
 
-  begin
+begin
     with ACanvas do
     begin
       Font.Name := 'Arial';
@@ -356,15 +356,15 @@ end;
       Font.Color := clBtnShadow;
       ExtTextOut(Handle, R.Left, R.Top, ETO_CLIPPED, @R, PChar(S), Length(S), nil);
     end;
-  end;
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-  procedure TClipboardFormatsProperty.PropDrawValue(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
+procedure TClipboardFormatsProperty.PropDrawValue(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
 
-  begin
+begin
     // Nothing to do here.
-  end;
+end;
 
 {$endif COMPILER_5_UP}
 
@@ -426,7 +426,7 @@ end;
 
 {$ifdef COMPILER_5_UP}
 
-  const
+const
     cCheckImageKindComboItemBorder   = 0;
     cCheckImageKindComboItemSpacing  = 2;
     cCheckImageKindComboBitmapHeight = 16;
@@ -436,19 +436,19 @@ end;
 
   {$ifdef COMPILER_6_UP}
 
-    procedure TCheckImageKindProperty.PropDrawName(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
+procedure TCheckImageKindProperty.PropDrawName(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
 
-    begin
-      DefaultPropertyDrawName(Self, ACanvas, ARect);
-    end;
+begin
+  DefaultPropertyDrawName(Self, ACanvas, ARect);
+end;
 
   {$endif}
 
 //----------------------------------------------------------------------------------------------------------------------
 
-  procedure TCheckImageKindProperty.PropDrawValue(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
+procedure TCheckImageKindProperty.PropDrawValue(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
 
-  begin
+begin
     if GetVisualValue <> '' then
       ListDrawValue(GetVisualValue, ACanvas, ARect, ASelected)
     else
@@ -457,20 +457,20 @@ end;
       {$else}
         inherited PropDrawValue(ACanvas, ARect, ASelected);
       {$endif}
-  end;
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-  procedure TCheckImageKindProperty.ListDrawValue(const Value: string; ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
+procedure TCheckImageKindProperty.ListDrawValue(const Value: string; ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
 
-  var
+var
     RighPosition: Integer;
     OldPenColor: TColor;
     CheckKind: TCheckImageKind;
     ImageList: TCustomImageList;
     RemainingRect: TRect;
 
-  begin
+begin
     RighPosition := ARect.Left + cCheckImageKindComboBitmapWidth;
     with ACanvas do
     try
@@ -495,23 +495,23 @@ end;
         inherited ListDrawValue(Value, ACanvas, RemainingRect, ASelected);
       {$endif}
     end;
-  end;
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-  procedure TCheckImageKindProperty.ListMeasureHeight(const Value: string; Canvas: TCanvas; var AHeight: Integer);
+procedure TCheckImageKindProperty.ListMeasureHeight(const Value: string; Canvas: TCanvas; var AHeight: Integer);
 
-  begin
-    AHeight := cCheckImageKindComboBitmapHeight;
-  end;
+begin
+  AHeight := cCheckImageKindComboBitmapHeight;
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-  procedure TCheckImageKindProperty.ListMeasureWidth(const Value: string; ACanvas: TCanvas; var AWidth: Integer);
+procedure TCheckImageKindProperty.ListMeasureWidth(const Value: string; ACanvas: TCanvas; var AWidth: Integer);
 
-  begin
+begin
     AWidth := AWidth + cCheckImageKindComboBitmapWidth;
-  end;
+end;
 
 {$endif COMPILER_5_UP}
 
@@ -613,6 +613,7 @@ begin
        'OnFocus*',
        'OnCreateEditor',
        'OnScroll',
+       'OnNodeHeightTracking',
        'OnHotChange']);
 
     RegisterPropertiesInCategory({$ifdef COMPILER_5} TVTHeaderCategory, {$endif} {$ifdef COMPILER_6_UP} sVTHeaderCategoryName, {$endif COMPILER_6_UP}

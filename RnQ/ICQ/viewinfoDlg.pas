@@ -14,13 +14,11 @@ uses
   StdCtrls, ICQContacts, ExtCtrls, ComCtrls,
   Menus,
   strutils, RnQButtons, RnQSpin, 
-//  OverbyteIcsWSocket,
-//  wsocket,
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     RnQGraphics,
   {$ELSE}
     RnQGraphics32,
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
   RnQDialogs, RnQNet,
   globalLib, RnQProtocol;
 

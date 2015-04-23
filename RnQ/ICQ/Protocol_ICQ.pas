@@ -515,7 +515,7 @@ begin
       result := getTranslation(status2ShowStr[TICQstatus(s)])
 end;
 
-function status2imgName(s: byte; inv:boolean=FALSE):AnsiString;
+function status2imgName(s: byte; inv:boolean=FALSE):TPicName;
 const
   prefix = 'status.';
 begin
@@ -545,7 +545,7 @@ if inv then
  result := INVIS_PREFIX + result;
 end; // status2imgdx
 
-function status2imgNameExt(s: byte; inv:boolean=FALSE; extSts : byte= 0):AnsiString;
+function status2imgNameExt(s: byte; inv:boolean=FALSE; extSts : byte= 0):TPicName;
 const
   prefix = 'status.';
 begin

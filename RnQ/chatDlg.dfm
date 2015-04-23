@@ -55,6 +55,7 @@ object chatFrm: TchatFrm
     Align = alBottom
     BevelOuter = bvNone
     FullRepaint = False
+    ParentBackground = False
     TabOrder = 6
     object sendBtn: TRnQToolButton
       Left = 9
@@ -84,6 +85,11 @@ object chatFrm: TchatFrm
       AutoSize = True
       ButtonHeight = 19
       ButtonWidth = 20
+      Color = clBtnFace
+      EdgeInner = esNone
+      EdgeOuter = esNone
+      List = True
+      ParentColor = False
       TabOrder = 0
       Transparent = False
       Wrapable = False
@@ -265,6 +271,10 @@ object chatFrm: TchatFrm
       Width = 200
       Height = 0
       Align = alCustom
+      Color = clBtnFace
+      EdgeInner = esNone
+      EdgeOuter = esNone
+      ParentColor = False
       TabOrder = 1
     end
   end
@@ -304,6 +314,7 @@ object chatFrm: TchatFrm
     Width = 615
     Height = 255
     Align = alClient
+    HotTrack = True
     MultiLine = True
     OwnerDraw = True
     TabOrder = 1
@@ -311,6 +322,7 @@ object chatFrm: TchatFrm
     OnChanging = pagectrlChanging
     OnDragDrop = pagectrlDragDrop
     OnDragOver = pagectrlDragOver
+    OnDrawTab = pagectrlDrawTab
     OnMouseDown = pagectrl00MouseDown
     OnMouseLeave = pagectrlMouseLeave
     OnMouseMove = pagectrlMouseMove
@@ -480,7 +492,7 @@ object chatFrm: TchatFrm
     end
     object hAdelete: TAction
       Category = 'histMenu'
-      Caption = 'Delete'
+      Caption = 'Delete selected'
       HelpKeyword = 'delete'
       OnExecute = del1Click
     end

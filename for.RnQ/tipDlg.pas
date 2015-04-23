@@ -10,13 +10,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     GDIPAPI,
     GDIPOBJ,
     RnQGraphics,
   {$ELSE}
     RnQGraphics32,
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
    RnQPrefsLib,
    Types;
 
@@ -132,6 +132,14 @@ type
 
 const
   TipsMaxTop : Integer = 200;
+
+var
+  TipsMaxCnt   : Integer = 20;
+  TipsBtwSpace : Integer;
+  TipsAlign    : TtipsAlign;
+  TipHorIndent : Integer;
+  TipVerIndent : Integer;
+
 var
   tipsList: TList = NIL;
 
@@ -153,12 +161,6 @@ uses
 //  processing:boolean=FALSE;
 //const
 //  round_R = 15;
-var
-  TipsMaxCnt   : Integer = 20;
-  TipsBtwSpace : Integer;
-  TipsAlign    : TtipsAlign;
-  TipHorIndent : Integer;
-  TipVerIndent : Integer;
 
 
 class function Ttipfrm.Add2ShowTip(pInfo : TTipInfo; x, y, Width, Height : Integer) : TtipFrm;
@@ -859,24 +861,32 @@ end;
 
 procedure tipsSetCFG(pp : TRnQPref);
 begin
-    pp.initPrefInt('show-tips-count', 20); //TipsMaxCnt);
-    pp.initPrefInt('show-tips-align', Byte(alBottomRight));
-    pp.initPrefInt('show-tips-btw-space', 2);
-    pp.initPrefInt('show-tips-ver-indent', 0);
-    pp.initPrefInt('show-tips-hor-indent', 0);
-// TipsMaxCnt   := 20;
-// TipsBtwSpace := 2;
-// TipsAlign    := alBottomRight;
-// TipsMaxAvtSizeUse := True;
-// TipsMaxAvtSize := 100;
-//TipsMaxTop
-    pp.getPrefInt('show-tips-count', TipsMaxCnt);
-    TipsAlign := TtipsAlign(byte(pp.getPrefIntDef('show-tips-align', Byte(TipsAlign))));
-    pp.getPrefInt('show-tips-btw-space', TipsBtwSpace);
-    pp.getPrefInt('show-tips-ver-indent', TipVerIndent);
-    pp.getPrefInt('show-tips-hor-indent', TipHorIndent);
-//    pp.getPrefBool('show-tips-use-avt-size', TipsMaxAvtSizeUse);
-//    pp.getPrefInt('show-tips-avt-size', TipsMaxAvtSize);
+  if Assigned(pp) then
+    begin
+      pp.initPrefInt('show-tips-count', 20); //TipsMaxCnt);
+      pp.initPrefInt('show-tips-align', Byte(alBottomRight));
+      pp.initPrefInt('show-tips-btw-space', 2);
+      pp.initPrefInt('show-tips-ver-indent', 0);
+      pp.initPrefInt('show-tips-hor-indent', 0);
+  //TipsMaxTop
+      pp.getPrefInt('show-tips-count', TipsMaxCnt);
+      TipsAlign := TtipsAlign(byte(pp.getPrefIntDef('show-tips-align', Byte(TipsAlign))));
+      pp.getPrefInt('show-tips-btw-space', TipsBtwSpace);
+      pp.getPrefInt('show-tips-ver-indent', TipVerIndent);
+      pp.getPrefInt('show-tips-hor-indent', TipHorIndent);
+  //    pp.getPrefBool('show-tips-use-avt-size', TipsMaxAvtSizeUse);
+  //    pp.getPrefInt('show-tips-avt-size', TipsMaxAvtSize);
+    end
+   else
+    begin
+      TipsMaxCnt   := 20;
+      TipsBtwSpace := 2;
+      TipsAlign    := alBottomRight;
+      TipVerIndent := 0;
+      TipHorIndent := 0;
+
+    end;
+
 end;
 
 end.

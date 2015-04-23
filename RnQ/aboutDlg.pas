@@ -10,10 +10,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, 
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     GDIPAPI,
     GDIPOBJ,
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
   RnQButtons, RQThemes,
   StdCtrls, ExtCtrls, RDGlobal;
 
@@ -44,9 +44,9 @@ type
     procedure RDLblClick(Sender: TObject);
 //    procedure antonLblClick(Sender: TObject);
     procedure forumLblClick(Sender: TObject);
-  { $IFNDEF NOT_USE_GDIPLUS}
+  { $IFDEF USE_GDIPLUS}
     procedure T1Timer(Sender: TObject);
-  { $ENDIF NOT_USE_GDIPLUS}
+  { $ENDIF USE_GDIPLUS}
     procedure AboutPBoxPaint(Sender: TObject);
     procedure CrdBtnClick(Sender: TObject);
     procedure OkBtnClick(Sender: TObject);
@@ -57,13 +57,13 @@ type
 //  public procedure destroyHandle;
   private
     AboutPBox: TRnQPntBox;
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     rnqicon : TGPBitmap;
-//  {$ELSE NOT_USE_GDIPLUS}
+//  {$ELSE NOT USE_GDIPLUS}
     picTok : Integer;
     PicLoc : TPicLocation;
     PicIdx : Integer;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
     curAngle : Integer;
 //    curSize : Single;
     curNapr  : Integer;
@@ -122,14 +122,14 @@ begin
 *)
   versionLbl.caption:=getTranslation('Build %d', [RnQBuild]);
 {$IFDEF CPUX64}
-  versionLbl.caption:= versionLbl.caption + ' x64';
+  versionLbl.caption := versionLbl.caption + ' x64';
 {$ENDIF CPUX64}
 {$IFDEF UNICODE}
 {$ELSE nonUNICODE}
-  versionLbl.caption:= versionLbl.caption + ' Ansi';
+  versionLbl.caption := versionLbl.caption + ' Ansi';
 {$ENDIF UNICODE}
   if LiteVersion then
-    versionLbl.caption:=versionLbl.caption + #13' Lite';
+    versionLbl.caption := versionLbl.caption + #13' Lite';
   bt := builtTime;
   BuiltLbl.Caption := 'Built: '+ DateTimeToStr(bt);
   MThanks.Height := AbPnl.Height;
@@ -144,10 +144,10 @@ begin
 //destroyHandle;
  aboutFrm := nil;
 // Im.Picture.free;
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
  rnqicon.Free;
  rnqicon := NIL;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
  Action := caFree;
 //  free;
 end;
@@ -167,12 +167,12 @@ begin
 //  AboutPBox.Height  := 85;
   AboutPBox.OnPaint := AboutPBoxPaint;
   AboutPBox.ControlStyle :=AboutPBox.ControlStyle + [ csOpaque ] ;
-  { $IFNDEF NOT_USE_GDIPLUS}
+  { $IFDEF USE_GDIPLUS}
   t1 := TTimer.Create(Self);
   t1.Interval := 40;
   t1.OnTimer := T1Timer;
   t1.Enabled := False;
-  { $ENDIF NOT_USE_GDIPLUS}
+  { $ENDIF USE_GDIPLUS}
   theme.pic2ico(RQteFormIcon, PIC_RNQ, icon);
   Lbl.Caption := 'R&Q IM';
 
@@ -204,17 +204,17 @@ end;
 //procedure TaboutFrm.destroyHandle; begin inherited end;
 
 procedure TaboutFrm.FormShow(Sender: TObject);
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
 var
  ico : HICON;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 begin
- {$IFNDEF NOT_USE_GDIPLUS}
+ {$IFDEF USE_GDIPLUS}
   ico := CopyImage(Application.Icon.Handle, IMAGE_ICON, 48, 48, LR_COPYFROMRESOURCE);
   rnqicon := TGPBitmap.Create(ico);
 //  DrawIconEx(PaintBox1.Canvas.Handle, 16, 190, SmallIcon,32, 32, 0, 0, DI_NORMAL);
   DestroyIcon(ico);
- {$ENDIF NOT_USE_GDIPLUS}
+ {$ENDIF USE_GDIPLUS}
   t1.Enabled := True;
   curAngle := 0;
 //   curSize := 20;
@@ -243,7 +243,7 @@ end;
 procedure TaboutFrm.AboutPBoxPaint(Sender: TObject);
 const
   PiDiv = Pi / 180;
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
 var
  gr : TGPGraphics;
   fnt : TGPFont;
@@ -382,7 +382,7 @@ begin
   SelectObject(DC, HOldBmp);
   DeleteObject(ABitmap);
   DeleteDC(DC);
-  {$ELSE NOT_USE_GDIPLUS}
+  {$ELSE NOT USE_GDIPLUS}
 const
   sizeM = 48;
   cntr = sizeM div 2;
@@ -497,13 +497,13 @@ begin
 
   bmp.Free;
 //  bmp2.Free;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 end;
 
 procedure TaboutFrm.RDLblClick(Sender: TObject);
 begin exec('mailto:Rapid@rnq.ru?subject=[RnQ]') end;
 
-  { $IFNDEF NOT_USE_GDIPLUS}
+  { $IFDEF USE_GDIPLUS}
 procedure TaboutFrm.T1Timer(Sender: TObject);
 begin
   if curAngle = -30 then
@@ -532,7 +532,7 @@ begin
   if Assigned(AboutPBox) then
     AboutPBox.Repaint;
 end;
-  { $ENDIF NOT_USE_GDIPLUS}
+  { $ENDIF USE_GDIPLUS}
 
 procedure TaboutFrm.forumLblClick(Sender: TObject);
 begin openURL(rnqSite) end;

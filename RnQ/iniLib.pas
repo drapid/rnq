@@ -73,7 +73,7 @@ uses
  {$ENDIF PROTOCOL_ICQ}
 
   OverbyteIcsWinSock,
-  RnQTips, history,
+  tipDlg, history,
   MenuSmiles, menusUnit,
    histUtilsDlg,
    Protocols_all;
@@ -381,10 +381,10 @@ behaviour[EK_url]:=behaviour[EK_msg];
 behaviour[EK_typingBeg].tiptime := 20;
 behaviour[EK_typingFin].tiptime := 20;
 
-
- TipsMaxCnt   := 20;
- TipsBtwSpace := 2;
- TipsAlign    := alBottomRight;
+  tipsSetCFG(NIL);
+// TipsMaxCnt   := 20;
+// TipsBtwSpace := 2;
+// TipsAlign    := alBottomRight;
  TipsMaxAvtSizeUse := True;
  TipsMaxAvtSize := 100;
 

@@ -891,11 +891,6 @@ uses
    Base64, //ZLibEx,
    RDFileUtil, RnQCrypt,
 //   rtf2html,
-  {$IFNDEF NOT_USE_GDIPLUS}
-    RnQGraphics,
-  {$ELSE}
-//    RnQGraphics32,
-  {$ENDIF NOT_USE_GDIPLUS}
  {$IFDEF RNQ_AVATARS}
    RnQ_Avatars,
  {$ENDIF}

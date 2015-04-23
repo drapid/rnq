@@ -75,7 +75,6 @@ uses
   themedit_fr in 'Prefs\themedit_fr.pas' {themeditFr: TFrame},
   RnQ_Avatars in 'RnQ_Avatars.pas',
   hook in 'hook.pas',
-  tipDlg in 'tipDlg.pas',
   RnQTips in 'RnQTips.pas',
   HistAllSearch in 'HistAllSearch.pas' {AllHistSrchForm},
   MenuSmiles in 'MenuSmiles.pas' {FSmiles},
@@ -101,6 +100,7 @@ uses
   ICQClients in 'ICQ\ICQClients.pas',
   Vcl.Themes,
   Vcl.Styles,
+  tipDlg in '..\For.rnq\tipDlg.pas',
   RnQLangFrm in '..\For.rnq\RnQLangFrm.pas' {FrmLangs},
   ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm};
 

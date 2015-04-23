@@ -1494,7 +1494,6 @@ begin
    rB.Bottom := r.Bottom;
    FillGradient(cnv.Handle, rB,  FadeColor2,  MidColor(FadeColor1, FadeColor2, 0.66),  gdVertical);
 
-//  {$ENDIF NOT_USE_GDIPLUS}
     oldCol := cnv.Brush.Color;
     cnv.Brush.Color := theme.GetColor('roaster.selection', clMenuHighlight);
     cnv.FrameRect(r);
