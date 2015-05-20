@@ -2594,9 +2594,11 @@ begin
 
         tabindex := pagectrl.IndexOfTabAt(p.X, p.Y);
 
+        StopTimer(HintTimer);
+
         if not Assigned(hintwnd) or not hintwnd.Visible or (tabindex <> last_tabindex) then
           ShowTabHint(P.X, P.Y);
-        StopTimer(HintTimer);
+        last_tabindex := tabindex;
 {        with FColumns do
         begin
           if not InHeader(P) or ((FDownIndex > NoColumn) and (FHoverIndex <> FDownIndex)) then
@@ -4035,6 +4037,8 @@ begin
 //        hintTimer.X := X;
 //        hintTimer.Y := Y;
 //        hintTimer.Enabled := true;
+         StopTimer(HintTimer);
+         last_tabindex := -1;
          SetTimer(Handle, HintTimer, 100, nil);
        end;
      end;

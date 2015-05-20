@@ -77,7 +77,7 @@ object aboutFrm: TaboutFrm
       '- Kantah'
       ''
       'Libs used'
-      '- Internet Component Suite, Francois Piette'
+      '- Internet Component Suite, by Fran'#231'ois Piette'
       '- VirtualTreeview, ColorPickerButton, by Mike Lischke'
       '- Bass, by Ian Luck'
       '- SciZipFile, by Patrik Spanel'
