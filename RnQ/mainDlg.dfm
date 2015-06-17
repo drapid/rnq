@@ -201,6 +201,8 @@ object RnQmain: TRnQmain
     OnMouseDown = rosterMouseDown
     OnMouseMove = rosterMouseMove
     OnMouseUp = rosterMouseUp
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerVertical, igoParentPassthrough]
     Columns = <>
   end
   object MlCntBtn: TRnQButton
