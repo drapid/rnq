@@ -2,7 +2,7 @@ unit RnQGraphics32;
 {$I ForRnQConfig.inc}
 {$I NoRTTI.inc}
 
-{ $DEFINE DELPHI_9_UP}
+{ $DEFINE DELPHI9_UP}
 {$IFDEF FPC}
   {$DEFINE TransparentStretchBltMissing}
   {$DEFINE CopyPaletteMissing}
@@ -172,15 +172,15 @@ type
 
   procedure FillGradient(DC: HDC; ARect: TRect; //ColorCount: Integer;
     StartColor, EndColor: Cardinal; ADirection: TGradientDirection; Alpha : Byte = $FF);
-  {$IFNDEF DELPHI_9_UP}
+  {$IFNDEF DELPHI9_UP}
   function WinGradientFill(DC: HDC; Vertex: PTriVertex; NumVertex: ULONG; Mesh: Pointer; NumMesh, Mode: ULONG): BOOL; stdcall;
-  {$ENDIF DELPHI_9_UP}
+  {$ENDIF DELPHI9_UP}
   procedure FillRoundRectangle(DC: HDC; ARect: TRect; Clr : Cardinal; rnd : Word);
 //  Procedure FillRectangle(DC: HDC; ARect: TRect; Clr : Cardinal);
   procedure DrawTextTransparent(DC : HDC; x, y : Integer; Text : String; Font : TFont; Alpha : Byte; fmt : Integer);
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
   procedure DrawText32(DC : HDC; TextRect : TRect; Text : String; Font : TFont; TextFlags : Cardinal);
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
  {$IFNDEF NO_WIN98}
   procedure DrawTransparentBitmap(dc:HDC;DrawBitmap: HBitmap; DestBnd:TGPRect; srcW, srcH : Integer; cTransparentColor:COLORREF);
  {$ENDIF NO_WIN98}
@@ -230,9 +230,9 @@ implementation
  uses
    StrUtils,
    math, mmSystem, Themes, UxTheme, UITypes,
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
    DwmApi,
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
@@ -370,12 +370,12 @@ begin
 //  fBmp := createBitmap(Width, Heigth);
    fBmp := Tbitmap.create;
    fBmp.PixelFormat := pf32bit;
-   {$IFDEF DELPHI_9_UP}
+   {$IFDEF DELPHI9_UP}
     fBmp.SetSize(Width, Heigth);
-   {$ELSE DELPHI_9_UP}
+   {$ELSE DELPHI9_UP}
     fBmp.width  := Width;
     fBmp.height := Heigth;
-   {$ENDIF DELPHI_9_UP}
+   {$ENDIF DELPHI9_UP}
   fWidth  := Width;
   fHeight := Heigth;
 end;
@@ -689,13 +689,13 @@ begin
           else
            begin
              bmp.fBmp.Handle := 0;
-            {$IFDEF DELPHI_9_UP}
+            {$IFDEF DELPHI9_UP}
              bmp.fBmp.SetSize(swf.Width, swf.Height);
             {$else DELPHI_9_dn}
              bmp.fBmp.Height := 0;
              bmp.fBmp.Width := swf.Width;
              bmp.fBmp.Height := swf.Height;
-            {$ENDIF DELPHI_9_UP}
+            {$ENDIF DELPHI9_UP}
            end;
   //         FreeAndNil(bmp.fBmp);
   //        fBmp.Canvas.Brush.Color:= clRed;// $00010101;
@@ -929,13 +929,13 @@ begin
               h := MulDiv(b, GetDeviceCaps(vBmp.Canvas.Handle, LOGPIXELSY), 2540);
             //  a := 50; b := 120;
               r.Left := 0; r.Top := 0; r.Right := w; r.Bottom := h;
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
               vBmp.SetSize(w, h);
- {$ELSE DELPHI_9_UP}
+ {$ELSE DELPHI9_UP}
               vBmp.Height := 0;
               vBmp.Width := w;
               vBmp.Height := h;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
               pic.Render(vBmp.Canvas.Handle, 0, 0, w, h, 0, b, a, -b, r);
               pic := NIL;
              end;
@@ -1881,12 +1881,12 @@ begin
            if fBmp.Height > fHeight then
              begin
                Result.fBmp.Height := 0;
-               {$IFDEF DELPHI_9_UP}
+               {$IFDEF DELPHI9_UP}
                 Result.fBmp.SetSize(fBmp.Width, fBmp.Height);
-               {$ELSE DELPHI_9_UP}
+               {$ELSE DELPHI9_UP}
                 Result.fBmp.width  := fBmp.Width;
                 Result.fBmp.height := fBmp.Height;
-               {$ENDIF DELPHI_9_UP}
+               {$ENDIF DELPHI9_UP}
              end;
            BitBlt(Result.fBmp.Canvas.Handle, 0, 0, fBmp.Width, fBmp.Height,
                MyDC, 0, 0, SRCCOPY);
@@ -2111,13 +2111,13 @@ begin
      Result.fBmp.Canvas.CopyRect(Rect(0, 0, Width, Height), Result.fBmp.Canvas, SRect);
      Result.fBmp.Width := FWidth;
 }
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
      Result.fBmp.SetSize(Width, Height);
  {$ELSE DELPHI_9_dn}
      Result.fBmp.Height := 0;
      Result.fBmp.Width := Width;
      Result.fBmp.Height := Height;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
      Result.fBmp.Canvas.CopyRect(Rect(0, 0, Width, Height), fBmp.Canvas, SRect);
      Result.fBmp.Transparent := fBmp.Transparent;
      Result.fBmp.TransparentColor := fBmp.TransparentColor;
@@ -2132,13 +2132,13 @@ begin
         Result.htMask.Width := FWidth;
 }
         Result.htMask.Monochrome := True;
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
         Result.htMask.SetSize(Width, Height);
  {$ELSE DELPHI_9_dn}
         Result.htMask.Height := 0;
         Result.htMask.Width := Width;
         Result.htMask.Height := Height;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
         Result.htMask.Canvas.CopyRect(Rect(0, 0, Width, Height), htMask.Canvas, SRect);
         Result.htMask.Transparent := htMask.Transparent;
         Result.htMask.TransparentColor := htMask.TransparentColor;
@@ -2533,12 +2533,12 @@ begin
                pic.Height := 0;
               end;
             pic.PixelFormat := pf1bit;
-           {$IFDEF DELPHI_9_UP}
+           {$IFDEF DELPHI9_UP}
             pic.SetSize(Result.cx, Result.cy);
            {$ELSE DELPHI_9_dn}
             pic.Width := Result.cx;
             pic.Height := Result.cy;
-           {$ENDIF DELPHI_9_UP}
+           {$ENDIF DELPHI9_UP}
             FillChar(Pal, SizeOf(Pal), 0);
             Pal.palVersion := $300;
             Pal.palNumEntries := 2;
@@ -2603,12 +2603,12 @@ function createBitmap(dx,dy:integer):Tbitmap;
 begin
  result:=Tbitmap.create;
  Result.PixelFormat := pf24bit;
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
   Result.SetSize(dx, dy);
- {$ELSE DELPHI_9_UP}
+ {$ELSE DELPHI9_UP}
   result.width:=dx;
   result.height:=dy;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
 end;
 
 function createBitmap(cnv:Tcanvas):Tbitmap;
@@ -2748,21 +2748,21 @@ begin
    bmp1 := TBitmap.Create;
    if bmp.Width * maxH < bmp.Height * maxW then
      begin
-      {$IFDEF DELPHI_9_UP}
+      {$IFDEF DELPHI9_UP}
        bmp1.SetSize(maxH*bmp.Width div bmp.Height, maxH);
       {$ELSE DELPHI_9_down}
        bmp1.Width := maxH*bmp.Width div bmp.Height;
        bmp1.Height := maxH;
-      {$ENDIF DELPHI_9_UP}
+      {$ENDIF DELPHI9_UP}
      end
     else
      begin
-      {$IFDEF DELPHI_9_UP}
+      {$IFDEF DELPHI9_UP}
      bmp1.SetSize(maxW, maxW*bmp.Height div bmp.Width);
       {$ELSE DELPHI_9_down}
        bmp1.Width := maxW;
        bmp1.Height := maxW*bmp.Height div bmp.Width;
-      {$ENDIF DELPHI_9_UP}
+      {$ENDIF DELPHI9_UP}
      end;
    bmp1.Canvas.StretchDraw(Rect(0, 0, bmp1.Width, bmp1.Height), bmp);
    FreeAndNil(bmp);
@@ -2937,7 +2937,7 @@ begin
   Result := True;
 end;
 
-  {$IFNDEF DELPHI_9_UP}
+  {$IFNDEF DELPHI9_UP}
 function WinGradientFill; external msimg32 name 'GradientFill';
 type
   COLOR16_RD = Smallint;
@@ -2955,16 +2955,16 @@ type
   TTriVertex_RD = _TRIVERTEX_RD;
   { $EXTERNALSYM TRIVERTEX_RD}
   TRIVERTEX_RD = _TRIVERTEX_RD;
-  {$ENDIF DELPHI_9_UP}
+  {$ENDIF DELPHI9_UP}
 
 procedure FillGradient(DC: HDC; ARect: TRect;// ColorCount: Integer;
   StartColor, EndColor: Cardinal; ADirection: TGradientDirection; Alpha : Byte = $FF);
 var
-  {$IFDEF DELPHI_9_UP}
+  {$IFDEF DELPHI9_UP}
    udtVertex: array [0..1] of TTriVertex;
   {$ELSE DELPHI_9_dn}
    udtVertex: array [0..1] of TTriVertex_RD;
-  {$ENDIF DELPHI_9_UP}
+  {$ENDIF DELPHI9_UP}
    rectGradient: TGradientRect;
    mode : Cardinal;
 
@@ -3073,11 +3073,11 @@ begin
 //        FillGradientInternal(tempDC,
 //           Rect(udtVertex[0].x, udtVertex[0].Y,udtVertex[1].x, udtVertex[1].Y),
 //           128, StartColor, EndColor, ADirection);
-    {$IFDEF DELPHI_9_UP}
+    {$IFDEF DELPHI9_UP}
         if GradientFill(tempDC,
-    {$ELSE DELPHI_9_UP}
+    {$ELSE DELPHI9_UP}
         if WinGradientFill(tempDC,
-    {$ENDIF DELPHI_9_UP}
+    {$ENDIF DELPHI9_UP}
                   @udtVertex, 2,
                   @rectGradient, 1,
                   Mode) then
@@ -3115,11 +3115,11 @@ begin
        end;
      end
     else
-    {$IFDEF DELPHI_9_UP}
+    {$IFDEF DELPHI9_UP}
       GradientFill(DC,
-    {$ELSE DELPHI_9_UP}
+    {$ELSE DELPHI9_UP}
       WinGradientFill(DC,
-    {$ENDIF DELPHI_9_UP}
+    {$ENDIF DELPHI9_UP}
                    @udtVertex, 2,
                    @rectGradient, 1,
                    Mode);
@@ -3180,12 +3180,12 @@ begin
 //     tempBitmap := createBitmap(res.cx, res.cy);
      tempBitmap:=Tbitmap.create;
      tempBitmap.PixelFormat := pf32bit;
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
      tempBitmap.SetSize(res.cx, res.cy);
  {$ELSE DELPHI_9_dn}
      tempBitmap.Width := res.cx;
      tempBitmap.Height := res.cy;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
      tempDC := tempBitmap.Canvas.Handle;
 {        tempDC := CreateCompatibleDC(DC);
         HOldBmp := 0;
@@ -3284,7 +3284,7 @@ begin
        end
 end;
 
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
 //procedure DrawTextTransparent2(DC : HDC; x, y : Integer; Text : String; Font : TFont; Alpha : Byte; fmt : Integer);
 procedure DrawText32(DC : HDC; TextRect : TRect; Text : String; Font : TFont; TextFlags : Cardinal);
 var
@@ -3353,7 +3353,7 @@ begin
         EndBufferedPaint(PaintBuffer, True);
       end;
 end;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
 
 function LoadAGifFromStream(var NonAnimated: boolean;
               Stream: TStream): TRnQBitmap;
@@ -3926,13 +3926,13 @@ begin
   ImageList_AddIcon(ilH, ico.Handle);
   ImageList_Draw(ilH, 0, bmp.Canvas.Handle, 0, 0, ILD_NORMAL);
   ImageList_Destroy(ilh);}
- {$IFDEF DELPHI_9_UP}// By Rapid D
+ {$IFDEF DELPHI9_UP}// By Rapid D
   bmp.SetSize(icon_size, icon_size);
  {$ELSE DELPHI_9_dn}
   bmp.Height := 0;
   bmp.Width := icon_size;
   bmp.Height := icon_size;
- {$ENDIF DELPHI_9_UP}// By Rapid D
+ {$ENDIF DELPHI9_UP}// By Rapid D
   bmp.TransparentColor := $010100;
 //  il.AddIcon(ico);
 //  il.GetBitmap(0, bmp);

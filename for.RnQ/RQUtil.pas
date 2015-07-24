@@ -82,9 +82,9 @@ function TxtFromInt(Int: Integer {3 digits}): String;
   procedure SoundUnInit;
 
   function ExistsFlash: Boolean;
- {$IFNDEF DELPHI_9_UP}
+ {$IFNDEF DELPHI9_UP}
   function ThemeControl(AControl: TControl): Boolean;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
 //  function DelayedFailureHook(dliNotify: dliNotification; pdli: PDelayLoadInfo): Pointer; stdcall;
 
 type
@@ -337,19 +337,19 @@ begin
 //	if not BASS_Init(1, 44100, 0, 0, nil) then
 //	if not BASS_Init(-1, 44100, 0, 0, nil) then
 
- {$IFDEF DELPHI_9_UP}// By Rapid D
+ {$IFDEF DELPHI9_UP}// By Rapid D
 //	if not BASS_Init(-1, 44100, 0, Application.MainFormHandle, nil) then
 	if not BASS_Init(-1, 44100, 0, Application.MainFormHandle, nil) then
- {$ENDIF DELPHI_9_UP}// By Rapid D
+ {$ENDIF DELPHI9_UP}// By Rapid D
    begin
     audioPresent:=FALSE;
     Unload_BASSDLL;
     msgDlg('Error initializing audio!', True, mtError);
    end
- {$IFDEF DELPHI_9_UP}// By Rapid D
+ {$IFDEF DELPHI9_UP}// By Rapid D
   else
     audioPresent:=TRUE;
- {$ENDIF DELPHI_9_UP}// By Rapid D
+ {$ENDIF DELPHI9_UP}// By Rapid D
  end
  else
  audioPresent:=FALSE;
@@ -865,7 +865,7 @@ begin
 //    IClassFactory(res)._Release;
 end;
 
- {$IFNDEF DELPHI_9_UP}
+ {$IFNDEF DELPHI9_UP}
 function ThemeControl(AControl: TControl): Boolean;
 begin
   Result := False;
@@ -876,7 +876,7 @@ begin
              )
              );
 end;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
 
 
 procedure drawCoolText(cnv:Tcanvas; const text:string);

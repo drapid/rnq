@@ -97,7 +97,7 @@ type
 //    wrote,lastmodify:Tdatetime;
 //    filepos:integer;
     constructor Create;// override;
-    destructor Destroy; override; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    destructor Destroy; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    function   toString:string;
 //    procedure  fromString(s:string);
     function   Clone : TSSIEvent;
@@ -110,8 +110,8 @@ type
 
     function empty:boolean;
 
-    destructor Destroy; override; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    procedure Clear; override; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    destructor Destroy; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure Clear; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    procedure clearU;
 //    function add(kind: Integer; dest:TUID; flags:integer=0; const info:string=''):TSSIEvent; overload;
 //    function add(kind: Integer; dest:TUID; flags:integer; cl:TRnQCList):TSSIEvent; overload;
@@ -466,18 +466,18 @@ type
     AvatarsAutoGetSWF : Boolean;
     myAvatarHash : RawByteString;
 
-        class function NewInstance: TObject; override; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+        class function NewInstance: TObject; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    class function GetId: Word; override;
-    class function _GetProtoName: string; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    class function _GetProtoName: string; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    class function _isValidUid(var uin:TUID):boolean; OverRide; final;
-    class function _isProtoUid(var uin:TUID):boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    class function _isValidUid1(const uin:TUID):boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    class function _getDefHost : Thostport; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    class function _getContactClass : TRnQCntClass; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    class function _getProtoServers : String; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    class function _getProtoID : Byte; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    class function _CreateProto(const uid : TUID) : TRnQProtocol; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    class function  _RegisterUser(var pUID : TUID; var pPWD : String) : Boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    class function _isProtoUid(var uin:TUID):boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _isValidUid1(const uin:TUID):boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _getDefHost : Thostport; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _getContactClass : TRnQCntClass; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _getProtoServers : String; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _getProtoID : Byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _CreateProto(const uid : TUID) : TRnQProtocol; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function  _RegisterUser(var pUID : TUID; var pPWD : String) : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     class function _MaxPWDLen: Integer; OverRide; final;
 //    class function isValidUid(var uin:TUID):boolean;
 //    function isValidUid(var uin:TUID):boolean;
@@ -487,10 +487,10 @@ type
     function getICQContact(const uid : TUID) : TICQContact; OverLoad;
     function getICQContact(uin : Integer) : TICQContact; OverLoad;
 
-    function  getContact(const UID : TUID) : TRnQContact; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  getContactClass : TRnQCntClass; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    function  getContact(const UID : TUID) : TRnQContact; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getContactClass : TRnQCntClass; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    function pwdEqual(const pass : String) : Boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    function pwdEqual(const pass : String) : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
     property DCmode:TicqDCmode read P_dcmode write setDCmode;
     property DCfakeIP:TInAddr read fDC_Fake_ip write set_DCfakeIP;
@@ -507,59 +507,59 @@ type
 //    constructor Create; override;
 //    destructor Destroy; override;
     constructor Create(const id : TUID; subType : TICQSessionSubType);
-    destructor Destroy; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    procedure ResetPrefs; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    procedure GetPrefs(var pp : TRnQPref); OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    procedure SetPrefs(pp : TRnQPref); OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    procedure Clear; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    destructor Destroy; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure ResetPrefs; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure GetPrefs(var pp : TRnQPref); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure SetPrefs(pp : TRnQPref); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure Clear; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure connect;
 //    procedure connect(createUIN:boolean; avt_session : Boolean = false); overload;
-    procedure disconnect; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    procedure disconnect; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    procedure setStatus(s:Tstatus; inv:boolean);
-    procedure setStatus(st: byte); overload; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    procedure setStatus(st: byte); overload; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure setStatus(s:TICQstatus; vis: Tvisibility); overload;
     function  getPwd : String; OverRide; Final;
     procedure setPwd(const value:String); OverRide; Final;
 
-    function  getStatus: byte; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  getVisibility : byte; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  IsInvisible : Boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  isOnline:boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  isOffline:boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  isReady:boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}     // we can send commands
-    function  isConnecting:boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  isSSCL:boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  imVisibleTo(c:TRnQContact):boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  getStatusName: String; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  getStatusImg : TPicName; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  getXStatus:byte; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    function  getStatus: byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getVisibility : byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  IsInvisible : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  isOnline:boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  isOffline:boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  isReady:boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}     // we can send commands
+    function  isConnecting:boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  isSSCL:boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  imVisibleTo(c:TRnQContact):boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getStatusName: String; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getStatusImg : TPicName; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getXStatus:byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
    public
     // manage contact lists
-    function  readList(l : TLIST_TYPES) : TRnQCList; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    function  readList(l : TLIST_TYPES) : TRnQCList; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    procedure AddToList(l : TLIST_TYPES; cl:TRnQCList); OverLoad; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    procedure RemFromList(l : TLIST_TYPES; cl:TRnQCList); OverLoad; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    procedure AddToList(l : TLIST_TYPES; cl:TRnQCList); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure RemFromList(l : TLIST_TYPES; cl:TRnQCList); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
     // manage contacts
 //    function  validUid(var uin:TUID):boolean;  inline;
-//    function  validUid1(const uin:TUID):boolean;  {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+//    function  validUid1(const uin:TUID):boolean;  {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
 //    class function  isValidUid(var uin:TUID):boolean; Static;
-    procedure AddToList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    procedure RemFromList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  isInList(l : TLIST_TYPES; cnt:TRnQContact) : Boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    procedure AddToList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure RemFromList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  isInList(l : TLIST_TYPES; cnt:TRnQContact) : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    function  addContact(c:TRnQContact; isLocal : Boolean = false):boolean; overload;OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  removeContact(cnt:TRnQContact):boolean;OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    function  addContact(c:TRnQContact; isLocal : Boolean = false):boolean; overload;OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  removeContact(cnt:TRnQContact):boolean;OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    procedure InputChangedFor(cnt :TRnQContact; InpIsEmpty : Boolean; timeOut : boolean = false); OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    procedure UpdateGroupOf(cnt : TRnQContact); OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    procedure getClientPicAndDesc4(cnt:TRnQContact; var pPic : TPicName; var CliDesc : String); OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  maxCharsFor(const c:TRnQContact; isBin : Boolean = false):integer; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  compareStatusFor(cnt1, Cnt2 : TRnqContact) : Smallint; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    procedure sendKeepalive; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  canAddCntOutOfGroup : Boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    procedure InputChangedFor(cnt :TRnQContact; InpIsEmpty : Boolean; timeOut : boolean = false); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure UpdateGroupOf(cnt : TRnQContact); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure getClientPicAndDesc4(cnt:TRnQContact; var pPic : TPicName; var CliDesc : String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  maxCharsFor(const c:TRnQContact; isBin : Boolean = false):integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  compareStatusFor(cnt1, Cnt2 : TRnqContact) : Smallint; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure sendKeepalive; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  canAddCntOutOfGroup : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    function  getNewDirect : TProtoDirect; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    function  getNewDirect : TProtoDirect; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
   {$IFDEF UNICODE}
 //    procedure notificationForMsgW(msgtype:byte; flags:byte; urgent:boolean;
@@ -813,20 +813,20 @@ type
     function  getFullStatusCode:dword;
 
    public // All
-    function  sendMsg(cnt : TRnQContact; var flags:dword; const msg:string; var requiredACK:boolean):integer; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP} // returns handle
-    procedure SetListener(l : TProtoNotify); OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    procedure AuthGrant(Cnt : TRnQContact); OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    procedure AuthRequest(cnt : TRnQContact; const reason : String); OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    function  sendMsg(cnt : TRnQContact; var flags:dword; const msg:string; var requiredACK:boolean):integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP} // returns handle
+    procedure SetListener(l : TProtoNotify); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure AuthGrant(Cnt : TRnQContact); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure AuthRequest(cnt : TRnQContact; const reason : String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    function  isMyAcc(c : TRnQContact) : Boolean; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  getMyInfo : TRnQContact; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    function  isMyAcc(c : TRnQContact) : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getMyInfo : TRnQContact; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    procedure setMyInfo(cnt : TRnQContact);
-    function  getStatuses : TStatusArray; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  getVisibilitis : TStatusArray; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  getStatusMenu  : TStatusMenu; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  getVisMenu     : TStatusMenu; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  getStatusDisable : TOnStatusDisable; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
-    function  getPrefPage : TPrefFrameClass; OverRide; {$IFDEF DELPHI_9_UP} final; {$ENDIF DELPHI_9_UP}
+    function  getStatuses : TStatusArray; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getVisibilitis : TStatusArray; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getStatusMenu  : TStatusMenu; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getVisMenu     : TStatusMenu; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getStatusDisable : TOnStatusDisable; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getPrefPage : TPrefFrameClass; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
    public
     function  GenSSID : Integer;
     procedure applyBalloon;

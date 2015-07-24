@@ -3,7 +3,6 @@ This file is part of R&Q.
 Under same license
 }
 unit pluginLib;
-{$I Compilers.inc}
 {$I RnQConfig.inc}
 
 {$IFDEF COMPILER_12_UP}

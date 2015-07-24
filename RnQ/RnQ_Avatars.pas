@@ -3,7 +3,6 @@ This file is part of R&Q.
 Under same license
 }
 unit RnQ_Avatars;
-{$I Compilers.inc}
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 

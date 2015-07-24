@@ -4,9 +4,9 @@
   {$define D7UP}
 {$endif FPC}
 
-{$IFNDEF FPC}
- {$I \VTV\Source\Compilers.inc}
-{$ENDIF}
+{ $IFNDEF FPC}
+ { $I \VTV\Source\Compilers.inc}
+{ $ENDIF}
 
  {$DEFINE HAS_INLINE}  // Added 20140409
 
@@ -50,18 +50,21 @@
  // { $DEFINE EUREKALOG}
 // { $DEFINE EUREKALOG_VER5}
 
+ {$I Include\OverbyteIcsDefs.inc}
 
 {$IFNDEF FPC}
 
-  { $IFDEF DELPHI_9_UP}
+  { $IFDEF DELPHI9_UP}
    { $INLINE AUTO}
    {$INLINE ON}
    {$STRINGCHECKS OFF}
-  { $ENDIF DELPHI_9_UP}
+  { $ENDIF DELPHI9_UP}
 
-  { $IFDEF DELPHI_16_UP}
+  { $IFDEF DELPHI16_UP}
   {$O+}
   {$EXCESSPRECISION OFF}
-  { $ENDIF DELPHI_16_UP}
+  { $ENDIF DELPHI16_UP}
 
 {$ENDIF}
+
+

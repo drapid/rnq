@@ -6,8 +6,7 @@ unit RnQStrings;
 
 { $MODE Delphi}
 
-{$I Compilers.inc}
-
+{$I ForRnQConfig.inc}
 {$I NoRTTI.inc}
 
 interface

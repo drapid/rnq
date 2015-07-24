@@ -153,7 +153,7 @@ type
     function  canEdit : Boolean; override;
     function  getGMT:TdateTime;
     function  GMTavailable:boolean;
-    function  uinAsStr:string; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+    function  uinAsStr:string; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
     function  uin2Show:string; OverRide; Final;
     function  getStatusName : String; OverLoad; OverRide; final;
     function  statusImg : TPicName; OverRide; final;

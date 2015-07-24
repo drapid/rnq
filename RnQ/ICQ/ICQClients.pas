@@ -1,6 +1,5 @@
 unit ICQClients;
 
-{$I Compilers.inc}
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 

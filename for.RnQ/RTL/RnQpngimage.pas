@@ -5423,13 +5423,13 @@ begin
    1,4 :
      begin
       TBitmap(Dest).PixelFormat := pf8Bit;
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
       TBitmap(Dest).SetSize(Width, Height);
  {$ELSE DELPHI_9_dn}
       TBitmap(Dest).Height := 0;
       TBitmap(Dest).Width := Width;
       TBitmap(Dest).Height := Height;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
       StretchDiBits(TBitmap(Dest).Canvas.Handle, 0,0, Width, Height,0,0,
         Header.Width, Header.Height, Header.fImageData,
         pBitmapInfo(@Header.BitmapInfo)^, DIB_RGB_COLORS, SRCCOPY);
@@ -6089,7 +6089,7 @@ begin
   else if NewAlpha > 255 then NewAlpha := 255;
   Result := (Color32 and $00FFFFFF) or (TColor32(NewAlpha) shl 24);
 end;}
-  function SetAlpha(Color32: TColor32; NewAlpha: Byte): TColor32; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+  function SetAlpha(Color32: TColor32; NewAlpha: Byte): TColor32; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
     begin
       Result := (Color32 and $00FFFFFF) or (NewAlpha shl 24);
     end;
@@ -6116,23 +6116,23 @@ var
 begin
  if not HeaderPresent then
   begin
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
     B32.SetSize(0, 0);
  {$ELSE DELPHI_9_dn}
     B32.Height := 0;
     B32.Width := 0;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
     Exit;
   end;
  vHDR := Header;
  B32.PixelFormat := pf32bit;
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
     B32.SetSize(vHDR.Width, vHDR.Height);
  {$ELSE DELPHI_9_dn}
     B32.Height := 0;
     B32.Width := vHDR.Width;
     B32.Height := vHDR.Height;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
  if (vHDR.Width=0) or (vHDR.Height=0) then exit;
  SetStretchBltMode(B32.Canvas.Handle,COLORONCOLOR);
 { StretchDiBits(B32.Canvas.Handle,0,0, Width, Height,0,0,

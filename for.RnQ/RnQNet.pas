@@ -1,8 +1,5 @@
 unit RnQNet;
-{$I Compilers.inc}
 {$I forRnQConfig.inc}
-{ $I RnQConfig.inc}
-
 {$I NoRTTI.inc}
 
 interface

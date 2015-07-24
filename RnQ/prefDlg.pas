@@ -3,7 +3,6 @@ This file is part of R&Q.
 Under same license
 }
 unit prefDlg;
-{$I Compilers.inc}
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 
@@ -138,38 +137,38 @@ end;
 
 procedure TprefFrm.reset;
 var
-  {$IFDEF DELPHI_9_UP}
+  {$if CompilerVersion >= 17}
   pp : TPrefPage;
-  {$ELSE DELPHI_9_UP}
+  {$ELSE}
   i:byte;
-  {$ENDIF DELPHI_9_UP}
+  {$IFEND DELPHI9_UP}
 begin
 
  SetBtnEnable(false);
  try
-  {$IFDEF DELPHI_9_UP}
+  {$IFDEF DELPHI9_UP}
   for pp in arrPages do
    if Assigned( pp.frame ) then
-  {$ELSE DELPHI_9_UP}
+  {$ELSE not DELPHI9_UP}
   for i := 0 to Length(arrPages)-1 do
    if Assigned( arrPages[i].frame ) then
-  {$ENDIF DELPHI_9_UP}
+  {$IFEND DELPHI9_UP}
   try
-  {$IFDEF DELPHI_9_UP}
+  {$IFDEF DELPHI9_UP}
    pp.frame.resetPage;
    pp.frame.updateVisPage;
-  {$ELSE DELPHI_9_UP}
+  {$ELSE not DELPHI9_UP}
    arrPages[i].frame.resetPage;
    arrPages[i].frame.updateVisPage;
-  {$ENDIF DELPHI_9_UP}
+  {$IFEND DELPHI9_UP}
    Application.ProcessMessages;
   except
     msgDlg(getTranslation('Error on reset page')+' "' +
-        {$IFDEF DELPHI_9_UP}
+  {$IFDEF DELPHI9_UP}
            getTranslation(pp.Caption) + '"!', False, mtError);
-        {$ELSE DELPHI_9_UP}
+       {$ELSE}
            getTranslation(arrPages[i].Caption) + '"!', mtError);
-        {$ENDIF DELPHI_9_UP}
+      {$ENDIF}
   end;
  finally
    SetBtnEnable(True);
@@ -178,35 +177,35 @@ end; // reset
 
 procedure TprefFrm.apply;
 var
-  {$IFDEF DELPHI_9_UP}
+  {$IFDEF DELPHI9_UP}
   pp : TPrefPage;
-  {$ELSE DELPHI_9_UP}
+  {$ELSE}
   i:byte;
-  {$ENDIF DELPHI_9_UP}
+  {$IFEND DELPHI9_UP}
 begin
  SetBtnEnable(false);
  try
-  {$IFDEF DELPHI_9_UP}
+  {$IFDEF DELPHI9_UP}
   for pp in arrPages do
    if Assigned( pp.frame ) then
-  {$ELSE DELPHI_9_UP}
+  {$ELSE not DELPHI9_UP}
   for i := 0 to Length(arrPages)-1 do
    if Assigned( arrPages[i].frame ) then
-  {$ENDIF DELPHI_9_UP}
+  {$IFEND DELPHI9_UP}
     try
-    {$IFDEF DELPHI_9_UP}
+  {$IFDEF DELPHI9_UP}
      pp.frame.applyPage;
-    {$ELSE DELPHI_9_UP}
+    {$ELSE DELPHI9_UP}
      arrPages[i].frame.applyPage;
-    {$ENDIF DELPHI_9_UP}
+    {$ENDIF DELPHI9_UP}
      Application.ProcessMessages;
     except
       msgDlg(getTranslation('Error on apply page')+' "' +
-          {$IFDEF DELPHI_9_UP}
+          {$IFDEF DELPHI9_UP}
              getTranslation(pp.Caption) + '"!', False, mtError);
-          {$ELSE DELPHI_9_UP}
+          {$ELSE DELPHI9_UP}
              getTranslation(arrPages[i].Caption) + '"!', mtError);
-          {$ENDIF DELPHI_9_UP}
+          {$ENDIF DELPHI9_UP}
     end;
 
   //repaintAllWindows;

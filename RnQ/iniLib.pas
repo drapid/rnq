@@ -3,11 +3,10 @@ This file is part of R&Q.
 Under same license
 }
 unit iniLib;
-{$I Compilers.inc}
 {$I RnQConfig.inc}
-{$WARN SYMBOL_PLATFORM OFF}
-
 {$I NoRTTI.inc}
+
+{$WARN SYMBOL_PLATFORM OFF}
 
 interface
 

@@ -14,7 +14,7 @@
 unit RnQHTTPAuth;
 
 interface
-{$I Compilers.inc}
+{$I ForRnQConfig.inc}
 {$I NoRTTI.inc}
 
 uses

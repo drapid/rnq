@@ -406,7 +406,7 @@ type
     function  getContact(const UID : TUID) : TRnQContact; Virtual; Abstract;
 //    function  ProtoName : String; Virtual; Abstract;
     function  ProtoName : String; inline;
-    function  ProtoElem : TRnQProtocol; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+    function  ProtoElem : TRnQProtocol; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
     procedure GetPrefs(var pp : TRnQPref); Virtual;
     procedure SetPrefs(pp : TRnQPref); Virtual;
     procedure ResetPrefs; Virtual;
@@ -597,30 +597,30 @@ type
   end;
 
   TcontactProc=procedure(c:TRnQContact);
-{$IFDEF DELPHI_9_UP}
+{$IFDEF DELPHI9_UP}
   TRnQContactType = type of TRnQContact;
 {$ELSE DELPHI_9_DOWN}
   TRnQContactType = class of TRnQContact;
-{$ENDIF DELPHI_9_UP}
+{$ENDIF DELPHI9_UP}
   TRnQCList=class(Tlist)
    protected
     enumIdx:integer;
    public
     procedure resetEnumeration;
-    function  hasMore:boolean;
+    function  hasMore: boolean;
     function  getNext:TRnQContact;
     function  get(cls : TRnQContactType; const UID:TUID):TRnQContact; OverLoad;
     function  get(cls : TRnQContactType; const uin:integer):TRnQcontact; overload; //OverRide;
-    function  getAt(const idx:integer):TRnQContact;
-    function  putAt(const idx:integer; c:TRnQContact):boolean;
-    function  exists(c:TRnQContact):boolean; overload;
+    function  getAt(const idx: integer): TRnQContact;
+    function  putAt(const idx: integer; c: TRnQContact): Boolean;
+    function  exists(const c: TRnQContact): Boolean; overload;
     function  exists(const pProto : TRnQProtocol; const uin:TUID):boolean; overload;
     function  empty:boolean;
     function  add(const pProto : TRnQProtocol; const UID:TUID):TRnQcontact; overload; //OverRide;
     function  add(c:TRnQContact):boolean; overload;
     function  add(p:pointer):boolean; overload;
     function  add(cl:TRnQCList):TRnQCList; overload;
-    function  remove(c:TRnQContact):boolean; overload;
+    function  remove(const c: TRnQContact): Boolean; overload;
     function  remove(p:pointer):boolean; overload;
     function  remove(cl:TRnQCList):TRnQCList; overload;
     function  intersect(cl:TRnQCList):TRnQCList;
@@ -1221,11 +1221,11 @@ begin
   result:=-1;
 end; // idxOf
 
-function TRnQCList.exists(c:TRnQContact):boolean;
-begin result:=(c<>NIL) and (_idxOf(c.UID2cmp)>=0) end;
+function TRnQCList.exists(const c: TRnQContact): boolean;
+begin result := (c<>NIL) and (_idxOf(c.UID2cmp)>=0) end;
 
 function TRnQCList.exists(const pProto : TRnQProtocol; const uin: TUID):boolean;
-begin result:=idxOf(pProto.getContactClass, uin)>=0 end;
+begin result := idxOf(pProto.getContactClass, uin)>=0 end;
 
 function TRnQCList.add(p:pointer):boolean;
 begin result:=Tobject(p) is TRnQContact and add(TRnQContact(p)) end;
@@ -1277,8 +1277,8 @@ end; // putAt
 function TRnQCList.empty:boolean;
 begin result:= count=0 end;
 
-function TRnQCList.remove(c:TRnQContact):boolean;
-begin result:=inherited remove(c) >= 0 end;
+function TRnQCList.remove(const c: TRnQContact):boolean;
+begin result := inherited remove(c) >= 0 end;
 
 function TRnQCList.remove(p:pointer):boolean;
 //begin result:= Tobject(p^) is TRnQContact and remove(PRnQContact(p)^) end;

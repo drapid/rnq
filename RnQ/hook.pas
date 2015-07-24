@@ -18,7 +18,6 @@ This file is part of &RQ.
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 unit hook;
-{$I Compilers.inc}
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 
@@ -44,7 +43,7 @@ type
 procedure installHook(hdl : THandle);
 //procedure installHook;
 procedure uninstallHook;
-//function  isHooked:boolean; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+//function  isHooked:boolean; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
 function isMoved : Boolean;
 
 var
@@ -216,7 +215,7 @@ begin
  {$ENDIF WIN98}
 end; // uninstallHook
 
-//function isHooked:boolean; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+//function isHooked:boolean; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
 //begin result:=hooked end;
 //
 

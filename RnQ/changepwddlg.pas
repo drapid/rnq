@@ -4,7 +4,6 @@ Under same license
 }
 unit changepwddlg;
 
-{$I Compilers.inc}
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 

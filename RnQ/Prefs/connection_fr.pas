@@ -1,5 +1,4 @@
 unit connection_fr;
-{$I Compilers.inc}
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 

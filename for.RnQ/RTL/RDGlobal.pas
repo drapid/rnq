@@ -93,7 +93,7 @@ type
   end;
   TPointDynArray = array of TGPPoint;
 
-  function MakePoint(p2 : TPoint): TGPPoint; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+  function MakePoint(p2 : TPoint): TGPPoint; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
 //  function MakePoint(X, Y: Integer): TGPPoint; overload;
 
 //--------------------------------------------------------------------------
@@ -107,8 +107,8 @@ type
     Height : Integer;
   end;
 
-  function MakeSize(sz2: TSize): TGPSize; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
-  function GetSize(sz1: TGPSize): TSize; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+  function MakeSize(sz2: TSize): TGPSize; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function GetSize(sz1: TGPSize): TSize; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
 //  function MakeSize(Width, Height: Integer): TGPSize; overload;
 
 type
@@ -120,9 +120,9 @@ type
   end;
   TRectDynArray = array of TGPRect;
 
-  function MakeRect(x, y, width, height: Integer): TGPRect; overload; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
-  function MakeRect(location: TGPPoint; size: TGPSize): TGPRect; overload;{$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
-  function MakeRect(const Rect: TRect): TGPRect; overload;{$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+  function MakeRect(x, y, width, height: Integer): TGPRect; overload; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function MakeRect(location: TGPPoint; size: TGPSize): TGPRect; overload;{$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function MakeRect(const Rect: TRect): TGPRect; overload;{$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
 
 type
   TMsgDlgType = (mtWarning, mtError, mtInformation, mtConfirmation, mtCustom);
@@ -199,7 +199,7 @@ end;
     Result.cy := sz1.Height;
   end;
 
-  function MakeRect(x, y, width, height: Integer): TGPRect; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+  function MakeRect(x, y, width, height: Integer): TGPRect; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   begin
     Result.X      := x;
     Result.Y      := y;
@@ -207,7 +207,7 @@ end;
     Result.Height := height;
   end;
 
-  function MakeRect(location: TGPPoint; size: TGPSize): TGPRect; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+  function MakeRect(location: TGPPoint; size: TGPSize): TGPRect; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   begin
 //    Result.X      := location.X;
 //    Result.Y      := location.Y;
@@ -217,7 +217,7 @@ end;
     Result.size := size;
   end;
 
-  function MakeRect(const Rect: TRect): TGPRect; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+  function MakeRect(const Rect: TRect): TGPRect; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   begin
     Result.X := rect.Left;
     Result.Y := Rect.Top;

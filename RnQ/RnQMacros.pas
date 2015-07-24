@@ -1,5 +1,4 @@
 unit RnQMacros;
-{$I Compilers.inc}
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 

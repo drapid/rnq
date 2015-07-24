@@ -4,7 +4,6 @@ Under same license
 }
 unit NewAccount;
 
-{$I Compilers.inc}
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 

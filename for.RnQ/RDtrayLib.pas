@@ -3,8 +3,7 @@ This file is part of R&Q.
 Under same license
 }
 unit RDtraylib;
-{$I Compilers.inc}
-{$I RnQConfig.inc}
+{$I ForRnQConfig.inc}
 {$I NoRTTI.inc}
 
 interface
@@ -56,7 +55,7 @@ type
     private
 //      data:TNotifyIconData;
       data : TNotifyIconDataW_V2;
-      shown, fHided:boolean;
+      shown, fHided : Boolean;
       Ico : TIcon;
     public
       constructor Create(hndl:HWND);
@@ -109,7 +108,6 @@ implementation
 
 uses
   forms, sysutils, ShellAPI,
-//  events, globalLib, utilLib,
   RDUtils, RnQStrings, RnQLangs, //themesLib,
   RQUtil, RQThemes, RnQGlobal
 //  dwTaskbarComponents, dwTaskbarList,

@@ -472,6 +472,10 @@ object viewinfoFrm: TviewinfoFrm
     object WorkTS: TTabSheet
       Caption = '&Work'
       ImageIndex = 6
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label1: TLabel
         Left = 32
         Top = 187
@@ -621,6 +625,10 @@ object viewinfoFrm: TviewinfoFrm
     end
     object TabSheet2: TTabSheet
       Caption = '&Extra'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Bevel2: TBevel
         Left = 245
         Top = 201
@@ -1051,6 +1059,10 @@ object viewinfoFrm: TviewinfoFrm
       Caption = '&Avatar'
       ImageIndex = 4
       OnShow = avtTSShow
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         424
         395)

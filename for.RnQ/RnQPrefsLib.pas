@@ -70,9 +70,9 @@ type
       procedure addPrefBool(const key : String; const Val : Boolean);
       procedure addPrefStr(const key : String; const Val : String);
       procedure addPrefTime(const key : String; const Val : TDateTime);
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
       procedure addPrefDate(const key : String; const Val : TDate);
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
       procedure addPrefParam(param : TObject);
       procedure addPrefArrParam(param : array of TObject);
       procedure getPrefArrParam(param : array of TObject);
@@ -359,7 +359,7 @@ begin
 //  Result := i;
 end;
 
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
 procedure TRnQPref.addPrefDate(const key: String; const Val: TDate);
 var
   El : TPrefElement;
@@ -381,7 +381,7 @@ begin
     i := fPrefStr.AddObject(key, el);
 //  Result := i;
 end;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
 
 procedure TRnQPref.addPrefInt(const key: String; const Val: Integer);
 var
@@ -533,12 +533,12 @@ begin
 //{$ELSE UNICODE}
 //  CopyMemory(el.elem.sVal, @Val[1], ByteLength(Val));
   El.elem.bVal := AllocMem((Length(Val)+1) * SizeOf(Char));
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
 //  CopyMemory(el.elem.bVal, @Val[1], ByteLength(Val));
   CopyMemory(el.elem.bVal, Pointer(Val), ByteLength(Val));
  {$ELSE DELPHI_9_dn}
   CopyMemory(el.elem.bVal, Pointer(Val), Length(Val));
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
 //  StrCopy(PChar(el.elem.sVal), PChar(Val));
 //{$ENDIF UNICODE}
   if i<0 then
@@ -850,7 +850,7 @@ begin
    end;
 end;
 
-  function yesnof(l : PAnsiChar):boolean; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+  function yesnof(l : PAnsiChar):boolean; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   const
     yyy = AnsiString('yes');
   begin
@@ -885,7 +885,7 @@ begin
 end;
 
 function TRnQPref.getPrefBoolDef(const key:String; const DefVal : Boolean): Boolean;
-(*  function yesno(l : PAnsiChar):boolean; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+(*  function yesno(l : PAnsiChar):boolean; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   const
     yyy = AnsiString('yes');
   begin
@@ -919,7 +919,7 @@ begin
 end;
 
 procedure TRnQPref.getPrefInt(const key:String; var Val : Integer);
-  function int(l : PAnsiChar):integer; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+  function int(l : PAnsiChar):integer; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   var
     bb : Integer;
 //    ss : AnsiString;
@@ -956,7 +956,7 @@ begin
 end;
 
 function TRnQPref.getPrefIntDef(const key:String; const DefVal : Integer) : Integer;
-  function int(l : PAnsiChar):integer; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+  function int(l : PAnsiChar):integer; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   var
     bb : Integer;
 //    ss : AnsiString;
@@ -994,7 +994,7 @@ begin
 end;
 
 procedure TRnQPref.getPrefDate(const key:String; var Val : TDateTime);
-  function dt(l : PAnsiChar):Tdatetime; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+  function dt(l : PAnsiChar):Tdatetime; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   var
     df : TFormatSettings;
     s : string;
@@ -1036,7 +1036,7 @@ begin
 end;
 
 procedure TRnQPref.getPrefDateTime(const key:String; var Val : TDateTime);
-  function dtt(l : PAnsiChar):Tdatetime; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+  function dtt(l : PAnsiChar):Tdatetime; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   var
     df : TFormatSettings;
   begin

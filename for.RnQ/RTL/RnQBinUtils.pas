@@ -60,7 +60,7 @@ function WNTS(const s: RawByteString): RawByteString;
 function WNTSU(const s: String): RawByteString;
 
 // read data
-function Qword_LEat(p: Pointer): Int64; inline;//{$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+function Qword_LEat(p: Pointer): Int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 function Qword_BEat(p: Pointer): Int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 function dword_BEat(const s: RawByteString; ofs: Integer): Integer; overload; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 function dword_BEat(p: Pointer): LongWord; overload; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}

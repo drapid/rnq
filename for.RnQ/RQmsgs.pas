@@ -261,11 +261,11 @@ begin
   end;
 
   msgList.Clear;
-{$IFDEF DELPHI_9_UP}
+{$IFDEF DELPHI9_UP}
   GlassFrame.Enabled := True;
 //  GlassFrame.Bottom := 35;
   Self.GlassFrame.Bottom := Self.ClientHeight-msgList.Height-1;
-{$ENDIF DELPHI_9_UP}
+{$ENDIF DELPHI9_UP}
 
   menu := TRnQPopupMenu.Create(Self);
   AddToMenu(menu.Items, 'Copy',

@@ -37,9 +37,9 @@ type
 
     langFN0, langFN1 : String;
 //    langIsUTF : Boolean;
-    function TranslateString(const Str : AnsiString): String; overload;{$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}// overload;//cdecl;
+    function TranslateString(const Str : AnsiString): String; overload;{$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}// overload;//cdecl;
  {$IFDEF UNICODE}
-    function TranslateString(const Str : UnicodeString): String; overload;{$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}// overload;//cdecl;
+    function TranslateString(const Str : UnicodeString): String; overload;{$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}// overload;//cdecl;
  {$ENDIF UNICODE}
     Procedure LangAddStr(const k : String; const v : String; Mas : TLangList);
     function  fileIsUTF(fn : String) : Boolean;
@@ -888,12 +888,12 @@ procedure ClearLangList;
    t : ToLangInfo;
    i : Integer;
   begin
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
    for t in tl do begin
  {$ELSE DELPHI_9_dn}
    for i := Low(tl) to High(tl) do begin
     t := tl[i];
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
     begin
      SetLength(t.fn, 0);
      SetLength(t.subFile, 0);

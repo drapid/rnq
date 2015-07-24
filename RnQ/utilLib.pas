@@ -161,7 +161,7 @@ procedure applyDocking(Undock : Boolean = false);
 function  whatStatusPanel(statusbar:Tstatusbar; x:integer):integer;
 // graphic
 procedure wallpaperize(canvas:Tcanvas); overload;
-procedure wallpaperize(DC:THandle; r:TRect); {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP} overload;
+procedure wallpaperize(DC:THandle; r:TRect); {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP} overload;
 // file management
 function  delSUBtree(subPath:string):boolean;
 function  deltree(path:string):boolean;
@@ -3391,13 +3391,13 @@ with RnQmain.roster.TreeOptions do
   end;
 end; // setRosterAnimation
 
-procedure wallpaperize(canvas:Tcanvas); {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+procedure wallpaperize(canvas:Tcanvas); {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
 begin
  if texturizedWindows then
   theme.Draw_wallpaper(canvas.Handle, canvas.ClipRect);
 end; // wallpaperize
 
-procedure wallpaperize(DC:THandle; r:TRect); {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+procedure wallpaperize(DC:THandle; r:TRect); {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
 begin
  if texturizedWindows then
   theme.Draw_wallpaper(DC, r);
@@ -3904,7 +3904,7 @@ end; // findInAvailableUsers
 function isAbort(const pluginReply: AnsiString):boolean;
 begin result:= (pluginReply>'') and (Byte(pluginReply[1])=PM_ABORT) end;
 
-procedure unroundWindow(hnd:Thandle); {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+procedure unroundWindow(hnd:Thandle); {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
 begin SetWindowRgn(hnd,0,True) end;
 
 procedure drawHint(cnv:Tcanvas; kind : Integer;
@@ -3937,9 +3937,9 @@ var
   rr.Bottom := y;// + 100;
   s := dupAmperstand(s);
 //  rr.Right := r.Left + 10;
-  {$IFDEF DELPHI_9_UP}
+  {$IFDEF DELPHI9_UP}
    cnv.TextRect(rr, s, [tfCalcRect, tfBottom, tfLeft, tfWordBreak, tfEndEllipsis, tfEditControl]);
-  {$ENDIF DELPHI_9_UP} 
+  {$ENDIF DELPHI9_UP} 
   xdy := rr.Bottom - rr.Top;
 //  if rr.Right > maxWidth then
     begin
@@ -3949,13 +3949,13 @@ var
 //      rr.Bottom := y + 100;
       Inc(rr.Right, 2);
       if calcOnly then
-       {$IFDEF DELPHI_9_UP}
+       {$IFDEF DELPHI9_UP}
 //        cnv.TextRect(rr, s, [tfBottom, tfLeft, tfWordBreak, tfEndEllipsis, tfEditControl, tfCalcRect])
-       {$ENDIF DELPHI_9_UP} 
+       {$ENDIF DELPHI9_UP} 
        else
-       {$IFDEF DELPHI_9_UP}
+       {$IFDEF DELPHI9_UP}
         cnv.TextRect(rr, s, [tfBottom, tfLeft, tfWordBreak, tfEndEllipsis, tfEditControl]);
-       {$ENDIF DELPHI_9_UP}
+       {$ENDIF DELPHI9_UP}
 //      xdy := rr.Bottom - rr.Top;
       x:=rr.Right;
     end;

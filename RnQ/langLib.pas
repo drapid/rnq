@@ -40,7 +40,7 @@ uses
 
 
 
-function trans(const s:string):string; {$IFDEF DELPHI_9_UP} inline; {$ENDIF DELPHI_9_UP}
+function trans(const s:string):string; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
 begin
 {if AnsiStartsStr('___',s) then
   result:=getTranslation(copy(s,4,9999))

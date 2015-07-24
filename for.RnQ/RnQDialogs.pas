@@ -759,9 +759,9 @@ begin
   ff.lfStrikeOut := -byte(fsStrikeOut in font.Style);
   ff.lfQuality := DEFAULT_QUALITY;
   ff.lfHeight := Font.Height;
-  {$IFDEF DELPHI_9_UP}
+  {$IFDEF DELPHI9_UP}
    ff.lfOrientation := Font.Orientation;
-  {$ENDIF DELPHI_9_UP}
+  {$ENDIF DELPHI9_UP}
 // ff.lfItalic := Font.
   With vcf do begin
       lStructSize := SizeOf(TChooseFont);

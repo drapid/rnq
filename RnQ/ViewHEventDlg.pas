@@ -5,7 +5,6 @@ Under same license
 unit ViewHEventDlg;
 
 interface
-{$I Compilers.inc}
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 

@@ -3,7 +3,6 @@ This file is part of R&Q.
 Under same license
 }
 unit RnQdbDlg;
-{$I Compilers.inc}
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 
@@ -410,12 +409,14 @@ var
 //  i : Integer;
   na : TNodeArray;
   n : PVirtualNode;
+  d : Pointer;
 begin
   na := dbTree.GetSortedSelection(True);
   for n in na do
    begin
-//    contactsDB.remove(Tcontact(n.Data));
-    contactsDB.remove(TRnQcontact((@n^.Data)^));
+//     d := @n^.GetData;
+     d := n.GetData;
+    contactsDB.remove(TRnQcontact((@d)^));
    end;
   dbTree.DeleteSelectedNodes
 

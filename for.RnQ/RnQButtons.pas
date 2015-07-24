@@ -187,11 +187,11 @@ type
     property Cancel : Boolean read FCancel write FCancel default False;
     property OnClick;
     property OnDblClick;
-  {$IFDEF DELPHI_9_UP}
+  {$IFDEF DELPHI9_UP}
     property OnMouseActivate;
     property OnMouseEnter;
     property OnMouseLeave;
-  {$ENDIF DELPHI_9_UP}
+  {$ENDIF DELPHI9_UP}
     property OnMouseDown;
     property OnMouseMove;
     property OnMouseUp;
@@ -606,9 +606,9 @@ implementation
 
 uses Consts, SysUtils, ActnList,
  UxTheme,
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
  DwmApi,
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
  {$IFDEF RNQ}
  RQUtil,
  {$ENDIF RNQ}
@@ -776,9 +776,9 @@ const
   DownStyles: array[Boolean] of Integer = (BDR_RAISEDINNER, BDR_SUNKENOUTER);
   FillStyles: array[Boolean] of Integer = (BF_MIDDLE, 0);
 
- {$IFNDEF DELPHI_9_UP}
+ {$IFNDEF DELPHI9_UP}
   PaintOnGlass = False;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
 var
   PaintRect: TRect;
   DrawFlags: Integer;
@@ -786,10 +786,10 @@ var
   Button: TThemedButton;
   ToolButton: TThemedToolBar;
   Details: TThemedElementDetails;
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
   PaintOnGlass: Boolean;
   PaintBuffer: HPAINTBUFFER;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
  {$IFNDEF 1=2 and COMPILER_12_UP}
   LForm: TCustomForm;
  {$ENDIF COMPILER_12_UP}
@@ -803,10 +803,10 @@ var
 begin
   if not Assigned(self) then
     exit;
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
   PaintOnGlass := False;
   PaintBuffer := 0;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
   if not Enabled then
   begin
     FState := bsDisabled;
@@ -825,7 +825,7 @@ begin
   try
   if ThemeControl(Self) then
   begin
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
     PaintOnGlass := ThemeServices.ThemesEnabled and DwmCompositionEnabled and
       not (csDesigning in ComponentState);
     if PaintOnGlass then
@@ -838,7 +838,7 @@ begin
         LForm.GlassFrame.IntersectsControl(Self);
      {$ENDIF COMPILER_12_UP}
     end;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
 
     if not PaintOnGlass then
       if Transparent then
@@ -880,7 +880,7 @@ begin
 
 
     PaintRect := ClientRect;
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
      if PaintOnGlass then
      begin
 //      cnv := TCanvas.Create;
@@ -904,7 +904,7 @@ begin
 //       oldFont := SelectObject(MemDC, Self.Font.Handle);
      end
 //     else
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
 //      FTempCanvas := Canvas
 ;
 
@@ -1010,7 +1010,7 @@ begin
       0, PaintOnGlass);
 
   finally
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
       if PaintOnGlass then
        begin
 //         cnv.Handle := saveDC;
@@ -1022,7 +1022,7 @@ begin
          EndBufferedPaint(PaintBuffer, True);
 //         EndBufferedPaint(PaintBuffer, False);
        end;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
     end;
 end;
 
@@ -4492,16 +4492,16 @@ procedure RnQDrawButtonText(//Canvas: TCanvas;
 
   procedure DoDrawText(DC: HDC; const Text: string;
     var TextRect: TRect; TextFlags: Cardinal; clr : Integer);
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
   var
     Options: TDTTOpts;
 //    tb : TThemedButton;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
   begin
 //    if FThemesEnabled then
     if ThemeServices.ThemesEnabled then
     begin
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
       if PaintOnGlass then
 //      if 1=1 then
       begin
@@ -4522,7 +4522,7 @@ procedure RnQDrawButtonText(//Canvas: TCanvas;
                   PWideChar(WideString(Text)), Length(Text), TextFlags, @TextRect, Options);
       end
       else
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
        begin
         SetTextColor(DC, clr);
         SetBkMode(DC, TRANSPARENT);
@@ -6022,9 +6022,9 @@ end;
 procedure TRnQButton.DrawItem(const DrawItemStruct: TDrawItemStruct);
 const
   WordBreakFlag: array[Boolean] of Integer = (0, DT_WORDBREAK);
- {$IFNDEF DELPHI_9_UP}
+ {$IFNDEF DELPHI9_UP}
   PaintOnGlass = false;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
 var
   IsDown, IsDefault: Boolean;
   State: TButtonState;
@@ -6037,10 +6037,10 @@ var
 //  DC : HDC;
 //  cnv : TCanvas;
     MemDC: HDC;
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
     PaintOnGlass: Boolean;
     PaintBuffer: HPAINTBUFFER;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
 //    h_Font, logfontOld, h_font_old : HFONT;
 begin
 //  cnv := TCanvas.Create;
@@ -6063,7 +6063,7 @@ begin
   if ThemeControl(Self) then
 //  if ThemeServices.ThemesEnabled then
   begin
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
     PaintOnGlass := ThemeServices.ThemesEnabled and DwmCompositionEnabled and
       not (csDesigning in ComponentState);
 //    PaintOnGlass := PaintOnGlass and not ParentDoubleBuffered;
@@ -6073,7 +6073,7 @@ begin
       PaintOnGlass := (LForm <> nil) and LForm.GlassFrame.FrameExtended and
        LForm.GlassFrame.IntersectsControl(Self);
     end;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
 
     if not Enabled then
       Button := tbPushButtonDisabled
@@ -6093,13 +6093,13 @@ begin
     // Parent background.
 //    ThemeServices.DrawParentBackground(Handle, DrawItemStruct.hDC, @Details, True);
 
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
     if PaintOnGlass then
 //      FillRect(FCanvas.Handle, ClientRect, GetStockObject(BLACK_BRUSH));
 //        PerformEraseBackground(Self, DrawItemStruct.hDC)
 //      FillRect(DrawItemStruct.hDC, ClientRect, GetStockObject(BLACK_BRUSH))
     else
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
       PerformEraseBackground(Self, DrawItemStruct.hDC);
 
 //          ThemeServices.DrawParentBackground(Handle, DrawItemStruct.hDC, @Details, True)
@@ -6111,7 +6111,7 @@ begin
     // Button shape.
     ;
     try
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
     PaintBuffer := 0;
      if PaintOnGlass then
 //     if 1=2 then
@@ -6124,7 +6124,7 @@ begin
         FillRect(MemDC, DrawItemStruct.rcItem, GetStockObject(BLACK_BRUSH));
      end
      else
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
       begin
         MemDC := FCanvas.Handle;
 //        PaintBuffer := 0;
@@ -6154,7 +6154,7 @@ begin
     end;
 
     finally
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
       if PaintOnGlass then
        begin
 //         FCanvas.Handle := DrawItemStruct.hDC;
@@ -6163,7 +6163,7 @@ begin
          EndBufferedPaint(PaintBuffer, True);
 //         EndBufferedPaint(PaintBuffer, False);
        end;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
     end;
   end
   else

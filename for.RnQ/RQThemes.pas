@@ -363,7 +363,7 @@ type
   {$ENDIF NOT_USE_GDIPLUS}
     procedure drawTiled(canvas:Tcanvas; const picName : TPicName); overload;
     procedure drawTiled(dc: HDC; ClipRect : TRect; const picName : TPicName); overload;
-    procedure Draw_wallpaper(DC : HDC; r : TRect); //{$IFDEF DELPHI_9_UP } inline; {$ENDIF DELPHI_9_UP}
+    procedure Draw_wallpaper(DC : HDC; r : TRect); //{$IFDEF DELPHI9_UP } inline; {$ENDIF DELPHI9_UP}
     procedure refreshThemeList;
   //  procedure refreshSmilesList;
     procedure ClearThemelist;
@@ -425,7 +425,7 @@ const
    ThemeInis : array[0..2] of string = ('theme.ini', 'smiles.ini', 'sounds.ini');
  {$ENDIF USE_ZIP}
 
- function MakeRectI(x, y, width, height: Integer): TGPRect; {$IFDEF DELPHI_9_UP}inline;{$ENDIF DELPHI_9_UP}
+ function MakeRectI(x, y, width, height: Integer): TGPRect; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   begin
     Result.X      := x;
     Result.Y      := y;
@@ -706,12 +706,12 @@ begin
     end;
    FThemePics.Clear;
 
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
    for po in FBigPics do begin
  {$ELSE DELPHI_9_dn}
    for I := 0 to Length(FBigPics) - 1 do begin
     po := FBigPics[i];
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
     if Assigned(po) then
     begin
       try
@@ -796,12 +796,12 @@ begin
     end;
    FSmileBigPics.Clear;
 }
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
    for po in FSmileBigPics do begin
  {$ELSE DELPHI_9_dn}
    for I := 0 to Length(FSmileBigPics) - 1 do begin
     po := FSmileBigPics[i];
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
     if Assigned(po) then
     begin
       try
@@ -852,12 +852,12 @@ var
 //var
 //  i : Integer;
 begin
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
   for po in FBigPics do begin
  {$ELSE DELPHI_9_dn}
   for I := 0 to Length(FBigPics) - 1 do begin
     po := FBigPics[i];
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
    if Assigned(po) then
     po.ref := 0;
   end;  
@@ -879,23 +879,23 @@ begin
         isWholeBig := False;
      end;
   end;
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
   for po in FBigPics do begin
  {$ELSE DELPHI_9_dn}
   for I := 0 to Length(FBigPics) - 1 do begin
     po := FBigPics[i];
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
    if Assigned(po) then
    if po.ref = 0 then
      FreeAndNil(po.bmp);
   end;
 
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
   for po in FSmileBigPics do begin
  {$ELSE DELPHI_9_dn}
   for I := 0 to Length(FSmileBigPics) - 1 do begin
     po := FSmileBigPics[i];
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
    if Assigned(po) then
     po.ref := 0;
   end;
@@ -905,12 +905,12 @@ begin
     if (k >=0)and (k < Length(FSmileBigPics)) then
       inc(FSmileBigPics[k].ref);
   end;
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
   for po in FSmileBigPics do begin
  {$ELSE DELPHI_9_dn}
   for I := 0 to Length(FSmileBigPics) - 1 do begin
     po := FSmileBigPics[i];
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
    if Assigned(po) then
    if po.ref = 0 then
      FreeAndNil(po.bmp);
@@ -1316,12 +1316,12 @@ begin
   with GetPicSize(name, tt, pl, idx) do
   if (cx > 0) and (cy > 0) then
    begin
-    {$IFDEF DELPHI_9_UP}
+    {$IFDEF DELPHI9_UP}
     pic.SetSize(cx,cy);
-    {$ELSE DELPHI_9_UP}
+    {$ELSE DELPHI9_UP}
      pic.Width  := cx;
      pic.Height := cy;
-    {$ENDIF DELPHI_9_UP}
+    {$ENDIF DELPHI9_UP}
     gr := TGPGraphics.Create(pic.Canvas.Handle);
     gr.Clear(aclWhite);
     gr.Free;
@@ -1330,12 +1330,12 @@ begin
    end
   else
    begin
-    {$IFDEF DELPHI_9_UP}
+    {$IFDEF DELPHI9_UP}
     pic.SetSize(0,0);
-    {$ELSE DELPHI_9_UP}
+    {$ELSE DELPHI9_UP}
      pic.Width  := 0;
      pic.Height := 0;
-    {$ENDIF DELPHI_9_UP}
+    {$ENDIF DELPHI9_UP}
    end;
 {
 
@@ -1384,12 +1384,12 @@ begin
 (*  with GetPicSize(name, tt, pl, idx) do
   if (cx > 0) and (cy > 0) then
    begin
-    {$IFDEF DELPHI_9_UP}
+    {$IFDEF DELPHI9_UP}
     pic.SetSize(cx,cy);
-    {$ELSE DELPHI_9_UP}
+    {$ELSE DELPHI9_UP}
      pic.Width  := cx;
      pic.Height := cy;
-    {$ENDIF DELPHI_9_UP}
+    {$ENDIF DELPHI9_UP}
     pic.Assign();
     pic.Canvas.Brush.Color := clWhite;
     pic.Canvas.FillRect(pic.Canvas.ClipRect);
@@ -1398,12 +1398,12 @@ begin
    end
   else
    begin
-    {$IFDEF DELPHI_9_UP}
+    {$IFDEF DELPHI9_UP}
     pic.SetSize(0,0);
-    {$ELSE DELPHI_9_UP}
+    {$ELSE DELPHI9_UP}
      pic.Width  := 0;
      pic.Height := 0;
-    {$ENDIF DELPHI_9_UP}
+    {$ENDIF DELPHI9_UP}
    end;
 *)
 
@@ -3716,16 +3716,16 @@ procedure TRQtheme.ClearThemelist;
   procedure Clear1ThemeList(var tl : aThemeinfo);
   var
    t : ToThemeinfo;
- {$IFNDEF DELPHI_9_UP}
+ {$IFNDEF DELPHI9_UP}
    i : Integer;
  {$ENDIF DELPHI_9_DOWN}
   begin
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
    for t in tl do begin
  {$ELSE DELPHI_9_dn}
    for i := Low(tl) to High(tl) do begin
     t := tl[i];
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
     begin
      SetLength(t.fn, 0);
      SetLength(t.subFile, 0);
@@ -4284,12 +4284,12 @@ begin
               (b2.Height <> Height) then
             begin
              b2.Height := 0;
-           {$IFDEF DELPHI_9_UP}
+           {$IFDEF DELPHI9_UP}
              b2.SetSize(Width, Height);
            {$ELSE DELPHI_9_dn}
              b2.Width := Width;
              b2.Height := Height;
-           {$ENDIF DELPHI_9_UP}
+           {$ENDIF DELPHI9_UP}
             end;
            b2DC := b2.Canvas.Handle;
 {          if Assigned(paramSmile.bg) then

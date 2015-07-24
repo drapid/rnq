@@ -23,7 +23,6 @@ uses
   RQUtil in '..\For.rnq\RQUtil.pas',
   RnQLangs in '..\For.rnq\RnQLangs.pas',
   RnQStrings in '..\For.rnq\RnQStrings.pas',
-  VirtualTrees in '..\For.rnq\VTV\Source\VirtualTrees.pas',
   RQThemes in '..\For.rnq\RQThemes.pas',
   RQmsgs in '..\For.rnq\RQmsgs.pas' {msgsFrm},
   RnQNet in '..\For.rnq\RnQNet.pas',

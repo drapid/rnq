@@ -18,7 +18,6 @@ This file is part of &RQ.
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 unit pwdDlg;
-{$I Compilers.inc}
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
   { $DEFINE USE_TKB}

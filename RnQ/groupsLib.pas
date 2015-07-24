@@ -22,7 +22,6 @@ This file is part of R&Q.
 Under same license
 }
 unit groupsLib;
-{$I Compilers.inc}
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 
@@ -41,12 +40,12 @@ type
     order : integer;
     node    :array [Tdivisor] of Tnode;
     expanded:array [Tdivisor] of boolean;
-{$IFDEF DELPHI_9_UP}
+{$IFDEF DELPHI9_UP}
     procedure ServerUpdate;
-{$ENDIF DELPHI_9_UP}
+{$ENDIF DELPHI9_UP}
    end;
 
-{$IFNDEF DELPHI_9_UP}
+{$IFNDEF DELPHI9_UP}
   procedure ServerUpdate(grp: Integer);
 {$ENDIF DELPHI_9_DOWN}
 
@@ -59,21 +58,21 @@ type
 //    procedure load(s : AnsiString);
     procedure fromString(s: RawByteString);
     function  toString: RawByteString;
-    function  idxOf(id:integer):integer;
-    function  add(id_:integer=0):integer;
-    function  get(id:integer):Pgroup;
-    function  exists(id:integer):boolean;
-    function  count:integer;
-    procedure rename(id:integer; newname:string);
-    function  delete(id:integer):boolean;
-    procedure changeId(oldId, newId:integer; db:TRnQCList);
-    function  name2id(name_:string):integer;
-    function  ssi2id(ssiN:integer):integer;
-    function  id2ssi(id:integer): Integer;
-    function  id2name(id:integer):string;
+    function  idxOf(id: integer): integer;
+    function  add(id_: integer=0): integer;
+    function  get(id: integer): Pgroup;
+    function  exists(id: integer): boolean;
+    function  count: integer;
+    procedure rename(id: integer; newname: string);
+    function  delete(id: integer): boolean;
+    procedure changeId(oldId, newId: integer; db: TRnQCList);
+    function  name2id(name_: string): integer;
+    function  ssi2id(ssiN: integer): integer;
+    function  id2ssi(id: integer): Integer;
+    function  id2name(id: integer): string;
     function  getAllSSI : RawByteString;
-    function  freeID:integer;
-    function  last:Pgroup;
+    function  freeID: integer;
+    function  last: Pgroup;
    end; // Tgroups
 
 implementation
@@ -325,7 +324,7 @@ begin result:=@a[length(a)-1] end;
 
 { Tgroup }
 
-{$IFDEF DELPHI_9_UP}
+{$IFDEF DELPHI9_UP}
 procedure Tgroup.ServerUpdate;
 begin
 //               ICQ.SSIRenameGroup(ssiID, name);
