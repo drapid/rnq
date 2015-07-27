@@ -4,6 +4,7 @@ program RnQx64;
 {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
 
 { $I Compilers.inc}
+{$I NoRTTI.inc}
 {$I RnQConfig.inc}
 
 

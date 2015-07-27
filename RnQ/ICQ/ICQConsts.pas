@@ -26,10 +26,10 @@ Type
 //  Tstatus=(SC_ONLINE = 0, SC_OCCUPIED, SC_DND, SC_NA, SC_AWAY, SC_F4C, SC_OFFLINE, SC_UNK,
 //           SC_Evil, SC_Depression);
 const
-  LOGIN_CHANNEL=1;
-  SNAC_CHANNEL=2;
-  LOGOUT_CHANNEL=4;
-  KEEPALIVE_CHANNEL=5;
+  LOGIN_CHANNEL     = 1;
+  SNAC_CHANNEL      = 2;
+  LOGOUT_CHANNEL    = 4;
+  KEEPALIVE_CHANNEL = 5;
 
   visibility2ShowStr : array [Tvisibility] of String =
        ('Normal (all but invisible-list)', 'Invisible', 'Privacy (only visible-list)',
@@ -60,7 +60,7 @@ const
     $6000, //Work [qip]
     $2001  //Lunch [qip]
    );
-  statusWithAutoMsg=[byte(SC_away), byte(SC_na), byte(SC_dnd),
+  statusWithAutoMsg = [byte(SC_away), byte(SC_na), byte(SC_dnd),
                      byte(SC_occupied)//, byte(SC_f4c)
 //                     , byte(SC_Evil),byte(SC_Depression)
                     ];
@@ -69,11 +69,11 @@ const
 //  overrideStatus2code:array [Tstatus] of dword=(0,9,$A,$E,4,0,0,0);
 
 const
-  maxRefs=2000;
-//  directProtoVersion=8;
+  maxRefs = 2000;
+//  directProtoVersion = 8;
   My_proto_ver = 9;
   ICQ_TCP_VERSION = My_proto_ver;
-  maxPwdLength=16;
+  maxPwdLength = 16;
   AIM_MD5_STRING : AnsiString = 'AOL Instant Messenger (SM)';
   uinToUpdate    =  223223181;
   AIMprefix = 'AIM_';
@@ -89,7 +89,7 @@ const
   BALLOON_DATE   = 3;
 
 // Client IDs
-  RnQclientID     =$FFFFF666;
+  RnQclientID  = $FFFFF666;
 
 const
 
@@ -130,9 +130,9 @@ const
     (V: #$7E#$11#$B7#$78#$A3#$53#$49#$26#$A8#$02#$44#$73#$52#$08#$C4#$2A; s: 'Lsp-RU-Rambler'),
     (V: #$B6#$07#$43#$78#$F5#$0C#$4A#$C7#$90#$92#$59#$38#$50#$2D#$05#$91; s: 'ICQ-XVideo'),
     (V: #$01#$00#$11#$00#$00#$00#$00#$00#$11#$00#$00#$00#$00#$2a#$02#$b5; s: 'AIM'),
-    (V: #$B2#$EC#$8F#$16#$7C#$6F#$45#$1B#$BD#$79#$DC#$58#$49#$78#$88#$B9; s: 'tZers' ),   // 21
+    (V: #$B2#$EC#$8F#$16#$7C#$6F#$45#$1B#$BD#$79#$DC#$58#$49#$78#$88#$B9; s: 'tZers'),   // 21
     (V: #$01#$38#$CA#$7B#$76#$9A#$49#$15#$88#$F2#$13#$FC#$00#$97#$9E#$A8; s: 'ICQ6'),
-    (V: #$D6#$68#$7F#$4F#$3D#$C3#$4b#$db#$8A#$8C#$4C#$1A#$57#$27#$63#$CD; s: 'R&Q-ProtectMsg'), //23
+    (V: #$D6#$68#$7F#$4F#$3D#$C3#$4b#$db#$8A#$8C#$4C#$1A#$57#$27#$63#$CD; s: 'R&Q-ProtectMsg'), // 23
     (V: #$7C#$73#$75#$02#$C3#$BE#$4F#$3E#$A6#$9F#$01#$53#$13#$43#$1E#$1A; s: 'qip Infium'),
     (V: #$56#$6D#$49#$43#$51#$20#$76#$30#$2E#$31#$2E#$34#$62#$00#$00#$00; s: 'vmICQ'),
     (V: #$7C#$53#$3F#$FA#$68#$00#$4F#$21#$BC#$FB#$C7#$D2#$43#$9A#$AD#$31; s: 'qip-plugins'),
@@ -178,26 +178,26 @@ const
     (V: #$01#$02; s: 'Has camera'; Desc: 'Has a video camera connected'),      // = HasCamera
     (V: #$01#$03; s: 'Has microphone'; Desc: 'Has a microphone connected (may not be set for non-USB mics)'),  //4 = HasMicrophone
     (V: #$01#$04; s: 'Rtp audio'; Desc: 'Can do live audio streaming, using SIP/RTP'),       // = RtpAudio
-    (V: #$01#$05; s: 'Available for call'; Desc : 'Can receive an a/v call at this time'), //6 = AvailableForCall
+    (V: #$01#$05; s: 'Available for call'; Desc: 'Can receive an a/v call at this time'), //6 = AvailableForCall
     (V: #$01#$06; s: 'Aca'),             // = Aca
     (V: #$01#$07; s: 'Multi audio'; Desc: 'Can participate in centralized audio conferences'),     //8 = MultiAudio
     (V: #$01#$08; s: 'Multi video'; Desc: 'Can participate in centralized video conferences'),     // = MultiVideo
     (V: #$01#$FF; s: 'Smart caps'; Desc: 'Whether caps reflect opt-in features vs. features the software supports'),    //10 = SmartCaps
     (V: #$F0#$04; s: 'Viceroy'),         // = Viceroy
-    (V: #$13#$49; s: 'ICQ Server Relay'), //12  AIM_CAPS_ICQSERVERRELAY
+    (V: #$13#$49; s: 'ICQ Server Relay'), // 12  AIM_CAPS_ICQSERVERRELAY
     (V: #$13#$44; s: 'is ICQ'),              // AIM_CAPS_ICQ
-    (V: #$13#$4E; s: 'UTF-8 Messages'),  //14 UTF-8
+    (V: #$13#$4E; s: 'UTF-8 Messages'),  // 14 UTF-8
     (V: #$13#$4c; s: 'Avatar'),              // CAP_AVATAR
 //    (V: #$13#$4c; s: 'Lite-AIM Cap1'),        // CAP_AVATAR
-    (V: #$13#$45; s: 'Direct IM'; Desc : 'Can participate in direct IM sessions'),  //16
-    (V: #$13#$46; s: 'Buddy icon'; Desc : 'Can receive non-BART buddy icons'),
-    (V: #$13#$48; s: 'File sharing'; Desc : 'Offering files for download'),    //18   CAP_FILE_SHARING
+    (V: #$13#$45; s: 'Direct IM'; Desc: 'Can participate in direct IM sessions'),  //16
+    (V: #$13#$46; s: 'Buddy icon'; Desc: 'Can receive non-BART buddy icons'),
+    (V: #$13#$48; s: 'File sharing'; Desc: 'Offering files for download'),    //18   CAP_FILE_SHARING
     (V: #$14#$49; s: 'ICQ 2001a'),           // CAP_ICQ_SERVER_RELAY
-    (V: #$13#$43; s: 'File Transfer'; Desc : 'Can receive files'),   // 20  CAP_FILE_TRANSFER
+    (V: #$13#$43; s: 'File Transfer'; Desc: 'Can receive files'),   // 20  CAP_FILE_TRANSFER
     (V: #$13#$41; s: 'Old Audio'; Desc: 'Can do live audio streaming, using JGTK'), // CAP_AOL_TALK
-    (V: #$13#$42; s: 'Direct Play'),     //22   CAP_DIRECT_PLAY
+    (V: #$13#$42; s: 'Direct Play'),     // 22   CAP_DIRECT_PLAY
     (V: #$13#$4B; s: 'Share Buddies'; Desc: 'Can receive sent buddy lists'),        // CAP_SHARE_BUDDIES
-//    (V: #$13#$42; s: 'Preakness')        //24   CAP_PREAKNESS
+//    (V: #$13#$42; s: 'Preakness')        // 24   CAP_PREAKNESS
 
     (V: #$13#$4D; s: 'Talk with ICQ'),
     (V: #$00#$00; s: 'Short caps'),            // 25
@@ -300,23 +300,23 @@ const
   	            MTYPE_AUTODND, MTYPE_AUTOFFC ];
 
    PLUGIN_SCRIPT = AnsiString('Script Plug-in: Remote Notification Arrive');
-  ACK_OK=0;
-  ACK_FILEDENY=1;
-  ACK_OCCUPIED=9;
-  ACK_DND=$A;
-  ACK_AWAY=4;
-  ACK_NA=$E;
-  ACK_NOBLINK=$C;
+  ACK_OK       = 0;
+  ACK_FILEDENY = 1;
+  ACK_OCCUPIED = 9;
+  ACK_DND      = $A;
+  ACK_AWAY     = 4;
+  ACK_NA       = $E;
+  ACK_NOBLINK  = $C;
 
-  flag_invisible=$00000100;
-  flag_webaware =$00010000;
-  flag_showip   =$00020000;
-  flag_birthday =$00080000;
-  flag_unknown  =$00100000;
+  flag_invisible = $00000100;
+  flag_webaware  = $00010000;
+  flag_showip    = $00020000;
+  flag_birthday  = $00080000;
+  flag_unknown   = $00100000;
   // if none of the following direct connection is for everyone
-  flag_dcForNone   =$01000000;  // DC not supported
-  flag_dcByRequest =$10000000;  // DC upon authorization
-  flag_dcForRoster =$20000000;  // DC only with contact users
+  flag_dcForNone   = $01000000;  // DC not supported
+  flag_dcByRequest = $10000000;  // DC upon authorization
+  flag_dcForRoster = $20000000;  // DC only with contact users
 
   MTN_FINISHED = $0000; //typing finished sign
   MTN_TYPED    = $0001; //text typed sign
@@ -345,10 +345,10 @@ const
 
 
 // FLAGS BUDDY__RIGHTS_QUERY_FLAGS for Snac 0302
-BART_SUPPORTED =	$0001;//	Want to receive BART items
-INITIAL_DEPARTS	= $0002;//	Want to receive ARRIVE/DEPART for all users on a Buddy List, even those offline
-OFFLINE_BART_SUPPORTED =	$0004;//	Want to receive BART items for offline buddies, excluding location
-REJECT_PENDING_BUDDIES =	$0008;//	If set and INITIAL_DEPARTS is set, use REJECT on pending buddies instead of DEPART
+BART_SUPPORTED =	$0001; //	Want to receive BART items
+INITIAL_DEPARTS	= $0002; //	Want to receive ARRIVE/DEPART for all users on a Buddy List, even those offline
+OFFLINE_BART_SUPPORTED =	$0004; //	Want to receive BART items for offline buddies, excluding location
+REJECT_PENDING_BUDDIES =	$0008; //	If set and INITIAL_DEPARTS is set, use REJECT on pending buddies instead of DEPART
 
 // SNACS for ICQ Extensions Family 0x0015
   SRV_ICQEXT_ERROR      = $0001;
@@ -1047,7 +1047,7 @@ var
    )}
    );
 
-  function CAPS_sm2big(i : byte): RawByteString; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+  function CAPS_sm2big(i: byte): RawByteString; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
 var
 //   ExtStsStrings : array[low(aXStatus)..High(aXStatus),0..1] of string;
 //   ExtStsStrings : array[low(XStatus6)..High(XStatus6)] of string;
@@ -1056,15 +1056,15 @@ var
    StatusesArray : TStatusArray;
 
 var
-   useFBcontacts : Boolean = false;
+   useFBcontacts: Boolean = false;
 
 type
   TFileAbout  = class(TObject)
-    fPath : String;
-    fName : String;
-    Size : Int64;
-    Processed : Int64;
-    CheckSum : Cardinal;
+    fPath: String;
+    fName: String;
+    Size: Int64;
+    Processed: Int64;
+    CheckSum: Cardinal;
   end;
 
 const
@@ -1100,7 +1100,7 @@ const
 
 implementation
 
-  function CAPS_sm2big(i : byte): RawByteString; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+  function CAPS_sm2big(i: byte): RawByteString; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
   begin
    result := CapsMakeBig1 + CAPSSmall[i].v + CapsMakeBig2;
   end;

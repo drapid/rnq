@@ -5,6 +5,8 @@
 *.dcu
 *.local
 *.identcache
+*.stat
+*.dproj.local
 *.bak
 *.ddp
 *.~*

@@ -790,9 +790,9 @@ var
   PaintOnGlass: Boolean;
   PaintBuffer: HPAINTBUFFER;
  {$ENDIF DELPHI9_UP}
- {$IFNDEF 1=2 and COMPILER_12_UP}
+ {$IFNDEF 1=2 and COMPILER12_UP}
   LForm: TCustomForm;
- {$ENDIF COMPILER_12_UP}
+ {$ENDIF COMPILER12_UP}
 //  cnv : TCanvas;
 //    saveDC,
     MemDC: HDC;

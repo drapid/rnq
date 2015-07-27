@@ -150,10 +150,10 @@ var
   r: TRect;
   r2: TGPRect;
   SmileObj: TSmlObj;
-  brF : HBRUSH;
-  s : String;
-  menu_pic : TBitmap;
-  ts : Boolean;
+  brF: HBRUSH;
+  s: String;
+  menu_pic: TBitmap;
+  ts: Boolean;
 //  brLog : tagLOGBRUSH;
 begin
 {  begin

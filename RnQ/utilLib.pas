@@ -29,164 +29,164 @@ uses
   dateutils
   ;
 
-function OnlFeature(const pr : TRnQProtocol; check : Boolean = True) : Boolean; // True if online
+function OnlFeature(const pr: TRnQProtocol; check: Boolean = True): Boolean; // True if online
 
-procedure processOevent(oe:Toevent);
-function  getShiftState():integer;
-function  exitFromAutoaway():boolean;
+procedure processOevent(oe: Toevent);
+function  getShiftState(): integer;
+function  exitFromAutoaway(): Boolean;
 
-procedure addTempVisibleFor(time:integer; c:TRnQContact);
-function  infoToStatus(const info:RawByteString): byte;
-function  infoToXStatus(const info:RawByteString):Byte;
-procedure drawHint(cnv:Tcanvas; kind : Integer;
+procedure addTempVisibleFor(time: integer; c: TRnQContact);
+function  infoToStatus(const info: RawByteString): byte;
+function  infoToXStatus(const info: RawByteString): Byte;
+procedure drawHint(cnv: Tcanvas; kind: Integer;
                    groupid : integer; c : TRnQcontact;
-                   var r:Trect; calcOnly: Boolean = False);
+                   var r: Trect; calcOnly: Boolean = False);
 //procedure drawNodeHint(cnv:Tcanvas; node:Pvirtualnode; var r:Trect);
-function  unexistant(const uin:TUID):boolean;
-function  fileIncomePath(cnt : TRnQContact) : String;
+function  unexistant(const uin: TUID): boolean;
+function  fileIncomePath(cnt: TRnQContact): String;
 
-function  isAbort(const pluginReply: AnsiString):boolean;
-function  findInAvailableUsers(const uin: TUID):integer;
+function  isAbort(const pluginReply: AnsiString): boolean;
+function  findInAvailableUsers(const uin: TUID): integer;
 procedure setupChatButtons;
 procedure reloadCurrentLang();
 {
-procedure assignImgIco(img:Timage; ico:Ticon);
-procedure assignImgBmp(img:Timage; bmp:Tbitmap);
+procedure assignImgIco(img: Timage; ico: Ticon);
+procedure assignImgBmp(img: Timage; bmp: Tbitmap);
 }
-//procedure assignImgPic(img:Timage; picName : String);
-function  showUsers(var pass : String) : TUID;
-function  CheckAccPas(const uid : TUID; const db : String; var pPass : String) : Boolean;
+//procedure assignImgPic(img: Timage; picName: String);
+function  showUsers(var pass: String): TUID;
+function  CheckAccPas(const uid: TUID; const db: String; var pPass: String): Boolean;
 procedure clearAvailableUsers;
 procedure refreshAvailableUsers;
-function  getLeadingInMsg(const s:string; ofs:integer=1):string;
-procedure applyCommonSettings(c:Tcomponent);
-procedure applyUserCharset(f:Tfont);
+function  getLeadingInMsg(const s: string; ofs: integer = 1): string;
+procedure applyCommonSettings(c: Tcomponent);
+procedure applyUserCharset(f: Tfont);
  {$IFDEF Use_Baloons}
-procedure ShowBalloonEv(ev : Thevent);
+procedure ShowBalloonEv(ev: Thevent);
  {$ENDIF Use_Baloons}
-function  addToNIL(c:TRnQContact; isBulk : Boolean = false):boolean;
-procedure NILifNIL(c:TRnQContact; isBulk : Boolean = false);
-function  setRosterAnimation(v:boolean):boolean;
-//function  eventName(ev:integer):string;
-function  behactionName(a:Tbehaction):string;
-//function  sendMCIcommand(cmd:PChar):string;
-function doLock : Boolean;
-//function  loadNewOrOldVersionContactList(fn:string; altpath:string=''):string;
+function  addToNIL(c: TRnQContact; isBulk: Boolean = false): boolean;
+procedure NILifNIL(c: TRnQContact; isBulk: Boolean = false);
+function  setRosterAnimation(v: boolean): boolean;
+//function  eventName(ev: integer): string;
+function  behactionName(a: Tbehaction): string;
+//function  sendMCIcommand(cmd: PChar): string;
+function doLock: Boolean;
+//function  loadNewOrOldVersionContactList(fn: string; altpath: string=''): string;
 procedure trayAction;
-function  chopAndRealizeEvent:boolean;
-procedure realizeEvents(const kind_:integer; c:TRnQContact);
-procedure realizeEvent(ev:Thevent);
+function  chopAndRealizeEvent: boolean;
+procedure realizeEvents(const kind_: integer; c: TRnQContact);
+procedure realizeEvent(ev: Thevent);
 procedure removeSWhotkeys;
-function  updateSWhotkeys:boolean;
+function  updateSWhotkeys: boolean;
 procedure hideTaskButtonIfUhave2;
-function  behave(ev:Thevent; kind:integer=-1{; const info: Ansistring=''}):boolean;
+function  behave(ev: Thevent; kind: integer=-1{; const info: Ansistring=''}): boolean;
 procedure startTimer;
 procedure stopMainTimer;
-procedure contactCreation(c:TRnQContact);
-procedure contactDestroying(c:TRnQContact);
-procedure clearDB(db:TRnQCList);
-procedure freeDB(var db:TRnQCList);
-function  isSpam(var wrd : String; c:TRnQContact; msg:string=''; flags:dword=0):boolean;
-function  filterRefuse(c:TRnQContact; const msg:string=''; flags:dword=0; ev : Thevent = NIL):boolean;
-function  rosterImgNameFor(c:TRnQcontact): TPicName;
+procedure contactCreation(c: TRnQContact);
+procedure contactDestroying(c: TRnQContact);
+procedure clearDB(db: TRnQCList);
+procedure freeDB(var db: TRnQCList);
+function  isSpam(var wrd: String; c: TRnQContact; msg: string=''; flags: dword=0): boolean;
+function  filterRefuse(c: TRnQContact; const msg: string=''; flags: dword=0; ev: Thevent = NIL): boolean;
+function  rosterImgNameFor(c: TRnQcontact): TPicName;
 procedure setAppBarSize;
 procedure check4update;
-function  CheckUpdates(cnt : TRnQContact) : Boolean;
-function  setAutomsg(const s:string):string;
-function  applyVars(c:TRnQcontact; const s : String; fromAM : boolean = false) : String;
-function  getAutomsgFor(c:TRnQcontact):string;
-function  getXStatusMsgFor(c:TRnQContact):string;
+function  CheckUpdates(cnt: TRnQContact): Boolean;
+function  setAutomsg(const s: String): string;
+function  applyVars(c: TRnQcontact; const s: String; fromAM: boolean = false): String;
+function  getAutomsgFor(c: TRnQcontact): string;
+function  getXStatusMsgFor(c: TRnQContact): string;
 procedure toggleOnlyOnline;
 procedure toggleOnlyImVisibleTo;
 procedure openURL(const pURL: String); OverLoad;
 function  enterPwdDlg(var pwd: String; const title: String = ''; maxLength: Integer = 0;
                       AllowNull: Boolean = False): boolean;
-function  enterUinDlg(const proto : TRnQProtocol; var uin:TUID; const title:string=''):boolean;
-function  sendProtoMsg(var oe:TOevent):boolean;
-procedure SendEmail2Mail(const email : String);
-function  childParent(child,parent:integer):boolean;
-//procedure redrawUIN(uin:TUID);
+function  enterUinDlg(const proto: TRnQProtocol; var uin: TUID; const title: string=''): boolean;
+function  sendProtoMsg(var oe: TOevent): boolean;
+procedure SendEmail2Mail(const email: String);
+function  childParent(child, parent: integer): boolean;
+//procedure redrawUIN(uin: TUID);
 procedure myBeep;
-function  findViewInfo(c:TRnQContact):TRnQViewInfoForm;
-procedure sortCL(cl:TRnQCList);
-procedure sortCLbyGroups(cl:TRnQCList);
-procedure updateViewInfo(c:TRnQContact);
+function  findViewInfo(c: TRnQContact): TRnQViewInfoForm;
+procedure sortCL(cl: TRnQCList);
+procedure sortCLbyGroups(cl: TRnQCList);
+procedure updateViewInfo(c: TRnQContact);
  {$IFDEF RNQ_FULL2}
-procedure convertHistoriesDlg(oldPwd, newPwd:string);
+procedure convertHistoriesDlg(oldPwd, newPwd: string);
  {$ENDIF}
-procedure openSendContacts(dest:TRnQContact);
-function  isEmailAddress(const s:string; start:integer):integer;
+procedure openSendContacts(dest: TRnQContact);
+function  isEmailAddress(const s: string; start: integer): integer;
 procedure notAvailable;
 // strings
-//function  TLV(code:integer; data:string):string;
-function  mb(q:extended):string;
+//function  TLV(code: integer; data: string): string;
+function  mb(q: extended): string;
 
-procedure onlyDigits(obj:Tobject); overload;
+procedure onlyDigits(obj: Tobject); overload;
 // icq communication
-procedure addToIgnorelist(c:TRnQcontact; const Local_only : Boolean = false);
-procedure removeFromIgnorelist(c:TRnQcontact);
-procedure removeFromRoster(c:TRnQContact; const withHistory : Boolean = false);
-function  addToRoster(c:TRnQContact; group:integer; const isLocal : Boolean = True):boolean; overload;
-function  doConnect:boolean;
-procedure connect_after_dns(const proto : TRnQProtocol);
+procedure addToIgnorelist(c: TRnQcontact; const Local_only: Boolean = false);
+procedure removeFromIgnorelist(c: TRnQcontact);
+procedure removeFromRoster(c: TRnQContact; const withHistory: Boolean = false);
+function  addToRoster(c: TRnQContact; group: integer; const isLocal: Boolean = True): boolean; overload;
+function  doConnect: boolean;
+procedure connect_after_dns(const proto: TRnQProtocol);
 // convert
-function  ints2cl(a:TintegerDynArray):TRnQCList;
-function  event2imgName(e:integer): TPicName;
+function  ints2cl(a: TintegerDynArray): TRnQCList;
+function  event2imgName(e: integer): TPicName;
 function  statusDrawExt(const DC: HDC; const x, y: Integer; const s: byte;
                         const inv: Boolean = False; const ExtSts: Byte = 0) : TSize;
 //function  statusDraw(cnv:Tcanvas; x,y:integer; s:Tstatus; inv:boolean=FALSE) : TSize;
-function  beh2str(kind:integer): RawByteString;
-procedure str2beh(const b, s : RawByteString); overload;
-function  str2beh(s: AnsiString):Tbehaviour; overload;
+function  beh2str(kind: integer): RawByteString;
+procedure str2beh(const b, s: RawByteString); overload;
+function  str2beh(s: AnsiString): Tbehaviour; overload;
 function  str2status(const s: AnsiString): byte;
-function  str2visibility(const s: AnsiString):Tvisibility;
-function  str2html(const s:string):string;
-function  strFromHTML(const s:string):string;
-function  db2strU(db:TRnQCList):RawByteString;
+function  str2visibility(const s: AnsiString): Tvisibility;
+function  str2html(const s: string): string;
+function  strFromHTML(const s: string): string;
+function  db2strU(db: TRnQCList): RawByteString;
 // window management
-procedure toggleMainfrmBorder(setBrdr : Boolean = false; IsBrdr : Boolean = True);
+procedure toggleMainfrmBorder(setBrdr: Boolean = false; IsBrdr: Boolean = True);
 procedure mainfrmHandleUpdate;
-procedure dockSet(var r:Trect); overload;
+procedure dockSet(var r: Trect); overload;
 procedure dockSet; overload;
-procedure fixWindowPos(frm:Tform);
-procedure showAuthreq(c:TRnQContact; msg:string);
+procedure fixWindowPos(frm: Tform);
+procedure showAuthreq(c: TRnQContact; msg: string);
 procedure showSplash;
-function  viewHeventWindow(ev:Thevent):Tform;
-procedure hideForm(frm:Tform);
-procedure showForm(whatForm:TwhatForm; const Page: String = ''; Mode: TfrmViewMode = vmFull); overload;
-function  PrefIsVisiblePage(const pf : String): Boolean;
+function  viewHeventWindow(ev: Thevent): Tform;
+procedure hideForm(frm: Tform);
+procedure showForm(whatForm: TwhatForm; const Page: String = ''; Mode: TfrmViewMode = vmFull); overload;
+function  PrefIsVisiblePage(const pf: String): Boolean;
 procedure restoreForeWindow;
-procedure applyTransparency(forced:integer=-1);
-procedure applyDocking(Undock : Boolean = false);
-function  whatStatusPanel(statusbar:Tstatusbar; x:integer):integer;
+procedure applyTransparency(forced: integer=-1);
+procedure applyDocking(Undock: Boolean = false);
+function  whatStatusPanel(statusbar: Tstatusbar; x: integer): integer;
 // graphic
-procedure wallpaperize(canvas:Tcanvas); overload;
-procedure wallpaperize(DC:THandle; r:TRect); {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP} overload;
+procedure wallpaperize(canvas: Tcanvas); overload;
+procedure wallpaperize(DC: THandle; r: TRect); {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP} overload;
 // file management
-function  delSUBtree(subPath:string):boolean;
-function  deltree(path:string):boolean;
-function  deleteFromTo(fn:string; from,to_:integer):boolean;
-function  saveAllLists(const uPath : String; const pr : TRnQProtocol; pProxys : Tarrproxy) : Boolean;
-function  loadDB(zp : TZipFile; pCheckGroups : Boolean):boolean;
+function  delSUBtree(subPath: string): boolean;
+function  deltree(path: string): boolean;
+function  deleteFromTo(fn: string; from, to_: integer): boolean;
+function  saveAllLists(const uPath: String; const pr: TRnQProtocol; pProxys : Tarrproxy) : Boolean;
+function  loadDB(zp: TZipFile; pCheckGroups: Boolean): boolean;
 //procedure saveDB;
-//procedure saveLists(pr : TRnQProtocol);
-procedure loadLists(const pr : TRnQProtocol; zp : TZipFile; const uPath : String);
-procedure LoadExtSts(zp : TZipFile);
+//procedure saveLists(pr: TRnQProtocol);
+procedure loadLists(const pr: TRnQProtocol; zp: TZipFile; const uPath : String);
+procedure LoadExtSts(zp: TZipFile);
 //procedure SaveExtSts;
-procedure loadSpamQuests(zp : TZipFile);
+procedure loadSpamQuests(zp: TZipFile);
 //procedure SaveSpamQuests;
-procedure LoadProxies(zp : TZipFile; var pProxys : Tarrproxy);
-//procedure SaveProxies(pProxys : Tarrproxy);
+procedure LoadProxies(zp: TZipFile; var pProxys: Tarrproxy);
+//procedure SaveProxies(pProxys: Tarrproxy);
 //procedure saveInbox;
-//procedure loadInbox(zp : TZipFile);
+//procedure loadInbox(zp: TZipFile);
 //procedure saveOutbox;
-procedure loadOutInBox(zp : TZipFile);
+procedure loadOutInBox(zp: TZipFile);
 //procedure saveRetrieveQ;
 function  openSaveDlg(parent: Tform; const Cptn: String; IsOpen: Boolean;
                       const ext: String = ''; const extCptn: String = '';
-                      const defFile: String =''; MultiSelect: boolean = false):string;
+                      const defFile: String = ''; MultiSelect: boolean = false):string;
 
-function  str2sortby(const s: AnsiString):TsortBy;
+function  str2sortby(const s: AnsiString): TsortBy;
 procedure CheckBDays;
 
 
@@ -320,9 +320,9 @@ uses
   OleCtrls;
 
 
-function str2sortby(const s: AnsiString):TsortBy;
+function str2sortby(const s: AnsiString): TsortBy;
 begin
-  result:=low(TsortBy);
+  result := low(TsortBy);
   while result <= high(TsortBy) do
    if s = sortby2str[result] then
      exit
@@ -337,27 +337,27 @@ begin
   RnQSysUtils.openURL(pURL, useDefaultBrowser, browserCmdLine);
 end; // openURL
 
-procedure onlyDigits(obj:Tobject);
+procedure onlyDigits(obj: Tobject);
 var
-  i:integer;
+  i: integer;
 begin
 if obj is Tcustomedit then
   with (obj as Tcustomedit) do
     begin
-    i:=selstart;
+    i := selstart;
     text := onlyDigits(text);
     if i>length(text) then
       i := length(text);
-    selStart:=i;
+    selStart := i;
     end;
 end; // onlyDigits
 
-procedure loadLists(const pr : TRnQProtocol; zp : TZipFile; const uPath : String);
+procedure loadLists(const pr: TRnQProtocol; zp: TZipFile; const uPath : String);
 var
-  zipLists : Boolean;
-  function LoadZorF(const fn : String) : RawByteString;
+  zipLists: Boolean;
+  function LoadZorF(const fn: String): RawByteString;
   var
-    i : Integer;
+    i: Integer;
    begin
      if zipLists then
       begin
@@ -372,8 +372,8 @@ var
        result := loadFileA(uPath + fn);
    end;
 var
-  s : RawByteString;
-  i : Integer;
+  s: RawByteString;
+  i: Integer;
 begin
 // backward compatibility
 renamefile(uPath + 'uin.list', uPath + uinlistFilename);
@@ -396,7 +396,7 @@ renamefile(uPath + 'uin.list', uPath + uinlistFilename);
   else
 //   s := loadNewOrOldVersionContactList(rosterFileName1);
    s := loadFileA(uPath + rosterFileName1);
- pr.readList(LT_ROSTER).fromString(pr, s, contactsDB );
+ pr.readList(LT_ROSTER).fromString(pr, s, contactsDB);
 
 
 { if zipLists then
@@ -441,9 +441,9 @@ if not saveFile(userPath+CheckInvisFileName+'.txt', CheckInvis.CList.toString, T
 end; // saveLists
 *)
 
-procedure loadExtSts(zp : TZipFile);
+procedure loadExtSts(zp: TZipFile);
 var
-  k,line, s: RawByteString;
+  k, line, s: RawByteString;
   i : Integer;
 begin
 //  clear;
@@ -452,10 +452,10 @@ begin
   i := 0;
   while s>'' do
   begin
-   line:=chopLine(s);
-   k:= chop(AnsiString('='),line);
+   line := chopLine(s);
+   k := chop(AnsiString('='),line);
    k := trim(k);
-   line:=trim(line);
+   line := trim(line);
    if isOnlyDigits(k) then
      try
        i := strToInt(k);
@@ -505,8 +505,8 @@ end;
 }
 procedure loadSpamQuests(zp : TZipFile);
 var
-  k,line, s: RawByteString;
-  i,j : Integer;
+  k, line, s: RawByteString;
+  i, j : Integer;
 begin
 //  clear;
   s := loadFromZipOrFile(zp, Account.ProtoPath, SpamQuestsFilename);
@@ -514,9 +514,9 @@ begin
 //  i := 0;
   while s>'' do
   begin
-   line:=chopLine(s);
-   k:=trim(chop('=',line));
-   line:=trim(line);
+   line := chopLine(s);
+   k := trim(chop('=',line));
+   line := trim(line);
 {   if isOnlyDigits(k) then
      try
        i := strToInt(k);
@@ -567,10 +567,10 @@ begin
 end;
 }
 
-procedure LoadProxies(zp : TZipFile; var pProxys : Tarrproxy);
+procedure LoadProxies(zp: TZipFile; var pProxys: Tarrproxy);
 var
-  cfg, l, h : RawByteString;
-  i, ppp : Integer;
+  cfg, l, h: RawByteString;
+  i, ppp: Integer;
   function yesno:boolean;
   begin result:=comparetext(l,AnsiString('yes'))=0 end;
 //var
@@ -584,8 +584,8 @@ begin
 //  ProxyIDBox.ItemIndex := 0;
   while cfg > '' do
    begin
-     l:=chop(CRLF,cfg);
-     h:=chop('=',l);
+     l := chop(CRLF,cfg);
+     h := chop('=',l);
      if h = 'proxy-name' then
        begin
          i := Length(pProxys);
@@ -692,14 +692,14 @@ var
 //    zf.Files[fIDX].CommonFileHeader.VersionNeededToExtract
   end;
 var
-//  s : string;
-  cfg : RawByteString;
-  sA  : AnsiString;
-//  i : Integer;
-  k, l : integer;
-  Saved : Boolean;
-  memStream : TMemoryStream;
-  lFileOld,lFileNew, lFileBak : string;
+//  s: string;
+  cfg: RawByteString;
+  sA: AnsiString;
+//  i: Integer;
+  k, l: integer;
+  Saved: Boolean;
+  memStream: TMemoryStream;
+  lFileOld,lFileNew, lFileBak: string;
 begin
  Result := False; 
  if fantomWork then Exit;
@@ -723,7 +723,7 @@ begin
 //  i := 0;
 //  zf.AddFile(dbFileName);
 //  zf.Data[i] := db2str(contactsDB);
-  zf.ZipFileComment := 'DB file of R&Q ver.'+ IntToStrA(RnQBuild);
+  zf.ZipFileComment := 'DB file of R&Q ver.' + IntToStrA(RnQBuild);
 
   cfg := db2strU(contactsDB);
   AddFile2Zip(dbFileName, cfg);
@@ -780,9 +780,9 @@ begin
                           StrToUTF8(automessages[k+1])+CRLF;
       inc(k,2);
     end;
-   cfg:=cfg+splitMsg+ autoaway_name+CRLF+ StrToUTF8(autoaway.msg)+CRLF;
+   cfg := cfg+splitMsg+ autoaway_name+CRLF+ StrToUTF8(autoaway.msg)+CRLF;
    AddFile2Zip(automsgFilename, cfg);
-   cfg:='';
+   cfg := '';
   end;
 
   AddFile2Zip(macrosFileName, macros2str(macros));
@@ -798,7 +798,7 @@ begin
   if Assigned(chatFrm) then
     AddFile2Zip(reopenchatsFileName, chatFrm.Pages2String);
 
-  cfg:='';
+  cfg := '';
 //  for I := low(XStatus6) to High(XStatus6) do
   for k := low(ExtStsStrings) to High(ExtStsStrings) do
   begin
@@ -809,7 +809,7 @@ begin
       StrToUTF8(ExtStsStrings[k].Cap),
       StrToUTF8(newline2slashn(ExtStsStrings[k].Desc))]);
 //  f := f+format(CRLF+'ssi=%d', [a[i].ssiID]);
-    cfg:=cfg+CRLF;
+    cfg := cfg+CRLF;
   end;
   AddFile2Zip(extstatusesFilename, cfg);
 
@@ -825,7 +825,7 @@ begin
   //     cfg := cfg+format(AnsiString(CRLF + 'answer=%s'),[StrToUTF8(spamfilter.quests[k].ans[l])]);
        cfg := cfg+ CRLF + AnsiString('answer=') + StrToUTF8(spamfilter.quests[k].ans[l]);
   //  f := f+format(CRLF+'ssi=%d', [a[i].ssiID]);
-      cfg:=cfg+CRLF + '**********' + CRLF;
+      cfg := cfg+CRLF + '**********' + CRLF;
      end;
   end;
   AddFile2Zip(SpamQuestsFilename, cfg);
@@ -900,13 +900,13 @@ begin
   Result := True;
 end;
 
-function doConnect:boolean;
+function doConnect: boolean;
 var
 // msg : string;
 // evInt : Integer;
- pr  : TRnQProtocol;
+ pr: TRnQProtocol;
 begin
- result:=FALSE;
+ result := FALSE;
  if not Assigned(Account.AccProto) or
     not Account.AccProto.isOffline then
    exit;
@@ -1593,18 +1593,18 @@ case whatForm of
   showForm(frm^);
 end; // showPref
 
-function showUsers(var pass : String) : TUID;
+function showUsers(var pass: String): TUID;
 begin
   application.createForm(TusersFrm, usersFrm);
   applyCommonsettings(usersFrm);
   //applyTaskButton(usersFrm);
   translateWindow(usersFrm);
-  result:=usersFrm.doSelect;
+  result := usersFrm.doSelect;
   pass := usersFrm.resAccPass;
   freeandNIL(usersFrm);
 end; // showUsers
 
-function CheckAccPas(const uid : TUID; const db : String; var pPass : String) : Boolean;
+function CheckAccPas(const uid: TUID; const db: String; var pPass: String): Boolean;
 begin
       pPass := '';
       if enterPwdDlg(pPass, getTranslation('Account password') + ' (' + uid + ')', 16) then
@@ -1626,7 +1626,7 @@ begin
         end;
 end;
 
-procedure updateViewInfo(c:TRnQcontact);
+procedure updateViewInfo(c: TRnQcontact);
 begin
 if not updateViewInfoQ.exists(c) then
   updateViewInfoQ.add(c);
@@ -1702,12 +1702,12 @@ begin
   eventQ.removeExpiringEvents;
 end;
 
-procedure openSendContacts(dest:TRnQcontact);
+procedure openSendContacts(dest: TRnQcontact);
 var
-  wnd:TselectCntsFrm;
+  wnd: TselectCntsFrm;
 begin
   if not Assigned(dest) then Exit;
-  wnd:=TselectCntsFrm.doAll2( RnQmain,
+  wnd := TselectCntsFrm.doAll2( RnQmain,
                               getTranslation('To %s',[dest.displayed]),
                               getTranslation('Send selected contacts'),
                               dest.fProto,
@@ -1718,21 +1718,21 @@ begin
                               );
 //  Theme.getIco2(PIC_CONTACTS, wnd.icon);
   Theme.pic2ico(RQteFormIcon, PIC_CONTACTS, wnd.icon);
-  wnd.extra:=Tincapsulate.aString(dest.uid);
+  wnd.extra := Tincapsulate.aString(dest.uid);
 end; // openSendContacts
 
-function isEmailAddress(const s:string; start:integer):integer;
+function isEmailAddress(const s: string; start: integer): integer;
 //const
 //  emailChar=['a'..'z','A'..'Z','0'..'9','-','_','.'];
 var
-  j:integer;
-  existsDot:boolean;
+  j: integer;
+  existsDot: boolean;
 begin
-result:=-1;
+result := -1;
 if s[start] in EMAILCHARS then   // chi comincia bene...
   begin
   // try to find the @
-  j:=start+1;
+  j := start+1;
   while (j < length(s)) and (s[j] in EMAILCHARS) do
     inc(j);
   if s[j]='@' then
@@ -2374,25 +2374,25 @@ begin
     docking.appbarFlag := vOn;
     RnQSysUtils.dockSet(RnQmain.Handle, vOn, WM_DOCK);
    end;
-if not docking.active then exit;
-w:=r.right-r.left;
-r:=desktopWorkArea;
-if docking.appBar then
+  if not docking.active then exit;
+  w := r.right-r.left;
+  r := desktopWorkArea(RnQmain.Handle);
+  if docking.appBar then
   begin
-  r.left:=0;
-  r.right:=screen.width;
+    r.left:=0;
+    r.right := screen.width;
   end;
-if docking.pos=DP_left then
-  begin
-  dec(r.left,getsystemmetrics(SM_CXFRAME));
-  r.right:=r.left+w;
-  end
-else
-  begin
-  inc(r.right,getsystemmetrics(SM_CXFRAME));
-  r.left:=r.right-w;
-  end;
-appbarResizeDelayed:=TRUE;
+  if docking.pos=DP_left then
+    begin
+     dec(r.left,getsystemmetrics(SM_CXFRAME));
+     r.right := r.left+w;
+    end
+   else
+    begin
+     inc(r.right,getsystemmetrics(SM_CXFRAME));
+     r.left := r.right-w;
+    end;
+  appbarResizeDelayed := TRUE;
 end; // dockSet
 
 procedure setAppBarSize;

@@ -88,10 +88,10 @@ var
   imgp : TPaintBox;
   bmp : TRnQBitmap;
 begin
-  form:= THEventFrm.create(Application.MainForm);
-  result:=form;
-  form.caption:=title;
-  form.position:=poDefaultPosOnly;
+  form := THEventFrm.create(Application.MainForm);
+  result := form;
+  form.caption := title;
+  form.position := poDefaultPosOnly;
 
   if (trim(body) <> '') then
   begin
@@ -214,7 +214,7 @@ begin
   end;
 
   form.OnClose := form.onCloseSomeWindows;
-  with desktopworkarea do
+  with desktopworkarea(form.Handle) do
     begin
       form.width:=(right-left) div 2;
       form.height:=(bottom-top) div 2;

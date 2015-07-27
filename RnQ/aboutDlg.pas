@@ -131,7 +131,7 @@ begin
   if LiteVersion then
     versionLbl.caption := versionLbl.caption + #13' Lite';
   bt := builtTime;
-  BuiltLbl.Caption := 'Built: '+ DateTimeToStr(bt);
+  BuiltLbl.Caption := getTranslation('Built at') + ' ' + DateTimeToStr(bt);
   MThanks.Height := AbPnl.Height;
  showForm(self);
 end;
@@ -197,7 +197,7 @@ end;
 procedure TaboutFrm.FormKeyPress(Sender: TObject; var Key: Char);
 begin
 //  if Key in [#0013, #0027] then
-  if (Key =#0013) or (Key = #0027) then
+  if (Key = #0013) or (Key = #0027) then
    close;
 end;
 

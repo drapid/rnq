@@ -33,33 +33,33 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure OldxStChkClick(Sender: TObject);
   private
-    BtnWidth : Integer;
-    BtnHeight : Integer;
-    thisProto : TRnQProtocol;
-    protoIs : Byte;
+    BtnWidth: Integer;
+    BtnHeight: Integer;
+    thisProto: TRnQProtocol;
+    protoIs: Byte;
     xStatusbuttons: array of TStsBtn;
-    procedure ChoosingX(Sender:TObject);
-    procedure DblClk(Sender:TObject);
+    procedure ChoosingX(Sender: TObject);
+    procedure DblClk(Sender: TObject);
     { Private declarations }
     procedure Init;
     procedure SetNameVis;
   public
     { Public declarations }
-//    procedure ShowNear(icq : TICQSession; mR: TRect; X, Y: Integer);
+//    procedure ShowNear(icq: TICQSession; mR: TRect; X, Y: Integer);
     procedure ShowNear(mR: TRect; X, Y: Integer);
-//    constructor ShowNear2(owner_ :Tcomponent; proto : IRnQProtocol; mR: TRect; X, Y: Integer);
-//    constructor ShowNear2(owner_ :TWinControl; proto : IRnQProtocol; mR: TRect; X, Y: Integer);
-    class procedure ShowNear2(owner_ :TWinControl; const proto : TRnQProtocol; mR: TRect; X, Y: Integer);
+//    constructor ShowNear2(owner_: Tcomponent; proto : IRnQProtocol; mR: TRect; X, Y: Integer);
+//    constructor ShowNear2(owner_: TWinControl; proto : IRnQProtocol; mR: TRect; X, Y: Integer);
+    class procedure ShowNear2(owner_: TWinControl; const proto: TRnQProtocol; mR: TRect; X, Y: Integer);
   end;
 
-  function OpenedXStForm : Boolean;
+  function OpenedXStForm: Boolean;
 
 var
 //  xStatusForm: TxStatusForm;
 //  xStatusbuttons: array [low(aXStatus)..High(aXStatus)] of TStsBtn;
 //  xStatusbuttons: array [low(XStatus6)..High(XStatus6)] of TStsBtn;
 //  xStatus6buttons: array [0..XStatus6Count-1] of TStsBtn;
-  tempStatus:byte;
+  tempStatus: byte;
 
 implementation
 
@@ -131,10 +131,10 @@ const
  {$ELSE}
   BtnsInRow = 7;
  {$ENDIF ICQ_OLD_STATUS}
-  procedure addBtn(x : Integer);
+  procedure addBtn(x: Integer);
   var
-    k   : integer;
-    curBtn : TStsBtn;
+    k: integer;
+    curBtn: TStsBtn;
   begin
     k := Length(xStatusButtons);
     curBtn := TStsBtn.create(Bevel1);
@@ -223,12 +223,12 @@ begin
     end
  {$ENDIF PROTOCOL_MRA}
    ;
-//  bevel1.height:=8+(((High(aXStatus)-1) div BtnsInRow)+1)*21+((High(aXStatus)-1) div BtnsInRow)*3;
-  bevel1.height:=8+(round((High(xStatusButtons)+1) / BtnsInRow + 0.5))*(BtnHeight+3);
-  clientwidth:= 22 + 4+BtnsInRow*(BtnWidth+4);
+//  bevel1.height := 8+(((High(aXStatus)-1) div BtnsInRow)+1)*21+((High(aXStatus)-1) div BtnsInRow)*3;
+  bevel1.height := 8+(round((High(xStatusButtons)+1) / BtnsInRow + 0.5))*(BtnHeight+3);
+  clientwidth := 22 + 4+BtnsInRow*(BtnWidth+4);
   Bevel1.Width := clientwidth - 16;
 //  bevel1.Width+22;
-//  bevel1.Width:=4+BtnsInRow*(BtnWidth+4) - 4;
+//  bevel1.Width := 4+BtnsInRow*(BtnWidth+4) - 4;
   XStatusStrMemo.Top := bevel1.Top + bevel1.height + 5;
  {$IFDEF ICQ_OLD_STATUS}
 {  if (protoIs = IS_ICQ) then
@@ -317,8 +317,8 @@ end;
 
 procedure TxStatusForm.FormShow(Sender: TObject);
 var
-//  i:integer;
-  btn : TStsBtn;
+//  i: integer;
+  btn: TStsBtn;
 begin
   tempStatus := thisProto.getXStatus;
   if protoIs = ICQProtoID then
@@ -343,7 +343,7 @@ begin
 
   for btn in xStatusButtons do
     if (tempStatus = btn.Tag) and btn.Enabled then
-      btn.down:=true;
+      btn.down := true;
 //    xstatusname.text:=curXStatusStr;
 //    XStatusStrMemo.Text := curXStatusDesc;
   xstatusname.text := ExtStsStrings[tempStatus].Cap;
@@ -369,7 +369,7 @@ end;
 
 procedure TxStatusForm.xSetButtonClick(Sender: TObject);
 var
-  b : Boolean;
+  b: Boolean;
 begin
 //  curXStatusStr  := xstatusName.Text;
 //  curXStatusDesc := XStatusStrMemo.Text;
@@ -415,21 +415,21 @@ end;
 
 procedure TxStatusForm.XStatusStrMemoChange(Sender: TObject);
 var
-  s : RawByteString;
+  s: RawByteString;
 begin
   sbar.panels[0].text:=getTranslation('Chars:')+' '+intToStr(length(XStatusStrMemo.Text));
   s := StrToUtf8(XStatusStrMemo.Text);
   sbar.panels[1].text:=getTranslation('left:')+' '+intToStr(250 - length(s));
 end;
 
-procedure TxStatusForm.DblClk(Sender:TObject);
+procedure TxStatusForm.DblClk(Sender: TObject);
 begin
   choosingX(sender);
   xSetButtonClick(NIL);
-//  self.ModalResult:=mrOK;
+//  self.ModalResult := mrOK;
 end;
 
-procedure TxStatusForm.choosingX(sender:TObject);
+procedure TxStatusForm.choosingX(sender: TObject);
 begin
 //  if tempStatus <> TStsBtn(Sender).tag then
   if protoIs = ICQProtoID then
@@ -451,7 +451,7 @@ begin
  {$ENDIF PROTOCOL_MRA}
    ;
 
-  tempStatus:=TStsBtn(Sender).tag;
+  tempStatus := TStsBtn(Sender).tag;
   XStatusStrMemo.Clear;
 
   if protoIs = ICQProtoID then
@@ -473,8 +473,8 @@ end;
 
 procedure TxStatusForm.ShowNear(mR: TRect; X, Y: Integer);
 var
-  MonRect : TRect;
-  P : TPoint;
+  MonRect: TRect;
+  P: TPoint;
 begin
   P.X := X;
   P.Y := Y;
@@ -532,12 +532,12 @@ begin
     end;
 end;
 
-//constructor TxStatusForm.ShowNear2(owner_ :Tcomponent; proto : IRnQProtocol; mR: TRect; X, Y: Integer);
-//constructor TxStatusForm.ShowNear2(owner_ :TWinControl; proto : IRnQProtocol; mR: TRect; X, Y: Integer);
-class Procedure TxStatusForm.ShowNear2(owner_ :TWinControl; const proto : TRnQProtocol; mR: TRect; X, Y: Integer);
+//constructor TxStatusForm.ShowNear2(owner_: Tcomponent; proto: IRnQProtocol; mR: TRect; X, Y: Integer);
+//constructor TxStatusForm.ShowNear2(owner_: TWinControl; proto: IRnQProtocol; mR: TRect; X, Y: Integer);
+class Procedure TxStatusForm.ShowNear2(owner_: TWinControl; const proto: TRnQProtocol; mR: TRect; X, Y: Integer);
 var
-  xStForm : TxStatusForm;
-  curProtoIs : Byte;
+  xStForm: TxStatusForm;
+  curProtoIs: Byte;
 begin
   if not Assigned(proto) then
     Exit;
@@ -558,27 +558,27 @@ begin
 //   xStForm.Free;
 end;
 
-function OpenedXStForm : Boolean;
+function OpenedXStForm: Boolean;
 var
-  i:integer;
-  c : TComponent;
+  i: integer;
+  c: TComponent;
 begin
   if Assigned(childWindows) then
   with childWindows do
    begin
-    i:=0;
+    i := 0;
     while i < count do
      begin
       c := items[i];
       if Tobject(c) is TxStatusForm then
        begin
-        result:=True;
+        result := True;
         exit;
        end;
       inc(i);
      end;
    end;
-  result:= False;
+  result := False;
 end; // OpenedXStForm
 
 

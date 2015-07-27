@@ -68,14 +68,14 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <Manifest_File>None</Manifest_File>
         <DCC_DcuOutput>Units</DCC_DcuOutput>
         <DCC_IOChecking>false</DCC_IOChecking>
-        <VerInfo_Build>1122</VerInfo_Build>
+        <VerInfo_Build>1124</VerInfo_Build>
         <DCC_ExeOutput>..\Distro\</DCC_ExeOutput>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MajorVer>0</VerInfo_MajorVer>
         <VerInfo_Release>9999</VerInfo_Release>
         <DCC_Define>RNQ;ICQ_ONLY;USE_SSL;ZLIB_OBJ;NO_EXTENDED_RTTI;NO_DEBUG_LOG;NO_HTTP_TUNNEL_AUTHDIGEST;$(DCC_Define)</DCC_Define>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1122;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1124;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=0.11.9999.1124;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1049</VerInfo_Locale>
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;$(DCC_Namespace)</DCC_Namespace>
@@ -109,7 +109,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_AssertionsAtRuntime>false</DCC_AssertionsAtRuntime>
-        <VerInfo_Build>1121</VerInfo_Build>
+        <VerInfo_Build>1124</VerInfo_Build>
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1121;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q x64;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
         <DCC_DebugInformation>0</DCC_DebugInformation>
@@ -118,7 +118,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1123;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q x64;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
-        <VerInfo_Build>1123</VerInfo_Build>
+        <VerInfo_Build>1124</VerInfo_Build>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_MapFile>3</DCC_MapFile>
     </PropertyGroup>

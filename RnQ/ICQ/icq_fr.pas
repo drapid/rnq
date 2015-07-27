@@ -172,7 +172,7 @@ begin
   GBTyping.Caption := '   ' + getTranslation(TypNotifCap);
   GBInvis.Caption := '   ' + getTranslation(ChkInvCap);
 
-  bdayBox.Format:=getTranslation('MMMM d');
+  bdayBox.Format := getTranslation('MMMM d');
   {$IFDEF RNQ_FULL}
   {$ELSE}
 //   TabSheet2.TabVisible := false;

@@ -262,7 +262,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure password1Click(Sender: TObject);
     procedure Delete1Click(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action:TCloseAction);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure byUIN1Click(Sender: TObject);
     procedure Whitepages1Click(Sender: TObject);
     procedure Sendmessage1Click(Sender: TObject);
@@ -291,7 +291,7 @@ type
     procedure Openallgroups1Click(Sender: TObject);
     procedure Contactsdatabase1Click(Sender: TObject);
     procedure Deleteallemptygroups1Click(Sender: TObject);
-    procedure movecontactsAction(sender:Tobject);
+    procedure movecontactsAction(sender: Tobject);
     procedure displayHint(Sender: TObject);
     procedure IP1Click(Sender: TObject);
     procedure AppActivate(Sender: TObject);
@@ -305,7 +305,7 @@ type
     procedure Lock1Click(Sender: TObject);
     procedure SendanSMS1Click(Sender: TObject);
     procedure Sendemail1Click(Sender: TObject);
-    procedure addcontactAction(sender:Tobject);
+    procedure addcontactAction(sender: Tobject);
     procedure menuBtnClick(Sender: TObject);
     procedure divisorMenuPopup(Sender: TObject);
     procedure groupMenuPopup(Sender: TObject);
@@ -618,7 +618,7 @@ begin
 i:=componentcount-1;
 while i >= 0 do
   begin
-  c:=components[i];
+  c := components[i];
   if c is Tform then
     with c as Tform do
       if visible then close;
@@ -632,7 +632,7 @@ end; // closeAllChildWindows
 
 procedure TRnQmain.updateCaption;
 var
-  MyInf : TRnQContact;
+  MyInf: TRnQContact;
 begin
   MyInf := NIL;
   if Assigned(Account.AccProto) then
@@ -663,7 +663,7 @@ end;
 
 procedure TRnQmain.toggleVisible;
 var
-  timeout:integer;
+  timeout: integer;
 begin
  if toggling then Exit;
  try
@@ -683,15 +683,15 @@ begin
   //       else
   //        AnimateWindow(self.Handle, 100, AW_BLEND or AW_HIDE);
          if Self.Floating then
-           WindowState:=wsMinimized
+           WindowState := wsMinimized
           else
            if docking.Dock2Chat and docking.Docked2chat then
-             chatFrm.WindowState:=wsMinimized
+             chatFrm.WindowState := wsMinimized
            ;
         end;
       { sometimes form is not hided after minimization, maybe it is a matter of
       { timeouts. this loop could fix the problem }
-      timeout:=0;
+      timeout := 0;
       if docking.Dock2Chat and docking.Docked2chat AND NOT Self.Floating then
         repeat
           if timeout > 0 then
@@ -739,7 +739,7 @@ begin
         except
         end;
         Application.BringToFront;
-        bringForeground:=handle;
+        bringForeground := handle;
       end;
     end;
  finally
@@ -808,11 +808,11 @@ begin chatFrm.openOn(clickedContact) end;
 
 procedure TRnQmain.addContactsAction(Sender: TObject);
 var
-  wnd:TselectCntsFrm;
-  cl:TRnQCList;
+  wnd: TselectCntsFrm;
+  cl: TRnQCList;
 begin
-  wnd:=(sender as Tcontrol).parent as TselectCntsFrm;
-  cl:=wnd.selectedList;
+  wnd := (sender as Tcontrol).parent as TselectCntsFrm;
+  cl := wnd.selectedList;
   cl.resetEnumeration;
   while cl.hasMore do
     addToRoster(cl.getNext);
@@ -830,17 +830,19 @@ begin
 //exit;
   if rosterbarOnTop then
     begin
-     bar.align:=alTop;
+     bar.align := alTop;
      bar.BevelEdges := [beBottom];
     end
    else
     begin
-     bar.Align:=alBottom;
+     bar.Align := alBottom;
      bar.BevelEdges := [beTop];
     end;
 
-  if filterbarOnTop then FilterBar.align:=alTop
-   else FilterBar.align:=alBottom;
+  if filterbarOnTop then
+    FilterBar.align := alTop
+   else
+    FilterBar.align := alBottom;
   FilterClearBtn.Left := FilterBar.Width - FilterClearBtn.Width - 2; 
 //  menuBtn.left:=0;
 //  statusBtn.left:=menuBtn.boundsrect.right+1;
@@ -849,14 +851,14 @@ begin
   sbar.width:=clientWidth-visibilityBtn.BoundsRect.right-1;
   sbar.top:=0;
   sbar.Height:=bar.ClientHeight;
-}  
+}
 //  PntBar.Left := visibilityBtn.BoundsRect.right+1;
 {
   if Assigned(PntBar) then
     PntBar.width := max(clientWidth-visibilityBtn.BoundsRect.right-1, 1);
 }
 //  rosterLib.formresized;
-  autosizeDelayed:=TRUE;
+  autosizeDelayed := TRUE;
 end;
 
 procedure TRnQmain.viewinfo1Click(Sender: TObject);
@@ -878,12 +880,12 @@ begin
 end;
 
 procedure TRnQmain.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-  function its(sc:Tshortcut):boolean;
+  function its(sc: Tshortcut): boolean;
   var
     k: Word;
     s: TShiftState;
   begin
-   ShortCutToKey(sc, k,s);
+   ShortCutToKey(sc, k, s);
    result:=(k=key) and (s=shift);
   end; // its
 var
@@ -919,7 +921,7 @@ begin
 //      SetFocusedControl(FilterEdit)
        except
       end;
-      if (FilterEdit.Text <> '')or
+      if (FilterEdit.Text <> '') or
          (roasterLib.FilterTextBy <> '') then
         FilterClearBtnClick(nil);
      end;
@@ -939,18 +941,18 @@ end;
 
 procedure TRnQmain.sendContactsAction(sender:Tobject);
 var
-//  i:integer;
-//  s : String;
+//  i: integer;
+//  s: String;
   s: AnsiString;
   cnt: TRnQContact;
   wnd: TselectCntsFrm;
   cl: TRnQCList;
 begin
- wnd:=(sender as Tcontrol).parent as TselectCntsFrm;
- cl:=wnd.selectedList;
+ wnd := (sender as Tcontrol).parent as TselectCntsFrm;
+ cl := wnd.selectedList;
  if not cl.empty then
   begin
-    s:=(wnd.extra as Tincapsulate).str;
+    s := (wnd.extra as Tincapsulate).str;
     if s > '' then
     begin
 //      cnt := contactsDB.get(TICQContact, s);
@@ -999,7 +1001,7 @@ var
 //  thmTkn : Integer;
 //  picLoc : TPicLocation;
 //  picIdx : Integer;
-  oldMode : Integer;
+  oldMode: Integer;
 //  bmp : TBitmap;
 //   TextLen: Integer;
    TextRect: TRect;
@@ -1010,10 +1012,10 @@ var
   PaintBuffer: HPAINTBUFFER;
   br : HBRUSH;
   oldF : HFONT;
-  s : String;
-  progress : Double;
+  s: String;
+  progress: Double;
 begin
-  cnv:=(Sender as TPaintBox).Canvas;
+  cnv := (Sender as TPaintBox).Canvas;
   cnv.Font.Assign(Screen.MenuFont);
   theme.ApplyFont('roaster.bar', cnv.font); //roaster.barfont);
   R := (Sender as TPaintBox).ClientRect;
@@ -1025,7 +1027,7 @@ begin
 //cnv.fillRect(r);
 //  cnv.fillRect(R);
 //  cnv.Lock;
-  y:=r.top+(r.bottom-r.top-cnv.TextHeight('1')) div 2;
+  y := r.top+(r.bottom-r.top-cnv.TextHeight('1')) div 2;
 
     PaintOnGlass := ThemeServices.ThemesEnabled and DwmCompositionEnabled and
       not (csDesigning in ComponentState);
@@ -2340,10 +2342,10 @@ case msg.msg of
       inherited;
       exit;
       end;
-    i:=mousepos.x;
+    i := mousepos.x;
 //    ScrWidth := screen.width
 //    r := Screen.MonitorFromWindow(self.Handle).WorkareaRect;
-    r := desktopWorkArea;
+    r := desktopWorkArea(Self.Handle);
      begin
        ScrWidth := r.Right;
        ScrLeft  := r.Left;
@@ -2352,15 +2354,15 @@ case msg.msg of
 //    if not docking.active and ((i<DOCK_SNAP) or (i>screen.width-DOCK_SNAP)) then
     if not docking.active and ((i<ScrLeft+DOCK_SNAP) or (i>scrWidth-DOCK_SNAP)) then
       begin
-      docking.active:=TRUE;
-      docking.pos:=DP_right;
-      if i < ScrLeft+DOCK_SNAP then docking.pos:=DP_left;
-      docking.bakOfs:=point(mousepos.x-boundsrect.left, mousepos.y-boundsrect.top);
-      docking.bakSize:=point(width, height);
+      docking.active := TRUE;
+      docking.pos := DP_right;
+      if i < ScrLeft+DOCK_SNAP then docking.pos := DP_left;
+      docking.bakOfs := point(mousepos.x-boundsrect.left, mousepos.y-boundsrect.top);
+      docking.bakSize := point(width, height);
     	end;
     if docking.active and (i>ScrLeft+DOCK_SNAP) and (i<scrWidth-DOCK_SNAP) then
       begin
-      docking.active:=FALSE;
+      docking.active := False;
       with Trect(pointer(msg.lparam)^) do
         begin
         left  := mousepos.x-docking.bakOfs.x;
@@ -2956,10 +2958,10 @@ if delayCount = 0 then
                                                   0, AwayXsts);
             end
            else
-            autoaway.bakstatus:=setStatus(Account.AccProto, byte(SC_AWAY));
-          autoaway.bakmsg:=setAutomsg(autoaway.msg) ;
+            autoaway.bakstatus := setStatus(Account.AccProto, byte(SC_AWAY));
+          autoaway.bakmsg := setAutomsg(autoaway.msg);
 
-          autoaway.triggered:=TR_AWAY;  // has to be set AFTER setstatus
+          autoaway.triggered := TR_AWAY;  // has to be set AFTER setstatus
           end;
         if (autoaway.na and (autoaway.time >= autoaway.naTime) and (autoaway.triggered<>TR_NA))
           or (autoaway.ss and (isSSRuning or isLocked))
@@ -2976,22 +2978,22 @@ if delayCount = 0 then
                                                     0, AwayXsts);
               end
              else
-              autoaway.bakstatus:=setStatus(Account.AccProto, byte(SC_NA));
-            autoaway.bakmsg:=setAutomsg(autoaway.msg);
+              autoaway.bakstatus := setStatus(Account.AccProto, byte(SC_NA));
+            autoaway.bakmsg := setAutomsg(autoaway.msg);
             end
           else
             begin
             setStatus(Account.AccProto, byte(SC_NA));
             setAutomsg(autoaway.msg);
             end;
-          autoaway.triggered:=TR_NA;  // has to be set AFTER setstatus
+          autoaway.triggered := TR_NA;  // has to be set AFTER setstatus
           end;
         end;
    end;
 
   if appBarResizeDelayed then
     begin
-    appBarResizeDelayed:=FALSE;
+    appBarResizeDelayed := FALSE;
     if docking.appBar then
       utilLib.setAppBarSize;
     end;
@@ -3000,18 +3002,18 @@ if delayCount = 0 then
 
   if rosterRebuildDelayed and not roasterLib.building then
     begin
-    rosterRepaintDelayed:=FALSE;
-    rosterRebuildDelayed:=FALSE;
+    rosterRepaintDelayed := FALSE;
+    rosterRebuildDelayed := FALSE;
     roasterLib.rebuild;
     end;
   if rosterRepaintDelayed then
     begin
-    rosterRepaintDelayed:=FALSE;
+    rosterRepaintDelayed := FALSE;
     roster.repaint;
     end;
   if dbUpdateDelayed then
     begin
-    dbUpdateDelayed:=FALSE;
+    dbUpdateDelayed := FALSE;
     inc(saveDBtimer, saveDBdelay);
     if Assigned(RnQdbFrm) AND (RnQdbFrm.Handle <> 0) then
       RnQdbFrm.updateList;
@@ -3036,9 +3038,9 @@ end; // ontimer
 
 procedure TRnQmain.Ignorelist1Click(Sender: TObject);
 var
-  c:TRnQcontact;
+  c: TRnQcontact;
 begin
-  c:=TRnQContact(clickedContact);
+  c := TRnQContact(clickedContact);
   if c=NIL then exit;
   if ignorelist.exists(c) then
     removeFromIgnorelist(c)
@@ -3066,13 +3068,13 @@ end;
 procedure TRnQmain.Deleteofflinemessages1Click(Sender: TObject);
 begin
  Protos_DelOfflineMSGS(Account.AccProto.ProtoElem);
- Account.AccProto.offlineMsgsChecked:=TRUE;
+ Account.AccProto.offlineMsgsChecked := TRUE;
 end;
 
 procedure TRnQmain.mainmenuimportclbClick(Sender: TObject);
 var
-  fn:string;
-  cl:TRnQCList;
+  fn: string;
+  cl: TRnQCList;
 begin
 {  fn:=openSavedlg(self, '', True, 'clb');
   if fn = '' then exit;
@@ -3090,9 +3092,9 @@ end;
 
 procedure TRnQmain.mainmenuexportclbClick(Sender: TObject);
 var
-  fn:string;
+  fn: string;
 begin
-{fn:=openSavedlg(self, '', False, 'clb');
+{fn := openSavedlg(self, '', False, 'clb');
 if fn = '' then exit;
 if savefile(fn, contactlist2clb(Account.AccProto.readList(LT_ROSTER))) then
   msgDlg('Done', True, mtInformation)
@@ -3116,9 +3118,9 @@ procedure TRnQmain.rosterKeyPress(Sender: TObject; var Key: Char);
 var
   k:char;
 begin
-k:=upcase(key);
-//k :=AnsiUpperCase(key)[1];
-key:=#0;  // avoid beep
+  k := upcase(key);
+  //k :=AnsiUpperCase(key)[1];
+  key := #0;  // avoid beep
 case k of
   #8,#27: searching:='';
   #13:
@@ -3129,21 +3131,21 @@ case k of
         chatFrm.openOn(roasterlib.focusedContact);
   'A'..'Z','0'..'9','_','@', '-', '=', '[', ']', 'à'..'ÿ', 'À'..'ß':
     begin
-    searching:=searching+k;
+    searching := searching+k;
     doSearch;
-    lastSearchTime:=now;
+    lastSearchTime := now;
     exit;
     end;
   end;
-formkeypress(sender,k);
+formkeypress(sender, k);
 end;
 
 procedure TRnQmain.rosterMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  focused:Tnode;
+  focused: Tnode;
 begin
-focused:=roasterLib.focused;
+focused := roasterLib.focused;
 if (button = mbLeft) and (clickedNode<>NIL) then
   case clickedNode.kind of
     NODE_CONTACT:
@@ -3164,21 +3166,21 @@ if (button = mbLeft) and (clickedNode<>NIL) then
         end;
     end;
 
-with roster.ClientToScreen(point(x,y)) do
+with roster.ClientToScreen(point(x, y)) do
   if button = mbRight then
-    roasterLib.popup(x,y);
+    roasterLib.popup(x, y);
 end;
 
 procedure TRnQmain.rosterDblClick(Sender: TObject);
 var
-  ev:Thevent;
+  ev: Thevent;
 begin
 if clickedNode = NIL then exit;
 case clickedNode.kind of
   NODE_DIV: toggleOnlyOnline;
   NODE_CONTACT:
     begin
-    ev:=eventQ.firstEventFor(clickedContact);
+    ev := eventQ.firstEventFor(clickedContact);
     if ev=NIL then
       begin
       chatFrm.openOn(clickedContact);
@@ -4617,22 +4619,24 @@ begin
    begin
     if alphablend then
      if handle <> getForegroundWindow then
-      alphablendvalue:=transparency.inactive;
+      alphablendvalue := transparency.inactive;
     FMouseInControl := False;
    end;
 end;
 
 procedure TRnQmain.Showallcontactsinone1Click(Sender: TObject);
 begin
-  OnlOfflInOne:=not OnlOfflInOne;
+  OnlOfflInOne := not OnlOfflInOne;
 //design_fr.prefToggleShowGroups;
-  rosterRebuildDelayed:=TRUE;
+  rosterRebuildDelayed := TRUE;
 end;
 
 procedure TRnQmain.AContInOneUpdate(Sender: TObject);
 begin
-  if OnlOfflInOne then TAction(Sender).HelpKeyword:=PIC_RIGHT
-   else TAction(Sender).HelpKeyword:='';
+  if OnlOfflInOne then
+    TAction(Sender).HelpKeyword := PIC_RIGHT
+   else
+    TAction(Sender).HelpKeyword := '';
 end;
 
 {procedure TRnQmain.CreateParams(var Params: TCreateParams);
@@ -4739,15 +4743,15 @@ function TRnQmain.AddContactMenuItem(pMI : PCLISTMENUITEM ): Integer;// cdecl;
               hotKey : DWORD; PicName : String = ''):integer;}
 var
 //  clMI : TCLISTMENUITEM;
-  Str, Str1 : String;
-  i : Integer;
-  MI : TRQMenuItem;
-  PM : TRQMenuItem;
-  MM : TMenuItem;
+  Str, Str1: String;
+  i: Integer;
+  MI: TRQMenuItem;
+  PM: TRQMenuItem;
+  MM: TMenuItem;
 //  Ic : TIcon;
 //  bmp : TBitmap;
 begin
-//  Str :=String(wPar);
+//  Str := String(wPar);
 //  clMI := PCLISTMENUITEM(lPar)^;
   if pMI.cbSize <> SizeOf(TCLISTMENUITEM) then
    begin
@@ -4804,7 +4808,7 @@ end;
 
 //function TRnQmain.UpdateContactMenuItem(menuHandle: hmenu; pMI : PCLISTMENUITEM ): Integer;// cdecl;
 Procedure TRnQmain.UpdateContactMenuItem(menuHandle: hmenu; pMI : PCLISTMENUITEM );// cdecl;
-  function findItem(item : TMenuItem): TmenuItem;
+  function findItem(item: TMenuItem): TmenuItem;
   var
     I: Integer;
    begin
@@ -4822,7 +4826,7 @@ Procedure TRnQmain.UpdateContactMenuItem(menuHandle: hmenu; pMI : PCLISTMENUITEM
           end;
    end;
 var
-  mi : TMenuItem;
+  mi: TMenuItem;
 begin
   mi := findItem(contactMenu.Items);
   if mi <> NIL then
@@ -4847,7 +4851,7 @@ begin
 end;
 
 procedure TRnQmain.DelContactMenuItem(menuHandle: hmenu);
-  function findItem(item : TMenuItem): TmenuItem;
+  function findItem(item: TMenuItem): TmenuItem;
   var
     I: Integer;
    begin
@@ -4865,7 +4869,7 @@ procedure TRnQmain.DelContactMenuItem(menuHandle: hmenu);
           end;
    end;
 var
-  item, parItem : TMenuItem;
+  item, parItem: TMenuItem;
 begin
   item := findItem(contactMenu.Items);
   if item <> NIL then
@@ -4886,7 +4890,7 @@ end;
 procedure TRnQmain.OnPluginMenuClick(Sender: TObject);
 var
 //  pr : procedure(uid:String);
-  pr : procedure(uid: RawByteString);
+  pr: procedure(uid: RawByteString);
 begin
   if Sender is TRQMenuItem then
    begin

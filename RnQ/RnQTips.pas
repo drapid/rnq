@@ -236,7 +236,7 @@ begin
           sl := 0;
         ;
 
-        work  := desktopWorkArea;
+        work  := desktopWorkArea(Application.MainFormHandle);
         item      := TRnQTip.Create;
 
         needW := 0; needH := 0;
@@ -260,7 +260,7 @@ begin
         end;
     end;
    2: begin  // Show pic
-        work  := desktopWorkArea;
+        work  := desktopWorkArea(Application.MainFormHandle);
         needH := bmp2.Height;
         needW := bmp2.Width;
 
@@ -272,7 +272,7 @@ begin
    3: begin // Show birthday
 //        Exit;
 
-        work  := desktopWorkArea;
+        work  := desktopWorkArea(Application.MainFormHandle);
         item      := TRnQTip.Create;
         needW := 0; needH := 0;
 
@@ -591,7 +591,7 @@ begin
   if Assigned(thisCnt) then
     s := thisCnt.displayed;
 //cname:=contact.displayed;
-  work := desktopWorkArea;
+  work := desktopWorkArea(Application.MainFormHandle);
 
   x:=4;
 //  R.left:=x;

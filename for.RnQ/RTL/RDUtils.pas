@@ -15,7 +15,7 @@ function  IfThen(AValue: Boolean; const s1, s2: RawByteString): RawByteString; o
 
 function  packArray(a: array of Integer; zero: Integer): TintegerDynArray;
 function  compareInt(a, b: Integer): Smallint; OverLoad;
-function  compareInt(a, b: int64):Smallint; OverLoad;
+function  compareInt(a, b: int64): Smallint; OverLoad;
 function  CompareDate(a, b: TDateTime): Smallint;
 function  boundInt(var i: Integer; min, max: Integer): Integer;
 function  bound(i: Integer; min, max: Integer): Integer;

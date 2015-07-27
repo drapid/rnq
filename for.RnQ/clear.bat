@@ -1,9 +1,10 @@
-@IF EXIST "*.~*" del *.~*
+@FOR /r %%R IN (*.~*) DO @IF EXIST %%R (del /s /q "%%R")
+@FOR /r %%R IN (*.identcache) DO @IF EXIST %%R (del /s /q "%%R")
+@FOR /r %%R IN (*.bak) DO @IF EXIST %%R (del /s /q "%%R")
+@FOR /r %%R IN (*.stat) DO @IF EXIST %%R (del /s /q "%%R")
 @IF EXIST "*.dcu" del *.dcu
 @IF EXIST "*.ppu" del *.ppu
 @IF EXIST "*.o" del *.o
-@IF EXIST "*.bak" del *.bak
-@IF EXIST "*.identcache" del *.identcache
 @IF EXIST "AES\*.dcu" del AES\*.dcu
 @IF EXIST "Bass\*.dcu" del Bass\*.dcu
 @IF EXIST "Flash\*.dcu" del Flash\*.dcu
@@ -11,7 +12,6 @@
 @IF EXIST VTV\Source\*.dcu del VTV\Source\*.dcu
 @IF EXIST VTV\Source\*.bak del VTV\Source\*.bak
 @IF EXIST xml\*.dcu del xml\*.dcu
-@IF EXIST RSA\*.bak del RSA\*.bak
 @IF EXIST RSA\*.dcu del RSA\*.dcu
 @IF EXIST "xml\__history\*" del /q xml\__history\*
 @IF EXIST "VTV\Source\__history\*" del /q VTV\Source\__history\*
@@ -21,7 +21,6 @@
 @IF EXIST "__history\*" del /q __history\*
 @IF EXIST "RTL\*.dcu" del RTL\*.dcu
 @IF EXIST "RTL\*.ppu" del RTL\*.ppu
-@IF EXIST "RTL\*.bak" del RTL\*.bak
 @IF EXIST "RTL\*.o" del RTL\*.o
 @IF EXIST "RTL\*.a" del RTL\*.a
-@IF EXIST "RTL\__history\*" del /q RTL\__history\*
+@IF EXIST "RTL\__history" del /s /q RTL\__history

@@ -65,19 +65,6 @@ type
     procedure Paint; override;
   public
     info : TTipInfo;
-(*
-//    evkind:integer;
-    mode: (TM_EVENT, TM_PIC, TM_PIC_EX);
-    ev : Thevent;
-//    info:string;
-//    contact:Tcontact;
-    pic:Tbitmap;
-  {$IFNDEF NOT_USE_GDIPLUS}
-    gpPic : TGPBitmap;
-  {$ELSE NOT_USE_GDIPLUS}
-    gpPic : TRnQBitmap;
-  {$ENDIF NOT_USE_GDIPLUS}
-*)
 //    counter:integer;
 //    time:Tdatetime;
     action: (TA_NULL, TA_LCLICK, TA_2LCLICK, TA_RCLICK, TA_2RCLICK);
@@ -155,7 +142,6 @@ uses
   RDGlobal,
   RQThemes, RnQSysUtils;
 //  RnQDialogs, RQUtil, RnQUtils, RnQBinUtils, RnQLangs,
-//  globalLib, mainDlg, utilLib, chatDlg,
 //  RQlog;
 //var
 //  processing:boolean=FALSE;
@@ -192,11 +178,11 @@ begin
    else
     showWindow(handle, SW_HIDE);
 //counter:=0;
-if prevWnd>0 then
-  begin
-  forceForegroundWindow(prevWnd);
-  prevWnd:=0;
-  end;
+  if prevWnd>0 then
+    begin
+      forceForegroundWindow(prevWnd);
+      prevWnd:=0;
+    end;
 end; // hide
 
 procedure TtipFrm.CreateParams(var Params: TCreateParams);
@@ -244,8 +230,8 @@ begin
    rad := 0;
   if rad > 0 then
   begin
-    R:=CreateRoundRectRgn(0,0,width+1,1+height,rad,rad);
-    SetWindowRgn(Handle,R, False);
+    R := CreateRoundRectRgn(0,0, width+1,1+height, rad,rad);
+    SetWindowRgn(Handle, R, False);
     deleteObject(R);
   end;
 // if not transparency.forTray then
@@ -253,14 +239,14 @@ begin
 //  else
 // st := GetWindowLong(Handle, GWL_STYLE);
 // SetWindowLong(Handle, GWL_STYLE, st or WS_Popup);
-  st:=GetWindowLong(Handle, GWL_EXSTYLE);
+  st := GetWindowLong(Handle, GWL_EXSTYLE);
   SetWindowLong(Handle, GWL_EXSTYLE, st or WS_EX_TOOLWINDOW {AND NOT WS_EX_APPWINDOW});
    showWindow(handle, SW_SHOWNA);
 //   hwnd := GetForegroundWindow;
 //   showWindow(handle, SW_SHOWNOACTIVATE);
 //   if hwnd <> GetForegroundWindow then
 //     SetForegroundWindow(hWnd);
-  processing:=FALSE;
+  processing := FALSE;
 end; // postshow
 
 (*
@@ -430,11 +416,11 @@ end; // wndproc
 
 procedure Ttipfrm.paint;
 var
-  maxX,maxY:integer;
-  work:Trect;
+  maxX,maxY: integer;
+  work: Trect;
 //  gr : TGPGraphics;
 begin
-  work:=desktopWorkArea;
+  work := desktopWorkArea(Application.MainFormHandle);
   isPainting := True;
 try
 //  case info.mode of
@@ -605,15 +591,15 @@ end;
 
 procedure MoveTips;
 var
-  i :  integer;
-  minY : Integer;
-  work:Trect;
-  rt : TRnQTip;
+  i:  integer;
+  minY: Integer;
+  work: Trect;
+  rt: TRnQTip;
 begin
 //OutputDebugString('Processing MoveTips');
  if Assigned(tipsList) then
  begin
-  work:=desktopWorkArea;
+  work := desktopWorkArea(Application.MainFormHandle);
   case TipsAlign of
     alBottomRight, alBottomLeft:
       begin
@@ -623,7 +609,7 @@ begin
          rt := TRnQTip(tipsList.Items[i]);
          if Assigned(rt) and Assigned(rt.form) then
             begin
-              if minY - rt.y  - rt.form.Height > 10 then
+              if minY - rt.y - rt.form.Height > TipsBtwSpace then
               begin
                 rt.y := minY - rt.form.Height;
       //          AnimateWindow()
@@ -641,7 +627,7 @@ begin
          rt := TRnQTip(tipsList.Items[i]);
          if Assigned(rt) and Assigned(rt.form) then
             begin
-              if rt.y  - minY > 10 then
+              if rt.y  - minY > TipsBtwSpace then
               begin
                 rt.y := minY;
       //          AnimateWindow()
@@ -658,11 +644,11 @@ end;
 function AddTip(var item : TRnQTip; ti : TTipInfo; needW, needH : Integer) : Boolean;
 var
   i, cnt, idx: Integer;
-  minX, minY : Integer;
+  minX, minY: Integer;
 //  needW, needH : Integer;
-  work:Trect;
-  not_ok : Boolean;
-  rt : TRnQTip;
+  work: Trect;
+  not_ok: Boolean;
+  rt: TRnQTip;
 begin
   if not Assigned(tipsList) then
     tipsList := TList.Create;
@@ -671,7 +657,7 @@ begin
 //  lastY := work.Bottom;
   not_ok := True;
   idx := 0;
-  work  := desktopWorkArea;
+  work := desktopWorkArea(Application.MainFormHandle);
   case TipsAlign of
     alBottomRight,
     alBottomLeft:
@@ -699,7 +685,7 @@ begin
                end;
           end;
         end;
-        if (tipsList.count >0)and
+        if (tipsList.count > 0) and
            ((cnt >= tipsMaxCnt) or (minY - work.Top - TipsMaxTop < needH))
            and (idx < tipsList.Count) then
          begin
@@ -797,10 +783,12 @@ begin
         begin
          rt := TRnQTip(tipsList.Items[i]);
          if Assigned(rt) and Assigned(rt.form) then
-           if (rt.x >= 0)and (rt.y >= 0) then
+           if (rt.x >= 0) and (rt.y >= 0) then
              minY := min(rt.Y, minY);
         end;
-       item.Y := minY - needH - TipsBtwSpace;
+        item.Y := minY - needH;
+        if (tipsList.Count > 0) then
+          Dec(item.Y, TipsBtwSpace);
       end;
     alTopRight,
     alTopLeft:
@@ -813,7 +801,9 @@ begin
            if (rt.x >= 0)and (rt.y >= 0) then
              minY := max(rt.Y  + rt.form.Height, minY);
         end;
-       item.Y := minY + TipsBtwSpace;
+        item.Y := minY;
+        if (tipsList.Count > 0) then
+          Inc(item.Y, TipsBtwSpace);
       end;
   end;
 

@@ -87,15 +87,15 @@ type
 //      ProcIdx : Integer;
 //      procedure OnPluginMenuClick(Sender: TObject);
       constructor Create(AOwner: TComponent); override;
-      procedure onExitMenu(var Msg: TMessage);message WM_EXITMENULOOP;
+      procedure onExitMenu(var Msg: TMessage); message WM_EXITMENULOOP;
       property  ImageName : TPicName read FImageName write SetImageName;
   end;
 //  function drawMenuItemR(ACanvas : TCanvas; Amenu:Tmenu; item:Tmenuitem;
 //                    r:Trect; onlysize:boolean=FALSE;
 //                    drawbar : Boolean = True; Selected : Boolean = false):Tpoint;
 
-  function GPdrawmenuitemR7(ACanvas : TCanvas; Amenu:Tmenu; item:Tmenuitem; r:Trect;
-           onlysize:boolean=FALSE; drawbar : Boolean = True; Selected : Boolean = false):Tpoint;
+  function GPdrawmenuitemR7(ACanvas : TCanvas; Amenu: Tmenu; item: Tmenuitem; r: Trect;
+           onlysize:boolean=FALSE; drawbar : Boolean = True; Selected : Boolean = false): Tpoint;
 
  {$IFNDEF NO_WIN98}
 //  function drawmenuitemR98(cnv : TCanvas; Amenu:Tmenu; item:Tmenuitem; r:Trect;
@@ -164,7 +164,7 @@ begin
 end;
 
 
-procedure TPopupListEx.WndProc(var Message: TMessage) ;
+procedure TPopupListEx.WndProc(var Message: TMessage);
 var
   nTi : integer;
 //  tt : HMENU;
@@ -216,23 +216,23 @@ end;
 
 procedure TRQMenuItem.MeasureItem(ACanvas: TCanvas; var Width, Height: Integer);
 var
-  p:Tpoint;
+  p: Tpoint;
 begin
  {$IFNDEF NO_WIN98}
 // if Win32MajorVersion < 5 then
-//   p:=drawmenuitemR98(ACanvas, NIL, TmenuItem(Self), rect(0,0,width,height), True)
+//   p := drawmenuitemR98(ACanvas, NIL, TmenuItem(Self), rect(0,0,width,height), True)
 //  else
  {$ENDIF WIN98}
-   p:=GPdrawmenuitemR7(ACanvas, NIL, TmenuItem(Self), rect(0,0,width,height), True);
-  width:=p.x;
-//  inc(height,2);
-  inc(p.y,2);
+   p := GPdrawmenuitemR7(ACanvas, NIL, TmenuItem(Self), rect(0,0,width,height), True);
+  width := p.x;
+//  inc(height, 2);
+  inc(p.y, 2);
   if (not MenuHeightPerm) or (height<p.y) then
-    height:=p.y;
+    height := p.y;
 end;
 
 (*
-function drawmenuitemR98(cnv : TCanvas; Amenu:Tmenu; item:Tmenuitem; r:Trect;
+function drawmenuitemR98(cnv : TCanvas; Amenu: Tmenu; item: Tmenuitem; r: Trect;
            onlysize:boolean=FALSE; drawbar : Boolean = True; Selected : Boolean = false):Tpoint;
 const
   cBarWidth = 20;

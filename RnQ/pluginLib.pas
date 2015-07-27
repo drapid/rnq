@@ -5,7 +5,7 @@ Under same license
 unit pluginLib;
 {$I RnQConfig.inc}
 
-{$IFDEF COMPILER_12_UP}
+{$IFDEF COMPILER12_UP}
   {$WARN IMPLICIT_STRING_CAST OFF}
   {$WARN IMPLICIT_STRING_CAST_LOSS OFF}
   {$WARN SUSPICIOUS_TYPECAST ERROR}
@@ -26,66 +26,66 @@ uses
 
 type
 
-  Tplugin=class
+  Tplugin = class
    public
-    hnd:Thandle;
+    hnd: Thandle;
     screenName,
     filename: String;
-    fun:TpluginFun;
-    funC:TpluginFunC;
-    active:boolean;
+    fun: TpluginFun;
+    funC: TpluginFunC;
+    active: boolean;
 
-    function activate:boolean;
+    function activate: boolean;
     procedure disactivate;
     function cast(data: RawByteString): RawByteString;
     procedure cast_preferences;
     end;
 
-  Tplugins=class
+  Tplugins = class
    private
-    enumIdx:integer;
-    list:Tlist;
+    enumIdx: integer;
+    list: Tlist;
    public
     constructor create;
     destructor Destroy; override;
 
     procedure resetEnumeration;
-    function  hasMore:boolean;
-    function  getNext:Tplugin;
+    function  hasMore: boolean;
+    function  getNext: Tplugin;
 
     procedure load;
     procedure unload;
-    function cast(const data:RawByteString):RawByteString; overload;
+    function cast(const data: RawByteString): RawByteString; overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; cl: TRnQCList): RawByteString;  overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime): RawByteString; overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; const s1: AnsiString): RawByteString; overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; const s1,s2: AnsiString): RawByteString; overload;
-    function castEv(ev_id: byte; when:Tdatetime; const name,addr,text:AnsiString):RawByteString; overload;
+    function castEv(ev_id: byte; when: Tdatetime; const name, addr, text: AnsiString): RawByteString; overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; const s1: AnsiString): RawByteString; overload;
-    function castEv(ev_id: byte; const uin: TUID; const s1:AnsiString):RawByteString; overload;
-    function castEv(ev_id: byte; const uin: TUID; const s1, s2:AnsiString):RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID; const s1: AnsiString): RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID; const s1, s2: AnsiString): RawByteString; overload;
     function castEv(ev_id: byte; const uin: TUID; b1: Byte; const s1, s2: AnsiString): RawByteString; overload;
-    function castEv(ev_id: byte; const uin: TUID; status,oldstatus: byte; inv,oldInv:boolean ):RawByteString; overload;
-    function castEv(ev_id: byte; const uin: TUID ):RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID; status, oldstatus: byte; inv, oldInv: boolean): RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID): RawByteString; overload;
     function castEv(ev_id: byte; uin: Integer): RawByteString; overload;
-    function castEv(ev_id: byte; const uin: TUID; flags:integer; cl:TRnQCList):RawByteString; overload;
-    function castEv(ev_id: byte ):RawByteString; overload;
-    function castEv(ev_id: byte; const s1,s2,s3:AnsiString; b:boolean; i:integer):RawByteString; overload;
-    function castEvList(ev_id:byte; list:byte; c:TRnQcontact ):RawByteString;
+    function castEv(ev_id: byte; const uin: TUID; flags: integer; cl: TRnQCList): RawByteString; overload;
+    function castEv(ev_id: byte): RawByteString; overload;
+    function castEv(ev_id: byte; const s1, s2, s3: AnsiString; b: boolean; i: integer): RawByteString; overload;
+    function castEvList(ev_id: byte; list: byte; c: TRnQcontact): RawByteString;
     end;
 
 
   TPlugButtons = class
    public
-    btns : Array of TRnQSpeedButton;
-    btnCnt : Integer;
+    btns: Array of TRnQSpeedButton;
+    btnCnt: Integer;
    public
-//    ButtonCount : Integer;
-//    maxID       : Integer;
-    PluginsTB : TToolBar;
-    function Add(proc:Pointer; iIcon : HIcon; const bHint : String; const sPic : AnsiString = '') : integer;
-    procedure Del(bAddr : integer);
-    procedure Modify(bAddr : Integer; iIcon : HICON; const bHint : String; const sPic : AnsiString = '');
+//    ButtonCount: Integer;
+//    maxID: Integer;
+    PluginsTB: TToolBar;
+    function Add(proc: Pointer; iIcon: HIcon; const bHint: String; const sPic: AnsiString = ''): integer;
+    procedure Del(bAddr: integer);
+    procedure Modify(bAddr: Integer; iIcon: HICON; const bHint: String; const sPic: AnsiString = '');
     procedure onToolMouseDown(Sender: TObject; Button: TMouseButton;
               Shift: TShiftState; X, Y: Integer);
     procedure onToolBtnClick(Sender: TObject);
@@ -118,20 +118,20 @@ const
 
 var
 //  outBuffer:RawByteString;   // callback result buffer
-  outBuffer00:RawByteString;   // callback result buffer
+  outBuffer00: RawByteString;   // callback result buffer
 
 
-function whatwindow(id:byte):Tform;
+function whatwindow(id: byte): Tform;
 begin
 case id of
   PW_ROSTER: result := RnQmain;
-  PW_CHAT: result:=chatFrm;
-  PW_PREFERENCES: result:=prefFrm;
-  else result:=NIL;
+  PW_CHAT: result := chatFrm;
+  PW_PREFERENCES: result := prefFrm;
+  else result := NIL;
   end;
 end; // whatwindow
 
-function whatlist(id:byte):TRnQCList;
+function whatlist(id: byte): TRnQCList;
 begin
 case id of
   PL_ROSTER:         result := Account.AccProto.readList(LT_ROSTER);
@@ -145,7 +145,7 @@ case id of
   end;
 end; // whatlist
 
-procedure addCL2list(id:byte; CL : TRnQCList);
+procedure addCL2list(id: byte; CL: TRnQCList);
 begin
 case id of
  {$IFDEF UseNotSSI}
@@ -157,11 +157,11 @@ case id of
   PL_TEMPVISIBLELIST: Account.AccProto.AddToList(LT_TEMPVIS, cl);
   PL_DB : contactsDB.add(cl);
   PL_NIL : notInList.add(cl); // not in list
-//  else result:=NIL;
+//  else result := NIL;
   end;
 end; // whatlist
 
-function add2list(id:byte; C : TRnQcontact) : Boolean;
+function add2list(id: byte; C: TRnQcontact): Boolean;
 begin
  result := True;
  case id of
@@ -239,23 +239,23 @@ const
   tenthsPerDay=10*60*60*24;
 
 var
-  b:boolean;
-  i,k :integer;
-  w:Tform;
-  bmp : TBitmap;
+  b: boolean;
+  i, k: integer;
+  w: Tform;
+  bmp: TBitmap;
 //  R : TRect;
-  cl:TRnQCList;
-  cnt : TRnQContact;
-  ints:TintegerDynArray;
+  cl: TRnQCList;
+  cnt: TRnQContact;
+  ints: TintegerDynArray;
   rct: TRect;
-  tS, tS2 : RawByteString;
-  sU : String;
-  PrefVal : TPrefElement;
+  tS, tS2: RawByteString;
+  sU: String;
+  PrefVal: TPrefElement;
 begin
-  ints:=NIL;
+  ints := NIL;
   if data='' then
     begin
-      resStr:=AnsiChar(PM_ACK)+AnsiChar(PA_OK);
+      resStr := AnsiChar(PM_ACK)+AnsiChar(PA_OK);
 //      Result := resStr;
       Res := resStr;
       exit;
@@ -345,7 +345,7 @@ case _byte_at(data,1) of
           ints:=NIL;
           end;
         end;
-      PC_QUIT: MustQuit := True;//quit;
+      PC_QUIT: MustQuit := True; //quit;
       PC_SET_STATUS: if minimum(2+1) then
         userSetStatus(Account.AccProto, OldStatus2Status[TICQStatus(_byte_at(data,3))], false);
       PC_SET_VISIBILITY: if minimum(2+1) then
@@ -550,7 +550,7 @@ case _byte_at(data,1) of
         else
           resStr :=AnsiChar(PM_DATA)+_int([ w.handle, w.left, w.top, w.width, w.height ]);
         end;
-      PG_AUTOMSG: resStr :=AnsiChar(PM_DATA)+_istring(automessages[0]);
+      PG_AUTOMSG: resStr := AnsiChar(PM_DATA)+_istring(automessages[0]);
       PG_CHAT_UIN:
           begin
             sU := chatFrm.thisChatUID;
@@ -638,9 +638,9 @@ end; // callbackStr
 function callback(data:Pinteger):pointer; stdcall;
 var
   s, s2: RawByteString;
-  ppp : TThreadProcedure;
+  ppp: TThreadProcedure;
 begin
-  result:=NIL;
+  result := NIL;
   if data=NIL then exit;
 //  FoutBufferCS.Acquire;
 //  try
@@ -664,8 +664,8 @@ begin
     end;
 
     //    callbackStr(s);
-    outBuffer00 :=_int(length(s2))+ s2;
-    result:=@outBuffer00[1];
+    outBuffer00 := _int(length(s2)) + s2;
+    result := @outBuffer00[1];
 //   finally
 //    FoutBufferCS.Release;
 //  end;
@@ -673,24 +673,24 @@ end; // callback
 
 ////////////////////////////////////////////////////////////////////////
 
-function Tplugin.activate:boolean;
+function Tplugin.activate: boolean;
 var
   s: RawByteString;
 begin
-  result:=FALSE;
+  result := FALSE;
   if active then exit;
   loggaEvtS(filename+': loading');
-  hnd:=LoadLibrary(PChar(myPath+pluginsPath+filename));
-//  hnd:=LoadLibraryEx(PChar(myPath+pluginsPath+filename));
+  hnd := LoadLibrary(PChar(myPath+pluginsPath+filename));
+//  hnd := LoadLibraryEx(PChar(myPath+pluginsPath+filename));
   if hnd=0 then exit;
   fun := GetProcAddress(hnd, PAnsiChar('pluginFun'));
   if not assigned(fun) then
-    fun:=GetProcAddress(hnd, '_pluginFun');
+    fun := GetProcAddress(hnd, '_pluginFun');
   if assigned(fun) then
     loggaEvtS(filename+': found pluginFun');
   funC := GetProcAddress(hnd,'pluginFunC');
   if not assigned(funC) then
-    funC:=GetProcAddress(hnd,'_pluginFunC');
+    funC := GetProcAddress(hnd,'_pluginFunC');
   if assigned(funC) then
     loggaEvtS(filename+': found pluginFunC');
   if not assigned(fun) and not assigned(funC) then
@@ -699,24 +699,24 @@ begin
     freeLibrary(hnd);
     exit;
    end;
-  active:=TRUE;
-  screenName:=filename;
+  active := TRUE;
+  screenName := filename;
   //fun(NIL);
   loggaEvtS(filename+': initializing');
-  s:=cast(_event(PE_INITIALIZE)
+  s := cast(_event(PE_INITIALIZE)
     +_int(integer(@callback))+_int(APIversion)
     +_istring(myPath)+_istring(AccPath)+_int(StrToIntDef(lastUser, 0))
   );
   if (s>'') then
    if (ord(s[1])=PM_DATA) then
     begin
-     screenName:=_istring_at(s,2);
+     screenName := _istring_at(s,2);
      loggaEvtS(filename+': name: '+screenname);
     end
    else
    if (ord(s[1])=PM_ABORT) then
     begin
-     result:= False;
+     result := False;
      try
        freeLibrary(hnd);
        hnd := 0;
@@ -724,7 +724,7 @@ begin
      end;
      exit;
     end;
-  result:=TRUE;
+  result := TRUE;
 end; // activate
 
 procedure Tplugin.disactivate;
@@ -743,24 +743,24 @@ begin
   except
    loggaEvtS(filename+': ERROR on freing!!!!', IconNames[mtError]);
   end;
-  hnd := 0;fun := NIL;funC := NIL;
-  active:=FALSE;
+  hnd := 0; fun := NIL; funC := NIL;
+  active := FALSE;
 end; // disactivate
 
 function Tplugin.cast(data: RawByteString): RawByteString;
 var
-  p:Pinteger;
+  p: Pinteger;
 begin
-result:='';
+result := '';
 if not active or not (assigned(fun) or assigned(funC)) then exit;
-data:=_int(length(data))+data;
+data := _int(length(data))+data;
 p := nil;
 //loggaEvt(format('%s: sending %d bytes',[filename,length(data)]));
  try
   if assigned(fun) then
-    p:=fun(@data[1])
+    p := fun(@data[1])
   else
-    p:=funC(@data[1]);
+    p := funC(@data[1]);
  except
    on E: Exception do
     msgDlg(getTranslation('Error at plugin "%s": %s', [screenName, e.Message]), False, mtError);
@@ -791,42 +791,42 @@ begin cast(_event(PE_PREFERENCES)) end;
 
 constructor Tplugins.create;
 begin
-list:=Tlist.create;
+  list := Tlist.create;
 end; // create
 
 destructor Tplugins.Destroy;
 begin
-unload;
-list.free;
+  unload;
+  list.free;
 end; // destroy
 
 procedure Tplugins.resetEnumeration;
 begin enumIdx:=0 end;
 
-function Tplugins.hasMore:boolean;
-begin result:=enumIdx<list.count end;
+function Tplugins.hasMore: boolean;
+begin result := enumIdx<list.count end;
 
     {$WARN UNSAFE_CAST OFF}
-function Tplugins.getNext:Tplugin;
+function Tplugins.getNext: Tplugin;
 begin
-result:=Tplugin(list[enumIdx]);
-inc(enumIdx);
+  result := Tplugin(list[enumIdx]);
+  inc(enumIdx);
 end; // getNext
 
 procedure Tplugins.load;
 var
-  sr:TsearchRec;
-  plugin:Tplugin;
+  sr: TsearchRec;
+  plugin: Tplugin;
 begin
 loggaEvtS('scanning for plugins: '+myPath+pluginsPath+'*.dll');
 if findFirst(myPath+pluginsPath+'*.dll', faAnyFile, sr) = 0 then
   repeat
-  plugin:=Tplugin.create;
+  plugin := Tplugin.create;
   list.add(plugin);
   with plugin do
     begin
-    filename:=sr.name;
-    screenName:='';
+    filename := sr.name;
+    screenName := '';
     if ansiContainsText(disabledPlugins, filename) then
       loggaEvtS(filename+': skipped (disabled)')
     else
@@ -846,8 +846,8 @@ end; // load
 
 procedure Tplugins.unload;
 var
-  s : String;
-  pl : Tplugin;
+  s: String;
+  pl: Tplugin;
 begin
   while list.count > 0 do
   try
@@ -862,75 +862,75 @@ begin
 end; // unload
     {$WARN UNSAFE_CAST ON}
 
-function Tplugins.cast(const data:RawByteString): RawByteString;
+function Tplugins.cast(const data: RawByteString): RawByteString;
 var
-  plugin:Tplugin;
+  plugin: Tplugin;
 begin
-  result:='';
+  result := '';
   resetEnumeration;
   while hasMore do
    begin
     plugin := getNext;
-    result := result+ plugin.cast(data);
+    result := result + plugin.cast(data);
    end;
 end; // cast
 
-function Tplugins.castEv(ev_id:byte; const s1,s2,s3:AnsiString; b:boolean; i:integer):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_istring(s1)+_istring(s2)+_istring(s3)+AnsiChar(b)+_int(i)) end;
+function Tplugins.castEv(ev_id: byte; const s1, s2, s3: AnsiString; b: boolean; i: integer): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_istring(s1)+_istring(s2)+_istring(s3)+AnsiChar(b)+_int(i)) end;
 
-function Tplugins.castEv(ev_id:byte; const uin: TUID; flags:integer; when:Tdatetime; cl:TRnQCList):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_dt(when)+_intlist(cl.toIntArray) ) end;
+function Tplugins.castEv(ev_id: byte; const uin: TUID; flags: integer; when: Tdatetime; cl: TRnQCList): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_dt(when)+_intlist(cl.toIntArray) ) end;
 
-function Tplugins.castEv(ev_id:byte; const uin: TUID; flags:integer; when:Tdatetime):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_dt(when) ) end;
+function Tplugins.castEv(ev_id: byte; const uin: TUID; flags: integer; when: Tdatetime): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_dt(when) ) end;
 
-function Tplugins.castEV(ev_id:byte; const uin: TUID; flags:integer; when:Tdatetime; const s1:AnsiString):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_dt(when)+_istring(s1) ) end;
+function Tplugins.castEV(ev_id: byte; const uin: TUID; flags: integer; when: Tdatetime; const s1: AnsiString): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_dt(when)+_istring(s1) ) end;
 
-function Tplugins.castEv(ev_id:byte; const uin: TUID; flags:integer; when:Tdatetime; const s1,s2:AnsiString):RawByteString;
+function Tplugins.castEv(ev_id: byte; const uin: TUID; flags: integer; when: Tdatetime; const s1, s2: AnsiString): RawByteString;
 begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_dt(when)+_istring(s1)+_istring(s2) ) end;
 
-function Tplugins.castEv(ev_id:byte; when:Tdatetime; const name,addr,text:AnsiString):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_dt(when)+_istring(name)+_istring(addr)+_istring(text) ) end;
+function Tplugins.castEv(ev_id: byte; when: Tdatetime; const name, addr, text: AnsiString): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_dt(when)+_istring(name)+_istring(addr)+_istring(text) ) end;
 
-function Tplugins.castEv(ev_id:byte; const uin: TUID; flags:integer; const s1:AnsiString):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_istring(s1) ) end;
+function Tplugins.castEv(ev_id: byte; const uin: TUID; flags: integer; const s1: AnsiString): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_istring(s1) ) end;
 
-function Tplugins.castEv(ev_id:byte; const uin: TUID; const s1:AnsiString):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_istring(s1) ) end;
+function Tplugins.castEv(ev_id: byte; const uin: TUID; const s1: AnsiString): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_istring(s1) ) end;
 
-function Tplugins.castEv(ev_id:byte; const uin: TUID; const s1, s2:AnsiString):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_istring(s1)+_istring(s1) ) end;
+function Tplugins.castEv(ev_id: byte; const uin: TUID; const s1, s2: AnsiString): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_istring(s1)+_istring(s1) ) end;
 
-function Tplugins.castEv(ev_id:byte; const uin: TUID; b1 : Byte; const s1, s2:AnsiString):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0)) + AnsiChar(b1) +_istring(s1)+_istring(s2) ) end;
+function Tplugins.castEv(ev_id: byte; const uin: TUID; b1: Byte; const s1, s2: AnsiString): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0)) + AnsiChar(b1) +_istring(s1)+_istring(s2) ) end;
 
-function Tplugins.castEv( ev_id:byte; const uin: TUID; status,oldstatus: byte; inv,oldInv:boolean ):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))
+function Tplugins.castEv(ev_id: byte; const uin: TUID; status, oldstatus: byte; inv, oldInv: boolean ): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))
         +AnsiChar(Status2OldStatus[TICQStatus(status)])+AnsiChar(Status2OldStatus[TICQStatus(oldstatus)])
         +AnsiChar(inv)+AnsiChar(oldInv) )
 end;
 
-function Tplugins.castEv(ev_id:byte; const uin: TUID; flags:integer; cl:TRnQCList):RawByteString;
+function Tplugins.castEv(ev_id: byte; const uin: TUID; flags: integer; cl: TRnQCList): RawByteString;
 begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_intlist(cl.toIntArray) ) end;
 
-function Tplugins.castEv( ev_id:byte; const uin: TUID):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0)) ) end;
+function Tplugins.castEv(ev_id: byte; const uin: TUID): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0)) ) end;
 
-function Tplugins.castEv( ev_id:byte; uin: Integer):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(uin) ) end;
+function Tplugins.castEv(ev_id: byte; uin: Integer): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(uin) ) end;
 
-function Tplugins.castEv(ev_id:byte):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id) ) end;
+function Tplugins.castEv(ev_id: byte): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id) ) end;
 
-function Tplugins.castEvList(ev_id:byte; list:byte; c:TRnQContact ):RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+AnsiChar(list)+_intlist([StrToIntDef(c.uid2cmp, 0)]) ) end;
+function Tplugins.castEvList(ev_id: byte; list: byte; c: TRnQContact): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+AnsiChar(list)+_intlist([StrToIntDef(c.uid2cmp, 0)]) ) end;
 
 
-function TPlugButtons.Add(proc:Pointer; iIcon : HIcon;
-                          const bHint : String; const sPic : AnsiString) : integer;
+function TPlugButtons.Add(proc: Pointer; iIcon: HIcon;
+                          const bHint: String; const sPic: AnsiString): integer;
 var
-  i : Integer;
+  i: Integer;
 begin
   i := Length(btns);
   SetLength(btns, i+1);
@@ -974,7 +974,7 @@ begin
   result := i;
 end;
 
-procedure TPlugButtons.Del(bAddr : integer);
+procedure TPlugButtons.Del(bAddr: integer);
 var
   i : Integer;
 begin
@@ -1003,12 +1003,12 @@ begin
     chatFrm.tbPlugins.Buttons[0].Free;}
 end;
 
-procedure TPlugButtons.Modify(bAddr : Integer; iIcon : HICON; //THandle;
-                              const bHint : String; const sPic : AnsiString);
+procedure TPlugButtons.Modify(bAddr: Integer; iIcon: HICON; //THandle;
+                              const bHint: String; const sPic: AnsiString);
 var
-  i : Integer;
+  i: Integer;
 begin
- i := bAddr;// - 1;
+ i := bAddr; // - 1;
   if (i < Low(btns)) or (i > High(btns)) then
     Exit;
  if btns[i] <> NIL then
@@ -1033,7 +1033,7 @@ end;
 procedure TPlugButtons.onToolMouseDown(Sender: TObject; Button: TMouseButton;
     Shift: TShiftState; X, Y: Integer);
 var
-  pr : procedure(button:integer);
+  pr: procedure(button: integer);
 //  St : boolean;
 begin
   if Button = mbLeft then
@@ -1048,7 +1048,7 @@ end;
 
 procedure TPlugButtons.onToolBtnClick(Sender: TObject);
 var
-  pr : procedure(button:integer);
+  pr: procedure(button: integer);
 begin
   pr := Pointer(TRnQSpeedButton(Sender).Tag);
   try

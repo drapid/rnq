@@ -21,16 +21,16 @@ procedure quitUser;
 procedure resetCFG;
 
 procedure UpdateProperties;
-function  getCFG:RawByteString;
-procedure loadCFG(zp : TZipFile);
+function  getCFG: RawByteString;
+procedure loadCFG(zp: TZipFile);
 //procedure saveCFG;
 function  getCommonCFG: AnsiString;
 procedure loadCommonCFG;
 procedure saveCommonCFG;
 //procedure saveAutomessages;
-procedure loadAutomessages(zp : TZipFile);
+procedure loadAutomessages(zp: TZipFile);
 procedure UnloadAutomessages;
-procedure loadMacros(zp : TZipFile);
+procedure loadMacros(zp: TZipFile);
 //procedure saveMacros;
 
 //procedure testBall;
@@ -153,31 +153,31 @@ with RnQmain do
     tray := 220;
    end;
 
-splitY:=-1;
-tempBlinkTime:=80;
+splitY := -1;
+tempBlinkTime := 80;
 okOn2enter_autoMsg := False;
 useLastStatus := True;
-  //loginServer:='login.icq.com';
-  lastStatusUserSet:= byte(SC_UNK);
-//  RnQStartingStatus:= byte(SC_ONLINE);
-  RnQStartingStatus:= -1; // Last used
-  RnQStartingVisibility := 0;//VI_NORMAL;
+  //loginServer := 'login.icq.com';
+  lastStatusUserSet := byte(SC_UNK);
+//  RnQStartingStatus := byte(SC_ONLINE);
+  RnQStartingStatus := -1; // Last used
+  RnQStartingVisibility := 0; //VI_NORMAL;
 
 quoting.cursorBelow := False;
 quoting.width := 300;
 quoting.quoteselected := True;
 //     icqdebug   := false;
 inactivehide := False;
-inactivehideTime:=50;
+inactivehideTime := 50;
 focusOnChatPopup := True;
 bringInfoFrgd := True; // By Rapid D
-checkupdate.lastSerial:=0;
+checkupdate.lastSerial := 0;
 checkupdate.betas := False or PREVIEWversion;
 checkupdate.enabled := False or PREVIEWversion;
-checkupdate.every:=24;
-prefHeight:=390;
+checkupdate.every := 24;
+prefHeight := 390;
 minOnOff := False;
-minOnOffTime:=30;
+minOnOffTime := 30;
 useSystemCodePage := True;
 
 showVisAndLevelling := False;
@@ -217,8 +217,8 @@ showVisAndLevelling := False;
   usePlugPanel  := True;
   useCtrlNumInstAlt := False; 
 
-rosterbarOnTop:= False;
-filterbarOnTop:=True;
+rosterbarOnTop := False;
+filterbarOnTop := True;
  RnQmain.FilterBar.Visible := False;
 
 doFixWindows := True;

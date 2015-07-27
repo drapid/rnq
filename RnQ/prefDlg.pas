@@ -45,16 +45,16 @@ type
     procedure PrefListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure HideAllPages(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
   public
-    arrPages : array of TPrefPage;
+    arrPages: array of TPrefPage;
     procedure reset;
     procedure apply;
 //    procedure updateVisible;
 //    procedure setPics();
 //  public procedure destroyHandle;
-    procedure SetViewMode(pages : array of TPrefPage);
+    procedure SetViewMode(pages: array of TPrefPage);
     procedure SetBtnEnable(Value: Boolean);
-    procedure SetActivePage(i : Integer); Overload;
-    procedure SetActivePage(const pn : String); Overload;
+    procedure SetActivePage(i: Integer); Overload;
+    procedure SetActivePage(const pn: String); Overload;
     procedure onTimer;
 //    procedure SetViewMode(const Mode: TfrmViewMode);
   private
@@ -62,8 +62,8 @@ type
   end;
 
 var
-  prefFrm :TprefFrm = NIL;
-  blinkExCount   :word;
+  prefFrm: TprefFrm = NIL;
+  blinkExCount: word;
 
 implementation
 {$R *.DFM}
@@ -110,7 +110,7 @@ end;
 
 procedure TprefFrm.onTimer;
 var
-  pp : TPrefPage;
+  pp: TPrefPage;
 begin
 {    for i := Low(prefFrm.arrPages) to High(prefFrm.arrPages) do
      if prefFrm.arrPages[i].frameClass = TdesignFr then
@@ -127,7 +127,7 @@ begin
       if Assigned(pp.frame) then
       with TdesignFr(pp.frame) do
        begin
-        blinkExCount:=succ(blinkExCount) mod blinkSlider.position;
+        blinkExCount := succ(blinkExCount) mod blinkSlider.position;
         if blinkExCount = 0 then
            BlinkPBox.Visible := not BlinkPBox.Visible;
         break;
@@ -137,10 +137,10 @@ end;
 
 procedure TprefFrm.reset;
 var
-  {$if CompilerVersion >= 17}
-  pp : TPrefPage;
+  {$IFDEF DELPHI9_UP}
+  pp: TPrefPage;
   {$ELSE}
-  i:byte;
+  i: byte;
   {$IFEND DELPHI9_UP}
 begin
 
@@ -242,11 +242,11 @@ end;
 
 procedure TprefFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 var
-  i : Byte;
+  i: Byte;
 //  p: TPrefPage;
 begin
   updateSWhotkeys;
-  hotkeysEnabled:=TRUE;
+  hotkeysEnabled := TRUE;
   Action := caFree;
   prefFrm := NIL;
 
@@ -318,8 +318,8 @@ end;
 procedure TprefFrm.PrefListDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-  s : String;
-  x : Integer;
+  s: String;
+  x: Integer;
 begin
   if not Assigned(TPrefPage(PPrefPage(PrefList.getnodedata(PaintInfo.Node))^)) then
     Exit;
@@ -350,16 +350,16 @@ procedure TprefFrm.PrefListGetNodeWidth(Sender: TBaseVirtualTree;
   HintCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
   var NodeWidth: Integer);
 var
-  k : Integer;
-  s : string;
-  r : TRect;
-  res : Tsize;
+  k: Integer;
+  s: string;
+  r: TRect;
+  res: Tsize;
 begin
-  k:=DT_CALCRECT;
+  k := DT_CALCRECT;
   s := TPrefPage(PPrefPage(PrefList.getnodedata(Node))^).Caption;
   r := HintCanvas.ClipRect;
   drawText(HintCanvas.Handle, PChar(s), -1, R, k or DT_SINGLELINE or DT_VCENTER or DT_CENTER);
-  GetTextExtentPoint32(HintCanvas.Handle,pchar(s),length(s), res);
+  GetTextExtentPoint32(HintCanvas.Handle, PChar(s), Length(s), res);
   NodeWidth := res.cx + 10;
 end;
 
@@ -393,9 +393,9 @@ end;
 
 procedure TprefFrm.sortPrefPages;
 var
-  i : Integer;
-  pp : TPrefPage;
-  bool : Boolean;
+  i: Integer;
+  pp: TPrefPage;
+  bool: Boolean;
 begin
   for i:=Low(arrPages) to High(arrPages) do
    begin
@@ -405,14 +405,14 @@ begin
     arrPages[i].Caption := getTranslation(arrPages[i].Caption);
    end;
   repeat
-    bool:= true;
+    bool := true;
     for i:=0 to High(arrPages)-1 do
     if arrPages[i].idx > arrPages[i+1].idx then
       begin
          pp := arrPages[i];
          arrPages[i] := arrPages[i+1];
          arrPages[i+1] := pp;
-         bool:=false
+         bool := false
       end;
   until bool;
 end;
@@ -427,12 +427,12 @@ begin
 //  wallpaperize(canvas);
 end;
 
-procedure TprefFrm.SetViewMode(pages : array of TPrefPage);
+procedure TprefFrm.SetViewMode(pages: array of TPrefPage);
 var
-  i, j, k : integer;
+  i, j, k: integer;
 //var
-  pg : PPrefPage;
-  protoPages : TPrefPagesArr;
+  pg: PPrefPage;
+  protoPages: TPrefPagesArr;
 //  FrameClass: TClass;
 begin
   if Length(pages) = 0 then
@@ -465,39 +465,39 @@ begin
          SetLength(protoPages, 0);
        end;
 
-      clientWidth:=  GAP_SIZE + PrefList.Width + GAP_SIZE + FRM_WIDTH + GAP_SIZE;
-      clientHeight:=  GAP_SIZE + FRM_HEIGHT + GAP_SIZE + Bevel.Height+ GAP_SIZE + okBtn.Height + GAP_SIZE;
-      PrefList.Visible:= true;
-      resetBtn.Visible:= true;
+      clientWidth :=  GAP_SIZE + PrefList.Width + GAP_SIZE + FRM_WIDTH + GAP_SIZE;
+      clientHeight :=  GAP_SIZE + FRM_HEIGHT + GAP_SIZE + Bevel.Height + GAP_SIZE + okBtn.Height + GAP_SIZE;
+      PrefList.Visible := true;
+      resetBtn.Visible := true;
 
       resetBtn.top := clientHeight - resetBtn.height - GAP_SIZE;
-      resetBtn.left:= GAP_SIZE;
+      resetBtn.left := GAP_SIZE;
 
 
-      applyBtn.top := resetBtn.top;
-      applyBtn.left:= clientWidth - applyBtn.Width - GAP_SIZE;
+      applyBtn.top  := resetBtn.top;
+      applyBtn.left := clientWidth - applyBtn.Width - GAP_SIZE;
 
-      closeBtn.top := resetBtn.top;
-      closeBtn.left:= applyBtn.left - closeBtn.Width - GAP_SIZE;
+      closeBtn.top  := resetBtn.top;
+      closeBtn.left := applyBtn.left - closeBtn.Width - GAP_SIZE;
 
-      okBtn.top := resetBtn.top;
-      okBtn.left:= closeBtn.left - okBtn.Width - GAP_SIZE;
+      okBtn.top  := resetBtn.top;
+      okBtn.left := closeBtn.left - okBtn.Width - GAP_SIZE;
 
 
-      Bevel.left:= GAP_SIZE;
-      Bevel.Width:= clientWidth - GAP_SIZE - GAP_SIZE;
-      Bevel.top:=  resetBtn.top - Bevel.Height - GAP_SIZE;
+      Bevel.left := GAP_SIZE;
+      Bevel.Width := clientWidth - GAP_SIZE - GAP_SIZE;
+      Bevel.top :=  resetBtn.top - Bevel.Height - GAP_SIZE;
 
       Self.GlassFrame.Bottom := resetBtn.height + GAP_SIZE shl 1 + 2;
 
       PrefList.height := Bevel.top - GAP_SIZE - GAP_SIZE;
-      PrefList.top:= GAP_SIZE;
-      PrefList.left:= GAP_SIZE;
+      PrefList.top := GAP_SIZE;
+      PrefList.left := GAP_SIZE;
 
-      framePnl.height:= PrefList.height;
-      framePnl.top:= GAP_SIZE;
-      framePnl.left:= PrefList.left + PrefList.Width + GAP_SIZE;
-      framePnl.Width:= clientWidth - framePnl.left - GAP_SIZE;
+      framePnl.height := PrefList.height;
+      framePnl.top := GAP_SIZE;
+      framePnl.left := PrefList.left + PrefList.Width + GAP_SIZE;
+      framePnl.Width := clientWidth - framePnl.left - GAP_SIZE;
     end
    else
     begin
@@ -506,28 +506,28 @@ begin
         begin
          arrPages[i] := pages[i].Clone;
         end;
-      clientWidth:=  GAP_SIZE + FRM_WIDTH + GAP_SIZE;
-      clientHeight:=  GAP_SIZE + FRM_HEIGHT + GAP_SIZE + Bevel.Height+ GAP_SIZE + okBtn.Height + GAP_SIZE;
-      PrefList.Visible:= false;
-      resetBtn.Visible:= false;
+      clientWidth :=  GAP_SIZE + FRM_WIDTH + GAP_SIZE;
+      clientHeight :=  GAP_SIZE + FRM_HEIGHT + GAP_SIZE + Bevel.Height + GAP_SIZE + okBtn.Height + GAP_SIZE;
+      PrefList.Visible := false;
+      resetBtn.Visible := false;
 
-      applyBtn.top := clientHeight - resetBtn.height - GAP_SIZE;
-      applyBtn.left:= GAP_SIZE;
+      applyBtn.top  := clientHeight - resetBtn.height - GAP_SIZE;
+      applyBtn.left := GAP_SIZE;
 
-      closeBtn.top := applyBtn.top;
-      closeBtn.left:= clientWidth - closeBtn.Width - GAP_SIZE;
+      closeBtn.top  := applyBtn.top;
+      closeBtn.left := clientWidth - closeBtn.Width - GAP_SIZE;
 
-      okBtn.top := applyBtn.top;
-      okBtn.left:= closeBtn.left - okBtn.Width - GAP_SIZE;
+      okBtn.top  := applyBtn.top;
+      okBtn.left := closeBtn.left - okBtn.Width - GAP_SIZE;
 
-      framePnl.top:= GAP_SIZE;
-      framePnl.left:= GAP_SIZE;
-      framePnl.height:= FRM_HEIGHT;
-      framePnl.Width:= clientWidth - framePnl.left - GAP_SIZE;
+      framePnl.top := GAP_SIZE;
+      framePnl.left := GAP_SIZE;
+      framePnl.height := FRM_HEIGHT;
+      framePnl.Width := clientWidth - framePnl.left - GAP_SIZE;
 
-      Bevel.left:= GAP_SIZE;
-      Bevel.Width:= clientWidth - GAP_SIZE - GAP_SIZE;
-      Bevel.top:=  applyBtn.top - Bevel.Height - GAP_SIZE;
+      Bevel.left := GAP_SIZE;
+      Bevel.Width := clientWidth - GAP_SIZE - GAP_SIZE;
+      Bevel.top :=  applyBtn.top - Bevel.Height - GAP_SIZE;
 
       Self.GlassFrame.Bottom := resetBtn.height + GAP_SIZE shl 1 + 2;
     end;
@@ -546,8 +546,8 @@ begin
 //     pagesBox.items.objects[i] := arrPages[i].frame;
      with arrPages[i].frame do
       begin
-        align:=alClient;
-        Parent:=framePnl;
+        align := alClient;
+        Parent := framePnl;
       end;
      PrefList.BeginUpdate;
      pg := PrefList.GetNodeData(PrefList.AddChild(nil));
@@ -598,11 +598,11 @@ begin
   applyBtn.Enabled := Value;
 end;
 
-procedure TprefFrm.SetActivePage(i : Integer);
+procedure TprefFrm.SetActivePage(i: Integer);
 var
-  k : Integer;
-  n : PVirtualNode;
-//  r : Tresults;
+  k: Integer;
+  n: PVirtualNode;
+//  r: Tresults;
 begin
 //        prefFrm.pagesBox.ItemIndex:=i;
 //   prefFrm.PrefList.FocusedNode := prefFrm.PrefList.get
@@ -627,11 +627,11 @@ begin
    pagesBoxClick(NIL);
 end;
 
-procedure TprefFrm.SetActivePage(const pn : String);
+procedure TprefFrm.SetActivePage(const pn: String);
 var
-//  k : Integer;
-  n : PVirtualNode;
-//  r : Tresults;
+//  k: Integer;
+  n: PVirtualNode;
+//  r: Tresults;
 begin
 //        prefFrm.pagesBox.ItemIndex:=i;
 //   prefFrm.PrefList.FocusedNode := prefFrm.PrefList.get

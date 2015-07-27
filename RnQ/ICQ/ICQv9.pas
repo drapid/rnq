@@ -2951,7 +2951,7 @@ else
       + xStsTLV;
   if StFirst then
    begin
-    sendSNAC(1,$1E, Pck );
+    sendSNAC(1, $1E, Pck);
     sleep(100);
    end;
 //   else
@@ -2965,7 +2965,7 @@ else
   if not StFirst then
     begin
       sleep(100);
-      sendSNAC(1,$1E, Pck );
+      sendSNAC(1, $1E, Pck);
     end;
 
 // ssi_
@@ -4950,7 +4950,7 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
   moodPresIcon := False;
   moodText := '';
 //{$IFDEF RNQ_AVATARS}
-  i := findTLV($1D, snac,ofs); // Expressions
+  i := findTLV($1D, snac, ofs); // Expressions
   if i>0 then
     begin
      s:=getTLV(@snac[i]);
@@ -4994,7 +4994,7 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
                  if t > 0 then
                  begin
                   i := word_BEat(@s[5]);
-                  if (i +6) <= length(s) then
+                  if (i + 6) <= length(s) then
                    begin
                      if i >0 then
 //                       moodText := excludeTrailingCRLF(unUTF( unUTF(copy(s, 7, i))))

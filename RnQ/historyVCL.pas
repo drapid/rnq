@@ -30,36 +30,36 @@ type
 
   TitemKind=( PK_NONE, PK_HEAD, PK_TEXT, PK_ARROWS_UP, PK_ARROWS_DN, PK_LINK,
     PK_SMILE, PK_CRYPTED, PK_RQPIC, PK_RQPICEX, PK_RNQBUTTON);
-  PhistoryItem=^ThistoryItem;
-  ThistoryLink=record
-    evIdx:integer;    // -1 for null links
+  PhistoryItem = ^ThistoryItem;
+  ThistoryLink = record
+    evIdx: integer;    // -1 for null links
     str: String;
-    from,to_:integer;
-    kind:TlinkKind;
-    id:integer;
-    ev:Thevent;
+    from, to_: integer;
+    kind: TlinkKind;
+    id: integer;
+    ev: Thevent;
    end;
   TLinkClickEvent = procedure(
     const Sender: TObject;
     const LinkHref: String;
     const LinkText: String) of object;
-  ThistoryItem=record
+  ThistoryItem = record
     kind: TitemKind;   // PK_NONE for null items
     ev: Thevent;
     evIdx, ofs, l: integer;
     r: Trect;
     link: ThistoryLink;
    end;
-  ThistoryPos=record
+  ThistoryPos = record
     ev: Thevent;    // NIL for null positions
     evIdx: integer; // -1 for void positions
-    ofs:integer;    // -1 when the whole event is selected
+    ofs: integer;    // -1 when the whole event is selected
    end;
 
-  ThistoryBox=class(TcustomControl)
+  ThistoryBox = class(TcustomControl)
    private
    // For History at all
-    items:array of ThistoryItem;
+    items: array of ThistoryItem;
     P_lastEventIsFullyVisible: boolean;
     startWithLastLine: boolean;
     P_topEventNrows, P_bottomEvent: integer;
@@ -67,15 +67,15 @@ type
     FOnScroll : TNotifyEvent;
    private
     // For Active History!
-    lastTimeClick:TdateTime;
+    lastTimeClick: TdateTime;
 //    avoidErase: boolean;
-    selecting:boolean;
-    justTriggeredAlink, dontTriggerLink, just2clicked:boolean;
+    selecting: boolean;
+    justTriggeredAlink, dontTriggerLink, just2clicked: boolean;
     lastClickedItem, P_pointedSpace, P_pointedItem: ThistoryItem;
     linkToUnderline: ThistoryLink;
     FOnLinkClick: TLinkClickEvent;
     buffer: TBitmap;
-//    fAutoscroll:boolean;    // auto scrolls along messages
+//    fAutoscroll: boolean;    // auto scrolls along messages
 //    not2go2end : Boolean;
    private
     // Same for all historys
@@ -101,9 +101,9 @@ type
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X,Y: Integer); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
     procedure Click; override;
-    function  triggerLink(item:ThistoryItem):boolean;
-    function  itemAt(pt:Tpoint):ThistoryItem;
-    function  spaceAt(pt:Tpoint):ThistoryItem;
+    function  triggerLink(item: ThistoryItem): boolean;
+    function  itemAt(pt: Tpoint): ThistoryItem;
+    function  spaceAt(pt: Tpoint): ThistoryItem;
     procedure updatePointedItem();
   public
     topVisible, topOfs: Integer;
@@ -112,27 +112,27 @@ type
     who: TRnQContact;
     history: Thistory;
     margin: Trect;
-    whole:boolean;         // see whole history
+    whole: boolean;         // see whole history
     rsb_visible: Boolean;
     rsb_position : integer;
     rsb_rowPerPos : integer;
     newSession:integer;    // where, in the history, does start new session
     onPainted: TNotifyEvent;
-    w2s : String;
+    w2s: String;
 
     property color;
     property canvas;
     property onDragOver;
     property onDragDrop;
-    property lastEventIsFullyVisible:boolean read P_lastEventIsFullyVisible;
-    property pointedItem:ThistoryItem read P_pointedItem;
-    property clickedItem :ThistoryItem read lastClickedItem;
-    property pointedSpace:ThistoryItem read P_pointedSpace;
-    property topEventNrows:integer read P_topEventNrows;
-    property bottomEvent:integer read P_bottomEvent;
-    property autoScrollVal : Boolean read getAutoscroll write setAutoScrollForce;
-    property OnScroll : TNotifyEvent read FOnScroll write FOnScroll;
-    property onLinkClick : TLinkClickEvent read FOnLinkClick write FOnLinkClick;
+    property lastEventIsFullyVisible: boolean read P_lastEventIsFullyVisible;
+    property pointedItem: ThistoryItem read P_pointedItem;
+    property clickedItem: ThistoryItem read lastClickedItem;
+    property pointedSpace: ThistoryItem read P_pointedSpace;
+    property topEventNrows: integer read P_topEventNrows;
+    property bottomEvent: integer read P_bottomEvent;
+    property autoScrollVal: Boolean read getAutoscroll write setAutoScrollForce;
+    property OnScroll: TNotifyEvent read FOnScroll write FOnScroll;
+    property onLinkClick: TLinkClickEvent read FOnLinkClick write FOnLinkClick;
 
     constructor Create(owner_: Tcomponent); override;
     destructor Destroy; override;
@@ -141,27 +141,27 @@ type
     procedure go2end(const calcOnly: Boolean = False; const precalc: Boolean = False);
     function  getSelText(): string;
     function  getSelBin(): AnsiString;
-    function  getSelHtml(smiles: boolean):string;
+    function  getSelHtml(smiles: boolean): string;
     function  getSelHtml2(smiles: boolean): RawByteString;
-    function  somethingIsSelected():boolean;
-    function  wholeEventsAreSelected():boolean;
-    function  nothingIsSelected():boolean;
-    function  partialTextIsSelected():boolean;
+    function  somethingIsSelected(): boolean;
+    function  wholeEventsAreSelected(): boolean;
+    function  nothingIsSelected(): boolean;
+    function  partialTextIsSelected(): boolean;
     procedure ManualRepaint;
 
-    function  offsetPos:integer;
-    procedure select(from,to_:integer);
+    function  offsetPos: integer;
+    procedure select(from, to_: integer);
     procedure deselect();
 
     procedure updateRSB(SetPos: Boolean; pos: Integer = 0; doRedraw: Boolean = true);
-    procedure addEvent(ev : Thevent);
+    procedure addEvent(ev: Thevent);
     function  historyNowCount: Integer;
     function  historyNowOffset: Integer;
     procedure trySetNot2go2end;
-    procedure histScrollEvent(d:integer);
-    procedure histScrollLine(d:integer);
+    procedure histScrollEvent(d: integer);
+    procedure histScrollLine(d: integer);
     procedure Scroll;
-    function  getQuoteByIdx(var pQuoteIdx: Integer) : String;
+    function  getQuoteByIdx(var pQuoteIdx: Integer): String;
   end; // ThistoryBox
 
 const
@@ -173,7 +173,7 @@ const
     // dsNone, dsBuffer, dsGlobalBuffer, dsMemory
 //    dStyle: TDrawStyle = dsGlobalBuffer2;
 //    dStyle: TDrawStyle = dsNone;
-    hisBGColor, myBGColor : TColor;
+    hisBGColor, myBGColor: TColor;
     MaxChatImgWidthVal : Integer = 100;
     MaxChatImgHeightVal : Integer = 100;
 
@@ -203,35 +203,45 @@ uses
   themesLib, menusUnit;
 
 var
-  lastBGCnt : TRnQContact;
-  lastBGToken : Integer;
-  vKeyPicElm : TRnQThemedElementDtls;
+  lastBGCnt: TRnQContact;
+  lastBGToken: Integer;
+  vKeyPicElm: TRnQThemedElementDtls;
   globalBuffer: TBitmap;
 
 function minor(const a, b: ThistoryPos): boolean; overload;
-begin result := (a.evIdx < b.evIdx) or (a.evIdx = b.evIdx) and (a.ofs < b.ofs) end;
+begin
+  result := (a.evIdx < b.evIdx) or (a.evIdx = b.evIdx) and (a.ofs < b.ofs)
+end;
 
 function equal(const a, b: ThistoryPos): boolean; overload;
-begin result := (a.evIdx = b.evIdx) and (a.ofs = b.ofs) end;
+begin
+  result := (a.evIdx = b.evIdx) and (a.ofs = b.ofs)
+end;
 
 function minor(const a, b: ThistoryItem): boolean; overload;
-begin result := (a.evIdx < b.evIdx) or (a.evIdx = b.evIdx) and (a.ofs < b.ofs) end;
+begin
+  result := (a.evIdx < b.evIdx) or (a.evIdx = b.evIdx) and (a.ofs < b.ofs)
+end;
 
 function equal(const a, b: ThistoryItem): boolean; overload;
 begin
-  result := (a.evIdx = b.evIdx)
-    and (a.ofs = b.ofs)
-    and (a.kind = b.kind)
+  result := (a.evIdx = b.evIdx) and (a.ofs = b.ofs) and (a.kind = b.kind)
 end;
 
 function equal(const a, b: ThistoryLink): boolean; overload;
-begin result := (a.evIdx = b.evIdx) and (a.from = b.from) and (a.to_ = b.to_) end;
+begin
+  result := (a.evIdx = b.evIdx) and (a.from = b.from) and (a.to_ = b.to_)
+end;
 
 function minor(const a, b: Tpoint): boolean; overload;
-begin result := (a.y < b.y) or (a.y = b.y) and (a.x < b.y) end;
+begin
+  result := (a.y < b.y) or (a.y = b.y) and (a.x < b.y)
+end;
 
 function isLink(const it: ThistoryItem): boolean;
-begin result := it.kind = PK_LINK end;
+begin
+  result := it.kind = PK_LINK
+end;
 
 function historyitem2pos(const a: ThistoryItem): ThistoryPos;
 begin
@@ -254,15 +264,15 @@ begin
 //  avoidErase:=FALSE;
   tabStop := False;
   P_lastEventIsFullyVisible := False;
-  onPainted:=NIL;
-//  autoscroll:=TRUE;
+  onPainted := NIL;
+//  autoscroll := TRUE;
   fAutoScrollState := ASS_FULLSCROLL;
   newSession := 0;
   offset := 0;
   deselect;
 
   if dStyle = dsBuffer then
-    buffer:= TBitmap.Create;
+    buffer := TBitmap.Create;
 
 end; // create
 
@@ -276,7 +286,7 @@ begin
 //  self := NIL;
 end;
 
-procedure ThistoryBox.paintOn(cnv: Tcanvas; vR : TRect; const JustCalc : Boolean = false);
+procedure ThistoryBox.paintOn(cnv: Tcanvas; vR: TRect; const JustCalc: Boolean = false);
 var
 //  vCnvHandle : HDC;
   lineHeight, bodySkipCounter, skippedLines,
@@ -291,7 +301,7 @@ var
   foundLink: ThistoryLink;
   mouse: Tpoint;
  {$IFDEF RNQ_FULL}
-  foundAniSmile : Boolean;
+  foundAniSmile: Boolean;
  {$ENDIF RNQ_FULL}
   eventFullyPainted, firstEvent,
     nowLink, nowBold, nowUnderline,
@@ -299,7 +309,7 @@ var
   oldMode: Integer;
   Nrows: integer;
 
-  procedure newLine(var x, y : Integer);
+  procedure newLine(var x, y: Integer);
   begin
     if bodySkipCounter <= 0 then
       inc(y, lineHeight)
@@ -374,12 +384,12 @@ var
     end;
   end; // isUIN
 
-  procedure newLineHeight(v:integer); overload;
-  begin if lineHeight < v then lineHeight:=v end;
+  procedure newLineHeight(v: integer); overload;
+  begin if lineHeight < v then lineHeight := v end;
 
-  procedure newLineHeight(const s:string); overload;
+  procedure newLineHeight(const s: string); overload;
   var
-    sz : TSize;
+    sz: TSize;
   begin
 //    cnv.TextHeight(s);
     GetTextExtentPoint32(Cnv.Handle, PChar(s), Length(s), sz);
@@ -387,18 +397,18 @@ var
     newLineHeight(sz.cy);
   end;
 
-  function addItem(k:TitemKind; o,l:integer; r:Trect):PhistoryItem;
+  function addItem(k: TitemKind; o, l: integer; r: Trect): PhistoryItem;
   begin
     inc(Nitems);
     if length(items) < Nitems then
       setLength(items, length(items)+20);
-    result:=@items[Nitems-1];
-    result.kind:=k;
-    result.ev:=ev;
-    result.evIdx:=evIdx;
-    result.ofs:=o;
-    result.l:=l;
-    result.r:=r;
+    result := @items[Nitems-1];
+    result.kind := k;
+    result.ev := ev;
+    result.evIdx := evIdx;
+    result.ofs := o;
+    result.l := l;
+    result.r := r;
     if k=PK_LINK then result.link:=foundLink;
 {     if k = PK_ARROWS_DN then
        begin
@@ -406,10 +416,10 @@ var
          hDownArrow:=  r.Bottom-r.Top;
        end
      else
-       hasDownArrow:= false;}
+       hasDownArrow:= false; }
   end; // addItem
 
-  function withinTheLink(i:integer):boolean;
+  function withinTheLink(i: integer): boolean;
   begin
   result:=(foundLink.from > 0)
     and (i >= foundLink.from)
@@ -417,31 +427,31 @@ var
   end; // withinTheLink
 
 //  function drawBody(cnv:Tcanvas; pTop : Integer) : Integer;
-  function drawBody(pTop : Integer) : Integer;
+  function drawBody(pTop: Integer): Integer;
   var
     whatFound: ( _nothing, _wrap, _return, _smile, _link, _bold, _underline, _RnQPic, _RnQPicEx, _aniSmile );
-    fndSmileI : Integer;
+    fndSmileI: Integer;
     fndSmile: String;
-    fndSmileN : TPicName;
-    foundPicSize : Integer;
-    RnQPicStream : TMemoryStream;
-    BodyText : String;
-    BodyCurChar : Char;
-    BodyBin  : RawByteString;
+    fndSmileN: TPicName;
+    foundPicSize: Integer;
+    RnQPicStream: TMemoryStream;
+    BodyText: String;
+    BodyCurChar: Char;
+    BodyBin: RawByteString;
 
     i, j, chunkStart, quoteCounter
      : Integer;
 
       function findLink(): boolean;
 
-        procedure setResult(lk:TlinkKind; end_:integer=0);
+        procedure setResult(lk: TlinkKind; end_: integer=0);
         const
           allowedChars: array [TlinkKind] of set of char=( FTPURLCHARS, EMAILCHARS,
             WEBURLCHARS, ['0'..'9'], EDURLCHARS );
         begin
           if end_ = 0 then
             begin
-            end_:=i;
+            end_ := i;
             if lk = LK_WWW then
               begin
                 while (end_ < length(BodyText)) and not TCharacter.IsSeparator(BodyText[end_+1])
@@ -460,15 +470,15 @@ var
             while CharInSet(BodyText[end_], ['?',')','.',',']) do
               dec(end_);
           foundLink.str:=copy(BodyText, i, end_-i+1);
-          foundLink.from:=i;
-          foundLink.to_:=end_;
-          foundLink.kind:=lk;
+          foundLink.from := i;
+          foundLink.to_ := end_;
+          foundLink.kind := lk;
           inc(foundLink.id);
           result := True;
         end;
 
       var
-        e:integer;
+        e: integer;
       begin
         result := False;
         if linkTheWholeBody > '' then
@@ -477,7 +487,7 @@ var
           foundLink.str := linkTheWholeBody;
           exit;
           end;
-        if isEmailAddress(BodyText,i,e) then
+        if isEmailAddress(BodyText, i, e) then
           setResult(LK_EMAIL, e)
         else
           case upcase(BodyText[i]) of
@@ -497,7 +507,7 @@ var
 
       function findFidonet(sym: Char): boolean;
       var
-        j:integer;
+        j: integer;
       begin
         result := False;
         if (BodyText[i] <> sym)
@@ -522,7 +532,7 @@ var
         k, l: integer;
         smileCap: string;
  {$IFDEF UNICODE}
-        sA : AnsiString;
+        sA: AnsiString;
  {$ENDIF UNICODE}
         SmileObj: TSmlObj;
       begin
@@ -570,16 +580,16 @@ var
          end;
       end; // findSmile
 
-      function findRnQPic():boolean;
+      function findRnQPic(): boolean;
       var
-        k:integer;
+        k: integer;
       begin
         result := False;
         if (BodyBin[i] <> '<') then
           exit;
 //        foundRnQPic := '';
         FreeAndNil(RnQPicStream);
-        if matches(BodyBin,i, RnQImageTag) then
+        if matches(BodyBin, i, RnQImageTag) then
           begin
             k := PosEx(RnQImageUnTag, BodyBin, i+10);
             if k <= 0 then
@@ -593,11 +603,11 @@ var
           end;
       end; // findRnQPic
 
-      function findRnQPicEx():boolean;
+      function findRnQPicEx(): boolean;
       const
         Length_RnQImageExTag = Length(RnQImageExTag);
       var
-        k:integer;
+        k: integer;
         OutSize: DWord;
         PIn, POut: Pointer;
       begin
@@ -606,7 +616,7 @@ var
           exit;
 //        foundRnQPic:='';
         FreeAndNil(RnQPicStream);
-        if matches(BodyBin,i, RnQImageExTag) then
+        if matches(BodyBin, i, RnQImageExTag) then
           begin
             k := PosEx(RnQImageExUnTag, BodyBin, i + Length_RnQImageExTag);
             if k <= 0 then
@@ -630,7 +640,7 @@ var
               except
                   try
                     FreeAndNil(RnQPicStream);
-                    result:=false;
+                    result := false;
                    except
                   end;
               end;
@@ -642,14 +652,14 @@ var
     quoteCounting: boolean;
     r, intersect: Trect;
     nowPos: ThistoryPos;
-    PntFontIdx : Byte;
+    PntFontIdx: Byte;
 
-    function withinTheSelection(i:integer):boolean;
+    function withinTheSelection(i: integer): boolean;
     begin
-      nowPos.evIdx:=evIdx;
-      nowPos.ev:=ev;
-      nowPos.ofs:=i;
-      result:=(SOS.ev<>NIL) and (EOS.ev<>NIL) and (
+      nowPos.evIdx := evIdx;
+      nowPos.ev := ev;
+      nowPos.ofs := i;
+      result := (SOS.ev<>NIL) and (EOS.ev<>NIL) and (
         (SOS.ofs<0) and within(SOS.evIdx,evIdx,EOS.evIdx)
         or not minor(EOS,nowPos) and minor(SOS,nowpos)
       );
@@ -657,7 +667,7 @@ var
 
     procedure applyFont();
     var
-      newPntFontIdx : Byte;
+      newPntFontIdx: Byte;
     begin
 //      cnv.font.Assign(Screen.MenuFont);
 //      theme.applyFont(ev.useFont, cnv.font);
@@ -685,47 +695,47 @@ var
        begin
         if nowBold then
            begin
-            if not (fsBold in style) then
-             style:=style+[fsBold];
+            if not(fsBold in style) then
+             style := style + [fsBold];
            end;
 //          else
 //            if (fsBold in style) then
-//             style:=style-[fsBold];
+//             style := style - [fsBold];
         if nowUnderline then
           begin
-           if not (fsUnderline in style) then
-            style:=style+[fsUnderline];
+           if not(fsUnderline in style) then
+            style := style + [fsUnderline];
           end;
 //         else
 //           if (fsUnderline in style) then
-//            style:=style-[fsUnderline];
+//            style := style - [fsUnderline];
        end;
       if nowLink then
         theme.applyFont('history.link', cnv.font);
     end; // applyFont
   var
-   tempColor : TColor;
+   tempColor: TColor;
     len, smileCount: integer;
-    size, tempSize : Tsize;
-    lastLineStart  : Integer;
+    size, tempSize: Tsize;
+    lastLineStart: Integer;
     lastSmileChar: char;
-    fndSmlT2 : TPicName;
-    fndSmlIT : Integer; fndAniSmlT : Boolean;
+    fndSmlT2: TPicName;
+    fndSmlIT: Integer; fndAniSmlT: Boolean;
     first, bool, wasInsideSelection: boolean;
     SelectionStartPos, SelectionEndPos: Integer;
 
 
 //    vDBPic: TBitmap;
-    vPicElm : TRnQThemedElementDtls;
-//    vPicLoc : TPicLocation;
-//    vThemeTkn : Integer;
-//    vPicIdx : Integer;
-//    vPicName : String;
-    x, y : Integer;
-    vRnQPic : TBitmap;
-//    gr : TGPGraphics;
-    vRnQpicEx : TRnQBitmap;
-    hnd : HDC;
+    vPicElm: TRnQThemedElementDtls;
+//    vPicLoc: TPicLocation;
+//    vThemeTkn: Integer;
+//    vPicIdx: Integer;
+//    vPicName: String;
+    x, y: Integer;
+    vRnQPic: TBitmap;
+//    gr: TGPGraphics;
+    vRnQpicEx: TRnQBitmap;
+    hnd: HDC;
     pt: TPoint;
 
   begin
@@ -745,7 +755,7 @@ var
     BodyText := ev.getBodyText;
 //    BodyBin  := ev.bInfo;
     BodyBin  := ev.getBodyBin;
-    if ((Length(BodyText) = 0)and (Length(BodyBin) <= 10)) or (y >= bottomLimit) then
+    if ((Length(BodyText) = 0) and (Length(BodyBin) <= 10)) or (y >= bottomLimit) then
      begin
       ev.HistoryToken := history.Token;
       ev.PaintHeight := 0;
@@ -773,7 +783,7 @@ var
            if not JustCalc then
             begin
              r := rect(x, y, rightLimit, y+cy);
-             addItem(PK_ARROWS_UP, 0,0, r);
+             addItem(PK_ARROWS_UP, 0, 0, r);
              hnd := Cnv.Handle;
              pt.Y := y;
              pt.X := x;
@@ -790,20 +800,20 @@ var
       end;
     end
     else
-      bodySkipCounter:=0;
+      bodySkipCounter := 0;
 
-  quoteCounter:=0;
-  whatFound:=_nothing;
+  quoteCounter := 0;
+  whatFound := _nothing;
   PntFontIdx := 101;
-  i:=1;
-  foundLink.from:=0;
-  lastLineStart:=1;
-  lineHeight:=0;
+  i := 1;
+  foundLink.from := 0;
+  lastLineStart := 1;
+  lineHeight := 0;
   x := margin.left;
   cnv.brush.color := TextBGColor; //history.bgcolor;
 //  cnv.font.assign(ev.font);
   wasInsideSelection := False;
-  len:=length(BodyText);
+  len := length(BodyText);
   quoteCounting := True;
   nowBold := False;
   nowUnderline := False;
@@ -811,7 +821,7 @@ var
   // loop until there's text to be painted
   while (y < bottomLimit) and (i <= len) do
     begin
-    chunkStart:=i;
+    chunkStart := i;
     case whatFound of
       _nothing:
         begin
@@ -825,14 +835,14 @@ var
            begin
 //            nowLink := False;
             if (foundLink.kind <> LK_UIN) then
-              whatFound:=_link;
+              whatFound := _link;
             break;
            end;
           // reached a selection edge, stop, we must paint it selected
-          bool:=withinTheSelection(i);
+          bool := withinTheSelection(i);
           if wasInsideSelection <> bool then
             begin
-             wasInsideSelection:=bool;
+             wasInsideSelection := bool;
              if wasInsideSelection then
                SelectionStartPos := i
               else
@@ -863,7 +873,7 @@ var
             if findLink() and (foundLink.kind <> LK_UIN) then
               begin
 //                nowLink := True;
-                whatFound:=_link;
+                whatFound := _link;
 //                chunkStart := i;
                 break;
               end;
@@ -894,47 +904,47 @@ var
           size := txtSizeL(Cnv.Handle, @BodyText[i], 1);
           inc(j, size.cx);
           if j > rightLimit then // no more room
-            begin
+           begin
             // search backward for a good place where to split
-            j:=i;
+            j := i;
             repeat
               dec(j)
             until (j=lastLineStart) or
                   (BodyText[j] in ['-', ' ', ',', ';', '.']);
             // found. choose it
             if j>chunkStart then
-              i:=j+1
+              i := j+1
              else
               if i = lastLineStart then
                inc(i);
-            whatFound:=_wrap;
+            whatFound := _wrap;
             break
-            end;
+           end;
           if not JustCalc then
            begin
             r := rect(j-size.cx, y, j, y+size.cy);
             if bodySkipCounter<=0 then
               if withinTheLink(i) then
-                addItem(PK_LINK, i,1, r)
+                addItem(PK_LINK, i, 1, r)
               else
-                addItem(PK_TEXT, i,1, r);
+                addItem(PK_TEXT, i, 1, r);
            end;
           inc(i);
-          end;//while
+          end; //while
         // no text, suddenly a break comes
             if i = chunkStart then
               continue;
 
-          j:=i-chunkStart; // = length of text
+          j := i-chunkStart; // = length of text
           applyFont();
           size := txtSizeL(Cnv.Handle, @BodyText[chunkStart], j); // size on screen
         // is it a link?
           if withinTheLink(chunkStart)
             and (evIdx = linkToUnderline.evIdx)
-            and within(linkToUnderline.from,chunkStart,linkToUnderline.to_) then
+            and within(linkToUnderline.from, chunkStart, linkToUnderline.to_) then
            with cnv.font do
             begin
-             style:=style+[fsUnderline];
+             style := style+[fsUnderline];
              PntFontIdx := 100;
             end;
 //          newLineHeight('I');
@@ -964,19 +974,19 @@ var
       _link:
         begin
 //         inc(i);
-         nowLink:=not nowLink;
+         nowLink := not nowLink;
          PntFontIdx := 100;
         end;
       _underline:
         begin
          inc(i);
-         nowUnderline:=not nowUnderline;
+         nowUnderline := not nowUnderline;
          PntFontIdx := 100;
         end;
       _bold:
         begin
          inc(i);
-         nowBold:=not nowBold;
+         nowBold := not nowBold;
          PntFontIdx := 100;
         end;
       _return:
@@ -993,13 +1003,13 @@ var
             nowBold := False;
             nowUnderline := False;
             nowLink := False;
-            quoteCounter:=0;
+            quoteCounter := 0;
             PntFontIdx := 100;
            end;
 
           quoteCounting := True;
           newLineHeight('I');
-          lastLineStart:=i;
+          lastLineStart := i;
           newLine(x, y);
         end;
       _smile:
@@ -1007,11 +1017,11 @@ var
           // count times smile has to be repeated by last character
           if Length(fndSmile) = 0 then
             break;
-          smileCount:=1;
+          smileCount := 1;
           j := length(fndSmile);
           inc(i, j);
-          lastSmileChar:=fndSmile[j];
-//          fndSmlT1 := fndSmile; 
+          lastSmileChar := fndSmile[j];
+//          fndSmlT1 := fndSmile;
           fndSmlT2 := fndSmileN;
           fndSmlIT := fndSmileI;
           fndAniSmlT := foundAniSmile;
@@ -1027,7 +1037,7 @@ var
           fndSmileN := fndSmlT2;
           fndSmileI := fndSmlIT;
           foundAniSmile := fndAniSmlT;
-//        vDBPic :=TBitmap.Create;
+//        vDBPic := TBitmap.Create;
 //        theme.GetPic(theme.GetSmileName(foundSmileIdx), vDBPic);
 //        vPicName := ;
 //        pic:=theme.GetSmile(foundSmileIdx); //smiles.pics[foundSmileIdx];
@@ -1039,7 +1049,7 @@ var
 //            size.cy := tempSize.cy;
             size := tempSize;
             inc(size.cx);
-            cnv.brush.color:=selectedClr;
+            cnv.brush.color := selectedClr;
             first := True;
             while smileCount > 0 do
               begin
@@ -1108,27 +1118,27 @@ var
       _wrap:
         begin
           newLine(x, y);
-          lastLineStart:=i;
+          lastLineStart := i;
         end;
-      end;//case
-    whatFound:=_nothing;
-    end;//while
+      end; //case
+    whatFound := _nothing;
+    end; //while
 
   eventFullyPainted := (i > len) and (y <= bottomLimit);
 
  ////////////////////// Processing Binaries ////////////////////////////
-  len:=length(BodyBin);
+  len := length(BodyBin);
   i := len+1;
   if len > 10 then
 //  if 1=2 then
   begin
-    i:=1;
+    i := 1;
     newLine(x, y);
-    whatFound:=_nothing;
+    whatFound := _nothing;
 //    PntFontIdx := 101;
 //    foundLink.from:=0;
 //    lastLineStart:=1;
-    lineHeight:=0;
+    lineHeight := 0;
     x := margin.left;
 //    cnv.brush.color := TextBGColor; //history.bgcolor;
   //  cnv.font.assign(ev.font);
@@ -1136,7 +1146,7 @@ var
 
     while (y < bottomLimit) and (i <= len) do
      begin
-      chunkStart:=i;
+      chunkStart := i;
       case whatFound of
         _nothing:
           begin
@@ -1145,7 +1155,7 @@ var
           while i <= len do
            begin
             // reached a selection edge, stop, we must paint it selected
-{            bool:=withinTheSelection(i);
+{            bool := withinTheSelection(i);
             if wasInsideSelection <> bool then
               begin
               wasInsideSelection:=bool;
@@ -1180,7 +1190,7 @@ var
               break
               end;}
              inc(i);
-           end;//while
+           end; //while
           // no text, suddenly a break comes
               if i = chunkStart then
                 continue;
@@ -1206,18 +1216,18 @@ var
               nowBold := False;
               nowUnderline := False;
               nowLink := False;
-              quoteCounter:=0;
+              quoteCounter := 0;
               PntFontIdx := 100;
              end;
 
             quoteCounting := True;
             newLineHeight('I');
-            lastLineStart:=i;
+            lastLineStart := i;
             newLine(x, y);
           end;
         _RnQPic:
           begin
-            vRnQPic :=NIL;
+            vRnQPic := NIL;
               inc(i, foundPicSize + length(RnQImageTag) + length(RnQImageUnTag));
             size := wbmp2bmp(RnQPicStream, vRnQPic, JustCalc);
             if Assigned(vRnQPic) or JustCalc then
@@ -1226,7 +1236,7 @@ var
                // paint
              if not JustCalc then
               begin
-               cnv.brush.color:=selectedClr;
+               cnv.brush.color := selectedClr;
                 // only the first one has full length
                 r := rect(x, y, x+size.cx + 1, y+size.cy);
                 if bodySkipCounter<=0 then
@@ -1267,7 +1277,7 @@ var
              // paint
             if not JustCalc then
              begin
-              cnv.brush.color:=selectedClr;
+              cnv.brush.color := selectedClr;
               // only the first one has full length
               r := rect(x, y, x+size.cx, y+size.cy);
               if bodySkipCounter<=0 then
@@ -1316,12 +1326,12 @@ var
         _wrap:
           begin
             newLine(x, y);
-            lastLineStart:=i;
+            lastLineStart := i;
           end;
         end;//case
-      whatFound:=_nothing;
+      whatFound := _nothing;
      end;
-  end;//while
+  end; //while
   FreeAndNil(RnQPicStream);
 
   newLine(x, y);
@@ -1346,7 +1356,7 @@ var
       r := rect(x, y, rightLimit, y+cy);
       while (Nitems > 0) and intersectRect(intersect, items[Nitems-1].r, r) do
         dec(Nitems);
-      addItem(PK_ARROWS_DN, 0,0, r);
+      addItem(PK_ARROWS_DN, 0, 0, r);
       pt.Y := y;
       pt.X := x;
       hnd := cnv.Handle;
@@ -1357,7 +1367,7 @@ var
        end;
      end;
     vPicElm.ThemeToken := -1;
-    inc(y, cy );
+    inc(y, cy);
    end;
   end; // drawBody
 
@@ -1365,11 +1375,11 @@ var
   function drawHeader(pTop: Integer): Integer;
   var
     curX, curY, LeftX: integer;
-    sa : RawByteString;
-    b : Byte;
-    st : byte;
-    sz : TSize;
-    s : String;
+    sa: RawByteString;
+    b: Byte;
+    st: byte;
+    sz: TSize;
+    s: String;
   begin
     lineHeight := 0;
     curX := margin.left;
@@ -1413,7 +1423,7 @@ var
     begin
 //     ts := ev.getHeaderText;
 //     cnv.textOut(curX, curY + 1, ts);
-     cnv.textOut(curX, curY + (lineHeight - sz.cy) , ev.getHeaderText);
+     cnv.textOut(curX, curY + (lineHeight - sz.cy), ev.getHeaderText);
      curX := cnv.penpos.x;
 
    // some events draws an extra icon on the right
@@ -1461,7 +1471,7 @@ var
 
     if not JustCalc then
      begin
-      addItem(PK_HEAD, -1,0, rect(margin.left,curY, curX,curY+lineHeight));
+      addItem(PK_HEAD, -1, 0, rect(margin.left, curY, curX, curY+lineHeight));
       LeftX := curX;
      end;
     inc(lineHeight);
@@ -1483,13 +1493,13 @@ var
 //  gr : TGPGraphics;
 //  dc : HDC;
   hls: Thls;
-  y : Integer;
-  vFullR : TRect;
-  smlRefresh : Boolean;
-  ch : AnsiChar;
+  y: Integer;
+  vFullR: TRect;
+  smlRefresh: Boolean;
+  ch: AnsiChar;
  {$IFDEF UNICODE}
 //  chU : Char;
-  sA : AnsiString;
+  sA: AnsiString;
  {$ENDIF UNICODE}
 begin
   if ((Self.Width <> lastWidth)//or(Self.Height <> lastHeight)
@@ -1621,66 +1631,66 @@ begin
    end;
 //  bottomLimit := vR.Bottom - vr.Top-margin.bottom - 10;
   y := margin.Top;
-  evIdx:=topVisible;
-  foundLink.id:=0;
-  Nrows:=0;
+  evIdx := topVisible;
+  foundLink.id := 0;
+  Nrows := 0;
   if not JustCalc then
-    P_topEventNrows:=0;
-firstEvent:=True;
-skippedLines:=0;
-pleaseDontDrawUpwardArrows:=False;
-while (y < bottomLimit) and (evIdx < history.Count) do
-  begin
-  ev:=history.getAt(evIdx);
-  if ev = nil then
-   begin
-    inc(evIdx);
-    continue;
-   end;
-  foundLink.ev:=ev;
-  foundLink.evIdx:=evIdx;
-  eventFullyPainted:=False;
-  bodySkipCounter:=0;
-//  s:=ev.getHeaderText;
-  if ev.kind = EK_GCARD then
- {$IFDEF DB_ENABLED}
-    linkTheWholeBody:=ev.txt
- {$ELSE ~DB_ENABLED}
-    linkTheWholeBody:=ev.decrittedInfo
- {$ENDIF ~DB_ENABLED}
-  else
-    linkTheWholeBody:='';
-//  inc(y, drawHeader(cnv1, y));
-  inc(y, drawHeader(y));
-  // if there is enough space for the body
-  if y < bottomLimit then
+    P_topEventNrows := 0;
+  firstEvent := True;
+  skippedLines := 0;
+  pleaseDontDrawUpwardArrows := False;
+  while (y < bottomLimit) and (evIdx < history.Count) do
     begin
+     ev := history.getAt(evIdx);
+     if ev = nil then
+       begin
+        inc(evIdx);
+        continue;
+       end;
+     foundLink.ev := ev;
+     foundLink.evIdx := evIdx;
+     eventFullyPainted := False;
+     bodySkipCounter := 0;
+  //  s := ev.getHeaderText;
+     if ev.kind = EK_GCARD then
+      {$IFDEF DB_ENABLED}
+       linkTheWholeBody := ev.txt
+      {$ELSE ~DB_ENABLED}
+       linkTheWholeBody := ev.decrittedInfo
+      {$ENDIF ~DB_ENABLED}
+      else
+       linkTheWholeBody := '';
+  //  inc(y, drawHeader(cnv1, y));
+     inc(y, drawHeader(y));
+  // if there is enough space for the body
+     if y < bottomLimit then
+       begin
     // gets the text to be painted
-//    s:=ev.getBodyText;
-//    eventFullyPainted:= s='';
-    if startWithLastLine and firstEvent then
-      begin
-      pleaseDontDrawUpwardArrows:=TRUE;
-      topOfs:=maxInt;
-      inc(y, drawBody(y));
-      pleaseDontDrawUpwardArrows:=FALSE;
-      topOfs:=skippedLines-1;
+    //    s:=ev.getBodyText;
+    //    eventFullyPainted:= s='';
+        if startWithLastLine and firstEvent then
+          begin
+           pleaseDontDrawUpwardArrows := TRUE;
+           topOfs := maxInt;
+           inc(y, drawBody(y));
+           pleaseDontDrawUpwardArrows := FALSE;
+           topOfs := skippedLines-1;
+          end;
+   //    if s = '' then
+        if not ev.isHasBody then
+          eventFullyPainted := y < bottomLimit
+         else
+          inc(y, drawBody(y));
+        inc(y);
       end;
-//    if s = '' then
-    if not ev.isHasBody then
-      eventFullyPainted:=y < bottomLimit
-     else
-      inc(y, drawBody(y));
-    inc(y);
-    end;
-  inc(evIdx);
-  if not JustCalc then
-   if firstEvent then
-     P_topEventNrows:=Nrows-1;
-  firstEvent:=FALSE;
-  end;//while
- P_bottomEvent:=evIdx-1;
- P_lastEventIsFullyVisible:= eventFullyPainted and (evIdx=history.count);
+    inc(evIdx);
+    if not JustCalc then
+     if firstEvent then
+       P_topEventNrows := Nrows-1;
+    firstEvent := False;
+  end; //while
+ P_bottomEvent := evIdx-1;
+ P_lastEventIsFullyVisible := eventFullyPainted and (evIdx=history.count);
  if not JustCalc then
    begin
     setLength(items, Nitems);
@@ -1691,10 +1701,10 @@ end; // paintOn
 procedure ThistoryBox.Paint();
 var
   MemDC: HDC;
-  ABitmap, HOldBmp : HBITMAP;
+  ABitmap, HOldBmp: HBITMAP;
   ARect: TRect;
   tmpCanvas: TCanvas;
-  a, b : Integer;
+  a, b: Integer;
 begin
 //  if autoScroll and (TopOfs=0) then
   if fAutoScrollState < ASS_FULLDISABLED  then
@@ -1715,13 +1725,13 @@ begin
       if (a <> buffer.Width)or(b <> buffer.Height) then
        begin
         buffer.Height := 0;
-        buffer.SetSize(a,b);
+        buffer.SetSize(a, b);
        end;
       buffer.Canvas.Lock;
       paintOn(buffer.Canvas, Canvas.ClipRect);
       buffer.Canvas.UnLock;
 
-      Canvas.Draw(0,0, buffer);
+      Canvas.Draw(0, 0, buffer);
     end;
 
    dsGlobalBuffer:
@@ -1918,33 +1928,33 @@ begin
   Result := '';
 end;
 
-function applyHtmlFont(fnt:Tfont; s:string):string;
+function applyHtmlFont(fnt: Tfont; s: string): string;
 var
-  h,q:string;
+  h,q: string;
 begin
-h:='<font size=2 face="'+fnt.name+'" color=#'+color2str(fnt.color)+'>';
-q:='</font>';
-if fsItalic in fnt.style then
-  begin
-  h:=h+'<i>';
-  q:='</i>'+q;
-  end;
-if fsBold in fnt.style then
-  begin
-  h:=h+'<b>';
-  q:='</b>'+q;
-  end;
-result:=h+s+q;
+  h := '<font size=2 face="'+fnt.name+'" color=#'+color2str(fnt.color)+'>';
+  q := '</font>';
+  if fsItalic in fnt.style then
+    begin
+     h := h+'<i>';
+     q := '</i>'+q;
+    end;
+  if fsBold in fnt.style then
+    begin
+     h := h+'<b>';
+     q := '</b>'+q;
+    end;
+  result := h+s+q;
 end; // applyHtmlFont
 
 
-function ThistoryBox.getSelHtml(smiles:boolean):string;
+function ThistoryBox.getSelHtml(smiles: boolean): string;
 var
-  SOS,EOS:ThistoryPos;
-  i, dim:integer;
-  ev:Thevent;
+  SOS, EOS: ThistoryPos;
+  i, dim: integer;
+  ev: Thevent;
 
-  procedure addStr(s:string);
+  procedure addStr(s: string);
   begin
   while dim+length(s) > length(result) do
     setLength(result, length(result)+10000);
@@ -1953,10 +1963,10 @@ var
   end; // addStr
 
 var
-  fnt : TFont;
+  fnt: TFont;
 begin
-  result:='';
-  dim:=0;
+  result := '';
+  dim := 0;
   fnt := TFont.Create;
 //  fnt.Assign(Self.canvas.Font);
   fnt.Assign(Screen.MenuFont);
@@ -1989,9 +1999,9 @@ begin
   fnt.free;
 end; // getSelHtml
 
-function str2html2(s:string):string;
+function str2html2(s: string): string;
 begin
-result:=template(s, [
+result := template(s, [
   '&', '&amp;',
   '<', '&lt;',
   '>', '&gt;',
@@ -2001,17 +2011,17 @@ result:=template(s, [
 ]);
 end; // str2html
 
-function color2html(color:Tcolor):AnsiString;
+function color2html(color: Tcolor): AnsiString;
 begin
 //  if not ColorToIdent(Color, Result) then
     begin
-      color:=ABCD_ADCB(ColorToRGB(color));
-      result:='#'+IntToHexA(color,6);
+      color := ABCD_ADCB(ColorToRGB(color));
+      result := '#'+IntToHexA(color,6);
     end;
 end; // color2str
 
 
-function ThistoryBox.getSelHtml2(smiles:boolean):RawByteString;
+function ThistoryBox.getSelHtml2(smiles: boolean): RawByteString;
 
 const
   HTMLTemplate = AnsiString('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"'+ CRLF +
@@ -2038,16 +2048,16 @@ const
                  '</html>');
 
 var
-  SOS,EOS:ThistoryPos;
-  i, dim:integer;
-  ev:Thevent;
+  SOS, EOS: ThistoryPos;
+  i, dim: integer;
+  ev: Thevent;
 //  Content: String;
   Content: RawByteString;
   HTMLElement: RawByteString;
 
   Host, Guest: String;
-  HostUIN, GuestUIN : TUID;
-  EvHost, EvGuest:Thevent;
+  HostUIN, GuestUIN: TUID;
+  EvHost, EvGuest: Thevent;
 
 //  procedure addStr(s:string);
 //  begin
@@ -2064,27 +2074,27 @@ var
    inc(dim, length(s));
   end; // addStr
 
-  function makeElement(uin : TUID; font : TFont) : RawByteString;
+  function makeElement(uin: TUID; font: TFont): RawByteString;
   begin
     result := '   .uin'+uin+ ' {'+CRLF+
               '     color: '+ color2html(font.color)+';'+CRLF;
-    result:= result + '     font-family: "'+ AnsiString(font.Name)+'";'+CRLF;
-    result:= result + '     font-size: '+IntToStrA(ABS(font.Height))+'px;'+CRLF;
+    result := result + '     font-family: "'+ AnsiString(font.Name)+'";'+CRLF;
+    result := result + '     font-size: '+IntToStrA(ABS(font.Height))+'px;'+CRLF;
     if fsBold in font.Style then
-      result:= result + '     font-weight: bold;';
+      result := result + '     font-weight: bold;';
     if fsItalic in font.Style then
-      result:= result + '     text-decoration: italic;';
+      result := result + '     text-decoration: italic;';
     if fsUnderline in font.Style then
-      result:= result + '     text-decoration: underline;';
-    result:= result + '   }'
+      result := result + '     text-decoration: underline;';
+    result := result + '   }'
 //             +CRLF;
   end;
 
 var
-  fnt : TFont;
+  fnt: TFont;
 begin
-  result:='';
-  dim:=0;
+  result := '';
+  dim := 0;
   fnt := TFont.Create;
   fnt.Assign(Self.canvas.Font);
 
@@ -2100,9 +2110,9 @@ begin
     EOS := startsel;
   end;
 
-  Host:= '';
-  Guest:= '';
-  Content:= '';
+  Host := '';
+  Guest := '';
+  Content := '';
   for i := SOS.evIdx to EOS.evIdx do
   begin
     ev := history.getAt(i);
@@ -2111,14 +2121,14 @@ begin
     begin
       if ev.isMyEvent then
       begin
-        EvHost:= history.getAt(i);
-        Host:= ev.who.displayed;
+        EvHost := history.getAt(i);
+        Host := ev.who.displayed;
         HostUIN := ev.who.UID;
       end
       else
       begin
-        EvGuest:= history.getAt(i);
-        Guest:= ev.who.displayed;
+        EvGuest := history.getAt(i);
+        Guest := ev.who.displayed;
         GuestUIN := ev.who.UID;
       end;
     end;
@@ -2132,17 +2142,17 @@ begin
          );
   end;
   setLength(Content, dim);
-  //Content:= StringReplace(Content, '&', '&amp;', [rfReplaceAll]);
+  //Content := StringReplace(Content, '&', '&amp;', [rfReplaceAll]);
 
   // %TITLE%
-  HTMLElement:= StrToUTF8(getTranslation( 'History [%s] with [%s]', [Host, Guest]));
-  Result:= StringReplace(HTMLTemplate, AnsiString('%TITLE%'), HTMLElement, []);
+  HTMLElement := StrToUTF8(getTranslation( 'History [%s] with [%s]', [Host, Guest]));
+  Result := StringReplace(HTMLTemplate, AnsiString('%TITLE%'), HTMLElement, []);
 
   // %BODY%
-  HTMLElement:= '    body {'+CRLF+
-                '      background-color: '+color2html(theme.GetColor(ClrHistBG, clWindow))+';'+CRLF+
-                '    }'+CRLF;
-  Result:= StringReplace(Result, AnsiString('%BODY%'), HTMLElement, []);
+  HTMLElement := '    body {'+CRLF+
+                 '      background-color: '+color2html(theme.GetColor(ClrHistBG, clWindow))+';'+CRLF+
+                 '    }'+CRLF;
+  Result := StringReplace(Result, AnsiString('%BODY%'), HTMLElement, []);
 
   // %HOST%
   if Host > '' then
@@ -2153,7 +2163,7 @@ begin
     end
    else
     HTMLElement := '';
-  Result:= StringReplace(Result, AnsiString('%HOST%'), HTMLElement, []);
+  Result := StringReplace(Result, AnsiString('%HOST%'), HTMLElement, []);
 
   // %GUEST%
   if Guest > '' then
@@ -2164,46 +2174,46 @@ begin
     end
    else
     HTMLElement := '';
-  Result:= StringReplace(Result, AnsiString('%GUEST%'), HTMLElement, []);
+  Result := StringReplace(Result, AnsiString('%GUEST%'), HTMLElement, []);
 
-  Result:= StringReplace(Result, AnsiString('%CONTENT%'), Content, []);
+  Result := StringReplace(Result, AnsiString('%CONTENT%'), Content, []);
 
 //  EvHost:= nil;
 //  EvGuest:= nil;
 
-  Host:= '';
-  Guest:= '';
-  Content:= '';
-  HTMLElement:= '';
+  Host := '';
+  Guest := '';
+  Content := '';
+  HTMLElement := '';
   fnt.Free;
 end; // getSelHtml2
 
-procedure ThistoryBox.mouseDown(Button: TMouseButton; Shift: TShiftState; X,Y:Integer);
+procedure ThistoryBox.mouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 
-  function doubleClick:boolean;
+  function doubleClick: boolean;
   begin
-  result:=just2clicked;
-  if just2clicked and not justTriggeredAlink and equal(lastClickedItem,pointedItem) then
+  result := just2clicked;
+  if just2clicked and not justTriggeredAlink and equal(lastClickedItem, pointedItem) then
     viewHeventWindow(history.getAt(endSel.evIdx));
   end; // doubleClick
 
 begin
-dontTriggerLink:=FALSE;
-just2clicked:=now-lastTimeClick < dblClickTime;
+  dontTriggerLink := FALSE;
+  just2clicked := now-lastTimeClick < dblClickTime;
   if shift=[ssRight] then
   begin
     updatePointedItem();
-    chatFrm.poppedup:=point(x,y);
-    chatFrm.del1.enabled:= wholeEventsAreSelected;
-    chatFrm.saveas1.enabled:= somethingIsSelected;
-    chatFrm.copy2clpb.visible:= somethingIsSelected;
-    chatFrm.toantispam.visible:= somethingIsSelected;
-    chatFrm.N2.visible:= somethingIsSelected;
+    chatFrm.poppedup := point(x,y);
+    chatFrm.del1.enabled := wholeEventsAreSelected;
+    chatFrm.saveas1.enabled := somethingIsSelected;
+    chatFrm.copy2clpb.visible := somethingIsSelected;
+    chatFrm.toantispam.visible := somethingIsSelected;
+    chatFrm.N2.visible := somethingIsSelected;
     chatFrm.savePicMnu.Visible := (pointedItem.kind=PK_RQPICEX)or (pointedItem.kind=PK_RQPIC);
-    chatFrm.copylink2clpbd.visible:=pointedItem.kind=PK_LINK;
-    chatFrm.addlink2fav.visible:=(pointedItem.kind=PK_LINK)
+    chatFrm.copylink2clpbd.visible := pointedItem.kind=PK_LINK;
+    chatFrm.addlink2fav.visible := (pointedItem.kind=PK_LINK)
       and (pointedItem.link.kind in [LK_WWW, LK_FTP]);
-    chatFrm.add2rstr.visible:=(pointedItem.kind=PK_LINK)
+    chatFrm.add2rstr.visible := (pointedItem.kind=PK_LINK)
       and (pointedItem.link.kind=LK_UIN);
     if chatFrm.add2rstr.visible then
       try
@@ -2217,11 +2227,11 @@ just2clicked:=now-lastTimeClick < dblClickTime;
         addGroupsToMenu(self, chatFrm.add2rstr, chatFrm.addcontactAction, not who.fProto.isOnline);// false);
  {$ENDIF UseNotSSI}
       except
-        chatFrm.add2rstr.visible:=FALSE;
+        chatFrm.add2rstr.visible := FALSE;
       end;
     chatFrm.ViewinfoM.Visible := Assigned(pointedItem.ev) and Assigned(pointedItem.ev.who);
-    chatFrm.viewmessageinwindow1.enabled:= historyNowCount>0;
-    chatFrm.selectall1.enabled:= historyNowCount>0;
+    chatFrm.viewmessageinwindow1.enabled := historyNowCount>0;
+    chatFrm.selectall1.enabled := historyNowCount>0;
     lastClickedItem := pointedItem;
     with clientToScreen(point(x,y)) do
       chatFrm.histMenu.popup(x,y);
@@ -2232,7 +2242,7 @@ just2clicked:=now-lastTimeClick < dblClickTime;
   begin
     if pointedSpace.kind<>PK_NONE then
       begin
-      endSel:=historyitem2pos(pointedSpace);
+      endSel := historyitem2pos(pointedSpace);
       repaint();
       end;
     inherited;
@@ -2240,17 +2250,17 @@ just2clicked:=now-lastTimeClick < dblClickTime;
   end;
   deselect();
   case pointedSpace.kind of
-    PK_NONE: selecting:=TRUE;
+    PK_NONE: selecting := TRUE;
     PK_CRYPTED:
       if enterPwdDlg(histcrypt.pwd) then
-        histcrypt.pwdkey:=calculate_KEY1(histcrypt.pwd);
+        histcrypt.pwdkey := calculate_KEY1(histcrypt.pwd);
     PK_HEAD, PK_TEXT, PK_LINK, PK_SMILE:
       if ((pointedSpace.kind<>PK_HEAD) or (pointedItem.kind = PK_HEAD))
         and not DoubleClick then
 
       begin
         selecting := TRUE;
-        startsel:=historyitem2pos(pointedSpace);
+        startsel := historyitem2pos(pointedSpace);
         endSel := startsel;
       end;
     PK_ARROWS_UP:
@@ -2287,7 +2297,7 @@ begin
    end;
 end;
 
-procedure ThistoryBox.mouseUp(Button: TMouseButton; Shift: TShiftState; X,Y:Integer);
+procedure ThistoryBox.mouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   s: string;
 begin
@@ -2313,26 +2323,26 @@ end; // mouseUp
 
 function ThistoryBox.spaceAt(pt: Tpoint): ThistoryItem;
 var
-  i,j,m,l:integer;
-  r:Trect;
+  i, j, m, l: integer;
+  r: Trect;
 begin
-  result.kind:=PK_NONE;
-  i:=0;
-  l:=length(items)-1;
+  result.kind := PK_NONE;
+  i := 0;
+  l := length(items)-1;
   if l<0 then exit;
-  j:=l;
-  m:=-1;
+  j := l;
+  m := -1;
   // search for an item on the same row
   while i<=j do
   begin
-    m:=(i+j) div 2;
-    r:=items[m].r;
+    m := (i+j) div 2;
+    r := items[m].r;
     if within(r.Top, pt.Y, r.bottom) then
       break;
     if (pt.y < r.top) or (pt.y < r.bottom) and (pt.x < r.left) then
-      j:=m-1
+      j := m-1
      else
-      i:=m+1;
+      i := m+1;
   end;
 // if no item is matching the Y, move backward until the item is behind PT
   while m > 0 do
@@ -2345,7 +2355,7 @@ begin
 // without leaving this row, move backward searching for a better matching item
   while m>0 do
   begin
-    r:=items[m-1].r;
+    r := items[m-1].r;
     if within(r.Top, pt.Y, r.bottom) and (pt.X <= r.right) then
       dec(m)
      else
@@ -2354,7 +2364,7 @@ begin
   // same, but move forward
   while m<l do
   begin
-    r:=items[m+1].r;
+    r := items[m+1].r;
     if within(r.Top, pt.Y, r.bottom) and (pt.X >= r.left) then
       inc(m)
      else
@@ -2363,46 +2373,46 @@ begin
   // do we have a valid item?
   if m>=0 then
   begin
-    result:=items[m];
+    result := items[m];
     // if pt is on the first half of the item then move behind 
     if pt.X < centerPoint(result.r).x then
      dec(result.ofs);
   end;
 end; // spaceAt
 
-function ThistoryBox.itemAt(pt:Tpoint):ThistoryItem;
+function ThistoryBox.itemAt(pt: Tpoint): ThistoryItem;
 var
-  i,j,m:integer;
-  r:Trect;
+  i, j, m: integer;
+  r: Trect;
 begin
-  result.kind:=PK_NONE;
-  i:=0;
-  j:=length(items)-1;
+  result.kind := PK_NONE;
+  i := 0;
+  j := length(items)-1;
   while i<=j do
     begin
-    m:=(i+j) div 2;
-    r:=items[m].r;
+    m := (i+j) div 2;
+    r := items[m].r;
     if ptInRect( r, pt ) then
       begin
-      result:=items[m];
+      result := items[m];
       break;
       end;
     if (pt.y < r.top) or (pt.y < r.bottom) and (pt.x < r.left) then j:=m-1
-    else i:=m+1;
+    else i := m+1;
     end;
 end; // itemAt
 
 procedure ThistoryBox.mouseMove(Shift: TShiftState; X, Y: Integer);
 begin updatePointedItem() end; // mouseMove
 
-procedure ThistoryBox.go2end(const calcOnly : Boolean = False; const precalc : Boolean = False);
+procedure ThistoryBox.go2end(const calcOnly: Boolean = False; const precalc: Boolean = False);
 var
   bmp: Tbitmap;
 //  secs : Cardinal;
 //  s : String;
-  oldTopOfs : Integer;
-  oldTopVis : Integer;
-  safeLastEventIsFullyVisible : Boolean;
+  oldTopOfs: Integer;
+  oldTopVis: Integer;
+  safeLastEventIsFullyVisible: Boolean;
 begin
 //  bmp := createBitmap(canvas.ClipRect.Right ClientWidth, ClientHeight);
 //  bmp := createBitmap(canvas.ClipRect.Right, canvas.ClipRect.Bottom);
@@ -2451,19 +2461,19 @@ begin
 end; // go2end
 
 function ThistoryBox.offsetPos():integer;
-begin result:=topVisible-offset end;
+begin result := topVisible-offset end;
 
 function ThistoryBox.wholeEventsAreSelected():boolean;
-begin result:=(startSel.ev<>NIL) and (startSel.ofs<0) end;
+begin result := (startSel.ev<>NIL) and (startSel.ofs<0) end;
 
 function ThistoryBox.nothingIsSelected():boolean;
-begin result:=startSel.ev=NIL end;
+begin result := startSel.ev=NIL end;
 
 function ThistoryBox.somethingIsSelected():boolean;
-begin result:=startSel.ev<>NIL end;
+begin result := startSel.ev<>NIL end;
 
 function ThistoryBox.partialTextIsSelected():boolean;
-begin result:=(startSel.ev<>NIL) and (startSel.ofs>=0) end;
+begin result := (startSel.ev<>NIL) and (startSel.ofs>=0) end;
 
 procedure ThistoryBox.select(from, to_: integer);
 begin
@@ -2488,35 +2498,35 @@ var
   oldLink: ThistoryLink;
   pt: Tpoint;
 begin
-pt:=screenToClient(mousePos);
-oldIt:=P_pointedItem;
-oldSp:=P_pointedSpace;
-oldLink:=linkToUnderline;
-P_pointedItem:=itemAt(pt);
-P_pointedSpace:=spaceAt(pt);
+  pt := screenToClient(mousePos);
+  oldIt := P_pointedItem;
+  oldSp := P_pointedSpace;
+  oldLink := linkToUnderline;
+  P_pointedItem := itemAt(pt);
+  P_pointedSpace := spaceAt(pt);
 // no interesting movement
-if equal(oldIt, P_pointedItem) and equal(oldSp, P_pointedSpace) then
-  exit;
+  if equal(oldIt, P_pointedItem) and equal(oldSp, P_pointedSpace) then
+    exit;
 // link underlining, mouse cursor shape
-if isLink(pointedItem) and (pointedItem.link.kind in linksToUnderline) then
-  begin
-  linkToUnderline:=pointedItem.link;
-  cursor:=crHandPoint
-  end
-else
-  begin
-  linkToUnderline.evIdx:=-1;
-  cursor:=crDefault;
-  end;
+  if isLink(pointedItem) and (pointedItem.link.kind in linksToUnderline) then
+    begin
+     linkToUnderline := pointedItem.link;
+     cursor := crHandPoint
+    end
+   else
+    begin
+     linkToUnderline.evIdx := -1;
+     cursor := crDefault;
+    end;
 // if pointedItem.kind = PK_RNQBUTTON then
 //   P_pointedItem.link
 
 // repaint necessary?
 if not equal(linkToUnderline, oldLink) then
   begin
-//  avoidErase:=TRUE;
+//  avoidErase := TRUE;
    paint();
-//  avoidErase:=FALSE;
+//  avoidErase := FALSE;
   end;
 // here the selecting management section begins
 if not selecting then
@@ -2525,10 +2535,10 @@ if not selecting then
 dontTriggerLink:=TRUE;
 // updating the selection end point
 if pointedSpace.kind=PK_NONE then exit;
-p:=historyitem2pos(pointedSpace);
+p := historyitem2pos(pointedSpace);
 if minor(startSel,p) then inc(p.ofs, pointedSpace.l-1);
 if equal(endSel,p) then exit; // no change?
-endSel:=p;
+endSel := p;
  pEnd := p; pEnd.ofs := p.ofs + pointedSpace.l-1;
   if (pointedSpace.kind = PK_SMILE) and
      minor(endSel, startSel) and
@@ -2537,17 +2547,17 @@ endSel:=p;
   
 // some adjustment could be needed
 if nothingIsSelected() then
-  startSel:=historyitem2pos(pointedItem)
+  startSel := historyitem2pos(pointedItem)
 else
   if startSel.ofs < 0 then
-    endSel.ofs:=-1
+    endSel.ofs := -1
   else
     if endSel.ofs < 0 then
-      endSel.ofs:=0;
+      endSel.ofs := 0;
 repaint();
 end; // updatePointedItem
 
-function ThistoryBox.triggerLink(item:ThistoryItem):boolean;
+function ThistoryBox.triggerLink(item: ThistoryItem): boolean;
 var
   s: string;
 begin
@@ -2559,7 +2569,7 @@ begin
     LK_WWW:
       begin
         if not (Imatches(s,1,'http://') or Imatches(s,1,'https://')) then
-          s:='http://'+s;
+          s := 'http://'+s;
 //        if Assigned(onLinkClick) then
 //          onLinkClick(self, s, item.link.str);
         openURL(s);
@@ -2567,7 +2577,7 @@ begin
     LK_FTP:
       begin
         if not (Imatches(s,1,'ftp://')or Imatches(s,1,'sftp://')) then
-          s:='ftp://'+s;
+          s := 'ftp://'+s;
         openURL(s);
       end;
     LK_EMAIL:
@@ -3216,7 +3226,7 @@ begin
      end;
     if i < 0 then  // nothing found, try restarting search from the end
       begin
-      i:=count-1;
+      i := count-1;
       if i>=0 then
        begin
         he := getAt(i);
@@ -3271,9 +3281,9 @@ begin
   Scroll();
 end; // histScrollEvent
 
-procedure ThistoryBox.histScrollLine(d:integer);
+procedure ThistoryBox.histScrollLine(d: integer);
 begin
-  startWithLastLine:=FALSE;
+  startWithLastLine := False;
 //  fAutoscroll := False;
 //  not2go2end := True;
   if d > 0 then

@@ -364,8 +364,8 @@ var
   node : Tnode;
   pt   : Tpoint;
 begin
-  bmp:=createBitmap(1,1);
-  pt:=RnQmain.roster.ScreenToClient(mousepos);
+  bmp := createBitmap(1,1);
+  pt := RnQmain.roster.ScreenToClient(mousepos);
   if within(0, pt.x, RnQmain.roster.width)
   and within(0, pt.y, RnQmain.roster.height) then
     node:=roasterLib.nodeAt(pt.x,pt.y)
@@ -376,8 +376,8 @@ begin
     begin
 //    drawNodeHint(bmp.canvas, node.treenode, r);
     drawHint(bmp.canvas, node.kind, node.groupId, node.contact, r, True);
-    bmp.Width:=r.Right+1;
-    bmp.Height:=r.bottom+1;
+    bmp.Width := r.Right+1;
+    bmp.Height := r.bottom+1;
 //    drawNodeHint(bmp.canvas, node.treenode, r);
     drawHint(bmp.canvas, node.kind, node.groupId, node.contact, r);
 //    TipAdd(bmp, 50);

@@ -406,10 +406,10 @@ end;
 
 procedure TRnQdbFrm.deleteC(Sender: TObject);
 var
-//  i : Integer;
-  na : TNodeArray;
-  n : PVirtualNode;
-  d : Pointer;
+//  i: Integer;
+  na: TNodeArray;
+  n: PVirtualNode;
+  d: Pointer;
 begin
   na := dbTree.GetSortedSelection(True);
   for n in na do

@@ -4,10 +4,7 @@ Under same license
 }
 unit RQ_ICQ;
 {$I RnQConfig.inc}
-
- {$IFDEF COMPILER_14_UP}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
- {$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 interface
  uses

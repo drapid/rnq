@@ -45,11 +45,11 @@ type
     procedure KBBtnClick(Sender: TObject);
    public
  {$IFDEF USE_TKB}
-    tkb : TAdvPopupTouchKeyBoard;
+    tkb: TAdvPopupTouchKeyBoard;
  {$ENDIF USE_TKB}
-    result_uin:integer;
-    exitCode:(EC_enter,EC_cancel);
-    AllowNull : Boolean;
+    result_uin: integer;
+    exitCode: (EC_enter, EC_cancel);
+    AllowNull: Boolean;
   end;
 
 implementation
@@ -67,23 +67,23 @@ case key of
   #27:
     begin
     close;
-    key:=#0;
+    key := #0;
     end;
   #13:
     begin
     okBtnClick(self);
-    key:=#0;
+    key := #0;
     end;
   end;
 end; // keypress
 
 procedure TmsgFrm.okBtnClick(Sender: TObject);
 begin
-if (trim(txtBox.text) = '')and not AllowNull then
-  exit;
-tag:=1;
-exitCode := EC_enter;
-close;
+  if (trim(txtBox.text) = '') and not AllowNull then
+   exit;
+  tag := 1;
+  exitCode := EC_enter;
+  close;
 end;
 
 procedure TmsgFrm.FormPaint(Sender: TObject);

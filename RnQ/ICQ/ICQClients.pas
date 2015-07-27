@@ -8,10 +8,10 @@ interface
    Windows, RDGlobal, ICQContacts;
 
   procedure LoadClientsDefs;
-  procedure getICQClientPicAndDesc( cnt : TICQContact; var pPic : TPicName; var CliDesc : String);
+  procedure getICQClientPicAndDesc(cnt: TICQContact; var pPic: TPicName; var CliDesc: String);
 
 var
-  ClientsDefLoaded : Boolean = false;
+  ClientsDefLoaded: Boolean = false;
 
 implementation
 
@@ -92,18 +92,18 @@ var
 
 procedure LoadClientsDefs;
 var
-  lastIDX : Integer;
+  lastIDX: Integer;
 
-  procedure ParseCaps(var pArr : TArr; pCaps : String);
-    function isHex(const ch : Char) : Boolean;
+  procedure ParseCaps(var pArr: TArr; pCaps: String);
+    function isHex(const ch: Char): Boolean;
     begin
      Result := ((Ch >= '0') and (Ch <= '9')) or
                ((Ch >= 'a') and (Ch <= 'f'))
     end;
   var
-    i : Integer;
-    s : String;
-    idx : Integer;
+    i: Integer;
+    s: String;
+    idx: Integer;
   begin
     idx := -1;
     SetLength(pArr, 0);
@@ -133,15 +133,15 @@ var
 const
   CliCFGFN = 'clients.cfg';
 var
-  Changed : Boolean;
-  sp : TThemeSourcePath;
-  sA : RawByteString;
-  Size : Integer;
-  Encoding : TEncoding;
-  lPath, fn : String;
-  lDef : RawByteString;
-  line : String;
-  v, k : String;
+  Changed: Boolean;
+  sp: TThemeSourcePath;
+  sA: RawByteString;
+  Size: Integer;
+  Encoding: TEncoding;
+  lPath, fn: String;
+  lDef: RawByteString;
+  line: String;
+  v, k: String;
 begin
   Changed := ClientsDefLoaded;
   ClientsDefLoaded := False;
@@ -181,7 +181,7 @@ begin
 
     while lDef>'' do
      begin
-       line:=trim(chopline(lDef));
+       line := trim(chopline(lDef));
        if (line='')or(line[1]=';') then continue;
        if (line[1]='[') and (line[length(line)]=']') then
         begin
@@ -189,9 +189,9 @@ begin
           SetLength(CliDefs, lastIDX + 1);
           continue;
         end;
-      v:=line;
-      k:=AnsiLowerCase(trim(chop('=',v)));
-      v:=trim(v);
+      v := line;
+      k := AnsiLowerCase(trim(chop('=',v)));
+      v := trim(v);
       if k = 'name' then
           CliDefs[lastIDX].name := v
        else
@@ -255,13 +255,13 @@ begin
   updateClients(NIL);
 end;
 
-procedure getClientPicAndDescExt( cnt : TICQContact; var pPic : TPicName; var CliDesc : String);
+procedure getClientPicAndDescExt(cnt: TICQContact; var pPic: TPicName; var CliDesc: String);
  var
-  CapsArr : TArr;
+  CapsArr: TArr;
 
     procedure assignCaps;
      var
-      i, a : Integer;
+      i, a: Integer;
     begin
       a := 0;
       for i in cnt.capabilitiesSm do
@@ -287,10 +287,10 @@ procedure getClientPicAndDescExt( cnt : TICQContact; var pPic : TPicName; var Cl
         end;
     end;
 
-    function isMatch(pDef : TCliDefRec) : Boolean;
-      function CapsInArr(const pS : RawByteString) : Boolean;
+    function isMatch(pDef: TCliDefRec): Boolean;
+      function CapsInArr(const pS: RawByteString): Boolean;
        var
-        i : Integer;
+        i: Integer;
       begin
         Result := False;
         for i := 0 to high(CapsArr) do
@@ -301,7 +301,7 @@ procedure getClientPicAndDescExt( cnt : TICQContact; var pPic : TPicName; var Cl
           end;
       end;
    var
-    i : Integer;
+    i: Integer;
   begin
     Result := false;
     if CB_proto in pDef.checkBy then
@@ -334,15 +334,15 @@ procedure getClientPicAndDescExt( cnt : TICQContact; var pPic : TPicName; var Cl
      end;
     Result := True;
   end;
-  function GetCliName(pIdx : Integer) : String;
-    function EvalVers : String;
+  function GetCliName(pIdx: Integer): String;
+    function EvalVers: String;
      var
-      Res : String;
-        procedure ProcessDCInfo(idx, val : Integer);
+      Res: String;
+        procedure ProcessDCInfo(idx, val: Integer);
         var
-          i, j, p, d : Integer;
-          l, par, par2 : String;
-          parCh : Char;
+          i, j, p, d: Integer;
+          l, par, par2: String;
+          parCh: Char;
         begin
           l := 'dcinfo' + IntToStr(idx) + '(';
           i := Pos(l, Res);
@@ -487,7 +487,7 @@ procedure getClientPicAndDescExt( cnt : TICQContact; var pPic : TPicName; var Cl
 //        CliDefs[pIdx].Version;
     end;
   var
-    i : Integer;
+    i: Integer;
   begin
     Result := CliDefs[pIdx].name;
     i := Pos('%', Result);
@@ -497,8 +497,8 @@ procedure getClientPicAndDescExt( cnt : TICQContact; var pPic : TPicName; var Cl
      end;
   end;
 var
-  i : Integer;
-  s : String;
+  i: Integer;
+  s: String;
 begin
   assignCaps;
   for i := low(CliDefs) to high(CliDefs) do
@@ -517,11 +517,11 @@ end;
 
 
 procedure getClientPicAndDescInt(c:TICQContact;
-              var pPic : TPicName; var CliDesc : String);
+              var pPic: TPicName; var CliDesc: String);
 //function getClientPicFor(c:Tcontact):string;
 var
   s, capa: RawByteString;
-  i:integer;
+  i: integer;
 begin
 
 {  if c=ICQ.myinfo then
@@ -548,7 +548,7 @@ begin
                  end;
     JIMMclientID: if c.lastStatusUpdate_dw = JIMMclientID then
                     begin
-                      pPic:=PIC_CLI_JIMM;
+                      pPic := PIC_CLI_JIMM;
                       CliDesc := 'Jimm';
                     end;
     MIRANDAclientID,
@@ -580,26 +580,26 @@ begin
                   end;
   //  RCQclientID: result := 'RCQ ' + ip2str(c.lastinfoupdate_dw); // Rapid D
     STRICQclientID: begin
-                      pPic:='stricq2';
+                      pPic := 'stricq2';
                       CliDesc := 'StrICQ 2';
                     end;
     end;
   if pPic > '' then exit;
 
- s:=c.extracapabilities;
+ s := c.extracapabilities;
  while s > '' do
   begin
-   capa:=chop(17,0,s);
+   capa := chop(17,0,s);
    if pos(AnsiString('&RQinside'),capa) > 0 then
     begin
       pPic := PIC_CLI_NRQ;
-      CliDesc :='&RQ '+ip2str(str2int(@capa[10]));
+      CliDesc := '&RQ '+ip2str(str2int(@capa[10]));
      exit;
     end else
     if pos(AnsiString('R&Qinside'),capa) > 0 then
     begin
      pPic := PIC_CLI_RNQ;
-       CliDesc :='R&Q ';
+       CliDesc := 'R&Q ';
        if capa[14] = #1 then
          CliDesc := CliDesc + 'lite '
        else if capa[14] = #2 then
@@ -659,24 +659,24 @@ begin
               end;
       end;
     end else
-   if pos(AnsiString('SIM client'),capa) > 0 then
+   if pos(AnsiString('SIM client'), capa) > 0 then
      begin
        pPic := PIC_CLI_SIM;
 //       CliDesc :='SIM '+ip2str(BSwapInt(str2int(@capa[13])));
-       CliDesc :='SIM '+ip2str(icsSwap32(str2int(@capa[13])));
+       CliDesc := 'SIM '+ip2str(icsSwap32(str2int(@capa[13])));
        Exit;
     end else
    if pos(AnsiString('Licq client'), capa) >0 then //4C69637120636C69656E742001670201
      begin
        pPic := PIC_CLI_LICQ;
-       CliDesc :='Licq ';//+ip2str(invert(str2int(@capa[13])));
+       CliDesc := 'Licq ';//+ip2str(invert(str2int(@capa[13])));
        Exit;
      end else
    if pos(AnsiString('mICQ © R.K. '),capa) > 0 then
     begin
       pPic := PIC_CLI_MICQ;
-//      CliDesc :='mICQ '+ip2str(BSwapInt(str2int(@capa[13])));
-      CliDesc :='mICQ '+ip2str(icsSwap32(str2int(@capa[13])));
+//      CliDesc := 'mICQ '+ip2str(BSwapInt(str2int(@capa[13])));
+      CliDesc := 'mICQ '+ip2str(icsSwap32(str2int(@capa[13])));
     end;
 
 //   if pos(ExtCapability[2],capa) > 0 then
@@ -794,17 +794,17 @@ if CAPS_big_macICQ in c.capabilitiesBig then
   end
 else
   case c.proto of
-//    4: result:='ICQ 98';
-//    6: result:='ICQ 99';
+//    4: result := 'ICQ 98';
+//    6: result := 'ICQ 99';
     7: begin
          pPic := PIC_CLI_2000;
-         CliDesc :='ICQ 2000';
+         CliDesc := 'ICQ 2000';
        end;
     8:
       if CAPS_big_Tril in c.capabilitiesBig then
         begin
           pPic := PIC_CLI_TRIL;
-          CliDesc :='Trillian';
+          CliDesc := 'Trillian';
         end
        else
       if CAPS_sm_UTF8 in c.capabilitiesSm then
@@ -826,7 +826,7 @@ else
         end
        else
         begin
-        	pPic :=PIC_CLI_2001;
+        	pPic := PIC_CLI_2001;
           CliDesc := 'ICQ 2001';
         end;
     9:if (CAPS_big_RMBLR in c.capabilitiesBig) then
@@ -861,8 +861,8 @@ else
                  end
             else
              begin
-               pPic :=PIC_CLI_LITE;
-               CliDesc :='ICQ Lite';
+               pPic := PIC_CLI_LITE;
+               CliDesc := 'ICQ Lite';
              end;
     10:
      if CAPS_big_RTF in c.capabilitiesBig then
@@ -874,13 +874,13 @@ else
     11:
       if CAPS_big_qipWM in c.capabilitiesBig then
         begin
-          pPic :=PIC_CLI_QIPPDA;
+          pPic := PIC_CLI_QIPPDA;
           CliDesc := BigCapability[CAPS_big_qipWM].s
         end
        else
       if CAPS_big_qipSym in c.capabilitiesBig then
         begin
-          pPic :=PIC_CLI_QIPPDA;
+          pPic := PIC_CLI_QIPPDA;
           CliDesc := BigCapability[CAPS_big_qipSym].s
         end
       else;
@@ -889,7 +889,7 @@ else
       if CAPS_big_Tril in c.capabilitiesBig then
         begin
           pPic := PIC_CLI_TRIL;
-          CliDesc :='Trillian';
+          CliDesc := 'Trillian';
         end
        else
       if CAPS_sm_UTF8 in c.capabilitiesSm then
@@ -910,18 +910,18 @@ else
           CliDesc := 'ICQ 2002'
         end
        else
-//        result:='ICQ 2000';
+//        result := 'ICQ 2000';
         begin
-          pPic :=Str_unk;
+          pPic := Str_unk;
           CliDesc := getTranslation(Str_unk);
         end;
     end;
 end; // getClientPicAndDescInt
 
 
-procedure getICQClientPicAndDesc( cnt : TICQContact; var pPic : TPicName; var CliDesc : String);
+procedure getICQClientPicAndDesc(cnt: TICQContact; var pPic: TPicName; var CliDesc: String);
 begin
-  pPic:='';
+  pPic := '';
   CliDesc := '';
   if cnt=NIL then exit;
 

@@ -24,7 +24,7 @@ interface
 //  TMsgDlgType = (mtWarning, mtError, mtInformation, mtConfirmation, mtCustom);
 
 
-function  DestRect(const W, H, cw, ch :Integer): TGPRect; overload;
+function  DestRect(const W, H, cw, ch: Integer): TGPRect; overload;
 function  DestRect(const PicSize, DestSize : TGPSize): TGPRect; overload;
 function  BoundsSize(srcSize, maxSize : TSize) : TSize; overload;
 function  BoundsSize(srcCX, srcCY, maxCX, maxCY : Longint) : TSize; overload;
@@ -44,28 +44,28 @@ function FillGradient2(DC: HDC; ARect: TRect; ColorCount: Integer;
 }
 
 
-  function  str2html(const s:string):string;
-  function  strFromHTML(const s:string):string;
+  function  str2html(const s: String): String;
+  function  strFromHTML(const s: String): String;
 
-  function  dateTocoolstr(d:Tdatetime):string;
-  function  datetimeToStrMinMax(dt:Tdatetime; min:Tdatetime; max:Tdatetime):string;
+  function  dateTocoolstr(d: Tdatetime): String;
+  function  datetimeToStrMinMax(dt: Tdatetime; min: Tdatetime; max: Tdatetime): String;
 
-procedure showForm(frm:Tform); overload;
+procedure showForm(frm: Tform); overload;
 
-  function absPath(const fn:string):boolean;
+  function absPath(const fn: String): boolean;
   function ExtractFileNameOnly(const fn : String) : String;
 
-  procedure msgDlg(msg: string; NeedTransl: Boolean; kind: TMsgDlgType; const uid: AnsiString = '');
-  function logTimestamp:string;
+  procedure msgDlg(msg: String; NeedTransl: Boolean; kind: TMsgDlgType; const uid: AnsiString = '');
+  function logTimestamp: String;
 
-  procedure drawTxt(hnd: Thandle; x,y: integer; const s: string);
-  procedure drawTxtL(hnd: Thandle; x,y: integer; const s: pchar; L: integer);
-  function  txtSize(hnd: Thandle; const s: string):Tsize;
-  function  txtSizeL(hnd: Thandle; s: pchar; L: integer):Tsize;
-  function  mousePos:Tpoint;
-  function  into(p:Tpoint; r:Trect):boolean;
+  procedure drawTxt(hnd: Thandle; x, y: integer; const s: String);
+  procedure drawTxtL(hnd: Thandle; x, y: integer; const s: PChar; L: integer);
+  function  txtSize(hnd: Thandle; const s: String): Tsize;
+  function  txtSizeL(hnd: Thandle; s: pchar; L: integer): Tsize;
+  function  mousePos: Tpoint;
+  function  into(p: Tpoint; r: Trect): boolean;
 
- procedure RestartApp;
+  procedure RestartApp;
 
 
  procedure LoadTranslit;
@@ -74,7 +74,7 @@ procedure showForm(frm:Tform); overload;
 function GetShellVersion: Cardinal;
 function TxtFromInt(Int: Integer {3 digits}): String;
 
-  procedure SoundPlay(fn:string); overload;
+  procedure SoundPlay(fn: String); overload;
   procedure SoundPlay(fs: TMemoryStream); overload;
   procedure SoundStop;
   procedure SoundInit;
@@ -90,10 +90,10 @@ function TxtFromInt(Int: Integer {3 digits}): String;
 type
   Pmsg = ^Tmsg;
   Tmsg = record
-     text:string;
+     text: String;
      UID : AnsiString;
-     kind:TMsgDlgType;
-     time:Tdatetime;
+     kind: TMsgDlgType;
+     time: Tdatetime;
 //     cnt : tcontact;
     end;
 
@@ -135,7 +135,7 @@ uses
 //var
 // Soundhndl : HCHANNEL;
 
-function absPath(const fn:string):boolean;
+function absPath(const fn: String): Boolean;
 begin
   result := (length(fn)>2) and ((fn[2]=':') or (fn[1]=PathDelim) and (fn[2]=PathDelim))
 end;
@@ -179,7 +179,7 @@ result:=template(s, [
 end; // str2html
 
 
-procedure msgDlg(msg:string; NeedTransl : Boolean; kind:TMsgDlgType; const uid : AnsiString = '');
+procedure msgDlg(msg: String; NeedTransl : Boolean; kind:TMsgDlgType; const uid : AnsiString = '');
 const
   kind2str:array [TmsgDlgType] of string=('WARNING','ERROR','INFO','','');
 begin

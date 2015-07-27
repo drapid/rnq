@@ -28,10 +28,10 @@ uses
 //  procedure HideFromProcess;
 
 //  function  getSpecialFolder(const what:string):string;
-  function getSpecialFolder(const what: Integer):string;
+  function getSpecialFolder(const what: Integer): String;
 //  function  getURLfromFav(fn:string):string;
-  function  desktopWorkArea:Trect;
-  function  ForceForegroundWindow(hwnd:THandle; doRestore:boolean=TRUE):boolean;
+  function  desktopWorkArea(clHandle: THandle): TRect;
+  function  ForceForegroundWindow(hwnd:THandle; doRestore:boolean=TRUE): Boolean;
 
 //function  getRegion(bmp:TGPBitmap):HRGN;
 function  getRegion(bmp:Tbitmap):HRGN;
@@ -244,9 +244,24 @@ if reg.openKey(keyName, FALSE) then
 reg.free;
 end; // getSpecialFolder}
 
-function desktopWorkArea:Trect;
+function getCLMon(clHanlde: THandle): TMonitor;
+var
+  mon: TMonitor;
 begin
-  SystemParametersInfo(SPI_GETWORKAREA,0,@result,0)
+  mon := Screen.MonitorFromWindow(clHanlde);
+  if (mon = nil) and (Screen.MonitorCount > 0) then mon := Screen.Monitors[0];
+  result := mon;
+end;
+
+function desktopWorkArea(clHandle: THandle): TRect;
+var
+  mon: TMonitor;
+begin
+  mon := getCLMon(clHandle);
+  if (mon = nil) then
+    SystemParametersInfo(SPI_GETWORKAREA, 0, @result, 0)
+  else
+    result := mon.WorkareaRect;
 end;
 
 function ForceForegroundWindow(hwnd:THandle; doRestore:boolean=TRUE):boolean;
