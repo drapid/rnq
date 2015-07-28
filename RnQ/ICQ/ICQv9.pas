@@ -4335,7 +4335,7 @@ begin
       + #$D0#07#02#00#$D2#$0F
       + Length_LE( SNAC_ver($05B9, $03, $00, 00, 02)
                    + word_BEasStr($00)
-                   +word_BEasStr(GetACP)
+                   + word_BEasStr(GetACP)
 //                   + word_BEasStr($FDE9) // UTF8
                    + dword_BEasStr($02)
                    + TLV(3, TLV(META_COMPAD_NICK, StrToUTF8(c.nick))
@@ -6304,10 +6304,10 @@ var
       with cnt do
        begin
          infoUpdatedTo := now;
-        nick:=eventwp.nick;
-        first:=eventwp.first;
-        last:=eventwp.last;
-        email:=eventwp.email;
+        nick := eventwp.nick;
+        first := eventwp.first;
+        last := eventwp.last;
+        email := eventwp.email;
         ICQ6Status := eventwp.StsMSG;
         birth := eventWP.bday;
         gender := eventWP.gender;
@@ -6487,18 +6487,18 @@ case ReplyType of
     begin
 //    inc(ofs,4);
     cont := getICQContact(readINT(snac, ofs));
-    y:=readWORD(snac, ofs);
-    m:=readBYTE(snac, ofs);
-    d:=readBYTE(snac, ofs);
+    y := readWORD(snac, ofs);
+    m := readBYTE(snac, ofs);
+    d := readBYTE(snac, ofs);
     if not tryEncodeDate(y,m,d, eventTime) then
       eventTime := 0;
-    d:=readBYTE(snac, ofs); // hours
-    m:=readBYTE(snac, ofs);
-    eventTime:=eventTime+EncodeTime(d,m,0,0)+GMToffset0;
-    msgtype:=readBYTE(snac, ofs);
-    msgflags:=readBYTE(snac, ofs);
-    msgflags:= msgflags or IF_offline;
-    msg:=getWNTS(snac, ofs);
+    d := readBYTE(snac, ofs); // hours
+    m := readBYTE(snac, ofs);
+    eventTime := eventTime+EncodeTime(d,m,0,0)+GMToffset0;
+    msgtype := readBYTE(snac, ofs);
+    msgflags := readBYTE(snac, ofs);
+    msgflags := msgflags or IF_offline;
+    msg := getWNTS(snac, ofs);
     eventContact := cont;
     if msgtype=MTYPE_PLUGIN then
       parseGCdata(copy(snac,ofs,length(snac)), TRUE)
@@ -6559,7 +6559,7 @@ case ReplyType of
            inc(ofs, $1D); // Unknown data
             readBEWORD(snac, ofs); // following data size
            extractWP_CP;
-           eventInt:=0;
+           eventInt := 0;
            eventContact := cont;
            if y = $B40F then
              notifyListeners(IE_wpEnd)
@@ -6569,14 +6569,14 @@ case ReplyType of
         else
           if refs[ref].kind = REF_wp then
             begin
-            eventInt:=-1;
+            eventInt := -1;
             notifyListeners(IE_wpEnd);
             end
           else
             begin
             if Assigned(cont) then
-              cont.nodb:=TRUE;
-            eventError:=EC_badContact;
+              cont.nodb := TRUE;
+            eventError := EC_badContact;
             eventContact := cont;
             notifyListeners(IE_error);
             end;
@@ -6600,8 +6600,8 @@ case ReplyType of
           extractWP;
           if Assigned(cont) then
           begin
-            cont.nodb:=FALSE;
-            cont.infoUpdatedTo:=now;
+            cont.nodb := FALSE;
+            cont.infoUpdatedTo := now;
             if cont.display = cont.UID then
               if cont.nick > '' then
                 cont.fDisplay := '';
@@ -6624,14 +6624,14 @@ case ReplyType of
         else
           if refs[ref].kind = REF_wp then
             begin
-            eventInt:=-1;
+            eventInt :=-1;
             notifyListeners(IE_wpEnd);
             end
           else
             begin
             if Assigned(cont) then
-              cont.nodb:=TRUE;
-            eventError:=EC_badContact;
+              cont.nodb := TRUE;
+            eventError := EC_badContact;
             eventContact := cont;
             notifyListeners(IE_error);
             end;
@@ -6639,13 +6639,13 @@ case ReplyType of
       SRV_LAST_USER_FOUND:   // last wp result
         begin
           if Assigned(cont) then
-            cont.infoUpdatedTo:=now;
+            cont.infoUpdatedTo := now;
 //        if ord(snac[ofs+2])=$A then
           if readBYTE(snac, ofs)=$A then
            begin
 //          inc(ofs,3);
             extractWP;
-            eventInt:=readINT(snac, ofs);
+            eventInt := readINT(snac, ofs);
            end
           else
            eventInt:=-1;
