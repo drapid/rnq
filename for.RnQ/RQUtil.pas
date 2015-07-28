@@ -50,7 +50,7 @@ function FillGradient2(DC: HDC; ARect: TRect; ColorCount: Integer;
   function  dateTocoolstr(d: Tdatetime): String;
   function  datetimeToStrMinMax(dt: Tdatetime; min: Tdatetime; max: Tdatetime): String;
 
-procedure showForm(frm: Tform); overload;
+  procedure showForm(frm: Tform); overload;
 
   function absPath(const fn: String): boolean;
   function ExtractFileNameOnly(const fn : String) : String;
@@ -68,11 +68,11 @@ procedure showForm(frm: Tform); overload;
   procedure RestartApp;
 
 
- procedure LoadTranslit;
- procedure UnLoadTranslit;
- function  Translit(const s : String) : String;
-function GetShellVersion: Cardinal;
-function TxtFromInt(Int: Integer {3 digits}): String;
+  procedure LoadTranslit;
+  procedure UnLoadTranslit;
+  function  Translit(const s : String) : String;
+  function GetShellVersion: Cardinal;
+  function TxtFromInt(Int: Integer {3 digits}): String;
 
   procedure SoundPlay(fn: String); overload;
   procedure SoundPlay(fs: TMemoryStream); overload;
@@ -86,6 +86,12 @@ function TxtFromInt(Int: Integer {3 digits}): String;
   function ThemeControl(AControl: TControl): Boolean;
  {$ENDIF DELPHI9_UP}
 //  function DelayedFailureHook(dliNotify: dliNotification; pdli: PDelayLoadInfo): Pointer; stdcall;
+  procedure unroundWindow(hnd:Thandle); {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+{
+  procedure assignImgIco(img: Timage; ico: Ticon);
+  procedure assignImgBmp(img: Timage; bmp: Tbitmap);
+}
+//  procedure assignImgPic(img: Timage; picName: String);
 
 type
   Pmsg = ^Tmsg;
@@ -953,6 +959,41 @@ function logTimestamp: string;
 begin result:=formatDatetime(timeformat.log, now)+'> ' end;
 
 
+procedure unroundWindow(hnd:Thandle); {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+begin SetWindowRgn(hnd,0,True) end;
 
+(*
+procedure assignImgPic(img: Timage; picName: String);
+//var
+//  bmp:Tbitmap;
+begin
+{ theme.GetPic(picName, bmp);
+ img.Picture.Bitmap.Destroy;
+ img.Picture.Bitmap.assign(bmp);}
+//  theme.GetPic(picName, img.Picture.Bitmap);
+ //img.Picture.Bitmap.FreeImage;
+// img.Transparent:=bmp.Transparent;
+ img.Transparent:=True;
+// img.height:=bmp.height;
+// img.width:=bmp.width;
+// bmp.Free;
+end; // assignImgBmp
+procedure assignImgBmp(img: Timage; bmp: Tbitmap);
+begin
+  img.Picture.Bitmap.Destroy;
+  img.Picture.Bitmap.assign(bmp);
+  //img.Picture.Bitmap.FreeImage;
+  img.Transparent := bmp.Transparent;
+  img.height := bmp.height;
+  img.width := bmp.width;
+end; // assignImgBmp
+
+procedure assignImgIco(img: Timage; ico: Ticon);
+begin
+  img.Picture.icon.assign(ico);
+  img.width := ico.width*2;
+  img.height := ico.height*2;
+end; // assignImgIco
+*)
 
 end.

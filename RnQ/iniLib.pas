@@ -33,8 +33,6 @@ procedure UnloadAutomessages;
 procedure loadMacros(zp: TZipFile);
 //procedure saveMacros;
 
-//procedure testBall;
-//procedure testNTLM;
 
 implementation
 

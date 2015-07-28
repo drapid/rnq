@@ -406,7 +406,7 @@ type
     function  getContact(const UID : TUID) : TRnQContact; Virtual; Abstract;
 //    function  ProtoName : String; Virtual; Abstract;
     function  ProtoName : String; inline;
-    function  ProtoElem : TRnQProtocol; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+    function  ProtoElem : TRnQProtocol; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
     procedure GetPrefs(var pp : TRnQPref); Virtual;
     procedure SetPrefs(pp : TRnQPref); Virtual;
     procedure ResetPrefs; Virtual;

@@ -49,11 +49,7 @@ function  isAbort(const pluginReply: AnsiString): boolean;
 function  findInAvailableUsers(const uin: TUID): integer;
 procedure setupChatButtons;
 procedure reloadCurrentLang();
-{
-procedure assignImgIco(img: Timage; ico: Ticon);
-procedure assignImgBmp(img: Timage; bmp: Tbitmap);
-}
-//procedure assignImgPic(img: Timage; picName: String);
+
 function  showUsers(var pass: String): TUID;
 function  CheckAccPas(const uid: TUID; const db: String; var pPass: String): Boolean;
 procedure clearAvailableUsers;
@@ -161,7 +157,7 @@ procedure applyDocking(Undock: Boolean = false);
 function  whatStatusPanel(statusbar: Tstatusbar; x: integer): integer;
 // graphic
 procedure wallpaperize(canvas: Tcanvas); overload;
-procedure wallpaperize(DC: THandle; r: TRect); {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP} overload;
+procedure wallpaperize(DC: THandle; r: TRect); {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE} overload;
 // file management
 function  delSUBtree(subPath: string): boolean;
 function  deltree(path: string): boolean;
@@ -3379,44 +3375,44 @@ begin result:=floatToStrF(q/(1024*1024),ffFixed,20,1)+getTranslation('Mb') end;
 //function eventName(ev:integer):string;
 //begin result:=getTranslation(event2str[ev]) end;
 
-function setRosterAnimation(v:boolean):boolean;
+function setRosterAnimation(v: boolean): boolean;
 begin
 with RnQmain.roster.TreeOptions do
   begin
-  result:=toAnimatedToggle in animationoptions;
+  result := toAnimatedToggle in animationoptions;
   if v then
-    animationoptions:=[toAnimatedToggle]
+    animationoptions := [toAnimatedToggle]
   else
-    animationoptions:=[]
+    animationoptions := []
   end;
 end; // setRosterAnimation
 
-procedure wallpaperize(canvas:Tcanvas); {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+procedure wallpaperize(canvas: Tcanvas); {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
  if texturizedWindows then
   theme.Draw_wallpaper(canvas.Handle, canvas.ClipRect);
 end; // wallpaperize
 
-procedure wallpaperize(DC:THandle; r:TRect); {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+procedure wallpaperize(DC: THandle; r: TRect); {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
  if texturizedWindows then
   theme.Draw_wallpaper(DC, r);
 end; // wallpaperize
 
-procedure applyUserCharset(f:Tfont);
+procedure applyUserCharset(f: Tfont);
 begin if userCharset >= 0 then f.charset:=usercharset end;
 
-function getLeadingInMsg(const s:string; ofs:integer=1):string;
+function getLeadingInMsg(const s: string; ofs: integer=1): string;
 var
-  i:integer;
+  i: integer;
 begin
-i:=0;
-while (i<length(s)) and (s[i+ofs] in ['>',' ']) do
-  inc(i);
-result:=copy(s,ofs,i);
+  i := 0;
+  while (i<length(s)) and (s[i+ofs] in ['>',' ']) do
+    inc(i);
+  result := copy(s,ofs,i);
 end; // getLeadingInMsg
 
-function  fileIncomePath(cnt : TRnQContact) : String;
+function  fileIncomePath(cnt: TRnQContact): String;
 begin
   Result := template(FileSavePath,[
                     '%userpath%', ExcludeTrailingPathDelimiter(AccPath),
@@ -3427,42 +3423,42 @@ begin
 
 end;
 
-procedure applyCommonSettings(c:Tcomponent);
+procedure applyCommonSettings(c: Tcomponent);
 var
-  i, i1:integer;
+  i, i1: integer;
 begin
   if not Assigned(c) then
     Exit;
   for i:=c.componentCount-1 downto 0 do
     applyCommonSettings(c.components[i]);
-if c is Tpopupmenu then
-//    if not (Tpopupmenu(c).Items.Items[i] is TRQMenuItem) then
- if c.Name <> 'visMenu' then
- begin
-  Tpopupmenu(c).OwnerDraw := True;
-  for i := 0 to Tpopupmenu(c).Items.Count-1 do
-   if not (Tpopupmenu(c).Items.Items[i] is TRQMenuItem) then
-    with Tpopupmenu(c).Items.Items[i] do
-    begin
-      OnAdvancedDrawItem:=RnQmain.menuDrawitem;
-      onMeasureItem:=RnQmain.menuMeasureItem;
-//      onMeasureItem := TRQMenuItem.MeasureItem;
-      for i1 := 0 to Tpopupmenu(c).Items.Items[i].Count-1 do
-      if not (Tpopupmenu(c).Items.Items[i].Items[i1] is TRQMenuItem) then
-       with Tpopupmenu(c).Items.Items[i].Items[i1] do
-        begin
-         OnAdvancedDrawItem:=RnQmain.menuDrawitem;
-         onMeasureItem:=RnQmain.menuMeasureItem;
-        end;
-    end;
- end;
- if c is TWinControl then
- begin
+  if c is Tpopupmenu then
+  //    if not (Tpopupmenu(c).Items.Items[i] is TRQMenuItem) then
+   if c.Name <> 'visMenu' then
+   begin
+    Tpopupmenu(c).OwnerDraw := True;
+    for i := 0 to Tpopupmenu(c).Items.Count-1 do
+     if not (Tpopupmenu(c).Items.Items[i] is TRQMenuItem) then
+      with Tpopupmenu(c).Items.Items[i] do
+      begin
+        OnAdvancedDrawItem:=RnQmain.menuDrawitem;
+        onMeasureItem:=RnQmain.menuMeasureItem;
+  //      onMeasureItem := TRQMenuItem.MeasureItem;
+        for i1 := 0 to Tpopupmenu(c).Items.Items[i].Count-1 do
+        if not (Tpopupmenu(c).Items.Items[i].Items[i1] is TRQMenuItem) then
+         with Tpopupmenu(c).Items.Items[i].Items[i1] do
+          begin
+           OnAdvancedDrawItem:=RnQmain.menuDrawitem;
+           onMeasureItem:=RnQmain.menuMeasureItem;
+          end;
+      end;
+   end;
+  if c is TWinControl then
+   begin
 //   TControl(c).
 //   Font.Name := 'Tahoma'; //'Arial';
 //   Font.Charset := RUSSIAN_CHARSET;
- end;
-  if c is Tcontrol then
+   end;
+   if c is Tcontrol then
     ApplyThemeComponent(Tcontrol(c));
 {  if c is TAction then
   begin
@@ -3472,7 +3468,7 @@ end; // applyCommonSettings
 
 procedure clearAvailableUsers;
 var
-  i : Integer;
+  i: Integer;
 begin
   for i := 0 to Length(availableUsers)-1 do
    begin
@@ -3483,30 +3479,30 @@ begin
      SetLength(availableUsers[i].uin, 0);
      SetLength(availableUsers[i].Prefix, 0);
    end;
-  setlength(availableUsers,0);
+  setlength(availableUsers, 0);
 end;
 
 procedure refreshAvailableUsers;
-  function getNick_SSI(protoClass : TRnQProtoClass; path:string;
-                       var pSSI : Boolean; uid : TUID;
-                       var nick : String; var isEncripted : Boolean):Boolean;
-      function yesno(const l : String):boolean;
-      begin result:=LowerCase(l)='yes' end;
+  function getNick_SSI(protoClass: TRnQProtoClass; path: string;
+                       var pSSI: Boolean; uid: TUID;
+                       var nick: String; var isEncripted: Boolean): Boolean;
+      function yesno(const l: String): boolean;
+      begin result := LowerCase(l)='yes' end;
   var
-    db:TRnQCList;
-    ini:TStrings;
-    zf : TZipFile;
-    s : AnsiString;
-    cf:string;
-    i : Integer;
-//    cnt : TRnQcontact;
-    save : Boolean;
+    db: TRnQCList;
+    ini: TStrings;
+    zf: TZipFile;
+    s: AnsiString;
+    cf: string;
+    i: Integer;
+//    cnt: TRnQcontact;
+    save: Boolean;
   begin
-    result:= False;
+    result := False;
     nick := '';
     save := false;
     isEncripted := False;
-    ini:=TstringList.create;
+    ini := TstringList.create;
     db := nil;
     pSSI := masterUseSSI;
     cf := path+ PathDelim +dbFileName + '5';
@@ -3526,8 +3522,8 @@ procedure refreshAvailableUsers;
               begin
                ini.Text := zf.data[i];
                s := ini.values['account-name'];
-               nick:= unUTF( s );
-               pSSI  := yesno(ini.Values['use-ssi']);
+               nick := unUTF( s );
+               pSSI := yesno(ini.Values['use-ssi']);
               end;
             end;
            if not Result then
@@ -3573,7 +3569,7 @@ procedure refreshAvailableUsers;
       end;
     if not result then
      begin
-      cf:=path+ PathDelim + configFileName;
+      cf := path+ PathDelim + configFileName;
       if fileExists(cf) then
         begin
           save := True;
@@ -3640,13 +3636,13 @@ procedure refreshAvailableUsers;
     ini.free;
   end; // getNick
 
-  procedure addAvailableUser(protoClass : TRnQProtoClass; UID : TUID;
-          pPath, pPrefix:string);
+  procedure addAvailableUser(protoClass: TRnQProtoClass; UID: TUID;
+          pPath, pPrefix: string);
   var
     n: integer;
   begin
-    n:=length(availableUsers);
-    setlength(availableUsers,n+1);
+    n := length(availableUsers);
+    setlength(availableUsers, n+1);
 //    with availableUsers[n] do
     begin
 //      availableUsers[n].uinStr:=extractFileName(pPath);
@@ -3674,16 +3670,16 @@ procedure refreshAvailableUsers;
     end;
   end; // addAvailableUser
 
-  procedure searchIn(path:string; Prefix : String = '');
+  procedure searchIn(path: string; Prefix : String = '');
 
   var
 //  code:integer;
-    sr:TsearchRec;
+    sr: TsearchRec;
 //   i:integer;
-    s : String;
-    s2 : TUID;
+    s: String;
+    s2: TUID;
 //   prCl : TRnQProtoHelper;
-    prCl : TRnQProtoClass;
+    prCl: TRnQProtoClass;
   begin
   path := includeTrailingPathDelimiter(path);
   ZeroMemory(@sr.FindData, SizeOf(TWin32FindData));
@@ -3714,10 +3710,10 @@ procedure refreshAvailableUsers;
   end;
 
 var
-  s:string;
-  i, j,n:integer;
-  found : Boolean;
-  ss : TUID;
+  s: string;
+  i, j, n: integer;
+  found: Boolean;
+  ss: TUID;
 //  uid : AnsiString;
 begin
   clearAvailableUsers;
@@ -3733,7 +3729,7 @@ begin
    if LowerCase(s) <> LowerCase(cmdLinePar.userPath) then
      searchIn(cmdLinePar.userPath, 'User\');
 
-  s:=usersPath;
+  s := usersPath;
   while s>'' do
     searchIn(chop(';',s), 'Users path\');
   if cmdLinePar.startUser > '' then
@@ -3753,44 +3749,13 @@ begin
      end;
    end;
 
- n:=length(availableUsers);
+ n := length(availableUsers);
  for i:=0 to n-2 do
   for j:=i+1 to n-1 do
     swap4(availableUsers[i], availableUsers[j], sizeOf(availableUsers[i]),
       availableUsers[i].uin > availableUsers[j].uin );
 end; // refreshAvailableUsers
 
-procedure assignImgPic(img:Timage; picName : String);
-//var
-//  bmp:Tbitmap;
-begin
-{ theme.GetPic(picName, bmp);
- img.Picture.Bitmap.Destroy;
- img.Picture.Bitmap.assign(bmp);}
-//  theme.GetPic(picName, img.Picture.Bitmap);
- //img.Picture.Bitmap.FreeImage;
-// img.Transparent:=bmp.Transparent;
- img.Transparent:=True;
-// img.height:=bmp.height;
-// img.width:=bmp.width;
-// bmp.Free;
-end; // assignImgBmp
-procedure assignImgBmp(img:Timage; bmp:Tbitmap);
-begin
-img.Picture.Bitmap.Destroy;
-img.Picture.Bitmap.assign(bmp);
-//img.Picture.Bitmap.FreeImage;
-img.Transparent:=bmp.Transparent;
-img.height:=bmp.height;
-img.width:=bmp.width;
-end; // assignImgBmp
-
-procedure assignImgIco(img:Timage; ico:Ticon);
-begin
-img.Picture.icon.assign(ico);
-img.width:=ico.width*2;
-img.height:=ico.height*2;
-end; // assignImgIco
 
 procedure mainfrmHandleUpdate;
 var
@@ -3903,9 +3868,6 @@ end; // findInAvailableUsers
 
 function isAbort(const pluginReply: AnsiString):boolean;
 begin result:= (pluginReply>'') and (Byte(pluginReply[1])=PM_ABORT) end;
-
-procedure unroundWindow(hnd:Thandle); {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
-begin SetWindowRgn(hnd,0,True) end;
 
 procedure drawHint(cnv:Tcanvas; kind : Integer;
                    groupid : integer; c : TRnQcontact;

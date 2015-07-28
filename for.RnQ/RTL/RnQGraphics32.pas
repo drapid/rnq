@@ -144,13 +144,13 @@ type
    procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR, SrcR: TGPRect;
                        pEnabled: Boolean= True; isCopy: Boolean = false); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 
-   function  loadPic(const fn:string; var bmp : TRnQBitmap; idx: Integer = 0): Boolean; Overload;
+   function  loadPic(const fn: string; var bmp: TRnQBitmap; idx: Integer = 0): Boolean; Overload;
    function  loadPic(var str: TStream; var bmp: TRnQBitmap; idx: Integer = 0; ff: TPAFormat = PA_FORMAT_UNK; name: string = ''): Boolean; Overload;
  {$IFDEF RNQ}
-   function  loadPic(pt: TThemeSourcePath; fn : string; var bmp:TRnQBitmap; idx : Integer = 0):boolean; overload;
+   function  loadPic(pt: TThemeSourcePath; fn: string; var bmp: TRnQBitmap; idx: Integer = 0): boolean; overload;
  {$ENDIF RNQ}
 
-   function  loadPic2(const fn : string; var bmp : TRnQBitmap):boolean; // if not loaded then bmp is nil!
+   function  loadPic2(const fn: string; var bmp: TRnQBitmap): boolean; // if not loaded then bmp is nil!
 
 {   //function  loadPic(fn:string; bmp:Tbitmap):boolean; overload;
     function  loadPic(fn:string; bmp:Tbitmap; idx : Integer = 0):boolean; overload;
@@ -162,33 +162,33 @@ type
     //procedure loadIco(fn:string; var result:Ticon);
 }
 
-    function  isSupportedPicFile(fn:string):boolean;
-    function  getSupPicExts:String;
+    function  isSupportedPicFile(fn: string): boolean;
+    function  getSupPicExts: String;
     function  DetectFileFormatStream(str: TStream): TPAFormat;
-  procedure  StretchPic(var bmp:TBitmap; maxH, maxW : Integer); overload;
-  procedure  StretchPic(var bmp:TRnQBitmap; maxH, maxW : Integer); overload;
+  procedure  StretchPic(var bmp: TBitmap; maxH, maxW: Integer); overload;
+  procedure  StretchPic(var bmp: TRnQBitmap; maxH, maxW: Integer); overload;
 
   procedure SmoothRotate(var Src, Dst: TBitmap; cx, cy: Integer; Angle: Extended);
 
   procedure FillGradient(DC: HDC; ARect: TRect; //ColorCount: Integer;
-    StartColor, EndColor: Cardinal; ADirection: TGradientDirection; Alpha : Byte = $FF);
+    StartColor, EndColor: Cardinal; ADirection: TGradientDirection; Alpha: Byte = $FF);
   {$IFNDEF DELPHI9_UP}
   function WinGradientFill(DC: HDC; Vertex: PTriVertex; NumVertex: ULONG; Mesh: Pointer; NumMesh, Mode: ULONG): BOOL; stdcall;
   {$ENDIF DELPHI9_UP}
-  procedure FillRoundRectangle(DC: HDC; ARect: TRect; Clr : Cardinal; rnd : Word);
+  procedure FillRoundRectangle(DC: HDC; ARect: TRect; Clr: Cardinal; rnd: Word);
 //  Procedure FillRectangle(DC: HDC; ARect: TRect; Clr : Cardinal);
-  procedure DrawTextTransparent(DC : HDC; x, y : Integer; Text : String; Font : TFont; Alpha : Byte; fmt : Integer);
+  procedure DrawTextTransparent(DC: HDC; x, y: Integer; Text: String; Font: TFont; Alpha: Byte; fmt: Integer);
  {$IFDEF DELPHI9_UP}
-  procedure DrawText32(DC : HDC; TextRect : TRect; Text : String; Font : TFont; TextFlags : Cardinal);
+  procedure DrawText32(DC: HDC; TextRect: TRect; Text: String; Font: TFont; TextFlags: Cardinal);
  {$ENDIF DELPHI9_UP}
  {$IFNDEF NO_WIN98}
-  procedure DrawTransparentBitmap(dc:HDC;DrawBitmap: HBitmap; DestBnd:TGPRect; srcW, srcH : Integer; cTransparentColor:COLORREF);
+  procedure DrawTransparentBitmap(dc: HDC; DrawBitmap: HBitmap; DestBnd: TGPRect; srcW, srcH: Integer; cTransparentColor: COLORREF);
  {$ENDIF NO_WIN98}
 
   function wbmp2bmp(Stream: TStream; var pic: TBitmap; CalcOnly: Boolean = False): TSize;
 
-  function  createBitmap(dx,dy:integer):Tbitmap; overload;
-  function  createBitmap(cnv:Tcanvas):Tbitmap; overload;
+  function  createBitmap(dx, dy: integer): Tbitmap; overload;
+  function  createBitmap(cnv: Tcanvas): Tbitmap; overload;
 
 // Color
 type
@@ -197,23 +197,23 @@ type
 //  function GPtranspPColor(cl : Cardinal): Cardinal;
 //  function transpColor(cl : TColor; alpha : Byte): TColor;
   function gpColorFromAlphaColor(Alpha: Byte; Color: TColor): Cardinal;
-  function  color2hls(clr:Tcolor):Thls;
-  function  hls2color(hls:Thls):Tcolor;
-  function  addLuminosity(clr:Tcolor; q:real):Tcolor;
-  function  MidColor(clr1, clr2 : Cardinal) : Cardinal; overLoad;
-  function  MidColor(const clr1, clr2 : Cardinal; koef : Double) : Cardinal; overLoad;
-  function  blend(c1,c2:Tcolor; left:real):Tcolor;
-//function  traspBmp1(bmp:Tbitmap; bg:Tcolor; transpLevel:integer):Tbitmap;
+  function  color2hls(clr: Tcolor): Thls;
+  function  hls2color(hls: Thls):  Tcolor;
+  function  addLuminosity(clr: Tcolor; q:real): Tcolor;
+  function  MidColor(clr1, clr2: Cardinal) : Cardinal; overLoad;
+  function  MidColor(const clr1, clr2: Cardinal; koef: Double): Cardinal; overLoad;
+  function  blend(c1,c2: Tcolor; left: real): Tcolor;
+//function  traspBmp1(bmp: Tbitmap; bg: Tcolor; transpLevel: integer): Tbitmap;
 
 // convert
-  function pic2ico(pic:Tbitmap):Ticon;
-  function bmp2ico2(bitmap:Tbitmap):Ticon;
-  function bmp2ico3(bitmap:Tbitmap):Ticon;
-  function bmp2ico4M(bitmap:Tbitmap):hicon;
-  function bmp2ico32(bitmap:Tbitmap):hicon;
-  function bmp2ico(bitmap:Tbitmap):Ticon;
-  procedure ico2bmp(ico : TIcon; bmp : TBitmap);
-  procedure ico2bmp2(pIcon : HIcon; bmp : TBitmap);
+  function pic2ico(pic: Tbitmap): Ticon;
+  function bmp2ico2(bitmap: Tbitmap): Ticon;
+  function bmp2ico3(bitmap: Tbitmap): Ticon;
+  function bmp2ico4M(bitmap: Tbitmap): hicon;
+  function bmp2ico32(bitmap: Tbitmap): hicon;
+  function bmp2ico(bitmap: Tbitmap): Ticon;
+  procedure ico2bmp(ico: TIcon; bmp: TBitmap);
+  procedure ico2bmp2(pIcon: HIcon; bmp: TBitmap);
 
 type
   TRnQAni = TRnQBitmap;
@@ -265,18 +265,18 @@ type
 const
   JPEG_HDR  = RawByteString(#$FF#$D8#$FF#$E0);
   JPEG_HDR2 = RawByteString(#$FF#$D8#$FF#$E1);
-  TIF_HDR : array [0 .. 3] of AnsiChar = #$49#$49#$2A#$00;
-  TIF_HDR2: array [0 .. 3] of AnsiChar = #$4D#$4D#$00#$2A;
-  CLSID_WICWEBPDecoder : TGUID = '{C747A836-4884-47B8-8544-002C41BD63D2}';
+  TIF_HDR : array [0..3] of AnsiChar = #$49#$49#$2A#$00;
+  TIF_HDR2: array [0..3] of AnsiChar = #$4D#$4D#$00#$2A;
+  CLSID_WICWEBPDecoder: TGUID = '{C747A836-4884-47B8-8544-002C41BD63D2}';
 
 const
- IID_IPicture  : TGUID = '{7BF80980-BF32-101A-8BBB-00AA00300CAB}';
+ IID_IPicture: TGUID = '{7BF80980-BF32-101A-8BBB-00AA00300CAB}';
 
 var
- supExts : array[0..9] of string = ('bmp', 'wbmp', 'wbm', 'ico','icon',
+ supExts: array[0..9] of string = ('bmp', 'wbmp', 'wbm', 'ico','icon',
                  'gif', 'png', 'jpg', 'jpe', 'jpeg');//, 'tif', 'dll')
- isWEBPSupport : Boolean;
- isTIFFSupport : Boolean;
+ isWEBPSupport: Boolean;
+ isTIFFSupport: Boolean;
 
   var
     ThePalette: HPalette;       {the rainbow palette for 256 colors}
@@ -285,14 +285,14 @@ var
 {----------------TAniFrame.Create}
 constructor TAniFrame.Create;
 begin
-inherited Create;
+  inherited Create;
 end;
 
 constructor TAniFrame.CreateCopy(Item: TAniFrame);
 begin
-inherited Create;
-System.Move(Item.frLeft, frLeft, DWord(@TheEnd)-DWord(@frLeft));
-IsCopy := True;
+  inherited Create;
+  System.Move(Item.frLeft, frLeft, DWord(@TheEnd)-DWord(@frLeft));
+  IsCopy := True;
 end;
 
 {----------------TAniFrame.Destroy}
@@ -305,8 +305,8 @@ end;}
 {----------------TAniFrameList.GetFrame}
 function TAniFrameList.GetFrame(I: integer): TAniFrame;
 begin
-Assert((I <= Count) and (I >= 1   ), 'Frame index out of range');
-Result := TAniFrame(Items[I-1]);
+  Assert((I <= Count) and (I >= 1   ), 'Frame index out of range');
+  Result := TAniFrame(Items[I-1]);
 end;
 
 destructor  TRnQBitmap.Destroy;
@@ -380,7 +380,7 @@ begin
   fHeight := Heigth;
 end;
 
-constructor TRnQBitmap.Create(hi : HICON);
+constructor TRnQBitmap.Create(hi: HICON);
 begin
   Create;
   fHI := CopyIcon(hi);
@@ -388,22 +388,22 @@ begin
   fHeight := icon_size;
 end;
 
-constructor TRnQBitmap.Create(fn : String);
+constructor TRnQBitmap.Create(fn: String);
 begin
   Create;
   loadPic(fn, Self);
 end;
 
-function  TRnQBitmap.GetWidth  : Integer;
+function  TRnQBitmap.GetWidth: Integer;
 begin
   Result := fWidth;
 end;
-function  TRnQBitmap.GetHeight : Integer;
+function  TRnQBitmap.GetHeight: Integer;
 begin
   Result := fHeight;
 end;
 
-procedure InitTransAlpha(bmp : TBitmap);
+procedure InitTransAlpha(bmp: TBitmap);
 var
  Scan32: pColor32Array;
  I, X: Cardinal;

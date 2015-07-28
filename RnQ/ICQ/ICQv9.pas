@@ -542,7 +542,7 @@ type
 
     // manage contacts
 //    function  validUid(var uin:TUID):boolean;  inline;
-//    function  validUid1(const uin:TUID):boolean;  {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+//    function  validUid1(const uin:TUID):boolean;  {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 //    class function  isValidUid(var uin:TUID):boolean; Static;
     procedure AddToList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure RemFromList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}

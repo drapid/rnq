@@ -6089,7 +6089,7 @@ begin
   else if NewAlpha > 255 then NewAlpha := 255;
   Result := (Color32 and $00FFFFFF) or (TColor32(NewAlpha) shl 24);
 end;}
-  function SetAlpha(Color32: TColor32; NewAlpha: Byte): TColor32; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function SetAlpha(Color32: TColor32; NewAlpha: Byte): TColor32; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
     begin
       Result := (Color32 and $00FFFFFF) or (NewAlpha shl 24);
     end;

@@ -37,9 +37,9 @@ type
 
     langFN0, langFN1 : String;
 //    langIsUTF : Boolean;
-    function TranslateString(const Str : AnsiString): String; overload;{$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}// overload;//cdecl;
+    function TranslateString(const Str : AnsiString): String; overload;{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;
  {$IFDEF UNICODE}
-    function TranslateString(const Str : UnicodeString): String; overload;{$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}// overload;//cdecl;
+    function TranslateString(const Str : UnicodeString): String; overload;{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;
  {$ENDIF UNICODE}
     Procedure LangAddStr(const k : String; const v : String; Mas : TLangList);
     function  fileIsUTF(fn : String) : Boolean;

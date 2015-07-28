@@ -301,9 +301,9 @@ begin
 end;
 
 
-procedure Tgroups.changeId(oldId, newId:integer; db:TRnQCList);
+procedure Tgroups.changeId(oldId, newId: integer; db: TRnQCList);
 var
-  i:integer;
+  i: integer;
 begin
 if exists(newId) then
   delete(oldId)
@@ -316,11 +316,11 @@ for i:=0 to TList(db).count-1 do
       group:=newId;
 end; // changeId
 
-function Tgroups.count:integer;
-begin result:=length(a) end;
+function Tgroups.count: integer;
+begin result := length(a) end;
 
-function Tgroups.last:Pgroup;
-begin result:=@a[length(a)-1] end;
+function Tgroups.last: Pgroup;
+begin result := @a[length(a)-1] end;
 
 { Tgroup }
 

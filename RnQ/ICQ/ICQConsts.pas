@@ -1047,7 +1047,7 @@ var
    )}
    );
 
-  function CAPS_sm2big(i: byte): RawByteString; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+  function CAPS_sm2big(i: byte): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 var
 //   ExtStsStrings : array[low(aXStatus)..High(aXStatus),0..1] of string;
 //   ExtStsStrings : array[low(XStatus6)..High(XStatus6)] of string;
@@ -1100,7 +1100,7 @@ const
 
 implementation
 
-  function CAPS_sm2big(i: byte): RawByteString; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+  function CAPS_sm2big(i: byte): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   begin
    result := CapsMakeBig1 + CAPSSmall[i].v + CapsMakeBig2;
   end;

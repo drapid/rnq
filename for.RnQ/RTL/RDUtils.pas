@@ -11,7 +11,7 @@ interface
     sysutils, classes, graphics, forms, types, RDGlobal;
 
 function  IfThen(AValue: Boolean; const ATrue: Integer; const AFalse: Integer = 0): Integer; overload;
-function  IfThen(AValue: Boolean; const s1, s2: RawByteString): RawByteString; overload; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+function  IfThen(AValue: Boolean; const s1, s2: RawByteString): RawByteString; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 
 function  packArray(a: array of Integer; zero: Integer): TintegerDynArray;
 function  compareInt(a, b: Integer): Smallint; OverLoad;
@@ -19,8 +19,8 @@ function  compareInt(a, b: int64): Smallint; OverLoad;
 function  CompareDate(a, b: TDateTime): Smallint;
 function  boundInt(var i: Integer; min, max: Integer): Integer;
 function  bound(i: Integer; min, max: Integer): Integer;
-function  within(pt: Tpoint; x, y, w, h: Integer): boolean; overload; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
-function  within(a, b, c: Integer): boolean; overload; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+function  within(pt: Tpoint; x, y, w, h: Integer): boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+function  within(a, b, c: Integer): boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 // strings
 function  isURL(const s: string; ofs: Integer=1): boolean;
 function  ipos(const ss: string; const s: string): Integer;
@@ -37,17 +37,17 @@ function  newline2slashn(s: String): String;
 function  excludeTrailingCRLF(const s: String): String;
 function  dupAmperstand(const s: String): String;
 function  onlyDigits(const s: String): string; overload;
-function  matches(const s: String; from: Integer; const sub: String): boolean; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
-function  matchesA(const s: RawByteString; from: Integer; const sub: RawByteString): Boolean; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+function  matches(const s: String; from: Integer; const sub: String): boolean; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+function  matchesA(const s: RawByteString; from: Integer; const sub: RawByteString): Boolean; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 function  Imatches(const s: String; from: Integer; const sub: String): Boolean;
-function  dupString(const s: AnsiString): AnsiString; {$IFDEF UNICODE}overload; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+function  dupString(const s: AnsiString): AnsiString; {$IFDEF UNICODE}overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 function  dupString(const s: String): String; overload; inline;
                                               {$ENDIF UNICODE}
 function  trailing(const s, ss: string): Boolean;
 procedure swap4(var a, b: Integer); overload;
 procedure swap4(var src, dest; count: dword; cond: Boolean); overload;
 // Convert
-function  ip2str(ip: Integer): String; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+function  ip2str(ip: Integer): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 function  str2ip(s: RawByteString): Integer;
 function  qword_BE2verU(d: UInt64): String;
 function  qword_LE2verU(d: UInt64): String;
@@ -55,8 +55,8 @@ function  bool2str(const b: Boolean): RawByteString;
   function ABCD_ADCB(d: dword): dword; assembler;
   function str2color(const s: AnsiString): Tcolor;
   function color2str(color: Tcolor): AnsiString;
-  function IntToHexA(Value: Integer; Digits: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}{$ENDIF UNICODE}
-  function IntToStrA(Value: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}{$ENDIF UNICODE}  overload;
+  function IntToHexA(Value: Integer; Digits: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}
+  function IntToStrA(Value: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}  overload;
   function intToStrA(i, d: Integer): AnsiString; overload;
   function intToStr(i, d: Integer): string; overload;
 
@@ -94,7 +94,7 @@ function RnQEndsText(const ASubText, AText: UnicodeString): Boolean; inline;
   function  findInStrings(const s: AnsiString;ss,separator:RawByteString):Integer; overload;
   function  findInStrings(const s: String;ss:Tstrings):Integer; overload;
 
-  function  chop(i: Integer; var s: RawByteString): RawByteString; overload; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function  chop(i: Integer; var s: RawByteString): RawByteString; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   function  chop(i,l: Integer; var s: RawByteString): RawByteString; overload;
   function  chop(const ss: RawByteString; var s: RawByteString): RawByteString; overload;
   function  chopline(var s: RawByteString): RawByteString; overload;
@@ -167,10 +167,10 @@ const
 
 
 
-function IfThen(AValue: Boolean; const ATrue: Integer; const AFalse: Integer = 0): Integer; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+function IfThen(AValue: Boolean; const ATrue: Integer; const AFalse: Integer = 0): Integer; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin if avalue then result:=atrue else result:=afalse end;
 
-function IfThen(AValue: Boolean; const s1, s2: RawByteString): RawByteString; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+function IfThen(AValue: Boolean; const s1, s2: RawByteString): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin if avalue then result:=s1 else result:=s2 end;
 
 
@@ -240,10 +240,10 @@ begin
        result:=i;
 end; // boundInt
 
-function within(a,b,c:Integer):boolean; overload; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+function within(a,b,c:Integer):boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin result:=(b>=a) and (b<=c) end;
 
-function within(pt:Tpoint; x,y,w,h:Integer):boolean; overload; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+function within(pt:Tpoint; x,y,w,h:Integer):boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin result:=(pt.x>=x) and (pt.y>=y) and (pt.x < x+w) and (pt.y < y+h) end;
 
 function isURL(const s: String; ofs: Integer=1): Boolean;
@@ -364,7 +364,7 @@ begin
 //result:=s;
 end; // onlyDigits
 
-function matches(const s: String; from: Integer; const sub: String): Boolean; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+function matches(const s: String; from: Integer; const sub: String): Boolean; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 //begin result:=sub=copy(s,from,length(sub)) end;
 //begin result:=AnsiPos(sub, s) = from end;
 var
@@ -392,7 +392,7 @@ begin
 {$ENDIF}
 end;
 
-function matchesA(const s: RawByteString; from: Integer; const sub: RawByteString): Boolean; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+function matchesA(const s: RawByteString; from: Integer; const sub: RawByteString): Boolean; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 //begin result:=sub=copy(s,from,length(sub)) end;
 //begin result:=AnsiPos(sub, s) = from end;
 var
@@ -511,11 +511,11 @@ end; // str2color
 
 
  {$IF DEFINED(WIN64) OR DEFINED(FPC)}
-  function IntToHexA(Value: Integer; Digits: Integer): AnsiString; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function IntToHexA(Value: Integer; Digits: Integer): AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   begin
     Result := IntToHex(Value, Digits);
   end;
-  function IntToStrA(Value : Integer) : AnsiString; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function IntToStrA(Value : Integer) : AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   begin
     Result := intToStr(Value);
   end;
@@ -626,11 +626,11 @@ end;
   {$MESSAGE FATAL 'Must be UNICODE.'}
 {$ENDIF}
 
-  function IntToHexA(Value: Integer; Digits: Integer): AnsiString; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function IntToHexA(Value: Integer; Digits: Integer): AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   begin
     Result := IntToHex(Value, Digits);
   end;
-  function IntToStrA(Value : Integer) : AnsiString; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function IntToStrA(Value : Integer) : AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   begin
     Result := intToStr(Value);
   end;
@@ -672,16 +672,16 @@ function dupAmperstand(const s:string):string;
 var
   i,last:Integer;
 begin
-result:='';
-last:=1;
-for i:=1 to length(s) do
-  if s[i]='&' then
-    begin
-    result:=result+copy(s,last,i-last+1)+'&';
-    last:=i+1;
-    end;
-if last<=length(s) then
-  result:=result+copy(s,last,length(s)-last+1);
+  result:='';
+  last:=1;
+  for i:=1 to length(s) do
+    if s[i]='&' then
+      begin
+      result:=result+copy(s,last,i-last+1)+'&';
+      last:=i+1;
+      end;
+  if last<=length(s) then
+    result:=result+copy(s,last,length(s)-last+1);
 end; // dupAmperstand
 
 {function max(a,b:double):double;
@@ -703,12 +703,12 @@ procedure swap4(var src, dest; count: dword; cond: boolean);
 var
   temp: pointer;
 begin
-if not cond then exit;
-getmem(temp, count);
-move(src, temp^, count);
-move(dest, src, count);
-move(temp^, dest, count);
-freemem(temp, count);
+  if not cond then exit;
+  getmem(temp, count);
+  move(src, temp^, count);
+  move(dest, src, count);
+  move(temp^, dest, count);
+  freemem(temp, count);
 {  asm
   mov ESI, src
   mov EDI, dest
@@ -730,13 +730,13 @@ begin
   result := dword_LE2ipU(ip)
 end;
  {$ELSE nonUNICODE}
-function ip2str(ip:Integer):RawByteString; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
+function ip2str(ip:Integer):RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
   result:=dword_LE2ip(ip)
 end;
  {$ENDIF UNICODE}
 
-function str2ip(s: RawByteString):Integer;
+function str2ip(s: RawByteString): Integer;
 var
   i, v, cd : Integer;
 begin
@@ -766,12 +766,12 @@ result:=0;
  end;
 end; // str2ip
 
-function qword_BE2verU(d:UInt64):String;
+function qword_BE2verU(d: UInt64): String;
 begin
   result := format(String('%d.%d.%d.%d'),[word(d), word(d shr 16), word(d shr 32), word(d shr 48)])
 end;
 
-function qword_LE2verU(d:UInt64):String;
+function qword_LE2verU(d: UInt64): String;
 begin
   result := format(String('%d.%d.%d.%d'),[word(d shr 48), word(d shr 32), word(d shr 16), word(d)])
 end;
@@ -1105,27 +1105,27 @@ var Len: cardinal;
 var
   i,
   j,
-  k:cardinal;
-  pc : PChar;
-    c:byte;
-    tmp:word;
+  k: cardinal;
+  pc: PChar;
+  c: byte;
+  tmp: word;
 begin
   if Value='' then begin
     Result:= '';
     exit;
   end;
-  Len:=Length(Value);
-  SetLength(Result,Len);
+  Len := Length(Value);
+  SetLength(Result, Len);
   pc := @Result[1];
-  i:=1;
-  j:=1;
+  i := 1;
+  j := 1;
   repeat
-    c:=byte(Value[i]);
+    c := byte(Value[i]);
     inc(i);
     if (c and $80)=0 then begin   //Символ с кодом 0..127
 //      Result[j]:=chr(c);
 //      Result[j]:= Char(c);
-      pc^:= Char(c);
+      pc^ := Char(c);
       inc(j);
       inc(pc);
       continue;
@@ -1145,17 +1145,17 @@ begin
         else break;
       tmp:=c and $F;                         // 4 младших бита
       for k := 1 to 2 do begin
-        c:= byte(Value[i]);
+        c := byte(Value[i]);
         inc(i);
         if (c shr 6)<>2 then begin           //10xxxxxx
           error;
           exit;
         end;
-        tmp:=(tmp shl 6) or (c and $3F);     //Добавляем 6 бит в конец
+        tmp := (tmp shl 6) or (c and $3F);     //Добавляем 6 бит в конец
       end;
 //      Result[j]:=chr(tmp);
       inc(j);
-      pc^:= chr(tmp);
+      pc^ := chr(tmp);
       inc(pc);
       continue;
     end;
@@ -1166,17 +1166,17 @@ begin
           exit;
         end
         else break;
-      tmp:=word(c and $1F) shl 6; // 5 младших битов
-      c:= byte(Value[i]);
+      tmp := word(c and $1F) shl 6; // 5 младших битов
+      c := byte(Value[i]);
       inc(i);
       if (c shr 6)<>2 then begin      //10xxxxxx
         error;
         exit;
       end;
-      tmp:=tmp or (c and $3F);
+      tmp := tmp or (c and $3F);
 //      Result[j]:=chr(tmp);
       inc(j);
-      pc^:= chr(tmp);
+      pc^ := chr(tmp);
       inc(pc);
     end
     else begin
@@ -1191,8 +1191,8 @@ end;
 function UnUTF(const s : RawByteString) : String;
 {$IFNDEF UNICODE}
 var
-//  ss : RawString;
-  ss : RawByteString;
+//  ss: RawString;
+  ss: RawByteString;
 {$ENDIF UNICODE}
 begin
 //  result := s;
@@ -1227,7 +1227,7 @@ function WideBEToUTF8(const Value: RawByteString): RawByteString;
 var
 //  buffer: Pointer;
   ResLen, BufLen: LongWord;
-  str : RawByteString;
+  str: RawByteString;
 //  lpBuf: Pointer;
 begin
   if Value='' then
@@ -1830,7 +1830,7 @@ end;
 function chop(const ss:RawByteString; var s:RawByteString):RawByteString;
 begin result:=chop(pos(ss,s),length(ss),s) end;
 
-function chop(i:Integer; var s:RawByteString):RawByteString; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+function chop(i:Integer; var s:RawByteString):RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin result:=chop(i,1,s) end;
 
 function chop(i,l:Integer; var s:RawByteString):RawByteString;
@@ -1880,7 +1880,7 @@ result:=copy(s,1,i-1);
 delete(s,1,i-1+l);
 end; // chop
 
-function chop(i: Integer; var s: String): String; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+function chop(i: Integer; var s: String): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin result := chop(i,1,s) end;
 
 function chop(const ss: String; var s: String): String;
