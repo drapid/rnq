@@ -64,6 +64,7 @@ var
   aEncryptMenu  : aTaMenuItem; // Menu of button "Encrypt" in chat
  {$ENDIF USE_SECUREIM}
   aEncryptMenu2  : aTaMenuItem; // Menu of button "Encrypt" in chat
+  aFileSendMenu : aTaMenuItem; // Menu of button "Send File" in chat
 
 implementation
   uses

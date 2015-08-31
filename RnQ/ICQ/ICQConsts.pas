@@ -102,8 +102,10 @@ const
 
   AvtHash_NoAvt = AnsiString(#$B4#$32#$5C#$25#$34#$3D#$41#$13#$72#$90#$9D#$C0#$E7#$3A#$71#$73); // Hash of Avatar "No photo has been uploaded"
 
-  Z=AnsiString(#0#0#0#0);
-  BigCapability:array [1..29] of record v : String[16]; s : AnsiString; end=(
+  word_Zero = AnsiString(#00#00);
+  dword_Zero = AnsiString(#00#00#00#00);
+  Z = AnsiString(#0#0#0#0);
+  BigCapability:array [1..32] of record v : String[16]; s : AnsiString; end=(
 //  BigCapability:array [1..28] of record v : AnsiString; s : AnsiString; end=(
     (V: #$97#$B1#$27#$51#$24#$3C#$43#$34#$AD#$22#$D6#$AB#$F7#$3F#$14#$92; s: 'RTF messages'),// RTF
     (V: #$2E#$7A#$64#$75#$FA#$DF#$4D#$C8#$88#$6F#$EA#$35#$95#$FD#$B6#$DF; s: 'ICQ 2001'), // AIM_CAPS_2001 or OLD_UTF
@@ -138,7 +140,10 @@ const
     (V: #$7C#$53#$3F#$FA#$68#$00#$4F#$21#$BC#$FB#$C7#$D2#$43#$9A#$AD#$31; s: 'qip-plugins'),
     (V: #$56#$3F#$C8#$09#$0B#$6F#$41#$51#$49#$50#$20#$20#$20#$20#$20#$21; s: 'QIP PDA WM'),
     (V: #$51#$AD#$D1#$90#$72#$04#$47#$3D#$A1#$A1#$49#$F4#$A3#$97#$A4#$1F; s: 'QIP PDA Symbian'),
-    (V: #$7A#$7B#$7C#$7D#$7E#$7F#$0A#$03#$0B#$04#$01#$53#$13#$43#$1E#$1A; s: 'qip 2010')
+    (V: #$7A#$7B#$7C#$7D#$7E#$7F#$0A#$03#$0B#$04#$01#$53#$13#$43#$1E#$1A; s: 'qip 2010'),
+    (v: #$35#$CA#$0A#$C9#$E4#$67#$48#$AB#$9D#$FA#$1D#$23#$41#$F0#$08#$32; s: 'tZers [Mults]'),
+    (v: #$4D#$6F#$64#$20#$62#$79#$20#$4D#$69#$6B#$61#$6E#$6F#$73#$68#$69; s: 'R&Q build by Mikanoshi'),
+    (v: #$F2#$3D#$D3#$84#$7B#$52#$40#$EC#$B5#$CE#$10#$64#$59#$A4#$C9#$7D; s: 'Buzz support')
 //    (V: #$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$70; s: 'Status [Sad]'),
 //    (V: #$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$75; s: 'Status [Free for chat]'),
 //    (V: #$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$76; s: 'Status [At home]'),
@@ -180,14 +185,14 @@ const
     (V: #$01#$04; s: 'Rtp audio'; Desc: 'Can do live audio streaming, using SIP/RTP'),       // = RtpAudio
     (V: #$01#$05; s: 'Available for call'; Desc: 'Can receive an a/v call at this time'), //6 = AvailableForCall
     (V: #$01#$06; s: 'Aca'),             // = Aca
-    (V: #$01#$07; s: 'Multi audio'; Desc: 'Can participate in centralized audio conferences'),     //8 = MultiAudio
-    (V: #$01#$08; s: 'Multi video'; Desc: 'Can participate in centralized video conferences'),     // = MultiVideo
+    (V: #$01#$07; s: 'Audio conferences'; Desc: 'Can participate in centralized audio conferences'),     //8 = MultiAudio
+    (V: #$01#$08; s: 'Video conferences'; Desc: 'Can participate in centralized video conferences'),     // = MultiVideo
     (V: #$01#$FF; s: 'Smart caps'; Desc: 'Whether caps reflect opt-in features vs. features the software supports'),    //10 = SmartCaps
     (V: #$F0#$04; s: 'Viceroy'),         // = Viceroy
     (V: #$13#$49; s: 'ICQ Server Relay'), // 12  AIM_CAPS_ICQSERVERRELAY
     (V: #$13#$44; s: 'is ICQ'),              // AIM_CAPS_ICQ
     (V: #$13#$4E; s: 'UTF-8 Messages'),  // 14 UTF-8
-    (V: #$13#$4c; s: 'Avatar'),              // CAP_AVATAR
+  (v: #$13#$4C; s: 'Avatar support'), // CAP_AVATAR
 //    (V: #$13#$4c; s: 'Lite-AIM Cap1'),        // CAP_AVATAR
     (V: #$13#$45; s: 'Direct IM'; Desc: 'Can participate in direct IM sessions'),  //16
     (V: #$13#$46; s: 'Buddy icon'; Desc: 'Can receive non-BART buddy icons'),
@@ -227,40 +232,46 @@ const
 
   CAPS_sm_ICQSERVERRELAY = 12;
   CAPS_sm_ICQ            = 13;
+  CAPS_sm_UTF8           = 14;
+  CAPS_sm_Avatar         = 15;
+  CAPS_sm_FILE           = 18;
+  CAPS_sm_FILE_TRANSFER  = 20;
+  CAPS_sm_AIM            = 24;
+  CAPS_sm_ShortCaps      = 25;
+  CAPS_sm_SecIM          = 26;
+
+  CAPS_sm_NEW_STAT       = 28;
+
   CAPS_big_RTF           = 1;
   CAPS_big_2001          = 2;
-  CAPS_big_Lite          = 8;
-  CAPS_sm_UTF8           = 14;
   CAPS_big_MTN           = 3;
   CAPS_big_SecIM         = 4;
-  CAPS_sm_Avatar         = 15;
+  CAPS_big_Chat          = 5;
   CAPS_big_Xtraz         = 6;
-  CAPS_sm_FILE_TRANSFER  = 20;
-  CAPS_BIG_Xtraz5        = 20;
+  CAPS_big_QIP_Secure    = 7;
+  CAPS_big_Lite          = 8;
 
   CAPS_Ext_CLI_First     = 9;
   CAPS_big_Tril          = 9;
-  CAPS_big_ICQ6          = 22;
   CAPS_big_macICQ        = 11;
   CAPS_big_LICQ          = 12;
-  CAPS_big_QIP_SEQURE    = 7;
   CAPS_big_QIP           = 13;
   CAPS_Ext_CLI_Last      = 14;
-  CAPS_sm_FILE           = 18;
 
   CAPS_big_RMBLR         = 18;
+  CAPS_BIG_Xtraz5        = 20;
   CAPS_big_tZers         = 21;
+  CAPS_big_ICQ6          = 22;
   CAPS_big_CryptMsg      = 23;
-  CAPS_sm_AIM            = 24;
   CAPS_big_qipInf        = 24;
-  CAPS_big_qip2010       = 29;
   CAPS_big_qipWM         = 27;
   CAPS_big_qipSym        = 28;
+  CAPS_big_qip2010       = 29;
+  CAPS_big_tZers_Mults = 30;
+  CAPS_big_Build = 31;
+  CAPS_big_Buzz = 32;
 
-  CAPS_sm_SecIM          = 26;
 
-  CAPS_sm_ShortCaps      = 25;
-  CAPS_sm_NEW_STAT       = 28;
   header2711_0= AnsiString(#$1B#0)+ AnsiChar(My_proto_ver)+Z+Z+Z+Z+#00#00#00;
   header2711  = header2711_0 + AnsiString(#03#00#00#00)
             +#04#$FF#$FF#$E#0#$FF#$FF+Z+Z+Z;
@@ -355,6 +366,21 @@ REJECT_PENDING_BUDDIES =	$0008; //	If set and INITIAL_DEPARTS is set, use REJECT
   CLI_META_REQ          = $0002;
   SRV_META_REPLY        = $0003;
 
+// SNACS for 04/06 (send message)
+CLI_META_MSG = $0006;
+CLI_META_MSG_DATA = $0002;
+CLI_META_MSG_ACK = $0003;
+CLI_META_MSG_OWNER = $001C;
+CLI_META_MSG_UNK = $001F;
+CLI_META_STORE_IF_OFFLINE = $0006;
+CLI_META_STICKER_DATA = $0031;
+CLI_META_REQ_CAPS_BYTE = $05;
+CLI_META_FRAG_VERSION_BYTE = $01;
+CLI_META_FRAG_ID_BYTE = $01; // 1 = text message
+CLI_META_REQ_CAP = $0106; // Unknown cap
+CLI_META_MSG_CHARSET = $0002;
+CLI_META_MSG_LANGUAGE = $0020;
+
 // Reply types for SNAC 15/02 & 15/03
   CLI_OFFLINE_MESSAGE_REQ     = $003C;
   CLI_DELETE_OFFLINE_MSGS_REQ = $003E;
@@ -394,11 +420,16 @@ REJECT_PENDING_BUDDIES =	$0008; //	If set and INITIAL_DEPARTS is set, use REJECT
   META_REQUEST_FULL_INFO= $04B2; // Request full user info;
   META_REQUEST_SHORT_INFO     = $04BA; // Request short user info;
   META_REQUEST_SELF_INFO= $04D0; // Request full self user info;
+  META_REQUEST_DELETE_UIN = $04C4; // Unreg UIN?;
+  META_REQUEST_CHANGE_PWD = $042E;
+  META_REQUEST_PROFILE_INFO = $051F; // Request user info;
   META_SEARCH_GENERIC   = $055F; // Search user by details (TLV);
   META_SEARCH_UIN       = $0569; // Search user by UIN (TLV);
   META_SEARCH_EMAIL     = $0573; // Search user by E-mail (TLV);
   META_XML_INFO         = $08A2; // Server variable requested via xml;
+  META_SEND_PERM        = $0C3A;
   META_SET_FULLINFO_ACK = $0C3F; // Server ack for set fullinfo command;
+  META_REQUEST_SEND_SMS = $1482;
   META_SPAM_REPORT_ACK  = $2012; // Server ack for user spam report;
 
   User_email = $015E;
@@ -443,6 +474,7 @@ REJECT_PENDING_BUDDIES =	$0008; //	If set and INITIAL_DEPARTS is set, use REJECT
 
 // Made in COMPAD!!!!!!!!!!!
   META_SEARCH_COMPAD    = $0FA0; // Adv Search in ComPad
+  META_SAVE_PROFILE = $0FD2; // Set user profile data
 
   CP_User_Gender= $0082;     // 1 байт
   CP_User_City  = $00A0;     // Chars
@@ -454,7 +486,7 @@ REJECT_PENDING_BUDDIES =	$0008; //	If set and INITIAL_DEPARTS is set, use REJECT
 
   META_COMPAD_UID    = $0032;
   META_COMPAD_INFO_HASH = $003C;
-  META_COMPAD_UNK1  = $0046; // Пустое
+  META_COMPAD_NICK2  = $0046; // Nick again
   META_COMPAD_EMAIL  = $0050; // E-Mail
   META_COMPAD_EMAIL_INACTIVE  = $0055; // Неподтверждёное мыло!
   META_COMPAD_FNAME  = $0064; // First Name // Имя
@@ -463,27 +495,30 @@ REJECT_PENDING_BUDDIES =	$0008; //	If set and INITIAL_DEPARTS is set, use REJECT
   META_COMPAD_GENDER = $0082;  // Пол
   META_COMPAD_Mails  = $008C;  // #00#00     // Содержит TLV 1 -> содержит TLV $64=Мыло для подключения
   META_COMPAD_HOMES  = $0096; // Содержит внутри себя TLV с городом, областью, страной.
-    META_COMPAD_HOMES_UNK1  = $0064;
+    META_COMPAD_HOMES_ADDRESS = $0064;
     META_COMPAD_HOMES_CITY  = $006E;
     META_COMPAD_HOMES_STATE = $0078;
+    META_COMPAD_HOMES_ZIP = $0082;
     META_COMPAD_HOMES_UNK2  = $0084;
     META_COMPAD_HOMES_COUNTRY = $008C;
   META_COMPAD_FROM  = $00A0; // Я из
-    META_COMPAD_FROM_UNK1  = $0064;
+    META_COMPAD_FROM_ADDRESS = $0064;
     META_COMPAD_FROM_CITY  = $006E;
     META_COMPAD_FROM_STATE = $0078;
-    META_COMPAD_FROM_UNK2  = $0082;
-    META_COMPAD_FROM_UNK3  = $0084;
+    META_COMPAD_FROM_ZIP   = $0082;
+    META_COMPAD_FROM_UNK1  = $0084;
     META_COMPAD_FROM_COUNTRY = $008C;
   META_COMPAD_LANG1  = $00AA; // $0026
   META_COMPAD_LANG2  = $00B4; // $000C
   META_COMPAD_LANG3  = $00BE; // $0000
   META_COMPAD_CELL  = $00C8; // $0000  Сотовые
     META_COMPAD_CELL_NUMM  = $0064; // Номерa
+    META_COMPAD_PHONES_NUM = $0064; // Телефон, но скорее стационарный, а не мобильный. Ещё факс там где-то))
+    META_COMPAD_PHONES_CNT = $006E;
   META_COMPAD_HP    = $00FA; // HomePage
   META_COMPAD_UNK9  = $0104; // $0000
+  META_COMPAD_MAIL_UN = $010E; // $0000  - Пропала после запроса подтверждения мыла
 
-  META_COMPAD_MAIL_UN  = $010E; // $0000  - Пропала после запроса подтверждения мыла
   META_COMPAD_WORKS  = $0118; // Работа
     META_COMPAD_WORKS_POSITION = $0064; //Должность
     META_COMPAD_WORKS_ORG      = $006E; // Организация
@@ -492,17 +527,18 @@ REJECT_PENDING_BUDDIES =	$0008; //	If set and INITIAL_DEPARTS is set, use REJECT
     META_COMPAD_WORKS_UNK2     = $0082; // ???   $0003
     META_COMPAD_WORKS_UNK3     = $0096; // Похоже на дату устройства. 8 символов
     META_COMPAD_WORKS_UNK4     = $00A0; // Похоже на дату увольнения. 8 символов
-    META_COMPAD_WORKS_STREET   = $00AA; // Улица
+    META_COMPAD_WORKS_ADDRESS  = $00AA; // Улица
     META_COMPAD_WORKS_CITY     = $00B4; // Город
     META_COMPAD_WORKS_STATE    = $00BE; // Область
     META_COMPAD_WORKS_COUNTRY  = $00D2; // Страна
+    META_COMPAD_WORKS_ZIP      = $00C8; // Индекс
   META_COMPAD_MarSts = $0121; // #$000C      Marital status
   META_COMPAD_INTERESTs = $0122; //  word - count; 4*(Length_BE(TLV($64, InterestStr) + TLV($6E, InterestInt))
     META_COMPAD_INTEREST_TEXT = $0064;
     META_COMPAD_INTEREST_ID   = $006E;
   META_COMPAD_UNK10 = $0123; // $0000
   META_COMPAD_UNK11 = $0124; // $0000
-  META_COMPAD_UNK12 = $012C; // $000C
+  META_COMPAD_MARITAL_STATUS = $012C; // Семейное положение
   META_COMPAD_UNK13 = $0136; // $00 00 00 00 00 00 00 00
   META_COMPAD_UNK14 = $0140; // $0000
   META_COMPAD_UNK15 = $014A; // $0000
@@ -516,12 +552,14 @@ REJECT_PENDING_BUDDIES =	$0008; //	If set and INITIAL_DEPARTS is set, use REJECT
   META_COMPAD_MOBILE  = $024E;
 
   META_COMPAD_STATUS  = $0190;
-  META_COMPAD_AUTH  = $01B8; // AUTH
+  META_COMPAD_AUTH = $019A; // Request auth when someone adds you (0 = request; 1 = no request)
+  META_COMPAD_AUTH2  = $01B8; // AUTH
   META_COMPAD_BDAY  = $01A4; // BirthDay
 
   META_COMPAD_INFO_CHG = $01CC; // Time of info changed (maybe)
   META_COMPAD_WEBAWEARE = $019A;// WebAware (1= show status)
-  META_COMPAD_INFO_SHOW = $01F9; // Show info (2 = Cont; 1 = All but email; 0 = nobody)
+  META_COMPAD_INFO_SHOW = $01F9; // Show info (2 = Cont; 1 = All but email; 0 = Show to all)
+  META_COMPAD_WEBAWARE  = $0212; // WebAware (1= show status)
 //...
   META_COMPAD_WP  = $00; //
 //  META_COMPAD_  = $01; //
@@ -597,17 +635,18 @@ BART_FLAGS_UNKNOWN = $40; // Used in OSERVICE__BART_REPLY; BART does not know ab
 BART_FLAGS_REDIRECT= $80; // Used in OSERVICE__BART_REPLY; BART says use this ID instead for the matching type
 
 //Class: BART__ID_TYPES
-BART_TYPE_BUDDY_ICON_SMALL = 0; // GIF/JPG/BMP, <= 32 pixels and 2k
-BART_TYPE_BUDDY_ICON   = 1; // GIF/JPG/BMP, <= 64 pixels and 7k
-BART_TYPE_STATUS_STR   = 2; //StringTLV format; DATA flag is always set
-BART_TYPE_ARRIVE_SOUND = 3; // WAV/MP3/MID, <= 10K
-BART_TYPE_RICH_TEXT    = 4; // byte array of rich text codes; DATA flag is always set
-BART_TYPE_SUPERBUDDY_ICON = 5;  // XML
-BART_TYPE_RADIO_STATION   = 6;  // Opaque struct; DATA flag is always set
-BART_TYPE_BUDDY_ICON_BIG  = 12; // SWF
-BART_TYPE_STATUS_STR_TOD  = 13; // Time when the status string is set
-BART_TYPE_STATUS_MOOD = 14; // $0E
-BART_TYPE_CURRENT_AV_TRACK = 15; // XML file; Data flag should not be set
+  BART_TYPE_BUDDY_ICON_SMALL = 0; // GIF/JPG/BMP, <= 32 pixels and 2k
+  BART_TYPE_BUDDY_ICON   = 1; // GIF/JPG/BMP, <= 64 pixels and 7k
+  BART_TYPE_STATUS_STR   = 2; //StringTLV format; DATA flag is always set
+  BART_TYPE_ARRIVE_SOUND = 3; // WAV/MP3/MID, <= 10K
+  BART_TYPE_RICH_TEXT    = 4; // byte array of rich text codes; DATA flag is always set
+  BART_TYPE_SUPERBUDDY_ICON = 5;  // XML
+  BART_TYPE_RADIO_STATION   = 6;  // Opaque struct; DATA flag is always set
+  BART_TYPE_BUDDY_ICON_BIG  = 12; // SWF
+  BART_TYPE_STATUS_STR_TOD  = 13; // Time when the status string is set
+  BART_TYPE_STATUS_MOOD = 14; // $0E
+  BART_TYPE_CURRENT_AV_TRACK = 15; // XML file; Data flag should not be set
+  BART_TYPE_XSTATUS = 16; // Just a guess :)
 //BART_TYPE_DEPART_SOUND 96 WAV/MP3/MID, <= 10K
 //BART_TYPE_IM_CHROME 129 GIF/JPG/BMP wallpaper
 //BART_TYPE_IM_SOUND 131 WAV/MP3, <= 10K

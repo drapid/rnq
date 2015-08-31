@@ -191,6 +191,10 @@ object icqFr: TicqFr
       object SecTS: TTabSheet
         Caption = 'Security'
         ImageIndex = 4
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         DesignSize = (
           405
           361)
@@ -242,6 +246,10 @@ object icqFr: TicqFr
       object AddTrafTB: TTabSheet
         Caption = 'Add traffic'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         DesignSize = (
           405
           361)

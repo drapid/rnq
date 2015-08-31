@@ -79,7 +79,7 @@ object chatFrm: TchatFrm
     object toolbar: TToolBar
       Left = 190
       Top = 8
-      Width = 192
+      Width = 234
       Height = 19
       Align = alNone
       AutoSize = True
@@ -141,8 +141,23 @@ object chatFrm: TchatFrm
         ImageName = 'smiles'
         OnClick = smilesBtnClick
       end
-      object prefBtn: TRnQSpeedButton
+      object stickersBtn: TRnQSpeedButton
         Left = 54
+        Top = 0
+        Width = 18
+        Height = 19
+        Hint = 'Shows stickers menu Ctrl+Shift+S'
+        AllowAllUp = True
+        Flat = True
+        ParentShowHint = False
+        ShowHint = False
+        Spacing = 0
+        Transparent = False
+        ImageName = 'stickers'
+        OnClick = stickersBtnClick
+      end
+      object prefBtn: TRnQSpeedButton
+        Left = 72
         Top = 0
         Width = 18
         Height = 19
@@ -158,7 +173,7 @@ object chatFrm: TchatFrm
         OnMouseDown = prefBtnMouseDown
       end
       object autoscrollBtn: TRnQSpeedButton
-        Left = 72
+        Left = 90
         Top = 0
         Width = 18
         Height = 19
@@ -174,7 +189,7 @@ object chatFrm: TchatFrm
         OnClick = autoscrollBtnClick
       end
       object infoBtn: TRnQSpeedButton
-        Left = 90
+        Left = 108
         Top = 0
         Width = 18
         Height = 19
@@ -189,7 +204,7 @@ object chatFrm: TchatFrm
         OnClick = infoBtnClick
       end
       object quoteBtn: TRnQSpeedButton
-        Left = 108
+        Left = 126
         Top = 0
         Width = 18
         Height = 19
@@ -204,7 +219,7 @@ object chatFrm: TchatFrm
         OnMouseDown = quoteBtnMouseDown
       end
       object singleBtn: TRnQSpeedButton
-        Left = 126
+        Left = 144
         Top = 0
         Width = 18
         Height = 19
@@ -222,9 +237,9 @@ object chatFrm: TchatFrm
         OnClick = singleBtnClick
       end
       object btnContacts: TRnQSpeedButton
-        Left = 144
+        Left = 162
         Top = 0
-        Width = 17
+        Width = 18
         Height = 19
         Hint = 'Send contacts'
         Flat = True
@@ -236,9 +251,9 @@ object chatFrm: TchatFrm
         OnClick = btnContactsClick
       end
       object RnQPicBtn: TRnQSpeedButton
-        Left = 161
+        Left = 180
         Top = 0
-        Width = 14
+        Width = 18
         Height = 19
         Hint = 'Send pics'
         Flat = True
@@ -250,9 +265,9 @@ object chatFrm: TchatFrm
         OnClick = RnQPicBtnClick
       end
       object RnQFileBtn: TRnQSpeedButton
-        Left = 175
+        Left = 198
         Top = 0
-        Width = 17
+        Width = 18
         Height = 19
         Hint = 'Send file'
         Flat = True
@@ -260,9 +275,23 @@ object chatFrm: TchatFrm
         ShowHint = False
         Spacing = 0
         Transparent = False
-        Visible = False
         ImageName = 'file'
         OnClick = RnQFileBtnClick
+        OnMouseDown = RnQFileBtnMouseDown
+      end
+      object BuzzBtn: TRnQSpeedButton
+        Left = 216
+        Top = 0
+        Width = 18
+        Height = 19
+        Hint = 'Buzz contact'
+        Flat = True
+        ParentShowHint = False
+        ShowHint = False
+        Spacing = 0
+        Transparent = False
+        ImageName = 'buzz'
+        OnClick = BuzzBtnClick
       end
     end
     object tb0: TToolBar
@@ -533,6 +562,12 @@ object chatFrm: TchatFrm
       HelpKeyword = 'smiles'
       OnExecute = hAShowSmilesExecute
       OnUpdate = hAShowSmilesUpdate
+    end
+    object ShowStickers: TAction
+      Category = 'chatActions'
+      SecondaryShortCuts.Strings = (
+        'Ctrl+Shift+S')
+      OnExecute = ShowStickersExecute
     end
   end
 end

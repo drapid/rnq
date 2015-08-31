@@ -13,8 +13,8 @@ unit ShockwaveFlashObjects_TLB;
 // manual modifications will be lost.                                         
 // ************************************************************************ //
 
-// $Rev: 41028 $
-// File generated on 17.08.2011 22:47:57 from Type Library described below.
+// $Rev: 52393 $
+// File generated on 09.08.2015 10:17:25 from Type Library described below.
 
 // ************************************************************************  //
 // Type Lib: C:\Windows\SysWOW64\Macromed\Flash\Flash10v.ocx (1)
@@ -205,6 +205,10 @@ type
     procedure Set_AllowNetworking(const pVal: WideString); safecall;
     function Get_AllowFullScreen: WideString; safecall;
     procedure Set_AllowFullScreen(const pVal: WideString); safecall;
+    function Get_AllowFullScreenInteractive: WideString; safecall;
+    procedure Set_AllowFullScreenInteractive(const pVal: WideString); safecall;
+    function Get_IsDependent: WordBool; safecall;
+    procedure Set_IsDependent(pVal: WordBool); safecall;
     property ReadyState: Integer read Get_ReadyState;
     property TotalFrames: Integer read Get_TotalFrames;
     property Playing: WordBool read Get_Playing write Set_Playing;
@@ -235,6 +239,8 @@ type
     property ProfilePort: Integer read Get_ProfilePort write Set_ProfilePort;
     property AllowNetworking: WideString read Get_AllowNetworking write Set_AllowNetworking;
     property AllowFullScreen: WideString read Get_AllowFullScreen write Set_AllowFullScreen;
+    property AllowFullScreenInteractive: WideString read Get_AllowFullScreenInteractive write Set_AllowFullScreenInteractive;
+    property IsDependent: WordBool read Get_IsDependent write Set_IsDependent;
   end;
 
 // *********************************************************************//
@@ -309,6 +315,8 @@ type
     procedure DisableLocalSecurity; dispid 200;
     property AllowNetworking: WideString dispid 201;
     property AllowFullScreen: WideString dispid 202;
+    property AllowFullScreenInteractive: WideString dispid 501;
+    property IsDependent: WordBool dispid 502;
   end;
 
 // *********************************************************************//
@@ -398,18 +406,18 @@ type
 // *********************************************************************//
   IFlashObjectDisp = dispinterface
     ['{86230738-D762-4C50-A2DE-A753E5B1686F}']
-    procedure GetDispID(const bstrName: WideString; grfdex: LongWord; out pid: Integer); dispid 1610743808;
-    procedure RemoteInvokeEx(id: Integer; lcid: LongWord; dwFlags: LongWord; 
-                             var pdp: {NOT_OLEAUTO(DISPPARAMS)}OleVariant; out pvarRes: OleVariant; 
-                             out pei: {NOT_OLEAUTO(EXCEPINFO)}OleVariant; 
-                             const pspCaller: IServiceProvider; cvarRefArg: SYSUINT; 
-                             var rgiRefArg: SYSUINT; var rgvarRefArg: OleVariant); dispid 1610743809;
-    procedure DeleteMemberByName(const bstrName: WideString; grfdex: LongWord); dispid 1610743810;
-    procedure DeleteMemberByDispID(id: Integer); dispid 1610743811;
-    procedure GetMemberProperties(id: Integer; grfdexFetch: LongWord; out pgrfdex: LongWord); dispid 1610743812;
-    procedure GetMemberName(id: Integer; out pbstrName: WideString); dispid 1610743813;
-    procedure GetNextDispID(grfdex: LongWord; id: Integer; out pid: Integer); dispid 1610743814;
-    procedure GetNameSpaceParent(out ppunk: IUnknown); dispid 1610743815;
+    function GetDispID(const bstrName: WideString; grfdex: LongWord; out pid: Integer): HResult; dispid 1610743808;
+    function RemoteInvokeEx(id: Integer; lcid: LongWord; dwFlags: LongWord; 
+                            var pdp: {NOT_OLEAUTO(DISPPARAMS)}OleVariant; out pvarRes: OleVariant; 
+                            out pei: {NOT_OLEAUTO(EXCEPINFO)}OleVariant; 
+                            const pspCaller: IServiceProvider; cvarRefArg: SYSUINT; 
+                            var rgiRefArg: SYSUINT; var rgvarRefArg: OleVariant): HResult; dispid 1610743809;
+    function DeleteMemberByName(const bstrName: WideString; grfdex: LongWord): HResult; dispid 1610743810;
+    function DeleteMemberByDispID(id: Integer): HResult; dispid 1610743811;
+    function GetMemberProperties(id: Integer; grfdexFetch: LongWord; out pgrfdex: LongWord): HResult; dispid 1610743812;
+    function GetMemberName(id: Integer; out pbstrName: WideString): HResult; dispid 1610743813;
+    function GetNextDispID(grfdex: LongWord; id: Integer; out pid: Integer): HResult; dispid 1610743814;
+    function GetNameSpaceParent(out ppunk: IUnknown): HResult; dispid 1610743815;
   end;
 
 
@@ -526,6 +534,8 @@ type
     property ProfilePort: Integer index 196 read GetIntegerProp write SetIntegerProp stored False;
     property AllowNetworking: WideString index 201 read GetWideStringProp write SetWideStringProp stored False;
     property AllowFullScreen: WideString index 202 read GetWideStringProp write SetWideStringProp stored False;
+    property AllowFullScreenInteractive: WideString index 501 read GetWideStringProp write SetWideStringProp stored False;
+    property IsDependent: WordBool index 502 read GetWordBoolProp write SetWordBoolProp stored False;
     property OnReadyStateChange: TShockwaveFlashOnReadyStateChange read FOnReadyStateChange write FOnReadyStateChange;
     property OnProgress: TShockwaveFlashOnProgress read FOnProgress write FOnProgress;
     property OnFSCommand: TShockwaveFlashFSCommand read FOnFSCommand write FOnFSCommand;

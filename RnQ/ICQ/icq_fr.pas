@@ -395,7 +395,7 @@ begin
   end;
  if mustUpdPerms2 and icq.isOnline then
   begin
-   ICQ.sendPrivacy(PrivacyGrp.ItemIndex, webawareChk.checked);
+   ICQ.sendPrivacy(PrivacyGrp.ItemIndex, webawareChk.checked, authNeededChk.Checked);
   end;
  if needSaveChkList then
    saveListsDelayed := True;

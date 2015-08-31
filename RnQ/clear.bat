@@ -1,8 +1,8 @@
-@FOR /r %%R IN (*.~*) DO IF EXIST %%R (del /s /q "%%R")
-@FOR /r %%R IN (*.identcache) DO IF EXIST %%R (del /s /q "%%R")
-@FOR /r %%R IN (*.ddp) DO IF EXIST %%R (del /s /q "%%R")
-@FOR /r %%R IN (*.ppu) DO IF EXIST %%R (del /s /q "%%R")
-@FOR /r %%R IN (*.bak) DO IF EXIST %%R (del /s /q "%%R")
+@FOR /r %%R IN (*.~*) DO @IF EXIST %%R (del /s /q "%%R")
+@FOR /r %%R IN (*.identcache) DO @IF EXIST %%R (del /s /q "%%R")
+@FOR /r %%R IN (*.ddp) DO @IF EXIST %%R (del /s /q "%%R")
+@FOR /r %%R IN (*.ppu) DO @IF EXIST %%R (del /s /q "%%R")
+@FOR /r %%R IN (*.bak) DO @IF EXIST %%R (del /s /q "%%R")
 
 @IF EXIST "*.dcu" del *.dcu
 @IF EXIST "*.o" del *.o

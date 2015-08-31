@@ -105,8 +105,8 @@ type
    public
     constructor Create; overload;
     constructor Create(Width, Heigth : Integer); Overload;
-    constructor Create(fn : String); Overload;
-    constructor Create(hi : HICON); Overload;
+    constructor Create(fn: String); Overload;
+    constructor Create(hi: HICON); Overload;
     destructor  Destroy; override;
     procedure   Clear;
     procedure MakeEmpty;
@@ -263,8 +263,14 @@ type
   TColor24Array = array[0..MaxInt div SizeOf(TColor24) - 1] of TColor24;
 }
 const
-  JPEG_HDR  = RawByteString(#$FF#$D8#$FF#$E0);
-  JPEG_HDR2 = RawByteString(#$FF#$D8#$FF#$E1);
+  JPEG_HDRS: array [0 .. 5] of AnsiString = (
+    #$FF#$D8#$FF#$E0,
+    #$FF#$D8#$FF#$E1,
+    #$FF#$D8#$FF#$ED, {ADOBE}
+    #$FF#$D8#$FF#$E2, {CANON}
+    #$FF#$D8#$FF#$E3,
+    #$FF#$D8#$FF#$DB {SAMSUNG});
+
   TIF_HDR : array [0..3] of AnsiChar = #$49#$49#$2A#$00;
   TIF_HDR2: array [0..3] of AnsiChar = #$4D#$4D#$00#$2A;
   CLSID_WICWEBPDecoder: TGUID = '{C747A836-4884-47B8-8544-002C41BD63D2}';
@@ -609,12 +615,12 @@ var
   swf : TShockwaveFlash;
 //  swf : TTransparentFlashPlayerControl;
 //  swf : TFlashPlayerControl;
-   {$ENDIF RNQ & RNQ_FULL}
+   {$ENDIF USE_FLASH}
 //  pnl : TPanel;
-  frm : TForm;
-  w, h : Double;
-  ff : TPAFormat;
-  pic : TPicture;
+  frm: TForm;
+  w, h: Double;
+  ff: TPAFormat;
+  pic: TPicture;
 begin
   Result := FileExists(fn);
   if not Assigned(bmp) then
@@ -718,9 +724,9 @@ begin
       except
        result := false;
       end;
-   {$ELSE RNQ_LITE}
+   {$ELSE not_USE_FLASH}
        Result := false;
-   {$ENDIF RNQ & RNQ_FULL}
+   {$ENDIF USE_FLASH}
       exit;
      end
 {  if (lowercase(ExtractFileExt(fn)) = '.gif') then
@@ -2711,19 +2717,19 @@ begin
   else
 //  s := Copy(pBuffer, 1, 4);
   if s = 'GIF8' then
-    Result:= PA_FORMAT_GIF
-  else if (s = JPEG_HDR) or (s = JPEG_HDR2) then
-    Result:= PA_FORMAT_JPEG
+    Result := PA_FORMAT_GIF
+  else if MatchStr(s, JPEG_HDRS) then
+    Result := PA_FORMAT_JPEG
   else if AnsiStartsText(AnsiString('BM'), s) then
-    Result:= PA_FORMAT_BMP
+    Result := PA_FORMAT_BMP
   else if s = '<?xm' then
-    Result:= PA_FORMAT_XML
+    Result := PA_FORMAT_XML
   else if AnsiStartsText(AnsiString('CWS'), s) then
-    Result:= PA_FORMAT_SWF
+    Result := PA_FORMAT_SWF
   else if AnsiStartsText(AnsiString('FWS'), s) then
-    Result:= PA_FORMAT_SWF
+    Result := PA_FORMAT_SWF
   else if AnsiStartsText(AnsiString('‰PNG'), s) then
-    Result:= PA_FORMAT_PNG
+    Result := PA_FORMAT_PNG
   else if (s = TIF_HDR) or (s = TIF_HDR2) then
     Result := PA_FORMAT_TIF
   else if (s= 'RIFF') then

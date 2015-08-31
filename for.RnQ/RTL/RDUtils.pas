@@ -148,6 +148,9 @@ function RnQEndsText(const ASubText, AText: UnicodeString): Boolean; inline;
 
   function  Rgb2Gray(RGBColor: TColor): byte;
 
+  function DoubleAsInt64(Value: double): int64; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+  function Int64AsDouble(Value: int64): double; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+
 { $IFNDEF UNICODE }
 var
   RnQDefaultSystemCodePage : Integer;
@@ -1954,6 +1957,20 @@ end;
                  (0.11 * GetBValue(RGBColor )));
 //   Result := RGB(Gray, Gray, Gray);
  end;
+
+function DoubleAsInt64(Value: double): int64;
+var
+  i: int64 absolute Value;
+begin
+  result := i;
+end;
+
+function Int64AsDouble(Value: int64): double;
+var
+  d: double absolute Value;
+begin
+  result := d;
+end;
 
 { $IFNDEF UNICODE }
 initialization

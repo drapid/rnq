@@ -185,9 +185,9 @@ result:=template(s, [
 end; // str2html
 
 
-procedure msgDlg(msg: String; NeedTransl : Boolean; kind:TMsgDlgType; const uid : AnsiString = '');
+procedure msgDlg(msg: String; NeedTransl: Boolean; kind: TMsgDlgType; const uid: AnsiString = '');
 const
-  kind2str:array [TmsgDlgType] of string=('WARNING','ERROR','INFO','','');
+  kind2str: array [TmsgDlgType] of string=('WARNING', 'ERROR', 'INFO', '', '');
 begin
   if NeedTransl then
     msg := getTranslation(msg);

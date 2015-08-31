@@ -43,6 +43,7 @@ function SNAC(fam,sub,flags:word; ref:integer):RawByteString; overload;
 function SNAC(fam,sub:word; ref:integer):RawByteString; overload;
 
 function SNAC_ver(fam,sub,flags:word; ref:integer; ver : word):RawByteString; overload;
+function SNAC_shortver(fam, sub, flags: word; ref: integer; ver: word): RawByteString; overload;
 
 // read data
 function getBUIN2(const s:RawByteString; var ofs:integer): RawByteString;
@@ -65,16 +66,24 @@ if (result=$DA) or (result=$D0) then
 end; // getMPservice
 
 function getSnacRef(const s:RawByteString):dword;
-begin result:=dword_BEat(@s[13]) end;
+begin
+  result:=dword_BEat(@s[13])
+end;
 
 function getSnacFlags(const s: RawByteString):word;
-begin result := word_BEat(@s[11]) end;
+begin
+ result := word_BEat(@s[11])
+end;
 
 function getSnacService(const s: RawByteString):word;
-begin result := byte(s[8]) shl 8+ byte(s[10]) end;
+begin
+  result := byte(s[8]) shl 8+ byte(s[10])
+end;
 
 function getFlapChannel(const s:RawByteString):byte;
-begin result := Byte(s[2]) end;
+begin
+  result := Byte(s[2])
+end;
 
 function getBUIN2(const s:RawByteString; var ofs:integer): RawByteString;
 begin
@@ -99,10 +108,14 @@ begin
 end; // getBUIN
 
 function SNAC(fam,sub,flags:word; ref:integer):RawByteString; overload;
-begin result:=word_BEasStr(fam)+word_BEasStr(sub)+word_BEasStr(flags)+dword_BEasStr(ref) end;
+begin
+  result:=word_BEasStr(fam)+word_BEasStr(sub)+word_BEasStr(flags)+dword_BEasStr(ref)
+end;
 
 function SNAC(fam,sub:word; ref:integer):RawByteString; overload;
-begin result:=word_BEasStr(fam)+word_BEasStr(sub)+word_BEasStr(0)+dword_BEasStr(ref) end;
+begin
+  result:=word_BEasStr(fam)+word_BEasStr(sub)+word_BEasStr(0)+dword_BEasStr(ref)
+end;
 
 function SNAC_ver(fam,sub,flags:word; ref:integer; ver : word):RawByteString; overload;
 begin
@@ -111,17 +124,28 @@ begin
 
 end;
 
+function SNAC_shortver(fam, sub, flags: word; ref: integer; ver: word): RawByteString; overload;
+begin
+  result := word_BEasStr(fam) + word_BEasStr(sub) + word_BEasStr(flags) + dword_BEasStr(ref);
+end;
+
 
 ////////////////////////////// FLAP QUEUE ////////////////////////////
 
 constructor TflapQueue.create;
-begin reset end;
+begin
+  reset
+end;
 
 procedure TflapQueue.reset;
-begin buff:='' end;
+begin
+  buff:=''
+end;
 
 procedure TflapQueue.add(const s: RawByteString);
-begin buff:=buff+s end;
+begin
+  buff:=buff+s
+end;
 
 function TflapQueue.error:boolean;
 begin
@@ -131,12 +155,13 @@ end; // error
 
 function TflapQueue.errorTill:integer;
 begin
-result:=-1;
-if buff='' then exit;
-result:=1;
-while (result<=length(buff)) and
+  result:=-1;
+  if buff='' then
+    exit;
+  result:=1;
+  while (result<=length(buff)) and
       ((buff[result]<>'*') or (result<length(buff)) and ((buff[result+1]=#0) or (buff[result+1]>#4))) do
-  inc(result);
+    inc(result);
 end; // errorTill
 
 function TflapQueue.popError: RawByteString;
@@ -149,11 +174,13 @@ delete(buff,1,i);
 end; // popError
 
 function TflapQueue.bodySize:integer;
-begin result := word_BEat(@buff[5]) end;
+begin
+  result := word_BEat(@buff[5])
+end;
 
 function TflapQueue.available:boolean;
 begin
-result:=not error
+  result:=not error
    and (length(buff) >= FLAP_HEAD_SIZE)   // bodysize exists only if this is true
    and (length(buff) >= FLAP_HEAD_SIZE+bodySize)
 end; // available

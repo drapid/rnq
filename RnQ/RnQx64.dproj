@@ -62,10 +62,10 @@
         <PreBuildEvent><![CDATA[BuiltTime.exe
 $(PreBuildEvent)]]></PreBuildEvent>
         <Icon_MainIcon>Res\MAINICON_Lite.ico</Icon_MainIcon>
-        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\AES;..\For.rnq\Flash;..\For.rnq\RTL;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\AES;..\For.rnq\Flash;..\For.rnq\RTL;\ICQ;\MRA;\Prefs;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <SanitizedProjectName>RnQx64</SanitizedProjectName>
         <DCC_UsePackage>rtl;$(DCC_UsePackage)</DCC_UsePackage>
-        <Manifest_File>None</Manifest_File>
+        <Manifest_File>Res\rnq.manifest1</Manifest_File>
         <DCC_DcuOutput>Units</DCC_DcuOutput>
         <DCC_IOChecking>false</DCC_IOChecking>
         <VerInfo_Build>1124</VerInfo_Build>
@@ -131,6 +131,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <VerInfo_Build>1122</VerInfo_Build>
+        <Manifest_File>Res\rnq.manifest1</Manifest_File>
         <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
         <DCC_UsePackage>EurekaLogCore;$(DCC_UsePackage)</DCC_UsePackage>
         <VerInfo_Debug>true</VerInfo_Debug>
@@ -341,6 +343,11 @@ $(PreBuildEvent)]]></PreBuildEvent>
             <Form>HEventFrm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="ICQ\ICQ.Stickers.pas"/>
+        <DCCReference Include="ICQ\MenuStickers.pas">
+            <Form>FStickers</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="..\For.rnq\RnQConfig.inc"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
@@ -400,6 +407,12 @@ $(PreBuildEvent)]]></PreBuildEvent>
                 <Platform value="Win64">True</Platform>
             </Platforms>
             <Deployment Version="1">
+                <DeployFile LocalName="..\Distro\RnQx64.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>RnQx64.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\Distro\RnQx64.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>RnQx64.exe</RemoteName>
@@ -407,6 +420,12 @@ $(PreBuildEvent)]]></PreBuildEvent>
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\For.rnq\RnQConfig.inc" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\For.rnq\RnQConfig.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -788,12 +807,12 @@ $(PreBuildEvent)]]></PreBuildEvent>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
@@ -803,7 +822,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
     <Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
     <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
     <PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -811,7 +830,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -819,7 +838,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -827,7 +846,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>

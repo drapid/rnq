@@ -102,7 +102,9 @@ uses
   Vcl.Styles,
   tipDlg in '..\For.rnq\tipDlg.pas',
   RnQLangFrm in '..\For.rnq\RnQLangFrm.pas' {FrmLangs},
-  ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm};
+  ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm},
+  ICQ.Stickers in 'ICQ\ICQ.Stickers.pas',
+  MenuStickers in 'ICQ\MenuStickers.pas' {FStickers};
 
 { $R RnQ.RES}
 {$R *.RES}

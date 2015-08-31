@@ -54,55 +54,55 @@ type
   TtrayIcon=class
     private
 //      data:TNotifyIconData;
-      data : TNotifyIconDataW_V2;
-      shown, fHided : Boolean;
-      Ico : TIcon;
+      data: TNotifyIconDataW_V2;
+      shown, fHided: Boolean;
+      Ico: TIcon;
     public
-      constructor Create(hndl:HWND);
+      constructor Create(hndl: HWND);
       destructor Destroy; override;
       procedure minimize;
       procedure update;
       procedure hide;
       procedure show;
-      procedure setIcon(icon:Ticon); overload;
+      procedure setIcon(icon: Ticon); overload;
       procedure setIcon(const iName: TPicName); overload;
-      procedure setTip(const s:string);
-//      procedure setIconFile(fn:string);
-      procedure updateHandle(hndl:HWND);
-      property hided : Boolean read fHided;
+      procedure setTip(const s: String);
+//      procedure setIconFile(fn: String);
+      procedure updateHandle(hndl: HWND);
+      property hided: Boolean read fHided;
     end; // TtrayIcon
 
 type
-  TGetPicTipFunc = Procedure(var vPic : TPicName; var vTip : String);// of object;
+  TGetPicTipFunc = Procedure(var vPic: TPicName; var vTip: String); // of object;
 
-  TstatusIcon=class
+  TstatusIcon = class
    private
-    FOnGetPicTip     : TGetPicTipFunc;
+    FOnGetPicTip: TGetPicTipFunc;
    public
-    trayIcon:TtrayIcon;
-    IcoName : TPicName;
-    lastTip:string;
+    trayIcon: TtrayIcon;
+    IcoName: TPicName;
+    lastTip: String;
     constructor Create;
     destructor Destroy; override;
     procedure update;
     procedure empty;
     procedure ReDraw;
-    procedure handleChanged(hndl : THandle);
+    procedure handleChanged(hndl: THandle);
  {$IFDEF Use_Baloons}
-    procedure showballoon(const bldelay:integer;
+    procedure showballoon(const bldelay: Integer;
                           const BalloonText, BalloonTitle: String;
                           const BalloonIconType: TBalloonIconType);
     procedure hideBalloon;
  {$ENDIF Use_Baloons}
-    property  OnGetPicTip : TGetPicTipFunc      read  FOnGetPicTip
-                                                write FOnGetPicTip;
+    property  OnGetPicTip: TGetPicTipFunc      read  FOnGetPicTip
+                                               write FOnGetPicTip;
 //    function AcceptBalloons: Boolean;
-//    procedure BalloonHint (Title, Value: string; BalloonType: TBalloonType; Delay: Integer);
+//    procedure BalloonHint (Title, Value: String; BalloonType: TBalloonType; Delay: Integer);
    end; // TstatusIcon
 
 var
-    ShowBalloonTime : Int64;
-    EnabledBaloons : Boolean;
+    ShowBalloonTime: Int64;
+    EnabledBaloons: Boolean;
 
 implementation
 
@@ -115,7 +115,7 @@ uses
   ;
 
 const
-     NIF_INFO=$00000010;
+     NIF_INFO = $00000010;
 
 {
 type
@@ -131,12 +131,12 @@ var
 
 constructor TstatusIcon.create;
 begin
-  trayIcon:=TtrayIcon.create(0);
+  trayIcon := TtrayIcon.create(0);
   trayIcon.setTip(Application.Title);
-  IcoName:='';
-  lastTip:='';
+  IcoName := '';
+  lastTip := '';
    {$IFDEF Use_Baloons}
-     if GetShellVersion>=$00050000 then
+     if GetShellVersion >= $00050000 then
       begin
        EnabledBaloons := true;
 //       htimer := tmCreateIntervalTimerEx(handler, 2000, tmPeriod,
@@ -158,10 +158,11 @@ procedure TstatusIcon.update;
 var
 //  nIco : String;
 //  IcoDtl : TRnQThemedElementDtls;
-  IcoPicName : TPicName;
-  s:string;
+  IcoPicName: TPicName;
+  s: String;
 begin
-  if self = nil then exit;
+  if self = nil then
+    exit;
   if Assigned(FOnGetPicTip) then
     FOnGetPicTip(IcoPicName, S)
    else
@@ -179,36 +180,40 @@ begin
   end;
  if s <> lastTip then
   begin
-   lastTip:=s;
+   lastTip := s;
    trayIcon.setTip(s);
   end;
 end; // update
 
 procedure TstatusIcon.empty;
 begin
-  IcoName:= PIC_EMPTY;
+  IcoName := PIC_EMPTY;
   trayIcon.setIcon(IcoName);
 end;
 
-procedure TstatusIcon.handleChanged(hndl : THandle);
+procedure TstatusIcon.handleChanged(hndl: THandle);
 begin
   if Assigned(trayIcon) then
     trayIcon.updateHandle(hndl)
 end;
 
-procedure TstatusIcon.showballoon(const bldelay:integer;
+procedure TstatusIcon.showballoon(const bldelay: integer;
                           const BalloonText, BalloonTitle: String;
                           const BalloonIconType: TBalloonIconType);
 const
-  aBalloonIconTypes : array[TBalloonIconType] of Byte = (NIIF_NONE, NIIF_INFO, NIIF_WARNING, NIIF_ERROR);
+  aBalloonIconTypes: array[TBalloonIconType] of Byte = (NIIF_NONE, NIIF_INFO, NIIF_WARNING, NIIF_ERROR);
 var
-//  NID_50 : NotifyIconData_50;
-//  NID_50 : TNotifyIconData;
-  NID_50 : TNotifyIconDataW_V2;
-  t : String;
+//  NID_50: NotifyIconData_50;
+//  NID_50: TNotifyIconData;
+  NID_50: TNotifyIconDataW_V2;
+  t: String;
 begin
-  if (not EnabledBaloons) or (not ShowBalloons) then exit;
-  if balloontext = '' then t := '_' else t := balloontext;
+  if (not EnabledBaloons) or (not ShowBalloons) then
+    exit;
+  if balloontext = '' then
+    t := '_'
+   else
+    t := balloontext;
   ShowBalloonTime := 0;
 //  tmStopTimer(hTimer);
 //  DZBalloonTrayIcon(window, IconID, t, balloontitle, balloonicontype);
@@ -235,9 +240,9 @@ end;
 
 procedure TstatusIcon.hideBalloon;
 var
-//  NID_50 : NotifyIconData_50;
-//  NID_50 : TNotifyIconData;
-  NID_50 : TNotifyIconDataW_V2;
+//  NID_50: NotifyIconData_50;
+//  NID_50: TNotifyIconData;
+  NID_50: TNotifyIconDataW_V2;
 begin
   ShowBalloonTime := 0;
   if (not EnabledBaloons) or (not ShowBalloons) then exit;
@@ -256,7 +261,7 @@ begin
   Shell_NotifyIcon(NIM_MODIFY, @NID_50);
 end;
 
-constructor TtrayIcon.create(hndl:HWND);
+constructor TtrayIcon.create(hndl: HWND);
 begin
   ZeroMemory(@data, NOTIFYIconDataW_V2_SIZE);
  with data do
@@ -292,7 +297,7 @@ begin
 //  tbcmp.Free;
 end;
 
-procedure TtrayIcon.updateHandle(hndl:HWND);
+procedure TtrayIcon.updateHandle(hndl: HWND);
 begin
 {
 //        if fspTaskbarMainAppWnd = 0 then
@@ -303,11 +308,11 @@ begin
 }
   if not shown then
    begin
-    data.wnd:=hndl;
+    data.wnd := hndl;
     exit;
    end;
   hide;
-  data.wnd:=hndl;
+  data.wnd := hndl;
   Shell_NotifyIcon(NIM_ADD, @data);
  // Для балунов тоже нада бы...
 end;
@@ -337,7 +342,7 @@ begin
 }
 end; { update }
 
-procedure TtrayIcon.setIcon(icon:Ticon);
+procedure TtrayIcon.setIcon(icon: Ticon);
 begin
   if icon=NIL then exit;
   if ico = NIL then
@@ -360,13 +365,13 @@ begin
    end
   else
    begin
-     ico.Handle := 0;//Application.Icon.Handle;
+     ico.Handle := 0; // Application.Icon.Handle;
      data.hIcon := 0;
    end;
   update;
 end;
 {
-procedure TtrayIcon.setIconFile(fn:string);
+procedure TtrayIcon.setIconFile(fn: String);
 var
   ico:Ticon;
 begin
@@ -375,7 +380,7 @@ ico.loadFromFile(fn);
 setIcon(ico);
 end; // setIconFile}
 
-procedure TtrayIcon.setTip(const s:string);
+procedure TtrayIcon.setTip(const s: String);
 begin
 //  strPCopy(data.szTip, s);
   strLCopy(data.szTip, PChar(s), 127);
@@ -392,7 +397,7 @@ end; // minimizeToTray
 
 procedure TtrayIcon.show;
 begin
-  shown:=true;
+  shown := true;
   fHided := False;
   Shell_NotifyIcon(NIM_ADD, @data)
 end; { show }

@@ -303,7 +303,7 @@ begin
       ev.f_info      := getString;
       add(ev);
       end;
-    HI_hashed: hashed:=getString;
+    HI_hashed: hashed := getString;
     HI_cryptMode:
       begin
 //      getInt; // skip length

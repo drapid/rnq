@@ -160,7 +160,18 @@ type
 
 const
   ProxyUnkError = 'PROXY: Unknown reply\n[%d]\n%s';
-  function LoadFromURL(const URL:String; var fn : String; Treshold : LongInt = 0; ExtByContent : Boolean = False) : Boolean;
+  SSLError = 'SSL: libeay32.dll or ssleay32.dll not found\n%s';
+  ImageContentTypes: array [0 .. 7] of string = ('image/bmp', 'image/jpeg', 'image/gif', 'image/png', 'image/x-icon', 'image/tiff', 'image/x-tiff', 'image/webp');
+
+  procedure SetupProxy(var httpCli: TSslHttpCli);
+  function HeaderFromURL(const URL: String): String;
+  function LoadFromURL0(const URL: String; var fn: String; Threshold: LongInt = 0; ExtByContent: Boolean = False): Boolean;
+  function LoadFromURL(const URL: String; var fn: String; var fs: TMemoryStream; Threshold: LongInt = 0;
+                       ExtByContent: boolean = false; DoPOST: boolean = false; POSTData: RawByteString = ''; showErrors: boolean = true): boolean; overload;
+  function LoadFromURL(const URL: String; var fn: String; Threshold: LongInt = 0; ExtByContent: boolean = false;
+                       DoPOST: boolean = false; POSTData: RawByteString = ''; showErrors: boolean = true): boolean; overload;
+  function LoadFromURL(const URL: String; var fs: TMemoryStream; Threshold: LongInt = 0; ExtByContent: boolean = false;
+                       DoPOST: boolean = false; POSTData: RawByteString = ''; showErrors: boolean = true): boolean; overload;
 
 var
   MainProxy : Tproxy;
@@ -929,8 +940,9 @@ function TRnQSocket.GetNTLMMessage3_RD(const ForProxy: Boolean; Domain : String 
 var
   Hostname, usr : String;
 //  res : AnsiString;
-  nmd : Boolean; AuthDt : RawByteString;
-  i : Integer;
+  nmd: Boolean;
+  AuthDt: RawByteString;
+  i: Integer;
 begin
   if secInit and (http.user= '') and (http.pwd = '') then
    begin
@@ -984,16 +996,163 @@ end;
 {$ENDIF}
 
  {$IFDEF RNQ_FULL}
-function LoadFromURL(const URL:String; var fn : String; Treshold : LongInt = 0; ExtByContent : Boolean = false) : Boolean;
+
+procedure SetupProxy(var httpCli: TSslHttpCli);
+begin
+  httpCli.SocksServer := '';
+  httpCli.SocksPort := '';
+  httpCli.SocksAuthentication := socksNoAuthentication;
+  httpCli.Proxy := '';
+  httpCli.ProxyPort := '';
+  if (StrUtils.StartsText('https://', httpCli.URL)) then
+    httpCli.SslContext := TSslContext.Create(nil);
+
+  if (MainProxy.proto in [PP_SOCKS4, PP_SOCKS5, PP_HTTPS]) then
+  case MainProxy.proto of
+    PP_SOCKS4, PP_SOCKS5:
+    begin
+      // sock.socksServer:=proxy.addr[proxy.proto].host;
+      // sock.socksPort:=proxy.addr[proxy.proto].port;
+      httpCli.SocksServer := MainProxy.addr.host;
+      httpCli.SocksPort := intToStr(MainProxy.addr.port);
+
+      if MainProxy.proto = PP_SOCKS4 then
+        httpCli.SocksLevel := '4'
+      else
+        httpCli.SocksLevel := '5';
+      httpCli.SocksAuthentication := socksNoAuthentication;
+      if MainProxy.auth then
+        httpCli.SocksAuthentication := socksAuthenticateUsercode;
+      // if proxy.NTLM then sock.SocksAuthentication := s
+      // if not proxy.NTLM then
+      begin
+        // sock.SocksAuthentication :=
+        httpCli.SocksUsercode := MainProxy.user;
+        httpCli.SocksPassword := MainProxy.pwd;
+      end
+    end;
+    PP_HTTPS:
+    begin
+      httpCli.Proxy := MainProxy.addr.host;
+      httpCli.ProxyPort := intToStr(MainProxy.addr.port);
+      // mainfrm.httpClient.ProxyConnection
+      if MainProxy.auth then
+      begin
+        httpCli.ProxyUsername := MainProxy.user;
+        httpCli.ProxyPassword := MainProxy.pwd;
+        if MainProxy.NTLM then
+          httpCli.ProxyAuth := OverbyteIcsHttpProt.httpAuthNtlm
+        else
+          httpCli.ProxyAuth := OverbyteIcsHttpProt.httpAuthBasic;
+      end
+    end
+  end;
+end;
+
+function LoadFromURL(const URL: String; var fn: String; Threshold: LongInt = 0; ExtByContent: boolean = false;
+  DoPOST: boolean = false; POSTData: RawByteString = ''; showErrors: boolean = true): boolean;
+var
+  fs: TMemoryStream;
+begin
+  fs := nil;
+  Result := LoadFromURL(URL, fn, fs, Threshold, ExtByContent, DoPOST, POSTData, showErrors);
+end;
+
+function LoadFromURL(const URL: String; var fs: TMemoryStream; Threshold: LongInt = 0; ExtByContent: boolean = false;
+  DoPOST: boolean = false; POSTData: RawByteString = ''; showErrors: boolean = true): boolean;
+var
+  fn: String;
+begin
+  Result := LoadFromURL(URL, fn, fs, Threshold, ExtByContent, DoPOST, POSTData, showErrors);
+end;
+
+function LoadFromURL(const URL: String; var fn: String; var fs: TMemoryStream; Threshold: LongInt = 0;
+  ExtByContent: boolean = false; DoPOST: boolean = false; POSTData: RawByteString = ''; showErrors: boolean = true): boolean;
+var
+  // idx: Integer;
+  AvStream: TMemoryStream;
+  httpCli: TSslHttpCli;
+  ft: TPAFormat;
+begin
+  Result := false;
+  // idx:=  HasAvatar(UIN);
+  try
+    httpCli := TSslHttpCli.Create(nil);
+    httpCli.URL := URL;
+    SetupProxy(httpCli);
+
+    AvStream := TMemoryStream.Create;
+    httpCli.RcvdStream := AvStream;
+
+    Result := false;
+    try
+      if Threshold > 0 then
+      begin
+        httpCli.Head;
+        if httpCli.ContentLength > Threshold then
+          Exit;
+      end;
+      // httpCli.Options
+      try
+        // httpCli.MultiThreaded := True;
+        // httpCli.ThreadDetach;
+        if DoPOST then
+        begin
+          httpCli.SendStream := TMemoryStream.Create;
+          httpCli.SendStream.Write(POSTData[1], Length(POSTData));
+          httpCli.SendStream.Seek(0, 0);
+          httpCli.Post;
+        end
+        else
+          httpCli.Get;
+        // httpCli.ThreadAttach;
+        Result := true;
+      except
+        on E: EHttpException do
+          if showErrors then
+            if E.ErrorCode = 3 then
+              msgDlg(getTranslation(SSLError, [E.Message]), false, mtError)
+            else if E.ErrorCode <> 404 then
+              msgDlg(getTranslation(ProxyUnkError, [E.ErrorCode, E.Message]), false, mtError)
+      end;
+
+      if Result then
+      begin
+        AvStream.Seek(0, 0);
+        if not (fs = nil) then
+        begin
+          AvStream.SaveToStream(fs);
+          fs.Seek(0, 0);
+        end
+        else if not(fn = '') then
+        begin
+          if ExtByContent then
+          begin
+            ft := DetectFileFormatStream(AvStream);
+            if ft <> PA_FORMAT_UNK then
+              fn := ChangeFileExt(fn, PAFormat[ft]);
+          end;
+          AvStream.SaveToFile(fn);
+        end;
+      end;
+    finally
+      httpCli.Free;
+      FreeAndNil(AvStream);
+    end;
+  except
+
+  end;
+end;
+
+function LoadFromURL0(const URL: String; var fn: String; Threshold: LongInt = 0; ExtByContent: Boolean = false): Boolean;
 // {$IFNDEF RNQ_LITE}
 var
-//  idx: Integer;
   AvStream: TMemoryStream;
   httpCli: THttpCli;
   ft : TPAFormat;
 begin
   Result := False;
-//  idx:=  HasAvatar(UIN);
+
  try
   httpCli := THttpCli.Create(NIL);
 //  proxySettings(httpCli.CtrlSocket);
@@ -1057,10 +1216,10 @@ begin
   httpCli.URL:= URL;
   result := False;
   try
-    if Treshold > 0 then
+    if Threshold > 0 then
      begin
       httpCli.Head;
-      if httpCli.ContentLength > Treshold then
+      if httpCli.ContentLength > Threshold then
         Exit;
      end;
 //    httpCli.Options
@@ -1103,6 +1262,31 @@ begin
 end;
 // {$ENDIF RNQ_LITE} *)
  {$ENDIF RNQ_FULL}
+
+function HeaderFromURL(const URL: String): String;
+var
+  AvStream: TMemoryStream;
+  httpCli: TSslHttpCli;
+begin
+  Result := '';
+  try
+    httpCli := TSslHttpCli.Create(nil);
+    httpCli.URL := URL;
+    SetupProxy(httpCli);
+
+    AvStream := TMemoryStream.Create;
+    httpCli.RcvdStream := AvStream;
+
+    try
+      httpCli.Head;
+      Result := httpCli.ContentType;
+    except end;
+  finally
+    httpCli.Free;
+    FreeAndNil(AvStream);
+  end;
+end;
+
 
 
 //FINALIZATION

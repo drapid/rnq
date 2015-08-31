@@ -341,10 +341,10 @@ docking.enabled:=TRUE;
 docking.appbar:=TRUE;
 docking.Dock2Chat := False;
 docking.Docked2chat := False;
-behaviour[EK_oncoming].trig:=[BE_tray,BE_sound,BE_tip,BE_history];
-behaviour[EK_offgoing].trig:=[BE_history,BE_tip];
-behaviour[EK_msg].trig:=[BE_tray,BE_openchat,BE_save,BE_sound,BE_history,BE_tip,BE_FLASHCHAT];
-behaviour[EK_contacts]:=behaviour[EK_msg];
+behaviour[EK_oncoming].trig := [BE_tray, BE_sound, BE_tip, BE_history];
+behaviour[EK_offgoing].trig := [BE_history, BE_tip];
+behaviour[EK_msg].trig := [BE_tray, BE_openchat, BE_save, BE_sound, BE_history, BE_tip, BE_FLASHCHAT];
+behaviour[EK_contacts] := behaviour[EK_msg];
 behaviour[EK_auth]:=behaviour[EK_msg];
 behaviour[EK_authDenied]:=behaviour[EK_msg];
 behaviour[EK_authreq]:=behaviour[EK_msg];
@@ -365,6 +365,7 @@ behaviour[EK_typingFin].trig := [BE_TIP];
  {$ENDIF Use_Baloons}
 behaviour[EK_XstatusMsg].trig:=[BE_history];
 behaviour[EK_Xstatusreq].trig:=[BE_history];
+behaviour[EK_buzz].trig := [BE_OPENCHAT, BE_HISTORY, BE_TIP, BE_SOUND];
 
 for i:=1 to EK_last do
   begin
@@ -1510,26 +1511,27 @@ begin
   timeformat.log:= FormatSettings.shortdateformat+' hh:nn:ss.zzz';
   timeformat.automsg:='hh:nn';
 
-  supportedBehactions[EK_msg]:=allBehactions;
-  supportedBehactions[EK_url]:=allBehactions;
-  supportedBehactions[EK_oncoming]:=allBehactions;
-  supportedBehactions[EK_offgoing]:=allBehactions;
-  supportedBehactions[EK_contacts]:=allBehactions;
-  supportedBehactions[EK_addedyou]:=allBehactions;
-  supportedBehactions[EK_auth]:=allBehactions;
-  supportedBehactions[EK_authReq]:=allBehactions;
-  supportedBehactions[EK_authDenied]:=allBehactions;
-  supportedBehactions[EK_automsgreq]:=allBehactions;
-  supportedBehactions[EK_statuschange]:=allBehactions;
-//  supportedBehactions[EK_statuschangeExt]:=allBehactions;
-  supportedBehactions[EK_gcard]:=allBehactions;
-//  supportedBehactions[EK_file]:=allBehactionsButTip;
-  supportedBehactions[EK_file]:=allBehactions;
-  supportedBehactions[EK_automsg] :=allBehactions;
+  supportedBehactions[EK_msg] := allBehactions;
+  supportedBehactions[EK_url] := allBehactions;
+  supportedBehactions[EK_oncoming] := allBehactions;
+  supportedBehactions[EK_offgoing] := allBehactions;
+  supportedBehactions[EK_contacts] := allBehactions;
+  supportedBehactions[EK_addedyou] := allBehactions;
+  supportedBehactions[EK_auth] := allBehactions;
+  supportedBehactions[EK_authReq] := allBehactions;
+  supportedBehactions[EK_authDenied] := allBehactions;
+  supportedBehactions[EK_automsgreq] := allBehactions;
+  supportedBehactions[EK_statuschange] := allBehactions;
+//  supportedBehactions[EK_statuschangeExt] := allBehactions;
+  supportedBehactions[EK_gcard] := allBehactions;
+//  supportedBehactions[EK_file] := allBehactionsButTip;
+  supportedBehactions[EK_file] := allBehactions;
+  supportedBehactions[EK_automsg] := allBehactions;
   supportedBehactions[EK_typingBeg] := mtnBehactions;
   supportedBehactions[EK_typingFin] := mtnBehactions;
-  supportedBehactions[EK_XstatusMsg]:=allBehactions;
-  supportedBehactions[EK_Xstatusreq]:=allBehactions;
+  supportedBehactions[EK_XstatusMsg]:= allBehactions;
+  supportedBehactions[EK_Xstatusreq]:= allBehactions;
+  supportedBehactions[EK_buzz] := [BE_OPENCHAT, BE_HISTORY, BE_TIP, BE_SOUND];
 
   resetCommonCFG;
   loadCommonCFG;
@@ -1701,12 +1703,12 @@ var
   MyInf : TRnQContact;
   AccUID : TUID;
 begin
- i:=findInAvailableUsers(uin2Bstarted);
- if i < 0 then
-  begin
-   msgDlg('StartUser: Bad UIN', True, mtError);
-   halt(1);
-  end;
+  i := findInAvailableUsers(uin2Bstarted);
+  if i < 0 then
+   begin
+    msgDlg('StartUser: Bad UIN', True, mtError);
+    halt(1);
+   end;
   s := 'R&Q' + uin2Bstarted;
 //there is no previous Mutex so create new one
   Mutex:=CreateMutex(nil,false, PChar(s));
@@ -2056,8 +2058,10 @@ loggaEvtS('Various lists: loaded');
   setProgBar(nil, 0);
   if autoConnect then
     doConnect;
- loggaEvtS('user: started');
- CheckBDays;
+  loggaEvtS('user: started');
+  CheckBDays;
+  applySnap;
+
 //if not startMinimized then
 //  showForm(mainfrm);
 //SetMenu(mainFrm.Handle, mainFrm.menu.Handle);

@@ -298,7 +298,8 @@ begin
 //wp.lang:=languageCodes.fromString(langBox.text);
   wp.lang := StrToLanguageI(langBox.text);        }
 
-  if not accumulateChk.checked then cleanResults;
+  if not accumulateChk.checked then
+    cleanResults;
 //  searchBtn.kind := bkNo;
   searchBtn.Caption := getTranslation('S&top');
 
@@ -500,7 +501,8 @@ end;
 
 procedure TwpFrm.Viewinfo1Click(Sender: TObject);
 begin
-  if resultTree.SelectedCount = 0 then Exit;
+  if resultTree.SelectedCount = 0 then
+    Exit;
 //  viewInfoAbout(selectedContact);
   selectedContact.ViewInfo; 
 end;
@@ -518,7 +520,9 @@ begin
 end;
 
 procedure TwpFrm.uinBoxChange(Sender: TObject);
-begin onlyDigits(sender) end;
+begin
+  onlyDigits(sender)
+end;
 
 procedure TwpFrm.resultsDblClick(Sender: TObject);
 begin
@@ -596,11 +600,12 @@ procedure TwpFrm.resultTreeHeaderClick(Sender: TVTHeader;
   HitInfo: TVTHeaderHitInfo);
 begin
   if HitInfo.Column = Sender.SortColumn then
-   if Sender.SortDirection = sdAscending then
-    Sender.SortDirection := sdDescending
-   else Sender.SortDirection := sdAscending
-  else
-   Sender.SortColumn := HitInfo.Column;
+    if Sender.SortDirection = sdAscending then
+      Sender.SortDirection := sdDescending
+     else
+      Sender.SortDirection := sdAscending
+   else
+    Sender.SortColumn := HitInfo.Column;
 end;
 
 procedure TwpFrm.FormPaint(Sender: TObject);
@@ -609,11 +614,15 @@ begin
 end;
 
 procedure TwpFrm.Label12Click(Sender: TObject);
-begin with onlineChk do checked := not checked end;
+begin
+  with onlineChk do
+    checked := not checked
+end;
 
 procedure TwpFrm.Sendmessage1Click(Sender: TObject);
 begin
-  if resultTree.SelectedCount = 0 then Exit;
+  if resultTree.SelectedCount = 0 then
+    Exit;
   chatFrm.openOn(selectedContact)
 end;
 
@@ -622,7 +631,10 @@ begin
   addToRoster(selectedContact, (sender as TRQmenuitem).tag)
 end;
 
-procedure TwpFrm.destroyHandle; begin inherited end;
+procedure TwpFrm.destroyHandle;
+begin
+  inherited
+end;
 
 procedure TwpFrm.FormShow(Sender: TObject);
 begin
@@ -657,7 +669,10 @@ begin
 end;
 
 procedure TwpFrm.Label1Click(Sender: TObject);
-begin with accumulateChk do checked := not checked end;
+begin
+  with accumulateChk do
+    checked := not checked
+end;
 
 procedure TwpFrm.FormResize(Sender: TObject);
 begin

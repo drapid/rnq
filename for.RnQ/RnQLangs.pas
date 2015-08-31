@@ -17,65 +17,65 @@ type
   ToLangInfo = Class(TObject)
    public
 //  Tthemeinfo=record
-     fn, subFile,desc:string;
+     fn, subFile, desc: string;
 //     isUTF : Boolean;
 //     Ver : byte;
     end;
    aLangInfo = array of ToLangInfo;
 
-//TLangList = THashedStringList;
-TLangList = TDictionary<String, String>;
+//  TLangList = THashedStringList;
+  TLangList = TDictionary<String, String>;
 
 type
   TRnQLang = class
    private
 //    LangPath : TThemePath;
-    LangsStr : TLangList;
+    LangsStr: TLangList;
   {$IFDEF LANGDEBUG}
-    hLangsStr : TLangList;
+    hLangsStr: TLangList;
   {$ENDIF}
 
-    langFN0, langFN1 : String;
+    langFN0, langFN1: String;
 //    langIsUTF : Boolean;
-    function TranslateString(const Str : AnsiString): String; overload;{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;
+    function TranslateString(const Str: AnsiString): String; overload;{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;
  {$IFDEF UNICODE}
-    function TranslateString(const Str : UnicodeString): String; overload;{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;
+    function TranslateString(const Str: UnicodeString): String; overload;{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;
  {$ENDIF UNICODE}
-    Procedure LangAddStr(const k : String; const v : String; Mas : TLangList);
-    function  fileIsUTF(fn : String) : Boolean;
+    Procedure LangAddStr(const k: String; const v: String; Mas: TLangList);
+    function  fileIsUTF(fn: String): Boolean;
    public
-//    constructor LoadLang(p_fn : String; p_isUTFLang : Boolean);
+//    constructor LoadLang(p_fn: String; p_isUTFLang: Boolean);
     constructor Create;
 //    function Trans(const key: AnsiString; const args:array of const):string; overload;
 //    function Trans(const key: AnsiString):string; overload;
 
    {$IFDEF UNICODE}
-//    function Trans(const key: UnicodeString; const args:array of const):string; overload;
-//    function Trans(const key: UnicodeString):string; overload;
+//    function Trans(const key: UnicodeString; const args: array of const): string; overload;
+//    function Trans(const key: UnicodeString): string; overload;
    {$ENDIF UNICODE}
 
-//    Procedure loadLanguageFile(fn : String; isUTFLang : Boolean);
-    Procedure loadLanguageFile2(fn:string; ts : TThemeSourcePath; isUTFLang : Boolean);
+//    Procedure loadLanguageFile(fn: String; isUTFLang: Boolean);
+    Procedure loadLanguageFile2(fn: String; ts: TThemeSourcePath; isUTFLang: Boolean);
 
     procedure ClearLanguage;
     procedure resetLanguage;
 //    procedure loadLanguage;
-    procedure loadLanguage2(f : ToLangInfo);
+    procedure loadLanguage2(f: ToLangInfo);
     procedure loadLastLanguage;
 
     procedure ClearLang;
     procedure resetLang;
   end;
 
-  function getTranslation(const key: AnsiString; const args:array of const):string; overload;
-  function getTranslation(const key: AnsiString):string; overload;
+  function getTranslation(const key: AnsiString; const args: array of const): String; overload;
+  function getTranslation(const key: AnsiString): String;  overload;
 
  {$IFDEF UNICODE}
-  function getTranslation(const key: UnicodeString; const args:array of const):string; overload;
-  function getTranslation(const key: UnicodeString):string; overload;
+  function getTranslation(const key: UnicodeString; const args: array of const): string; overload;
+  function getTranslation(const key: UnicodeString): string; overload;
  {$ENDIF UNICODE}
 
-  procedure refreshLangList(pOnlyFileNames : Boolean);
+  procedure refreshLangList(pOnlyFileNames: Boolean);
   procedure ClearLanglist;
 
   procedure LoadSomeLanguage;
@@ -432,7 +432,7 @@ end;
 
 procedure TRnQLang.loadLastLanguage;
 var
-  f : ToLangInfo;
+  f: ToLangInfo;
 begin
   f := ToLangInfo.Create;
   f.fn := langFN0;
@@ -445,12 +445,12 @@ begin
   end;
 end;
 
-procedure TRnQLang.loadLanguage2(f : ToLangInfo);
+procedure TRnQLang.loadLanguage2(f: ToLangInfo);
 var
-  i,k : Integer;
-  pt : TThemeSourcePath;
-  fn : String;
-  isUTF : Boolean;
+  i, k: Integer;
+  pt: TThemeSourcePath;
+  fn: String;
+  isUTF: Boolean;
 begin
   loggaEvtS('loading language: ');
 
@@ -516,7 +516,7 @@ begin
      if lang_debug then
       begin
        k := hLangStr.IndexOf(not2Translate[i]);
-       if k >=0 then
+       if k >= 0 then
         begin
          FreeMemory(TPUStrObj(hLangStr.Objects[k]).Str);
          TPUStrObj(hLangStr.Objects[k]).Free;
@@ -534,11 +534,11 @@ begin
   loggaEvtS('language loaded');
 end;
 
-Function TRnQLang.TranslateString(const Str : AnsiString): String;
+Function TRnQLang.TranslateString(const Str: AnsiString): String;
 var
 //  Res : String;
 //  i : Integer;
-  s : String;
+  s: String;
 begin
     if LangsStr.TryGetValue(Str, s) then
       Result := s
@@ -575,11 +575,11 @@ begin
 end;
 
  {$IFDEF UNICODE}
-Function TRnQLang.TranslateString(const Str : UnicodeString): String;
+Function TRnQLang.TranslateString(const Str: UnicodeString): String;
 var
 //  Res : String;
 //  i : Integer;
-  s : String;
+  s: String;
 begin
     if LangsStr.TryGetValue(Str, s) then
       Result := s
@@ -616,7 +616,7 @@ begin
 end;
  {$ENDIF UNICODE}
 
-Procedure TRnQLang.LangAddStr(const k : String; const v : String; Mas : TLangList);
+Procedure TRnQLang.LangAddStr(const k: String; const v: String; Mas: TLangList);
 //var
 //  so : TPUStrObj;
 //  i : Integer;
@@ -645,11 +645,10 @@ begin
 *)
 end;
 
-function TRnQLang.fileIsUTF(fn : String) : Boolean;
+function TRnQLang.fileIsUTF(fn: String): Boolean;
 begin
   Result := ExtractFileExt(fn) = '.utflng';
 end;
-
 
 procedure TRnQLang.resetLang;
 //var
@@ -687,11 +686,10 @@ begin
     result := LangVar.TranslateString(key)
    else
     result := key;
-  result:=ansiReplaceStr(result,'\n', #13);
+  result := ansiReplaceStr(result, '\n', #13);
 end; // getTranslation
 
-
-function getTranslation(const key:Ansistring; const args:array of const):string;
+function getTranslation(const key: Ansistring; const args: array of const): String;
 //var
 //  s : extended;
 begin
@@ -708,8 +706,8 @@ begin
    except
 
    end;
-  result:=ansiReplaceStr(result,'\n',#13);
-//result:=ansiReplaceStr(result,'\s',' ');
+  result:=ansiReplaceStr(result, '\n', #13);
+//result:=ansiReplaceStr(result, '\s', ' ');
 end; // getTranslation
 
  {$IFDEF UNICODE}
@@ -757,32 +755,35 @@ procedure refreshLangList(pOnlyFileNames : Boolean);
       ati[n].subFile:=subfile;
 //      ati[n].isUTF := isUTF;
       section:='';
-{
+
       while s>'' do
         begin
-        line:=chopline(s);
+        line := chopline(s);
         if (line>'') and (line[1]='[') then
           begin
-          line:=trim(line);
+          line := trim(line);
           if line[length(line)]=']' then
-            section:=copy(line,2,length(line)-2);
+            section := copy(line, 2, length(line)-2);
           continue;
           end;
-        v:=trim(line);
-        k:=AnsiLowerCase(trim(chop('=',v)));
-        v:=trim(v);
+        v := trim(line);
+        k := AnsiLowerCase(trim(chop('=', v)));
+        v := trim(v);
         if section='' then
-          begin
-          if k='logo'  then ati[n].logo := v;
-          if k='title' then ati[n].title:= UnUTF(v);
-          if k='desc'  then ati[n].desc := ansiReplaceStr(UnUTF(v),'\n',CRLF);
-          end;
+         begin
+          // if k = 'logo'  then ati[n].logo := v;
+          // if k = 'title' then ati[n].title := UnUTF(v);
+          if k = 'desc'  then
+            ati[n].desc := ansiReplaceStr(UnUTF(v),'\n',CRLF);
+         end;
         v := '';
         if section='desc' then
-          with ati[n] do desc:=desc+ UnUTF(line)+CRLF;
+          with ati[n] do
+            desc:=desc+ UnUTF(line)+CRLF;
         end;
-      with ati[n] do desc:=trimright(desc);
-}
+      with ati[n] do
+        desc:=trimright(desc);
+
   end;
  begin
 //     line := trim(chopline(s));
@@ -796,15 +797,15 @@ const
    langsFiles : array[0..1] of string = ('RnQ*.utflng', 'RnQ*.lng');
    ZipLangs : array[0..0] of string = ('.zlng');
 var
-  sr:TSearchRec;
+  sr: TSearchRec;
   I, e: Integer;
 //  str: TStringStream;
 //  str2: TMemoryStream;
-  ts : TThemeSourcePath;
-  fn, FullFN : String;
+  ts: TThemeSourcePath;
+  fn, FullFN: String;
   //subFile,
-  sA : RawByteString;
-  w:string;
+  sA: RawByteString;
+  w: String;
 //  lang_paths : array[0..1] of string;
   lang_paths : array of string;
   lang_subpaths : array of string;
@@ -890,7 +891,7 @@ procedure ClearLangList;
   begin
  {$IFDEF DELPHI9_UP}
    for t in tl do begin
- {$ELSE DELPHI_9_dn}
+ {$ELSE DELPHI9_dn}
    for i := Low(tl) to High(tl) do begin
     t := tl[i];
  {$ENDIF DELPHI9_UP}

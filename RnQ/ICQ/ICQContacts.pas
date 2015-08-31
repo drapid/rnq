@@ -66,6 +66,7 @@ type
     age: Smallint ;
     MarStatus : word;
     email,
+    address,
     city,
     state,
     about,
@@ -82,16 +83,21 @@ type
     workDep,
     workPos,
     workpage,
+    birthcity,
+    birthstate,
+    regular,
     cellular,
 //    lclImportant,
     ssImportant,
     ssCell,
+    ssCell2,
+    ssCell3,
     ssMail : String;
     OnlineTime : dWord;       // В секундах!
     lastUpdate_dw:dword;
     lastinfoupdate_dw:dword;
     lastStatusUpdate_dw:dword;
-    country, workCountry:word;
+    country, workCountry, birthCountry: word;
     IdleTime : word;          // В секундах!
     GMThalfs:Shortint;
     lang : Tlanguages;
@@ -256,6 +262,7 @@ infoUpdatedTo:=0;
 lastTimeSeenOnline:=0;
 fillChar(lang,sizeOf(lang),0);
 homepage:='';
+regular:='';
 cellular:='';
 SMSable:=FALSE;
 proto:=0;
@@ -274,6 +281,8 @@ extracapabilities:='';
   SetLength(lclImportant, 0);
 //  SetLength(email, 0);
   SetLength(ssCell, 0);
+  SetLength(ssCell2, 0);
+  SetLength(ssCell3, 0);
   SetLength(ssMail, 0);
 
   fDisplay:='';
@@ -294,6 +303,7 @@ extracapabilities:='';
   workDep := '';
   workPos := '';
   workpage := '';
+  regular := '';
   cellular := '';
   clearInterests;
 end; // clear
@@ -619,6 +629,7 @@ begin
       +TLV2U_IFNN(DBFK_FIRST, first)
       +TLV2U_IFNN(DBFK_LAST, last)
       +TLV2U_IFNN(DBFK_EMAIL, email)
+      +TLV2U_IFNN(DBFK_ADDRESS, address)
       +TLV2U_IFNN(DBFK_CITY, city)
       +TLV2U_IFNN(DBFK_STATE, state)
       +TLV2U_IFNN(DBFK_ABOUT, about)
@@ -628,6 +639,7 @@ begin
       +TLV2_IFNN(DBFK_COUNTRY, integer(country))
       +TLV2_IFNN(DBFK_LANG, languages2str(lang))
       +TLV2U_IFNN(DBFK_HOMEPAGE, homepage)
+      +TLV2U_IFNN(DBFK_REGULAR, regular)
       +TLV2U_IFNN(DBFK_CELLULAR, cellular)
       +TLV2_IFNN(DBFK_IP, connection.ip)
 //      +TLV2(DBFK_AGE, int2str(age))
@@ -657,6 +669,8 @@ begin
       +TLV2U_IFNN(DBFK_ssNoteStr, ssImportant)
       +TLV2U_IFNN(DBFK_ssMail, ssMail)
       +TLV2U_IFNN(DBFK_ssCell, ssCell)
+      +TLV2U_IFNN(DBFK_ssCell2, ssCell2)
+      +TLV2U_IFNN(DBFK_ssCell3, ssCell3)
 //      +TLV2(DBFK_ICONSHOW, int2str(icon.ToShow))
       +TLV2(DBFK_ICONSHOW, integer(icon.ToShow))
       +TLV2_IFNN(DBFK_ICONMD5, ICQIcon.hash_safe)
@@ -673,6 +687,10 @@ begin
       +TLV2U_IFNN(DBFK_WORKCITY,  workcity)
       +TLV2_IFNN(DBFK_MARSTATUS, MarStatus)
       +TLV2_IFNN(DBFK_qippwd, crypt.qippwd)
+
+      +TLV2_IFNN(DBFK_BIRTHCOUNTRY, integer(birthCountry))
+      +TLV2U_IFNN(DBFK_BIRTHSTATE, birthstate)
+      +TLV2U_IFNN(DBFK_BIRTHCITY, birthcity)
 end;
 
 function TICQcontact.ParseDBrow(ItemType : Integer; const item : RawByteString) : Boolean;
@@ -705,6 +723,7 @@ begin
 //        cntICQ := TICQcontact(c);
         case ItemType of
           DBFK_EMAIL:   self.email:= UnUTF(item);
+          DBFK_ADDRESS: self.address := UnUTF(item);
           DBFK_CITY:    self.city := UnUTF(item);
           DBFK_STATE:   self.state:= UnUTF(item);
           DBFK_ABOUT:   self.about:= UnUTF(item);
@@ -714,6 +733,7 @@ begin
           DBFK_LANG:    system.move(item[1], self.lang, 3);
           DBFK_HOMEPAGE:    self.homepage := UnUTF(item);
           DBFK_CELLULAR:    self.cellular := UnUTF(item);
+          DBFK_REGULAR:     self.regular := UnUTF(item);
           DBFK_IP:          system.move(item[1], self.connection.ip, 4);
           DBFK_AGE:         system.move(item[1], self.age, 4);
           DBFK_GMT:         system.move(item[1], self.GMThalfs, 1);
@@ -737,9 +757,15 @@ begin
           DBFK_WORKSTATE:   self.workstate := UnUTF(item);
           DBFK_WORKCITY :   self.workcity  := UnUTF(item);
 
+          DBFK_BIRTHCOUNTRY: system.move(item[1], self.birthCountry, 4);
+          DBFK_BIRTHSTATE:   self.birthstate := UnUTF(item);
+          DBFK_BIRTHCITY :   self.birthcity  := UnUTF(item);
+
           DBFK_ssNoteStr:   self.ssImportant := UnUTF(item);
           DBFK_ssMail:      self.ssMail := UnUTF(item);
           DBFK_ssCell:      self.ssCell := UnUTF(item);
+          DBFK_ssCell2:     self.ssCell2 := UnUTF(item);
+          DBFK_ssCell3:     self.ssCell3 := UnUTF(item);
           DBFK_ICONMD5:     self.ICQIcon.hash_safe := item;
           DBFK_MARSTATUS:   self.MarStatus := str2int(item);
           DBFK_qippwd:      self.crypt.qippwd := str2int(item);

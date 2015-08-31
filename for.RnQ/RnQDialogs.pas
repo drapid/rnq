@@ -40,6 +40,7 @@ resourcestring
   SMsgDlgError = Str_Error;
   SMsgDlgInformation = 'Information';
   SMsgDlgConfirm = 'Confirm';
+  SMsgDlgBuzz = 'Buzz';
   SMsgDlgYes = '&Yes';
   SMsgDlgNo = '&No';
   SMsgDlgOK = 'OK';
@@ -54,6 +55,7 @@ resourcestring
   SMsgDlgNoToAll = 'N&o to All';
   SMsgDlgYesToAll = 'Yes to &All';
   SMsgDlgClose    = 'Close';
+  SCannotOpenClipboard = 'Cannot open clipboard: %s';
 
  function InputQueryBig(const ACaption, APrompt: string;
    var Value: string): Boolean;
@@ -92,29 +94,29 @@ implementation
   {$ENDIF}
    SysUtils, StrUtils;
 
- function CharReplace(const Source: string; oldChar, newChar: Char): string;
- var
+function CharReplace(const Source: string; oldChar, newChar: Char): string;
+var
    i: Integer;
- begin
+begin
    Result := Source;
    for i := 1 to Length(Result) do
      if Result[i] = oldChar then
        Result[i] := newChar
- end;
+end;
 
- function OpenSaveFileDialog(ParentHandle: THandle;
+function OpenSaveFileDialog(ParentHandle: THandle;
    const DefExt, Filter, InitialDir, Title: string; var FileNames: string;
-   IsOpenDialog: Boolean; Multi : Boolean = false): Boolean;
- const
+   IsOpenDialog: Boolean; Multi: Boolean = false): Boolean;
+const
    OPENFILENAME_SIZE_VERSION_400 = 76;
- var
+var
    ofn: TOpenFilename;
    szFile: array[0..32000] of Char;
    szDir: array[0..32000] of Char;
-   vDir : String;
-   i, j : Integer;
+   vDir: String;
+   i, j: Integer;
 //   vEnd : Boolean;
- begin
+begin
    Result := False;
    FillChar(ofn, SizeOf(TOpenFileName), 0);
    with ofn do
@@ -131,7 +133,7 @@ implementation
      if (InitialDir <> '') then
        lpstrInitialDir := PChar(InitialDir);
      StrPCopy(lpstrFile, FileNames);
-     lpstrFilter := PChar(CharReplace(Filter, '|', #0)+#0#0);
+     lpstrFilter := PChar(CharReplace(Filter, '|', #0) + #0#0);
    if DefExt <> '' then
        lpstrDefExt := PChar(DefExt);
    end;
@@ -158,7 +160,7 @@ implementation
     //            vEnd := (i=j) or (szFile[i+1] = #0);
                 FileNames := FileNames + vDir + PathDelim + StrPas(szFile+j) + ';';
     //            FileNames := FileNames + vDir + '\'+ Copy(szFile+j, j, i-j) + ';';
-                j := j + StrLen(szFile+j)+1;
+                j := j + StrLen(szFile+j) + 1;
               until szFile[j]=#0;
               SetLength(FileNames, length(FileNames)-1);
              end
@@ -169,7 +171,7 @@ implementation
           FileNames := StrPas(szFile);
        end;
       finally
-       if i >0 then
+       if i > 0 then
          SetCurrentDirectory(szDir);
      end;
    end
@@ -184,14 +186,14 @@ implementation
          FileNames := StrPas(szFile);
        end;
       finally
-       if i >0 then
+       if i > 0 then
          SetCurrentDirectory(szDir);
      end;
    end;
   except
     Result := False;
   end;
- end;
+end;
 
 function OpenDirDialog(ParentHandle: THandle; Title: String; var DirName: String): boolean;
 {$IFNDEF BIF_NONEWFOLDERBUTTON}
@@ -199,7 +201,7 @@ const
   BIF_UAHINT = $100;   // Add a UA hint to the dialog, in place of the edit box. May not be combined with BIF_EDITBOX
   BIF_NONEWFOLDERBUTTON = $200;   // Do not add the "New Folder" button to the dialog.  Only applicable with BIF_NEWDIALOGSTYLE.
 {$ENDIF BIF_NONEWFOLDERBUTTON}
- var
+var
 //   TitleName: string;
    lpItemID: PItemIDList;
    BrowseInfo: TBrowseInfo;
@@ -208,7 +210,7 @@ const
    TempPath: array[0..MAX_PATH] of char;
 //   TempPath: array[0..MAX_PATH] of WideChar;
 //   TempPath : PWideChar;
- begin
+begin
    FillChar(BrowseInfo, sizeof(BrowseInfo), #0);
    BrowseInfo.hwndOwner := ParentHandle;
    BrowseInfo.pszDisplayName := @DisplayName;
@@ -230,7 +232,7 @@ const
    end
    else
     Result := false;
- end;
+end;
 
 {$IFDEF usesVCL}
 
@@ -427,12 +429,12 @@ var
 type
   TMessageForm = class(TForm)
   private
-    FTimer : TTimer;
-    FSeconds : Integer;
+    FTimer: TTimer;
+    FSeconds: Integer;
     DefaultButton: TMsgDlgBtn;
-//    DefButton : TRnQSpeedButton;
-      DefButton : TRnQButton;
-//    DefButton : TButton;
+//    DefButton: TRnQSpeedButton;
+      DefButton: TRnQButton;
+//    DefButton: TButton;
     Message: TLabel;
     procedure HelpButtonClick(Sender: TObject);
   protected
@@ -445,7 +447,7 @@ type
   end;
 
 procedure TMessageForm.onTimer(Sender: TObject);
- begin
+begin
   Dec(FSeconds);
     DefButton.Caption := getTranslation( LoadResString(ButtonCaptions[DefaultButton]) +
       ' (%d)', [FSeconds]);
@@ -455,7 +457,7 @@ procedure TMessageForm.onTimer(Sender: TObject);
     ModalResult := ModalResults[DefaultButton];
     FTimer.Enabled := False
   end
- end;
+end;
 
 constructor TMessageForm.CreateNew(AOwner: TComponent);
 var
@@ -525,7 +527,7 @@ begin
 //    if Components[I] is TRnQSpeedButton then
 //      ButtonCaptions := ButtonCaptions + TRnQSpeedButton(Components[I]).Caption +
         StringOfChar(' ', 3);
-  ButtonCaptions := StringReplace(ButtonCaptions,'&','', [rfReplaceAll]);
+  ButtonCaptions := StringReplace(ButtonCaptions, '&', '', [rfReplaceAll]);
   Result := Format('%s%s%s%s%s%s%s%s%s%s', [DividerLine, Caption, sLineBreak,
     DividerLine, Message.Caption, sLineBreak, DividerLine, ButtonCaptions,
     sLineBreak, DividerLine]);
@@ -562,7 +564,7 @@ var
   IconID: PChar;
   TextRect: TRect;
 //  tB : TRnQSpeedButton;
-  tB : TRnQButton;
+  tB: TRnQButton;
 //  tB : TButton;
 begin
   Result := TMessageForm.CreateNew(Application);
@@ -736,10 +738,10 @@ begin
 end;
 {$ENDIF}
 
-function ChooseFontDlg(ParentHandle: THandle; Title : String; var Font: TFont) : boolean;
+function ChooseFontDlg(ParentHandle: THandle; Title: String; var Font: TFont): boolean;
 var
-  vCF : TChooseFont;
-  ff : LOGFONT;
+  vCF: TChooseFont;
+  ff: LOGFONT;
 begin
   ff.lfCharSet := Font.Charset;
 //  ff.lfHeight  := Font.Height;
@@ -786,7 +788,7 @@ begin
    end;
   if Result then
   begin
-    Font.Handle :=CreateFontIndirect(ff);
+    Font.Handle := CreateFontIndirect(ff);
 //  Font.Name := ff.lfFaceName;
     Font.Color := vcf.rgbColors;
     if ff.lfItalic <> 0 then
@@ -829,7 +831,7 @@ DLGRES_NO = 7;
 DLGRES_CLOSE = 8;
 
 { Example:
-HRESULT TaskDialog(HWND hWndParent,
+ HRESULT TaskDialog(HWND hWndParent,
     HINSTANCE hInstance,
     PCWSTR pszWindowTitle,
     PCWSTR pszMainInstruction,
@@ -851,12 +853,12 @@ if TaskDialog(self, 'Hello world','Ready to enjoy the new Vista task dialog ?',
    TD_YES + TD_NO, TD_ICON_QUESTION) = mrYes then
      TaskMessage(self,'yes');
 }
-function TaskDialog(AForm: TCustomForm; ATitle, ADescription, AContent: string; Buttons,Icon: integer): integer;
+function TaskDialog(AForm: TCustomForm; ATitle, ADescription, AContent: string; Buttons, Icon: integer): integer;
 var
   VerInfo: TOSVersioninfo;
   DLLHandle: THandle;
   res: integer;
-  wTitle,wDescription,wContent: array[0..1024] of widechar;
+  wTitle, wDescription, wContent: array[0..1024] of widechar;
   Btns: TMsgDlgButtons;
   DlgType: TMsgDlgType;
   TaskDialogProc: function(HWND: THandle; hInstance: THandle;
@@ -871,17 +873,17 @@ begin
 
   if (verinfo.dwMajorVersion >= 6) then
   begin
-    DLLHandle := LoadLibrary(comctl32);// 'comctl32.dll');
+    DLLHandle := LoadLibrary(comctl32); // 'comctl32.dll');
     if DLLHandle >= 32 then
     begin
-      @TaskDialogProc := GetProcAddress(DLLHandle,'TaskDialog');
+      @TaskDialogProc := GetProcAddress(DLLHandle, 'TaskDialog');
  
       if Assigned(TaskDialogProc) then
       begin
         StringToWideChar(ATitle, wTitle, sizeof(wTitle));
         StringToWideChar(ADescription, wDescription, sizeof(wDescription));
         StringToWideChar(AContent, wContent, sizeof(wContent));
-        TaskDialogProc(AForm.Handle, 0, wTitle, wDescription, wContent, Buttons,Icon,@res);
+        TaskDialogProc(AForm.Handle, 0, wTitle, wDescription, wContent, Buttons, Icon, @res);
 
         Result := mrOK;
 

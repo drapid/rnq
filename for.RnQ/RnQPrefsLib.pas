@@ -117,12 +117,12 @@ type
   PPrefPage = ^TPrefPage;
   TPrefPage = class
    public
-    idx   : byte;
-    frame : TPrefFrame;
-    frameClass : TPrefFrameClass;
-    GroupName : String;
+    idx: byte;
+    frame: TPrefFrame;
+    frameClass: TPrefFrameClass;
+    GroupName: String;
     Name,
-    Caption : string;
+    Caption: string;
     fProtoIDX : Integer;
 //    proto : IRnQProtocol;
    public
@@ -138,9 +138,9 @@ type
 //  procedure ClearPrefs;
 //  procedure resetPrefs;
 
-  procedure ClearPrefElement(vt : TElemType; var val : TPrefElem);
-  procedure CopyPrefElement(vt0 : TElemType; val0 : TPrefElem;
-                            vt : TElemType; var val : TPrefElem);
+  procedure ClearPrefElement(vt: TElemType; var val: TPrefElem);
+  procedure CopyPrefElement(vt0: TElemType; val0: TPrefElem;
+                            vt: TElemType; var val: TPrefElem);
 
 
 type
@@ -159,8 +159,8 @@ type
      function getRandomPort : Integer;
   end;
 
-
 implementation
+
  uses
    SysUtils, Character, ExtCtrls, StdCtrls, Controls,
    RnQSpin, RDUtils,
@@ -176,11 +176,16 @@ implementation
    Base64;
 
 procedure TPrefFrame.updateVisPage;
-begin end;
+begin
+end;
+
 procedure TPrefFrame.initPage;
-begin end;
+begin
+end;
+
 procedure TPrefFrame.unInitPage;
-begin end;
+begin
+end;
 
 
 (*
@@ -312,8 +317,8 @@ begin
 end;
 
 
-procedure TRnQPref.addPrefBlob64(const key : String;
-                                 const Val : RawByteString);
+procedure TRnQPref.addPrefBlob64(const key: String;
+                                 const Val: RawByteString);
 var
   El : TPrefElement;
   i : Integer;
@@ -630,15 +635,15 @@ begin
     end;
 end; // resetLanguage
 
-procedure TRnQPref.Load(const cfg : RawByteString);
+procedure TRnQPref.Load(const cfg: RawByteString);
 var
   l: RawByteString;
-  key : String;
-  hhh : RawByteString;
-  pp : PAnsiChar;
+  key: String;
+  hhh: RawByteString;
+  pp: PAnsiChar;
   p1, p2, // Position of CRLF
   len,
-  m1, m : Integer;
+  m1, m: Integer;
 //  lastVersion:integer;
 //  i:integer;
 begin
@@ -699,10 +704,10 @@ begin
 
 end;
 
-procedure TRnQPref.getPrefBlob(const key:String; var Val : RawByteString);
+procedure TRnQPref.getPrefBlob(const key: String; var Val: RawByteString);
 var
-  i : Integer;
-  el : TPrefElement;
+  i: Integer;
+  el: TPrefElement;
 begin
    begin
 //    Result := '';
@@ -721,10 +726,10 @@ begin
    end;
 end;
 
-procedure TRnQPref.getPrefBlob64(const key:String; var Val : RawByteString);
+procedure TRnQPref.getPrefBlob64(const key: String; var Val: RawByteString);
 var
-  i : Integer;
-  el : TPrefElement;
+  i: Integer;
+  el: TPrefElement;
 begin
    begin
 //    Result := '';
@@ -743,10 +748,10 @@ begin
    end;
 end;
 
-function TRnQPref.getPrefBlobDef(const key:String; const DefVal : RawByteString): RawByteString;
+function TRnQPref.getPrefBlobDef(const key: String; const DefVal: RawByteString): RawByteString;
 var
-  i : Integer;
-  el : TPrefElement;
+  i: Integer;
+  el: TPrefElement;
 begin
    begin
     Result := '';
@@ -767,12 +772,12 @@ begin
    end;
 end;
 
-function TRnQPref.getPrefBlob64Def(const key:String;
-                         const DefVal : RawByteString): RawByteString;
+function TRnQPref.getPrefBlob64Def(const key: String;
+                         const DefVal: RawByteString): RawByteString;
 var
-  i : Integer;
-  el : TPrefElement;
-  sr : RawByteString;
+  i: Integer;
+  el: TPrefElement;
+  sr: RawByteString;
 begin
    begin
     Result := '';
@@ -801,10 +806,10 @@ begin
    end;
 end;
 
-procedure TRnQPref.getPrefStr(const key:String; var Val : String);
+procedure TRnQPref.getPrefStr(const key: String; var Val : String);
 var
-  i : Integer;
-  el : TPrefElement;
+  i: Integer;
+  el: TPrefElement;
 begin
    begin
 //    Result := '';
@@ -823,10 +828,10 @@ begin
    end;
 end;
 
-function TRnQPref.getPrefStrDef(const key:String; const DefVal : String): String;
+function TRnQPref.getPrefStrDef(const key: String; const DefVal: String): String;
 var
-  i : Integer;
-  el : TPrefElement;
+  i: Integer;
+  el: TPrefElement;
 begin
    begin
     Result := '';
@@ -850,7 +855,7 @@ begin
    end;
 end;
 
-  function yesnof(l : PAnsiChar):boolean; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function yesnof(l: PAnsiChar): boolean; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   const
     yyy = AnsiString('yes');
   begin
@@ -858,10 +863,10 @@ end;
     result := AnsiStrings.StrIComp(l, PAnsiChar(yyy)) = 0
   end;
 
-procedure TRnQPref.getPrefBool(const key:String; var Val : Boolean);
+procedure TRnQPref.getPrefBool(const key: String; var Val: Boolean);
 var
-  i : Integer;
-  el : TPrefElement;
+  i: Integer;
+  el: TPrefElement;
 begin
    begin
      i := fPrefStr.IndexOf(key);
@@ -884,8 +889,8 @@ begin
    end;
 end;
 
-function TRnQPref.getPrefBoolDef(const key:String; const DefVal : Boolean): Boolean;
-(*  function yesno(l : PAnsiChar):boolean; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+function TRnQPref.getPrefBoolDef(const key: String; const DefVal: Boolean): Boolean;
+(*  function yesno(l: PAnsiChar):boolean; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   const
     yyy = AnsiString('yes');
   begin
@@ -893,8 +898,8 @@ function TRnQPref.getPrefBoolDef(const key:String; const DefVal : Boolean): Bool
     result := StrIComp(l, PAnsiChar(yyy)) = 0
   end;*)
 var
-  i : Integer;
-  el : TPrefElement;
+  i: Integer;
+  el: TPrefElement;
 begin
    begin
     Result := DefVal;
@@ -918,8 +923,8 @@ begin
    end;
 end;
 
-procedure TRnQPref.getPrefInt(const key:String; var Val : Integer);
-  function int(l : PAnsiChar):integer; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+procedure TRnQPref.getPrefInt(const key: String; var Val: Integer);
+  function int(l: PAnsiChar): Integer; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   var
     bb : Integer;
 //    ss : AnsiString;
@@ -955,12 +960,12 @@ begin
    end;
 end;
 
-function TRnQPref.getPrefIntDef(const key:String; const DefVal : Integer) : Integer;
-  function int(l : PAnsiChar):integer; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+function TRnQPref.getPrefIntDef(const key: String; const DefVal: Integer): Integer;
+  function int(l: PAnsiChar): integer; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   var
-    bb : Integer;
+    bb: Integer;
 //    ss : AnsiString;
-    ss : String;
+    ss: String;
   begin
     ss := l;
     System.Val(ss, Result, bb);
@@ -968,8 +973,8 @@ function TRnQPref.getPrefIntDef(const key:String; const DefVal : Integer) : Inte
      Result := 0;
   end;
 var
-  i : Integer;
-  el : TPrefElement;
+  i: Integer;
+  el: TPrefElement;
 begin
   Result := DefVal;
    begin
@@ -993,8 +998,8 @@ begin
    end;
 end;
 
-procedure TRnQPref.getPrefDate(const key:String; var Val : TDateTime);
-  function dt(l : PAnsiChar):Tdatetime; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+procedure TRnQPref.getPrefDate(const key: String; var Val: TDateTime);
+  function dt(l: PAnsiChar): TDateTime; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   var
     df : TFormatSettings;
     s : string;
@@ -1011,8 +1016,8 @@ procedure TRnQPref.getPrefDate(const key:String; var Val : TDateTime);
    end;
   end;
 var
-  i : Integer;
-  el : TPrefElement;
+  i: Integer;
+  el: TPrefElement;
 begin
    begin
      i := fPrefStr.IndexOf(key);
@@ -1035,8 +1040,8 @@ begin
    end;
 end;
 
-procedure TRnQPref.getPrefDateTime(const key:String; var Val : TDateTime);
-  function dtt(l : PAnsiChar):Tdatetime; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+procedure TRnQPref.getPrefDateTime(const key: String; var Val: TDateTime);
+  function dtt(l: PAnsiChar): TDateTime; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   var
     df : TFormatSettings;
   begin
@@ -1077,10 +1082,10 @@ begin
    end;
 end;
 
-function TRnQPref.getPrefVal(const key:String) : TPrefElement;
+function TRnQPref.getPrefVal(const key: String): TPrefElement;
 var
-  i : Integer;
-//  el : TPrefElement;
+  i: Integer;
+//  el: TPrefElement;
 begin
    begin
 //    Result := '';
@@ -1094,9 +1099,9 @@ begin
    end;
 end;
 
-procedure TRnQPref.getPrefValue(const key:String; et : TElemType; var Val : TPrefElem);
+procedure TRnQPref.getPrefValue(const key: String; et: TElemType; var Val: TPrefElem);
 var
-  i : Integer;
+  i: Integer;
 begin
    begin
 //    Result := '';
@@ -1120,13 +1125,13 @@ begin
     addPrefBool(key, Val);
 end;
 
-procedure TRnQPref.initPrefInt(const key : String; const Val : Integer);
+procedure TRnQPref.initPrefInt(const key: String; const Val: Integer);
 begin
   if not prefExists(key) then
     addPrefInt(key, Val);
 end;
 
-procedure TRnQPref.initPrefStr(const key : String; const Val : String);
+procedure TRnQPref.initPrefStr(const key: String; const Val: String);
 begin
   if not prefExists(key) then
     addPrefStr(key, Val);
@@ -1208,7 +1213,7 @@ end;
 
 function TPrefElement.Clone: TPrefElement;
 var
-  l : Integer;
+  l: Integer;
 begin
   Result := TPrefElement.Create;
   Result.ElType := Self.ElType;
@@ -1275,7 +1280,7 @@ begin
   Result.GroupName := Self.GroupName;
 end;
 
-procedure ClearPrefElement(vt : TElemType; var val : TPrefElem);
+procedure ClearPrefElement(vt: TElemType; var val: TPrefElem);
 begin
   case vt of
     ET_String: begin
@@ -1305,12 +1310,12 @@ begin
   val.dVal := 0;
 end;
 
-procedure CopyPrefElement(vt0 : TElemType; val0 : TPrefElem;
-                          vt : TElemType; var val : TPrefElem);
+procedure CopyPrefElement(vt0: TElemType; val0: TPrefElem;
+                          vt: TElemType; var val: TPrefElem);
 var
-  l : Integer;
-  strA : RawByteString;
-  s : String;
+  l: Integer;
+  strA: RawByteString;
+  s: String;
 begin
   case vt of
     ET_String:
@@ -1388,9 +1393,9 @@ begin
 end;
 
 
-procedure TPortList.AddPorts(pLPort : Integer; pRPort : Integer = 0);
+procedure TPortList.AddPorts(pLPort: Integer; pRPort: Integer = 0);
 var
-  pe : TPortElement;
+  pe: TPortElement;
 begin
   pe := TPortElement.Create;
   pe.Count := 1;
@@ -1466,15 +1471,15 @@ begin
 
 end;
 
-procedure TPortList.parseString(const s : String);
+procedure TPortList.parseString(const s: String);
 type
   TLastState = (LS_numberL, LS_numberR, LS_delimiter, LS_hyphen, LS_end);
 var
-  st, ost : tlastState;
+  st, ost: tlastState;
   I: Integer;
-  ch : Char;
-  lastNum : String;
-  lastPort, rPort : Integer;
+  ch: Char;
+  lastNum: String;
+  lastPort, rPort: Integer;
 begin
   Clear;
   PortsCount := 0;

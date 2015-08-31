@@ -35,21 +35,22 @@ const
 //  EK_statuschangeExt = 17;
   EK_XstatusMsg   = 17;
   EK_Xstatusreq   = 18;
-  EK_last         = 18;
   EK_BirthDay     = 18;
+  EK_buzz         = 19;
+  EK_last         = 19;
 
 // adding events remember to initialize supportedBehactions
 const
   event2str:array [0..EK_last] of AnsiString=(
     '','msg','url','contacts','file','authreq','addedyou',
-    'oncoming','offgoing','auth','authdenied','statuschange','automsgreq','gcard','automsg','begtyping', 'fintyping', 'xstatusmsg', 'xstatusreq'
+    'incoming','outgoing','auth','authdenied','statuschange','automsgreq','gcard','automsg','begtyping', 'fintyping', 'xstatusmsg', 'xstatusreq', 'buzz'
   );
   event2ShowStr:array [0..EK_last] of string=(
-    '',Str_message,'URL','Contacts','File','Authorization request',
-    'Added you','Oncoming','Offgoing','Authorization given',
+    '',Str_message, 'URL', 'Contacts', 'File','Authorization request',
+    'Added you', 'Oncoming', 'Offgoing', 'Authorization given',
     'Authorization denied', 'Status changed','Auto-message request',
     'Green-card', 'Auto-message', 'Begin typing', 'Finish typing',
-    'XStatus message', 'XStatus request'
+    'XStatus message', 'XStatus request', 'Contact buzzing'
   );
   trayEvent2str:array [0..EK_last] of string=(
     '','message from %s','URL from %s','contacts from %s','file',
@@ -57,7 +58,7 @@ const
     '%s authorized you','%s denied authorization','%s changed status',
     'auto-message requested by %s','greeting card from %s',
     'auto-message for %s','Begun typing', 'Finished typing', '%s changed status',
-    'XStatus requested by %s'
+    'XStatus requested by %s', 'Tried to buzz by %s'
   );
   tipevent2str:array [0..EK_last] of string=(
     '',Str_message,'Sent you an URL','Sent you contacts','Sent you file',
@@ -65,7 +66,7 @@ const
     'Authorized you','Denied authorization','Changed status',
     'Requested your auto-message','Sent you a greeting card',
     'Auto-message','Begun typing', 'Finished typing', 'Changed status',
-    'Requested your XStatus'
+    'Requested your XStatus', 'Tried to buzz you!'
   );
   tipBirth2str: array[0..2] of string=(
     'Has a birthday!', 'Has a birthday tomorrow!', 'Has a birthday after tomorrow!'
@@ -74,7 +75,8 @@ const
     histHeadevent2str:array [0..EK_last] of string=(
     '','','','',' sent file',' Request authorization','',
     ' is online',' is offline',' Authorized',' Denied authorization',' - status %3:s',
-    ' requested your auto-message',' Greeting Card',' auto-message', ' begun typing', ' finished typing', ' - status %3:s', ' requested your XStatus'
+    ' requested your auto-message',' Greeting Card',' auto-message', ' begun typing',
+    ' finished typing', ' - status %3:s', ' requested your XStatus', '%3:s'
   );
      histBodyEvent2str:array [EK_null..EK_last] of string=(
     '','','','',
@@ -82,7 +84,7 @@ const
     '%s',   // EK_authReq
     'Added you to his/her contact list', // EK_AddedYou
     '','','','%s','','',
-    'Watch the greeting card','','', '', '%s', ''
+    'Watch the greeting card','','', '', '%s', '', ''
   );
 
   EI_flags=1;
@@ -319,6 +321,8 @@ begin
         else
          Result := PIC_MSG// + 'ok'
    end
+  else if kind = EK_buzz then
+    Result := PIC_BUZZ
   else
 //   if kind = EK_XstatusMsg then
 //     result:=
@@ -532,7 +536,21 @@ else
   else
    result:='';
   if Assigned(who) then
+  begin
+    if (kind = EK_buzz) then
+      if isMyEvent then
+      begin
+        dsp := GetTranslation('You');
+        Result := ' ' + GetTranslation('tried to buzz this contact!');
+      end
+        else
+      begin
+        dsp := who.displayed;
+        Result := ' ' + GetTranslation('tried to buzz you!');
+      end
+    else
     dsp := who.displayed
+  end
    else
     dsp := ''; 
 //result:=___('history header '+event2str[kind], [
@@ -697,7 +715,7 @@ var
   i, k//, foundPicSize
     : Integer;
 begin
-  if kind in [EK_oncoming, EK_statuschange, EK_AUTOMSG, EK_XstatusMsg,EK_MSG] then
+  if kind in [EK_oncoming, EK_statuschange, EK_AUTOMSG, EK_XstatusMsg, EK_MSG] then
     Result := fBin
    else
     result := '';
@@ -850,7 +868,7 @@ else
 //    insert(0, ev)
 //  else
     inherited add(ev);
-  if ev.kind in [EK_oncoming,EK_offgoing] then
+  if ev.kind in [EK_oncoming, EK_offgoing] then
     ev.expires:=tempBlinkTime;        // tenth of second
   if count = 1 then
     if assigned(OnNewTop) then OnNewTop;
@@ -933,6 +951,7 @@ while i < count do
      exit;
    except
      result := NIL;
+     // May be need to remove bad item
    end;
   inc(i);
   end;

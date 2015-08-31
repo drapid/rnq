@@ -63,6 +63,8 @@ type
     Caption    : String;
     Fnote      : String;
     FCellular  : String;
+    FCellular2 : String;
+    FCellular3 : String;
     FMail      : String;
     FFirstMsg: TDateTime;
     isNIL : Boolean; // In Not-In-List group
@@ -134,6 +136,7 @@ type
     IE_oncoming,
     IE_offgoing,
     IE_msg,
+    IE_buzz,
     IE_userinfo = Byte(High(RnQProtocol.TProtoEvent))+20,
     IE_userinfoCP,
     IE_email,
@@ -242,8 +245,17 @@ type
     REF_msg,
     REF_contacts,
     REF_auth,
-    REF_sms
+    REF_sms,
+    REF_login
   );
+
+  TSessionParams = record
+    secret     : String;
+    token      : String;
+    tokenExpIn : Integer;
+    tokenTime  : Integer;
+  end;
+
 
 {$IFDEF usesDC}
 
@@ -383,6 +395,12 @@ type
 
     fPwd               : String;
     fPwdHash           : ShortString;
+    fSessionSecret     : String;
+    fSessionToken      : String;
+    fSessionTokenExpIn : Integer;
+    fSessionTokenTime  : Integer;
+
+    buzzedLastTime     : TDateTime;
 //    getAvatarFor       : Integer;
     procedure setWebaware(value:boolean);
     procedure setAuthNeeded(value:boolean);
@@ -519,7 +537,10 @@ type
     procedure setStatus(st: byte); overload; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure setStatus(s:TICQstatus; vis: Tvisibility); overload;
     function  getPwd : String; OverRide; Final;
+    function  getPwdOnly : String; //OverRide; Final;
     procedure setPwd(const value:String); OverRide; Final;
+    procedure refreshSessionSecret();
+    function  getSession: TSessionParams; //OverRide; Final;
 
     function  getStatus: byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  getVisibility : byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -589,9 +610,9 @@ type
     function  serverPort:word;
     function  serverStart:word;
     procedure sendAddTempContact(const buinlist: RawByteString); overload; // 030F
-    function  sendFLAP(ch:word; const data: RawByteString):boolean;
-    function  sendSNAC(fam,sub:word; const data: RawByteString):boolean; OverLoad;
-    function  sendSNAC(fam,sub, flags:word; const data: RawByteString):boolean; OverLoad;
+    function  sendFLAP(ch:word; const data: RawByteString): boolean;
+    function  sendSNAC(fam,sub:word; const data: RawByteString): boolean; OverLoad;
+    function  sendSNAC(fam,sub, flags:word; const data: RawByteString): boolean; OverLoad;
    public // ICQ Only
     procedure SSIdeleteContact(cnt : TRnQContact);
     procedure SSIAddContact(c : TICQContact);
@@ -630,17 +651,23 @@ type
     procedure sendDeleteUIN;
     procedure sendsaveMyInfoNew(c:TICQContact);
     procedure sendPermsNew;//(c:Tcontact);
+    procedure sendSticker(uin: TUID; const sticker: String);
     procedure sendInfoStatus(const s : String);
     procedure getUINStatusNEW(const UID : TUID);
-    procedure sendPrivacy(em : Byte; ShareWeb : Boolean);
+    procedure sendPrivacy(em : Word; ShareWeb : Boolean; authReq : Boolean);
     procedure sendReqOfflineMsgs;
     procedure sendDeleteOfflineMsgs;
     procedure sendContacts(cnt : TRnQContact;flags:dword; cl:TRnQCList);
     procedure sendQueryInfo(uin: Integer);
     procedure sendSimpleQueryInfo(const uin:TUID);
+    procedure sendAdvQueryInfo(const uin: TUID);
+    procedure sendFullQueryInfo(const uin: TUID);
+    procedure sendNewQueryInfo(const uin: TUID);
     procedure sendAddedYou(const uin:TUID);
     procedure sendStatusCode(sendVis : Boolean = True);
+    procedure sendXStatusCodeOnly();
     procedure sendCapabilities;
+    procedure resetStatusCode;
     procedure SSIAuth_REPLY(const uin : TUID; isAccept : Boolean; const msg : String = '');
 
     function  sendAutoMsgReq(const uin:TUID):integer;
@@ -802,7 +829,7 @@ type
     procedure sendLogin;
     procedure sendImICQ;
     procedure sendCookie;
-    procedure SendReqBuddy;
+    procedure SendReqBuddy(Second: Boolean = False);
 
     procedure sendIMparameter(chn : AnsiChar);
     procedure sendClientReady;
@@ -814,6 +841,7 @@ type
 
    public // All
     function  sendMsg(cnt : TRnQContact; var flags:dword; const msg:string; var requiredACK:boolean):integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP} // returns handle
+    function  sendBuzz(cnt: TRnQContact): Boolean;
     procedure SetListener(l : TProtoNotify); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure AuthGrant(Cnt : TRnQContact); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure AuthRequest(cnt : TRnQContact; const reason : String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -877,7 +905,7 @@ var
   statMenu, icqVisMenu : TStatusMenu;
 
 
-IMPLEMENTATION
+implementation
 uses
    Controls, dateUtils,
  {$IFDEF UNICODE}
@@ -1182,7 +1210,7 @@ result:=
  '<senders_UIN>'+ me.uid +'</senders_UIN>'+
  '<senders_name>'+AnsiString(me.displayed)+'</senders_name>'+
  '<delivery_receipt>'+yesno[ack]+'</delivery_receipt>'+
- '<time>'+ AnsiString( formatDatetime('ddd, dd mmm yyyy hh:nn:ss GMT',now-gmtoffset) )+'</time>'+
+ '<time>'+ AnsiString( formatDatetime('ddd, dd mmm yyyy hh:nn:ss GMT', now-gmtoffset) )+'</time>'+
  '</icq_sms_message>';
 end; // xml_sms
 
@@ -2003,7 +2031,7 @@ begin
   freeAndNIL(newaccountFrm);
 {$ELSE}
   Result := False;
-  openURL('http://icq.com/register/');
+  openURL('http://www.icq.com/join/');
 {$ENDIF USE_REGUIN}
 end;
 
@@ -2042,6 +2070,7 @@ begin
     Attached_login_email := '';
   fPwd     := '';
   fPwdHash := '';
+  fSessionTokenExpIn := 86400;
   SNACref:=1;
 //  FLAPseq:=$6700+random($100);
 //  FLAPseq := Flap_start;
@@ -2571,6 +2600,27 @@ begin
     Result := fPwd;
 end;
 
+function TicqSession.getPwdOnly: String;
+begin
+  Result := fPwd;
+end;
+
+function TicqSession.getSession: TSessionParams;
+var
+  params: TSessionParams;
+begin
+  if (fSessionToken = '') or
+     (fSessionTokenTime = 0) or
+     (fSessionTokenTime + fSessionTokenExpIn > DateTimeToUnix(Now, False)) then
+     refreshSessionSecret();
+
+  params.secret := fSessionSecret;
+  params.token := fSessionToken;
+  params.tokenExpIn := fSessionTokenExpIn;
+  params.tokenTime := fSessionTokenTime;
+  Result := params;
+end;
+
 procedure TicqSession.setPwd(const value:String);
  procedure chg(const v : String);
  begin
@@ -2641,10 +2691,14 @@ result:=TRUE;
 end; // sendFLAP
 
 function TicqSession.sendSNAC(fam,sub:word; const data: RawByteString):boolean;
-begin result:=sendFLAP(SNAC_CHANNEL, SNAC(fam,sub, SNACref)+data) end;
+begin
+  result := sendFLAP(SNAC_CHANNEL, SNAC(fam,sub, SNACref)+data)
+end;
 
 function TicqSession.sendSNAC(fam,sub, flags:word; const data: RawByteString):boolean;
-begin result:=sendFLAP(SNAC_CHANNEL, SNAC(fam,sub,flags, SNACref)+data) end;
+begin
+  result := sendFLAP(SNAC_CHANNEL, SNAC(fam,sub,flags, SNACref)+data)
+end;
 
 procedure TicqSession.sendKeepalive;
 begin
@@ -2664,10 +2718,14 @@ begin
 end; // notifyListeners
 
 function TicqSession.isOffline:boolean;
-begin result:= phase=null_ end;
+begin
+  result:= phase=null_
+end;
 
 function TicqSession.isOnline:boolean;
-begin result:= phase=online_ end;
+begin
+  result:= phase=online_
+end;
 
 function TicqSession.isConnecting:boolean;
 begin
@@ -2807,7 +2865,9 @@ if (phase<>login_)or(cookie='') then
 end; // disconnected
 
 function TicqSession.isReady:boolean;
-begin result:=phase in [SETTINGUP_,ONLINE_] end;
+begin
+  result := phase in [SETTINGUP_,ONLINE_]
+end;
 
 function TicqSession.isSSCL:boolean;
 begin
@@ -2856,6 +2916,14 @@ begin
         SSI_CreateItem('', S, 0, 0, FEEDBAG_CLASS_ID_PDINFO);
        end;
   end;
+end;
+
+procedure TicqSession.resetStatusCode; //011E
+begin
+  if not isReady then Exit;
+
+  sendSNAC(ICQ_SERVICE_FAMILY, $1E, TLV($06, dword_Zero));
+//  addRef(REF_status, '');
 end;
 
 procedure TicqSession.sendStatusCode(sendVis : Boolean); //011E
@@ -2951,7 +3019,7 @@ else
       + xStsTLV;
   if StFirst then
    begin
-    sendSNAC(1, $1E, Pck);
+    sendSNAC(ICQ_SERVICE_FAMILY, $1E, Pck);
     sleep(100);
    end;
 //   else
@@ -2965,7 +3033,7 @@ else
   if not StFirst then
     begin
       sleep(100);
-      sendSNAC(1, $1E, Pck);
+      sendSNAC(ICQ_SERVICE_FAMILY, $1E, Pck);
     end;
 
 // ssi_
@@ -2985,6 +3053,25 @@ addRef(REF_null,0);}
     notifyListeners(IE_visibilityChanged);
   end;
  previousInvisible:= isInvisible;
+end; // sendStatusCode
+
+procedure TicqSession.sendXStatusCodeOnly(); //011E
+var
+  xStsTLV : RawByteString;
+begin
+  if not isReady then Exit;
+
+  xStsTLV := TLV($1D,
+             word_BEasStr(BART_TYPE_XSTATUS) +
+             AnsiChar(BART_FLAGS_DATA) +
+//           Length_B(Length_BE(StrToUTF8(ExtStsStrings[curXStatus].Desc))+
+             Length_B(Length_BE(StrToUTF8(curXStatusStr.Desc)) + Length_BE('')) + // 'iso-8859-1'
+             word_BEasStr(BART_TYPE_STATUS_MOOD) +
+             Length_BE(XStatusArray[curXStatus].pid6)
+  );
+
+  sendSNAC(ICQ_SERVICE_FAMILY, $1E, xStsTLV);
+  addRef(REF_status, '');
 end; // sendStatusCode
 
 //procedure TicqSession.setStatusStr(s : String; Pic : String = '');
@@ -3022,12 +3109,12 @@ begin
     sendCapabilities;
 //   else
     sendStatusCode(false);
-//  sendSNAC($01, $1E, TLV($1D, word_BEasStr($02) + #$04 + BUIN( Length_BE(StrToUTF8(s))+
+//  sendSNAC(ICQ_SERVICE_FAMILY, $1E, TLV($1D, word_BEasStr($02) + #$04 + BUIN( Length_BE(StrToUTF8(s))+
 //                                 Length_BE('') // 'iso-8859-1'
 //                                    )+
 //                              TLV($0E, Pic))
 //          );
-//  sendSNAC($01, $1E, TLV($1D, TLV($0E, Pic))
+//  sendSNAC(ICQ_SERVICE_FAMILY, $1E, TLV($1D, TLV($0E, Pic))
 //          );
    end;
 end;
@@ -3102,25 +3189,25 @@ end;
 procedure TicqSession.sendAddVisible(const buinlist:RawByteString);
 begin
   if not isReady or not isInvisible then exit;
-  sendSNAC(9,5, buinlist);
+  sendSNAC(ICQ_BOS_FAMILY, 5, buinlist);
 end; // sendAddVisible
 
 procedure TicqSession.sendRemoveVisible(const buinlist:RawByteString);
 begin
   if not isReady or not isInvisible then exit;
-  sendSNAC(9,6, buinlist);
+  sendSNAC(ICQ_BOS_FAMILY, 6, buinlist);
 end; // sendRemoveVisible
 
 procedure TicqSession.sendAddInvisible(const buinlist:RawByteString);
 begin
   if not isReady or isInvisible then exit;
-  sendSNAC(9,7, buinlist);
+  sendSNAC(ICQ_BOS_FAMILY, 7, buinlist);
 end; // sendAddInvisible
 
 procedure TicqSession.sendRemoveInvisible(const buinlist:RawByteString);
 begin
   if not isReady or isInvisible then exit;
-  sendSNAC(9,8, buinlist);
+  sendSNAC(ICQ_BOS_FAMILY, 8, buinlist);
 end; // sendRemoveInvisible
 
 procedure TicqSession.sendRemoveContact(cl:TRnQCList);
@@ -3186,20 +3273,20 @@ end;
 procedure TicqSession.sendAddContact(const buinlist:RawByteString);
 begin
 if (buinlist='') or not isReady then exit;
-sendSNAC(03, 04, buinlist);
+sendSNAC(ICQ_BUDDY_FAMILY, 04, buinlist);
 end; // sendAddContact
 
 procedure TicqSession.sendRemoveContact(const buinlist:RawByteString);
 begin
 if (buinlist='') or not isReady then exit;
-sendSNAC(3,5, buinlist);
+sendSNAC(ICQ_BUDDY_FAMILY, 5, buinlist);
 end; // sendRemoveContact
 
 {$ENDIF UseNotSSI}
 procedure TicqSession.sendAddTempContact(const buinlist: RawByteString); // 030F
 begin
   if (buinlist='') or not isReady then exit;
-  sendSNAC(03, $0F, buinlist);
+  sendSNAC(ICQ_BUDDY_FAMILY, $0F, buinlist);
  addRef(REF_null,'');
 end; // sendAddTempContact
 procedure TicqSession.sendAddTempContact(cl:TRnQCList);
@@ -3210,7 +3297,7 @@ end;
 procedure TicqSession.sendRemoveTempContact(const buinlist:AnsiString); // 0310
 begin
   if (buinlist='') or not isReady then exit;
-  sendSNAC(03, $10, buinlist);
+  sendSNAC(ICQ_BUDDY_FAMILY, $10, buinlist);
 end; // sendRemoveTempContact
 
 
@@ -3233,7 +3320,7 @@ if not imVisibleTo(c) then
   addTemporaryVisible(c);
 
 {
-sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(SNACref)+#0#2
+sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
   +BUIN(uin)
   +TLV(5, #0#0
     +qword_LEasStr(SNACref)+CAPS_sm2big(CAPS_sm_ICQSERVERRELAY)+TLV($A,#0#1)
@@ -3278,7 +3365,7 @@ sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(SNACref)+#0#2
       s := '';
     end;
 
-  sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(SNACref)+#0#2
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
    + Length_B(uin)
    +TLV(5, #0#0 // Request
     + qword_LEasStr(eventDirect.eventID)
@@ -3359,7 +3446,7 @@ begin
    drct.fileDesc := '<ICQ_COOL_FT><FS>' + drct.fileName +'</FS><S>' + intToStr(drct.fileSizeTotal) + '</S>'
 //                       + '<SID>1</SID><DESC></DESC></ICQ_COOL_FT>'
                        + '<SID>1</SID></ICQ_COOL_FT>';
-  sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(drct.eventID)+#0#2
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(drct.eventID)+#0#2
    + c.buin
    +TLV(5, #0#0 // Request
     + qword_LEasStr(drct.eventID)
@@ -3426,7 +3513,7 @@ begin
       s := '';
     end;
 
-  sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(SNACref)+#0#2
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
    + (drct.contact.buin)
    +TLV(5, #0#0 // Request
     + qword_LEasStr(SNACref)+CAPS_sm2big(CAPS_sm_FILE_TRANSFER)
@@ -3471,7 +3558,7 @@ begin
  if SendMsg then
  begin
    if useProxy then
-      sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(Drct.eventID)+#0#2
+      sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(Drct.eventID)+#0#2
        + Drct.contact.buin// BUIN(drсt.contact.UID)
 //       + TLV(5, #0#0 // Request
        + TLV(5, #0#2 // Accept
@@ -3486,7 +3573,7 @@ begin
          + TLV($10, '')                    // has proxy flag
          )
        )
-//     sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(msgID)+#0#2
+//     sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(msgID)+#0#2
 //         +BUIN(c.uid)
 //         +TLV(5, #0#2+qword_LEasStr(msgID)+CAPS_sm2big(CAPS_sm_FILE_TRANSFER)//+TLV($A,#0#2)
 //             )
@@ -3494,7 +3581,7 @@ begin
 
     else
 // Send File OK
-     sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(Drct.eventID)+#0#2
+     sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(Drct.eventID)+#0#2
          +Drct.contact.buin //  BUIN(c.uid)
          + TLV(5, #0#2 // Accept
                  +qword_LEasStr(Drct.eventID)
@@ -3524,7 +3611,7 @@ begin
     if dirct.stage = 1 then
       dirct.connect2proxy
      else 
-      sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(dirct.eventID)+#0#2
+      sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(dirct.eventID)+#0#2
        + dirct.contact.buin// BUIN(drct.contact.UID)
        + TLV(5, #0#0 // Request
 //       + TLV(5, #0#2 // Accept
@@ -3553,7 +3640,7 @@ if not imVisibleTo(cnt) then
   if addTempVisMsg then
   addTemporaryVisible(cnt);
 
-sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(msgID)+#0#2
+sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(msgID)+#0#2
   + cnt.buin
   +TLV(5, #0#0+qword_LEasStr(msgID)+CAPS_sm2big(CAPS_sm_FILE)+TLV($B,#0#1) )
 );
@@ -3569,7 +3656,7 @@ if not imVisibleTo(c) then
  if addTempVisMsg then
   addTemporaryVisible(c);
 
-sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(msgID)+#0#2
+sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(msgID)+#0#2
   + Length_B(refs[msgID].uid)
   +TLV(5, #0#2+qword_LEasStr(msgID) + CAPS_sm2big(CAPS_sm_ICQSERVERRELAY ))
 );
@@ -3585,7 +3672,7 @@ if not imVisibleTo(c) then
  if addTempVisMsg then
    addTemporaryVisible(c);
   iam := getMyInfo;
-sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(SNACref)+#0#4
+sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
   + Length_B(uin)
   +TLV(5, myUINle+ AnsiChar(MTYPE_AUTHREQ)+ AnsiChar(#0)
 //    +WNTS(getMyInfo.nick+#$FE+getMyInfo.first+#$FE+getMyInfo.last+#$FE+ MyInfo0.email+#$FE#0#$FE+msg)
@@ -3600,7 +3687,7 @@ end; // sendAuthReq
 
 procedure TicqSession.sendMSGsnac(const uin : TUID; const sn : RawByteString);
 begin
-  sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(SNACref)+#0#2
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
     + Length_B(uin)
     +TLV(5, #0#0+qword_LEasStr(SNACref)+ CAPS_sm2big(CAPS_sm_ICQSERVERRELAY)
       +TLV($A,#0#1)
@@ -3621,7 +3708,7 @@ end;
 
 procedure TicqSession.sendCryptMSGsnac(const uin : TUID; const sn : RawByteString);
 begin
-  sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(SNACref)+#0#2
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
     + Length_B(uin)
     +TLV(5, #0#0+qword_LEasStr(SNACref)+ BigCapability[CAPS_big_CryptMsg].v
       +TLV($A,#0#1)
@@ -3814,7 +3901,7 @@ begin
        flags := flags or IF_Encrypt;
      end
     else
-    if UseCryptMsg and (CAPS_big_QIP_SEQURE in c.capabilitiesBig)
+    if UseCryptMsg and (CAPS_big_QIP_Secure in c.capabilitiesBig)
          and (c.Crypt.qippwd > 0) and not isBin then
       begin  // QIP crypt message
        Msg2Send := qip_msg_crypt(msg2, c.Crypt.qippwd);
@@ -3833,7 +3920,7 @@ begin
        flags := flags or IF_Encrypt;
       end
     else
-{  sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(SNACref)+#0#2
+{  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
     +BUIN(uin)
     +TLV(5, #0#0+qword_LEasStr(SNACref)+ CAPS_sm2big(CAPS_sm_ICQSERVERRELAY)
       +TLV($A,#0#1)
@@ -3880,7 +3967,7 @@ begin
        Msg2Send := RawByteString(msg2);
       end;
    flags := IF_Simple or flags;   
-    sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(SNACref)+#0#1
+    sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#1
       +c.buin
       +TLV(2,
          TLV($0501, AnsiChar(#1)+ RawByteString(IfThen(isUnicode, AnsiChar(#6))))  // Need for ICQ 2003b!!!!
@@ -3896,6 +3983,27 @@ result:=addRef(REF_msg,c.UID2Cmp);
 //    acks.add(OE_msg, uin, 0, 'MSG').ID := result;
 
 end; // sendMsg
+
+function TicqSession.sendBuzz(cnt: TRnQContact): Boolean;
+var
+  c: TICQContact;
+begin
+  Result := False;
+  if not isReady or (SecondsBetween(Now, buzzedLastTime) < 15) then Exit;
+
+  buzzedLastTime := Now;
+  c := TICQcontact(cnt);
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref) + #00#02 + Length_B(c.UID)
+    + TLV($05, #00#00 + qword_LEasStr(SNACref) + BigCapability[CAPS_big_Buzz].v
+      + TLV($0A, #00#01)
+      + TLV($0F, '')
+      + TLV($0E, 'en')
+      + TLV($0D, 'us-ascii'))
+    + TLV($03, #00#00));
+  addRef(REF_msg, c.UID2Cmp);
+
+  Result := True;
+end;
 
 function TicqSession.sendAutoMsgReq(const uin:TUID):integer;
 var
@@ -3931,7 +4039,7 @@ if not imVisibleTo(c) then
   if addTempVisMsg then
     addTemporaryVisible(c);
 
-sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(SNACref)+#0#4
+sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
   + Length_B(uin)
   +TLV(5, myUINle+ AnsiChar(MTYPE_ADDED)+#$00+WNTS('') )
   +TLV(6,'')
@@ -3957,7 +4065,7 @@ begin
    with cl.getNext do
     s:=s + uid +#$FE + StrToUTF8(nick) + #$FE;
 
-sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(SNACref)+#0#4
+sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
   + cnt.buin 
   +TLV(5, myUINle+ AnsiChar(MTYPE_CONTACTS)+ AnsiChar(#00)+WNTS(s))
   +TLV(6,'')
@@ -3974,7 +4082,7 @@ c:=getICQContact(uin);
 if not imVisibleTo(c) then
   if addTempVisMsg then
    addTemporaryVisible(c);
-sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(SNACref)+#0#4
+sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
   + Length_B(uin)
   +TLV(5, myUINle+ AnsiChar(MTYPE_AUTHOK)+#0+WNTS(''))
   +TLV(6, '')
@@ -3985,12 +4093,35 @@ end; // sendAuth
 procedure TicqSession.sendAuthDenied(const uin:TUID; const msg:string);
 begin
 if not isReady then exit;
-sendSNAC(ICQ_MSG_FAMILY, 6, qword_LEasStr(SNACref)+#0#4
+sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
   + Length_B(uin)
   +TLV(5, myUINle+ AnsiChar(MTYPE_AUTHDENY)+#0+WNTS(StrToUTF8(msg)))
   +TLV(6, '')
 );
 end; // sendAuth
+
+procedure TicqSession.sendNewQueryInfo(const uin: TUID);
+var
+  a : Integer;
+begin
+  if not isReady then Exit;
+  // new UIN info request 2502 with 2503 presponse (unparsed for now)
+  a := StrToIntDef(uin, 0);
+  if a > 0 then
+  sendSNAC($25, $02, Length_BE('ru-RU') +
+                     word_Zero +
+                     dword_BEasStr($01) +
+                     dword_BEasStr($02) +
+                     dword_BEasStr($01) + // number of included account blocks
+                     dword_BEasStr($000100D1) + // data block label
+                     Length_BE(word_BEasStr($01) + // block number
+                               Length_BE(uin)) + // target UIN
+                     dword_Zero + dword_Zero +
+                     dword_BEasStr($14) +
+                     dword_BEasStr($00010004) +
+                     dword_BEasStr($01));
+  addRef(REF_query, '');
+end;
 
 procedure TicqSession.sendSimpleQueryInfo(const uin:TUID);
 var
@@ -4000,11 +4131,29 @@ begin
   a := StrToIntDef(uin, 0);
   if a > 0 then
    sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, TLV(1, Length_LE( myUINle
-     + #$D0#07#0#0#$1F#05
+     + word_LEasStr(CLI_META_INFO_REQ)
+     + word_Zero
+     + word_LEasStr(META_REQUEST_PROFILE_INFO)
      + dword_LEasStr(a)
     )));
   addRef(REF_simplequery, uin);
 end; // sendSimpleQueryInfo
+
+procedure TicqSession.sendFullQueryInfo(const uin: TUID);
+var
+  a : Integer;
+begin
+  if not isReady then Exit;
+  a := StrToIntDef(uin, 0);
+  if a > 0 then
+  sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, TLV(1, Length_LE(myUINle
+    + word_LEasStr(CLI_META_INFO_REQ)
+    + word_Zero
+    + word_LEasStr(META_REQUEST_FULL_INFO)
+    + dword_LEasStr(a)))
+  );
+  addRef(REF_query, uin);
+end; // sendMultiQueryInfo
 
 procedure TicqSession.sendQueryInfo(uin:Integer);
 //const
@@ -4209,11 +4358,15 @@ end; // sendWPsearch2
 
 procedure TicqSession.getUINStatusNEW(const UID : TUID);
 begin
+  if not isReady then
+    exit;
   if UID > '' then
   sendSnac(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
-        TLV(1, Length_LE( myUINle +
-           #$D0#07#03#00#$A0#$0F+
-           Length_LE(#$05#$b9#$00#$02#$80#$00#$00#$00#$00#$00#$00#$06#$00#$01+
+        TLV(1, Length_LE( myUINle
+           + word_LEasStr(CLI_META_INFO_REQ)
+           + word_LEasStr($03)
+           + word_LEasStr(META_SEARCH_COMPAD)
+           + Length_LE(#$05#$b9#$00#$02#$80#$00#$00#$00#$00#$00#$00#$06#$00#$01+
               #$00#$02#$00#$02#$00#$00#$04#$e3#$00#$00#$00#$02+
               TLV(3, '')+
               TLV(1,  #00#$32 + Length_LE(UID))
@@ -4223,6 +4376,26 @@ begin
           );
 end;
 
+procedure TicqSession.sendAdvQueryInfo(const uin: TUID);
+begin
+  if not isReady then exit;
+  if not (uin = '') then
+  sendSnac(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
+    TLV(1, Length_LE(myUINle
+           + word_LEasStr(CLI_META_INFO_REQ)
+           + word_LEasStr($03)
+           + word_LEasStr(META_SEARCH_COMPAD)
+           + Length_LE(SNAC_shortver($05B9, $0fa0, $00, $00, $02)
+             + word_BEasStr($00)
+             + word_BEasStr(GetACP)
+             + dword_BEasStr($02)
+             + TLV(3, '')
+             + TLV(1, #00#$32 + Length_BE(uin))
+           ))
+    )
+  );
+end;
+
 
 procedure TicqSession.sendReqOfflineMsgs;
 begin
@@ -4230,7 +4403,7 @@ begin
     sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
            TLV(1, Length_LE( myUINle +#$3C#0#0#0)))
    else
-    sendSNAC($04, $10, ''); // ICBM__OFFLINE_RETRIEVE
+    sendSNAC(ICQ_MSG_FAMILY, $10, ''); // ICBM__OFFLINE_RETRIEVE
 end;
 
 procedure TicqSession.sendDeleteOfflineMsgs;
@@ -4243,7 +4416,9 @@ procedure TicqSession.sendDeleteUIN;
 begin
   sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
       TLV(1, Length_LE( myUINle
-     +#$D0#7#1#0#$C4#4
+     + word_LEasStr(CLI_META_INFO_REQ)
+     + word_LEasStr($01)
+     + word_LEasStr(META_REQUEST_DELETE_UIN)
      +myUINle
      +WNTS(pwd)
   )));
@@ -4254,7 +4429,7 @@ begin
  if not isReady then exit;
  sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, TLV(1, Length_LE( myUINle
   + RawByteString(#$D0#7#0#0#$82#14+#0#1#0#$16)+StringOfChar(AnsiChar(#00),18)
-  +Length_BE( xml_sms(getMyInfo, dest,msg,ack) )
+  + Length_BE( xml_sms(getMyInfo, dest, msg, ack) )
  )));
  addRef(REF_sms, '');
 end; // sendSMS
@@ -4332,7 +4507,10 @@ begin
 
   sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
      TLV(1, Length_LE( myUINle
-      + #$D0#07#02#00#$D2#$0F
+      + word_LEasStr(CLI_META_INFO_REQ)
+      + word_LEasStr($02)
+      + word_LEasStr(META_SAVE_PROFILE)
+
       + Length_LE( SNAC_ver($05B9, $03, $00, 00, 02)
                    + word_BEasStr($00)
                    + word_BEasStr(GetACP)
@@ -4412,40 +4590,53 @@ end;
 procedure TicqSession.sendInfoStatus(const s : String);
 begin
   sendSnac(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
-        TLV(1, Length_LE( myUINle +
-           #$D0#07#02#00#$D2#$0F+
-           Length_LE(#$05#$b9#$00#$03#$80#$00#$00#$00#$00#$00#$00#$06#$00#$01+
-              #$00#$02#$00#$02#$00#$00#$04#$e3#$00#$00#$00#$02+
-              TLV(3, TLV($0226, StrToUTF8(s)))
-//              TLV(3, TLV($0226, s))
-                    )
-              )
+        TLV(1, Length_LE( myUINle
+          + word_LEasStr(CLI_META_INFO_REQ)
+          + word_LEasStr($02)
+          + word_LEasStr(META_SAVE_PROFILE)
+          + Length_LE(SNAC_ver($05B9, $03, $00, $00, $02)
+            + word_BEasStr($00)
+            + word_BEasStr(GetACP)
+            + dword_BEasStr($02)
+            + TLV(3, TLV(META_COMPAD_STS_MSG, StrToUTF8(s)))
+             )
+            )
            )
           );
 end;
 
-procedure TicqSession.sendPrivacy(em : Byte; ShareWeb : Boolean);
+procedure TicqSession.sendPrivacy(em: Word; shareWeb: Boolean; authReq: Boolean);
 var
- i : byte;
+  weba, auth: Word;
 begin
   if ShareWeb then
-    i := 1
+    weba := 1
    else
-    i := 0; 
+    weba := 0;
+
+  if authReq then
+    auth := 0
+  else
+    auth := 1;
+
   showInfo := em;
   webaware := ShareWeb;
   sendSnac(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
-        TLV(1, Length_LE( myUINle +
-           #$D0#07#02#00#$D2#$0F+
-           Length_LE(#$05#$b9#$00#$03#$80#$00#$00#$00#$00#$00#$00#$06#$00#$01+
-              #$00#$02#$00#$02#$00#$00#$04#$e3#$00#$00#$00#$02+
-              TLV(3, TLV(META_COMPAD_INFO_SHOW, word(em))
-                   + TLV(META_COMPAD_WEBAWEARE, word(i))
-                   + TLV($0212, byte(i))  //UNKNOWN!!!
-                 )
+       TLV(1, Length_LE( myUINle
+               + word_LEasStr(CLI_META_INFO_REQ)
+               + word_LEasStr($02)
+               + word_LEasStr(META_SAVE_PROFILE)
+               + Length_LE(SNAC_ver($05B9, $03, $00, $00, $02)
+                  + word_BEasStr($00)
+                  + word_BEasStr(GetACP)
+                  + dword_BEasStr($02)
+                  + TLV(3,
+                        TLV(META_COMPAD_INFO_SHOW, em)
+                      + TLV(META_COMPAD_WEBAWARE, AnsiChar(weba))
+                      + TLV(META_COMPAD_AUTH, auth)
+                   ))
                     )
               )
-           )
           );
 end;
 
@@ -4468,8 +4659,30 @@ begin
   if not isReady then exit;
   waitingNewPwd:=newPwd;
   sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
-    TLV(1, Length_LE( myUINle+#$D0#7#0#0#$2E#4+WNTS(newpwd) ) ) );
+    TLV(1, Length_LE(myUINle
+      + word_LEasStr(CLI_META_INFO_REQ)
+      + word_Zero
+      + word_LEasStr(META_SAVE_PROFILE)
+      + WNTS(newpwd))
+    )
+  );
 end; // sendChangePwd
+
+procedure TicqSession.sendSticker(uin: TUID; const sticker: String);
+begin
+  sendSnac(ICQ_MSG_FAMILY, CLI_META_MSG, #$AB#$AB#$AB#$AB#$AB#$AB#$AB#$AB
+         + word_BEasStr(MTYPE_PLAIN) + Length_B(uin)
+         + TLV(CLI_META_STORE_IF_OFFLINE, '')
+         + TLV(CLI_META_MSG_DATA,
+               AnsiChar(CLI_META_REQ_CAPS_BYTE)
+             + AnsiChar(CLI_META_FRAG_VERSION_BYTE)
+             + Length_BE(word_BEasStr(CLI_META_REQ_CAP))
+             + AnsiChar(CLI_META_FRAG_ID_BYTE)
+             + AnsiChar(CLI_META_FRAG_VERSION_BYTE)
+             + Length_BE(word_BEasStr(CLI_META_MSG_CHARSET) + word_BEasStr(CLI_META_MSG_LANGUAGE))) // Empty msg
+         + TLV(CLI_META_STICKER_DATA, sticker)
+  );
+end;
 
 procedure TicqSession.parseAuthKey(const snac: RawByteString);
 var
@@ -4743,14 +4956,14 @@ end; // parseOncomingUser
 
 
 procedure TicqSession.parseOnlineInfo(const snac: RawByteString; pOfs: Integer; cont : TICQcontact; isSt : Boolean;
-                                      isMsg : Boolean; ShowCntSts : Boolean);
+                                      isMsg: Boolean; ShowCntSts: Boolean);
 var
-  ofs : Integer;
-  s : RawByteString;
-  pS : PAnsiChar;
-  moodText : String;
-  cap, capSm : RawByteString;
-  found, status_changed : Boolean;
+  ofs: Integer;
+  s: RawByteString;
+  pS: PAnsiChar;
+  moodText, xStatusText: String;
+  cap, capSm: RawByteString;
+  found, status_changed: Boolean;
   i : Integer;
   t : Byte;
   nickFlags : Int64;
@@ -5017,6 +5230,26 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
 //                 end;
                  i := 4 + t;
                 end;
+             $10:
+               begin
+                 moodPresText := True;
+                 t := Byte(s[4]);
+                 if t > 0 then
+                 begin
+                  i := word_BEat(@s[5]);
+                  if (i + 6) <= length(s) then
+                   begin
+                     if i > 0 then
+                       xStatusText := excludeTrailingCRLF(unUTF(copy(s, 7, i)))
+                      else
+                       xStatusText := '';
+                   end;
+                 end
+                 else
+                    xStatusText := '';
+
+                 i := 4 + t;
+               end;
              BART_TYPE_STATUS_MOOD:  // BART_STATUS_ICON
                 begin
                  moodPresIcon := True;
@@ -5509,7 +5742,7 @@ begin
      begin
     	with acks.getAt(i) do
        begin
-        sendSNAC(4,6, qword_LEasStr(SNACref)+#0#2
+        sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
           +BUIN(uin)
            + word_BEasStr(5)+word_BEasStr($60)
 //          +TLV(5, #0#0+//qword_LEasStr(SNACref)//+capability[1]
@@ -5562,6 +5795,37 @@ begin
   eventContact:=getICQContact(getBUIN2(snac,ofs));
   notifyListeners(IE_serverAck);
 end; // parseServerAck
+
+function parseTzerTag(sA: RawByteString): RawByteString;
+var
+  p : Integer;
+  ext, imgStr: RawByteString;
+  buf: TMemoryStream;
+begin
+  p := PosEx('name="', sA);
+  Result := getTranslation('tZer') + ': ' + copy(sA, p + 6, PosEx('"', sA, p + 7) - p - 6) + #13#10;
+  p := PosEx('url="', sA);
+  Result := Result + copy(sA, p + 5, PosEx('"', sA, p + 6) - p - 5) + #13#10;
+  p := PosEx('thumb="', sA);
+  ext := copy(sA, p + 7, PosEx('"', sA, p + 8) - p - 7);
+
+  try
+    imgStr := '';
+    buf := TMemoryStream.Create;
+    LoadFromURL(ext, buf);
+    SetLength(imgStr, buf.Size);
+    buf.ReadBuffer(imgStr[1], buf.Size);
+    buf.Free;
+
+    if Trim(imgStr) = '' then
+      imgStr := ext
+    else
+      imgStr := RnQImageExTag + Base64EncodeString(imgStr) + RnQImageExUnTag;
+  except
+    imgStr := ext;
+  end;
+  Result := Result + imgStr + #13#10;
+end;
 
 procedure TicqSession.parseIncomingMsg(snac: RawByteString); // 0407
 var
@@ -5632,7 +5896,7 @@ case Byte(snac[10]) of // msg format
 //        eventTime:= UnixToDateTime(getTLVdwordBE(@snac[i])) + GMToffset0;
         eventTime:= UnixToDateTime(getTLVdwordBE(@snac[i])) + GMToffset;
      end;
-    ofs:=findTLV(2, snac,ofs)+4+3;
+    ofs := findTLV(2, snac, ofs)+4+3;
     inc(ofs, 3+ Byte(snac[ofs]));
     l:=word_BEat(snac,ofs)-4;
     inc(ofs, 2);
@@ -5715,6 +5979,32 @@ case Byte(snac[10]) of // msg format
       if i>0 then
         eventTime:= UnixToDateTime(getTLVdwordBE(@snac[i])) + GMToffset0;
      end;
+    if Cap = BigCapability[CAPS_big_Buzz].v then
+    begin
+      eventContact := thisCnt;
+      notifyListeners(IE_buzz);
+      Exit;
+    end
+    else if Cap = BigCapability[CAPS_big_Chat].v then
+    begin
+      i := findTLV($0A, snac, ofs);
+      t := 0;
+      if i > 0 then
+        t := getTLVwordBE(@snac[i]);
+
+      sA := getTLVSafe($0D, snac, ofs);
+      msgEnc := getTLVSafe($2711, snac, ofs);
+
+      if sA = 'utf-8' then
+        msg := unUTF(msgEnc)
+      else if sA = 'us-ascii' then
+        msg := msgEnc
+      else // unknown codepage
+        msg := unUTF(msgEnc);
+
+      // msg ~ aol://2719:10-4-chat1245382434654977163
+      // What to do with this group chatroom?
+    end else
     if Cap = CAPS_sm2big(CAPS_sm_FILE_TRANSFER) then
      begin
        msgEnc := getTLVSafe($0D, snac, ofs);
@@ -6168,14 +6458,17 @@ case Byte(snac[10]) of // msg format
     end;
   end;
   4:begin
-    ofs:=findTLV(5, snac,ofs);
-    msg:=ptrWNTS(@snac[ofs+10]);
-    msgtype:= Byte(snac[ofs+8]);
-    eventContact := thisCnt;
-    if msgtype=MTYPE_PLUGIN then
-      parseGCdata( copy(snac, ofs+4+6+3+length(msg), length(snac)) )
-    else
-      notificationForMsg(msgtype, Byte(snac[ofs+9]), not dontBotherStatus, msg);
+      ofs := findTLV(5, snac, ofs);
+      if ofs >= 0 then
+      begin
+        msg := ptrWNTS(@snac[ofs+10]);
+        msgtype := Byte(snac[ofs+8]);
+        eventContact := thisCnt;
+        if msgtype=MTYPE_PLUGIN then
+          parseGCdata( copy(snac, ofs+4+6+3+length(msg), length(snac)) )
+         else
+          notificationForMsg(msgtype, Byte(snac[ofs+9]), not dontBotherStatus, msg);
+      end;
     end;
   end; // case
 end; // parseincomingMsg
@@ -6336,7 +6629,7 @@ var
             state := unUTF(getTLVSafe(META_COMPAD_HOMES_STATE, Pkt1));
             s := getTLVSafe(META_COMPAD_HOMES_COUNTRY, Pkt1);
             if s <> '' then
-              country := dword_BEat(Pointer(s)); //?????????????????????
+              country := dword_BEat(Pointer(s));
            end;
 
         Pkt1 := getTLVSafe(META_COMPAD_FROM, snac, ofs);
@@ -6361,6 +6654,11 @@ var
 //           cellular := '';
         homepage := getTLVSafe(META_COMPAD_HP, snac, ofs);
 
+        MarStatus := $00;
+        s := getTLVSafe(META_COMPAD_MARITAL_STATUS, snac, ofs);
+        if s > '' then
+          MarStatus := word_BEat(@s[1]);
+
         isExstsTLV := existsTLV(META_COMPAD_WORKS, snac, ofs);
         Pkt1 := getTLVSafe(META_COMPAD_WORKS, snac, ofs);
          Pkt1 := getTLVSafe(1, Pkt1);
@@ -6369,15 +6667,16 @@ var
             workpage  := unUTF(getTLVSafe(META_COMPAD_WORKS_PAGE, Pkt1));
             workPos   := unUTF(getTLVSafe(META_COMPAD_WORKS_POSITION, Pkt1));
             workCompany := unUTF(getTLVSafe(META_COMPAD_WORKS_ORG, Pkt1));
-            workaddress := unUTF(getTLVSafe(META_COMPAD_WORKS_STREET, Pkt1));
+            workaddress := unUTF(getTLVSafe(META_COMPAD_WORKS_ADDRESS, Pkt1));
             workcity  := unUTF(getTLVSafe(META_COMPAD_WORKS_CITY, Pkt1));
             workstate := unUTF(getTLVSafe(META_COMPAD_WORKS_STATE, Pkt1));
             workDep     := unUTF(getTLVSafe(META_COMPAD_WORKS_DEPT, Pkt1));
+            workZip   := unUTF(getTLVSafe(META_COMPAD_WORKS_ZIP, Pkt1));
             workphone := '';
             workfax := '';
             s := getTLVSafe(META_COMPAD_WORKS_COUNTRY, Pkt1);
             if s <> '' then
-              workCountry := dword_BEat(Pointer(s)); //?????????????????????
+              workCountry := dword_BEat(Pointer(s));
            end
           else
            if isExstsTLV then
@@ -6426,7 +6725,6 @@ var
            end;
          end;
         Pkt1 := getTLVSafe(META_COMPAD_INFO_CHG, snac, ofs);
-//        cnt.
         if Length(Pkt1) = 8 then
           begin
 //            t64 := qword_LEat(@Pkt1[1]);
@@ -6435,14 +6733,17 @@ var
 //            cnt.lastInfoUpdate := Tdatetime(t64)+GMToffset;
             Int64((@cnt.lastInfoUpdate)^)   := Qword_BEat(Pointer(Pkt1));
           end;
+        Pkt1 := getTLVSafe(META_COMPAD_GMT, snac, ofs);
+        if Length(Pkt1) = 2 then
+          cnt.GMThalfs := SmallInt(word_BEat(Pointer(Pkt1)));
 
 //        eventContact.gender := getTLVSafe(META_COMPAD_GENDER, snac, ofs)
         if cnt.equals(MyAccount) then
          begin
           showInfo := getTLVwordBE(META_COMPAD_INFO_SHOW, snac, ofs);
-          s := getTLVSafe(META_COMPAD_WEBAWEARE, snac, ofs);
-          if Length(s) = 2 then
-           P_webaware := Byte(s[2]) = 1;
+           s := getTLVSafe(META_COMPAD_WEBAWARE, snac, ofs);
+           if Length(s) >= 1 then
+             P_webaware := Byte(s[1]) = 1;
          end;
         eventContact := cnt;
         notifyListeners(IE_userinfoCP);
@@ -7057,11 +7358,11 @@ while Q.available do
       case service of
         $0118:
           begin     // ack to I'm ICQ
-          sendSNAC(1,6, '');
+          sendSNAC(ICQ_SERVICE_FAMILY, 6, '');
 //          if not isAvatarSession then
           if protoType = SESS_IM then
            begin
-            sendSNAC(1,$E, '');// 010E
+            sendSNAC(ICQ_SERVICE_FAMILY, $E, '');// 010E
 
      {$IFDEF UseNotSSI}
             if useSSI then
@@ -7070,11 +7371,11 @@ while Q.available do
                SSIreqLimits;
              end;
 
-            sendSNAC(2,2, ''); // 0202
+            sendSNAC(ICQ_LOCATION_FAMILY, 2, ''); // 0202
             SendReqBuddy; // 0302 BUDDY__RIGHTS_QUERY
 
-            sendSNAC(4,4, ''); // 0404
-            sendSNAC(9,2, ''); // 0902
+            sendSNAC(ICQ_MSG_FAMILY, 4, ''); // 0404
+            sendSNAC(ICQ_BOS_FAMILY, 2, ''); // 0902
           end;
           notifyListeners(IE_almostonline);
           end;
@@ -7261,6 +7562,7 @@ while Q.available do
           $040B: parse040B(pkt); // auto-messages
           $040C: parseServerAck(pkt,ref);
           $0414: parseTYPING_NOTIFICATION(pkt);
+          $0417: notifyListeners(IE_endOfOfflineMsgs);
         {$IFDEF RNQ_AVATARS}
           $1003: iconUploadAck(pkt);
           $1007: parseIcon(pkt);
@@ -7283,6 +7585,8 @@ while Q.available do
 //          $1501: parse1501Error(pkt, ref, flags);
 ////////////////////////////////////////////////////////////
           $1503: parse1503(pkt, ref, flags);
+          $2503: ;// new UIN info, need to parse
+                  // https://sites.google.com/site/imaderingcity/im-world/im-protocols/icq-protocol/148
           end;
     end;//case
   if Q.error then
@@ -7313,11 +7617,11 @@ begin
   i := MISSED_CALLS_ENABLED or CHANNEL_MSGS_ALLOWED;
   if ((chn=#0)or (chn = #1)or(chn = #2)) and SupportTypingNotif then i := i or EVENTS_ALLOWED;
 //  if ((chn = #1)or(chn = #2)) then
-    i := i or OFFLINE_MSGS_ALLOWED;   // Èëè ýòî óáèâàåò îôëàéí-ñîîáùåíèÿ :)
+    i := i or OFFLINE_MSGS_ALLOWED;   // Или это убивает офлайн-сообщения :)
   i := i or unk1_ALLOWED;
 //  i := i or $0700; // Seems it HTML support
 //  Chr3 := #00;
-  sendSNAC(ICQ_MSG_FAMILY,2, AnsiChar(#$00) + chn + dword_BEasStr(i) + #$1F#$40+ #$03#$E7+#$03#$E7+Z)
+  sendSNAC(ICQ_MSG_FAMILY, 2, AnsiChar(#$00) + chn + dword_BEasStr(i) + #$1F#$40+ #$03#$E7+#$03#$E7+Z)
 //  sendSNAC(ICQ_MSG_FAMILY,2, #$00 + chn + #$00#$00 + #00 + Chr(i) + #$1F#$40+ #$03#$E7+#$03#$E7+Z)
 //  sendSNAC(ICQ_MSG_FAMILY,2, #$00 + chn + #$00#$00 + word_LEasStr(i) + #$1F#$40+ #$03#$E7+#$03#$E7+Z)
 end;
@@ -7328,9 +7632,9 @@ const
 begin
 // if isAvatarSession then
  if protoType = SESS_AVATARS then
-   sendSNAC(1,2, #$00#$10#$00#$01 + cver)
+   sendSNAC(ICQ_SERVICE_FAMILY, 2, #$00#$10#$00#$01 + cver)
   else
-   sendSNAC(1,2,
+   sendSNAC(ICQ_SERVICE_FAMILY, 2,
     #$00#$22#$00#$01 + cver +
     #$00#$01#$00#$04 + cver +
 //    #$00#$10#$00#$01 + #$00#$10#$08#$E4);
@@ -7368,7 +7672,7 @@ begin
   if UseCryptMsg then
    begin
     s := s + BigCapability[CAPS_big_CryptMsg].v;
-    s := s + BigCapability[CAPS_big_QIP_SEQURE].v; // QIP protect message
+    s := s + BigCapability[CAPS_big_QIP_Secure].v; // QIP protect message
    end;
 //    sm := sm + CapsSmall[CAPS_sm_UTF8].v;
   if AvatarsSupport then
@@ -7412,9 +7716,9 @@ procedure TicqSession.sendImICQ;
 begin
 // if isAvatarSession then
  if protoType = SESS_AVATARS then
-   sendSNAC(1,$17, #$00#$10#$00#$01)
+   sendSNAC(ICQ_SERVICE_FAMILY, $17, #$00#$10#$00#$01)
   else
-   sendSNAC(1,$17,  #$00#$22#$00#$01 +
+   sendSNAC(ICQ_SERVICE_FAMILY, $17,  #$00#$22#$00#$01 +
                     #$00#$01#$00#$04+
                     #$00#$02#$00#$01+
                     #$00#$03#$00#$01+
@@ -7466,10 +7770,10 @@ begin
    begin
 
      sendFLAP( LOGIN_CHANNEL, s  +
-   TLV( $8003, #$00#$10#$00#$00));
+              TLV( $8003, #$00#$10#$00#$00));
 
     // if Assigned(myInfo) then
-  sendSNAC($17, $06, TLV($01, MyAccount)
+  sendSNAC(ICQ_BUCP_FAMILY, $06, TLV($01, MyAccount)
     //     + TLV($4B, '') // Unknown
     //     + TLV($5A, '') // Unknown
    );
@@ -7512,28 +7816,32 @@ sendFLAP( LOGIN_CHANNEL, s
 notifyListeners(IE_loggin);
 end; // sendLogin
 
-procedure TicqSession.SendReqBuddy;
+procedure TicqSession.SendReqBuddy(Second: Boolean = False);
 var
   vS : RawByteString;
 begin
-  vS := '';
-
+  if Second then
+    vS := ''
+  else
 // Seems it for support of offline messages
 // Some
 //  vS := TLV(05, word_BEasStr(BART_SUPPORTED or OFFLINE_BART_SUPPORTED));
 
 //  vS := TLV(05, word_BEasStr(BART_SUPPORTED or INITIAL_DEPARTS));
-  vS := TLV(05, word_BEasStr(BART_SUPPORTED or INITIAL_DEPARTS or
+    vS := TLV(05, word_BEasStr(BART_SUPPORTED or INITIAL_DEPARTS or
                                OFFLINE_BART_SUPPORTED or REJECT_PENDING_BUDDIES));
   if useFBcontacts then
    begin
-    vS := vS + TLV(06, AnsiChar(0)+ AnsiChar(0)+AnsiChar(0)); // Don't know what
-    vS := vS + TLV(07, AnsiChar(0)); // Don't know what
+    if not Second then
+    begin
+      vS := vS + TLV(06, AnsiChar(1)+ AnsiChar(0)+AnsiChar(1)); // Don't know what
+      vS := vS + TLV(07, AnsiChar(0)); // Don't know what
+    end;
 
     vS := vS + TLV(08, AnsiChar(1)); // ICQ_FACEBOOK_SUPPORT;
    end;
 
-  sendSNAC(3,2, vS); // 0302 BUDDY__RIGHTS_QUERY
+  sendSNAC(ICQ_BUDDY_FAMILY, 2, vS); // 0302 BUDDY__RIGHTS_QUERY
 end;
 
 function TicqSession.removeContact(cnt:TRnQContact):boolean;
@@ -8267,13 +8575,13 @@ end; // removeFromInvisible
 
 procedure TicqSession.SSIsendAddTempVisible(const buid : AnsiString);
 begin
-// sendSNAC($13,$37, #$01#$01 + #0+buid + #00#00);
- sendSNAC(ICQ_BOS_FAMILY,$0A, buid);
+// sendSNAC(ICQ_LISTS_FAMILY, $37, #$01#$01 + #0+buid + #00#00);
+ sendSNAC(ICQ_BOS_FAMILY, $0A, buid);
 end;
 
 procedure TicqSession.SSIsendDelTempVisible(const buid : AnsiString);
 begin
-// sendSNAC($13,$37, #$01#$01 + #0+buid + #00#00);
+// sendSNAC(ICQ_LISTS_FAMILY, $37, #$01#$01 + #0+buid + #00#00);
  sendSNAC(ICQ_BOS_FAMILY,$0B, buid);
 end;
 
@@ -8399,10 +8707,10 @@ const
 //  unk = #0#0#0#0;
   cook = #0#0#0#0;
 begin
-//sendSNAC($17,4,
+//sendSNAC(ICQ_BUCP_FAMILY, 4,
 //  TLV(1, Z+#$28#0#3#0+Z+Z+s+s+Z+Z+Z+Z+WNTS(pwd)+s+#0#0#$CF#1));
 
- sendSNAC($17,4,
+ sendSNAC(ICQ_BUCP_FAMILY, 4,
   word_BEasStr(1)+word_BEasStr(50+length(pwd))+
   z+
   #$28#0#0#0+
@@ -8415,7 +8723,7 @@ begin
   z+
   #0#9+Word_BEasStr(length(acceptKey))+acceptKey);
 {
- sendSNAC($17,4, TLV(1, Z+#$28#0#3#0
+ sendSNAC(ICQ_BUCP_FAMILY, 4, TLV(1, Z+#$28#0#3#0
   z+z+
   cook+
   cook+
@@ -8547,7 +8855,7 @@ case ord(tlv[46]) of
     end;
   MTYPE_FILEREQ: s:=s+ Z+#$01#$00#$00#$C8#$06#$C9#$00+Z;
   end;
-sendSNAC(4,$B, copy(snac, 1, 11+ord(snac[11]))+#0#3 +s);
+sendSNAC(ICQ_MSG_FAMILY, $B, copy(snac, 1, 11+ord(snac[11]))+#0#3 +s);
 }
     mtf := #03;
 case status of
@@ -9364,6 +9672,60 @@ begin
  end;
 end; // connect
 
+// Get session data for web login
+procedure TicqSession.refreshSessionSecret();
+var
+  fs: TMemoryStream;
+  session: RawByteString;
+  Params, KeyValPair: TStringList;
+  i: Integer;
+begin
+  if not (MyAccNum = '') and not (fPwd = '') then
+  begin
+    fs := TMemoryStream.Create;
+    LoadFromUrl('https://api.login.icq.net/auth/clientLogin', fs, 0, false, true,
+                'devId=ic1nmMjqg7Yu-0hL&f=qs&s=' + String(MyAccNum) + '&pwd=' + fPwd, false);
+    SetLength(session, fs.Size);
+    fs.ReadBuffer(session[1], fs.Size);
+    fs.Free;
+
+    Params := TStringList.Create;
+    KeyValPair := TStringList.Create;
+    try
+      Params.Delimiter := '&';
+      Params.StrictDelimiter := true;
+      Params.DelimitedText := UTF8ToStr(session);
+
+      KeyValPair.Delimiter := '=';
+      KeyValPair.StrictDelimiter := true;
+
+      for i := 0 to Params.Count -1 do
+      begin
+        KeyValPair.Clear;
+        KeyValPair.DelimitedText := UTF8ToStr(StringReplace(Params.Strings[i], '+', ' ', [rfReplaceAll]));
+        if KeyValPair.Count >= 2 then
+        begin
+          if (KeyValPair.Strings[0] = 'statusCode') then
+            if not ((KeyValPair.Strings[1] = '200') or (KeyValPair.Strings[1] = '304')) then Break;
+          if (KeyValPair.Strings[0] = 'statusText') then
+            if not (KeyValPair.Strings[1] = 'OK') then Break;
+
+          if (KeyValPair.Strings[0] = 'token_a') then
+            fSessionToken := KeyValPair.Strings[1];
+          if (KeyValPair.Strings[0] = 'token_expiresIn') then
+            TryStrToInt(KeyValPair.Strings[1], fSessionTokenExpIn);
+          if (KeyValPair.Strings[0] = 'hostTime') then
+            TryStrToInt(KeyValPair.Strings[1], fSessionTokenTime);
+          if (KeyValPair.Strings[0] = 'sessionSecret') then
+            fSessionSecret := KeyValPair.Strings[1];
+        end;
+      end;
+    finally
+      Params.Free;
+    end;
+  end;
+end;
+
 function Ticqsession.getFullStatusCode:dword;
 begin
   result:=0;
@@ -9449,7 +9811,7 @@ function TicqSession.CheckInvisibility2(const uin : TUID ) : Integer;
 // id : integer;
 begin
 {
-  sendSNAC(4,6, qword_LEasStr(SNACref)+#0#2
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
     +BUIN(uin)
      + word_BEasStr(5)+word_BEasStr($60)
 //          +TLV(5, #0#0+//qword_LEasStr(SNACref)//+capability[1]
@@ -9470,25 +9832,25 @@ begin
 //            )
 //          )
   );
-{  sendSNAC(2,$15, //qword_LEasStr(SNACref) +
+{  sendSNAC(ICQ_LOCATION_FAMILY, $15, //qword_LEasStr(SNACref) +
   #0#0#0#5 +BUIN(uin)
   );
 }
-{  sendSNAC(4,6, qword_LEasStr(SNACref)+#0#2
+{  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
     +BUIN(uin)
     +TLV(6, '')
   );
 }
-  sendSNAC(ICQ_MSG_FAMILY,6, qword_LEasStr(SNACref)+#0#4
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
     + Length_B(uin)
 //    +TLV(5, word_LEasStr(myInfo.uin)+#$09 + #$07 + #$07+ #0#0#0)
     +TLV(5, myUINle+ #$07+ #0#0#0)
   );
-//  sendSNAC(2, $0B, chr(Length('R@p|d D')) + 'R@p|d D');
-//  sendSNAC(2, $0B, chr(Length('RapidD2006')) + 'RapidD2006');
+//  sendSNAC(ICQ_LOCATION_FAMILY, $0B, chr(Length('R@p|d D')) + 'R@p|d D');
+//  sendSNAC(ICQ_LOCATION_FAMILY, $0B, chr(Length('RapidD2006')) + 'RapidD2006');
 
- sendSnac($02, $05, word_BEasStr(04)+ Length_B(uin));
-// sendSnac($02, $05, word_LEasStr(05)+ BUIN(uin));
+ sendSnac(ICQ_LOCATION_FAMILY, $05, word_BEasStr(04)+ Length_B(uin));
+// sendSnac(ICQ_LOCATION_FAMILY, $05, word_LEasStr(05)+ BUIN(uin));
   result := addRef(REF_msg,uin);
 //  acks.add(OE_msg, uin, 0, 'Inv').ID := id;
 //  result := 0;
@@ -9504,7 +9866,7 @@ function TicqSession.getUINStatus(const uin : TUID ) : Integer;
 // id : integer;
 begin
 {
-  sendSNAC(4,6, qword_LEasStr(SNACref)+#0#2
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
     +BUIN(uin)
      + word_BEasStr(5)+word_BEasStr($60)
 //          +TLV(5, #0#0+//qword_LEasStr(SNACref)//+capability[1]
@@ -9526,17 +9888,17 @@ begin
 //          )
   );
 {
-  sendSNAC(2,$15, //qword_LEasStr(SNACref) +
+  sendSNAC(ICQ_LOCATION_FAMILY, $15, //qword_LEasStr(SNACref) +
     word_BEasStr(05) + //
     BUIN(uin)
   );
 {
-  sendSNAC(4,6, qword_LEasStr(SNACref)+#0#2
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
     +BUIN(uin)
     +TLV(6, '')
   );
 }
- sendSnac($02, $05, word_BEasStr(04)+ Length_B(uin));
+ sendSnac(ICQ_LOCATION_FAMILY, $05, word_BEasStr(04)+ Length_B(uin));
 {
 SIG	0x00000001	The AIM signature
 UNAVAILABLE	0x00000002	The away message
@@ -9544,7 +9906,7 @@ CAPABILITIES	0x00000004	CAPABILITIES UUID array; short caps will be represented 
 CERTS	0x00000008	The CERT Blob
 HTML_INFO	0x00000400	Return HTML formatted Buddy Info page
 }
-// sendSnac($02, $05, word_LEasStr(05)+ BUIN(uin));
+// sendSnac(ICQ_LOCATION_FAMILY, $05, word_LEasStr(05)+ BUIN(uin));
   result := addRef(REF_msg,uin);
 //  acks.add(OE_msg, uin, 0, 'Inv').ID := id;
 //  result := 0;
@@ -9556,7 +9918,7 @@ begin
   sendSNAC(ICQ_MSG_FAMILY, $14, qword_LEasStr(0) + #00#01 + cnt.buin + word_BEasStr(notif_type))
 end;
 
-{This command, requests the server side contact list.
+{This command requests the server side contact list.
 It has no parameters, and always causes SRV_REPLYROSTER (rather than
 SRV_REPLYROSTEROK). My guess is that CLI_REQROSTER is sent instead of
 CLI_CHECKROSTER when the client does not have a cached copy of the contact
@@ -9646,7 +10008,7 @@ end;
 
 procedure TicqSession.send170C;
 begin
-  sendSNAC($17, $0c, #00#00);
+  sendSNAC(ICQ_BUCP_FAMILY, $0c, #00#00);
 end;
  {$ENDIF USE_REGUIN}
 
@@ -9810,7 +10172,7 @@ begin
 end;
 {procedure TicqSession.RequestIcon(uin : Integer; hash : String);
 begin
-  sendSNAC($10, $06, BUIN(uin) + #01 + #00#01+#01+#$10 + hash);
+  sendSNAC(ICQ_AVATAR_FAMILY, $06, BUIN(uin) + #01 + #00#01+#01+#$10 + hash);
 end;}
 
 function TicqSession.RequestIcon(c : TICQcontact) : Boolean;
@@ -10047,7 +10409,7 @@ end;
 procedure TICQSession.SSInewGroup(gID:integer; gName:string; iID : integer = 0);
 begin
 //showmessage(inttostr(gid));
-//  sendSNAC($13,$8, Length_BE(gName)+word_LEasStr(gID)+#$00#$00+
+//  sendSNAC(ICQ_LISTS_FAMILY, $8, Length_BE(gName)+word_LEasStr(gID)+#$00#$00+
 //         #$00#$01#$00#$00);
   sendSNAC(ICQ_LISTS_FAMILY, $08, Length_BE(gName)+word_BEasStr(gID)+ word_BEasStr(iID)+
         word_BEasStr(FEEDBAG_CLASS_ID_GROUP)+ #$00#$00);
@@ -10141,6 +10503,14 @@ begin
       ExtData := replaceAddTLV($13A, ExtData, 1, StrToUTF8(c.ssCell))
      else
       ExtData := deleteTLV($13A, ExtData);
+    if c.ssCell2 > '' then
+      ExtData := replaceAddTLV($138, ExtData, 1, StrToUTF8(c.ssCell2))
+     else
+      ExtData := deleteTLV($138, ExtData);
+    if c.ssCell3 > '' then
+      ExtData := replaceAddTLV($158, ExtData, 1, StrToUTF8(c.ssCell3))
+     else
+      ExtData := deleteTLV($158, ExtData);
     if c.ssImportant > '' then
       ExtData := replaceAddTLV($13C, ExtData, 1, StrToUTF8(c.ssImportant))
      else
@@ -10150,6 +10520,8 @@ begin
      else
       ExtData := deleteTLV($137, ExtData);
     FCellular := c.ssCell;
+    FCellular2:= c.ssCell2;
+    FCellular3:= c.ssCell2;
     Fnote := c.ssImportant;
     FMail := c.ssMail;
 //    ExtInfo  := ;
@@ -10379,7 +10751,7 @@ var
   s : RawByteString;
 //  item : TOSSIItem;
 begin
-//sendSNAC($13,$8, Length_BE(nUIN)+word_LEasStr(gID)+
+//sendSNAC(ICQ_LISTS_FAMILY, $8, Length_BE(nUIN)+word_LEasStr(gID)+
 //  word_LEasStr(random(65025))+#$00#$00+
 //    Length_BE(TLV($0131, cName)+TLV($0066,'')));
 //asd:=random(65025);
@@ -10413,6 +10785,8 @@ begin
   }
      s := s + TLV($0137, StrToUTF8(cnt.ssMail));
      s := s + TLV($013A, StrToUTF8(cnt.ssCell));
+     s := s + TLV($0138, StrToUTF8(cnt.ssCell2));
+     s := s + TLV($0158, StrToUTF8(cnt.ssCell3));
      s := s + TLV($013C, StrToUTF8(cnt.ssImportant));
 
   //   s := s + TLV($0137, '') + TLV($013A, '') + TLV($013C, '');
@@ -10597,7 +10971,7 @@ end;
 procedure TICQSession.SSIdeleteGroup(gID:integer);
 begin
 //showmessage(inttostr(gid));
-//  sendSNAC($13,$8, Length_BE(gName)+word_LEasStr(gID)+#$00#$00+
+//  sendSNAC(ICQ_LISTS_FAMILY, $8, Length_BE(gName)+word_LEasStr(gID)+#$00#$00+
 //         #$00#$01#$00#$00);
 //  sendSNAC(ICQ_LISTS_FAMILY, SSI_OPERATION_CODES_REMOVE,
 //            Length_BE(gName)+word_BEasStr(gID)+#$00#$00 + #$00#$01#$00#$00);
@@ -11243,6 +11617,8 @@ begin
   Result.FInfoToken := Self.FInfoToken;
   Result.FProto := Self.FProto;
   Result.FCellular := Self.FCellular;
+  Result.FCellular2:= Self.FCellular2;
+  Result.FCellular3:= Self.FCellular2;
   Result.FMail := Self.FMail;
   Result.FFirstMsg := Self.FFirstMsg;
 end;

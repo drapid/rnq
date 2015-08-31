@@ -94,8 +94,8 @@ type
 //                    r:Trect; onlysize:boolean=FALSE;
 //                    drawbar : Boolean = True; Selected : Boolean = false):Tpoint;
 
-  function GPdrawmenuitemR7(ACanvas : TCanvas; Amenu: Tmenu; item: Tmenuitem; r: Trect;
-           onlysize:boolean=FALSE; drawbar : Boolean = True; Selected : Boolean = false): Tpoint;
+  function GPdrawmenuitemR7(ACanvas: TCanvas; Amenu: Tmenu; item: Tmenuitem; r: Trect;
+           onlysize: boolean = FALSE; drawbar: Boolean = True; Selected: Boolean = false): Tpoint;
 
  {$IFNDEF NO_WIN98}
 //  function drawmenuitemR98(cnv : TCanvas; Amenu:Tmenu; item:Tmenuitem; r:Trect;

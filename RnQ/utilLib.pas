@@ -141,6 +141,7 @@ function  strFromHTML(const s: string): string;
 function  db2strU(db: TRnQCList): RawByteString;
 // window management
 procedure toggleMainfrmBorder(setBrdr: Boolean = false; IsBrdr: Boolean = True);
+procedure applySnap();
 procedure mainfrmHandleUpdate;
 procedure dockSet(var r: Trect); overload;
 procedure dockSet; overload;
@@ -184,6 +185,7 @@ function  openSaveDlg(parent: Tform; const Cptn: String; IsOpen: Boolean;
 
 function  str2sortby(const s: AnsiString): TsortBy;
 procedure CheckBDays;
+function GetWidth(chk: TCheckBox): integer;
 
 
 
@@ -252,7 +254,14 @@ const
 
   DBFK_LASTINFOCHG = 125;
 
+  DBFK_ADDRESS = 126;
+  DBFK_BIRTHCOUNTRY = 127;
+  DBFK_BIRTHSTATE = 128;
+  DBFK_BIRTHCITY = 129;
+  DBFK_REGULAR = 130;
 
+  DBFK_ssCell2 = 131;
+  DBFK_ssCell3 = 132;
 
 implementation
 
@@ -568,7 +577,9 @@ var
   cfg, l, h: RawByteString;
   i, ppp: Integer;
   function yesno:boolean;
-  begin result:=comparetext(l,AnsiString('yes'))=0 end;
+  begin
+    result := comparetext(l,AnsiString('yes'))=0
+  end;
 //var
 //  pp : TproxyProto;
 begin
@@ -593,8 +604,10 @@ begin
      if Length(pProxys) > 0 then
      begin
       if h='proxy-ver5' then
-         if yesno then pProxys[i].proto:=PP_SOCKS5
-         else pProxys[i].proto:=PP_SOCKS4
+         if yesno then
+           pProxys[i].proto:=PP_SOCKS5
+         else
+           pProxys[i].proto:=PP_SOCKS4
 //      else if h='proxy' then pProxys[i].enabled:=yesno
       else if h='proxy-auth' then pProxys[i].auth:=yesno
       else if h='proxy-user' then pProxys[i].user:= UnUTF(l)
@@ -1162,7 +1175,8 @@ begin
 //    SetWindowPos(splashFrm.Handle, 0, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_NOZORDER or SWP_FRAMECHANGED);
 
   g_hLib_User32 := LoadLibrary('user32.dll');
-  if g_hLib_User32 = 0 then raise Exception.Create('LoadLibrary(user32.dll) failed');
+  if g_hLib_User32 = 0 then
+    raise Exception.Create('LoadLibrary(user32.dll) failed');
 
   @g_pUpdateLayeredWindow := GetProcAddress(g_hLib_User32, 'UpdateLayeredWindow');
   with splashFrm do
@@ -1268,17 +1282,19 @@ end; // str2html
 
 procedure restoreForeWindow;
 begin
-if oldForewindow=0 then exit;
-bringForeground:=oldForeWindow;
-oldForewindow:=0;
+  if oldForewindow=0 then
+   exit;
+  bringForeground := oldForeWindow;
+  oldForewindow := 0;
 end; // restoreForeWIndow
 
-procedure applyTransparency(forced:integer=-1);
+procedure applyTransparency(forced: integer = -1);
 var
   bak:Thandle;
 begin
-  if not running then exit;
-  bak:=RnQmain.handle;
+  if not running then
+    exit;
+  bak := RnQmain.handle;
   RnQmain.alphablend:=transparency.forRoster or (forced>0);
   chatfrm.alphablend:=transparency.forChat or (forced>0);
   if RnQmain.alphablend then
@@ -1300,12 +1316,13 @@ begin
      chatfrm.alphablendvalue:=forced
     else
      chatFrm.AlphaBlendValue:=transparency.active;
-  if bak<>RnQmain.handle then mainfrmHandleUpdate;
+  if bak<>RnQmain.handle then
+    mainfrmHandleUpdate;
 end; // applyTransparency
 
-procedure applyDocking(Undock : Boolean = false);
+procedure applyDocking(Undock: Boolean = false);
 var
-  r : TRect;
+  r: TRect;
 begin
  try
   if docking.Dock2Chat then
@@ -1365,11 +1382,11 @@ begin
  end;
 end;
 
-function  loadDB(zp : TZipFile; pCheckGroups : Boolean):boolean;
+function  loadDB(zp: TZipFile; pCheckGroups: Boolean): Boolean;
 var
-  s : RawByteString;
-  zf : TZipFile;
-  i : Integer;
+  s: RawByteString;
+  zf: TZipFile;
+  i: Integer;
 begin
   freeDB(contactsDB);
   s := '';
@@ -1458,7 +1475,9 @@ end;
 *)
 
 function compContacts(Item1, Item2: Pointer):Integer;
-begin result:=compareText(TRnQContact(item1).displayed, TRnQContact(item2).displayed) end;
+begin
+  result := compareText(TRnQContact(item1).displayed, TRnQContact(item2).displayed)
+end;
 
 function compContactsByGroup(Item1, Item2: Pointer):Integer;
 var
@@ -1476,22 +1495,28 @@ else
 end; // compContacts
 
 procedure sortCL(cl:TRnQCList);
-begin cl.sort(compContacts) end;
+begin
+  cl.sort(compContacts)
+end;
 
 procedure sortCLbyGroups(cl:TRnQCList);
-begin cl.sort(compContactsByGroup) end;
+begin
+  cl.sort(compContactsByGroup)
+end;
 
 //////////////////////////////////////////////////////////////////////////
 procedure hideForm(frm:Tform);
 begin
-if frm=NIL then exit;
-if frm = RnQmain then
-  begin
-  if formvisible(RnQmain) then RnQmain.toggleVisible;
-  exit;
+  if frm=NIL then
+    exit;
+  if frm = RnQmain then
+   begin
+     if formvisible(RnQmain) then
+       RnQmain.toggleVisible;
+     exit;
   end;
-frm.hide;
-ShowWindow(application.handle,SW_HIDE)
+  frm.hide;
+  ShowWindow(application.handle,SW_HIDE)
 end;
 
 function PrefIsVisiblePage(const pf: String): Boolean;
@@ -1702,7 +1727,8 @@ procedure openSendContacts(dest: TRnQcontact);
 var
   wnd: TselectCntsFrm;
 begin
-  if not Assigned(dest) then Exit;
+  if not Assigned(dest) then
+    Exit;
   wnd := TselectCntsFrm.doAll2( RnQmain,
                               getTranslation('To %s',[dest.displayed]),
                               getTranslation('Send selected contacts'),
@@ -1757,7 +1783,9 @@ if s[start] in EMAILCHARS then   // chi comincia bene...
 end; // isEmailAddress
 
 procedure notAvailable;
-begin msgDlg('This feature isn''t available yet.\nCome back tomorrow...', True, mtInformation) end;
+begin
+  msgDlg('This feature isn''t available yet.\nCome back tomorrow...', True, mtInformation)
+end;
 
 //procedure redrawUIN(uin:TUID);
 //begin rosterLib.redraw(contactsDB.get(uin)) end;
@@ -1774,7 +1802,10 @@ begin
 end; // childParent
 
 procedure myBeep;
-begin if playSounds then beep end;
+begin
+  if playSounds then
+    beep
+end;
 
 function whatStatusPanel(statusbar:Tstatusbar; x:integer):integer;
 var
@@ -1789,15 +1820,15 @@ while (x > x1) and (result<statusbar.Panels.Count-1) do
   end;
 end; // whatStatusPanel
 
-function sendProtoMsg(var oe:TOevent):boolean;
+function sendProtoMsg(var oe: TOevent): Boolean;
 var
 //  c  : Tcontact;
-  ev : THevent;
-  vBin : RawByteString;
-  vStr : String;
-  send_msg : String;
-  fl : Cardinal;
-  i : Integer;
+  ev: THevent;
+  vBin: RawByteString;
+  vStr: String;
+  send_msg: String;
+  fl: Cardinal;
+  i: Integer;
 begin
 //  c:= Tcontact(contactsDB.get( oe.uid));
 
@@ -1820,18 +1851,22 @@ begin
        oe.info := send_msg;
      end
      else if (byte(vBin[1])=PM_ABORT) then
-      exit else begin end
+      exit
+     else
+      begin end
    else
      send_msg := oe.info;
   vBin := '';
-  if Length(send_msg) = 0 then exit;
+  if Length(send_msg) = 0 then
+    exit;
   result := True;
   oe.id:= oe.whom.fProto.sendMsg(oe.whom, oe.flags, send_msg,result);
   oe.timeSent:=now;
   if result then
     Account.acks.add(oe.kind, oe.whom, oe.flags, 'MSG').ID := oe.ID;
 
-  if Length(oe.info) = 0 then exit;
+  if Length(oe.info) = 0 then
+    exit;
  {$IFDEF DB_ENABLED}
   if (oe.flags and IF_Bin) <> 0 then
     begin
@@ -1876,7 +1911,9 @@ begin
 end;
 
 function deleteFromTo(fn:string; from,to_:integer):boolean;
-begin result:=partDeleteFile(fn,from,to_-from) end;
+begin
+  result := partDeleteFile(fn,from,to_-from)
+end;
 
 function enterUinDlg(const proto : TRnQProtocol; var uin : TUID; const title:string=''):boolean;
 var
@@ -1918,13 +1955,14 @@ begin
 //        uin := res;
         break
        end
-      else msgDlg('Invalid UIN', True, mtError)
+      else
+       msgDlg('Invalid UIN', True, mtError)
     end;
   until not result;
 end; // enterUinDlg
 
-function enterPwdDlg(var pwd:String; const title:string=''; maxLength:integer=0;
-                      AllowNull : Boolean = False):boolean;
+function enterPwdDlg(var pwd: String; const title: string=''; maxLength: integer=0;
+                      AllowNull: Boolean = False): Boolean;
 var
   frm: pwdDlg.TmsgFrm;
 begin
@@ -1954,17 +1992,18 @@ end; // enterPwdDlg
 {$IFDEF RNQ_FULL2}
 procedure convertHistoriesDlg(oldPwd, newPwd: AnsiString);
 begin
-if oldPwd=newPwd then exit;
-if not ICQ.isOffline then
-  if messageDlg(getTranslation('You have to be offline for this operation!\nDisconnect?'),mtConfirmation,[mbYes,mbNo],0)=mrNo then
-    exit
-  else
-    ICQ.disconnect;
-chatFrm.closeAllPages;
+  if oldPwd=newPwd then
+    exit;
+  if not ICQ.isOffline then
+    if messageDlg(getTranslation('You have to be offline for this operation!\nDisconnect?'),mtConfirmation,[mbYes,mbNo],0)=mrNo then
+      exit
+     else
+      ICQ.disconnect;
+  chatFrm.closeAllPages;
   convhistFrm := TconvhistFrm.Create(Application);
-convhistFrm.oldPwd:=oldPwd;
-convhistFrm.newPwd:=newPwd;
-convhistFrm.showModal;
+  convhistFrm.oldPwd := oldPwd;
+  convhistFrm.newPwd := newPwd;
+  convhistFrm.showModal;
 end; // convertHistoriesDlg
 {$ENDIF}
 
@@ -1972,7 +2011,8 @@ function addToRoster(c:TRnQContact; group:integer; const isLocal : Boolean = Tru
 begin
   // Add SSI
   result:=FALSE;
-  if c=NIL then exit;
+  if c=NIL then
+    exit;
   if group=2000 then
     group:=0;
   c.group:=group;
@@ -1984,7 +2024,8 @@ function addToNIL(c:TRnQContact; isBulk : Boolean = false):boolean;
 begin
   result:=FALSE;
   c.fProto.removeContact(c);
-  if not notInList.add(c) then exit;
+  if not notInList.add(c) then
+    exit;
   if not isBulk then
    begin
     roasterlib.update(c);
@@ -2006,36 +2047,38 @@ begin
    end;
 end; // eventFrom
 
-function deltree(path:string):boolean;
+function deltree(path: String): Boolean;
 var
-  sr:TsearchRec;
-begin
-result:=FALSE;
-if (path='') or not directoryExists(path) then exit;
-path:=includeTrailingPathDelimiter(path);
-if findFirst(path+'*.*', faAnyFile, sr) = 0 then
-  repeat
-  if (sr.name<>'.') and (sr.name<>'..') then
-    if sr.Attr and faDirectory > 0 then
-      deltree(path+sr.name)
-    else
-      deleteFile(path+sr.name);
-  until findNext(sr) <> 0;
-findClose(sr);
-//path:=ExcludeTrailingPathDelimiter(path);
-result:=RemoveDir(path);
-end; // deltree
-
-function delSUBtree(subPath:string):boolean;
-var
-  sr:TsearchRec;
-  path : String;
+  sr: TsearchRec;
 begin
   result:=FALSE;
+  if (path='') or not directoryExists(path) then
+    exit;
+  path := includeTrailingPathDelimiter(path);
+  if findFirst(path+'*.*', faAnyFile, sr) = 0 then
+   repeat
+    if (sr.name<>'.') and (sr.name<>'..') then
+      if sr.Attr and faDirectory > 0 then
+        deltree(path+sr.name)
+       else
+        deleteFile(path+sr.name);
+   until findNext(sr) <> 0;
+  findClose(sr);
+//path:=ExcludeTrailingPathDelimiter(path);
+  result := RemoveDir(path);
+end; // deltree
+
+function delSUBtree(subPath: String): Boolean;
+var
+  sr: TsearchRec;
+  path: String;
+begin
+  result := FALSE;
   path := myPath + subPath;
-  if(subPath='') or (subPath=PathDelim)or(path='') or not directoryExists(path) then exit;
+  if(subPath='') or (subPath=PathDelim)or(path='') or not directoryExists(path) then
+    exit;
   subPath := includeTrailingPathDelimiter(subPath);
-  path:=includeTrailingPathDelimiter(path);
+  path := includeTrailingPathDelimiter(path);
   if findFirst(path+'*.*', faAnyFile, sr) = 0 then
     repeat
     if (sr.name<>'.') and (sr.name<>'..') then
@@ -2046,7 +2089,7 @@ begin
     until findNext(sr) <> 0;
   findClose(sr);
   //path:=ExcludeTrailingPathDelimiter(path);
-  result:=RemoveDir(path);
+  result := RemoveDir(path);
 end; // deltree
 
 function rosterImgNameFor(c:TRnQContact): AnsiString;
@@ -2066,8 +2109,8 @@ begin
    statusPics[s, inv].tkn, statusPics[s, inv].Loc, statusPics[s, inv].idx)
 end;}
 
-function statusDrawExt(const DC : HDC; const x,y:integer; const s: byte;
-                       const inv:boolean=FALSE; const ExtSts : Byte = 0) : TSize;
+function statusDrawExt(const DC: HDC; const x, y: integer; const s: byte;
+                       const inv: boolean=FALSE; const ExtSts: Byte = 0): TSize;
 begin
   if XStatusAsMain and (ExtSts > 0) then
     if DC = 0 then
@@ -2250,9 +2293,9 @@ var
   serial:integer;
   ct : TICQContact;
 //  thisVer:string;
-  procedure found(v:longword; preview:boolean);
+  procedure found(v: longword; preview: boolean);
   var
-    vs,ps,url:string;
+    vs, ps, url: string;
   begin
     if preview then
       url := ct.workpage
@@ -2260,8 +2303,8 @@ var
       url:= ct.homepage;
   //  ps:=plugins.castEv(PE_UPDATE_INFO, checkupdate.info, ip2str(v), url, preview, v);
   //  if isAbort(ps) then exit;
-    vs:=IntToStr(v)+ifThen(preview, ' PREVIEW');
-    ps:=ifThen( PREVIEWversion , CRLF+getTranslation('Your version is a "preview"!'), '');
+    vs := IntToStr(v) + ifThen(preview, ' PREVIEW');
+    ps := ifThen( PREVIEWversion , CRLF+getTranslation('Your version is a "preview"!'), '');
     if messageDlg( getTranslation('There''s a new version available! version %s%s\nDo you want to download the new version?', [vs,ps]), mtConfirmation,[mbYes,mbNo],0)=mrYes then
       openURL(url)
   end; // found
@@ -2279,18 +2322,19 @@ begin
     ct := TICQContact(cnt)
    else
     Exit;
-if (error<>0) and not checkupdate.autochecking then
-  begin
-  msgDlg('Error checking for updates', True, mtError);
-  exit;
-  end;
-if not matches(ct.nick,1,'R&Q versions info') then exit;
-checkupdate.last := now;
+  if (error<>0) and not checkupdate.autochecking then
+   begin
+    msgDlg('Error checking for updates', True, mtError);
+    exit;
+   end;
+  if not matches(ct.nick, 1, 'R&Q versions info') then
+    exit;
+  checkupdate.last := now;
 //thisVer:=ip2str(RnQversion);
  try
-  serial:=StrToInt64Def(ct.zip, 0);
-  v:=StrToInt64Def(ct.first, RnQBuild);
-  previewv:=StrToInt64Def(ct.last, RnQBuild);
+  serial := StrToInt64Def(ct.zip, 0);
+  v := StrToInt64Def(ct.first, RnQBuild);
+  previewv := StrToInt64Def(ct.last, RnQBuild);
   if PREVIEWversion and ((v > RnQBuild) or (previewv > RnQBuild))  then
    begin
      Result := True;
@@ -2327,13 +2371,13 @@ checkupdate.last := now;
     if checkupdate.betas and (previewv > RnQBuild) and (previewv>v) then
      begin
       Result := True;
-      found(previewv,TRUE)
+      found(previewv, TRUE)
      end
     else
       if v > RnQBuild then
         begin
           Result := True;
-          found(v,FALSE);
+          found(v, FALSE);
         end
       else
         nothingFound;
@@ -2350,12 +2394,13 @@ end;
 
 procedure dockSet;
 var
-  r:Trect;
+  r: Trect;
 begin
-  if RnQmain=NIL then exit;
-  r:=RnQmain.boundsrect;
+  if RnQmain=NIL then
+    exit;
+  r := RnQmain.boundsrect;
   dockset(r);
-  RnQmain.boundsrect:=r;
+  RnQmain.boundsrect := r;
 end; // dockSet
 
 procedure dockSet(var r:Trect);
@@ -2363,14 +2408,16 @@ var
   w:integer;
   vOn : Boolean;
 begin
-  if not RnQmain.visible or not running then exit;
+  if not RnQmain.visible or not running then
+    exit;
   vOn := docking.appBar and docking.active and not docking.tempOff;
   if vOn <> docking.appBarFlag then
    begin
     docking.appbarFlag := vOn;
     RnQSysUtils.dockSet(RnQmain.Handle, vOn, WM_DOCK);
    end;
-  if not docking.active then exit;
+  if not docking.active then
+    exit;
   w := r.right-r.left;
   r := desktopWorkArea(RnQmain.Handle);
   if docking.appBar then
@@ -2400,35 +2447,43 @@ begin
   RnQSysUtils.setAppBarSize( RnQmain.handle, RnQmain.boundsrect, WM_DOCK, docking.pos=DP_left)
 end; // setAppBarSize
 
-procedure fixWindowPos(frm:Tform);
+procedure fixWindowPos(frm: Tform);
 var
-  dwa:Trect;
+  dwa: Trect;
 begin
-if frm=NIL then exit;
-if not doFixWindows or docking.active or (frm.WindowState<>wsNormal) then exit;
-dwa := Screen.DesktopRect;
-//dwa:=desktopWorkArea;
-if fixingWindows.lastWidth <> dwa.right then
-  begin
-  if fixingWindows.onTheRight then
-    frm.left:=dwa.right-fixingWindows.lastRightSpace;
-  fixingWindows.lastWidth:=dwa.right;
-  end;
-if frm.left < (dwa.left-frm.Width) then frm.left:=dwa.left-frm.Width+10;
-if frm.top < (dwa.top-frm.Height) then frm.top:=dwa.top-frm.Height+10;
-if frm.left > dwa.right-10 then frm.left:=dwa.Right-10;
-if frm.top > dwa.bottom-10 then frm.Top:=dwa.bottom-10;
-if frm.height > screen.height then frm.height:=screen.height-20;
-if frm.width > screen.width then frm.width:=screen.width-20;
-fixingWindows.onTheRight:=centerPoint(frm.BoundsRect).x > (screen.Width div 2);
-fixingWindows.lastRightSpace:=dwa.right-frm.left;
+  if frm=NIL then
+    exit;
+  if not doFixWindows or docking.active or (frm.WindowState<>wsNormal) then
+    exit;
+  dwa := Screen.DesktopRect;
+//  dwa:=desktopWorkArea;
+  if fixingWindows.lastWidth <> dwa.right then
+   begin
+    if fixingWindows.onTheRight then
+      frm.left:=dwa.right-fixingWindows.lastRightSpace;
+    fixingWindows.lastWidth:=dwa.right;
+   end;
+  if frm.left < (dwa.left-frm.Width) then
+    frm.left := dwa.left-frm.Width+10;
+  if frm.top < (dwa.top-frm.Height) then
+    frm.top := dwa.top-frm.Height+10;
+  if frm.left > dwa.right-10 then
+    frm.left := dwa.Right-10;
+  if frm.top > dwa.bottom-10 then
+    frm.Top := dwa.bottom-10;
+  if frm.height > screen.height then
+    frm.height := screen.height-20;
+  if frm.width > screen.width then
+    frm.width := screen.width-20;
+  fixingWindows.onTheRight := centerPoint(frm.BoundsRect).x > (screen.Width div 2);
+  fixingWindows.lastRightSpace := dwa.right-frm.left;
 end; // fixWindowPos
 
-function isSpam(var wrd : String; c:TRnQcontact; msg:string=''; flags:dword=0):boolean;
+function isSpam(var wrd: String; c: TRnQcontact; msg: string = ''; flags: dword = 0): Boolean;
 var
-  b,filter:boolean;
-  s:string;
-  i : Integer;
+  b, filter: boolean;
+  s: string;
+  i: Integer;
 begin
   if (flags and IF_auth > 0) and spamfilter.ignoreauthNIL and
 //     (not roasterLib.exists(c) or notInList.exists(c))
@@ -2437,56 +2492,65 @@ begin
     result:=TRUE;
     exit;
   end;
-if spamfilter.ignoreNIL and //(not roasterLib.exists(c) or notInList.exists(c))
-                      (notInList.exists(c) or not c.isInRoster)
-or spamfilter.ignorepagers and (IF_pager and flags>0) then
+  if spamfilter.ignoreNIL and //(not roasterLib.exists(c) or notInList.exists(c))
+    (notInList.exists(c) or not c.isInRoster)
+    or spamfilter.ignorepagers and (IF_pager and flags>0) then
   begin
-  result:=TRUE;
-  exit;
+    result:=TRUE;
+    exit;
   end;
-result:=FALSE;
-filter:=FALSE;
-if spamfilter.uingt>0 then
-  if TryStrToInt(c.uid, i) and (i <= spamfilter.uingt) then exit
-  else filter:=TRUE;
-if spamfilter.notnil then
+  result := FALSE;
+  filter := FALSE;
+  if spamfilter.uingt>0 then
+    if TryStrToInt(c.uid, i) and (i <= spamfilter.uingt) then
+      exit
+     else
+      filter:=TRUE;
+  if spamfilter.notnil then
 //  if roasterLib.exists(c) then exit
-  if c.isInRoster then exit
-  else filter:=TRUE;
-if spamfilter.multisend then
-  if flags and IF_multiple = 0 then exit
-  else filter:=TRUE;
-if spamfilter.notEmpty then
-  if ExistsHistWith(c.uid2cmp) then exit
-  else filter:=TRUE;
-if spamfilter.nobadwords then
+    if c.isInRoster then
+      exit
+     else
+      filter:=TRUE;
+  if spamfilter.multisend then
+    if flags and IF_multiple = 0 then
+      exit
+     else
+      filter := TRUE;
+  if spamfilter.notEmpty then
+    if ExistsHistWith(c.uid2cmp) then
+      exit
+     else
+      filter := TRUE;
+  if spamfilter.nobadwords then
   begin
-  b:=FALSE;
-  s:=spamfilter.badwords;
-  while not b and (s>'') do
-   begin
-    wrd := chop(';',s);
-    b:=ansiContainsText(msg, wrd);
-   end;
-  if b then filter:=TRUE
-  else
-   begin
-    wrd := '';
-    filter := False;
-//    exit;
-   end;
+    b:=FALSE;
+    s:=spamfilter.badwords;
+    while not b and (s>'') do
+     begin
+       wrd := chop(';',s);
+       b:=ansiContainsText(msg, wrd);
+     end;
+    if b then
+      filter := TRUE
+     else
+      begin
+        wrd := '';
+        filter := False;
+    //    exit;
+      end;
   end;
-result:=filter;
+  result := filter;
 end; // isSpam
 
-function filterRefuse(c:TRnQContact; const msg:string=''; flags:dword=0; ev : Thevent = NIL):boolean;
+function filterRefuse(c: TRnQContact; const msg: string = ''; flags: dword = 0; ev: Thevent = NIL): boolean;
 var
-  wrd : String;
-  spamCnt : TRnQcontact;
+  wrd: String;
+  spamCnt: TRnQcontact;
 begin
-result:=TRUE;
-wrd := '';
-if isSpam(wrd, c, msg, flags) then
+  result := TRUE;
+  wrd := '';
+  if isSpam(wrd, c, msg, flags) then
   begin
    if spamfilter.addToHist then
     if (msg > '')and(Assigned(ev)) then
@@ -2498,25 +2562,25 @@ if isSpam(wrd, c, msg, flags) then
           chatFrm.addEvent(spamCnt, ev.clone);
       end;
 
-  if spamfilter.warn then
-   if wrd > '' then
-    msgDlg(getTranslation('SPAM FILTERED FROM %s \n BY WORD %s',
-       [c.displayed + ' (' + c.UID + ')', wrd]), False, mtInformation, c.UID)
-   else
-    msgDlg(getTranslation('SPAM FILTERED FROM %s',[c.displayed + ' (' + c.UID + ')']), False,
-            mtInformation, c.UID);
-  exit;
+    if spamfilter.warn then
+     if wrd > '' then
+       msgDlg(getTranslation('SPAM FILTERED FROM %s \n BY WORD %s',
+          [c.displayed + ' (' + c.UID + ')', wrd]), False, mtInformation, c.UID)
+      else
+       msgDlg(getTranslation('SPAM FILTERED FROM %s',[c.displayed + ' (' + c.UID + ')']), False,
+             mtInformation, c.UID);
+    exit;
   end;
-result:=enableIgnoreList and ignorelist.exists(c);
+  result:=enableIgnoreList and ignorelist.exists(c);
 end; // filterRefuse
 
-function db2strU(db:TRnQCList):RawByteString;
+function db2strU(db: TRnQCList): RawByteString;
 var
- dim:integer;
+ dim: integer;
 
   procedure addStr(const s: RawByteString);
    var
-     i : Integer;
+     i: Integer;
   begin
     if Length(s) > 0 then
     begin
@@ -2558,15 +2622,15 @@ begin
  result:= byte(SC_ONLINE); // shut up compiler warning
 end; // str2status
 
-function str2visibility(const s:AnsiString):Tvisibility;
+function str2visibility(const s: AnsiString): Tvisibility;
 var
-  ss : TPicName;
+  ss: TPicName;
 begin
-  ss:=LowerCase(s);
- for result:=low(result) to high(result) do
-  if visib2str[result] = ss then
-    exit;
- result:=VI_normal; // shut up compiler warning
+  ss := LowerCase(s);
+  for result := low(result) to high(result) do
+   if visib2str[result] = ss then
+     exit;
+  result := VI_normal; // shut up compiler warning
 end; // str2visibility
 
 procedure clearDB(db:TRnQCList);
@@ -2579,9 +2643,10 @@ for i:=0 to TList(db).count-1 do
 db.clear;
 end; // clearDB
 
-procedure freeDB(var db:TRnQCList);
+procedure freeDB(var db: TRnQCList);
 begin
-  if not Assigned(db) then Exit;
+  if not Assigned(db) then
+    Exit;
   clearDB(db);
   db.free;
   db:=NIL;
@@ -2613,7 +2678,9 @@ begin
 end;
 
 procedure startTimer;
-begin RnQmain.timer.enabled:=TRUE end;
+begin
+  RnQmain.timer.enabled:=TRUE
+end;
 
 procedure stopMainTimer;
 begin
@@ -2671,7 +2738,8 @@ begin
 //  if info > '' then
 //    ev.setInfo(info);
  {$ENDIF ~DB_ENABLED}
-  if kind >= 0 then ev.kind:=kind;
+  if kind >= 0 then
+    ev.kind:=kind;
 
   case kind of
     EK_GCARD,
@@ -2952,26 +3020,40 @@ if not BossMode.isBossKeyOn and (BE_popup in behaviour[ev.kind].trig) then
    if not vProto.getStatusDisable.OpenChat then
     if ev.flags and IF_no_matter = 0 then
      chatFrm.openOn(ev.who, focusOnChatPopup);
-
+  // SHAKE IT BABY!
+  if ev.kind = EK_BUZZ then
+    if not BossMode.isBossKeyOn and (BE_flashchat in behaviour[ev.kind].trig) then
+      if chatFrm.Visible then
+        chatFrm.shake
 end; // behave
 
-function beh2str(kind:integer): RawByteString;
+function beh2str(kind: integer): RawByteString;
 var
   s: RawByteString;
 begin
-s:='';
-if behaviour[kind].tiptimes then s:=s+'times('+IntToStrA(behaviour[kind].tiptimeplus)+')+';
-if BE_tip in behaviour[kind].trig then s:=s+'tip('+IntToStrA(behaviour[kind].tiptime)+')+';
-if BE_tray in behaviour[kind].trig then s:=s+'tray+';
-if BE_openchat in behaviour[kind].trig then s:=s+'openchat+';
-if BE_save in behaviour[kind].trig then s:=s+'save+';
-if BE_sound in behaviour[kind].trig then s:=s+'sound+';
-if BE_history in behaviour[kind].trig then s:=s+'history+';
-if BE_popup in behaviour[kind].trig then s:=s+'popup+';
-if BE_flashchat in behaviour[kind].trig then s:=s+'flashchat+';
-if BE_balloon in behaviour[kind].trig then s:=s+'balloon+';
-delete(s,length(s),1);
-result:=s;
+  s:='';
+  if behaviour[kind].tiptimes then
+    s:=s+'times('+IntToStrA(behaviour[kind].tiptimeplus)+')+';
+  if BE_tip in behaviour[kind].trig then
+    s:=s+'tip('+IntToStrA(behaviour[kind].tiptime)+')+';
+  if BE_tray in behaviour[kind].trig then
+    s:=s+'tray+';
+  if BE_openchat in behaviour[kind].trig then
+    s:=s+'openchat+';
+  if BE_save in behaviour[kind].trig then
+    s:=s+'save+';
+  if BE_sound in behaviour[kind].trig then
+    s:=s+'sound+';
+  if BE_history in behaviour[kind].trig then
+    s:=s+'history+';
+  if BE_popup in behaviour[kind].trig then
+    s:=s+'popup+';
+  if BE_flashchat in behaviour[kind].trig then
+    s:=s+'flashchat+';
+  if BE_balloon in behaviour[kind].trig then
+    s:=s+'balloon+';
+  delete(s,length(s),1);
+  result:=s;
 end; // beh2str
 
 procedure str2beh(const b, s : RawByteString);
@@ -2984,27 +3066,29 @@ begin
       if b = event2str[i]+'-behaviour' then
         behaviour[i]:=str2beh(s)
 end;
-function str2beh(s: AnsiString):Tbehaviour;
-const tipstr = AnsiString('tip');
+
+function str2beh(s: AnsiString): Tbehaviour;
+const
+  tipstr = AnsiString('tip');
 
   function extractPar(const lab: AnsiString): AnsiString;
   var
-    i,j:integer;
+    i,j: integer;
   begin
-  result:='';
-  i:=AnsiPos(lab+'(',s);
-  if i > 0 then
-    begin
-    inc(i,length(lab)+1);
-     j:= PosEx(')', s, i);
-//    j:=i;
-//    while (length(s) > j) and (s[j]<>')') do
-//      inc(j);
-     if j > 0 then
-       result:=copy(s,i,j-i)
-     else
-       result:=''
-    end;
+    result:='';
+    i := AnsiPos(lab+'(',s);
+    if i > 0 then
+     begin
+       inc(i,length(lab)+1);
+       j:= PosEx(')', s, i);
+   //    j:=i;
+   //    while (length(s) > j) and (s[j]<>')') do
+   //      inc(j);
+       if j > 0 then
+         result:=copy(s,i,j-i)
+        else
+         result:=''
+     end;
   end; // extractPar
 var
   tS : AnsiString;
@@ -3021,7 +3105,8 @@ result.tiptimes:=ansiContainsText(s, AnsiString('times'));
       result.tiptimeplus:=strToInt(ts)
   except
   end;
-if ansiContainsText(s, tipstr) then include(result.trig, BE_tip);
+  if ansiContainsText(s, tipstr) then
+    include(result.trig, BE_tip);
   try
     tS := extractPar(tipstr);
     if tS <>'' then
@@ -3040,7 +3125,7 @@ if ansiContainsText(s, AnsiString('balloon')) then include(result.trig, BE_BALLO
 end; // str2beh
 
 //function event2imgidx(e:integer):integer;
-function event2imgName(e:integer):AnsiString;
+function event2imgName(e: integer): AnsiString;
 begin
 case e of
   EK_URL:       result:= PIC_URL;
@@ -3064,21 +3149,21 @@ if not menuViaMacro then
   ShowWindow(application.handle,SW_HIDE)
 end;
 
-function registerHK(id:integer; hk:word):boolean;
+function registerHK(id: integer; hk: word): boolean;
 var
-  m:integer;
+  m: integer;
 begin
-m:=0;
-if hk and $1000>0 then inc(m, MOD_WIN);
-if hk and $2000>0 then inc(m, MOD_SHIFT);
-if hk and $4000>0 then inc(m, MOD_CONTROL);
-if hk and $8000>0 then inc(m, MOD_ALT);
-result:=RegisterHotKey(RnQmain.handle, id, m, LOBYTE(hk));
+  m:=0;
+  if hk and $1000>0 then inc(m, MOD_WIN);
+  if hk and $2000>0 then inc(m, MOD_SHIFT);
+  if hk and $4000>0 then inc(m, MOD_CONTROL);
+  if hk and $8000>0 then inc(m, MOD_ALT);
+  result:=RegisterHotKey(RnQmain.handle, id, m, LOBYTE(hk));
 end; // registerHK
 
-function updateSWhotkeys:boolean;
+function updateSWhotkeys: Boolean;
 var
-  i:integer;
+  i: integer;
 begin
   result:=False;
  if RnQmain = nil then
@@ -3114,7 +3199,8 @@ procedure addToignorelist(c:TRnQcontact; const Local_only : Boolean = false);
 //var
 //  i : Byte;
 begin
-  if (c=NIL) or ignoreList.exists(c) then exit;
+  if (c=NIL) or ignoreList.exists(c) then
+    exit;
   ignoreList.add(c);
   if
   {$IFDEF UseNotSSI}
@@ -3138,7 +3224,8 @@ procedure removeFromIgnorelist(c:TRnQcontact);
 //var
 //  i : Byte;
 begin
-  if (c=NIL) or not ignoreList.exists(c) then exit;
+  if (c=NIL) or not ignoreList.exists(c) then
+    exit;
   ignoreList.remove(c);
  {$IFDEF UseNotSSI}
 //  if icq.useSSI then
@@ -3163,7 +3250,8 @@ procedure removeFromRoster(c:TRnQContact; const WithHistory : Boolean = false);
 var
   grp:integer;
 begin
-  if c=NIL then exit;
+  if c=NIL then
+    exit;
   if c.isInRoster then
     plugins.castEvList( PE_LIST_REMOVE, PL_ROSTER, c);
   grp:=c.group;
@@ -3220,7 +3308,8 @@ var
   dd : TProtoDirect;
 //  ev0:Thevent;
 begin
-  if not Assigned(ev) then Exit;
+  if not Assigned(ev) then
+    Exit;
 
   roasterLib.redraw(ev.who);
     TipRemove(ev);
@@ -3275,18 +3364,19 @@ begin
   end;
 end; // realizeEvent
 
-function chopAndRealizeEvent:boolean;
+function chopAndRealizeEvent: boolean;
 var
-  ev:Thevent;
+  ev: Thevent;
 begin
-  result:=FALSE;
-  if eventQ=NIL then exit;
-  ev:=eventQ.pop;
+  result := FALSE;
+  if eventQ=NIL then
+    exit;
+  ev := eventQ.pop;
   if not assigned(ev) then
     exit;
-  result:=TRUE;
+  result := TRUE;
   realizeEvent(ev);
-  saveInboxDelayed:=TRUE;
+  saveInboxDelayed := TRUE;
 end; // chopAndRealizeEvent
 
 procedure trayAction;
@@ -3366,11 +3456,15 @@ begin
   result:=getTranslation(status2str[s])
 end;}
 
-function behactionName(a:Tbehaction):string;
-begin result:=getTranslation(behactions2str[a]) end;
+function behactionName(a: Tbehaction): string;
+begin
+  result := getTranslation(behactions2str[a])
+end;
 
-function mb(q:extended):string;
-begin result:=floatToStrF(q/(1024*1024),ffFixed,20,1)+getTranslation('Mb') end;
+function mb(q: extended): string;
+begin
+  result := floatToStrF(q/(1024*1024),ffFixed,20,1)+getTranslation('Mb')
+end;
 
 //function eventName(ev:integer):string;
 //begin result:=getTranslation(event2str[ev]) end;
@@ -3400,7 +3494,10 @@ begin
 end; // wallpaperize
 
 procedure applyUserCharset(f: Tfont);
-begin if userCharset >= 0 then f.charset:=usercharset end;
+begin
+  if userCharset >= 0 then
+    f.charset:=usercharset
+end;
 
 function getLeadingInMsg(const s: string; ofs: integer=1): string;
 var
@@ -3761,13 +3858,13 @@ procedure mainfrmHandleUpdate;
 var
   b : Boolean;
 begin
- b := ThemeServices.ThemesEnabled and DwmCompositionEnabled and (not docking.Docked2chat and RnQmain.Floating);
- if mainDlg.RnQmain.GlassFrame.Enabled <> b then
-   mainDlg.RnQmain.GlassFrame.Enabled := b;
- if RnQmain.Handle = RnQmain.oldHandle then
-   Exit;
- DragAcceptFiles(RnQmain.oldHandle, FALSE);
- RnQmain.oldHandle := RnQmain.Handle;
+  b := StyleServices.enabled and DwmCompositionEnabled and (not docking.Docked2chat and RnQmain.Floating);
+  if mainDlg.RnQmain.GlassFrame.Enabled <> b then
+    mainDlg.RnQmain.GlassFrame.Enabled := b;
+  if RnQmain.Handle = RnQmain.oldHandle then
+    Exit;
+  DragAcceptFiles(RnQmain.oldHandle, FALSE);
+  RnQmain.oldHandle := RnQmain.Handle;
 // DragAcceptFiles(RnQmain.roster.handle, FALSE);
  DragAcceptFiles(RnQmain.handle, True);
  if Assigned(statusIcon) then
@@ -3851,6 +3948,20 @@ begin
   mainfrmHandleUpdate;
 end; // toggleMainfrmBorder
 
+procedure applySnap();
+var
+  l: Boolean;
+begin
+  if Assigned(MainPrefs) then
+   begin
+    l := MainPrefs.getPrefBoolDef('snap-to-screen-edges', True);
+    if Assigned(RnQmain) then
+      RnQmain.ScreenSnap := l;
+    if Assigned(chatFrm) then
+      chatFrm.ScreenSnap := l;
+   end;
+end;
+
 function unexistant(const uin: TUID):boolean;
 begin
 result:=not (Account.AccProto.getMyInfo.equals(uin))
@@ -3867,11 +3978,13 @@ result:=-1;
 end; // findInAvailableUsers
 
 function isAbort(const pluginReply: AnsiString):boolean;
-begin result:= (pluginReply>'') and (Byte(pluginReply[1])=PM_ABORT) end;
+begin
+  result:= (pluginReply>'') and (Byte(pluginReply[1])=PM_ABORT)
+end;
 
-procedure drawHint(cnv:Tcanvas; kind : Integer;
-                   groupid : integer; c : TRnQcontact;
-                   var r:Trect; calcOnly: Boolean = False);
+procedure drawHint(cnv: Tcanvas; kind: Integer;
+                   groupid: integer; c: TRnQcontact;
+                   var r: Trect; calcOnly: Boolean = False);
 const
   border=5;
   roundsize=16;
@@ -3926,16 +4039,17 @@ var
       cnv.TextOut(x,y, s);
       x:=cnv.penpos.x;
     end;}
-  if x > maxX then maxX:=x;
+  if x > maxX then
+    maxX:=x;
   end; // textout
 
-  procedure textout(const s:string; a:TFontStyles); overload;
+  procedure textout(const s: string; a: TFontStyles); overload;
   begin
-   cnv.Font.Style:=a;
+   cnv.Font.Style := a;
    textout(s);
   end; // textout
 
-  procedure fieldOut(const fn,fc:string; needTranslateFC : Boolean = false);
+  procedure fieldOut(const fn, fc: string; needTranslateFC : Boolean = false);
   begin
     textout(fn, []);
     if fc='' then
@@ -3949,7 +4063,7 @@ var
   //  inc(y, dy+2);
     inc(y, xdy+2);
   end; // fieldout
-  procedure fieldOutDP(const fn,fc:string; needTranslateFC : Boolean = false);
+  procedure fieldOutDP(const fn, fc: string; needTranslateFC : Boolean = false);
   begin
     textout(getTranslation(fn) + ': ', []);
     if fc='' then
@@ -3966,19 +4080,19 @@ var
 
   procedure lineOut(clr:Tcolor);
   begin
-  cnv.Pen.color:=clr;
-  cnv.moveTo(r.left+15,y);
-  cnv.LineTo(r.right-15,y);
+    cnv.Pen.color:=clr;
+    cnv.moveTo(r.left+15, y);
+    cnv.LineTo(r.right-15, y);
   end; // lineout
 
   procedure rulerOut();
   begin
    inc(y,dy div 2);
    if not calcOnly then
-     lineOut(cnv.font.Color);
+     lineOut(cnv.Pen.Color);
    inc(y,2);
    if not calcOnly then
-     lineOut(cnv.font.Color);
+     lineOut(cnv.Pen.Color);
    inc(y,dy div 2);
   end; // rulerOut
 
@@ -3996,7 +4110,7 @@ var
 
 var
   i,
-  a,a2,a3:integer;
+  a, a2, a3: integer;
   cl:TRnQCList;
   ty : Integer;
   pic : TPicName;
@@ -4008,9 +4122,12 @@ var
 //  region:HRGN;
   tS : String;
 begin
-  if (kind = NODE_CONTACT) and (c=NIL) then exit;
-  if (kind = NODE_GROUP) and (groupid < 0) then exit;
-  if cnv=NIL then exit;
+  if (kind = NODE_CONTACT) and (c=NIL) then
+    exit;
+  if (kind = NODE_GROUP) and (groupid < 0) then
+    exit;
+  if cnv=NIL then
+    exit;
 
 //  n:=getNode(node);
   if c is TICQcontact then
@@ -4180,7 +4297,8 @@ case kind of
     if c.isInList(LT_SPAM) or ignoreList.exists(c) then
       fieldOut('', 'ignore list', True);
    {$IFDEF CHECK_INVIS}
-    if CheckInvis.CList.exists(c) then fieldOut('', 'Check-invisibility list', True);
+    if CheckInvis.CList.exists(c) then
+      fieldOut('', 'Check-invisibility list', True);
    {$ENDIF}
     if
      {$IFDEF UseNotSSI}
@@ -4369,7 +4487,7 @@ begin
   s := copy(ev.getBodyText, 1, 255);
 
   if behaviour[ev.kind].TipTimes then
-    counter:=counter*length(s)+
+    counter := counter*length(s)+
                behaviour[ev.kind].TipTimePlus* 100;
   if counter < 100 then
     counter := 100;
@@ -4507,6 +4625,19 @@ begin
   spamfilter.badwords := '';
 //  for q in spamfilter.quests do
 
+end;
+
+function GetWidth(chk: TCheckBox): integer;
+var
+  c: TBitmap;
+begin
+  c := TBitmap.Create;
+  try
+    c.canvas.Font.Assign(chk.Font);
+    result := c.canvas.TextWidth(chk.Caption) + 16;
+  finally
+    c.Free;
+  end;
 end;
 
 INITIALIZATION

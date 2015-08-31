@@ -356,9 +356,11 @@ case getSnacService(s) of
   $010E:result:='ask my info';
   $010F:result:='my info';
   $0113:result:='motd';
+  $0115: result := 'list of well known urls';
   $0117:result:='i''m icq';
   $0118:result:='you''re icq';
   $011E:result:='set status';
+  $0121: result := 'own extended status';
   $0202:result:='ask location rights';
   $0203:result:='location rights';
   $0204:result:='set capabilities';
@@ -379,16 +381,24 @@ case getSnacService(s) of
   $0407:result:='in msg';
   $040B:result:='ack msg';
   $040C:result:='server ack msg';
+  $0410: result := 'ICBM: offline messages request';
   $0414:result:='typing notification';
+  $0417: result := 'ICBM: no more offline msgs';
   $0902:result:='ask bos rights';
   $0903:result:='bos rights';
   $0905:result:='+visible';
   $0906:result:='-visible';
   $0907:result:='+invisible';
   $0908:result:='-invisible';
+  $0B02: result := 'min stats report interval';
   $1006:result:='ask avatar';
   $1007:result:='avatar';
+  $1302: result := 'SSI limits request';
+  $1303: result := 'SSI limits response';
+  $1304: result := 'contact list request';
+  $1305: result := 'contact list check request';
   $1306:result:='reply CL';
+  $1307: result := 'activate server-side contact list';
   $1308:result:='SSI edit: add item(s)';
   $1309:result:='SSI edit: update item(s)';
   $130A:result:='SSI edit: remove item(s)';
@@ -449,6 +459,12 @@ case getSnacService(s) of
       $DA8C:result:='info saved (interests)';
       else result:='in multipurpose';
       end;
+    $1702: result := 'md5 login start';
+    $1703: result := 'server login or error reply';
+    $1706: result := 'md5 authkey request';
+    $1707: result := 'md5 authkey response';
+    $2502: result := 'new uin info request';
+    $2503: result := 'new uin info response';
   else
     if getSnacService(s) and $FF=1 then
       result:=getTranslation(Str_Error)
@@ -1676,6 +1692,11 @@ case ev of
          if behave(e, EK_url) then
            NILifNIL(c);
         end;
+     end;
+  IE_buzz:
+     begin
+       if behave(e, EK_buzz) then
+         NILifNIL(c);
      end;
   IE_msg:
      begin

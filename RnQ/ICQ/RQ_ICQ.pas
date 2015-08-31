@@ -60,6 +60,8 @@ type
  function peer_oft_checksum_file(fn : String; InitChkSum : Cardinal = $ffff0000) : Cardinal;
 {$ENDIF usesDC}
 
+ procedure parseImgLinks(var msg: RawByteString);
+
 var
   Attached_login_email:  string;
 
@@ -76,15 +78,17 @@ var
 
 implementation
 uses
-  DateUtils, UtilLib, roasterlib, RDGlobal, mainDlg, RnQGlobal,
-  math,
+  DateUtils,
+  math, Types, StrUtils,
+  RDGlobal, RnQBinUtils, RDFileUtil, RDUtils, Base64,
+  RnQGlobal,
  {$IFDEF RNQ_AVATARS}
   RnQ_Avatars,
  {$ENDIF}
-  Base64, RnQBinUtils, RDFileUtil, RnQNet,RDUtils,
-  RQUtil, GlobalLib, RnQLangs,
+  RnQNet, RQUtil, RnQLangs,
   Protocol_ICQ,
   menusUnit,
+  UtilLib, roasterlib, mainDlg, GlobalLib,
   ICQConsts, ICQContacts, RnQStrings, RnQDialogs, groupsLib;
 
 Procedure ProcessSSIItem(curICQ : TicqSession; item : TOSSIItem);
@@ -115,6 +119,10 @@ begin
         c.fDisplay := Caption;
       if FCellular > '' then
         c.ssCell := FCellular;
+      if FCellular2 > '' then
+        c.ssCell2 := FCellular2;
+      if FCellular3 > '' then
+        c.ssCell3 := FCellular3;
       if FMail > '' then
         c.ssMail := FMail;
       if Fnote > '' then
@@ -222,6 +230,10 @@ begin
                 c.fDisplay := Caption;
                 if FCellular > '' then
                   c.ssCell := FCellular;
+                if FCellular2 > '' then
+                  c.ssCell2 := FCellular2;
+                if FCellular3 > '' then
+                  c.ssCell3 := FCellular3;
                 if FMail > '' then
                   c.ssMail := FMail;
                 if Fnote > '' then
@@ -340,6 +352,8 @@ end;
 //        deleteTLV($0131, Clist);
         Result.FMail     := unUTF(getTLVSafeDelete($0137, Clist));
         Result.FCellular := unUTF(getTLVSafeDelete($013A, Clist));
+        Result.FCellular2:= unUTF(getTLVSafeDelete($0138, Clist));
+        Result.FCellular3:= unUTF(getTLVSafeDelete($0158, Clist));
         Result.Fnote     := unUTF(getTLVSafeDelete($013C, Clist));
         s1               := getTLVSafeDelete($0145, Clist);
         if s1 > '' then
@@ -403,6 +417,8 @@ end;
         Result.Caption   := '';
         Result.FMail     := '';
         Result.FCellular := '';
+        Result.FCellular2:= '';
+        Result.FCellular3:= '';
         Result.Fnote     := '';
         Result.FInfoToken:= '';
         Result.FFirstMsg := 0;
@@ -413,6 +429,8 @@ end;
       Result.Caption   := '';
       Result.FMail     := '';
       Result.FCellular := '';
+      Result.FCellular2:= '';
+      Result.FCellular3:= '';
       Result.Fnote     := '';
       Result.FInfoToken:= '';
       Result.FFirstMsg := 0;
@@ -1183,6 +1201,42 @@ begin
       n := (Byte(s4[i])+n)*$A8C3+p;
     end;
 end;
+
+procedure parseImgLinks(var msg: RawByteString);
+var
+  msgTmp, sA, imgStr: RawByteString;
+  buf: TMemoryStream;
+  strs : TStringDynArray;
+  i: Integer;
+begin
+  if (msg <> '') then
+  begin
+    msgTmp := msg;
+    strs := SplitString(msgTmp, ' ;,"'''#13#10);
+    for i := Low(strs) to High(strs) do
+    if StartsText('http://', strs[i]) or StartsText('https://', strs[i]) or StartsText('www.', strs[i]) then
+    begin
+      if ContainsText(strs[i], 'files.icq.net/get/') then
+        sA := Trim(ReplaceText(strs[i], 'files.icq.net/get', 'files.icq.com/preview/max/1000000'))
+      else
+        sA := Trim(strs[i]);
+
+      if MatchText(HeaderFromURL(sA), ImageContentTypes) then
+      begin
+        buf := TMemoryStream.Create;
+        LoadFromURL(sA, buf);
+        SetLength(imgStr, buf.Size);
+        buf.ReadBuffer(imgStr[1], buf.Size);
+        buf.Free;
+        msgTmp := ReplaceText(msgTmp, strs[i], strs[i] + RnQImageExTag + Base64EncodeString(imgStr) + RnQImageExUnTag);
+      end;
+    end;
+  end;
+
+  if not (msgTmp = msg) then
+    msg := msgTmp;
+end;
+
 
 end.
 

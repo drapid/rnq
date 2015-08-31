@@ -202,13 +202,15 @@ end;
 function Ttipfrm.preshow():boolean;
 begin
   result:=FALSE;
-  if processing or mousedown then exit;
+  if processing or mousedown then
+    exit;
   hide();
 //  if locked then exit;
   if Assigned(fOnToShow) then
     if not fOnToShow then
       Exit;
-  if actionCount>0 then exit;  // user interacting with tipfrm
+  if actionCount>0 then
+    exit;  // user interacting with tipfrm
   actioncount:=0;
   processing:=TRUE;
   result:=TRUE;

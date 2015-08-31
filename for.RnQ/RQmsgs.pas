@@ -109,9 +109,9 @@ begin
     clr:=clWindowText
    else
     if not selected then
-      clr:=clGrayText
+      clr := clGrayText
      else
-      clr:=clHighlightText;
+      clr := clHighlightText;
   PaintInfo.Canvas.Font.Color := clr;
     // additional spaces for icon
   with Pmsg(sender.getnodedata(PaintInfo.Node))^ do
@@ -125,10 +125,10 @@ begin
         inc(r.Left, 2 + cx)
        else
         begin
-          ic := StringOfChar(' ',2+ cx div PaintInfo.Canvas.TextWidth(' '));
+          ic := StringOfChar(' ', 2 + cx div PaintInfo.Canvas.TextWidth(' '));
           s := ic + s;
           if cy > 16 then
-            s:= s+ ic;
+            s := s + ic;
         end;
       s := s+ text;
       SetBkMode(PaintInfo.Canvas.handle, TRANSPARENT);

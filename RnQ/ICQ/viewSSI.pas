@@ -189,6 +189,8 @@ begin
 //        deleteTLV($0131, Clist);
         s0 := deleteTLV($0137, s0);
         s0 := deleteTLV($013A, s0);
+        s0 := deleteTLV($0138, s0);
+        s0 := deleteTLV($0158, s0);
         s0 := deleteTLV($013C, s0);
         s0 := deleteTLV($0145, s0);
         s0 := deleteTLV($0066, s0);
@@ -289,7 +291,8 @@ procedure TSSIForm.DelBtnClick(Sender: TObject);
 var
   n : PVirtualNode;
 begin
-  if not OnlFeature(Account.AccProto) then Exit;
+  if not OnlFeature(Account.AccProto) then
+    Exit;
   if not loadedServerSSI then
    begin
     msgDlg('Loaded not your SSI', True, mtInformation);
@@ -374,9 +377,11 @@ var
 begin
 //  fn:=openSavedlg(rnqMain, True, 'ssi', 'Server Side Information');
   fn:=openSavedlg(Self, '', True, 'ssi', 'Server Side Information');
-  if fn= '' then Exit;
+  if fn= '' then
+    Exit;
   s := loadFileA(fn);
-  if s = '' then Exit;
+  if s = '' then
+    Exit;
 
    isImpCL := False;
    thisSSI.items := NIL;

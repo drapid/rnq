@@ -20,7 +20,7 @@ uses
     wait: boolean = false): cardinal;
 //  procedure openURL(url: AnsiString);
   procedure openURL(const pURL: String; const useDefaultBrowser : boolean;
-                  const browserCmdLine : String);
+                  const browserCmdLine: String);
 
 //Для того, чтобы убрать программу Delphi из списка диспетчера задач можно воспользоваться следующим кодом:
 // Not Found!!!!
@@ -52,7 +52,7 @@ function  formVisible(frm:Tform):boolean;
   procedure addLinkToFavorites(const link:string);
 
   procedure dockSet(const hnd : HWND; const pOn:boolean; const pCallbackMessage : Integer);
-  procedure setAppBarSize(const hnd : HWND; const R: TRect;
+  procedure setAppBarSize(const hnd: HWND; const R: TRect;
                           const pCallbackMessage : Integer;
                           const pIsLeft : Boolean);
   function  IsCanShowNotifications : Boolean;
@@ -401,7 +401,6 @@ begin
 end;
 }
 
-
     {$WARN UNSAFE_CODE OFF}
 function getRegion(bmp:Tbitmap):HRGN;
 var
@@ -436,8 +435,10 @@ with bmp do
     sx:=-1;
     for x:=0 to bmp.width-1 do
       begin
-      if (p^ <> transcolor) and (sx < 0) then sx:=x;
-      if (p^ = transcolor) and (sx >= 0) then addspan;
+      if (p^ <> transcolor) and (sx < 0) then
+        sx:=x;
+      if (p^ = transcolor) and (sx >= 0) then
+        addspan;
       inc(p);
       end;
     if sx >= 0 then
@@ -524,7 +525,9 @@ with frm do
 end; // setTopMost
 
 function formVisible(frm:Tform):boolean;
-begin result:=(frm<>NIL) and isWindowVisible(frm.handle) end;
+begin
+  result:=(frm<>NIL) and isWindowVisible(frm.handle)
+end;
 
 
 { Clipboard }
@@ -566,9 +569,13 @@ var
             idxEndFragment := Pos('<!--EndFragment-->', pClipData);
             if (idxStartFragment >= 0) and (idxEndFragment >= idxStartFragment) then
               Result := Copy(pClipData, idxStartFragment + 20, idxEndFragment - idxStartFragment - 20);
-          finally GlobalUnlock(hClipData); end;
+           finally
+            GlobalUnlock(hClipData);
+          end;
         end;
-      finally Win32Check(CloseClipboard); end;
+       finally
+        Win32Check(CloseClipboard);
+      end;
     end;
   end; { DSiGetHtmlFormatFromClipboard }
 
@@ -645,7 +652,9 @@ var
           Win32Check(assigned(pClipData));
           try
             Move(PChar(clipStrings[iFormats])^, pClipData^, Length(clipStrings[iFormats]) + 1);
-          finally GlobalUnlock(hClipData); end;
+           finally
+            GlobalUnlock(hClipData);
+          end;
           Win32Check(SetClipboardData(clipFormats[iFormats], hClipData) <> 0);
           hClipData := 0;
         finally
@@ -653,7 +662,9 @@ var
             GlobalFree(hClipData);
         end;
       end;
-    finally Win32Check(CloseClipboard); end;
+     finally
+      Win32Check(CloseClipboard);
+    end;
   end; { DSiCopyHtmlFormatToClipboard }
 
 
@@ -712,7 +723,7 @@ begin
     dliNotePreGetProcAddress: ;
     dliFailLoadLibrary:
      begin
-      s := Format('Failed to load library "%0:s".'#13#10' Error (%1:d) %2:s',[AnsiString(pdli.szDll),
+      s := Format('Failed to load library "%0:s".'#13#10' Error (%1:d) %2:s', [AnsiString(pdli.szDll),
           pdli.dwLastError, SysErrorMessage(pdli.dwLastError)]);
       RQLog.loggaEvtS(s, PIC_ASTERISK);
       raise EAbort.Create(s);
@@ -723,9 +734,12 @@ begin
     dliFailGetProcAddress:
       if pdli.dlp.fImportByName then
         begin
-         s := Format('Failed to load function "%0:s" from "%1:s"'#13#10' Error (%2:d) %3:s',[
-           AnsiString(pdli.dlp.szProcName), AnsiString(pdli.szDll),
-          pdli.dwLastError, SysErrorMessage(pdli.dwLastError)]);
+         s := Format('Failed to load function "%0:s" from "%1:s"'#13#10' Error (%2:d) %3:s',
+          [
+           AnsiString(pdli.dlp.szProcName),
+           AnsiString(pdli.szDll),
+           pdli.dwLastError,
+           SysErrorMessage(pdli.dwLastError)]);
          RQLog.loggaEvtS(s, PIC_ASTERISK);
          raise EAbort.Create(s);
 //         raise EGetProcAddressError.CreateFmt(
@@ -768,11 +782,12 @@ begin
   end;
 end;
 
-procedure SetAutorun(_on_: boolean; pKey : String);
+procedure SetAutorun(_on_: boolean; pKey: String);
 // pKey = 'R&Q_' + lastUser
-var Registry: TRegistry;
-    FName: string;
-    F: TSearchRec;
+var
+  Registry: TRegistry;
+  FName: string;
+  F: TSearchRec;
 begin
   Registry := TRegistry.Create();
   try
@@ -780,7 +795,8 @@ begin
     if _on_ then
     begin
       FName := myPath + 'R&Q.exe';
-      if FindFirst(FName,0, F) <> 0 then FName := myPath + '&RQ.exe';
+      if FindFirst(FName,0, F) <> 0 then
+        FName := myPath + '&RQ.exe';
       Registry.WriteString(pKey, FName);
     end
     else
@@ -791,44 +807,44 @@ begin
 
 end;
 
-function validFilename(const s:string):string;
+function validFilename(const s: string): string;
 const
   invalid='\/:*?"<>|';
 var
-  i:integer;
+  i: integer;
 begin
-result:=s;
-i:=length(result);
-while i > 0 do
-  begin
-  if pos(result[i], invalid) > 0 then
-    delete(result,i,1);
-  dec(i);
-  end;
+  result := s;
+  i := length(result);
+  while i > 0 do
+   begin
+    if pos(result[i], invalid) > 0 then
+      delete(result,i,1);
+    dec(i);
+   end;
 end; // validFilename
 
-procedure addLinkToFavorites(const link:string);
+procedure addLinkToFavorites(const link: string);
 var
-  s:string;
-  f:textFile;
+  s: string;
+  f: textFile;
 begin
 //  s:=getSpecialFolder('Favorites')+ PathDelim +getTranslation('from R&Q');
 //  s:=getSpecialFolder('Favorites')+ PathDelim + 'R&Q';
-  s:=getSpecialFolder(CSIDL_FAVORITES)+ PathDelim + 'R&Q';
+  s := getSpecialFolder(CSIDL_FAVORITES)+ PathDelim + 'R&Q';
   mkdir(s);
   IOresult;
-assignFile(F,IncludeTrailingPathDelimiter(s)+validFilename(link)+'.url');
-rewrite(f);
-writeln(f,'[InternetShortcut]');
-writeln(f,'URL='+link);
-closeFile(f);
+  assignFile(F, IncludeTrailingPathDelimiter(s)+validFilename(link)+'.url');
+  rewrite(f);
+  writeln(f, '[InternetShortcut]');
+  writeln(f, 'URL='+link);
+  closeFile(f);
 end; // addLinkToFavorites
 
-procedure dockSet(const hnd : HWND; const pOn:boolean; const pCallbackMessage : Integer);
+procedure dockSet(const hnd: HWND; const pOn: boolean; const pCallbackMessage: Integer);
 var
-  abd:APPBARDATA;
+  abd: APPBARDATA;
 begin
-  abd.cbsize:=sizeOf(abd);
+  abd.cbsize := sizeOf(abd);
   abd.hWnd := hnd;
   abd.uCallbackMessage := pCallbackMessage;
   if pOn then
@@ -837,9 +853,9 @@ begin
     SHAppBarMessage(ABM_REMOVE, abd);
 end; // dockSet
 
-procedure setAppBarSize(const hnd : HWND; const R: TRect;
-                        const pCallbackMessage : Integer;
-                        const pIsLeft : Boolean);
+procedure setAppBarSize(const hnd: HWND; const R: TRect;
+                        const pCallbackMessage: Integer;
+                        const pIsLeft: Boolean);
 var
   abd:APPBARDATA;
   scale : Integer;

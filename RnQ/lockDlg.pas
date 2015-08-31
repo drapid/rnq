@@ -115,7 +115,9 @@ begin
 end;
 
 procedure TlockFrm.FormPaint(Sender: TObject);
-begin wallpaperize(canvas) end;
+begin
+  wallpaperize(canvas)
+end;
 
 procedure TlockFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin

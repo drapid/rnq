@@ -48,6 +48,7 @@ const
   PIC_KEY                         = TPicName('key');//23;
   PIC_ADD_CONTACT                 = TPicName('add.contact');//24;
   PIC_INFO                        = TPicName('info');//25;
+  PIC_WEBINFO                     = TPicName('webinfo');
   PIC_SEARCH                      = TPicName('search');//26;
 //  PIC_1_MSG                       ='1.msg';//27;
 //  PIC_QUOTE                       ='quote';//28;
@@ -124,6 +125,8 @@ const
   PIC_BIRTH                       = TPicName('birth');
   PIC_BIRTH1                      = TPicName('birth1');
   PIC_BIRTH2                      = TPicName('birth2');
+
+  PIC_BUZZ                        = TPicName('buzz');
 
 const
   PIC_CLI_MAGENT                  = TPicName('magent');

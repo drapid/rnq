@@ -561,15 +561,17 @@ const
      (ID: -23; Value: '+11:30'),
      (ID: -24; Value: '+12:00'));
 
-  MarSts: array[0..7] of TCodeValWord =
-  ((ID: $0000; Value: 'Marital status not specified'),
-   (ID: $000A; Value: 'User is single'),
-   (ID: $000B; Value: 'User is in a long-term relationship'),
-   (ID: $000C; Value: 'User is engaged'),
-   (ID: $0014; Value: 'User is married'),
-   (ID: $001E; Value: 'User is divorced'),
-   (ID: $001F; Value: 'User is separated'),
-   (ID: $0028; Value: 'User is widowed'));
+  MarSts: array[0..9] of TCodeValWord =
+  ((ID: $0000; Value: 'Not specified'),
+   (ID: $000A; Value: 'Single'),
+   (ID: $000B; Value: 'Long-term relationship'),
+   (ID: $000C; Value: 'Engaged'),
+   (ID: $0014; Value: 'Married'),
+   (ID: $001E; Value: 'Divorced'),
+   (ID: $001F; Value: 'Separated'),
+   (ID: $0028; Value: 'Widowed'),
+   (ID: $0032; Value: 'Open marriage'),
+   (ID: $00FF; Value: 'Other'));
 
 {@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@}
 function StrToAgeI(const Value: String): LongWord;

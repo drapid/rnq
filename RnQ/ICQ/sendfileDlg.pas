@@ -365,15 +365,16 @@ var
   Data : RawByteString;
 //  curPos : Int64;
 begin
-   if bytes <=0 then Exit;
-   if sendedSize = 0 then
+  if bytes <=0 then
+    Exit;
+  if sendedSize = 0 then
     begin
      times.startTime := now;
      times.bt[0].startTime := times.startTime;
      T1.Enabled := True;
     end;
-   inc(sendedSize, bytes);
-   if fstr.Position < fSize then
+  inc(sendedSize, bytes);
+  if fstr.Position < fSize then
     begin
       l := min(BufSize, fSize-fstr.Position);
       l := min(BufSize-TCustomWSocket(sender).BufferedByteCount, l);

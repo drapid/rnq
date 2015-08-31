@@ -182,7 +182,8 @@ begin
     while lDef>'' do
      begin
        line := trim(chopline(lDef));
-       if (line='')or(line[1]=';') then continue;
+       if (line='')or(line[1]=';') then
+         continue;
        if (line[1]='[') and (line[length(line)]=']') then
         begin
           LastIDX := Length(CliDefs);
@@ -923,7 +924,8 @@ procedure getICQClientPicAndDesc(cnt: TICQContact; var pPic: TPicName; var CliDe
 begin
   pPic := '';
   CliDesc := '';
-  if cnt=NIL then exit;
+  if cnt=NIL then
+    exit;
 
  if ClientsDefLoaded then
    getClientPicAndDescExt(cnt, pPic, CliDesc)

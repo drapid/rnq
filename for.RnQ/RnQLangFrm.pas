@@ -32,10 +32,10 @@ type
     { Private declarations }
   public
     { Public declarations }
-    SelectedLang : Integer;
+    SelectedLang: Integer;
   end;
 
-function showLangsFrm(lngs : aLangInfo) : Integer;
+function showLangsFrm(lngs: aLangInfo): Integer;
 
 //var
 //  FrmLangs: TFrmLangs;
@@ -47,19 +47,18 @@ implementation
 type
   PRnQLang = ^TRnQLang;
   TRnQLang = record
-     path, fn : string;
-     desc : String;
-     utf : Boolean;
-     idx : Integer;
+     path, fn: string;
+     desc: String;
+     utf: Boolean;
+     idx: Integer;
    end;
 
-
-function showLangsFrm(lngs : aLangInfo) : Integer;
+function showLangsFrm(lngs: aLangInfo): Integer;
 var
-  i : Integer;
-  n : PVirtualNode;
+  i: Integer;
+  n: PVirtualNode;
   FrmLangs: TFrmLangs;
-  lr : PRnQLang;
+  lr: PRnQLang;
 
 begin
   if Length(lngs) <= 1 then
@@ -121,19 +120,25 @@ end;
 procedure TFrmLangs.LangsBoxDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-  s : String;
-  x : Integer;
-//  cr : Boolean;
+  s: String;
+  x: Integer;
+//  cr: Boolean;
 begin
   with TRnQLang(PRnQLang(LangsBox.getnodedata(PaintInfo.Node))^) do
    begin
     s := '';
     if desc > '' then
-      s := desc + ' ( ';
+    begin
+      s := desc + ' ';
+      if (path > '') or (fn > '') then
+        s := s + '( ';
+    end;
+
     s := s + path;
     if fn > '' then
       s := s + ' \\ ' + fn;
-    if desc > '' then
+
+    if (desc > '') and ((path > '') or (fn > '')) then
       s := s + ' )';
    end;
   if vsSelected in PaintInfo.Node.States then
@@ -149,14 +154,14 @@ begin
 //  inc(x, theme.drawPic(PaintInfo.Canvas, PaintInfo.ContentRect.Left +3, 0,
 //         TlogItem(PLogItem(LogList.getnodedata(PaintInfo.Node)^)^).Img).cx+6);
   SetBkMode(PaintInfo.Canvas.Handle, TRANSPARENT);
-//  PaintInfo.Canvas.textout(PaintInfo.ContentRect.Left +x,2, s);
+//  PaintInfo.Canvas.textout(PaintInfo.ContentRect.Left + x, 2, s);
   PaintInfo.Canvas.textout(x, 2, s);
 end;
 
 procedure TFrmLangs.LangsBoxFocusChanged(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex);
 begin
-  BtnOk.enabled:= LangsBox.FocusedNode <> NIL
+  BtnOk.enabled := LangsBox.FocusedNode <> NIL
 end;
 
 procedure TFrmLangs.LangsBoxFreeNode(Sender: TBaseVirtualTree;

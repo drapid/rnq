@@ -40,7 +40,7 @@ uses
 
 
 
-function trans(const s:string):string; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+function trans(const s: String): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
 {if AnsiStartsStr('___',s) then
   result:=getTranslation(copy(s,4,9999))
@@ -100,63 +100,78 @@ procedure translateComponent(c:Tcomponent; window:Tform);
 var
   i, k:integer;
 begin
-if c is Tcheckbox then with c as Tcheckbox do
- begin
-  if caption > '' then
+  if c is Tcheckbox then
+    with c as Tcheckbox do
     begin
-    caption:=trans(caption);
-//    width:=35+txtSize(window.canvas.handle, caption).cx;
+     if caption > '' then
+       begin
+         caption:=trans(caption);
+     //    width:=35+txtSize(window.canvas.handle, caption).cx;
+       end
     end
- end
-else if c is Tcustomform then with c as Tcustomform do
-  caption:=trans(caption)
-else if c is Tmenu then with c as Tmenu do
-  recurMenu(items)
-else if c is Tlabel then with c as Tlabel do
-  caption:=trans(caption)
-else if c is Ttabsheet then with c as Ttabsheet do
-  caption:=trans(caption)
-else if c is Tlabelededit then with c as Tlabelededit do with editlabel do
-  caption:=trans(caption)
-else if c is Tgroupbox then with c as Tgroupbox do
-  caption:=trans(caption)
-else if c is Tpanel then with c as Tpanel do
-  caption:=trans(caption)
-else if c is Tbutton then with c as Tbutton do
-  caption:=trans(caption)
-else if c is TRnQspeedbutton then with c as TRnQspeedbutton do
-  caption:=trans(caption)
-else if c is TRnQToolButton then with c as TRnQToolButton do
-  caption:=trans(caption)
-else if c is Tradiobutton then with c as Tradiobutton do
- begin
-  if caption > '' then
-    begin
-    caption:=trans(caption);
-//    width:=25+txtSize(window.canvas.handle, caption).cx;
-    end
- end
-else if c is Tradiogroup then with c as Tradiogroup do
-  begin
-  caption:=trans(caption);
-  tstrings_trans(items);
-  end
-else if c is TcomboBox then with TcomboBox(c) do
-  begin  // itemindex is lost during translation
-  i:=itemIndex;
-  k := Items.Count;
-  if k > 0 then
-   begin
-    tstrings_trans(items);
-    itemIndex:=i;
-   end;
-  end
-else if c is TVirtualDrawTree then
-  begin
-    for I := 0 to TVirtualDrawTree(c).Header.Columns.Count - 1 do
-       TVirtualDrawTree(c).Header.Columns.Items[i].Text :=
-          getTranslation(TVirtualDrawTree(c).Header.Columns.Items[i].Text)
-  end
+   else if c is Tcustomform then
+    with c as Tcustomform do
+      caption:=trans(caption)
+   else if c is Tmenu then
+    with c as Tmenu do
+      recurMenu(items)
+   else if c is Tlabel then
+    with c as Tlabel do
+      caption:=trans(caption)
+   else if c is Ttabsheet then
+    with c as Ttabsheet do
+      caption:=trans(caption)
+   else if c is Tlabelededit then
+    with c as Tlabelededit do
+    with editlabel do
+      caption:=trans(caption)
+   else if c is Tgroupbox then
+    with c as Tgroupbox do
+      caption:=trans(caption)
+   else if c is Tpanel then
+    with c as Tpanel do
+      caption:=trans(caption)
+   else if c is Tbutton then
+    with c as Tbutton do
+      caption:=trans(caption)
+   else if c is TRnQspeedbutton then
+    with c as TRnQspeedbutton do
+      caption:=trans(caption)
+   else if c is TRnQToolButton then
+    with c as TRnQToolButton do
+      caption:=trans(caption)
+   else if c is Tradiobutton then
+    with c as Tradiobutton do
+      begin
+       if caption > '' then
+        begin
+         caption := trans(caption);
+     //    width:=25+txtSize(window.canvas.handle, caption).cx;
+        end
+      end
+   else if c is Tradiogroup then
+    with c as Tradiogroup do
+      begin
+       caption := trans(caption);
+       tstrings_trans(items);
+      end
+   else if c is TcomboBox then
+    with TcomboBox(c) do
+      begin  // itemindex is lost during translation
+       i := itemIndex;
+       k := Items.Count;
+       if k > 0 then
+        begin
+         tstrings_trans(items);
+         itemIndex:=i;
+        end;
+      end
+    else if c is TVirtualDrawTree then
+     begin
+       for I := 0 to TVirtualDrawTree(c).Header.Columns.Count - 1 do
+          TVirtualDrawTree(c).Header.Columns.Items[i].Text :=
+            getTranslation(TVirtualDrawTree(c).Header.Columns.Items[i].Text)
+     end
 {
 else if c is Tchecklistbox then with c as Tchecklistbox do
   tstrings_trans(items)
@@ -169,10 +184,10 @@ else if c is Tchecklistbox then with c as Tchecklistbox do
   customText:=trans(customText);
   end;}
 if c is Tcontrol then with c as Tcontrol do
-  hint:=trans(hint);
+  hint := trans(hint);
 
-for i:=c.componentCount-1 downto 0 do
-  translateComponent(c.components[i], window);
+  for i:=c.componentCount-1 downto 0 do
+    translateComponent(c.components[i], window);
 end; // translateComponent
 
 procedure translateWindow(w:Tform);
