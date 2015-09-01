@@ -92,4 +92,11 @@ object FStickers: TFStickers
       OnExecute = PrevExtExecute
     end
   end
+  object UpdTmr: TTimer
+    Enabled = False
+    Interval = 100
+    OnTimer = UpdTmrTimer
+    Left = 432
+    Top = 256
+  end
 end

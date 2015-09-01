@@ -21,6 +21,7 @@ type
     actList: TActionList;
     NextExt: TAction;
     PrevExt: TAction;
+    UpdTmr: TTimer;
     procedure FormShow(Sender: TObject);
     procedure UpdTmrTimer(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -104,7 +105,6 @@ end;
 
 procedure TFStickers.FormShow(Sender: TObject);
 begin
-//  UpdTmr.Enabled := True;
   showStickerExt(openedExt);
 end;
 
@@ -113,7 +113,7 @@ begin
   if GetForegroundWindow <> self.Handle then
   begin
     Self.Hide;
-//    UpdTmr.Enabled := False;
+    UpdTmr.Enabled := False;
   end;
 end;
 
@@ -135,20 +135,23 @@ begin
     getSticker(IntToStr(stickerExtNames[FExt]), IntToStr(FSticker), @fs, 'small');
     if loadPic(TStream(fs), png) then
 //    if not png.Empty then
-    begin
-//      if (png.Header.ColorType = COLOR_PALETTE) then
-//        ConvertToRGBA(png);
-      stickerGrid := stickerGrids.Items[FExt];
-      if not (stickerGrid = nil) then
-      stickerGrid.Items.AddThumb('ext:' + IntToStr(stickerExtNames[FExt]) + ':sticker:' + IntToStr(FSticker), png);
-      if FSticker = stickerExtCounts[FExt] then
       begin
-//        fStickers.loderPanel.Hide;
-        stickerGrid.Items.EndUpdate;
-      end;
-    end;
-
-    fs.Free;
+  //      if (png.Header.ColorType = COLOR_PALETTE) then
+  //        ConvertToRGBA(png);
+        stickerGrid := stickerGrids.Items[FExt];
+        if not (stickerGrid = nil) then
+        stickerGrid.Items.AddThumb('ext:' + IntToStr(stickerExtNames[FExt]) + ':sticker:' + IntToStr(FSticker), png);
+        if FSticker = stickerExtCounts[FExt] then
+        begin
+  //        fStickers.loderPanel.Hide;
+          stickerGrid.Items.EndUpdate;
+        end;
+      end
+    else
+     begin
+      fs.Free;
+      png.Free;
+     end;
   end, TThreadPool.Default);
   task.Start;
 end;
@@ -207,6 +210,7 @@ begin
 //  loderPanel.BringToFront;
   stickerGrid.SetFocus;
   openedExt := ext;
+  UpdTmr.Enabled := True;
 end;
 
 procedure TFStickers.InvalidateSticker(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -274,9 +278,7 @@ procedure TFStickers.RecreateExtBtns();
 var
   i: Integer;
   extBtn: TRnQSpeedButton;
-  bmp: TRnQBitmap;
   AlphaTask: ITask;
-  png: TRnQBitmap;
 begin
   for i := exts.ComponentCount - 1 downto 0 do
     if exts.Components[i] is TRnQSpeedButton then
