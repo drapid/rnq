@@ -331,7 +331,8 @@ var
   // try to find the @
     while (j <= length(s)) and (s[j] in EMAILCHARS) and (j - start < 30) do
       inc(j);
-    if s[j] <> '@' then exit;
+    if s[j] <> '@' then
+      exit;
   // @ found, now skip the @ and search for .
     inc(j);
     existsDot := False;
@@ -345,12 +346,15 @@ var
       inc(j);
     end;
     // at least a valid char after the . must exists
-    if not existsDot or not (s[j] in EMAILCHARS) then exit;
+    if not existsDot or not (s[j] in EMAILCHARS) then
+      exit;
     // go forth till we're out or we meet an invalid char
-    repeat inc(j)
+    repeat
+      inc(j)
     until (j > length(s)) or not (s[j] in EMAILCHARS);
     end_:=j-1;
-    if s[end_] = '.' then dec(end_);
+    if s[end_] = '.' then
+      dec(end_);
     //while s[start-1] in emailChar do dec(start);
     result := True;
   end; // isEmailAddress
@@ -359,7 +363,7 @@ var
     function isdig(ch: char): Boolean; inline;
     begin
      {$IFDEF UNICODE}
-      Result := TCharacter.IsDigit(ch);
+      result := ch.IsDigit;
      {$ELSE UNICODE}
       Result := ch in ['0'..'9'];
      {$ENDIF UNICODE}
@@ -385,7 +389,10 @@ var
   end; // isUIN
 
   procedure newLineHeight(v: integer); overload;
-  begin if lineHeight < v then lineHeight := v end;
+  begin
+    if lineHeight < v then
+      lineHeight := v
+  end;
 
   procedure newLineHeight(const s: string); overload;
   var
@@ -409,7 +416,8 @@ var
     result.ofs := o;
     result.l := l;
     result.r := r;
-    if k=PK_LINK then result.link:=foundLink;
+    if k=PK_LINK then
+      result.link:=foundLink;
 {     if k = PK_ARROWS_DN then
        begin
          hasDownArrow:= true;
@@ -421,9 +429,9 @@ var
 
   function withinTheLink(i: integer): boolean;
   begin
-  result:=(foundLink.from > 0)
-    and (i >= foundLink.from)
-    and (i <= foundLink.to_)
+    result := (foundLink.from > 0)
+              and (i >= foundLink.from)
+              and (i <= foundLink.to_)
   end; // withinTheLink
 
 //  function drawBody(cnv:Tcanvas; pTop : Integer) : Integer;
@@ -511,12 +519,13 @@ var
       begin
         result := False;
         if (BodyText[i] <> sym)
-        or ((i>1) and not (BodyText[i-1] in WHITESPACES)) // word begin
-        or (i+2 > length(BodyText)) then exit;
+           or ((i>1) and not (BodyText[i-1] in WHITESPACES)) // word begin
+           or (i+2 > length(BodyText)) then
+          exit;
         j := i+1;
         while (j<length(BodyText)) and
  {$IFDEF UNICODE}
-           TCharacter.IsLetterOrDigit(BodyText[j])
+        (BodyText[j].IsLetterOrDigit)
  {$ELSE UNICODE}
            (BodyText[j] in ALPHANUMERIC)
  {$ENDIF UNICODE}
@@ -539,9 +548,11 @@ var
          result := False;
  {$IFDEF UNICODE}
         sA := BodyText[i];
-        if not (sA[1] in firstCharactersForSmiles) then exit;
+        if not (sA[1] in firstCharactersForSmiles) then
+          exit;
  {$ELSE nonUNICODE}
-        if not (BodyText[i] in  firstCharactersForSmiles) then exit;
+        if not (BodyText[i] in  firstCharactersForSmiles) then
+          exit;
  {$ENDIF UNICODE}
 //        if not CharInSet(BodyText[i], firstCharactersForSmiles) then exit;
         fndSmileN := '';
@@ -556,7 +567,7 @@ var
            begin
             smileCap:=SmileObj.SmlStr.Strings[l];
             if (smileCap[1] = BodyText[i]) and
-                matches(BodyText,i,smileCap) //and (SmileObj.Smile<>NIL)
+                matches(BodyText, i, smileCap) //and (SmileObj.Smile<>NIL)
                 and ((fndSmileI=-1) or (length(smileCap) > length(fndSmile))) then
              begin
     //          if (length(s) >= i+length(smileCap))
@@ -1060,7 +1071,8 @@ var
                 end;
               // only the first one has full length
 //              if first then j:=length(fndSmile) else j:=1;
-              if not first then j:=1;
+              if not first then
+                j:=1;
               if not JustCalc then
                begin
                 r := rect(x, y, x+size.cx, y+size.cy + 1);
@@ -1207,8 +1219,9 @@ var
             case BodyBin[i] of
               #10: inc(i);
               #13: begin
-                    inc(i);
-                    if (i<=len) and (BodyBin[i]=#10) then inc(i);
+                     inc(i);
+                     if (i<=len) and (BodyBin[i]=#10) then
+                       inc(i);
                    end;
               end;
             if nowBold or nowUnderline or nowLink or (quoteCounter > 0) then
@@ -1282,7 +1295,7 @@ var
               r := rect(x, y, x+size.cx, y+size.cy);
               if bodySkipCounter<=0 then
                 begin
-                  j:=foundPicSize + 25;
+                  j:=foundPicSize + 25; // 25=length(RnQImageExTag) + length(RnQImageExUnTag);
                   addItem( PK_RQPICEX, chunkStart, j, r);
   //                if not JustCalc then
                    begin
@@ -1304,7 +1317,7 @@ var
                vRnQpicEx := NIL;
               inc(chunkStart);
               inc(x, size.cx);
-             RnQPicStream := NIL;
+             RnQPicStream := NIL; // It's already freed in loadPic
              // Draw Button
   {            newLine(x, y);
               newLineHeight( 21+1);
@@ -1332,7 +1345,8 @@ var
       whatFound := _nothing;
      end;
   end; //while
-  FreeAndNil(RnQPicStream);
+  if Assigned(RnQPicStream) then
+    FreeAndNil(RnQPicStream);
 
   newLine(x, y);
   Result := y - pTop;
@@ -1494,6 +1508,8 @@ var
 //  dc : HDC;
   hls: Thls;
   y: Integer;
+  tempS: String;
+  lGapBtwMsg: Integer;
   vFullR: TRect;
   smlRefresh: Boolean;
   ch: AnsiChar;
@@ -1629,6 +1645,9 @@ begin
     MaxChatImgWidthVal := MainPrefs.getPrefIntDef('chat-images-width-value', 300);
     MaxChatImgHeightVal := MainPrefs.getPrefIntDef('chat-images-height-value', 300);
    end;
+
+  tempS := theme.GetString('history.gap-between-messages');
+  lGapBtwMsg := bound(StrToIntDef(tempS, 1), 0, 30);
 //  bottomLimit := vR.Bottom - vr.Top-margin.bottom - 10;
   y := margin.Top;
   evIdx := topVisible;
@@ -1639,6 +1658,7 @@ begin
   firstEvent := True;
   skippedLines := 0;
   pleaseDontDrawUpwardArrows := False;
+
   while (y < bottomLimit) and (evIdx < history.Count) do
     begin
      ev := history.getAt(evIdx);
@@ -1681,7 +1701,7 @@ begin
           eventFullyPainted := y < bottomLimit
          else
           inc(y, drawBody(y));
-        inc(y);
+        inc(y, lGapBtwMsg);
       end;
     inc(evIdx);
     if not JustCalc then
@@ -1843,7 +1863,8 @@ begin
 }
 
  if assigned(onPainted) //and (cnv=canvas)
-  then onPainted(self);
+  then
+   onPainted(self);
 end;
 
 
@@ -1870,7 +1891,8 @@ begin
   result := '';
   dim := 0;
 
-  if startSel.ev = NIL then exit;
+  if startSel.ev = NIL then
+    exit;
 
   if minor(startSel, endSel) then
   begin
@@ -1970,7 +1992,8 @@ begin
   fnt := TFont.Create;
 //  fnt.Assign(Self.canvas.Font);
   fnt.Assign(Screen.MenuFont);
-  if startSel.ev = NIL then exit;
+  if startSel.ev = NIL then
+    exit;
   if minor(startSel, endSel) then
   begin
     SOS := startsel;
@@ -2098,7 +2121,8 @@ begin
   fnt := TFont.Create;
   fnt.Assign(Self.canvas.Font);
 
-  if startSel.ev = NIL then exit;
+  if startSel.ev = NIL then
+    exit;
   if minor(startSel, endSel) then
   begin
     SOS := startsel;
@@ -2203,7 +2227,7 @@ begin
   if shift=[ssRight] then
   begin
     updatePointedItem();
-    chatFrm.poppedup := point(x,y);
+    chatFrm.poppedup := point(x, y);
     chatFrm.del1.enabled := wholeEventsAreSelected;
     chatFrm.saveas1.enabled := somethingIsSelected;
     chatFrm.copy2clpb.visible := somethingIsSelected;
@@ -2329,7 +2353,8 @@ begin
   result.kind := PK_NONE;
   i := 0;
   l := length(items)-1;
-  if l<0 then exit;
+  if l<0 then
+    exit;
   j := l;
   m := -1;
   // search for an item on the same row
@@ -2397,13 +2422,17 @@ begin
       result := items[m];
       break;
       end;
-    if (pt.y < r.top) or (pt.y < r.bottom) and (pt.x < r.left) then j:=m-1
-    else i := m+1;
+    if (pt.y < r.top) or (pt.y < r.bottom) and (pt.x < r.left) then
+      j:=m-1
+     else
+      i := m+1;
     end;
 end; // itemAt
 
 procedure ThistoryBox.mouseMove(Shift: TShiftState; X, Y: Integer);
-begin updatePointedItem() end; // mouseMove
+begin
+  updatePointedItem()
+end; // mouseMove
 
 procedure ThistoryBox.go2end(const calcOnly: Boolean = False; const precalc: Boolean = False);
 var
@@ -2461,19 +2490,29 @@ begin
 end; // go2end
 
 function ThistoryBox.offsetPos():integer;
-begin result := topVisible-offset end;
+begin
+  result := topVisible-offset
+end;
 
 function ThistoryBox.wholeEventsAreSelected():boolean;
-begin result := (startSel.ev<>NIL) and (startSel.ofs<0) end;
+begin
+  result := (startSel.ev<>NIL) and (startSel.ofs<0)
+end;
 
 function ThistoryBox.nothingIsSelected():boolean;
-begin result := startSel.ev=NIL end;
+begin
+  result := startSel.ev=NIL
+end;
 
 function ThistoryBox.somethingIsSelected():boolean;
-begin result := startSel.ev<>NIL end;
+begin
+  result := startSel.ev<>NIL
+end;
 
 function ThistoryBox.partialTextIsSelected():boolean;
-begin result := (startSel.ev<>NIL) and (startSel.ofs>=0) end;
+begin
+  result := (startSel.ev<>NIL) and (startSel.ofs>=0)
+end;
 
 procedure ThistoryBox.select(from, to_: integer);
 begin
@@ -2522,24 +2561,28 @@ begin
 //   P_pointedItem.link
 
 // repaint necessary?
-if not equal(linkToUnderline, oldLink) then
-  begin
-//  avoidErase := TRUE;
-   paint();
-//  avoidErase := FALSE;
-  end;
+  if not equal(linkToUnderline, oldLink) then
+   begin
+  //  avoidErase := TRUE;
+     paint();
+  //  avoidErase := FALSE;
+   end;
 // here the selecting management section begins
-if not selecting then
-  exit;
+  if not selecting then
+    exit;
 // selecting, no link has to be triggered
-dontTriggerLink:=TRUE;
+  dontTriggerLink:=TRUE;
 // updating the selection end point
-if pointedSpace.kind=PK_NONE then exit;
-p := historyitem2pos(pointedSpace);
-if minor(startSel,p) then inc(p.ofs, pointedSpace.l-1);
-if equal(endSel,p) then exit; // no change?
-endSel := p;
- pEnd := p; pEnd.ofs := p.ofs + pointedSpace.l-1;
+  if pointedSpace.kind=PK_NONE then
+    exit;
+  p := historyitem2pos(pointedSpace);
+  if minor(startSel, p) then
+    inc(p.ofs, pointedSpace.l-1);
+  if equal(endSel,p) then
+    exit; // no change?
+  endSel := p;
+  pEnd := p;
+  pEnd.ofs := p.ofs + pointedSpace.l-1;
   if (pointedSpace.kind = PK_SMILE) and
      minor(endSel, startSel) and
      (minor(p, startSel) and minor(startSel, pEnd)) then
@@ -3188,8 +3231,9 @@ end;
 
 function ThistoryBox.historyNowOffset:integer;
 begin
-  if whole then result:=0
-  else
+  if whole then
+    result:=0
+   else
     result:=newSession
 end;
 
@@ -3239,7 +3283,8 @@ begin
           end;
        end;
       end;
-    if i < 0 then exit; // nothing found, really
+    if i < 0 then
+      exit; // nothing found, really
     pQuoteIdx := i;
      theme.applyFont('history.my', self.canvas.font);
 //        selected:=getAt(i).getBodyText();
