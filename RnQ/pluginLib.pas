@@ -99,7 +99,7 @@ uses
   mainDlg, chatDlg, outboxLib, globalLib, utilLib, outboxDlg,
   themesLib, iniLib,
  { $IFDEF RNQ_FULL}
-  prefDlg, RnQPrefsLib,
+  prefDlg, RnQPrefsLib, RnQBinUtils,
  { $ENDIF RNQ_FULL}
   Protocols_all,
  {$IFDEF PROTOCOL_ICQ}
@@ -471,11 +471,11 @@ case _byte_at(data,1) of
         else
           resStr := AnsiChar(PM_DATA)+_int(StrToIntDef(Account.AccProto.ProtoElem.MyAccNum, 0)) +
                       _istring(Account.AccProto.ProtoElem.MyAccNum);
-      PG_DISPLAYED_NAME: resStr:=AnsiChar(PM_DATA)+_istring( Account.AccProto.getContact(IntToStrA(_int_at(data,3))).displayed );
-      PG_ANDRQ_VER: resStr:=AnsiChar(PM_DATA)+_int( RQversion );
-      PG_ANDRQ_VER_STR: resStr:=AnsiChar(PM_DATA)+_istring( ip2str(RQversion) );
-      PG_RNQ_BUILD: resStr:=AnsiChar(PM_DATA)+_int( RnQBuild ) + _dt(BuiltTime);
-      PG_TIME: resStr:=AnsiChar(PM_DATA)+_dt( now );
+      PG_DISPLAYED_NAME: resStr := AnsiChar(PM_DATA)+_istring( Account.AccProto.getContact(IntToStrA(_int_at(data,3))).displayed );
+      PG_ANDRQ_VER: resStr := AnsiChar(PM_DATA)+_int( RQversion );
+      PG_ANDRQ_VER_STR: resStr := AnsiChar(PM_DATA)+_istring( ip2str(RQversion) );
+      PG_RNQ_BUILD: resStr := AnsiChar(PM_DATA)+_int( RnQBuild ) + _dt(BuiltTime);
+      PG_TIME: resStr := AnsiChar(PM_DATA)+_dt( now );
       PG_CONTACTINFO:
                if minimum(6) then
                  begin

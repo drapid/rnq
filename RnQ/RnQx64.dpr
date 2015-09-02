@@ -9,7 +9,7 @@ program RnQx64;
 
 
 {$R 'WinXP2.res' 'Res\WinXP2.rc'}
-//{  $R 'Res\WinXP2.res'}
+{$R 'stickers.res' 'ICQ\stickers.rc'}
 
 uses
   Windows,

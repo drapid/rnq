@@ -59,10 +59,13 @@ var
 
 implementation
 
+{ $R 'stickers.res' 'stickers.rc'} // Added to Project Source
+
 uses
   ICQv9, ICQ.Stickers,
+  RnQLangs, RnQGlobal, RQUtil, RQThemes,
   events, history,
-  chatDlg, RnQLangs, RnQGlobal, globalLib, RQUtil;
+  chatDlg, globalLib;
 
 var
   stickerGrids: TDictionary<Integer, TAwImageGrid>;
@@ -140,7 +143,7 @@ begin
   //        ConvertToRGBA(png);
         stickerGrid := stickerGrids.Items[FExt];
         if not (stickerGrid = nil) then
-        stickerGrid.Items.AddThumb('ext:' + IntToStr(stickerExtNames[FExt]) + ':sticker:' + IntToStr(FSticker), png);
+          stickerGrid.Items.AddThumb('ext:' + IntToStr(stickerExtNames[FExt]) + ':sticker:' + IntToStr(FSticker), png);
         if FSticker = stickerExtCounts[FExt] then
         begin
   //        fStickers.loderPanel.Hide;
@@ -311,7 +314,7 @@ begin
     RefreshExtBtnStates;
 
     if i = extPos then
-    extBtn.Margins.Left := 30;
+      extBtn.Margins.Left := 30;
 
     if (extPos = 1) then
     begin
@@ -338,6 +341,8 @@ begin
 end;
 
 procedure TFStickers.FormCreate(Sender: TObject);
+var
+  a: Integer;
 begin
   initialized := False;
 {
@@ -358,6 +363,12 @@ begin
   scrollRight.Left := (stickerWidth + 8) * 4 - scrollRight.Width - 1;
   scrollRight.Top := -1;
   scrollRight.Height := exts.Height + 2;
+
+  for a in stickerExtNames do
+   begin
+//     theme.AddPicResource('sticker' + IntToStr(a), 'STICKER' + IntToStr(a))
+     theme.AddPicResource('sticker' + IntToStr(a), 'sticker' + IntToStr(a))
+   end;
 end;
 
 procedure TFStickers.FormHide(Sender: TObject);

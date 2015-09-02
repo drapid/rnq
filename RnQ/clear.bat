@@ -7,6 +7,7 @@
 @IF EXIST "*.dcu" del *.dcu
 @IF EXIST "*.o" del *.o
 @IF EXIST ".\Units\*.dcu" del .\Units\*.dcu
+@IF EXIST ".\Units\*.res" del .\Units\*.res
 @IF EXIST "Prefs\__history\*" del /q Prefs\__history\*
 @IF EXIST "Prefs\*.dcu" del /q Prefs\*.dcu
 @IF EXIST "__history\*" del /q __history\*

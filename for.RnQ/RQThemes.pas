@@ -68,9 +68,9 @@ const
   TE2Str : array[TRnQThemedElement] of TPicName = ('', 'button.', 'menu.', 'tray.', 'formicon.');
 
 type
-  TPicLocation=(PL_pic, PL_icon, PL_int, PL_Ani, PL_Smile);
-  TthemePropertyKind=(TP_font,TP_color,TP_file,TP_pic,TP_ico,
-        TP_string,TP_sound, TP_smile);
+  TPicLocation = (PL_pic, PL_icon, PL_int, PL_Ani, PL_Smile);
+  TthemePropertyKind = (TP_font, TP_color, TP_file, TP_pic, TP_ico,
+                        TP_string, TP_sound, TP_smile);
 
 //  PRnQThemedElementDtls = ^TRnQThemedElementDtls;
   TRnQThemedElementDtls = record
@@ -231,33 +231,32 @@ type
     FAniTimer : TTimer;
     FdrawCS : TCriticalSection;
  {$ENDIF RNQ_FULL}
-//    addProp : procedure (name:string;kind:TthemePropertyKind; s: String);
-    procedure addProp(name:TPicName; ts : TThemeSourcePath; kind:TthemePropertyKind; const s: String); overload;
-//    procedure addProp(name:string; ico: TIcon); overload;
-//    procedure addProp(name:string; fnt: TFont); overload;
-    procedure addprop(const pName:TPicName; fnt: TFontObj); overload;
-//    procedure addprop(name:string; fnt: TFontProps); overload;
-    procedure addProp(const name:TPicName; c: TColor); overload;
-    procedure addprop(const name:TPicName; const SmlCaption : String; Smile: TRnQBitmap;
-                      var pTP : TThemePic;
-               bStretch : Boolean = false; Ani : Boolean = false; AniIdx :
-               Integer = -1); overload;
+//    addProp : procedure (name: TPicName;kind:TthemePropertyKind; s: String);
+    procedure addProp(name: TPicName; ts: TThemeSourcePath; kind: TthemePropertyKind; const s: String); overload;
+//    procedure addProp(name: TPicName; ico: TIcon); overload;
+//    procedure addProp(name: TPicName; fnt: TFont); overload;
+    procedure addprop(const pName: TPicName; fnt: TFontObj); overload;
+//    procedure addprop(name: TPicName; fnt: TFontProps); overload;
+    procedure addProp(const name: TPicName; c: TColor); overload;
+    procedure addprop(const name: TPicName; const SmlCaption: String; Smile: TRnQBitmap;
+                      var pTP: TThemePic; bStretch: Boolean = false;
+                      Ani: Boolean = false; AniIdx: Integer = -1); overload;
 //    function  GetIco2(name : String; ico : TIcon) : Boolean;
   {$IFNDEF NOT_USE_GDIPLUS}
-    function  GetPic13(name : TPicName; var pic : TGPImage; AddPic : Boolean = True) : boolean;
+    function  GetPic13(name: TPicName; var pic: TGPImage; AddPic: Boolean = True): boolean;
   {$ENDIF NOT_USE_GDIPLUS}
-    function GetSmlCnt : Integer;
+    function GetSmlCnt: Integer;
 //    procedure GetPic(name : String; var pic : TRnQBitmap); overload;
    {$IFDEF RNQ_FULL}
     procedure TickAniTimer(Sender: TObject);
    {$ENDIF RNQ_FULL}
    public
-    ThemePath : TThemePath;
+    ThemePath: TThemePath;
 //    MasterFN, subfn :string;
 //    fs : TPathType;
 //    fs : TThemeSourcePath;
 //    path : String;
-    title,desc:string;
+    title, desc: string;
     useTSC : TThemeSubClass;
 //    supSmiles : Boolean;
  {$IFDEF RNQ_FULL}
@@ -273,78 +272,79 @@ type
     procedure Debug;
     constructor Create;
     destructor Destroy; override;
-    procedure Clear(pTSC : TThemeSubClass);
+    procedure Clear(pTSC: TThemeSubClass);
     procedure FreeResource;
-    procedure load(fn0:string; subFile : String = ''; loadBase : Boolean = True;
-                   subClass : TThemeSubClass = tsc_all);
-    procedure loadThemeScript(const fn:string; const path : string); overload;
-    procedure loadThemeScript(fn:string; ts : TThemeSourcePath); overload;
+    procedure load(fn0:string; subFile: String = ''; loadBase: Boolean = True;
+                   subClass: TThemeSubClass = tsc_all);
+    procedure loadThemeScript(const fn: String; const path: string); overload;
+    procedure loadThemeScript(fn: String; ts: TThemeSourcePath); overload;
    private
-    function  addBigPic(var pBmp: TRnQBitmap) : Integer;
-    function  addBigSmile(var pBmp: TRnQBitmap) : Integer;
+    function  addBigPic(var pBmp: TRnQBitmap): Integer;
+    function  addBigSmile(var pBmp: TRnQBitmap): Integer;
 //    procedure addprop(name:string;hi: HICON; Internal : Boolean = false); overload;
-    function  addProp(const name:TPicName; kind:TthemePropertyKind; var pBmp: TRnQBitmap) : Integer; overload;
-    procedure addProp(const name:TPicName; kind:TthemePropertyKind; var pic: TThemePic); overload;
+    function  addProp(const name: TPicName; kind: TthemePropertyKind; var pBmp: TRnQBitmap) : Integer; overload;
+    procedure addProp(const name: TPicName; kind: TthemePropertyKind; var pic: TThemePic); overload;
 //    procedure delProp(name:String;kind:TthemePropertyKind);
  {$IFDEF RNQ_FULL}
-    function addProp(name:AnsiString; pic: TRnQAni) : Integer; overload;
+    function addProp(name: AnsiString; pic: TRnQAni): Integer; overload;
 //    function addProp(name:string; pic: TRnQBitmap) : Integer; overload;
  {$ENDIF RNQ_FULL}
    public
-    procedure addHIco(const name:TPicName;hi: HICON; Internal : Boolean = false);
+    procedure addHIco(const name: TPicName; hi: HICON; Internal: Boolean = false);
+    function  AddPicResource(const name: TPicName; ResourceName: String; Internal: Boolean = false) : Boolean;
   {$IFDEF NOT_USE_GDIPLUS}
-    function  GetBrush(name : TPicName) : HBRUSH;
+    function  GetBrush(name: TPicName): HBRUSH;
   {$ENDIF NOT_USE_GDIPLUS}
 //    procedure initPic(name : String; var ThemeToken : Integer;
 //               var picLoc : TPicLocation; var picIdx : Integer); overload;
-    procedure initPic(var picElm : TRnQThemedElementDtls); overload;
-    function  GetPicSize(pTE : TRnQThemedElement; const name : TPicName; minSize : Integer = 0):Tsize; overload;
-//    function  GetPicSize(name : String; var ThemeToken : Integer;
-//        var picLoc : TPicLocation; var picIdx : Integer; minSize : Integer = 0):Tsize; overload;
-    function  GetPicSize(var PicElm : TRnQThemedElementDtls; minSize : Integer = 0):Tsize; overload;
-    function  GetPicOld(const PicName : TPicName; pic: TBitmap; AddPic : Boolean = True) : Boolean;
+    procedure initPic(var picElm: TRnQThemedElementDtls); overload;
+    function  GetPicSize(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0):Tsize; overload;
+//    function  GetPicSize(name: String; var ThemeToken: Integer;
+//        var picLoc: TPicLocation; var picIdx: Integer; minSize: Integer = 0): Tsize; overload;
+    function  GetPicSize(var PicElm: TRnQThemedElementDtls; minSize: Integer = 0): Tsize; overload;
+    function  GetPicOld(const PicName: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
 //    function  GetIcoBad(name : String) : TIcon;
-    function  GetString(const name : TPicName; isAdd : Boolean = True) : String;
-    function  GetSound(const name : TPicName) : String;
-    function  PlaySound(const name : TPicName): Boolean;
+    function  GetString(const name: TPicName; isAdd: Boolean = True): String;
+    function  GetSound(const name: TPicName): String;
+    function  PlaySound(const name: TPicName): Boolean;
 //    procedure ApplyFont(name : String; var fnt : TFont); overload;
-    procedure ApplyFont(const pName : TPicName; fnt : TFont);
+    procedure ApplyFont(const pName: TPicName; fnt: TFont);
 //    function  GetFontProp(name : String; Prop : TFontPropsTypes) : TFontProps;
     function  GetFontName(const pName : TPicName) : String;
-    function  GetColor(const name : TPicName; pDefColor : TColor = clDefault) : TColor;
-    function  GetAColor(const name : TPicName; pDefColor : Integer = clDefault) : Cardinal;
-    function  GetTColor(const name : TPicName; pDefColor : Cardinal) : Cardinal;
+    function  GetColor(const name: TPicName; pDefColor: TColor = clDefault): TColor;
+    function  GetAColor(const name: TPicName; pDefColor: Integer = clDefault): Cardinal;
+    function  GetTColor(const name: TPicName; pDefColor: Cardinal): Cardinal;
   {$IFNDEF NOT_USE_GDIPLUS}
 //    function  pic2ico2(picName:String; ico:Ticon) : Boolean;
   {$ENDIF NOT_USE_GDIPLUS}
-    function  pic2ico(pTE : TRnQThemedElement; const picName: TPicName; ico:Ticon) : Boolean;
-    function  pic2hIcon(const picName: TPicName; var ico:HICON) : Boolean;
-//    function  drawPic(cnv:Tcanvas; x,y:integer; pic:TRnQBitmap):Tsize; overload;
-    function  drawPic(DC: HDC; pX, pY:integer; const picName: TPicName; pEnabled : Boolean = true):Tsize; overload;
-//    function  drawPic(DC: HDC; x,y:integer; picName:string; var ThemeToken : Integer;
-//        var picLoc : TPicLocation; var picIdx : Integer; pEnabled : Boolean = true):Tsize; overload;
-//    function  drawPic(DC: HDC; x,y:integer; var picElm : TRnQThemedElementDtls):Tsize; overload;
-    function  drawPic(DC: HDC; pR: TGPRect; const picName: TPicName; pEnabled : Boolean = true):Tsize; overload;
-    function  drawPic(DC: HDC; p : TPoint;  var picElm : TRnQThemedElementDtls):Tsize; overload;
-    function  drawPic(DC: HDC; pR: TGPRect; var picElm : TRnQThemedElementDtls):Tsize; overload;
-    function  getPic(DC: HDC; p :TPoint; var picElm : TRnQThemedElementDtls; var is32Alpha : Boolean):Tsize; overload;
+    function  pic2ico(pTE: TRnQThemedElement; const picName: TPicName; ico: Ticon): Boolean;
+    function  pic2hIcon(const picName: TPicName; var ico: HICON): Boolean;
+//    function  drawPic(cnv: Tcanvas; x,y: integer; pic: TRnQBitmap): Tsize; overload;
+    function  drawPic(DC: HDC; pX, pY: integer; const picName: TPicName; pEnabled: Boolean = true):Tsize; overload;
+//    function  drawPic(DC: HDC; x,y: integer; picName: string; var ThemeToken: Integer;
+//        var picLoc: TPicLocation; var picIdx: Integer; pEnabled: Boolean = true): Tsize; overload;
+//    function  drawPic(DC: HDC; x,y:integer; var picElm : TRnQThemedElementDtls): Tsize; overload;
+    function  drawPic(DC: HDC; pR: TGPRect; const picName: TPicName; pEnabled: Boolean = true):Tsize; overload;
+    function  drawPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls): Tsize; overload;
+    function  drawPic(DC: HDC; pR: TGPRect; var picElm: TRnQThemedElementDtls): Tsize; overload;
+    function  getPic(DC: HDC; p : TPoint; var picElm: TRnQThemedElementDtls; var is32Alpha : Boolean):Tsize; overload;
   {$IFNDEF NOT_USE_GDIPLUS}
-    function  drawPic(gr:TGPGraphics; x,y:integer; picName:string; pEnabled : Boolean = true):Tsize; overload;
-    function  drawPic(gr:TGPGraphics; x,y:integer; picName:string; var ThemeToken : Integer;
-        var picLoc : TPicLocation; var picIdx : Integer; pEnabled : Boolean = true):Tsize; overload;
-    function  drawPic(gr:TGPGraphics; x,y:integer; picElm : Prnq):Tsize; overload;
+    function  drawPic(gr: TGPGraphics; x, y:integer; picName:string; pEnabled : Boolean = true):Tsize; overload;
+    function  drawPic(gr: TGPGraphics; x, y:integer; picName:string; var ThemeToken: Integer;
+        var picLoc: TPicLocation; var picIdx : Integer; pEnabled : Boolean = true): Tsize; overload;
+    function  drawPic(gr: TGPGraphics; x, y: integer; picElm: Prnq): Tsize; overload;
   {$ENDIF NOT_USE_GDIPLUS}
 //    function  GetPicRGN(picName:string; var ThemeToken : Integer;
 //        var picLoc : TPicLocation; var picIdx : Integer):HRGN;
 //    function drawPic(cnv:Tcanvas; x,y:integer; picName:String):Tsize; overload;
-    function  GetSmileName(i : Integer) : TPicName;
-    function  GetSmileObj(i : Integer) : TSmlObj;
+    function  GetSmileName(i: Integer): TPicName;
+    function  GetSmileObj(i: Integer): TSmlObj;
     procedure checkAnimationTime;
 
    {$IFDEF RNQ_FULL}
-    function  GetAniPic(idx : integer) : TRnQAni;
-    procedure  AddAniParam( PicIdx : Integer; Bounds: TGPRect;
-              Color: TColor; cnv, cnvSrc : TCanvas; Sel : Boolean = false);
+    function  GetAniPic(idx: integer): TRnQAni;
+    procedure  AddAniParam( PicIdx: Integer; Bounds: TGPRect;
+              Color: TColor; cnv, cnvSrc: TCanvas; Sel: Boolean = false);
     procedure  ClearAniParams;
     procedure  ClearAniMNUParams;
    {$ENDIF RNQ_FULL}
@@ -2214,7 +2214,7 @@ begin
   end
 end;
 
-procedure TRQtheme.addHIco(const name:TPicName; hi: HICON; Internal : Boolean = false);
+procedure TRQtheme.addHIco(const name: TPicName; hi: HICON; Internal: Boolean = false);
 //procedure TRQtheme.addprop(name:string;hi: HICON; Internal : Boolean = false);
 var
   i : Integer;
@@ -2285,11 +2285,32 @@ begin
       end
 end; // addthemeprop
 
+function TRQtheme.AddPicResource(const name: TPicName; ResourceName: String; Internal: Boolean = false) : Boolean;
+var
+  bmp: TRnQBitmap;
+  str: TResourceStream;
+begin
+  try
+    str := TResourceStream.Create(HInstance, ResourceName, RT_RCDATA);
+  except
+//    e: EResNotFound
+    result := false;
+    exit;
+  end;
+  bmp := TRnQBitmap.Create;
+  if not loadPic(TStream(str), bmp, 0, PA_FORMAT_UNK, name) then
+    begin
+      str.Free;
+      exit;
+    end;
+  addProp(name, TP_pic, bmp);
+end;
 
-procedure TRQtheme.addprop(const name:TPicName; const SmlCaption : String; Smile: TRnQBitmap;
-                           var pTP : TThemePic;
-                           bStretch : Boolean = false;
-                           Ani : Boolean = false; AniIdx : Integer=-1);
+
+procedure TRQtheme.addprop(const name: TPicName; const SmlCaption: String; Smile: TRnQBitmap;
+                           var pTP: TThemePic;
+                           bStretch: Boolean = false;
+                           Ani: Boolean = false; AniIdx: Integer=-1);
 var
   i, j : Integer;
   NewSmile : TSmlObj;
@@ -2305,7 +2326,8 @@ vST := TP_smile;
   i := Fsmiles.IndexOf(name);
   if i < 0 then
    begin
-    if not Assigned(Smile) and not Assigned(pTP) then exit;
+    if not Assigned(Smile) and not Assigned(pTP) then
+      exit;
     NewSmile := TSmlObj.Create;
     NewSmile.Animated := Ani;
     NewSmile.SmlStr := TStringList.Create;
@@ -2366,9 +2388,10 @@ var
   i : Integer;
   curList : TObjList;
 begin
- if name='' then exit;
- name := AnsiLowerCase(name);
- if  kind = TP_sound then
+  if name='' then
+    exit;
+  name := AnsiLowerCase(name);
+  if  kind = TP_sound then
   begin
    i := FSounds.IndexOf(name);
    if i < 0 then
@@ -2376,34 +2399,34 @@ begin
       SndObj := TSndObj.Create;
       i := FSounds.AddObject(name, SndObj);
     end;
-     TSndObj(FSounds.Objects[i]).str := s;
-     FreeAndNil(TSndObj(FSounds.Objects[i]).s3m);
-      if ts.pathType <> pt_path then
-       begin
-         TSndObj(FSounds.Objects[i]).s3m := TMemoryStream.Create;
-         ts.path := '';
-         if not loadFile(ts, s, TStream(TSndObj(FSounds.Objects[i]).s3m)) then
-          FreeAndNil(TSndObj(FSounds.Objects[i]).s3m);
-       end;
+   TSndObj(FSounds.Objects[i]).str := s;
+   FreeAndNil(TSndObj(FSounds.Objects[i]).s3m);
+   if ts.pathType <> pt_path then
+     begin
+       TSndObj(FSounds.Objects[i]).s3m := TMemoryStream.Create;
+       ts.path := '';
+       if not loadFile(ts, s, TStream(TSndObj(FSounds.Objects[i]).s3m)) then
+         FreeAndNil(TSndObj(FSounds.Objects[i]).s3m);
+     end;
+   exit;
+  end;
+  case kind of
+   TP_string: curList := FStr;
+   else
     exit;
   end;
- case kind of
-   TP_string: curList := FStr;
-  else
-    exit;
- end;
   begin
    i := curList.IndexOf(name);
    if i < 0 then
-    begin
+     begin
       StrObj := TStrObj.Create;
       StrObj.str := s;
       curList.AddObject(name, StrObj);
-    end
-   else
-    begin
-     TStrObj(curList.Objects[i]).str := s;
-    end;
+     end
+    else
+     begin
+       TStrObj(curList.Objects[i]).str := s;
+     end;
   end
 end; // addthemeprop
 {
