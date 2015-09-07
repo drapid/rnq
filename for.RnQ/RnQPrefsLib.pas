@@ -1001,8 +1001,8 @@ end;
 procedure TRnQPref.getPrefDate(const key: String; var Val: TDateTime);
   function dt(l: PAnsiChar): TDateTime; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
   var
-    df : TFormatSettings;
-    s : string;
+    df: TFormatSettings;
+    s: string;
   begin
    try
 //    GetLocaleFormatSettings(0, df);
@@ -1010,7 +1010,7 @@ procedure TRnQPref.getPrefDate(const key: String; var Val: TDateTime);
     df.ShortDateFormat := 'dd.mm.yyyy';
     df.DateSeparator := '.';
     s := Copy(l, 1, 10);
-    result:=StrToDate(s, df);
+    result := StrToDate(s, df);
    except
     result := 0;
    end;
@@ -1056,8 +1056,8 @@ procedure TRnQPref.getPrefDateTime(const key: String; var Val: TDateTime);
     result:=StrToDateTime(l, df);
   end;
 var
-  i : Integer;
-  el : TPrefElement;
+  i: Integer;
+  el: TPrefElement;
 begin
    begin
      i := fPrefStr.IndexOf(key);

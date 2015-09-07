@@ -66,7 +66,7 @@ object aboutFrm: TaboutFrm
     Lines.Strings = (
       'Thanks to:'
       '- Rejetto for &RQ'
-      '- Embarcadero for Delphi XE8!'
+      '- Embarcadero for Delphi 10!'
       ''
       'Thanks for help to:'
       '- MadNut, ZlydenGL, ego1st, Sax-mmS, Djumon'

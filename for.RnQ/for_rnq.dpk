@@ -34,9 +34,7 @@ requires
   rtl,
   vcl,
   designide,
-  vclx,
-  IcsCommonDXE8Run,
-  VirtualTreesDR;
+  vclx;
 
 contains
   RDGlobal in 'RTL\RDGlobal.pas',
