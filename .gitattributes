@@ -3,3 +3,6 @@
 *.rar binary
 *.png binary
 *.jpg binary
+*.rtz binary
+*.rtr binary
+*.zlng binary

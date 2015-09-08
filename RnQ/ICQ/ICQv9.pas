@@ -906,6 +906,7 @@ var
 
 
 implementation
+
 uses
    Controls, dateUtils,
  {$IFDEF UNICODE}
@@ -961,9 +962,9 @@ while (i< TList(cl).count) do
   end;
 end;
 
-procedure splitSSICL(proc:TsplitProc; cl:TRnQCList; OnlyLocal : Boolean);
+procedure splitSSICL(proc: TsplitProc; cl: TRnQCList; OnlyLocal: Boolean);
 var
-  i,cnt:integer;
+  i, cnt: integer;
   s: RawByteString;
 begin
   if TList(cl).count=0 then
@@ -971,19 +972,19 @@ begin
     proc('');
     exit;
     end;
-  i:=0;
+  i := 0;
   while (i< TList(cl).count) do
    begin
     if i > 0 then
       sleep(1000);
-    cnt:=100;
-    s:='';
+    cnt := 100;
+    s := '';
     while (i< TList(cl).count) and (cnt>0) do
       begin
        with TICQContact(cl.getAt(i)) do
        if CntIsLocal or (not OnlyLocal and not Authorized) then
         begin
-         s:=s + buin;
+         s := s + buin;
          dec(cnt);
         end;
        inc(i);
@@ -992,9 +993,9 @@ begin
    end;
 end;
 
-procedure splitSSICL60(proc:TsplitProc; cl:TRnQCList; OnlyLocal : Boolean);
+procedure splitSSICL60(proc: TsplitProc; cl: TRnQCList; OnlyLocal: Boolean);
 var
-  i,cnt:integer;
+  i, cnt: integer;
   s: RawByteString;
 begin
   if TList(cl).count=0 then
@@ -2657,40 +2658,40 @@ if not pwdEqual(Value) and (length(value) <= maxPwdLength) then
     chg(value);
 end; // setPwd
 
-function TicqSession.sendFLAP(ch:word; const data: RawByteString):boolean;
+function TicqSession.sendFLAP(ch: word; const data: RawByteString): boolean;
 var
   s: RawByteString;
 begin
-result:=FALSE;
-if sock.State <> wsConnected then exit;
-s:= RawByteString('*')
-  +AnsiChar(ch)
-  +word_BEasStr(FLAPseq)
-  +word_BEasStr(length(data))
-  +data;
- try
+  result := FALSE;
+  if sock.State <> wsConnected then exit;
+  s := RawByteString('*')
+    + AnsiChar(ch)
+    + word_BEasStr(FLAPseq)
+    + word_BEasStr(length(data))
+    + data;
+  try
    while abs(now - lastSendedFlap) < DT2100miliseconds do
 //    Application.ProcessMessages
     ;
-  sock.sendStr(RawByteString(s));
-  lastSendedFlap := now;
+   sock.sendStr(RawByteString(s));
+   lastSendedFlap := now;
 {  if phase=online_ then
    begin
     inc(SendedFlaps);
     if (SendedFlaps > ICQMaxFlaps)and (phase=online_)  then
       sock.Pause;
    end;}
-  eventData:=s;
-  notifyListeners(IE_serverGot);
-  inc(FLAPseq);
-  if FLAPseq >= $8000 then FLAPseq:=0;
- except
- end;
-s:='';
-result:=TRUE;
+   eventData:=s;
+   notifyListeners(IE_serverGot);
+   inc(FLAPseq);
+   if FLAPseq >= $8000 then FLAPseq:=0;
+  except
+  end;
+  s := '';
+  result := TRUE;
 end; // sendFLAP
 
-function TicqSession.sendSNAC(fam,sub:word; const data: RawByteString):boolean;
+function TicqSession.sendSNAC(fam, sub: word; const data: RawByteString): boolean;
 begin
   result := sendFLAP(SNAC_CHANNEL, SNAC(fam,sub, SNACref)+data)
 end;
@@ -2937,15 +2938,16 @@ var
   xStsTLV : RawByteString;
   Pck     : RawByteString;
 begin
-if not isReady then exit;
+  if not isReady then
+    exit;
 
-if DCmode = DC_none then
-  dc:=Z+dword_BEasStr(0)
-else
- if DCmode = DC_FAKE then
-   dc := dword_LEasStr(fDC_Fake_ip.S_addr) + dword_BEasStr(fDC_Fake_port)
-  else
-   dc:=dword_LEasStr(getLocalIP) +
+  if DCmode = DC_none then
+    dc := Z+dword_BEasStr(0)
+   else
+    if DCmode = DC_FAKE then
+      dc := dword_LEasStr(fDC_Fake_ip.S_addr) + dword_BEasStr(fDC_Fake_port)
+     else
+      dc:=dword_LEasStr(getLocalIP) +
 //  server.GetXAddr + //#127#0#0#1+
         dword_BEasStr(serverPort);
   if sock.http.enabled then
@@ -3075,9 +3077,9 @@ begin
 end; // sendStatusCode
 
 //procedure TicqSession.setStatusStr(s : String; Pic : String = '');
-procedure TicqSession.setStatusStr(xSt : byte; stStr : TXStatStr);
+procedure TicqSession.setStatusStr(xSt: byte; stStr: TXStatStr);
 var
-  s : String;
+  s: String;
 begin
   eventContact := NIL;
   if not (xSt in [Low(XStatusArray)..High(XStatusArray)]) then
@@ -3270,16 +3272,18 @@ begin
   splitSSICL(sendAddContact,cl, OnlyLocal)
 end;
 
-procedure TicqSession.sendAddContact(const buinlist:RawByteString);
+procedure TicqSession.sendAddContact(const buinlist: RawByteString);
 begin
-if (buinlist='') or not isReady then exit;
-sendSNAC(ICQ_BUDDY_FAMILY, 04, buinlist);
+  if (buinlist='') or not isReady then
+    exit;
+  sendSNAC(ICQ_BUDDY_FAMILY, 04, buinlist);
 end; // sendAddContact
 
-procedure TicqSession.sendRemoveContact(const buinlist:RawByteString);
+procedure TicqSession.sendRemoveContact(const buinlist: RawByteString);
 begin
-if (buinlist='') or not isReady then exit;
-sendSNAC(ICQ_BUDDY_FAMILY, 5, buinlist);
+  if (buinlist='') or not isReady then
+    exit;
+  sendSNAC(ICQ_BUDDY_FAMILY, 5, buinlist);
 end; // sendRemoveContact
 
 {$ENDIF UseNotSSI}
@@ -6552,9 +6556,9 @@ var
     s : RawByteString;
     Pkt1, Pkt2 : RawByteString;
     isExstsTLV : Boolean;
-    i, k, ofs1, code : Integer;
+    t, i, k, ofs1, code : Integer;
     t64 : Int64;
-    sU : String;
+    sU, PhoneNum, PhoneCnt : String;
     cnt : TICQcontact;
   begin
     eventwp.uin    := getTLVSafe(META_COMPAD_UID, snac, ofs);
@@ -6621,6 +6625,8 @@ var
           cnt.lang[3] := 0;
         about := UnUTF(getTLVSafe(META_COMPAD_ABOUT, snac, ofs));
 //        Pkt1 := getTLVSafe(META_COMPAD_Mails, snac, ofs);
+
+        isExstsTLV := existsTLV(META_COMPAD_HOMES, snac, ofs);
         Pkt1 := getTLVSafe(META_COMPAD_HOMES, snac, ofs);
          Pkt1 := getTLVSafe(1, Pkt1);
           if pkt1 <> '' then
@@ -6633,25 +6639,52 @@ var
            end;
 
         Pkt1 := getTLVSafe(META_COMPAD_FROM, snac, ofs);
-{         Pkt1 := getTLVSafe(1, Pkt1);
+         Pkt1 := getTLVSafe(1, Pkt1);
           if pkt1 <> '' then
            begin
-            workcity  := unUTF(getTLVSafe(META_COMPAD_FROM_CITY, Pkt1));
-            workstate := unUTF(getTLVSafe(META_COMPAD_FROM_STATE, Pkt1));
+            birthcity  := unUTF(getTLVSafe(META_COMPAD_FROM_CITY, Pkt1));
+            birthstate := unUTF(getTLVSafe(META_COMPAD_FROM_STATE, Pkt1));
             s := getTLVSafe(META_COMPAD_FROM_COUNTRY, Pkt1);
             if s <> '' then
-              workCountry := dword_BEat(@s[1]); //?????????????????????
-           end;
-}
-        Pkt1 := getTLVSafe(META_COMPAD_CELL, snac, ofs);
-         Pkt1 := getTLVSafe(1, Pkt1);
-          if pkt1 > '' then
-           begin
-            cellular := unUTF(getTLVSafe(META_COMPAD_CELL_NUMM, Pkt1));
+              birthCountry := dword_BEat(@s[1]);
            end
-          else
+             else
+           if isExstsTLV then
+            begin
+              birthcity    := '';
+              birthstate   := '';
+              birthCountry := 0;
+           end;
+
+         Pkt1 := getTLVSafe(META_COMPAD_PHONES, snac, ofs);
+         if (Pkt1 > '') and (Length(Pkt1) > 3) then
+         begin
+           t := word_BEat(Pkt1, 1);
+           ofs1 := 3;
+           if t > 0 then
+           for i := 1 to t do
+           begin
+             Pkt2 := getBEWNTS(Pkt1, ofs1);
+             PhoneNum := UnUTF(getTLVSafe(META_COMPAD_PHONES_NUM, Pkt2, 1));
+             PhoneCnt := getTLVSafe(META_COMPAD_PHONES_CNT, Pkt2, 1);
+             if Length(PhoneCnt) >= 2 then
+               code := word_BEat(PhoneCnt, 1)
+             else
+               code := 0;
+             case code of
+               1: regular := PhoneNum;
+               2: workphone := PhoneNum;
+               3: cellular := PhoneNum;
+             end;
+           end;
+         end
+           else
+         begin
+           regular := '';
+           workphone := '';
            cellular := unUTF(getTLVSafe(META_COMPAD_MOBILE, snac, ofs));
-//           cellular := '';
+         end;
+
         homepage := getTLVSafe(META_COMPAD_HP, snac, ofs);
 
         MarStatus := $00;
@@ -6672,7 +6705,7 @@ var
             workstate := unUTF(getTLVSafe(META_COMPAD_WORKS_STATE, Pkt1));
             workDep     := unUTF(getTLVSafe(META_COMPAD_WORKS_DEPT, Pkt1));
             workZip   := unUTF(getTLVSafe(META_COMPAD_WORKS_ZIP, Pkt1));
-            workphone := '';
+            //workphone := '';
             workfax := '';
             s := getTLVSafe(META_COMPAD_WORKS_COUNTRY, Pkt1);
             if s <> '' then
@@ -6688,7 +6721,7 @@ var
               workcity    := '';
               workstate   := '';
               workDep     := '';
-              workphone := '';
+              //workphone := '';
               workfax := '';
               workCountry := 0;
            end;
@@ -7607,15 +7640,19 @@ const
   MISSED_CALLS_ENABLED = $00000002; //Wants MISSED_CALLS on this channel 
   EVENTS_ALLOWED = $00000008;       //Wants CLIENT_EVENTs 
   SMS_SUPPORTED = $00000010;        //Aware of sending to SMS 
+  unk0_ALLOWED = $00000080;
   OFFLINE_MSGS_ALLOWED = $00000100; //Support offline IMs; client is capable of storing and retrieving 
   unk1_ALLOWED = $00000200; //
   HTML_ALLOWED = $00000400; // Seems it HTML support
+  unk2_ALLOWED = $00000800;
+  unk3_ALLOWED = $00040000;
 var
   i : word;
 //  Chr3 : Char;
 begin
   i := MISSED_CALLS_ENABLED or CHANNEL_MSGS_ALLOWED;
-  if ((chn=#0)or (chn = #1)or(chn = #2)) and SupportTypingNotif then i := i or EVENTS_ALLOWED;
+  if ((chn=#0)or (chn = #1)or(chn = #2)) and SupportTypingNotif then
+    i := i or EVENTS_ALLOWED;
 //  if ((chn = #1)or(chn = #2)) then
     i := i or OFFLINE_MSGS_ALLOWED;   // Или это убивает офлайн-сообщения :)
   i := i or unk1_ALLOWED;
