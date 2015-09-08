@@ -62,7 +62,8 @@ contains
   RnQSysUtils in 'RnQSysUtils.pas',
   RnQStrings in 'RnQStrings.pas',
   Base64 in 'RTL\Base64.pas',
-  VirtualTreesReg in 'External\VTV\Design\VirtualTreesReg.pas';
+  VirtualTreesReg in 'External\VTV\Design\VirtualTreesReg.pas',
+  VirtualTrees in 'External\VTV\Source\VirtualTrees.pas';
 
 end.
 
