@@ -44,18 +44,22 @@ implementation
 uses
   sysutils, utilLib, RQUtil, RDUtils, RnQBinUtils;
 
-function TuinLists.exists(const name:string):boolean;
-begin result:=idxOf(name)>=0 end;
+function TuinLists.exists(const name: string): boolean;
+begin
+  result:=idxOf(name)>=0
+end;
 
-function TuinLists.idxOf(const name:string):integer;
+function TuinLists.idxOf(const name: string): integer;
 begin
   result:=count-1;
   while (result>=0) and (compareText(getAt(result).name,name)<>0) do
     dec(result);
 end; // idxof
 
-function TuinLists.getAt(idx:integer):PuinList;
-begin result:=PuinList(items[idx]) end;
+function TuinLists.getAt(idx: integer): PuinList;
+begin
+  result:=PuinList(items[idx])
+end;
 
 function TuinLists.put(const name:string):PuinList;
 var
@@ -176,15 +180,19 @@ else
 end; // get
 
 procedure Tuinlists.resetEnumeration;
-begin enumIdx:=0 end;
-
-function Tuinlists.hasMore:boolean;
-begin result:=enumIdx<count end;
-
-function Tuinlists.getNext:PuinList;
 begin
-result:=getAt(enumIdx);
-inc(enumIdx);
+  enumIdx := 0
+end;
+
+function Tuinlists.hasMore: boolean;
+begin
+  result := enumIdx<count
+end;
+
+function Tuinlists.getNext: PuinList;
+begin
+  result := getAt(enumIdx);
+  inc(enumIdx);
 end; // getNext
 
 end.

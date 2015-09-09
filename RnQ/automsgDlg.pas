@@ -156,13 +156,14 @@ var
   i:integer;
   name:string;
 begin
-if predBox.FocusedNode = NIL then exit;
+  if predBox.FocusedNode = NIL then
+   exit;
 //if predBox.itemIndex < 0 then exit;
 //name:=predBox.items[predBox.itemIndex];
 //predBox.items.delete(predBox.itemIndex);
-name:=TAutMsg(PAutMsg(predBox.getnodedata(predBox.FocusedNode))^).Name;
-predBox.DeleteNode(predBox.FocusedNode);
-i:=1;
+  name:=TAutMsg(PAutMsg(predBox.getnodedata(predBox.FocusedNode))^).Name;
+  predBox.DeleteNode(predBox.FocusedNode);
+  i:=1;
 while i < automessages.count do
   begin
   if compareText(automessages[i], name)=0 then

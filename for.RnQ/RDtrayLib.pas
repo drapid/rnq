@@ -222,7 +222,8 @@ begin
 //  FillMemory(@NID_50, SizeOf(NID_50), 0);
 //  ZeroMemory(@NID_50, SizeOf(NID_50));
   ZeroMemory(@NID_50, NOTIFYIconDataW_V2_SIZE);
-  with NID_50 do begin
+  with NID_50 do
+  begin
 //    cbSize := SizeOf(NID_50);
 //    cbSize := sizeof; // For Delphi XE
     cbSize := NOTIFYIconDataW_V2_SIZE;
@@ -245,10 +246,12 @@ var
   NID_50: TNotifyIconDataW_V2;
 begin
   ShowBalloonTime := 0;
-  if (not EnabledBaloons) or (not ShowBalloons) then exit;
+  if (not EnabledBaloons) or (not ShowBalloons) then
+    exit;
 //  ZeroMemory(@NID_50, SizeOf(NID_50));
   ZeroMemory(@NID_50, NOTIFYIconDataW_V2_SIZE);
-  with NID_50 do begin
+  with NID_50 do
+  begin
 //    cbSize := SizeOf(NID_50);
 //    cbSize := sizeof; // For Delphi XE
     cbSize := NOTIFYIconDataW_V2_SIZE;
@@ -344,7 +347,8 @@ end; { update }
 
 procedure TtrayIcon.setIcon(icon: Ticon);
 begin
-  if icon=NIL then exit;
+  if icon=NIL then
+    exit;
   if ico = NIL then
     ico := TIcon.Create;
   ico.Assign(icon);

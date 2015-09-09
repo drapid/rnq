@@ -411,12 +411,14 @@ begin
   result:= IcsSwap32(pd^);
 end;
 
-function getTLV(idx:integer; const s:RawByteString; ofs:integer):RawByteString;
-begin result:=getTLV(@s[findTLV(idx,s,ofs)]) end;
+function getTLV(idx: integer; const s: RawByteString; ofs: integer): RawByteString;
+begin
+  result := getTLV(@s[findTLV(idx,s,ofs)])
+end;
 
-function getTLVSafe(idx:integer; s:RawByteString; ofs:integer):RawByteString;
+function getTLVSafe(idx: integer; s: RawByteString; ofs: integer): RawByteString;
 var
-  i : Integer;
+  i: Integer;
 begin
  i := findTLV(idx,s,ofs);
  if i > 0 then
@@ -454,10 +456,14 @@ begin
 end;
 
 function getTLVwordBE(idx:integer; const s:RawByteString; ofs:integer=1):word;
-begin result:=getTLVwordBE(@s[findTLV(idx,s,ofs)]) end;
+begin
+  result:=getTLVwordBE(@s[findTLV(idx,s,ofs)])
+end;
 
 function getTLVdwordBE(idx:integer; const s:RawByteString;ofs:integer=1):dword;
-begin result:=getTLVdwordBE(@s[findTLV(idx,s,ofs)]) end;
+begin
+  result:=getTLVdwordBE(@s[findTLV(idx,s,ofs)])
+end;
 
 function getTLVqwordBE(idx:integer; const s:RawByteString;ofs:integer=1): Int64;
 var
@@ -572,22 +578,32 @@ begin
     end;
 end;
 
-function Length_LE(const data: RawByteString):RawByteString;
-begin result:=word_LEasStr(length(data))+data end;
+function Length_LE(const data: RawByteString): RawByteString;
+begin
+  result:=word_LEasStr(length(data))+data
+end;
 
-function Length_DLE(const data: RawByteString):RawByteString;
-begin result:=dword_LEasStr(length(data))+data end;
+function Length_DLE(const data: RawByteString): RawByteString;
+begin
+  result:=dword_LEasStr(length(data))+data
+end;
 
-function Length_BE(const data:RawByteString):RawByteString;
-begin result:=word_BEasStr(length(data))+data end;
+function Length_BE(const data: RawByteString): RawByteString;
+begin
+  result:=word_BEasStr(length(data))+data
+end;
 
-function Length_B(const data:RawByteString):RawByteString;
-begin result:= AnsiChar(byte(length(data)))+data end;
+function Length_B(const data: RawByteString): RawByteString;
+begin
+  result:= AnsiChar(byte(length(data)))+data
+end;
 
-function WNTS(const s:RawByteString):RawByteString;
-begin result:=Word_LEasStr(length(s)+1)+s+#0 end;
+function WNTS(const s: RawByteString): RawByteString;
+begin
+  result:=Word_LEasStr(length(s)+1)+s+#0
+end;
 
-function WNTSU(const s:String):RawByteString;
+function WNTSU(const s: String): RawByteString;
 var
   s1 : RawByteString;
 begin
@@ -595,25 +611,33 @@ begin
   result:=Word_LEasStr(length(s1)+1)+s1+#0
 end;
 
-function TLV(t:word; v:dword):RawByteString;
-begin result:=TLV(t,dword_BEasStr(v)) end;
+function TLV(t: word; v: dword): RawByteString;
+begin
+  result:=TLV(t,dword_BEasStr(v))
+end;
 
-function TLV(t:word; v:word):RawByteString;
-begin result:=TLV(t,word_BEasStr(v)) end;
+function TLV(t: word; v: word): RawByteString;
+begin
+  result:=TLV(t,word_BEasStr(v))
+end;
 
-function TLV(t:word; v:integer):RawByteString;
-begin result:=TLV(t,dword_BEasStr(v)) end;
+function TLV(t: word; v: integer): RawByteString;
+begin
+  result:=TLV(t,dword_BEasStr(v))
+end;
 
-function TLV(t:word; v:Int64):RawByteString;
-begin result:=TLV(t,qword_BEasStr(v)) end;
+function TLV(t: word; v: Int64): RawByteString;
+begin
+  result:=TLV(t,qword_BEasStr(v))
+end;
 
-function TLV(t:word; const v: RawByteString):RawByteString;
+function TLV(t: word; const v: RawByteString): RawByteString;
 //begin result:=word_BEasStr(t)+word_BEasStr(length(v))+v end;
 var
-  s : RawByteString;
-  ps : Pointer;
-  i : word;
-  a : word;
+  s: RawByteString;
+  ps: Pointer;
+  i: word;
+  a: word;
 begin
   i := length(v);
   SetLength(s, 2+ 2+ i);
@@ -632,10 +656,12 @@ end;
 //function TLV_LE(t:word; v:word):string;
 //begin result:= TLV_LE(t, word_LEasStr(v)) end;
 
-function TLV_LE(t:word; const v:RawByteString):RawByteString;
-begin result:=word_LEasStr(t)+word_LEasStr(length(v))+v end;
+function TLV_LE(t: word; const v: RawByteString): RawByteString;
+begin
+  result:=word_LEasStr(t)+word_LEasStr(length(v))+v
+end;
 
-function TLV2(code:integer; const data:RawByteString):RawByteString;
+function TLV2(code: integer; const data: RawByteString): RawByteString;
 var
   s : RawByteString;
 //  ps : PAnsiChar;
@@ -842,8 +868,10 @@ begin
    Result := '';
 end;
 
-function qword_LEat(p:pointer):int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-begin result:=int64(p^) end;
+function qword_LEat(p: pointer): int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+begin
+  result:=int64(p^)
+end;
 
 function Qword_BEat(p:pointer):int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 begin
@@ -857,48 +885,70 @@ begin
   result:= IcsSwap32(LongWord(p^))
 end;
 
-function dword_BEat(const s:RawByteString; ofs:integer):integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-begin result:=dword_BEat(@s[ofs]) end;
+function dword_BEat(const s: RawByteString; ofs: integer): integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+begin
+  result:=dword_BEat(@s[ofs])
+end;
 
-function dword_LEat(p:pointer):LongWord; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-begin result:=integer(p^) end;
+function dword_LEat(p: pointer): LongWord; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+begin
+  result:=integer(p^)
+end;
 
-function word_LEat(p:pointer):word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-begin result:=word(p^) end;
+function word_LEat(p: pointer): word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+begin
+  result:=word(p^)
+end;
 
-function word_BEat(p:pointer):word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-begin result:=swap(word(p^)) end;
+function word_BEat(p: pointer): word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+begin
+  result:=swap(word(p^))
+end;
 
-function word_BEat(const s: RawByteString; ofs:integer):word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-begin result:=word_BEat(@s[ofs]) end;
+function word_BEat(const s: RawByteString; ofs: integer): word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+begin
+  result:=word_BEat(@s[ofs])
+end;
 
-function dword_LE2ip(d:dword):AnsiString;
-begin result:=format(AnsiString('%d.%d.%d.%d'),[byte(d shr 24),byte(d shr 16),byte(d shr 8),byte(d)]) end;
+function dword_LE2ip(d: dword): AnsiString;
+begin
+  result:=format(AnsiString('%d.%d.%d.%d'),[byte(d shr 24),byte(d shr 16),byte(d shr 8),byte(d)])
+end;
 
  {$IFDEF UNICODE}
-function dword_LE2ipU(d:dword):UnicodeString;
-begin result:=format('%d.%d.%d.%d',[byte(d shr 24),byte(d shr 16),byte(d shr 8),byte(d)]) end;
+function dword_LE2ipU(d: dword): UnicodeString;
+begin
+  result:=format('%d.%d.%d.%d',[byte(d shr 24),byte(d shr 16),byte(d shr 8),byte(d)])
+end;
  {$ENDIF UNICODE}
 
-function word_LEasStr(w:word):RawByteString;
-begin result:=AnsiChar(w)+AnsiChar(w shr 8) end;
+function word_LEasStr(w: word): RawByteString;
+begin
+  result:=AnsiChar(w)+AnsiChar(w shr 8)
+end;
 
-function word_BEasStr(w:word):RawByteString;
-begin result:=AnsiChar(w shr 8)+AnsiChar(w) end;
+function word_BEasStr(w: word): RawByteString;
+begin
+  result:=AnsiChar(w shr 8)+AnsiChar(w)
+end;
 
-function dword_BEasStr(d:dword):RawByteString;
-begin result:=AnsiChar(d shr 24)+AnsiChar(d shr 16)+AnsiChar(d shr 8)+AnsiChar(d) end;
+function dword_BEasStr(d: dword): RawByteString;
+begin
+  result:=AnsiChar(d shr 24)+AnsiChar(d shr 16)+AnsiChar(d shr 8)+AnsiChar(d)
+end;
 
-function dword_LEasStr(d:dword):RawByteString;
-begin result:=AnsiChar(d)+AnsiChar(d shr 8)+AnsiChar(d shr 16)+AnsiChar(d shr 24) end;
+function dword_LEasStr(d: dword): RawByteString;
+begin
+  result:=AnsiChar(d)+AnsiChar(d shr 8)+AnsiChar(d shr 16)+AnsiChar(d shr 24)
+end;
 
-function qword_LEasStr(d:int64):RawByteString;
+function qword_LEasStr(d: int64): RawByteString;
 begin
   setLength(result,8);
   move(d, Pointer(result)^,8);
 end; // qword_LEasStr
 
-function qword_BEasStr(d:int64):RawByteString;
+function qword_BEasStr(d: int64): RawByteString;
 begin
   setLength(result,8);
 //  d := Invert64(d);
@@ -906,23 +956,44 @@ begin
   move(d, Pointer(result)^, 8);
 end; // qword_LEasStr
 
-  function readBYTE(const snac : RawByteString; var ofs : integer):byte;
+  function readBYTE(const snac: RawByteString; var ofs: integer): byte;
 //  begin result:=byte((@snac[ofs])^); inc(ofs) end;
 //  function readBYTE:byte;
-  begin result:=byte(snac[ofs]); inc(ofs) end;
-  function readWORD(const snac : RawByteString; var ofs : integer):word;
-  begin result:=word_LEat(@snac[ofs]); inc(ofs, 2) end;
-  function readBEWORD(const snac : RawByteString; var ofs : integer):word;
-  begin result:=word_BEat(@snac[ofs]); inc(ofs, 2) end;
-  function readINT(const snac : RawByteString; var ofs : integer):integer;
-  begin result:=dword_LEat(@snac[ofs]); inc(ofs, 4) end;
-  function readDWORD(const snac : RawByteString; var ofs : integer):cardinal;
-  begin result:=dword_LEat(@snac[ofs]); inc(ofs, 4) end;
-  function readBEDWORD(const snac : RawByteString; var ofs : integer):cardinal;
-  begin result:=dword_BEat(@snac[ofs]); inc(ofs, 4) end;
+  begin
+    result:=byte(snac[ofs]);
+    inc(ofs)
+  end;
+  function readWORD(const snac: RawByteString; var ofs: integer): word;
+  begin
+    result:=word_LEat(@snac[ofs]);
+    inc(ofs, 2)
+  end;
+  function readBEWORD(const snac: RawByteString; var ofs: integer): word;
+  begin
+    result:=word_BEat(@snac[ofs]);
+    inc(ofs, 2)
+  end;
+  function readINT(const snac: RawByteString; var ofs: integer): integer;
+  begin
+    result:=dword_LEat(@snac[ofs]);
+    inc(ofs, 4)
+  end;
+  function readDWORD(const snac: RawByteString; var ofs: integer): cardinal;
+  begin
+    result:=dword_LEat(@snac[ofs]);
+    inc(ofs, 4)
+  end;
+  function readBEDWORD(const snac: RawByteString; var ofs: integer): cardinal;
+  begin
+    result:=dword_BEat(@snac[ofs]);
+    inc(ofs, 4)
+  end;
 
-  function readQWORD(const snac : RawByteString; var ofs : integer):Int64;
-  begin result:=Qword_LEat(@snac[ofs]); inc(ofs, 8) end;
+  function readQWORD(const snac: RawByteString; var ofs: integer): Int64;
+  begin
+    result:=Qword_LEat(@snac[ofs]);
+    inc(ofs, 8)
+  end;
 
 
 function int2str64(i:Int64):RawByteString;
@@ -943,11 +1014,15 @@ begin
   Result := v;
 end;
 
-function str2int(const s:RawByteString):integer;
-begin result:=dword_LEat(Pointer(s)) end;
+function str2int(const s: RawByteString): integer;
+begin
+  result:=dword_LEat(Pointer(s))
+end;
 
-function str2int(p:pointer):integer;
-begin result:=dword_LEat(p) end;
+function str2int(p: pointer): integer;
+begin
+  result:=dword_LEat(p)
+end;
 
 end.
 

@@ -78,9 +78,10 @@ type
     procedure updateList;
     procedure updateMemo;
     procedure updateChars;
-//    function  validIdx(i:integer):boolean;
-    procedure open(c:TRnQcontact=NIL);
-    public procedure DestroyHandle; OverRide;
+//    function  validIdx(i: integer): boolean;
+    procedure open(c: TRnQcontact=NIL);
+   public
+    procedure DestroyHandle; OverRide;
   end;
 
 var
@@ -104,7 +105,8 @@ var
   i:integer;
   o : POEvent;
 begin
-  if self = NIL then Exit;
+  if self = NIL then
+    Exit;
   list.clear;
   for i:=0 to Account.outbox.count-1 do
    begin
@@ -282,7 +284,8 @@ var
 //  i:integer;
   n : PVirtualNode;
 begin
-  if list.SelectedCount <= 0 then Exit;
+  if list.SelectedCount <= 0 then
+    Exit;
   n := list.GetFirst;
   while n <> NIL do
   begin
@@ -322,7 +325,8 @@ end;
 
 procedure ToutboxFrm.saveBtnClick(Sender: TObject);
 begin
- if list.FocusedNode = NIL then Exit;
+ if list.FocusedNode = NIL then
+    Exit;
 //with list.Items.Objects[list.itemIndex] as TOevent do
  with TOevent(POevent(list.getnodedata(list.FocusedNode))^) do
   begin
@@ -402,7 +406,8 @@ end; // selectedContact
 
 procedure ToutboxFrm.Sendmsg1Click(Sender: TObject);
 begin
-  if lastSelected = NIL then exit;
+  if lastSelected = NIL then
+    exit;
   Account.outbox.remove(lastSelected);
   processOevent(lastSelected);
   lastSelected.Free;
@@ -426,13 +431,20 @@ if button=mbRight then
 end;
 
 procedure ToutboxFrm.listDblClick(Sender: TObject);
-begin if selectedContact<>NIL then chatFrm.openOn(selectedContact) end;
+begin
+  if selectedContact<>NIL then
+    chatFrm.openOn(selectedContact)
+end;
 
-procedure ToutboxFrm.destroyHandle; begin inherited end;
+procedure ToutboxFrm.destroyHandle;
+begin
+  inherited
+end;
 
 procedure ToutboxFrm.menuPopup(Sender: TObject);
 begin
-  if (lastSelected = NIL)or (lastSelected.whom = NIL) then exit;
+  if (lastSelected = NIL)or (lastSelected.whom = NIL) then
+    exit;
 
   Sendmsg1.Enabled:= lastSelected.whom.fProto.isOnline;
 end;

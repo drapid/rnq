@@ -126,7 +126,10 @@ begin
   LocalChk.Checked := not LocalChk.Enabled;//not (LocalChk.Checked);
 end;
 
-procedure TaddContactFrm.destroyHandle; begin inherited end;
+procedure TaddContactFrm.destroyHandle;
+begin
+  inherited
+end;
 
 procedure TaddContactFrm.FormShow(Sender: TObject);
 begin

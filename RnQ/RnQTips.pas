@@ -15,7 +15,7 @@ uses
 
 
 //  procedure TipAdd2(ev:Thevent; bmp2 : tbitmap; seconds : Integer = -1);
-  procedure TipAdd3(ev:Thevent; bmp2 : tbitmap = NIL; pCnt : TRnQContact = NIL; seconds : Integer = -1);
+  procedure TipAdd3(ev: Thevent; bmp2: tbitmap = NIL; pCnt : TRnQContact = NIL; seconds : Integer = -1);
 //  procedure TipAdd(bmp : Tbitmap; seconds : Integer = -1); overload;
 //  procedure TipAdd(ev:Thevent; seconds : Integer = -1); overload;
 //  procedure TipAdd(gpBmp : tGPbitmap; seconds : Integer = -1); overload;
@@ -91,8 +91,10 @@ type
   TColor32 = type Cardinal;
 function SetAlpha(Color32: TColor32; NewAlpha: Integer): TColor32;
 begin
-  if NewAlpha < 0 then NewAlpha := 0
-  else if NewAlpha > 255 then NewAlpha := 255;
+  if NewAlpha < 0 then
+    NewAlpha := 0
+   else if NewAlpha > 255 then
+    NewAlpha := 255;
   Result := (Color32 and $00FFFFFF) or (TColor32(NewAlpha) shl 24);
 end;
 var
@@ -158,7 +160,8 @@ begin
   if MainPrefs.getPrefIntDef('show-tips-count', 20)=0 then
     exit;
 
-  if locked then exit;
+  if locked then
+    exit;
 
   if Assigned(ev) then
     tipType := 1
@@ -425,7 +428,8 @@ begin
   begin
    tipFrm := rt.form;
    if assigned(tipFrm) then
-   with tipFrm do if not mousedown then
+   with tipFrm do
+   if not mousedown then
     if actionCount=0 then
       begin
       // shutdown tip-window

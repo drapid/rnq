@@ -421,7 +421,8 @@ begin
       end;
     inc(i);
     end;
-  if st > en then exit;
+  if st > en then
+    exit;
   utilLib.deleteFromTo(Account.ProtoPath+historyPath + uid, getAt(st).fpos, getAt(en).fpos+length(getAt(en).toString));
 
   reset;
@@ -647,6 +648,7 @@ end;
 
 
 INITIALIZATION
+
 writingQ:=Tlist.create;
 
 FINALIZATION

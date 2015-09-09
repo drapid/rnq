@@ -233,7 +233,8 @@ begin
  if i < 10 then
   exit;
  k := PosEx(AnsiString('</URL>'), s, i+5);
- if k <= 5 then exit;
+ if k <= 5 then
+   exit;
  url := Copy(s, i+5, k-i-5);
  i := Pos(CRLF, url);
  if i > 5 then
@@ -425,13 +426,15 @@ begin
  {$ENDIF AVT_IN_DB}
 
   path := AccPath + avtPath;
-  if (path='') or not directoryExists(path) then exit;
+  if (path='') or not directoryExists(path) then
+    exit;
   path := includeTrailingPathDelimiter(path);
   ZeroMemory(@sr.FindData, SizeOf(TWin32FindData));
      if FindFirst(path+ str2hexU(hash)+'.*', faAnyFile, sr) = 0 then
      repeat
 //      if (sr.name<>'.') and (sr.name<>'..') then
-      if (sr.name='.') or (sr.name='..') then Continue;
+      if (sr.name='.') or (sr.name='..') then
+        Continue;
       pPicFile := path + sr.name;
  //      if sr.Attr and faDirectory > 0 then
       if isSupportedPicFile(sr.name) then
@@ -481,7 +484,6 @@ begin
   if not Account.AccProto.AvatarsSupport then
     Exit;
   hasAvatar := c.icon.ToShow <> IS_AVATAR;
-//  if not hasAvatar then
 
   if not hasAvatar then
   begin
@@ -789,7 +791,8 @@ begin
 //  path := userPath + avtPath;
   if not Account.AccProto.AvatarsSupport then
     Exit;
-  if (path='') or not directoryExists(path) then exit;
+  if (path='') or not directoryExists(path) then
+    exit;
 
   path:=includeTrailingPathDelimiter(path);
  with proto.readList(LT_ROSTER) do
@@ -1097,8 +1100,10 @@ begin
  {$ENDIF UseNotSSI}
    Exit;
   path := AccPath + avtPath;
-  if (path='') or not directoryExists(path) then exit;
-  if length(TICQContact(proto.getMyInfo).ICQIcon.hash_safe) < 16 then exit;
+  if (path='') or not directoryExists(path) then
+    exit;
+  if length(TICQContact(proto.getMyInfo).ICQIcon.hash_safe) < 16 then
+    exit;
 
 
   path:=includeTrailingPathDelimiter(path);
@@ -1109,8 +1114,10 @@ begin
 //      if sr.Attr and faDirectory > 0 then
 //        deltree(path+sr.name)
 //      else
-      if lowercase(ExtractFileExt(path+sr.name)) = '.swf' then continue;
-      if PosEx('.xml.', sr.name, 15) > 0 then Continue;
+      if lowercase(ExtractFileExt(path+sr.name)) = '.swf' then
+        continue;
+      if PosEx('.xml.', sr.name, 15) > 0 then
+        Continue;
 
       ToUploadAvatarFN := path+sr.name;
       ToUploadAvatarHash := TICQContact(proto.getMyInfo).ICQIcon.hash_safe;

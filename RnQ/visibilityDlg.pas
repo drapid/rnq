@@ -58,7 +58,8 @@ type
     procedure selectAll(lb:TBaseVirtualTree);
     procedure unselect(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
     procedure select(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
-  public procedure DestroyHandle; Override;
+  public
+    procedure DestroyHandle; Override;
   end;
 
 var
@@ -83,13 +84,15 @@ type
   end;
 
 
-function what2display(c:TRnQContact):string;
-begin result:=c.displayed+'  '+c.uid end;
+function what2display(c: TRnQContact): string;
+begin
+  result:=c.displayed+'  '+c.uid
+end;
 
-procedure fillUp(lb:TBaseVirtualTree; cl:TRnQCList);
+procedure fillUp(lb: TBaseVirtualTree; cl: TRnQCList);
 var
-  i:integer;
-  p : PVisRec;
+  i: integer;
+  p: PVisRec;
 begin
 lb.Clear;
 for i:=0 to TList(cl).count-1 do
@@ -336,9 +339,12 @@ begin
      OnlFeature(thisProto, false);
      Exit;
     end;
-  if normalBox.SelectedCount > 0 then normal2inv;
-  if visibleBox.SelectedCount > 0 then vis2inv;
-  if invisBox.SelectedCount = 0 then setUpBoxes;
+  if normalBox.SelectedCount > 0 then
+    normal2inv;
+  if visibleBox.SelectedCount > 0 then
+    vis2inv;
+  if invisBox.SelectedCount = 0 then
+    setUpBoxes;
  {$IFDEF UseNotSSI}
   if (thisProto.ProtoElem is TicqSession) then
     TicqSession(thisProto.ProtoElem).updateVisibility;
@@ -360,9 +366,12 @@ begin
      OnlFeature(thisProto, false);
      Exit;
     end;
-  if invisBox.SelectedCount > 0 then inv2normal;
-  if visibleBox.SelectedCount > 0 then vis2normal;
-  if normalBox.SelectedCount = 0 then setUpBoxes;
+  if invisBox.SelectedCount > 0 then
+    inv2normal;
+  if visibleBox.SelectedCount > 0 then
+    vis2normal;
+  if normalBox.SelectedCount = 0 then
+    setUpBoxes;
  {$IFDEF UseNotSSI}
   if (thisProto.ProtoElem is TicqSession) then
     TicqSession(thisProto.ProtoElem).updateVisibility;
@@ -384,9 +393,12 @@ begin
      OnlFeature(thisProto, false);
      Exit;
     end;
-  if normalBox.SelectedCount > 0 then  normal2vis;
-  if invisBox.SelectedCount > 0 then inv2vis;
-  if visibleBox.SelectedCount = 0 then setUpBoxes;
+  if normalBox.SelectedCount > 0 then
+    normal2vis;
+  if invisBox.SelectedCount > 0 then
+    inv2vis;
+  if visibleBox.SelectedCount = 0 then
+    setUpBoxes;
  {$IFDEF UseNotSSI}
   if (thisProto.ProtoElem is TicqSession) then
     TicqSession(thisProto.ProtoElem).updateVisibility;
@@ -400,22 +412,34 @@ procedure TvisibilityFrm.selectAll(lb:TBaseVirtualTree);
 //var
 //  i:integer;
 begin
-  if lb<>normalBox then normalbox.IterateSubtree(NIL, unselect, NIL);
-  if lb<>visibleBox then VisibleBox.IterateSubtree(NIL, unselect, NIL);
-  if lb<>invisBox then InvisBox.IterateSubtree(NIL, unselect, NIL);
+  if lb<>normalBox then
+    normalbox.IterateSubtree(NIL, unselect, NIL);
+  if lb<>visibleBox then
+    VisibleBox.IterateSubtree(NIL, unselect, NIL);
+  if lb<>invisBox then
+    InvisBox.IterateSubtree(NIL, unselect, NIL);
 
   lb.IterateSubtree(NIL, select, NIL);
 end; // selectAll
 
 procedure TvisibilityFrm.selectall1Click(Sender: TObject);
-begin selectAll(invisBox) end;
+begin
+  selectAll(invisBox)
+end;
 
 procedure TvisibilityFrm.Selectall2Click(Sender: TObject);
-begin selectAll(normalBox) end;
+begin
+  selectAll(normalBox)
+end;
 
 procedure TvisibilityFrm.Selectall3Click(Sender: TObject);
-begin selectAll(visibleBox) end;
+begin
+  selectAll(visibleBox)
+end;
 
-procedure TvisibilityFrm.destroyHandle; begin inherited end;
+procedure TvisibilityFrm.destroyHandle;
+begin
+  inherited
+end;
 
 end.

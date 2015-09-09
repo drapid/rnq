@@ -210,11 +210,12 @@ end;
 
 procedure repaintAllWindows;
 
-  procedure repaintRecur(c:Tcontrol);
+  procedure repaintRecur(c: Tcontrol);
   var
     i:integer;
   begin
-    if c = NIL then Exit;
+    if c = NIL then
+      Exit;
     if c is Twincontrol then
      with c as Twincontrol do
       for i:=controlCount-1 downto 0 do
@@ -231,7 +232,7 @@ for i:=0 to Screen.FormCount-1 do
 end;
 
 
-procedure refreshMenuThemelist(menuItem : TMenuItem; StartIDX : byte; proc : TnotifyEvent);
+procedure refreshMenuThemelist(menuItem: TMenuItem; StartIDX: byte; proc: TnotifyEvent);
 var
   i : Integer;
   old, oldSub:string;

@@ -216,7 +216,8 @@ end; // msgDlg
 
 procedure showForm(frm: Tform);
 begin
-  if frm=NIL then exit;
+  if frm=NIL then
+    exit;
 {
 if frm = mainFrm then
   begin
@@ -228,22 +229,34 @@ if frm = mainFrm then
 end;
 
 procedure drawTxt(hnd: Thandle; x, y: integer; const s: string);
-begin textOut(hnd, x,y, PChar(s), length(s)) end;
+begin
+  textOut(hnd, x,y, PChar(s), length(s))
+end;
 
 procedure drawTxtL(hnd: Thandle; x, y: integer; const s: pchar; L: integer);
-begin textOut(hnd, x,y, s, L) end;
+begin
+  textOut(hnd, x,y, s, L)
+end;
 
 function txtSize(hnd: Thandle; const s: string): TSize;
-begin GetTextExtentPoint32(hnd, pchar(s), length(s), result) end;
+begin
+  GetTextExtentPoint32(hnd, pchar(s), length(s), result)
+end;
 
 function txtSizeL(hnd: Thandle; s: pchar; L: integer): TSize;
-begin GetTextExtentPoint32(hnd,s,l,result) end;
+begin
+  GetTextExtentPoint32(hnd,s,l,result)
+end;
 
 function mousePos: Tpoint;
-begin getCursorPos(result) end;
+begin
+  getCursorPos(result)
+end;
 
 function into(p: Tpoint; r: Trect): boolean;
-begin result:=(r.Left <= p.x) and (r.right >= p.x) and (r.top <= p.y) and (r.bottom >= p.y) end;
+begin
+  result := (r.Left <= p.x) and (r.right >= p.x) and (r.top <= p.y) and (r.bottom >= p.y)
+end;
 
 
 procedure UnLoadTranslit;
@@ -260,9 +273,9 @@ end;
 
 procedure LoadTranslit;
 var
-  txt : RawByteString;
-  v, k : RawByteString;
-  so : TStrObj;
+  txt: RawByteString;
+  v, k: RawByteString;
+  so: TStrObj;
 begin
   TranslitList := TStringList.create;
   TranslitList.Sorted := false;
@@ -271,10 +284,12 @@ begin
    try
     v:=chopline(txt);
     v:=trim(chop('#',v));
-    if v='' then Continue;
+    if v='' then
+      Continue;
     k := trim(chop('-', v));
     v := trim(v);
-    if (k='') or (v = '') then Continue;
+    if (k='') or (v = '') then
+      Continue;
     so :=TStrObj.Create;
     so.str := v;
     TranslitList.AddObject(k, so)
@@ -285,9 +300,9 @@ begin
   TranslitList.Sort;
 end;
 
-function Translit(const s : String) : String;
+function Translit(const s: String): String;
 var
-  i, k : Integer;
+  i, k: Integer;
 begin
   if Assigned(TranslitList) and (TranslitList.Count > 0) then
     begin
@@ -313,7 +328,7 @@ const
 {$ENDIF CPUX64}
   bass_dll_FN = 'bass.dll';
 var
- b : Boolean;
+  b: Boolean;
 begin
   audioPresent:=FALSE;
  {$IFDEF RNQ_PLAYER}
@@ -365,16 +380,17 @@ end;
 
 procedure SoundPlay(fn: string);
 begin
- if masterMute or disablesounds or (not playSounds) then exit;
-if length(fn) < 2 then
-  exit;
-if fn[2] <> ':' then
-  fn:= myPath + fn;
- if not audioPresent then
+  if masterMute or disablesounds or (not playSounds) then
+    exit;
+  if length(fn) < 2 then
+    exit;
+  if fn[2] <> ':' then
+    fn:= myPath + fn;
+  if not audioPresent then
 //  waveOutSetVolume (HWAVEOUT hwo, DWORD dwVolume);
-  PlaySound(PChar(fn), 0, SND_ASYNC+SND_FILENAME+SND_NODEFAULT+SND_NOWAIT)
+    PlaySound(PChar(fn), 0, SND_ASYNC+SND_FILENAME+SND_NODEFAULT+SND_NOWAIT)
 //  sound.PlaySound(fn)
- else
+   else
  begin
  {$IFDEF RNQ_PLAYER}
   RnQbPlayer.PlaySecondSound(fn, Soundvolume * MaxVolume div 100);
@@ -396,7 +412,8 @@ end; // playSound
 
 procedure SoundStop;
 begin
-  if disablesounds or (not playSounds) then exit;
+  if disablesounds or (not playSounds) then
+    exit;
   if not audioPresent then
     PlaySound(nil, 0, SND_ASYNC+SND_NODEFAULT + SND_NOWAIT)
 //   else
@@ -405,12 +422,12 @@ end;
 
 function sendMCIcommand(cmd:PChar):string;
 var
-  res:array [0..100] of char;
-  trash:Thandle;
+  res: array [0..100] of char;
+  trash: Thandle;
 begin
-trash:=0; // shut up compiler
-mciSendString(cmd, res, length(res), trash);
-result:=res;
+  trash := 0; // shut up compiler
+  mciSendString(cmd, res, length(res), trash);
+  result := res;
 end; // sendMCI
 
 procedure SoundPlay(fs: TMemoryStream);
@@ -420,9 +437,11 @@ var
   sz : Int64;
 begin
 
-  if masterMute or disablesounds or (not playSounds) then exit;
+  if masterMute or disablesounds or (not playSounds) then
+    exit;
   sz := fs.Seek(0, soEnd);
-  if sz < 2 then exit;
+  if sz < 2 then
+    exit;
   fs.Seek(0, soBeginning);
 
   if not audioPresent then
@@ -493,17 +512,17 @@ end;
 
 function GetShellVersion: Cardinal;
 begin
-  if ShellVersion=0
-   then ShellVersion:=GetFileVersion ('shell32.dll');
-  Result:=ShellVersion;
+  if ShellVersion=0 then
+    ShellVersion := GetFileVersion ('shell32.dll');
+  Result := ShellVersion;
 end;
 
 
 
-function transpColor(cl : TColor; alpha : Byte): TColor;
+function transpColor(cl: TColor; alpha: Byte): TColor;
 var
- dw : Cardinal;
- cf : Double;
+ dw: Cardinal;
+ cf: Double;
 begin
   dw := ColorToRGB(cl);
   cf := alpha / $FF;
@@ -564,9 +583,9 @@ end;
 
 function TxtFromInt(Int: Integer {3 digits}): String;
 var
- iArr:array[1..3] of Integer;
+ iArr: array[1..3] of Integer;
  res, line: String;
- i,k: Integer;
+ i, k: Integer;
 begin
 // Randomize;
  if (Int<100)or(Int>999) then
@@ -875,7 +894,8 @@ end;
 function ThemeControl(AControl: TControl): Boolean;
 begin
   Result := False;
-  if AControl = nil then exit;
+  if AControl = nil then
+    exit;
   Result := (not (csDesigning in AControl.ComponentState) and ThemeServices.ThemesEnabled) or
             ((csDesigning in AControl.ComponentState) and (AControl.Parent <> nil) and
              (ThemeServices.ThemesEnabled //and not UnthemedDesigner(AControl.Parent)
@@ -885,17 +905,20 @@ end;
  {$ENDIF DELPHI9_UP}
 
 
-procedure drawCoolText(cnv:Tcanvas; const text:string);
+procedure drawCoolText(cnv: Tcanvas; const text: string);
 var
-  i,l,n,escpos:integer;
-  r:Trect;
-  st:Tfontstyles;
-  startX:integer;
+  i, l, n, escpos: integer;
+  r: Trect;
+  st: Tfontstyles;
+  startX: integer;
 
-  procedure turnStyle(v:graphics.TFontStyle);
+  procedure turnStyle(v: graphics.TFontStyle);
   begin
-  if v in st then st:=st-[v] else st:=st-[v];
-  cnv.font.style:=st;
+    if v in st then
+      st := st-[v]
+     else
+      st := st-[v];
+    cnv.font.style := st;
   end;
 
 begin
@@ -907,9 +930,12 @@ startX:=cnv.penpos.x;
 while i<=l do
   begin
   escpos:=i;
-  while (escpos<=l) and (text[escpos]<>#27) do inc(escpos);
-  if escpos>l then n:=l-i+1
-  else n:=escpos-i;
+  while (escpos<=l) and (text[escpos]<>#27) do
+    inc(escpos);
+  if escpos>l then
+    n:=l-i+1
+   else
+    n:=escpos-i;
   r.Left:=cnv.PenPos.X;
   r.top:=cnv.PenPos.y;
   DrawText(cnv.handle, @text[i], n, r, DT_SINGLELINE);
@@ -929,13 +955,13 @@ end; // drawCoolText
 
 function datetimeToStrMinMax(dt: Tdatetime; min: Tdatetime; max: Tdatetime): string; overload;
 begin
-if dt=0 then
-  result:=''
-else
-  if (dt<min) or (dt>max) then
-    result:=getTranslation('Invalid')
-  else
-    result:=formatDatetime(timeformat.info, dt);
+  if dt=0 then
+    result:=''
+   else
+    if (dt<min) or (dt>max) then
+      result := getTranslation('Invalid')
+     else
+      result := formatDatetime(timeformat.info, dt);
 end; // datetimeToStrMinMax
 
 function dateTocoolstr(d: Tdatetime): string;

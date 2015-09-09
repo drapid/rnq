@@ -231,7 +231,7 @@ type
     FAniTimer : TTimer;
     FdrawCS : TCriticalSection;
  {$ENDIF RNQ_FULL}
-//    addProp : procedure (name: TPicName;kind:TthemePropertyKind; s: String);
+//    addProp : procedure (name: TPicName; kind:TthemePropertyKind; s: String);
     procedure addProp(name: TPicName; ts: TThemeSourcePath; kind: TthemePropertyKind; const s: String); overload;
 //    procedure addProp(name: TPicName; ico: TIcon); overload;
 //    procedure addProp(name: TPicName; fnt: TFont); overload;

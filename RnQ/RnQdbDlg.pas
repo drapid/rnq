@@ -88,35 +88,38 @@ const
 
 procedure TRnQdbFrm.minimizePanel;
 begin
-resizeBtn.ImageName := PIC_DOWN;
-if not panelExpanded then exit;
-resizeBtn.width:= theme.getPicSize(RQteButton, PIC_DOWN).cx+4;
-resizeBtn.Repaint;
-panel.visible:=FALSE;
-height:=height-panel.height;
-panelExpanded:=FALSE;
+  resizeBtn.ImageName := PIC_DOWN;
+  if not panelExpanded then
+    exit;
+  resizeBtn.width:= theme.getPicSize(RQteButton, PIC_DOWN).cx+4;
+  resizeBtn.Repaint;
+  panel.visible:=FALSE;
+  height:=height-panel.height;
+  panelExpanded:=FALSE;
 end; // minimizePanel
 
 procedure TRnQdbFrm.restorePanel;
 begin
-resizeBtn.ImageName := PIC_UP;
-if panelExpanded then exit;
-resizeBtn.width:= theme.getPicSize(RQteButton, PIC_UP).cx+4;
-resizeBtn.Repaint;
-height:=height+panel.height;
-barPnl.visible:=FALSE;
-panel.visible:=TRUE;
-barPnl.visible:=TRUE;
-panelExpanded:=TRUE;
+  resizeBtn.ImageName := PIC_UP;
+  if panelExpanded then
+    exit;
+  resizeBtn.width:= theme.getPicSize(RQteButton, PIC_UP).cx+4;
+  resizeBtn.Repaint;
+  height:=height+panel.height;
+  barPnl.visible:=FALSE;
+  panel.visible:=TRUE;
+  barPnl.visible:=TRUE;
+  panelExpanded:=TRUE;
 end; // minimizePanel
 
 procedure TRnQdbFrm.updateList;
 var
 //  i,j:integer;
-  c:TRnQContact;
+  c: TRnQContact;
 //  cl:TcontactList;
 begin
-  if not visible then exit;
+  if not visible then
+    exit;
   dbTree.Clear;
   dbTree.BeginUpdate;
   with contactsDB, TList(contactsDB) do
@@ -144,12 +147,14 @@ procedure TRnQdbFrm.purgeBtnClick(Sender: TObject);
     path:string;
 //    uin:integer;
   begin
-  if not removenilhistoriesChk.checked then exit;
+  if not removenilhistoriesChk.checked then
+    exit;
  {$IFNDEF DB_ENABLED}
   path:= Account.ProtoPath + historyPath;
   if findFirst( path+'*', faAnyfile, sr ) = 0 then
     repeat
-    if sr.attr and faDirectory <> 0 then continue;
+    if sr.attr and faDirectory <> 0 then
+      continue;
     try
 //      uin:=strToInt(sr.name);
       if unexistant(sr.name) then
@@ -174,7 +179,8 @@ procedure TRnQdbFrm.purgeBtnClick(Sender: TObject);
     begin
     c:=contactsDB.getAt(i);
     removeIt:=FALSE;
-    if nilChk.checked then removeIt:=unexistant(c.uid);
+    if nilChk.checked then
+      removeIt:=unexistant(c.uid);
     removeIt := removeIt and not TCE(c.data^).dontdelete;
     if removeIt then
       begin
@@ -315,7 +321,8 @@ begin
     if HitInfo.Column = Sender.SortColumn then
      if Sender.SortDirection = sdAscending then
       Sender.SortDirection := sdDescending
-     else Sender.SortDirection := sdAscending
+     else
+      Sender.SortDirection := sdAscending
     else
      Sender.SortColumn := HitInfo.Column;
   end;
@@ -389,12 +396,13 @@ end;
 
 procedure TRnQdbFrm.AddALLcontactsToList(Sender: TObject);
 var
-  i:integer;
+  i: integer;
 begin
-if messageDlg(getTranslation('Are you sure?'),mtConfirmation,[mbYes,mbNo],0)=mrNo then exit;
-with contactsDB, TList(contactsDB) do
-  for i:=0 to count-1 do
-    addToRoster(TRnQcontact(getAt(i)));
+  if messageDlg(getTranslation('Are you sure?'), mtConfirmation,[mbYes,mbNo],0)=mrNo then
+    exit;
+  with contactsDB, TList(contactsDB) do
+    for i:=0 to count-1 do
+      addToRoster(TRnQcontact(getAt(i)));
 end;
 
 procedure TRnQdbFrm.openChat(Sender: TObject);

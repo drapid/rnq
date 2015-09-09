@@ -118,7 +118,8 @@ begin
   s:=decritted(copy(s,8,length(s)), StrToIntDef(Account.AccProto.ProtoElem.MyAccNum, 0));
   clearU;
   i:=1;
-  if length(s) < 4 then exit;
+  if length(s) < 4 then
+    exit;
   try
    while i < length(s) do
     begin
@@ -290,15 +291,17 @@ begin
   saveOutboxDelayed:=TRUE;
 end; // pop
 
-function Toutbox.empty:boolean;
-begin result:=count=0 end;
-
-function Toutbox.stFor(who:TRnQContact):boolean;
-var
-  i:integer;
-  ev : TOEvent;
+function Toutbox.empty: boolean;
 begin
-  result:=FALSE;
+  result:=count=0
+end;
+
+function Toutbox.stFor(who: TRnQContact): boolean;
+var
+  i: integer;
+  ev: TOEvent;
+begin
+  result := FALSE;
   if Assigned(who) and (who is TRnQcontact) then
   for i:=0 to count-1 do
    begin
@@ -306,16 +309,17 @@ begin
     if Assigned(ev) and (ev.whom <> NIL) then
      if who.equals(ev.whom) then
       begin
-        result:=TRUE;
+        result := TRUE;
         exit;
       end;
    end;
 end; // stFor
 
-procedure Toutbox.updateScreenFor(cnt : TRnQContact);
+procedure Toutbox.updateScreenFor(cnt: TRnQContact);
 begin
 //if (uin = '') or (uin = '0') then exit;
-  if (cnt = NIL) or (cnt.UID2cmp = '0') then exit;
+  if (cnt = NIL) or (cnt.UID2cmp = '0') then
+    exit;
 //  redrawUIN(uin);
   roasterLib.redraw(cnt);
  if chatFrm<>NIL then
@@ -326,9 +330,9 @@ begin
  RnQmain.PntBar.Repaint;
 end; // updateScreenFor
 
-function Toutbox.findID(id:Integer):integer;
+function Toutbox.findID(id: Integer): integer;
 var
-  e : TOEvent;
+  e: TOEvent;
 begin
   for result:=count-1 downto 0 do
    begin
@@ -353,8 +357,10 @@ const
 
 function TOevent.toString: RawByteString;
 
-  procedure writeDown(code:integer; const data: RawByteString);
-  begin result:=result+int2str(length(data))+int2str(code)+data end;
+  procedure writeDown(code: integer; const data: RawByteString);
+  begin
+    result:=result+int2str(length(data))+int2str(code)+data
+  end;
 
 begin
 result:='';
@@ -411,8 +417,9 @@ begin
          end;
       OEK_cl:
         begin
-        if cl=NIL then cl:=TRnQCList.create;
-        cl.fromstring(Account.AccProto, copy(s,i,L), contactsDB);
+          if cl=NIL then
+            cl:=TRnQCList.create;
+          cl.fromstring(Account.AccProto, copy(s,i,L), contactsDB);
         end;
       end;
     i:=next;
@@ -444,7 +451,8 @@ end;
 
 destructor TOevent.Destroy;
 begin
-  if Assigned(cl) then FreeAndNil(cl);
+  if Assigned(cl) then
+    FreeAndNil(cl);
 //  FreeAndNil(whom);
   whom := NIL;
 //  SetLength(UID, 0);

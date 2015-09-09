@@ -95,13 +95,15 @@ end;
 procedure TauthreqFrm.authBtnClick(Sender: TObject);
 begin
   Proto_Outbox_add(OE_auth, contact);
-  if closeAuthAfterReply then close;
+  if closeAuthAfterReply then
+    close;
 end;
 
 procedure TauthreqFrm.noBtnClick(Sender: TObject);
 begin
   Proto_Outbox_add(OE_authDenied, contact);
-  if closeAuthAfterReply then close;
+  if closeAuthAfterReply then
+    close;
 end;
 
 procedure TauthreqFrm.reasonBtnClick(Sender: TObject);
@@ -109,11 +111,14 @@ begin
 //notAvailable;
 //exit;
   Proto_Outbox_add(OE_authDenied, contact, 0, msgBox.Text);
-  if closeAuthAfterReply then close;
+  if closeAuthAfterReply then
+    close;
 end;
 
 procedure TauthreqFrm.closeBtnClick(Sender: TObject);
-begin close end;
+begin
+  close
+end;
 
 procedure TauthreqFrm.viewinfoBtnClick(Sender: TObject);
 begin
@@ -136,21 +141,34 @@ destroyHandle;
 end;
 
 procedure TauthreqFrm.FormPaint(Sender: TObject);
-begin wallpaperize(canvas) end;
+begin
+  wallpaperize(canvas)
+end;
 
-procedure TauthreqFrm.addcontactAction(sender:Tobject);
-begin addToRoster(contact, (sender as Tmenuitem).tag) end;
+procedure TauthreqFrm.addcontactAction(sender: Tobject);
+begin
+  addToRoster(contact, (sender as Tmenuitem).tag)
+end;
 
 procedure TauthreqFrm.FormShow(Sender: TObject);
-begin applyTaskButton(self) end;
+begin
+  applyTaskButton(self)
+end;
 
 procedure TauthreqFrm.closeChkClick(Sender: TObject);
-begin closeAuthAfterReply:=closeChk.checked end;
+begin
+  closeAuthAfterReply:=closeChk.checked
+end;
 
 procedure TauthreqFrm.sendBtnClick(Sender: TObject);
-begin chatFrm.openOn(contact) end;
+begin
+  chatFrm.openOn(contact)
+end;
 
 procedure TauthreqFrm.Label2Click(Sender: TObject);
-begin with closeChk do checked:=not checked end;
+begin
+  with closeChk do
+    checked:=not checked
+end;
 
 end.

@@ -134,7 +134,8 @@ begin
  begin
    hndl := GetModuleHandle('user32.dll');
    @GetLII := GetProcAddress(hndl, 'GetLastInputInfo');
-   if @GetLII = NIL then Exit;
+   if @GetLII = NIL then
+     Exit;
    isHooked:=TRUE;
    oldHook := false;
  end
@@ -200,7 +201,8 @@ end; // installHook
 
 procedure uninstallHook;
 begin
-  if not isHooked then exit;
+  if not isHooked then
+    exit;
   if FRegisteredSessionNotification then
     UnRegisterSessionNotification(SessNotifHndl) ;
   SessNotifHndl := 0;

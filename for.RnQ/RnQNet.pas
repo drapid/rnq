@@ -779,7 +779,8 @@ procedure TRnQSocket.proxySettings(proxy : TProxy);
   end;
 
 begin
-  if self.State <> wsClosed then exit;
+  if self.State <> wsClosed then
+    exit;
 //  proxy_http_Enable(sock);
   case proxy.proto of
     PP_NONE:
