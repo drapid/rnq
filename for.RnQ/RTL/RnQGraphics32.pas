@@ -825,28 +825,28 @@ begin
   icn.Free;
 end;
 
-function  loadPic(var str : TStream; var bmp : TRnQBitmap; idx : Integer = 0; ff : TPAFormat = PA_FORMAT_UNK; name : string = ''):boolean;
+function  loadPic(var str: TStream; var bmp: TRnQBitmap; idx: Integer = 0; ff: TPAFormat = PA_FORMAT_UNK; name : string = ''):boolean;
 var
-//  png : TPNGGraphic;
-  png : TPNGObject;
+//  png: TPNGGraphic;
+  png: TPNGObject;
   WICpic: TWICImage;
 //  aniImg : TRnQAni;
-  NonAnimated : Boolean;
+  NonAnimated: Boolean;
 //  vJpg : TJPEGImage;
 //  {$IFNDEF RNQ_LITE}
 //  vJpg, vJpgBad : TsdJpegFormat;
 //  vJpg, vJpgBad : jpeg_decompress_struct;
 //  JPegR : TFPReaderJPEG;
-  pic : IPicture;
-  a, b : Integer;
-  h, w : Integer;
+  pic: IPicture;
+  a, b: Integer;
+  h, w: Integer;
   r: TRect;
 
-  vBmp : TBitmap;
+  vBmp: TBitmap;
 //  {$ENDIF RNQ_LITE}
   IcoStream: TIconStream;
 //  MemStream : TMemoryStream;
-  i : Integer;
+  i: Integer;
   Frame: TAniFrame;
 //  Grph: TGraphic;
 //  ff : TPAFormat;
@@ -855,7 +855,8 @@ begin
 //  fBMP32 := NIL;
 //  f32Alpha := False;
   Result := False;
-  if not Assigned(str) then Exit;
+  if not Assigned(str) then
+    Exit;
 
   if ff = PA_FORMAT_UNK then
     ff := DetectFileFormatStream(str);
@@ -1041,7 +1042,10 @@ begin
        begin
 //         png := TPNGGraphic.Create;
          png := TPNGObject.Create;
-         png.LoadFromStream(str);
+         try
+           png.LoadFromStream(str);
+          except
+         end;
          if not png.empty then
          begin
           if not Assigned(bmp) then

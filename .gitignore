@@ -4,6 +4,7 @@
 Distro/Stickers/
 Distro/*.map
 Distro/*.exe
+RnQ/Units/
 #################
 ## Delphi
 #################
@@ -16,6 +17,7 @@ Distro/*.exe
 *.bak
 *.ddp
 *.~*
+*.drc
 #################
 ## Eclipse
 #################
