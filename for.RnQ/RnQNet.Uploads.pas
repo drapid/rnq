@@ -19,7 +19,7 @@ const
   UploadError = 'Failed to upload file! Server response';
 
   function UploadFileRGhost(const Filename: String; pOnSendData: TDocDataEvent): String;
-  function UploadFileMikanoshi(const Filename: String; pOnSendData: TDocDataEvent): String;
+  function UploadFileRnQ(const Filename: String; pOnSendData: TDocDataEvent): String;
 
 type
   PMemoryStream = ^TMemoryStream;
@@ -204,7 +204,7 @@ begin
   end;
 end;
 
-function UploadFileMikanoshi(const Filename: String; pOnSendData: TDocDataEvent): String;
+function UploadFileRnQ(const Filename: String; pOnSendData: TDocDataEvent): String;
 var
   AvStream, FileStream: TMemoryStream;
   httpCli: TSslHttpCli;
@@ -228,7 +228,7 @@ begin
   end;
 
   try
-    httpCli.URL := 'http://code.highspec.ru/upload.php';
+    httpCli.URL := 'http://RnQ.ru/file_upload.php';
     httpCli.ContentTypePost := 'multipart/form-data; boundary=' + Boundry;
     httpCli.SendStream := TMemoryStream.Create;
 

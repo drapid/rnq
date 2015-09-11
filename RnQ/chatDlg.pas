@@ -182,7 +182,7 @@ type
     procedure RnQFileBtnClick(Sender: TObject);
     procedure RnQPicBtnClick(Sender: TObject);
     procedure RnQFileUploadClick(Sender: TObject);
-    procedure RnQFileUploadMClick(Sender: TObject);
+    procedure RnQFileUploadRClick(Sender: TObject);
     procedure CloseallandAddtoIgnorelist1Click(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure SplitterMoved(Sender: TObject);
@@ -4772,7 +4772,7 @@ begin
 //        if ServerToUpload = 0 then
           url := UploadFileRGhost(fn, OnUploadSendData)
 //        else
-//          url := UploadFileMikanoshi(fn, OnUploadSendData);
+//          url := UploadFileRnQ(fn, OnUploadSendData);
       finally
         RnQFileBtn.Enabled := True;
       end;
@@ -4783,7 +4783,7 @@ begin
   end;
 end;
 
-procedure TchatFrm.RnQFileUploadMClick(Sender: TObject);
+procedure TchatFrm.RnQFileUploadRClick(Sender: TObject);
 var
   fn, url: String;
 //  ServerToUpload: Integer;
@@ -4803,7 +4803,7 @@ begin
     begin
       RnQFileBtn.Enabled := False;
       try
-        url := UploadFileMikanoshi(fn, OnUploadSendData);
+        url := UploadFileRnQ(fn, OnUploadSendData);
       finally
         RnQFileBtn.Enabled := True;
       end;

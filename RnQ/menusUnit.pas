@@ -265,8 +265,10 @@ begin
       '', chatFrm.RnQFileBtnClick, nil);
   addToMenuMass(aFileSendMenu, 2, 'UploadRGHost', 'Upload file to RGHost', '',
       '', chatFrm.RnQFileUploadClick, nil);
-  addToMenuMass(aFileSendMenu, 3, 'UploadMikanoshi', 'Upload file to Mikanoshi', '',
-      '', chatFrm.RnQFileUploadClick, nil);
+//  addToMenuMass(aFileSendMenu, 3, 'UploadMikanoshi', 'Upload file to Mikanoshi', '',
+//      '', chatFrm.RnQFileUploadMClick, nil);
+  addToMenuMass(aFileSendMenu, 3, 'UploadRnQ', 'Upload file to RnQ.ru', '',
+      '', chatFrm.RnQFileUploadRClick, nil);
 
 end;
 
