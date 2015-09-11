@@ -381,7 +381,7 @@ procedure getClientPicAndDescExt(cnt: TICQContact; var pPic: TPicName; var CliDe
                    d := (val shl ((4-d) *8)) shr ((4-d) *8);
                    case parCh of
                     '#': l := IntToStr(d);
-                    '+': l := format('%d%d%d%d',[byte(d shr 24),byte(d shr 16),byte(d shr 8),byte(d)]);
+                    '+': l := format('%d%d%d%d', [byte(d shr 24), byte(d shr 16), byte(d shr 8), byte(d)]);
                     '*': l := ip2str(d);
                     else
                      l := ip2str(d);
@@ -546,6 +546,9 @@ begin
                   CliDesc    := CliDesc + intToStr(C.lastinfoupdate_dw and ($FFFFFF)); // Rapid D
                   if C.lastinfoupdate_dw and $80000000 <> 0 then
                    CliDesc    := CliDesc + ' Test';
+
+                  if CAPS_big_Build in c.capabilitiesBig then
+                   CliDesc := CliDesc + 'Mikanoshi''s Build';
                  end;
     JIMMclientID: if c.lastStatusUpdate_dw = JIMMclientID then
                     begin
@@ -585,19 +588,20 @@ begin
                       CliDesc := 'StrICQ 2';
                     end;
     end;
-  if pPic > '' then exit;
+  if pPic > '' then
+    exit;
 
  s := c.extracapabilities;
  while s > '' do
   begin
    capa := chop(17,0,s);
-   if pos(AnsiString('&RQinside'),capa) > 0 then
+   if pos(AnsiString('&RQinside'), capa) > 0 then
     begin
       pPic := PIC_CLI_NRQ;
       CliDesc := '&RQ '+ip2str(str2int(@capa[10]));
      exit;
     end else
-    if pos(AnsiString('R&Qinside'),capa) > 0 then
+    if pos(AnsiString('R&Qinside'), capa) > 0 then
     begin
      pPic := PIC_CLI_RNQ;
        CliDesc := 'R&Q ';
@@ -610,6 +614,8 @@ begin
          CliDesc := CliDesc + IntToStr(i)
        else
          CliDesc := CliDesc +ip2str(str2int(@capa[10]));
+       if CAPS_big_Build in c.capabilitiesBig then
+         CliDesc := CliDesc + 'Mikanoshi''s Build';
      exit;
     end else
     if pos(AnsiString('mChat icq'),capa) > 0 then
@@ -689,7 +695,8 @@ begin
 //   if pos('mICQ © R.K. ',capa) > 0 then
 //     result := PIC_CLI_m;
   end;
-  if pPic > '' then exit;
+  if pPic > '' then
+    exit;
 
   if CAPS_big_CryptMsg in c.capabilitiesBig then
   begin

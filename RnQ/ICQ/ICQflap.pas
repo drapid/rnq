@@ -117,11 +117,10 @@ begin
   result:=word_BEasStr(fam)+word_BEasStr(sub)+word_BEasStr(0)+dword_BEasStr(ref)
 end;
 
-function SNAC_ver(fam,sub,flags:word; ref:integer; ver : word):RawByteString; overload;
+function SNAC_ver(fam, sub, flags: word; ref: integer; ver: word): RawByteString; overload;
 begin
-  result:=word_BEasStr(fam)+word_BEasStr(sub)+word_BEasStr(flags or $8000)
+  result := word_BEasStr(fam)+word_BEasStr(sub)+word_BEasStr(flags or $8000)
            +dword_BEasStr(ref) + Length_BE(TLV(1, Word(ver)));
-
 end;
 
 function SNAC_shortver(fam, sub, flags: word; ref: integer; ver: word): RawByteString; overload;
@@ -147,15 +146,15 @@ begin
   buff:=buff+s
 end;
 
-function TflapQueue.error:boolean;
+function TflapQueue.error: boolean;
 begin
- error:=((buff>'') and (buff[1]<>'*'))
+ error := ((buff>'') and (buff[1]<>'*'))
         or ((length(buff)>1) and ((buff[2]=#0) or (buff[2]>#5)))
 end; // error
 
-function TflapQueue.errorTill:integer;
+function TflapQueue.errorTill: integer;
 begin
-  result:=-1;
+  result := -1;
   if buff='' then
     exit;
   result:=1;
@@ -178,11 +177,11 @@ begin
   result := word_BEat(@buff[5])
 end;
 
-function TflapQueue.available:boolean;
+function TflapQueue.available: boolean;
 begin
-  result:=not error
-   and (length(buff) >= FLAP_HEAD_SIZE)   // bodysize exists only if this is true
-   and (length(buff) >= FLAP_HEAD_SIZE+bodySize)
+  result := not error
+       and (length(buff) >= FLAP_HEAD_SIZE)   // bodysize exists only if this is true
+       and (length(buff) >= FLAP_HEAD_SIZE+bodySize)
 end; // available
 
 function TflapQueue.pop: RawByteString;

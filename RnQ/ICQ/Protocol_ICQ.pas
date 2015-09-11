@@ -60,10 +60,12 @@ interface
 
   procedure updateClients(pr : TRnQProtocol);
 
+  procedure openICQURL(pr : TRnQProtocol; const pURL: String);
+
 implementation
 
  uses
-   Forms, SysUtils,
+   Forms, SysUtils, DateUtils,
    Types, OverbyteIcsWSocket,
  {$IFDEF UNICODE}
    AnsiStrings,
@@ -72,6 +74,7 @@ implementation
 //   RnQProtocol,
    rnqLangs, RnQStrings, RQThemes, RnQFileUtil, RDUtils,
    RnQTips, RDtrayLib, RDGlobal, RnQGlobal, RnQPics,
+   NetEncoding, cHash, Base64,
  {$IFDEF RNQ_AVATARS}
   RnQ_Avatars,
  {$ENDIF}
@@ -348,12 +351,14 @@ function getDescForSnac(const s:RawByteString):string;
 begin
 case getSnacService(s) of
   $0102:result:='ready';
-  $0103:result:='ready';
-  $0106:result:='ask rates';
+  $0103: result := 'supported snac families list';
+  $0104: result := 'request service';
+  $0105: result := 'redirect to requested service';
+  $0106: result := 'rates request';
   $0107:result:='rates';
   $0108:result:='rates ack';
-  $010A:result:='sending too fast';
-  $010E:result:='ask my info';
+  $010A: result := 'rate update or warning';
+  $010E: result := 'my info request';
   $010F:result:='my info';
   $0113:result:='motd';
   $0115: result := 'list of well known urls';
@@ -361,12 +366,12 @@ case getSnacService(s) of
   $0118:result:='you''re icq';
   $011E:result:='set status';
   $0121: result := 'own extended status';
-  $0202:result:='ask location rights';
+  $0202: result := 'location rights request';
   $0203:result:='location rights';
   $0204:result:='set capabilities';
-  $0205:result:='ask user info';
+  $0205: result := 'user info request';
   $0206:result:='user info';
-  $0302:result:='ask buddy rights';
+  $0302: result := 'buddy rights request';
   $0303:result:='buddy rights';
   $0304:result:='+roster';
   $0305:result:='-roster';
@@ -374,8 +379,8 @@ case getSnacService(s) of
   $030b:result:='oncoming/new status';
   $030c:result:='offgoing';
   $0401:result:='error msg';
-  $0402:result:='ask im rights';
-  $0404:result:='ask im rights';
+  $0402: result := 'im rights request';
+  $0404: result := 'im rights request';
   $0405:result:='im rights';
   $0406:result:='out msg';
   $0407:result:='in msg';
@@ -384,14 +389,14 @@ case getSnacService(s) of
   $0410: result := 'ICBM: offline messages request';
   $0414:result:='typing notification';
   $0417: result := 'ICBM: no more offline msgs';
-  $0902:result:='ask bos rights';
+  $0902: result := 'bos rights request';
   $0903:result:='bos rights';
   $0905:result:='+visible';
   $0906:result:='-visible';
   $0907:result:='+invisible';
   $0908:result:='-invisible';
   $0B02: result := 'min stats report interval';
-  $1006:result:='ask avatar';
+  $1006: result := 'avatar request';
   $1007:result:='avatar';
   $1302: result := 'SSI limits request';
   $1303: result := 'SSI limits response';
@@ -409,7 +414,7 @@ case getSnacService(s) of
   $1319:result:='auth request';
   $1502:
     case getMPservice(s) of
-      $3C:result:='ask offline msgs';
+      $3C: result := 'offline msgs request';
       $3E:result:='delete offline msgs';
       $D098:result:='xml';
       $D01F,
@@ -449,7 +454,7 @@ case getSnacService(s) of
       $DAFA:result:='contact info (past background)';
       $DAF0:result:='contact info (interests)';
       $DAEB:result:='contact info (emails)';
-      $DAB4:result:='uin deleted';
+      $DAB4: result := 'uin info';
       $DAAA:result:='password changed';
       $DA64:result:='info saved (main)';
       $DA78:result:='info saved (hp/more)';
@@ -1834,6 +1839,43 @@ begin
          end;
         cl.free;
       end;
+end;
+
+procedure openICQURL(pr : TRnQProtocol; const pURL: String);
+var
+  hash, query, baseUrl, redirectUrl, unixTime, devId, sToken: String;
+  url, hashStr, sSecret: RawByteString;
+  session: TSessionParams;
+  digest: T256BitDigest;
+  icq: TICQSession;
+begin
+  icq := TICQSession(pr);
+  session := icq.getSession;
+
+  if (icq.getPwdOnly = '') or (session.secret = '') or (session.token = '') then
+  begin
+    openURL(pURL);
+    exit;
+  end;
+
+  baseUrl := 'http://www.icq.com/karma_api/karma_client2web_login.php';
+  sToken := TNetEncoding.url.Encode(session.token);
+  digest := CalcHMAC_SHA256(StrToUTF8(icq.getPwdOnly), StrToUTF8(session.secret));
+  sSecret := Base64EncodeString(SHA256DigestToStrA(digest));
+  devId := 'ic1nmMjqg7Yu-0hL';
+  redirectUrl := TNetEncoding.url.Encode(pURL);
+  unixTime := IntToStr(DateTimeToUnix(Now, False));
+
+  query := 'a=' + sToken + '&d=' + redirectUrl + '&k=' + devId + '&owner=' + Account.AccProto.ProtoElem.MyAccNum + '&ts='
+    + unixTime;
+
+  hash := 'GET&' + TNetEncoding.url.Encode(baseUrl) + '&' + TNetEncoding.url.Encode(query);
+  digest := CalcHMAC_SHA256(sSecret, StrToUTF8(hash));
+  hashStr := Base64EncodeString(SHA256DigestToStrA(digest));
+
+  url := StrToUTF8(baseUrl + '?' + query + '&sig_sha256=' + TNetEncoding.url.Encode(hashStr));
+
+  openURL(url);
 end;
 
 end.

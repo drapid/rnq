@@ -182,6 +182,7 @@ type
     procedure RnQFileBtnClick(Sender: TObject);
     procedure RnQPicBtnClick(Sender: TObject);
     procedure RnQFileUploadClick(Sender: TObject);
+    procedure RnQFileUploadMClick(Sender: TObject);
     procedure CloseallandAddtoIgnorelist1Click(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure SplitterMoved(Sender: TObject);
@@ -4750,7 +4751,7 @@ end;
 procedure TchatFrm.RnQFileUploadClick(Sender: TObject);
 var
   fn, url: String;
-  ServerToUpload: Integer;
+//  ServerToUpload: Integer;
 begin
   fn := openSaveDlg(self, 'Select file to transfer', true);
   if fn > '' then
@@ -4767,11 +4768,42 @@ begin
     begin
       RnQFileBtn.Enabled := False;
       try
-        ServerToUpload := MainPrefs.getPrefIntDef('file-transfer-upload-server', 0);
-        if ServerToUpload = 0 then
+//        ServerToUpload := MainPrefs.getPrefIntDef('file-transfer-upload-server', 0);
+//        if ServerToUpload = 0 then
           url := UploadFileRGhost(fn, OnUploadSendData)
-        else
-          url := UploadFileMikanoshi(fn, OnUploadSendData);
+//        else
+//          url := UploadFileMikanoshi(fn, OnUploadSendData);
+      finally
+        RnQFileBtn.Enabled := True;
+      end;
+
+      if not (trim(url) = '') and not (thisChat = nil) and Assigned(thisChat.input) then
+        thisChat.input.SelText := trim(url);
+    end;
+  end;
+end;
+
+procedure TchatFrm.RnQFileUploadMClick(Sender: TObject);
+var
+  fn, url: String;
+//  ServerToUpload: Integer;
+begin
+  fn := openSaveDlg(self, 'Select file to transfer', true);
+  if fn > '' then
+  // if OpenSaveFileDialog(Application.Handle, '*',
+  // 'Any file|*.*', '', 'Select file to transfer', fn, True) then
+  // if OpenPicDlg.Execute then
+  begin
+    if not FileExists(fn) then
+    begin
+      msgDlg('File doesn''t exist', true, mtError);
+      Exit;
+    end;
+    if Assigned(thisChat.who) then
+    begin
+      RnQFileBtn.Enabled := False;
+      try
+        url := UploadFileMikanoshi(fn, OnUploadSendData);
       finally
         RnQFileBtn.Enabled := True;
       end;
@@ -4795,7 +4827,7 @@ begin
   if Button = mbRight then
 //    showForm(WF_PREF, 'Other', vmShort);
     if Assigned(FileSendMenu) then
-      with sbar.ClientToScreen(Point(x,y)) do
+      with RnQFileBtn.ClientToScreen(Point(x,y)) do
         FileSendMenu.Popup(x,y);
 end;
 

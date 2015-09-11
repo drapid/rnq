@@ -27,17 +27,13 @@ type
     pagectrl: TPageControl;
     mainSheet: TTabSheet;
     Label7: TLabel;
-    Label8: TLabel;
     Label2: TLabel;
-    Label14: TLabel;
     Label13: TLabel;
     Label17: TLabel;
     Label18: TLabel;
     Label20: TLabel;
     aboutBox: TMemo;
-    ipBox: TEdit;
     genderBox: TComboBox;
-    countryBox: TComboBox;
     lang1Box: TComboBox;
     lang2Box: TComboBox;
     lang3Box: TComboBox;
@@ -63,16 +59,12 @@ type
     displayBox: TLabeledEdit;
     uinBox: TLabeledEdit;
     statusBox: TLabeledEdit;
-    cityBox: TLabeledEdit;
-    stateBox: TLabeledEdit;
-    zipBox: TLabeledEdit;
     timeBox: TLabeledEdit;
     cellularBox: TLabeledEdit;
-    homepageBox: TLabeledEdit;
     birthBox: TDateTimePicker;
-    ageSpin: TRnQSpinEdit;
     birthageBox: TComboBox;
     birthageLbl: TLabel;
+    ageSpin: TRnQSpinEdit;
     xstatusBox: TLabeledEdit;
     InterSheet: TTabSheet;
     BirthLBox: TDateTimePicker;
@@ -103,6 +95,8 @@ type
     CapsLabel: TLabel;
     XstatusBtn: TRnQSpeedButton;
     CliCapsMemo: TMemo;
+    ipBox: TEdit;
+    Label8: TLabel;
  // Avatars
     avtTS: TTabSheet;
     AVTGrp: TGroupBox;
@@ -132,9 +126,9 @@ type
     WorkPosEdit: TLabeledEdit;
     WorkDeptEdit: TLabeledEdit;
     WorkCompanyEdit: TLabeledEdit;
+    workAddressEdt: TLabeledEdit;
     loginMailEdt: TLabeledEdit;
     GoWkPgBtn: TRnQButton;
-    goBtn: TRnQButton;
     LUPDDATEEdt: TEdit;
     LInfoDATEEdt: TEdit;
     PrivacyTab: TTabSheet;
@@ -152,6 +146,24 @@ type
     ApplyMyTextBtn: TRnQButton;
     lclNoteStrEdit: TLabeledEdit;
     LastChgInfoBox: TLabeledEdit;
+    HomeTS: TTabSheet;
+    goBtn: TRnQButton;
+    homepageBox: TLabeledEdit;
+    countryBox: TComboBox;
+    cityBox: TLabeledEdit;
+    stateBox: TLabeledEdit;
+    zipBox: TLabeledEdit;
+    Label14: TLabel;
+    GroupBox1: TGroupBox;
+    Label5: TLabel;
+    birthCityBox: TLabeledEdit;
+    birthStateBox: TLabeledEdit;
+    birthCountryBox: TComboBox;
+    addressBox: TLabeledEdit;
+    regularBox: TLabeledEdit;
+
+    CellularEdt2: TLabeledEdit;
+    CellularEdt3: TLabeledEdit;
     procedure PhtBigLoadBtnClick(Sender: TObject);
     procedure StatusBtnClick(Sender: TObject);
     procedure PhtLoadBtnClick(Sender: TObject);
@@ -189,6 +201,8 @@ type
 //    procedure RnQButton3Click(Sender: TObject);
     procedure ApplyMyTextBtnClick(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure removeAllPhotos();
+    procedure verifyPhoneClick(Sender: TObject);
   protected
     addmenu: TPopupMenu;
     procedure SetPhtBtnEnb(val : Boolean);
@@ -233,6 +247,21 @@ uses
 
 {$R *.DFM}
 
+// Delete all photos before downloading,
+// otherwise ExtByContent may change extension and photo won't be replaced
+procedure TviewinfoFrm.removeAllPhotos();
+var
+  sr: TSearchRec;
+begin
+  if FindFirst(AccPath + avtPath + contact.uid2Cmp + '.photo.*', faAnyFile, sr) = 0 then
+    repeat
+      if (sr.name <> '.') and (sr.name <> '..') then
+        if isSupportedPicFile(sr.name) then
+          DeleteFile(AccPath + avtPath + sr.name);
+    until findNext(sr) <> 0;
+  findClose(sr);
+end;
+
 procedure TviewinfoFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
  childWindows.remove(self);
@@ -260,6 +289,8 @@ begin
  contact.lclImportant := lclNoteStrEdit.Text;
  TICQcontact(contact).ssImportant := ssNoteStrEdit.Text;
  TICQcontact(contact).ssCell  := CellularEdt.Text;
+  TICQcontact(contact).ssCell2 := CellularEdt2.text;
+  TICQcontact(contact).ssCell3 := CellularEdt3.text;
  TICQcontact(contact).ssMail := localMailEdt.Text;
  contact.SendTransl:=ChkSendTransl.checked;
 
@@ -327,8 +358,10 @@ procedure TviewinfoFrm.updateInfo;
     result:=result+':00';
   end; // gmt2str
 
-  function datetime2str(dt:Tdatetime):string; overload;
-  begin result:=datetimeTostrMinMax(dt,{1980}80*365,now) end;
+  function datetime2str(dt: Tdatetime): string; overload;
+  begin
+    result := datetimeTostrMinMax(dt,{1980}80*365,now)
+  end;
 var
   i : Byte;
   sr:TsearchRec;
@@ -352,6 +385,7 @@ with TICQcontact(contact) do
   lastBox.text:=last;
   emailBox.text:=email;
   cityBox.text:=city;
+  addressBox.text := address;
   stateBox.text:=state;
 //  aboutBox.text:=unUTF(about);
   aboutBox.text:= about;
@@ -387,26 +421,40 @@ with TICQcontact(contact) do
     XstatusBtn.Enabled := xStatus > 0;
 //  theme.getPic(aXStatus[xStatus].PicName, xstatusImg.Picture.bitmap);
  {$ENDIF}
-  if zip='' then zipbox.text:=''
-  else zipBox.text:=StringOfChar('0',6-length(zip))+zip;
+  if zip='' then
+    zipbox.text:=''
+  else
+    zipBox.text := zip;
   cellularBox.text:=cellular;
+  regularBox.text := regular;
   timeBox.text:='';
   smsChk.checked:=smsable;
 
-  with gmtBox do itemIndex:=findInStrings(gmt2str(getGMT), Items);
-  with genderBox do itemIndex:=findInStrings(GendersByID(gender), Items);
-  with countryBox do itemIndex:=findInStrings(CountriesByID(country), Items);
-  with lang1Box do itemIndex:=findInStrings(languagesByID(lang[1]), Items);
-  with lang2Box do itemIndex:=findInStrings(languagesByID(lang[2]), Items);
-  with lang3Box do itemIndex:=findInStrings(languagesByID(lang[3]), Items);
-  with MarStsBox do itemIndex:=findInStrings(MarStsByID(MarStatus), Items);
+  with gmtBox do
+    itemIndex:=findInStrings(gmt2str(getGMT), Items);
+  with genderBox do
+    itemIndex:=findInStrings(GendersByID(gender), Items);
+  with countryBox do
+    itemIndex:=findInStrings(CountriesByID(country), Items);
+  with lang1Box do
+    itemIndex:=findInStrings(languagesByID(lang[1]), Items);
+  with lang2Box do
+    itemIndex:=findInStrings(languagesByID(lang[2]), Items);
+  with lang3Box do
+    itemIndex:=findInStrings(languagesByID(lang[3]), Items);
+  with MarStsBox do
+    itemIndex:=findInStrings(MarStsByID(MarStatus), Items);
 //  i := interests.Count;
   if interests.Count > 0 then
    begin
-    with Inter1Box do itemIndex:=findInStrings(InterestsByID(interests.InterestBlock[0].Code), Items);
-    with Inter2Box do itemIndex:=findInStrings(InterestsByID(interests.InterestBlock[1].Code), Items);
-    with Inter3Box do itemIndex:=findInStrings(InterestsByID(interests.InterestBlock[2].Code), Items);
-    with Inter4Box do itemIndex:=findInStrings(InterestsByID(interests.InterestBlock[3].Code), Items);
+    with Inter1Box do
+      itemIndex:=findInStrings(InterestsByID(interests.InterestBlock[0].Code), Items);
+    with Inter2Box do
+      itemIndex:=findInStrings(InterestsByID(interests.InterestBlock[1].Code), Items);
+    with Inter3Box do
+      itemIndex:=findInStrings(InterestsByID(interests.InterestBlock[2].Code), Items);
+    with Inter4Box do
+      itemIndex:=findInStrings(InterestsByID(interests.InterestBlock[3].Code), Items);
     Inter1.Text := strings2str(', ', interests.InterestBlock[0].Names);
     Inter2.Text := strings2str(', ', interests.InterestBlock[1].Names);
     Inter3.Text := strings2str(', ', interests.InterestBlock[2].Names);
@@ -456,7 +504,11 @@ with TICQcontact(contact) do
     lclNoteStrEdit.Text := lclImportant;
     lclNoteStrEdit.Enabled := True;
     CellularEdt.Text   := ssCell;
+    CellularEdt2.text := ssCell2;
+    CellularEdt3.text := ssCell3;
     CellularEdt.Enabled   := True;
+    CellularEdt2.enabled := True;
+    CellularEdt3.enabled := True;
     localMailEdt.Text  := ssMail;
     localMailEdt.Enabled  := True;
 
@@ -503,7 +555,8 @@ with TICQcontact(contact) do
 
 //  clientBox.text := getClientFor(contact, True);
   clientBox.text := contact.ClientDesc;
-  if clientBox.text ='' then clientBox.text:=getTranslation(Str_unk);
+  if clientBox.text ='' then
+    clientBox.text:=getTranslation(Str_unk);
   if contact.fProto.isMyAcc(contact) then
    begin
     protoBox.text:='ver.'+intToStr(My_proto_ver);
@@ -511,7 +564,7 @@ with TICQcontact(contact) do
    end
   else
    begin
-    protoBox.text:=ifThen(TICQcontact(contact).proto=0, getTranslation(Str_unk),  'ver.'+intToStr(TICQcontact(contact).proto));
+    protoBox.text := ifThen(TICQcontact(contact).proto=0, getTranslation(Str_unk),  'ver.'+intToStr(TICQcontact(contact).proto));
     loginMailEdt.Text := '';
     loginMailEdt.Visible := False;
    end;
@@ -543,16 +596,23 @@ with TICQcontact(contact) do
   CliCapsMemo.ReadOnly  := True;
   ipbox2.ReadOnly       := True;
 
- WkpgEdt.Text      := workpage;
- workPosEdit.Text  := workPos;
- WorkDeptEdit.Text := workDep;
- workCityEdt.Text  := workcity;
- workStateEdt.Text := workstate;
- with WorkCntryBox do itemIndex:=findInStrings(CountriesByID(workCountry), Items);
- workZipEdt.Text   := workzip;
- WorkCellEdit.Text := workphone;
- WorkCompanyEdit.Text := workCompany;
- StsMsgEdit.Text   := ICQ6Status;
+  WkpgEdt.Text      := workpage;
+  workPosEdit.Text  := workPos;
+  WorkDeptEdit.Text := workDep;
+  workAddressEdt.text := workaddress;
+  workCityEdt.Text  := workcity;
+  workStateEdt.Text := workstate;
+  with WorkCntryBox do
+    itemIndex:=findInStrings(CountriesByID(workCountry), Items);
+  workZipEdt.Text   := workzip;
+  WorkCellEdit.Text := workphone;
+  WorkCompanyEdit.Text := workCompany;
+  StsMsgEdit.Text   := ICQ6Status;
+
+  birthCityBox.text := birthcity;
+  birthStateBox.text := birthstate;
+  with birthCountryBox do
+    ItemIndex := findInStrings(CountriesByID(birthCountry), Items);
 
    {$IFDEF RNQ_AVATARS}
 
@@ -631,6 +691,11 @@ with TICQcontact(contact) do
 
 end;
 
+procedure TviewinfoFrm.verifyPhoneClick(Sender: TObject);
+begin
+  openICQURL(contact.fProto, 'http://www.icq.com/attach-phone/');
+end;
+
 procedure TviewinfoFrm.XstatusBtnClick(Sender: TObject);
 begin
   TICQSession(contact.fProto).RequestXStatus(contact.uid);
@@ -651,40 +716,44 @@ begin
     end
 end;
 
-constructor TviewinfoFrm.doAll(owner_ :Tcomponent; c:TRnQcontact);
+constructor TviewinfoFrm.doAll(owner_ : Tcomponent; c: TRnQcontact);
 var
-  i:integer;
-  comp:Tcomponent;
-  itsme:boolean;
+  i: integer;
+  comp: Tcomponent;
+  itsme: boolean;
 begin
-if c=NIL then exit;
-inherited create(owner_);
-position:=poDefaultPosOnly;
-contact:=c;
-itsme:= c.fProto.isMyAcc(c);
-readOnlyContact := not itsme;
-applyCommonSettings(self);
+  if c=NIL then
+    exit;
+  inherited create(owner_);
+  position := poDefaultPosOnly;
+  contact := c;
+  itsme := c.fProto.isMyAcc(c);
+  readOnlyContact := not itsme;
+  applyCommonSettings(self);
 
 //countryBox.Items.text:=CRLF+CountrysToStr;
-   CountrysToCB(countryBox);
+  CountrysToCB(countryBox);
 //WorkCntryBox.Items.text:=countryBox.Items.text;
-   CountrysToCB(WorkCntryBox);
-genderBox.Items.text:=CRLF+GendersToStr;
-lang1Box.Items.text:=CRLF+LanguagesToStr;
-lang2Box.Items.text := lang1Box.Items.text;
-lang3Box.Items.text := lang1Box.Items.text;
-Inter1Box.Items.text:=CRLF+InterestsToStr;
-Inter2Box.Items.text:=Inter1Box.Items.text;
-Inter3Box.Items.text:=Inter1Box.Items.text;
-Inter4Box.Items.text:=Inter1Box.Items.text;
-gmtBox.Items.text:=gmtsToStr;
-MarStsBox.Items.Text := MarStsToStr;
-if TICQcontact(contact).infoUpdatedTo = 0 then
-  TICQSession(contact.fProto).sendQueryInfo(StrToIntDef(contact.UID2cmp, 0));
-theme.pic2ico(RQteFormIcon, PIC_INFO, icon);
+  CountrysToCB(WorkCntryBox);
+  CountrysToCB(birthCountryBox);
+  genderBox.Items.text:=CRLF+GendersToStr;
+  lang1Box.Items.text:=CRLF+LanguagesToStr;
+  lang2Box.Items.text := lang1Box.Items.text;
+  lang3Box.Items.text := lang1Box.Items.text;
+  Inter1Box.Items.text:=CRLF+InterestsToStr;
+  Inter2Box.Items.text:=Inter1Box.Items.text;
+  Inter3Box.Items.text:=Inter1Box.Items.text;
+  Inter4Box.Items.text:=Inter1Box.Items.text;
+  gmtBox.Items.text:=gmtsToStr;
+  MarStsBox.Items.Text := MarStsToStr;
+  if TICQcontact(contact).infoUpdatedTo = 0 then
+    TICQSession(contact.fProto).sendQueryInfo(StrToIntDef(contact.UID2cmp, 0));
+  theme.pic2ico(RQteFormIcon, PIC_INFO, icon);
   updateBtn.ImageName := PIC_LOAD_NET;
   deleteBtn.ImageName := PIC_DELETE;
   goBtn.ImageName := PIC_URL;
+//  verifyPhone.ImageName := PIC_URL;
+//  verifyPhone2.ImageName := PIC_URL;
   GoWkPgBtn.ImageName := goBtn.ImageName;
   mailBtn.ImageName := PIC_MAIL;
 {  theme.getPic(PIC_LOAD_NET, updateBtn.Glyph );
@@ -733,6 +802,8 @@ ssNoteStrEdit.readonly := false;
 lclNoteStrEdit.readonly := false;
 localMailEdt.ReadOnly  := False;
 CellularEdt.ReadOnly   := False;
+  CellularEdt2.ReadOnly := False;
+  CellularEdt3.ReadOnly := False;
 ipBox.readonly:=TRUE;
 statusBox.readonly:=TRUE;
  xstatusBox.readonly := True;
@@ -809,12 +880,13 @@ else
     c.first:=firstbox.Text;
     c.last:=lastbox.text;
     c.email:=emailbox.text;
+    c.address := addressBox.text;
     c.city:=citybox.text;
     c.state:=statebox.text;
-    if TryStrToInt(c.zip, i) then
-      c.zip:=zipBox.text
-     else
-      c.zip := '';
+    // if TryStrToInt(zipBox.text, i) then
+    c.zip := zipBox.text;
+    // else
+    // c.zip := '';
     c.age:=0;
     c.birth:=0;
     case birthageBox.itemindex of
@@ -822,6 +894,7 @@ else
       2: c.age:=round(ageSpin.value);
       end;
     c.cellular:=cellularBox.text;
+    c.regular := regularBox.text;
     c.homepage:=homepageBox.text;
     c.about:=aboutBox.text;
     c.gender:=StrToGenderI(genderBox.text);
@@ -871,6 +944,7 @@ else
     c.workpage := WkpgEdt.Text;
     c.workPos := workPosEdit.Text;
     c.workDep := WorkDeptEdit.Text;
+    c.workaddress := workAddressEdt.text;
     c.workcity := workCityEdt.Text;
     c.workstate := workStateEdt.Text;
 //    c.workCountry := StrToCountryI(WorkCntryBox.text);
@@ -879,6 +953,11 @@ else
     c.workphone := WorkCellEdit.Text;
     c.ICQ6Status :=  StsMsgEdit.Text;
     c.workCompany := WorkCompanyEdit.Text;
+
+    c.birthcity := birthCityBox.text;
+    c.birthstate := birthStateBox.text;
+    // c.birthCountry := StrToCountryI(birthCntryBox.text);
+    c.birthCountry := CB2ID(birthCountryBox);
 
 //    ICQ.sendSaveMyInfoAs(c);
     TicqSession(c.fProto).sendsaveMyInfoNew(c);
@@ -891,15 +970,18 @@ else
 end;
 
 procedure TviewinfoFrm.FormPaint(Sender: TObject);
-begin wallpaperize(canvas)end;
+begin
+  wallpaperize(canvas)
+end;
 
 procedure TviewinfoFrm.goBtnClick(Sender: TObject);
 var
-  s:string;
+  s: string;
 begin
-  s:=homepageBox.text;
-  if trim(s)='' then exit;
-  if not Imatches(s,1,'http://') then
+  s := homepageBox.text;
+  if trim(s)='' then
+    exit;
+  if not Imatches(s, 1, 'http://') and not Imatches(s, 1, 'https://') then
     s:='http://'+s;
   openURL(s);
 end;
@@ -908,15 +990,18 @@ procedure TviewinfoFrm.GoWkPgBtnClick(Sender: TObject);
 var
   s:string;
 begin
- s:=WkpgEdt.text;
- if trim(s)='' then exit;
- if not Imatches(s,1,'http://') then
-   s:='http://'+s;
- openURL(s);
+  s:=WkpgEdt.text;
+  if trim(s)='' then
+    exit;
+  if not Imatches(s, 1, 'http://') and not Imatches(s, 1, 'https://') then
+    s:='http://'+s;
+  openURL(s);
 end;
 
 procedure TviewinfoFrm.mailBtnClick(Sender: TObject);
-begin sendEmailTo(contact) end;
+begin
+  sendEmailTo(contact)
+end;
 
 procedure TviewinfoFrm.SetPhtBtnEnb(val : Boolean);
 begin
@@ -1056,11 +1141,12 @@ end;
 }
 procedure TviewinfoFrm.dnslookup(Sender: TObject; Error: Word);
 begin
-if ipbox2=NIL then exit;
-if Error = 0 then
-  ipbox2.text:=ipbox2.text+CRLF+TRnQSocket(sender).DnsResultList.text
-else
-  ipbox2.text:=ipbox2.text+CRLF+getTranslation(Str_Error)+' '+intToStr(error);
+  if ipbox2=NIL then
+    exit;
+  if Error = 0 then
+    ipbox2.text:=ipbox2.text+CRLF+TRnQSocket(sender).DnsResultList.text
+   else
+    ipbox2.text:=ipbox2.text+CRLF+getTranslation(Str_Error)+' '+intToStr(error);
 end; // dnslookup
 
 procedure TviewinfoFrm.copyBtnClick(Sender: TObject);
@@ -1070,7 +1156,9 @@ if ipbox2.Lines.Count > 1 then
 end;
 
 procedure TviewinfoFrm.addcontactAction(sender:Tobject);
-begin addToRoster(contact, (sender as Tmenuitem).tag) end;
+begin
+  addToRoster(contact, (sender as Tmenuitem).tag)
+end;
 
 procedure TviewinfoFrm.FormShow(Sender: TObject);
 begin
@@ -1111,10 +1199,12 @@ begin
    end;
 end;
 
-function TviewinfoFrm.isUpToDate:boolean;
+function TviewinfoFrm.isUpToDate: boolean;
 
-  function newer(d:Tdatetime):boolean;
-  begin result:=(d>10000) and (d<now) and (d>TICQcontact(contact).infoUpdatedTo) end;
+  function newer(d: Tdatetime): boolean;
+  begin
+    result := (d>10000) and (d<now) and (d>TICQcontact(contact).infoUpdatedTo)
+  end;
 
 begin
   with TICQcontact(contact) do
@@ -1124,16 +1214,18 @@ end;
 // isUpToDate
 
 procedure TviewinfoFrm.birthBoxChange(Sender: TObject);
-begin setupBirthAge end;
+begin
+  setupBirthAge
+end;
 
 procedure TviewinfoFrm.setupBirthage;
 var
-  i:integer;
+  i: integer;
 begin
-i:=birthageBox.itemIndex;
-ageSpin.Visible:= i=2;
-birthBox.visible:= i=1;
-birthageLbl.visible:= i=0;
+  i := birthageBox.itemIndex;
+  ageSpin.Visible := i=2;
+  birthBox.visible:= i=1;
+  birthageLbl.visible:= i=0;
 end;
 
 procedure TviewinfoFrm.statusBoxSubLabelDblClick(Sender: TObject);
@@ -1153,10 +1245,14 @@ begin
 end;
 
 procedure TviewinfoFrm.birthageBoxChange(Sender: TObject);
-begin setupBirthage end;
+begin
+  setupBirthage
+end;
 
 procedure TviewinfoFrm.OnlyDigitChange(Sender: TObject);
-begin onlydigits(sender) end;
+begin
+  onlydigits(sender)
+end;
 
 procedure TviewinfoFrm.pagectrlChange(Sender: TObject);
 begin
@@ -1172,6 +1268,8 @@ begin
     ssImportant := ssNoteStrEdit.Text;
     lclImportant := lclNoteStrEdit.Text;
     ssCell := CellularEdt.Text;
+    ssCell2 := CellularEdt2.text;
+    ssCell3 := CellularEdt3.text;
     ssMail := localMailEdt.Text;
    end;
   if not contact.CntIsLocal and contact.fProto.isOnline then
@@ -1209,6 +1307,7 @@ procedure TviewinfoFrm.avtSaveBtnClick(Sender: TObject);
 var
   fn : String;
 begin
+//  openICQURL('http://www.icq.com/people/' + Account.AccProto.ProtoElem.MyAccNum + '/edit/');
 //  if OpenSaveFileDialog(Application.Handle, '', 'Pictures (*.gif;*.jpg;*.jpeg;*.png;*.bmp;*.xml)|*.gif;*.jpg;*.jpeg;*.png;*.bmp;*.xml'
   if OpenSaveFileDialog(Application.Handle, '', 'Pictures (*.gif;*.jpg;*.jpeg;*.bmp;*.xml)|*.gif;*.jpg;*.jpeg;*.bmp;*.xml'
 //     getSupPicExts + ';'#0 + 'R&Q Pics Files|*.wbmp'
@@ -1259,7 +1358,8 @@ procedure TviewinfoFrm.ClrAvtBtnClick(Sender: TObject);
 var
   itsme : Boolean;
 begin
-  if not Assigned(contact) then Exit;
+  if not Assigned(contact) then
+    Exit;
    {$IFDEF RNQ_AVATARS}
   itsme := contact.fProto.ismyAcc(contact);
   if itsme then
@@ -1307,9 +1407,11 @@ begin
 //  ch := thisChat;
 //  if (ch = NIL)or (ch.chatType <> CT_ICQ)or not (Assigned(ch.avtPic.Pic))  then
   if (contactAvt = NIL)or not contactAvt.Animated  then
-   Exit;
-  if not Assigned(AvtPBox) then Exit;
-  if not contactAvt.RnQCheckTime then Exit;
+    Exit;
+  if not Assigned(AvtPBox) then
+    Exit;
+  if not contactAvt.RnQCheckTime then
+    Exit;
 //  w := ch.avtPic.PicAni.Width;
 //  h := ch.avtPic.PicAni.Height;
   resW := AvtPBox.ClientWidth;

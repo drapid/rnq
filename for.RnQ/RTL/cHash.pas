@@ -105,7 +105,10 @@
 {                                                                              }
 {******************************************************************************}
 
-{$INCLUDE Compilers.inc}
+unit cHash;
+
+{$I forRnQConfig.inc}
+{$I NoRTTI.inc}
 
 {$IFDEF FREEPASCAL}
   {$WARNINGS OFF}{$HINTS OFF}
@@ -117,8 +120,6 @@
   {$DEFINE HASH_SELFTEST}
 {$ENDIF}
 {$ENDIF}
-
-unit cHash;
 
 interface
 

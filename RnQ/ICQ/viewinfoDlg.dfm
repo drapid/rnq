@@ -29,10 +29,6 @@ object viewinfoFrm: TviewinfoFrm
     OnChange = pagectrlChange
     object mainSheet: TTabSheet
       Caption = '&Main'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label7: TLabel
         Left = 3
         Top = 264
@@ -42,36 +38,18 @@ object viewinfoFrm: TviewinfoFrm
         Transparent = True
         Visible = False
       end
-      object Label8: TLabel
-        Left = 227
-        Top = 75
-        Width = 51
-        Height = 13
-        Alignment = taRightJustify
-        Caption = 'IP address'
-        Transparent = True
-      end
       object Label2: TLabel
         Left = 39
-        Top = 75
+        Top = 92
         Width = 35
         Height = 13
         Alignment = taRightJustify
         Caption = 'Gender'
         Transparent = True
       end
-      object Label14: TLabel
-        Left = 34
-        Top = 168
-        Width = 39
-        Height = 13
-        Alignment = taRightJustify
-        Caption = 'Country'
-        Transparent = True
-      end
       object Label13: TLabel
         Left = 221
-        Top = 121
+        Top = 92
         Width = 56
         Height = 13
         Alignment = taRightJustify
@@ -80,7 +58,7 @@ object viewinfoFrm: TviewinfoFrm
       end
       object Label17: TLabel
         Left = 221
-        Top = 144
+        Top = 115
         Width = 56
         Height = 13
         Alignment = taRightJustify
@@ -89,7 +67,7 @@ object viewinfoFrm: TviewinfoFrm
       end
       object Label18: TLabel
         Left = 221
-        Top = 167
+        Top = 138
         Width = 56
         Height = 13
         Alignment = taRightJustify
@@ -98,7 +76,7 @@ object viewinfoFrm: TviewinfoFrm
       end
       object Label20: TLabel
         Left = 326
-        Top = 236
+        Top = 222
         Width = 21
         Height = 13
         Alignment = taRightJustify
@@ -107,7 +85,7 @@ object viewinfoFrm: TviewinfoFrm
       end
       object mailBtn: TRnQSpeedButton
         Left = 197
-        Top = 48
+        Top = 59
         Width = 20
         Height = 20
         Hint = 'Send an e-mail'
@@ -122,15 +100,6 @@ object viewinfoFrm: TviewinfoFrm
         ShowHint = True
         OnClick = mailBtnClick
       end
-      object birthageLbl: TLabel
-        Left = 52
-        Top = 189
-        Width = 19
-        Height = 13
-        Alignment = taRightJustify
-        Caption = 'Age'
-        Transparent = True
-      end
       object XstatusBtn: TRnQSpeedButton
         Left = 396
         Top = 257
@@ -141,8 +110,8 @@ object viewinfoFrm: TviewinfoFrm
         OnClick = XstatusBtnClick
       end
       object StatusBtn: TRnQSpeedButton
-        Left = 399
-        Top = 94
+        Left = 195
+        Top = 218
         Width = 22
         Height = 20
         Hint = 'Status'
@@ -151,13 +120,22 @@ object viewinfoFrm: TviewinfoFrm
       end
       object Label3: TLabel
         Left = 0
-        Top = 94
+        Top = 116
         Width = 71
         Height = 21
         Alignment = taRightJustify
         AutoSize = False
         Caption = 'Marital status'
         Layout = tlCenter
+      end
+      object birthageLbl: TLabel
+        Left = 52
+        Top = 168
+        Width = 19
+        Height = 13
+        Alignment = taRightJustify
+        Caption = 'Age'
+        Transparent = True
       end
       object aboutBox: TMemo
         AlignWithMargins = True
@@ -168,69 +146,50 @@ object viewinfoFrm: TviewinfoFrm
         Align = alBottom
         MaxLength = 480
         ScrollBars = ssVertical
-        TabOrder = 27
-      end
-      object ipBox: TEdit
-        Left = 281
-        Top = 71
-        Width = 140
-        Height = 21
-        TabStop = False
-        AutoSize = False
-        TabOrder = 7
-        Text = '000.000.000.000'
+        TabOrder = 21
       end
       object genderBox: TComboBox
         Left = 77
-        Top = 71
+        Top = 88
         Width = 140
         Height = 21
         Style = csDropDownList
         TabOrder = 6
       end
-      object countryBox: TComboBox
-        Left = 77
-        Top = 163
+      object lang1Box: TComboBox
+        Left = 281
+        Top = 88
         Width = 140
         Height = 21
         Style = csDropDownList
         Sorted = True
-        TabOrder = 14
+        TabOrder = 9
       end
-      object lang1Box: TComboBox
+      object lang2Box: TComboBox
         Left = 281
-        Top = 117
+        Top = 111
+        Width = 140
+        Height = 21
+        Style = csDropDownList
+        Sorted = True
+        TabOrder = 10
+      end
+      object lang3Box: TComboBox
+        Left = 281
+        Top = 134
         Width = 140
         Height = 21
         Style = csDropDownList
         Sorted = True
         TabOrder = 11
       end
-      object lang2Box: TComboBox
-        Left = 281
-        Top = 140
-        Width = 140
-        Height = 21
-        Style = csDropDownList
-        Sorted = True
-        TabOrder = 13
-      end
-      object lang3Box: TComboBox
-        Left = 281
-        Top = 163
-        Width = 140
-        Height = 21
-        Style = csDropDownList
-        Sorted = True
-        TabOrder = 15
-      end
       object smsChk: TCheckBox
         Left = 220
-        Top = 212
+        Top = 191
         Width = 188
         Height = 17
         Caption = 'SMS-able'
-        TabOrder = 22
+        TabOrder = 17
       end
       object nickBox: TLabeledEdit
         Left = 281
@@ -246,7 +205,7 @@ object viewinfoFrm: TviewinfoFrm
       end
       object lastBox: TLabeledEdit
         Left = 281
-        Top = 26
+        Top = 32
         Width = 140
         Height = 21
         EditLabel.Width = 49
@@ -258,7 +217,7 @@ object viewinfoFrm: TviewinfoFrm
       end
       object firstBox: TLabeledEdit
         Left = 77
-        Top = 25
+        Top = 31
         Width = 140
         Height = 21
         EditLabel.Width = 50
@@ -270,8 +229,8 @@ object viewinfoFrm: TviewinfoFrm
       end
       object emailBox: TLabeledEdit
         Left = 77
-        Top = 48
-        Width = 119
+        Top = 58
+        Width = 115
         Height = 21
         EditLabel.Width = 28
         EditLabel.Height = 13
@@ -294,7 +253,7 @@ object viewinfoFrm: TviewinfoFrm
       end
       object uinBox: TLabeledEdit
         Left = 281
-        Top = 48
+        Top = 59
         Width = 140
         Height = 21
         EditLabel.Width = 18
@@ -305,9 +264,9 @@ object viewinfoFrm: TviewinfoFrm
         TabOrder = 5
       end
       object statusBox: TLabeledEdit
-        Left = 281
-        Top = 94
-        Width = 119
+        Left = 77
+        Top = 219
+        Width = 115
         Height = 21
         EditLabel.Width = 31
         EditLabel.Height = 13
@@ -315,47 +274,11 @@ object viewinfoFrm: TviewinfoFrm
         EditLabel.OnDblClick = statusBoxSubLabelDblClick
         LabelPosition = lpLeft
         ReadOnly = True
-        TabOrder = 9
-      end
-      object cityBox: TLabeledEdit
-        Left = 77
-        Top = 117
-        Width = 140
-        Height = 21
-        EditLabel.Width = 19
-        EditLabel.Height = 13
-        EditLabel.Caption = 'City'
-        LabelPosition = lpLeft
-        ReadOnly = True
-        TabOrder = 10
-      end
-      object stateBox: TLabeledEdit
-        Left = 77
-        Top = 140
-        Width = 140
-        Height = 21
-        EditLabel.Width = 26
-        EditLabel.Height = 13
-        EditLabel.Caption = 'State'
-        LabelPosition = lpLeft
-        ReadOnly = True
-        TabOrder = 12
-      end
-      object zipBox: TLabeledEdit
-        Left = 77
-        Top = 233
-        Width = 140
-        Height = 21
-        EditLabel.Width = 14
-        EditLabel.Height = 13
-        EditLabel.Caption = 'Zip'
-        LabelPosition = lpLeft
-        ReadOnly = True
-        TabOrder = 23
+        TabOrder = 8
       end
       object timeBox: TLabeledEdit
         Left = 279
-        Top = 233
+        Top = 219
         Width = 38
         Height = 21
         EditLabel.Width = 36
@@ -363,11 +286,11 @@ object viewinfoFrm: TviewinfoFrm
         EditLabel.Caption = 'his time'
         LabelPosition = lpLeft
         ReadOnly = True
-        TabOrder = 24
+        TabOrder = 18
       end
       object cellularBox: TLabeledEdit
         Left = 77
-        Top = 209
+        Top = 192
         Width = 140
         Height = 21
         EditLabel.Width = 35
@@ -375,47 +298,34 @@ object viewinfoFrm: TviewinfoFrm
         EditLabel.Caption = 'Cellular'
         LabelPosition = lpLeft
         ReadOnly = True
-        TabOrder = 21
+        TabOrder = 16
       end
       object birthBox: TDateTimePicker
         Left = 220
-        Top = 186
+        Top = 165
         Width = 92
         Height = 21
         Date = 39050.677962962960000000
         Time = 39050.677962962960000000
-        TabOrder = 18
+        TabOrder = 13
         OnChange = birthBoxChange
       end
       object ageSpin: TRnQSpinEdit
         Left = 219
-        Top = 186
+        Top = 165
         Width = 55
         Height = 22
         Decimal = 0
         MaxValue = 120.000000000000000000
         MinValue = 13.000000000000000000
-        TabOrder = 17
+        TabOrder = 12
         Value = 13.000000000000000000
         AsInteger = 13
         OnChange = OnlyDigitChange
       end
-      object birthageBox: TComboBox
-        Left = 77
-        Top = 186
-        Width = 140
-        Height = 21
-        Style = csDropDownList
-        TabOrder = 16
-        OnChange = birthageBoxChange
-        Items.Strings = (
-          'Not specified'
-          'Birthday'
-          'Age')
-      end
       object xstatusBox: TLabeledEdit
         Left = 77
-        Top = 257
+        Top = 249
         Width = 313
         Height = 21
         EditLabel.Width = 37
@@ -423,22 +333,22 @@ object viewinfoFrm: TviewinfoFrm
         EditLabel.Caption = 'XStatus'
         LabelPosition = lpLeft
         ReadOnly = True
-        TabOrder = 26
+        TabOrder = 20
       end
       object BirthLBox: TDateTimePicker
         Left = 336
-        Top = 186
+        Top = 165
         Width = 85
         Height = 21
         Date = 38421.000000000000000000
         Format = 'dd.MM.yyyy'
         Time = 38421.000000000000000000
-        TabOrder = 20
+        TabOrder = 15
         OnChange = birthBoxChange
       end
       object BirthLChk: TCheckBox
         Left = 314
-        Top = 188
+        Top = 167
         Width = 18
         Height = 17
         Alignment = taLeftJustify
@@ -448,37 +358,212 @@ object viewinfoFrm: TviewinfoFrm
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         ParentFont = False
-        TabOrder = 19
+        TabOrder = 14
         OnClick = BirthLChkClick
         OnKeyPress = BirthLChkKeyPress
       end
       object gmtBox: TComboBox
         Left = 353
-        Top = 233
+        Top = 219
         Width = 66
         Height = 21
         Style = csDropDownList
-        TabOrder = 25
+        TabOrder = 19
       end
       object MarStsBox: TComboBox
         Left = 77
-        Top = 94
+        Top = 116
         Width = 140
         Height = 21
         Style = csDropDownList
+        TabOrder = 7
+      end
+      object birthageBox: TComboBox
+        Left = 77
+        Top = 165
+        Width = 140
+        Height = 21
+        Style = csDropDownList
+        TabOrder = 22
+        OnChange = birthageBoxChange
+        Items.Strings = (
+          'Not specified'
+          'Birthday'
+          'Age')
+      end
+    end
+    object HomeTS: TTabSheet
+      Caption = 'Home'
+      ImageIndex = 7
+      object Label14: TLabel
+        Left = 34
+        Top = 153
+        Width = 39
+        Height = 13
+        Alignment = taRightJustify
+        Caption = 'Country'
+        Transparent = True
+      end
+      object homepageBox: TLabeledEdit
+        Left = 8
+        Top = 23
+        Width = 336
+        Height = 21
+        EditLabel.Width = 51
+        EditLabel.Height = 13
+        EditLabel.Caption = 'Homepage'
+        ReadOnly = True
+        TabOrder = 0
+      end
+      object goBtn: TRnQButton
+        Left = 353
+        Top = 21
+        Width = 71
+        Height = 25
+        Hint = 'Open this address'
+        Caption = 'GO'
+        TabOrder = 1
+        OnClick = goBtnClick
+      end
+      object cityBox: TLabeledEdit
+        Left = 77
+        Top = 88
+        Width = 267
+        Height = 21
+        EditLabel.Width = 19
+        EditLabel.Height = 13
+        EditLabel.Caption = 'City'
+        LabelPosition = lpLeft
+        LabelSpacing = 6
+        ReadOnly = True
+        TabOrder = 2
+      end
+      object stateBox: TLabeledEdit
+        Left = 77
+        Top = 118
+        Width = 267
+        Height = 21
+        EditLabel.Width = 26
+        EditLabel.Height = 13
+        EditLabel.Caption = 'State'
+        LabelPosition = lpLeft
+        LabelSpacing = 6
+        ReadOnly = True
+        TabOrder = 3
+      end
+      object countryBox: TComboBox
+        Left = 77
+        Top = 148
+        Width = 267
+        Height = 21
+        Style = csDropDownList
+        Sorted = True
+        TabOrder = 4
+      end
+      object zipBox: TLabeledEdit
+        Left = 77
+        Top = 180
+        Width = 267
+        Height = 21
+        EditLabel.Width = 14
+        EditLabel.Height = 13
+        EditLabel.Caption = 'Zip'
+        LabelPosition = lpLeft
+        LabelSpacing = 6
+        ReadOnly = True
+        TabOrder = 5
+      end
+      object addressBox: TLabeledEdit
+        Left = 77
+        Top = 58
+        Width = 267
+        Height = 21
+        EditLabel.Width = 39
+        EditLabel.Height = 13
+        EditLabel.Caption = 'Address'
+        LabelPosition = lpLeft
+        LabelSpacing = 6
+        ReadOnly = True
+        TabOrder = 6
+      end
+      object regularBox: TLabeledEdit
+        Left = 77
+        Top = 211
+        Width = 267
+        Height = 21
+        EditLabel.Width = 30
+        EditLabel.Height = 13
+        EditLabel.Caption = 'Phone'
+        EditLabel.Font.Charset = DEFAULT_CHARSET
+        EditLabel.Font.Color = 9079434
+        EditLabel.Font.Height = -11
+        EditLabel.Font.Name = 'Tahoma'
+        EditLabel.Font.Style = []
+        EditLabel.ParentFont = False
+        LabelPosition = lpLeft
+        LabelSpacing = 6
+        ReadOnly = True
+        TabOrder = 7
+      end
+      object GroupBox1: TGroupBox
+        Left = 8
+        Top = 269
+        Width = 410
+        Height = 119
+        Caption = 'Place of birth'
         TabOrder = 8
+        object Label5: TLabel
+          Left = 24
+          Top = 83
+          Width = 39
+          Height = 13
+          Alignment = taRightJustify
+          Caption = 'Country'
+          Transparent = True
+        end
+        object birthCityBox: TLabeledEdit
+          Left = 69
+          Top = 26
+          Width = 267
+          Height = 21
+          EditLabel.Width = 19
+          EditLabel.Height = 13
+          EditLabel.Caption = 'City'
+          LabelPosition = lpLeft
+          LabelSpacing = 6
+          ReadOnly = True
+          TabOrder = 0
+        end
+        object birthStateBox: TLabeledEdit
+          Left = 69
+          Top = 53
+          Width = 267
+          Height = 21
+          EditLabel.Width = 26
+          EditLabel.Height = 13
+          EditLabel.Caption = 'State'
+          LabelPosition = lpLeft
+          LabelSpacing = 6
+          ReadOnly = True
+          TabOrder = 1
+        end
+        object birthCountryBox: TComboBox
+          Left = 69
+          Top = 80
+          Width = 267
+          Height = 21
+          Style = csDropDownList
+          Sorted = True
+          TabOrder = 2
+        end
       end
     end
     object WorkTS: TTabSheet
       Caption = '&Work'
       ImageIndex = 6
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label1: TLabel
         Left = 32
-        Top = 187
+        Top = 237
         Width = 39
         Height = 13
         Alignment = taRightJustify
@@ -498,32 +583,34 @@ object viewinfoFrm: TviewinfoFrm
       end
       object workCityEdt: TLabeledEdit
         Left = 77
-        Top = 131
-        Width = 140
+        Top = 173
+        Width = 267
         Height = 21
         EditLabel.Width = 19
         EditLabel.Height = 13
         EditLabel.Caption = 'City'
         LabelPosition = lpLeft
+        LabelSpacing = 6
         ReadOnly = True
         TabOrder = 5
       end
       object workStateEdt: TLabeledEdit
         Left = 77
-        Top = 158
-        Width = 140
+        Top = 205
+        Width = 267
         Height = 21
         EditLabel.Width = 26
         EditLabel.Height = 13
         EditLabel.Caption = 'State'
         LabelPosition = lpLeft
+        LabelSpacing = 6
         ReadOnly = True
         TabOrder = 6
       end
       object WorkCntryBox: TComboBox
         Left = 77
-        Top = 185
-        Width = 140
+        Top = 235
+        Width = 267
         Height = 21
         Style = csDropDownList
         Sorted = True
@@ -531,14 +618,15 @@ object viewinfoFrm: TviewinfoFrm
       end
       object workZipEdt: TLabeledEdit
         Left = 77
-        Top = 212
-        Width = 140
+        Top = 266
+        Width = 267
         Height = 21
         CharCase = ecLowerCase
         EditLabel.Width = 14
         EditLabel.Height = 13
         EditLabel.Caption = 'Zip'
         LabelPosition = lpLeft
+        LabelSpacing = 6
         MaxLength = 9
         ReadOnly = True
         TabOrder = 8
@@ -546,49 +634,53 @@ object viewinfoFrm: TviewinfoFrm
       end
       object WorkCellEdit: TLabeledEdit
         Left = 77
-        Top = 239
-        Width = 140
+        Top = 297
+        Width = 267
         Height = 21
         EditLabel.Width = 35
         EditLabel.Height = 13
         EditLabel.Caption = 'Cellular'
         LabelPosition = lpLeft
+        LabelSpacing = 6
         ReadOnly = True
         TabOrder = 9
       end
       object WorkPosEdit: TLabeledEdit
         Left = 77
         Top = 50
-        Width = 140
+        Width = 267
         Height = 21
         EditLabel.Width = 37
         EditLabel.Height = 13
         EditLabel.Caption = 'Position'
         LabelPosition = lpLeft
+        LabelSpacing = 6
         ReadOnly = True
         TabOrder = 2
       end
       object WorkDeptEdit: TLabeledEdit
         Left = 77
-        Top = 77
-        Width = 140
+        Top = 79
+        Width = 267
         Height = 21
         EditLabel.Width = 57
         EditLabel.Height = 13
         EditLabel.Caption = 'Department'
         LabelPosition = lpLeft
+        LabelSpacing = 6
         ReadOnly = True
         TabOrder = 3
       end
       object WorkCompanyEdit: TLabeledEdit
         Left = 77
-        Top = 104
-        Width = 140
+        Top = 110
+        Width = 267
         Height = 21
         EditLabel.Width = 45
         EditLabel.Height = 13
         EditLabel.Caption = 'Company'
         LabelPosition = lpLeft
+        LabelSpacing = 6
         ReadOnly = True
         TabOrder = 4
       end
@@ -602,42 +694,31 @@ object viewinfoFrm: TviewinfoFrm
         TabOrder = 1
         OnClick = GoWkPgBtnClick
       end
-      object StsMsgEdit: TLabeledEdit
-        Left = 15
-        Top = 327
-        Width = 329
+      object workAddressEdt: TLabeledEdit
+        Left = 77
+        Top = 141
+        Width = 267
         Height = 21
-        EditLabel.Width = 50
+        EditLabel.Width = 39
         EditLabel.Height = 13
-        EditLabel.Caption = 'Life status'
+        EditLabel.Caption = 'Address'
+        LabelPosition = lpLeft
+        LabelSpacing = 6
+        ReadOnly = True
         TabOrder = 10
-      end
-      object RnQButton2: TRnQButton
-        Left = 15
-        Top = 354
-        Width = 90
-        Height = 25
-        Caption = 'Apply'
-        TabOrder = 11
-        OnClick = RnQButton2Click
-        ImageName = 'apply'
       end
     end
     object TabSheet2: TTabSheet
       Caption = '&Extra'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Bevel2: TBevel
         Left = 245
         Top = 201
         Width = 2
-        Height = 202
+        Height = 181
       end
       object Label28: TLabel
         Left = 265
-        Top = 244
+        Top = 208
         Width = 40
         Height = 13
         Caption = 'UIN-lists'
@@ -646,22 +727,22 @@ object viewinfoFrm: TviewinfoFrm
         Left = 8
         Top = 357
         Width = 231
-        Height = 17
+        Height = 22
         Caption = 'Don'#39't delete from database'
-        TabOrder = 8
+        TabOrder = 6
       end
       object uinlistsBox: TMemo
         Left = 265
         Top = 263
         Width = 148
-        Height = 107
+        Height = 86
         ReadOnly = True
         ScrollBars = ssVertical
-        TabOrder = 11
+        TabOrder = 9
       end
       object groupBox: TLabeledEdit
         Left = 288
-        Top = 201
+        Top = 228
         Width = 125
         Height = 21
         EditLabel.Width = 29
@@ -669,34 +750,23 @@ object viewinfoFrm: TviewinfoFrm
         EditLabel.Caption = 'Group'
         LabelPosition = lpLeft
         ReadOnly = True
-        TabOrder = 10
+        TabOrder = 8
       end
       object publicChk: TCheckBox
         Left = 8
         Top = 375
         Width = 231
-        Height = 17
+        Height = 22
         Caption = 'Let people see my e-mail address'
-        TabOrder = 9
-      end
-      object homepageBox: TLabeledEdit
-        Left = 8
-        Top = 23
-        Width = 336
-        Height = 21
-        EditLabel.Width = 51
-        EditLabel.Height = 13
-        EditLabel.Caption = 'Homepage'
-        ReadOnly = True
-        TabOrder = 0
+        TabOrder = 7
       end
       object GroupBox9: TGroupBox
         Left = 3
-        Top = 50
+        Top = 48
         Width = 418
         Height = 145
         Caption = 'Interests'
-        TabOrder = 2
+        TabOrder = 0
         object Inter1Box: TComboBox
           Left = 16
           Top = 16
@@ -768,7 +838,7 @@ object viewinfoFrm: TviewinfoFrm
         EditLabel.Caption = 'Info updated to'
         LabelPosition = lpLeft
         ReadOnly = True
-        TabOrder = 7
+        TabOrder = 5
       end
       object membersinceBox: TLabeledEdit
         Left = 121
@@ -780,7 +850,7 @@ object viewinfoFrm: TviewinfoFrm
         EditLabel.Caption = 'Registered on'
         LabelPosition = lpLeft
         ReadOnly = True
-        TabOrder = 6
+        TabOrder = 4
       end
       object onlinesinceBox: TLabeledEdit
         Left = 121
@@ -792,7 +862,7 @@ object viewinfoFrm: TviewinfoFrm
         EditLabel.Caption = 'Online since'
         LabelPosition = lpLeft
         ReadOnly = True
-        TabOrder = 5
+        TabOrder = 3
       end
       object lastonlineBox: TLabeledEdit
         Left = 121
@@ -804,7 +874,7 @@ object viewinfoFrm: TviewinfoFrm
         EditLabel.Caption = 'Last time seen online'
         LabelPosition = lpLeft
         ReadOnly = True
-        TabOrder = 4
+        TabOrder = 2
       end
       object lastmsgBox: TLabeledEdit
         Left = 121
@@ -816,17 +886,7 @@ object viewinfoFrm: TviewinfoFrm
         EditLabel.Caption = 'Last message time'
         LabelPosition = lpLeft
         ReadOnly = True
-        TabOrder = 3
-      end
-      object goBtn: TRnQButton
-        Left = 350
-        Top = 21
-        Width = 71
-        Height = 25
-        Hint = 'Open this address'
-        Caption = 'GO'
         TabOrder = 1
-        OnClick = goBtnClick
       end
       object LastChgInfoBox: TLabeledEdit
         Left = 121
@@ -838,19 +898,35 @@ object viewinfoFrm: TviewinfoFrm
         EditLabel.Caption = 'Info changed'
         LabelPosition = lpLeft
         ReadOnly = True
+        TabOrder = 10
+      end
+      object StsMsgEdit: TLabeledEdit
+        Left = 3
+        Top = 17
+        Width = 322
+        Height = 21
+        EditLabel.Width = 50
+        EditLabel.Height = 13
+        EditLabel.Caption = 'Life status'
+        TabOrder = 11
+      end
+      object RnQButton2: TRnQButton
+        Left = 331
+        Top = 17
+        Width = 90
+        Height = 25
+        Caption = 'Apply'
         TabOrder = 12
+        OnClick = RnQButton2Click
+        ImageName = 'apply'
       end
     end
     object InterSheet: TTabSheet
       Caption = '&Client'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Bevel1: TBevel
         Left = 16
-        Top = 308
+        Top = 293
         Width = 393
         Height = 2
       end
@@ -889,6 +965,15 @@ object viewinfoFrm: TviewinfoFrm
         Width = 82
         Height = 13
         Caption = 'Client capabilities'
+      end
+      object Label8: TLabel
+        Left = 32
+        Top = 307
+        Width = 51
+        Height = 13
+        Alignment = taRightJustify
+        Caption = 'IP address'
+        Transparent = True
       end
       object ipbox2: TMemo
         Left = 95
@@ -934,8 +1019,9 @@ object viewinfoFrm: TviewinfoFrm
         Left = 3
         Top = 96
         Width = 418
-        Height = 206
+        Height = 193
         ReadOnly = True
+        ScrollBars = ssVertical
         TabOrder = 4
         WordWrap = False
       end
@@ -965,20 +1051,26 @@ object viewinfoFrm: TviewinfoFrm
         ReadOnly = True
         TabOrder = 7
       end
+      object ipBox: TEdit
+        Left = 95
+        Top = 304
+        Width = 140
+        Height = 21
+        TabStop = False
+        AutoSize = False
+        TabOrder = 8
+        Text = '000.000.000.000'
+      end
     end
     object TabSheet1: TTabSheet
       Caption = '&Notes'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object notesBox: TMemo
         AlignWithMargins = True
         Left = 3
-        Top = 143
+        Top = 200
         Width = 418
-        Height = 249
+        Height = 192
         Align = alBottom
         Lines.Strings = (
           'notesBox')
@@ -989,7 +1081,7 @@ object viewinfoFrm: TviewinfoFrm
         Left = 3
         Top = 0
         Width = 418
-        Height = 106
+        Height = 153
         Caption = 'Server side'
         TabOrder = 1
         object ssNoteStrEdit: TLabeledEdit
@@ -1040,10 +1132,36 @@ object viewinfoFrm: TviewinfoFrm
           OnClick = ApplyMyTextBtnClick
           ImageName = 'apply'
         end
+        object CellularEdt3: TLabeledEdit
+          Left = 66
+          Top = 121
+          Width = 286
+          Height = 21
+          EditLabel.Width = 44
+          EditLabel.Height = 13
+          EditLabel.Caption = 'Cellular 3'
+          EditLabel.Layout = tlCenter
+          LabelPosition = lpLeft
+          LabelSpacing = 6
+          TabOrder = 4
+        end
+        object CellularEdt2: TLabeledEdit
+          Left = 66
+          Top = 96
+          Width = 286
+          Height = 21
+          EditLabel.Width = 44
+          EditLabel.Height = 13
+          EditLabel.Caption = 'Cellular 2'
+          EditLabel.Layout = tlCenter
+          LabelPosition = lpLeft
+          LabelSpacing = 6
+          TabOrder = 5
+        end
       end
       object lclNoteStrEdit: TLabeledEdit
         Left = 69
-        Top = 112
+        Top = 165
         Width = 352
         Height = 21
         EditLabel.Width = 48
@@ -1059,10 +1177,6 @@ object viewinfoFrm: TviewinfoFrm
       Caption = '&Avatar'
       ImageIndex = 4
       OnShow = avtTSShow
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         424
         395)
@@ -1205,10 +1319,6 @@ object viewinfoFrm: TviewinfoFrm
     object PrivacyTab: TTabSheet
       Caption = 'Privacy'
       ImageIndex = 6
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label4: TLabel
         Left = 35
         Top = 32

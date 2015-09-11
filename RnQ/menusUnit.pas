@@ -232,34 +232,42 @@ end;
 
 procedure InitMenuChats;
 begin
- addToMenuMass(aSendMenu, 1, 'SendMultiple', 'Multiple', '',
+  addToMenuMass(aSendMenu, 1, 'SendMultiple', 'Multiple', '',
       '', chatFrm.Sendmultiple1Click, nil);
- addToMenuMass(aSendMenu, 2, 'SendWhenVis', 'When i''m visible to him/her', '',
+  addToMenuMass(aSendMenu, 2, 'SendWhenVis', 'When i''m visible to him/her', '',
       PIC_VISIBLE_TO, chatFrm.SendWhenImVisibleToHimHer1Click, nil);
- addToMenuMass(aSendMenu, 3, 'SendAllOpen', 'To all open chats', '',
+  addToMenuMass(aSendMenu, 3, 'SendAllOpen', 'To all open chats', '',
       '', chatFrm.chatSendMenuOpen1Click, nil);
 
- addToMenuMass(aCloseMenu, 1, 'CloseAll', 'Close all', '',
+  addToMenuMass(aCloseMenu, 1, 'CloseAll', 'Close all', '',
       '', chatFrm.CloseAll1Click, nil);
- addToMenuMass(aCloseMenu, 2, 'CloseAllbutThisone', 'Close all but this one', '',
+  addToMenuMass(aCloseMenu, 2, 'CloseAllbutThisone', 'Close all but this one', '',
       '', chatFrm.Closeallbutthisone1Click, nil);
- addToMenuMass(aCloseMenu, 3, 'CloseAllOFFLINEs', 'Close all OFFLINEs', '',
+  addToMenuMass(aCloseMenu, 3, 'CloseAllOFFLINEs', 'Close all OFFLINEs', '',
       '', chatFrm.CloseallOFFLINEs1Click, nil);
- addToMenuMass(aCloseMenu, 4, 'chatcloseignore1', 'Close and Add to Ignore list', '',
+  addToMenuMass(aCloseMenu, 4, 'chatcloseignore1', 'Close and Add to Ignore list', '',
       '', chatFrm.chatcloseignore1Click, nil);
- addToMenuMass(aCloseMenu, 5, 'CloseallandAddtoIgnorelist1', 'Close all NIL and Add to Ignore list', '',
+  addToMenuMass(aCloseMenu, 5, 'CloseallandAddtoIgnorelist1', 'Close all NIL and Add to Ignore list', '',
       '', chatFrm.CloseallandAddtoIgnorelist1Click, nil);
 
  {$IFDEF USE_SECUREIM}
- addToMenuMass(aEncryptMenu, 1, 'SendInit', 'Init', '',
+  addToMenuMass(aEncryptMenu, 1, 'SendInit', 'Init', '',
       '', chatFrm.EncryptSendInit, nil);
- addToMenuMass(aEncryptMenu, 2, 'SetPWD', 'Set password', '',
+  addToMenuMass(aEncryptMenu, 2, 'SetPWD', 'Set password', '',
       '', chatFrm.EncryptSetPWD, nil);
  {$ENDIF USE_SECUREIM}
- addToMenuMass(aEncryptMenu2, 2, 'SetPWD', 'Set password', '',
+  addToMenuMass(aEncryptMenu2, 2, 'SetPWD', 'Set password', '',
       PIC_KEY, chatFrm.EncryptSetPWD, nil);
- addToMenuMass(aEncryptMenu2, 3, 'clrPWD', 'Clear password', '',
+  addToMenuMass(aEncryptMenu2, 3, 'clrPWD', 'Clear password', '',
       'clear', chatFrm.EncryptClearPWD, nil);
+
+  addToMenuMass(aFileSendMenu, 1, 'DirectSend', 'Send through protocol', '',
+      '', chatFrm.RnQFileBtnClick, nil);
+  addToMenuMass(aFileSendMenu, 2, 'UploadRGHost', 'Upload file to RGHost', '',
+      '', chatFrm.RnQFileUploadClick, nil);
+  addToMenuMass(aFileSendMenu, 3, 'UploadMikanoshi', 'Upload file to Mikanoshi', '',
+      '', chatFrm.RnQFileUploadClick, nil);
+
 end;
 
 

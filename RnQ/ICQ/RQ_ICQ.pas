@@ -507,7 +507,7 @@ begin
   ts := copy(snac, length(snac) - 3, 4);
   if ts <> z then
    begin
-    ssiList.modTime := UnixToDateTime(dword_LEat(@ts[1]));
+    ssiList.modTime := UnixToDateTime(dword_BEat(@ts[1]));
     result := True;
     CLPktNUM := 0;
    end
