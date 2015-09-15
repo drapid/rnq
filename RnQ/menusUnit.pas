@@ -270,6 +270,9 @@ begin
   addToMenuMass(aFileSendMenu, 3, 'UploadRnQ', 'Upload file to RnQ.ru', '',
       '', chatFrm.RnQFileUploadRClick, nil);
 
+ addToMenuMass(aFileSendMenu, 3, 'UploadRnQTar', 'Upload multiple files to RnQ.ru', '',
+      '', chatFrm.RnQFileUploadMClick, nil);
+
 end;
 
 

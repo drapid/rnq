@@ -1247,7 +1247,7 @@ begin
     hndl := 0;
   fn := ExtractFileName(defFile);
   if OpenSaveFileDialog(Hndl, ext, Filtr, ExtractFileDir(defFile),
-    getTranslation(cptn), fn, IsOpen) then
+    getTranslation(cptn), fn, IsOpen, MultiSelect) then
     result:=fn
   else
     result:='';
