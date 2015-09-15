@@ -12,7 +12,7 @@ interface
 
  DESCRIPTION     :  Common basic type definitions
 
- REQUIREMENTS    :  TP5-7, D1-D7/D9-D12, FPC, VP, WDOSX
+ REQUIREMENTS    :  TP5-7, D1-D7/D9-D12/D17-D22, FPC, VP, WDOSX
 
  EXTERNAL DATA   :  ---
 
@@ -34,11 +34,14 @@ interface
  0.16     21.11.08  we          __P2I: type cast pointer to integer for masking etc
  0.17     02.12.08  we          Use pchar and pAnsiChar for pchar8 if possible
  0.18     27.02.09  we          pBoolean
+ 0.19     14.02.12  we          extended = double $ifdef SIMULATE_EXT64
+ 0.20     06.05.14  we          extended = double $ifdef SIMULATE_EXT64 OR EXT64
+ 0.21     25.04.15  we          With $ifdef HAS_INTXX, HAS_PINTXX
 *************************************************************************)
 
 
 (*-------------------------------------------------------------------------
- (C) Copyright 2006-2009 Wolfgang Ehrhardt
+ (C) Copyright 2006-2015 Wolfgang Ehrhardt
 
  This software is provided 'as-is', without any express or implied warranty.
  In no event will the authors be held liable for any damages arising from
@@ -79,6 +82,8 @@ type
   pLongint    = ^Longint;
 
 {$else}
+
+  {$ifndef HAS_INTXX}
 type
   Int8   = ShortInt;                { 8 bit   signed integer}
   Int16  = SmallInt;                {16 bit   signed integer}
@@ -90,7 +95,10 @@ type
   {$else}
   UInt32 = Longint;                 {32 bit unsigned integer}
   {$endif}
+  {$endif}
+
   {$ifndef HAS_XTYPES}
+  type
   pByte     = ^Byte;
   pBoolean  = ^Boolean;
   pShortInt = ^ShortInt;
@@ -99,42 +107,31 @@ type
   pLongint  = ^Longint;
   {$endif}
   {$ifdef FPC} {$ifdef VER1_0}
+  type
   pBoolean  = ^Boolean;
   pShortInt = ^ShortInt;
   {$endif} {$endif}
 
-{$endif}
+{$endif} {BIT16}
 
 type
   Str255  = string[255];   {Handy type to avoid problems with 32 bit and/or unicode}
   Str127  = string[127];
 
 type
+{$ifndef HAS_PINTXX}
   pInt8   = ^Int8;
   pInt16  = ^Int16;
   pInt32  = ^Int32;
   pUInt8  = ^UInt8;
   pUInt16 = ^UInt16;
   pUInt32 = ^UInt32;
+{$endif}
   pStr255 = ^Str255;
   pStr127 = ^Str127;
 
 
-{$ifdef BIT32}
-  {$ifdef UNICODE}
-    type
-      BString  = AnsiString;    {String of 8 bit characters}
-      pBString = pAnsiString;
-      char8    = AnsiChar;      {8 bit characters}
-      pchar8   = pAnsiChar;
-    {$else}
-    type
-      BString  = AnsiString;    {String of 8 bit characters}
-      pBString = pAnsiString;
-      char8    = AnsiChar;      {8 bit characters}
-      pchar8   = pAnsiChar;
-  {$endif}
-{$else}
+{$ifdef BIT16}
   {$ifdef V7Plus}
     type
       BString  = string[255];   {String of 8 bit characters}
@@ -147,6 +144,20 @@ type
       pBString = ^BString;
       char8    = char;          {8 bit characters}
       pchar8   = ^char;
+  {$endif}
+{$else}
+  {$ifdef UNICODE}
+    type
+      BString  = AnsiString;    {String of 8 bit characters}
+      pBString = pAnsiString;
+      char8    = AnsiChar;      {8 bit characters}
+      pchar8   = pAnsiChar;
+    {$else}
+    type
+      BString  = AnsiString;    {String of 8 bit characters}
+      pBString = pAnsiString;
+      char8    = AnsiChar;      {8 bit characters}
+      pchar8   = pAnsiChar;
   {$endif}
 {$endif}
 
@@ -167,9 +178,20 @@ type
     type __P2I = PtrUInt;  {Type cast pointer to integer for masking etc}
   {$endif}
 {$else}
+  {$ifdef BIT64}
+    type __P2I = NativeInt;  {Type cast pointer to integer for masking etc}
+  {$else}
   type __P2I = longint;    {Type cast pointer to integer for masking etc}
+  {$endif}
 {$endif}
 
+{$ifdef EXT64}
+  type extended = double;    {Force 64-bit 'extended'}
+{$else}
+  {$ifdef SIMULATE_EXT64}
+    type extended = double;  {Debug simulation EXT64}
+  {$endif}
+{$endif}
 
 
 implementation

@@ -4,7 +4,7 @@ unit AES_Base;
 
  DESCRIPTION     :  AES basic routines
 
- REQUIREMENTS    :  TP5-7, D1-D7/D9-D10, FPC, VP
+ REQUIREMENTS    :  TP5-7, D1-D7/D9-D10/D12/D17, FPC, VP
 
  EXTERNAL DATA   :  ---
 
@@ -37,11 +37,12 @@ unit AES_Base;
  0.39     24.12.04  we          Helper types PWA4, PLong
  0.40     24.12.04  we          FastInit, AES_Get/SetFastInit
  0.41     09.07.06  we          Checked: D9-D10
+ 0.42     25.12.12  we          {$J+} if needed
 **************************************************************************)
 
 
 (*-------------------------------------------------------------------------
- (C) Copyright 2002-2006 Wolfgang Ehrhardt
+ (C) Copyright 2002-2012 Wolfgang Ehrhardt
 
  This software is provided 'as-is', without any express or implied warranty.
  In no event will the authors be held liable for any damages arising from
@@ -136,6 +137,7 @@ implementation
 {$ifdef D4Plus}
 var
 {$else}
+{$ifdef J_OPT} {$J+} {$endif}
 const
 {$endif}
   FastInit : boolean = true;    {Clear only necessary context data at init}

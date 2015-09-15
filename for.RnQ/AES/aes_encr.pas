@@ -5,7 +5,7 @@ unit AES_Encr;
 
  DESCRIPTION     :  AES encrypt functions
 
- REQUIREMENTS    :  TP5-7, D1-D7/D9-D10, FPC, VP (Undef BASM16 for 286)
+ REQUIREMENTS    :  TP5-7, D1-D7/D9-D10/D12/D17, FPC, VP
 
  EXTERNAL DATA   :  ---
 
@@ -52,11 +52,12 @@ unit AES_Encr;
  0.50     09.07.06  we          Compressed tables, code in INC files
  0.51     19.07.06  we          TCe_Diag
  0.52     21.11.08  we          Use __P2I from BTypes
+ 0.53     01.12.12  we          separate BIT64 include statements
 **************************************************************************)
 
 
 (*-------------------------------------------------------------------------
- (C) Copyright 2002-2008 Wolfgang Ehrhardt
+ (C) Copyright 2002-2012 Wolfgang Ehrhardt
 
  This software is provided 'as-is', without any express or implied warranty.
  In no event will the authors be held liable for any damages arising from
@@ -124,17 +125,14 @@ implementation
 
 uses BTypes;
 
-{$ifdef Development}
-{.$undef  basm16}
-{.$define bit32}
-{$endif}
-
-
-
 {$ifdef AES_ComprTab}
   {$i enc_cdat.inc}
-  {$ifdef BIT32}
-    {$i enc_cp32.inc}
+  {$ifndef BIT16}
+    {$ifdef BIT64}
+      {$i enc_cp16.inc}   {This version is faster for FPC260/Win7-64!!!}
+    {$else}
+      {$i enc_cp32.inc}
+    {$endif}
   {$else}
     {$ifdef BASM16}
       {$i enc_ca16.inc}
@@ -144,8 +142,12 @@ uses BTypes;
   {$endif}
 {$else}
   {$i enc_fdat.inc}
-  {$ifdef BIT32}
-    {$i enc_fp32.inc}
+  {$ifndef BIT16}
+    {$ifdef BIT64}
+      {$i enc_fp16.inc}   {This version is faster for FPC260/Win7-64!!!}
+    {$else}
+      {$i enc_fp32.inc}
+    {$endif}
   {$else}
     {$ifdef BASM16}
       {$i enc_fa16.inc}
