@@ -341,7 +341,7 @@ end;
 function UploadTarFileRnQ(const Filenames: String; pOnSendData: TDocDataEvent): String;
 var
   AvStream: TMemoryStream;
-  str: TStringList;
+  str: TStrings;
   tar: TtarStream;
   fsize: Int64;
   httpCli: TSslHttpCli;
@@ -354,7 +354,9 @@ begin
 
   tar := TtarStream.create;
 
-  str := TStringList.Create;
+  str := TStrings.Create;
+
+  str.StrictDelimiter := True;
   str.Delimiter := ';';
   str.DelimitedText := Filenames;
   try
@@ -482,7 +484,7 @@ begin
     exit;
   result:=TRUE;
   if dst = '' then
-    dst:=extractFileName(src);
+    dst := extractFileName(src);
   i:=length(flist);
   setLength(flist, i+1);
   flist[i].src:=src;
@@ -556,7 +558,7 @@ begin
   result:=FALSE;
   try
     freeAndNIL(fs);
-    fs:=TfileStream.Create(flist[cur].src, fmOpenRead+fmShareDenyWrite);
+    fs := TfileStream.Create(flist[cur].src, fmOpenRead+fmShareDenyWrite);
     result:=TRUE;
    except
     fs:=NIL;
@@ -628,7 +630,7 @@ begin
     +num(flist[cur].mtime, 12)  // mtime
     +FAKE_CHECKSUM
     +'0'+str('', 100)       // link properties
-    +'ustar  '#0+str('user',32)+str('group',32);    // not actually used
+    +'ustar  '#0+str('user',32) + str('group',32);    // not actually used
   applyChecksum(s);
   s:=str(s, 512); // pad
   block.Size:=0;

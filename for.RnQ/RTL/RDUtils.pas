@@ -8,7 +8,7 @@ unit RDUtils;
 
 interface
   uses
-    sysutils, classes, graphics, forms, types, RDGlobal;
+    Windows, sysutils, classes, graphics, forms, types, RDGlobal;
 
 function  IfThen(AValue: Boolean; const ATrue: Integer; const AFalse: Integer = 0): Integer; overload;
 function  IfThen(AValue: Boolean; const s1, s2: RawByteString): RawByteString; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
@@ -80,30 +80,33 @@ function  bool2str(const b: Boolean): RawByteString;
 // function UnWideStr(s : String) : String;
 //procedure StrSwapByteOrder(Str: PWideChar);
  {$IFDEF UNICODE} {$IF CompilerVersion >= 24}
-function RnQEndsText(const ASubText, AText: UnicodeString): Boolean;
+  function RnQEndsText(const ASubText, AText: UnicodeString): Boolean;
 {$ELSE}
-function RnQEndsText(const ASubText, AText: UnicodeString): Boolean; inline;
+  function RnQEndsText(const ASubText, AText: UnicodeString): Boolean; inline;
  {$IFEND ver} {$ENDIF UNICODE}
+
+  function TBytesToString(B: TBytes; CodePage: Integer = CP_UTF8): string;
+  function StringToTBytes(S: string; CodePage: Integer = CP_UTF8): TBytes;
 
 
 // strings
  {$IFDEF UNICODE}
-  function  findInStrings(const s: AnsiString;ss:Tstrings):Integer; overload;
+  function  findInStrings(const s: AnsiString; ss:Tstrings): Integer; overload;
  {$ENDIF UNICODE}
-  function  findInStrings(const s: AnsiString;ss:array of AnsiString):Integer; overload;
-  function  findInStrings(const s: AnsiString;ss,separator:RawByteString):Integer; overload;
-  function  findInStrings(const s: String;ss:Tstrings):Integer; overload;
+  function  findInStrings(const s: AnsiString; ss: array of AnsiString): Integer; overload;
+  function  findInStrings(const s: AnsiString; ss, separator: RawByteString): Integer; overload;
+  function  findInStrings(const s: String; ss: Tstrings): Integer; overload;
 
   function  chop(i: Integer; var s: RawByteString): RawByteString; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-  function  chop(i,l: Integer; var s: RawByteString): RawByteString; overload;
+  function  chop(i, l: Integer; var s: RawByteString): RawByteString; overload;
   function  chop(const ss: RawByteString; var s: RawByteString): RawByteString; overload;
   function  chopline(var s: RawByteString): RawByteString; overload;
 
  {$IFDEF UNICODE}
-  function chop(const ss:String; var s:UnicodeString):String; overload;
-  function chop(i,l:Integer; var s:UnicodeString): String; overload;
-  function chop(i:Integer; var s:UnicodeString): String; overload;
-  function chopline(var s:UnicodeString):String; overload;
+  function chop(const ss: String; var s: UnicodeString): String; overload;
+  function chop(i, l: Integer; var s: UnicodeString): String; overload;
+  function chop(i: Integer; var s: UnicodeString): String; overload;
+  function chopline(var s: UnicodeString): String; overload;
  {$ENDIF UNICODE}
 
  {$IFDEF UNICODE}
@@ -139,7 +142,7 @@ function RnQEndsText(const ASubText, AText: UnicodeString): Boolean; inline;
   function  hexToInt(const s: RawByteString): Cardinal;
   function  strings2str(const split: string; ss: Tstrings): string; overload;
   function  strings2str(const split: string; const ss: array of string):string; overload;
-  procedure str2strings(const split: String; src: string; var ss: Tstrings);
+  procedure str2strings(const split: String; src: string; var ss: Tstrings); deprecated;
   function  size2str(sz: Int64): String;
 
 //  function  bmp2wbmp(bmp : TBitmap) : String;
@@ -159,7 +162,7 @@ var
 
 implementation
   uses
-    Windows, StrUtils,
+    StrUtils,
   {$IFDEF UNICODE}
     Character,
   {$ENDIF UNICODE}
@@ -171,28 +174,38 @@ const
 
 
 function IfThen(AValue: Boolean; const ATrue: Integer; const AFalse: Integer = 0): Integer; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-begin if avalue then result:=atrue else result:=afalse end;
+begin
+  if avalue then
+    result:=atrue
+   else
+    result:=afalse
+end;
 
 function IfThen(AValue: Boolean; const s1, s2: RawByteString): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-begin if avalue then result:=s1 else result:=s2 end;
-
-
-function packArray(a:array of Integer; zero:Integer):TintegerDynArray;
-var
-  i,n:Integer;
 begin
-n:=0;
-setlength(result, length(a));
-for i:=0 to length(a)-1 do
-  if a[i]<>zero then
-    begin
-    result[n]:=a[i];
-    inc(n);
-    end;
-setlength(result, n);
+  if avalue then
+    result:=s1
+   else
+    result:=s2
+end;
+
+
+function packArray(a: array of Integer; zero: Integer): TintegerDynArray;
+var
+  i, n: Integer;
+begin
+  n:=0;
+  setlength(result, length(a));
+  for i:=0 to length(a)-1 do
+    if a[i]<>zero then
+      begin
+      result[n]:=a[i];
+      inc(n);
+      end;
+  SetLength(result, n);
 end; // packArray
 
-function compareInt(a,b:Integer): Smallint;
+function compareInt(a, b: Integer): Smallint;
 begin
   if a<b then
     result:=-1
@@ -203,7 +216,7 @@ begin
       result:=0
 end; // compareInt
 
-function compareInt(a,b:int64): Smallint;
+function compareInt(a, b: int64): Smallint;
 begin
   if a<b then
     result:=-1
@@ -214,7 +227,7 @@ begin
       result:=0
 end; // compareInt
 
-function CompareDate(a, b : TDateTime): Smallint;
+function CompareDate(a, b: TDateTime): Smallint;
 begin
   if a<b then
     result:=-1
@@ -225,14 +238,16 @@ begin
       result:=0
 end;
 
-function boundInt(var i:Integer; min,max:Integer):Integer;
+function boundInt(var i: Integer; min, max: Integer): Integer;
 begin
-if i > max then i:=max;
-if i < min then i:=min;
-result:=i;
+  if i > max then
+    i:=max;
+  if i < min then
+    i:=min;
+  result:=i;
 end; // boundInt
 
-function bound(i:Integer; min,max:Integer):Integer;
+function bound(i: Integer; min, max: Integer): Integer;
 begin
   if i > max then
      result:=max
@@ -243,17 +258,21 @@ begin
        result:=i;
 end; // boundInt
 
-function within(a,b,c:Integer):boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-begin result:=(b>=a) and (b<=c) end;
+function within(a, b, c: Integer): boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+begin
+  result:=(b>=a) and (b<=c)
+end;
 
-function within(pt:Tpoint; x,y,w,h:Integer):boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-begin result:=(pt.x>=x) and (pt.y>=y) and (pt.x < x+w) and (pt.y < y+h) end;
+function within(pt: Tpoint; x, y, w, h: Integer): boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+begin
+  result:=(pt.x>=x) and (pt.y>=y) and (pt.x < x+w) and (pt.y < y+h)
+end;
 
 function isURL(const s: String; ofs: Integer=1): Boolean;
 begin
  {$IFDEF UNICODE}
  while (Integer(s[ofs]) <= $7F) and
-        (((s[ofs] >= '0') and (s[ofs] <= '9')) or TCharacter.IsLetter(s[ofs])) do
+        (((s[ofs] >= '0') and (s[ofs] <= '9')) or s[ofs].IsLetter()) do
  {$ELSE nonUNICODE}
  while s[ofs] in ['0'..'9','a'..'z','A'..'Z'] do
  {$ENDIF UNICODE}
@@ -261,22 +280,22 @@ begin
 result:= copy(s,ofs,3) = '://' ;
 end; // isURL
 
-function ipos(const ss:string; const s:string):Integer;
+function ipos(const ss: string; const s: string): Integer;
 begin
-for result:=1 to length(s) do
-  if ansiCompareText(ss, copy(s,result,length(ss)))=0 then
-    exit;
-result:=0;
+  for result:=1 to length(s) do
+    if ansiCompareText(ss, copy(s,result,length(ss)))=0 then
+      exit;
+  result:=0;
 end; // ipos
 
-function capitalize(const s:string):string;
+function capitalize(const s: string): string;
 begin
  result:=s;
  if result>'' then
    result[1] := upcase(result[1]);
 end; // capitalize
 
-procedure convertAllNewlinesToCRLF(var s:string);
+procedure convertAllNewlinesToCRLF(var s: string);
 //var
 //  i: Integer;
 begin
@@ -292,19 +311,19 @@ while i>0 do
   end}
 end; // convertAllNewlinesToCRLF
 
-function separated(const sep:string; ss:array of string):string;
+function separated(const sep: string; ss: array of string): string;
 var
-  i:Integer;
+  i: Integer;
 begin
-result:='';
-for i:=0 to length(ss)-1 do
-  if ss[i] > '' then
-    result := result+ifThen(result>'', ',')+ss[i];
+  result:='';
+  for i:=0 to length(ss)-1 do
+    if ss[i] > '' then
+      result := result+ifThen(result>'', ',')+ss[i];
 end; // separated
 
-function template(const src:string; table:array of string):string;
+function template(const src: string; table: array of string): string;
 var
-  i:Integer;
+  i: Integer;
 begin
   result:=src;
   i:=0;
@@ -317,9 +336,9 @@ begin
 end; // template
 
  {$IFDEF UNICODE}
-function  template(const src: AnsiString; table:array of AnsiString): AnsiString;
+function  template(const src: AnsiString; table: array of AnsiString): AnsiString;
 var
-  i:Integer;
+  i: Integer;
 begin
   result:=src;
   i:=0;
@@ -332,9 +351,9 @@ begin
 end; // template
  {$ENDIF UNICODE}
 
-function newline2slashn(s:string):string;
+function newline2slashn(s: string): string;
 var
-  i:Integer;
+  i: Integer;
 begin
   repeat
   i:=pos(#13,s);
@@ -351,16 +370,17 @@ result:=s;
 end; // newline2slashn
 
 
-function onlyDigits(const s:string):string;
+function onlyDigits(const s: string): string;
 var
-  i : Integer;
+  i: Integer;
 begin
   i := 1;
 //  t := 1;
   Result := Copy(s, 1, length(s));
   while i <= length(Result) do
-  if s[i] in ['0'..'9'] then
-//   if TCharacter.IsDigit(Result, i) then
+//  if s[i] in ['0'..'9'] then
+  if s[i].IsDigit then
+//   if Result[i].IsDigit then
      inc(i)
     else
      delete(Result,i,1);
@@ -449,22 +469,30 @@ begin
 {$ENDIF}
 end;
 
-function dupString(const s:AnsiString):AnsiString;
-begin result:=copy(s, 1, length(s)) end;
+function dupString(const s: AnsiString): AnsiString;
+begin
+  result := copy(s, 1, length(s))
+end;
 
 {$IFDEF UNICODE}
-function dupString(const s:string):string;
-begin result:=copy(s, 1, length(s)) end;
+function dupString(const s: string): string;
+begin
+  result := copy(s, 1, length(s))
+end;
 {$ENDIF UNICODE}
 
 function trailing(const s, ss: String): Boolean;
-begin result:= ss=copy(s,length(s)-length(ss)+1,length(ss)) end;
+begin
+  result:= ss=copy(s,length(s)-length(ss)+1,length(ss))
+end;
 
 
 function bool2str(const b: Boolean): RawByteString;
-begin result := AnsiChar(b) end;
+begin
+  result := AnsiChar(b)
+end;
 
-function ABCD_ADCB(d:dword):dword; assembler;
+function ABCD_ADCB(d: dword): dword; assembler;
  asm
   mov EAX, d
   ror EAX, 16
@@ -474,7 +502,7 @@ function ABCD_ADCB(d:dword):dword; assembler;
   rol EAX, 8
 end; // ABCD_ADCB
 
-function color2str(color:Tcolor): AnsiString;
+function color2str(color: Tcolor): AnsiString;
  {$IFDEF UNICODE}
 var
   res : String;
@@ -498,7 +526,7 @@ begin
  {$ENDIF UNICODE}
 end; // color2str
 
-function str2color(const s: AnsiString):Tcolor;
+function str2color(const s: AnsiString): Tcolor;
 begin
 if length(s) = 0 then
   result:=-1
@@ -1444,7 +1472,7 @@ end;
 {$EXTERNALSYM IsEqualGUID}
 
 
-function findInStrings(const s:string;ss:Tstrings):Integer;
+function findInStrings(const s: string; ss: Tstrings): Integer;
 begin
 result:=0;
 while result < ss.count do
@@ -1456,7 +1484,7 @@ result:=-1;
 end; // findInStrings
 
  {$IFDEF UNICODE}
-function findInStrings(const s:AnsiString;ss:Tstrings):Integer;
+function findInStrings(const s: AnsiString;ss: Tstrings): Integer;
 var
   sU : UnicodeString;
 begin
@@ -1471,7 +1499,7 @@ begin
 end; // findInStrings
  {$ENDIF UNICODE}
 
-function findInStrings(const s:AnsiString;ss:array of AnsiString):Integer;
+function findInStrings(const s: AnsiString; ss: array of AnsiString): Integer;
 begin
 result:=0;
 while result < length(ss) do
@@ -1482,7 +1510,7 @@ while result < length(ss) do
 result:=-1;
 end; // findInStrings
 
-function findInStrings(const s : AnsiString; ss,separator:RawByteString):Integer;
+function findInStrings(const s: AnsiString; ss, separator: RawByteString): Integer;
 begin
 result:=0;
 while ss>'' do
@@ -1494,7 +1522,7 @@ result:=-1;
 end; // findInStrings
 
 
-function hexToInt(const s:RawByteString):Cardinal;
+function hexToInt(const s: RawByteString): Cardinal;
 var
   i,v,c: Cardinal;
 begin
@@ -1511,7 +1539,7 @@ while i > 0 do
   dec(i);
   end;
 end; // hexToInt
-function str2valor(const s:AnsiString):Int64;
+function str2valor(const s: AnsiString): Int64;
 var
   cd : Integer;
 begin
@@ -1529,7 +1557,8 @@ else
       result:=0
     end
 end; // str2valor
-function hex2Str(const s: RawByteString):RawByteString;
+
+function hex2Str(const s: RawByteString): RawByteString;
 var
   i:Integer;
 begin
@@ -1578,10 +1607,10 @@ while i < length(s) do
   end;
 end; // hexToInt
 
-function hex2StrU(const s : String) : RawByteString;
+function hex2StrU(const s: String) : RawByteString;
 var
-  i:Integer;
-  ch : AnsiChar;
+  i: Integer;
+  ch: AnsiChar;
 begin
 result:='';
 //c:=0;
@@ -1609,7 +1638,7 @@ end; // hexToInt
 function PacketToHex(Buffer: Pointer; BufLen: Word): AnsiString;
 var
 //  S: AnsiString;
-  i : Integer;
+  i: Integer;
 begin
   Result := '';
   for i := 1 to BufLen do
@@ -1622,7 +1651,7 @@ end;
 function str2hex(const s: RawByteString): AnsiString;
 var
 //  ofs,
-  i:Integer;
+  i: Integer;
 //  s2:string;
 begin
   result:='';
@@ -1634,10 +1663,10 @@ begin
 //      result:=result+' ';
     end;
 end; // Str2hex
-function str2hexU(const s:AnsiString): String;
+function str2hexU(const s: AnsiString): String;
 var
 //  ofs,
-  i:Integer;
+  i: Integer;
 //  s2:string;
 begin
   result:='';
@@ -1649,10 +1678,10 @@ begin
 //      result:=result+' ';
     end;
 end; // Str2hex
-function str2hex(const s: RawByteString; const Delim : AnsiChar) : AnsiString;
+function str2hex(const s: RawByteString; const Delim: AnsiChar): AnsiString;
 var
 //  ofs,
-  i:Integer;
+  i: Integer;
 //  s2:string;
 begin
   result:='';
@@ -1667,9 +1696,9 @@ begin
     end;
 end; // Str2hex
 
-function strings2str(const split:string; ss:Tstrings):string;
+function strings2str(const split: string; ss: Tstrings): string;
 var
-  i:Integer;
+  i: Integer;
 begin
   result:='';
   if ss = nil then
@@ -1685,7 +1714,7 @@ begin
     result:=result+ss[ss.count-1]
 end; // strings2str
 
-function strings2str(const split:string; const ss:array of string):string;
+function strings2str(const split: string; const ss: array of string): string;
 var
   i:Integer;
 begin
@@ -1696,7 +1725,7 @@ for i:=0 to length(ss)-2 do
 result:=result+ss[length(ss)-1];
 end;
 
-procedure str2strings(const split : String; src:string; var ss:Tstrings);
+procedure str2strings(const split: String; src: string; var ss: Tstrings);
 var
   i:Integer;
 begin
@@ -1710,12 +1739,12 @@ while src > '' do
   end;
 end; // strings2str
 
-function hexDump(const data:RawByteString): AnsiString;
+function hexDump(const data: RawByteString): AnsiString;
 const
   cols=16;
 var
-  ofs,i:Integer;
-  s,s2: AnsiString;
+  ofs, i: Integer;
+  s, s2: AnsiString;
 begin
  result:='';
  ofs:=0;
@@ -1970,6 +1999,30 @@ var
   d: double absolute Value;
 begin
   result := d;
+end;
+
+function TBytesToString(B: TBytes; CodePage: Integer = CP_UTF8): string;
+var
+  E: TEncoding;
+begin
+  E := TEncoding.GetEncoding(CodePage);
+  try
+    Result := E.GetString(B);
+  finally
+    E.Free;
+  end;
+end;
+
+function StringToTBytes(S: string; CodePage: Integer = CP_UTF8): TBytes;
+var
+  E: TEncoding;
+begin
+  E := TEncoding.GetEncoding(CodePage);
+  try
+    Result := E.GetBytes(S);
+  finally
+    E.Free;
+  end;
 end;
 
 { $IFNDEF UNICODE }

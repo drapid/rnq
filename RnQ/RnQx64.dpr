@@ -104,7 +104,8 @@ uses
   RnQLangFrm in '..\For.rnq\RnQLangFrm.pas' {FrmLangs},
   ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm},
   ICQ.Stickers in 'ICQ\ICQ.Stickers.pas',
-  MenuStickers in 'ICQ\MenuStickers.pas' {FStickers};
+  MenuStickers in 'ICQ\MenuStickers.pas' {FStickers},
+  RDUtils in '..\for.RnQ\RTL\RDUtils.pas';
 
 { $R RnQ.RES}
 {$R *.RES}

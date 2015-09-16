@@ -58,13 +58,14 @@ type
   TLocalFile = packed record
     LocalFileHeaderSignature: DWORD; //    4 bytes  (0x04034b50)
     CommonFileHeader: TCommonFileHeader; //
-    filename: AnsiString; //variable size
+    filename: TBytes; //variable size
     extrafield: RawByteString; //variable size
     CompressedData: RawByteString; //variable size
     pass : AnsiString;
  { TODO -oRapid D -cIncrease load speed : Add support of "preview" loading }
     DataOffset : Int64;
     DataLoaded : Boolean;
+    function UTFSupport: Boolean;
   end;
 
  {$IFDEF ZIP_AES}
@@ -128,13 +129,14 @@ type
     InternalFileAttributes: WORD; //        2 bytes
     ExternalFileAttributes: DWORD; //       4 bytes
     RelativeOffsetOfLocalHeader: DWORD; //  4 bytes
-    filename: AnsiString; //variable size
+    filename: TBytes; //variable size
     extrafield: RawByteString; //variable size
     fileComment: AnsiString; //variable size
 
  {$IFDEF ZIP_AES}
     AESInfo : TAESExtraData; // By Rapid D
  {$ENDIF ZIP_AES}
+    function UTFSupport: Boolean;
   end;
 
   TEndOfCentralDir = packed record
@@ -153,18 +155,19 @@ type
     Files: array of TLocalFile;
     CentralDirectory: array of TFileHeader;
     EndOfCentralDirectory: TEndOfCentralDir;
+    aUTF8Support: Boolean;  // By Default its True
    public
     ZipFileComment: AnsiString;
     Password : AnsiString;
 //    fCompressionLevel : Integer;
   private
-    function GetUncompressed(i: integer): RawByteString;
+    function  GetUncompressed(i: integer): RawByteString;
     procedure SetUncompressed(i: integer; const Value: RawByteString);
     procedure Uncompress2Stream(I:Integer; Stream : TStream);
-    function GetDateTime(i: integer): TDateTime;
+    function  GetDateTime(i: integer): TDateTime;
     procedure SetDateTime(i: integer; const Value: TDateTime);
-    function GetCount: integer;
-    function GetName(i: integer): string;
+    function  GetCount: integer;
+    function  GetName(i: integer): string;
     procedure SetName(i: integer; const Value: string);
   public
     property Count: integer read GetCount;
@@ -188,6 +191,7 @@ type
 //    property CompressionLevel : Integer read fCompressionLevel write fCompressionLevel;
     property DateTime[i: integer]: TDateTime read GetDateTime write SetDateTime;
     property Name[i: integer]: string read GetName write SetName;
+    property UTF8Support: Boolean read aUTF8Support default True;
   end;
 
   EZipFileCRCError = class(Exception);
@@ -217,7 +221,7 @@ implementation
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
-   RDFileUtil,
+   RDFileUtil, RDUtils,
      Math;
 
 const
@@ -321,6 +325,17 @@ begin
  Result:=c  xor $FFFFFFFF;
 end;
 }
+
+function TFileHeader.UTFSupport: Boolean;
+begin
+  result := Self.CommonFileHeader.GeneralPurposeBitFlag and (1 shl 11) > 0
+end;
+
+function TLocalFile.UTFSupport: Boolean;
+begin
+  result := Self.CommonFileHeader.GeneralPurposeBitFlag and (1 shl 11) > 0
+end;
+
 { TZipFile }
 
 procedure TZipFile.SaveToFile(const filename: string);
@@ -431,10 +446,10 @@ begin
           LocalFileHeaderSignature := signature;
           ZipFileStream.Read(CommonFileHeader, SizeOf(CommonFileHeader));
           SetLength(filename, CommonFileHeader.FilenameLength);
-          ZipFileStream.Read(PAnsiChar(filename)^,
+          ZipFileStream.Read(PByte(filename)^,
             CommonFileHeader.FilenameLength);
           SetLength(extrafield, CommonFileHeader.ExtraFieldLength);
-          ZipFileStream.Read(PAnsiChar(extrafield)^,
+          ZipFileStream.Read(PByte(extrafield)^,
             CommonFileHeader.ExtraFieldLength);
 {
           if ((CommonFileHeader.GeneralPurposeBitFlag and 8) = 8) then
@@ -1019,7 +1034,14 @@ begin
   SetLength(Files, High(Files) + 2);
   SetLength(CentralDirectory, length(Files));
   h := High(Files);
-  Files[h].filename := name;
+  if UTF8Support then
+    Files[h].CommonFileHeader.GeneralPurposeBitFlag := Files[h].CommonFileHeader.GeneralPurposeBitFlag or (1 shl 11); // UTF8 support
+
+  if UTF8Support then
+    Files[h].filename := StringToTBytes(name)
+   else
+    Files[h].filename := StringToTBytes(name, 437)
+  ;
   Files[h].extrafield := '';
   Files[h].pass := pPass;
  {$IFDEF ZIP_AES}
@@ -1056,7 +1078,7 @@ begin
 *)
       begin
         CompressionMethod := 8;
-        GeneralPurposeBitFlag := 0;
+        GeneralPurposeBitFlag := GeneralPurposeBitFlag and (not 1);
         FileDesc.CompressedSize := 0;
       end;
 //    GeneralPurposeBitFlag := GeneralPurposeBitFlag or 2; // ZL_MAXIMUM_COMPRESSION
@@ -1129,27 +1151,51 @@ end;
 
 function TZipFile.GetName(i: integer): string;
 begin
-  Result := Files[i].filename;
+  if Files[i].UTFSupport then
+    Result := TBytesToString(Files[i].filename, CP_UTF8)
+   else
+    Result := TBytesToString(Files[i].filename, 437)
+   ;
 end;
 
 procedure TZipFile.SetName(i: integer; const Value: string);
 begin
-  Files[i].filename := Value;
+//  Files[i].filename := Value;
+  if Files[i].UTFSupport then
+    Files[i].filename := StringToTBytes(Value, CP_UTF8)
+   else
+    Files[i].filename := StringToTBytes(Value, 437)
+    ;
 end;
 
-function  TZipFile.IndexOf(const s : String) : Integer;
+function  TZipFile.IndexOf(const s: String): Integer;
 var
   I: Integer;
-  s1 : AnsiString;
+//  s1 : AnsiString;
+  b1, b8: TBytes;
 begin
- Result := -1;
- s1 := ToZipName(s);
- for I := 0 to Length(Files) - 1 do
-  if AnsiSameText(Files[i].filename, s1) then
-   begin
-    Result := i;
-    Break;
-   end;
+  Result := -1;
+  b8 := StringToTBytes(ToZipName(s), CP_UTF8);
+  b1 := StringToTBytes(ToZipName(s), 437);
+// s1 := ToZipName(s);
+  for I := 0 to Length(Files) - 1 do
+//  if AnsiSameText(Files[i].filename, b) then
+  if (Files[i].UTFSupport) then
+    begin
+      if (Length(Files[i].filename) = Length(b8)) and (CompareMem(Files[i].filename, b8, Length(b8))) then
+       begin
+        Result := i;
+        Exit;
+       end;
+    end
+   else
+    begin
+      if (Length(Files[i].filename) = Length(b1)) and (CompareMem(Files[i].filename, b1, Length(b1))) then
+       begin
+        Result := i;
+        Exit;
+       end;
+    end
 
 end;
 
