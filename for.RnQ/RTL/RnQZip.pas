@@ -169,8 +169,8 @@ type
     function  GetCount: integer;
     function  GetName(i: integer): string;
     procedure SetName(i: integer; const Value: string);
+    constructor create;
   public
-    property Count: integer read GetCount;
     function  AddFile(const name: string; FAttribute: DWord = 0; const pPass: AnsiString = '';
                        const pData : RawByteString = '') : Integer;
     function  AddExtFile(const pFileName : String; const name: string = '';
@@ -178,12 +178,13 @@ type
     procedure SaveToFile(const filename: string);
     procedure SaveToStream(ZipFileStream: TStream);
     procedure LoadFromFile(const filename: string; pPreview : Boolean = false);
-    procedure LoadFromStream(const ZipFileStream: TStream; pPreview : Boolean = false);
-    function  IndexOf(const s : String) : Integer;
+    procedure LoadFromStream(const ZipFileStream: TStream; pPreview: Boolean = false);
+    function  IndexOf(const s: String) : Integer;
     Function  ExtractToStream(const fn : String; Stream : TStream) : Boolean; Overload;
     function  ExtractToStream(i : Integer; Stream : TStream) : Boolean; Overload;
     function  IsEncrypted(i : Integer)  : Boolean;
     function  CheckPassword(I:Integer; const pass : AnsiString) : Boolean;
+    property  Count: integer read GetCount;
 //    property Uncompressed[i: integer]: AnsiString read GetUncompressed;
                                                   //write SetUncompressed;
     property Data[i: integer]: RawByteString read  GetUncompressed
@@ -337,6 +338,12 @@ begin
 end;
 
 { TZipFile }
+
+constructor TZipFile.create;
+begin
+  inherited;
+  Self.aUTF8Support := True;
+end;
 
 procedure TZipFile.SaveToFile(const filename: string);
 var
