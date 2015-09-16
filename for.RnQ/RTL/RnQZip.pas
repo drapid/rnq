@@ -353,9 +353,9 @@ end;
 procedure TZipFile.SaveToStream(ZipFileStream: TStream);
 var
   i: integer;
-  dw:DWORD;
-  cfh:TCommonFileHeader;
-  additionalDescriptor:Boolean;
+  dw: DWORD;
+  cfh: TCommonFileHeader;
+  additionalDescriptor: Boolean;
 begin
     for i := 0 to High(Files) do
       with Files[i] do
@@ -974,14 +974,14 @@ begin
       if isEncr then
         begin
           CompressionMethod := 99;
-          GeneralPurposeBitFlag := 1;
+          GeneralPurposeBitFlag := GeneralPurposeBitFlag or 1;
           FileDesc.Crc32 := 0;
         end
        else
    {$ENDIF ZIP_AES}
         begin
           CompressionMethod := 8;
-          GeneralPurposeBitFlag := 0;
+          GeneralPurposeBitFlag := GeneralPurposeBitFlag and (not 1);
 //          Crc32 := ZipCrc32($FFFFFFFF, @Value[1], Length(Value)) XOR $FFFFFFFF;
           FileDesc.Crc32 := ZipCrc32($FFFFFFFF, Pointer(Value), Length(Value)) XOR $FFFFFFFF;
         end;
