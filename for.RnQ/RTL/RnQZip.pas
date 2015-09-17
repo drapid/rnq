@@ -169,8 +169,8 @@ type
     function  GetCount: integer;
     function  GetName(i: integer): string;
     procedure SetName(i: integer; const Value: string);
-    constructor create;
   public
+    constructor create;
     function  AddFile(const name: string; FAttribute: DWord = 0; const pPass: AnsiString = '';
                        const pData : RawByteString = '') : Integer;
     function  AddExtFile(const pFileName : String; const name: string = '';
@@ -1122,7 +1122,7 @@ begin
 end;
 
 function TZipFile.AddExtFile(const pFileName : String; const name: string = '';
-                    FAttribute: DWord = 0; const pPass: AnsiString = '') : Integer;
+                    FAttribute: DWord = 0; const pPass: AnsiString = ''): Integer;
 var
   buf : RawByteString;
   lFN : String;
@@ -1280,9 +1280,9 @@ begin
   result := result xor $FFFFFFFF;
 end;
 }
-Function ToZipName(const FileName:String):String;
+Function ToZipName(const FileName: String): String;
 Var
- P : Integer;
+ P: Integer;
 Begin
   Result := FileName;
   Result := StringReplace(Result,'\','/',[rfReplaceAll]);
@@ -1306,9 +1306,9 @@ Begin
 End;
 
 
-Function ToDosName(const FileName:String):String;
+Function ToDosName(const FileName: String): String;
 Var
- P : Integer;
+ P: Integer;
 Begin
   Result := FileName;
   Result := StringReplace(Result,'\','/',[rfReplaceAll]);
