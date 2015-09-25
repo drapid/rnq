@@ -25,7 +25,7 @@ implementation
    SysUtils, StrUtils,
    OverbyteIcsUtils,
    RQUtil, RnQStrings, RnQLangs, RnQBinUtils,
-   RQThemes, RDFileUtil, RDUtils, RnQGlobal, RnQPics,
+   RQThemes, RDFileUtil, RDUtils, RnQGlobal, RnQPics, RQLog,
    Protocol_ICQ, ICQConsts,
    themesLib
    ;
@@ -130,6 +130,40 @@ var
 
   end;
 
+  function choplineF(const s: String; var pos0 : Integer): String;
+  var
+    i, l: Integer;
+
+  begin
+    l := Length(s);
+    if pos0 < l then
+    for i := pos0 to l do
+      case s[i] of
+        #10:
+          begin
+            result := Copy(s, pos0, i-pos0);
+            pos0 := i+1;
+            exit;
+          end;
+        #13:
+          begin
+            if (i < length(s)) and (s[i+1]=#10) then
+              begin
+                result := Copy(s, pos0, i-pos0);
+                pos0 := i+2;
+              end
+             else
+              begin
+                result := Copy(s, pos0, i-pos0);
+                pos0 := i+1;
+              end;
+            exit;
+          end;
+        end;
+    result := s;
+    pos0 := Length(s)+1;
+  end; // chopline
+
 const
   CliCFGFN = 'clients.cfg';
 var
@@ -139,10 +173,13 @@ var
   Size: Integer;
   Encoding: TEncoding;
   lPath, fn: String;
-  lDef: RawByteString;
+//  lDef: RawByteString;
+  lCfg: String;
+  lCfgL, lPos : Integer;
   line: String;
   v, k: String;
 begin
+  loggaEvtS('ICQClients: loading');
   Changed := ClientsDefLoaded;
   ClientsDefLoaded := False;
   SetLength(CliDefs, 0);
@@ -166,9 +203,9 @@ begin
     sA := loadFile(sp, CliCFGFN);
     Encoding := NIL;
     Size := TEncoding.GetBufferEncoding(tbytes(PAnsiChar(sA)), Encoding);
-    lDef := Encoding.GetString(tbytes(PAnsiChar(sA)), Size, Length(sA) - Size);
+    lCfg := Encoding.GetString(tbytes(PAnsiChar(sA)), Size, Length(sA) - Size);
 
-    if lDef > '' then
+    if lCfg > '' then
       begin
        CLientsDefLoaded := True;
       end
@@ -179,9 +216,12 @@ begin
         Exit;
       end;
 
-    while lDef>'' do
+    lPos := 1;
+    lCfgL := Length(lCfg);
+
+    while lPos < lCfgL do
      begin
-       line := trim(chopline(lDef));
+       line := trim(choplineF(lCfg, lPos));
        if (line='')or(line[1]=';') then
          continue;
        if (line[1]='[') and (line[length(line)]=']') then
@@ -247,13 +287,16 @@ begin
 
       ;
      end;
+    loggaEvtS('ICQClients: pics loading');
     theme.loadThemeScript('clients.pics.ini', sp);
+    loggaEvtS('ICQClients: pics loaded');
    finally
     if (sp.pathType=pt_zip) and Assigned(sp.zp) then
       FreeAndNil(sp.zp);
   end;
-  lDef := '';
+  lCfg := '';
   updateClients(NIL);
+  loggaEvtS('ICQClients: loaded');
 end;
 
 procedure getClientPicAndDescExt(cnt: TICQContact; var pPic: TPicName; var CliDesc: String);

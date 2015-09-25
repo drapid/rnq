@@ -1900,23 +1900,27 @@ result:=chop(0,0,s);
 end; // chopline
 
  {$IFDEF UNICODE}
-function chop(i,l:Integer; var s:String): String;
+function chop(i, l: Integer; var s:String): String;
 begin
-if i=0 then
-  begin
-  result:=s;
-  s:='';
-  exit;
-  end;
-result:=copy(s,1,i-1);
-delete(s,1,i-1+l);
+  if i=0 then
+    begin
+      result:=s;
+      s:='';
+      exit;
+    end;
+  result:=copy(s,1,i-1);
+  delete(s,1,i-1+l);
 end; // chop
 
 function chop(i: Integer; var s: String): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-begin result := chop(i,1,s) end;
+begin
+  result := chop(i,1,s)
+end;
 
 function chop(const ss: String; var s: String): String;
-begin result := chop(pos(ss,s),length(ss),s) end;
+begin
+  result := chop(pos(ss,s),length(ss),s)
+end;
 
 
 function chopline(var s: String): String;
@@ -1927,14 +1931,16 @@ for i:=1 to length(s) do
   case s[i] of
     #10:
       begin
-      result:=chop(i,s);
-      exit;
+        result:=chop(i,s);
+        exit;
       end;
     #13:
       begin
-      if (i < length(s)) and (s[i+1]=#10) then result:=chop(i,2,s)
-      else result:= chop(i,s);
-      exit;
+        if (i < length(s)) and (s[i+1]=#10) then
+          result := chop(i,2,s)
+         else
+          result := chop(i,s);
+        exit;
       end;
     end;
 result:=chop(0,0,s);
