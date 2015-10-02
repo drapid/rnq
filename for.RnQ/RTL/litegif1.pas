@@ -1499,11 +1499,11 @@ begin
 
 // store the pixel index into PixelList
 
-{$IFDEF DELPHI_12_UP}
+{$IFDEF DELPHI12_UP}
             p := rID^.rPixelList + j;
-{$ELSE ~DELPHI_12_UP}
+{$ELSE ~DELPHI12_UP}
             p := PByte(LongInt(rID^.rPixelList) + j);
-{$ENDIF ~DELPHI_12_UP}
+{$ENDIF ~DELPHI12_UP}
             p^ := byte(i);
           end;
 

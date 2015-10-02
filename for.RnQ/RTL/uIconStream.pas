@@ -4,11 +4,19 @@ unit uIconStream;
 
 interface
 
-uses Windows, Classes, Types, Graphics, SysUtils, Dialogs, UITypes;
+uses
+   {$IFDEF FPC}
+     JwaWinGDI,
+   {$ENDIF}
+   Windows, Classes, Types, Graphics, SysUtils,
+  {$IFNDEF FPC}
+   UITypes,
+  {$ENDIF}
+   Dialogs;
 
 type
   PColor32 = ^TColor32;
-{
+ {$IFDEF FPC}
   TColor32 = packed record
    case boolean of
     True:
@@ -18,8 +26,9 @@ type
       (color : Cardinal);
 //   end;
   end;
-}
+ {$ELSE ~FPC}
   TColor32 = TAlphaColorRec;
+ {$ENDIF}
   PColor32Array = ^TColor32Array;
   TColor32Array = array [0..MaxInt div SizeOf(TColor32) - 1] of TColor32;
 
@@ -381,7 +390,14 @@ var
   pXOR, pAND: Pointer;
 
   HasPalette: Boolean;
-
+ {$IFDEF FPC}
+  function BytesPerScanline(PixelsPerScanline, BitsPerPixel, Alignment: Longint): Longint;
+  begin
+    Dec(Alignment);
+    Result := ((PixelsPerScanline * BitsPerPixel) + Alignment) and not Alignment;
+    Result := Result div 8;
+  end;
+ {$ENDIF}
 
   function GetScanLine(Row: Integer): Pointer;
   begin
@@ -440,7 +456,11 @@ var
 
     procedure Draw32Native;
   var
+    {$IFDEF FPC}
+      blend: JwaWinGDI.BLENDFUNCTION;
+    {$ELSE ~FPC}
     blend: BLENDFUNCTION;
+    {$ENDIF}
     hDC, hdcColor, hOldC: Integer;
     colorBitmap: HBITMAP;
     pcolorBits: pointer;
@@ -468,7 +488,12 @@ var
 
     //StretchDIBits(DC,DX,DY,Width,Height,0, 0, Width, Height,pAND, PBitmapInfo(@iAND)^, DIB_RGB_COLORS,SRCAND);
 
-    Windows.AlphaBlend(DC,DX,DY,Width,Height, hdcColor,0,0,Width, Height, blend);
+  {$IFDEF FPC}
+    JwaWinGDI.
+  {$ELSE ~FPC}
+    Windows.
+  {$ENDIF}
+    AlphaBlend(DC,DX,DY,Width,Height, hdcColor,0,0,Width, Height, blend);
 
     SelectObject(hdcColor, hOldC);
     DeleteObject(hdcColor);

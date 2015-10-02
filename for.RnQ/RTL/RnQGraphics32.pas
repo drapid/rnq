@@ -21,6 +21,13 @@ uses
   RDGlobal
   ;
 
+
+{$IFDEF FPC}
+const
+  //gdi32 = 'gdi32.dll';
+  msimg32 = 'msimg32.dll';
+{$ENDIF FPC}
+
 type
   TGradientDirection = (gdVertical, gdHorizontal);
 type
@@ -262,6 +269,56 @@ type
   PColor24Array = ^TColor24Array;
   TColor24Array = array[0..MaxInt div SizeOf(TColor24) - 1] of TColor24;
 }
+{$IFDEF FPC}
+type
+  PAlphaColor = ^TAlphaColor;
+  TAlphaColor = UInt32;
+
+  {$EXTERNALSYM OLE_HANDLE}
+  OLE_HANDLE = Longint;
+  {$EXTERNALSYM OLE_XPOS_HIMETRIC}
+  OLE_XPOS_HIMETRIC  = Longint;
+  {$EXTERNALSYM OLE_YPOS_HIMETRIC}
+  OLE_YPOS_HIMETRIC  = Longint;
+  {$EXTERNALSYM OLE_XSIZE_HIMETRIC}
+  OLE_XSIZE_HIMETRIC = Longint;
+  {$EXTERNALSYM OLE_YSIZE_HIMETRIC}
+  OLE_YSIZE_HIMETRIC = Longint;
+
+  {$EXTERNALSYM IPicture}
+  {$HPPEMIT 'DECLARE_DINTERFACE_TYPE(IPicture)' }
+  IPicture = interface
+    ['{7BF80980-BF32-101A-8BBB-00AA00300CAB}']
+    function get_Handle(out handle: OLE_HANDLE): HResult;  stdcall;
+    function get_hPal(out handle: OLE_HANDLE): HResult; stdcall;
+    function get_Type(out typ: Smallint): HResult; stdcall;
+    function get_Width(out width: OLE_XSIZE_HIMETRIC): HResult; stdcall;
+    function get_Height(out height: OLE_YSIZE_HIMETRIC): HResult; stdcall;
+    function Render(dc: HDC; x, y, cx, cy: Longint;
+      xSrc: OLE_XPOS_HIMETRIC; ySrc: OLE_YPOS_HIMETRIC;
+      cxSrc: OLE_XSIZE_HIMETRIC; cySrc: OLE_YSIZE_HIMETRIC;
+      const rcWBounds: TRect): HResult; stdcall;
+    function set_hPal(hpal: OLE_HANDLE): HResult; stdcall;
+    function get_CurDC(out dcOut: HDC): HResult; stdcall;
+    function SelectPicture(dcIn: HDC; out hdcOut: HDC;
+      out bmpOut: OLE_HANDLE): HResult; stdcall;
+    function get_KeepOriginalFormat(out fkeep: BOOL): HResult; stdcall;
+    function put_KeepOriginalFormat(fkeep: BOOL): HResult; stdcall;
+    function PictureChanged: HResult; stdcall;
+    function SaveAsFile(const stream: IStream; fSaveMemCopy: BOOL;
+      out cbSize: Longint): HResult; stdcall;
+    function get_Attributes(out dwAttr: Longint): HResult; stdcall;
+  end;
+
+  function AlphaBlend(hdcDest: HDC; xoriginDest, yoriginDest, wDest, hDest: Integer;
+                      hdcSrc: HDC; xoriginSrc, yoriginSrc, wSrc, hSrc: Integer; p11: TBlendFunction): BOOL; stdcall;
+                external msimg32 name 'AlphaBlend';
+  {$EXTERNALSYM AlphaBlend}
+
+  //function AlphaBlend; external msimg32 name 'AlphaBlend' delayed;
+
+{$ENDIF FPC}
+
 const
   JPEG_HDRS: array [0 .. 5] of AnsiString = (
     #$FF#$D8#$FF#$E0,
@@ -390,8 +447,10 @@ constructor TRnQBitmap.Create(hi: HICON);
 begin
   Create;
   fHI := CopyIcon(hi);
-  fWidth  := icon_size;
-  fHeight := icon_size;
+//  fWidth  := icon_size;
+//  fHeight := icon_size;
+  fWidth  := GetSystemMetrics(SM_CXICON);
+  fHeight := GetSystemMetrics(SM_CYICON);
 end;
 
 constructor TRnQBitmap.Create(fn: String);
@@ -567,6 +626,12 @@ begin
  pstm := NIL;
 end;}
 
+{ $IFNDEF FPC}
+
+{$IFDEF FPC}
+function OleLoadPicture(stream: IStream; lSize: Longint; fRunmode: BOOL;
+    const iid: TGUID; var vObject): HResult; stdcall external 'olepro32.dll' name 'OleLoadPicture';
+{$ENDIF}
 procedure LoadPictureStream(str : TStream; var gpPicture : IPicture);
 var
  stra : TStreamAdapter;
@@ -587,6 +652,7 @@ begin
   //   pstm := NIL;
 //     stra.Free;
 //     Exit;
+     gpPicture := NIL;
    end;
   // GlobalFree(Global);
   // pstm := NIL;
@@ -596,6 +662,7 @@ begin
  end;
 end;
 
+{ $ENDIF ~FPC}
 
 function  loadPic2(const fn : string; var bmp : TRnQBitmap):boolean;
 begin
@@ -1055,6 +1122,56 @@ begin
           bmp.f32Alpha := False;
           bmp.fFormat := ff;
 
+          if png.Animated then
+            begin
+             if Assigned(bmp.fBmp) then
+                FreeAndNil(bmp.fBmp);
+
+             bmp.fBmp := png.AniPNG.getFullBitmap;
+{
+              if (png.TransparencyMode =ptmPartial)
+                 or (png.Header.ColorType = COLOR_PALETTE)
+               then
+                begin
+                 bmp.f32Alpha := True;
+//                 Premultiply(bmp.fBmp);
+                end;
+
+              bmp.fTransparentColor := ColorToRGB(bmp.fBmp.TransparentColor);
+}
+              bmp.f32Alpha := True;
+//              Premultiply(bmp.fBmp);
+
+              bmp.fWidth := png.Width;
+              bmp.fHeight := png.Height;
+
+             if not Assigned(bmp.fFrames) then
+               bmp.fFrames := TAniFrameList.Create;
+//             bmp.fAnimated := True;
+             bmp.FNumFrames := png.AniPNG.FNumFrames;
+             bmp.FNumIterations := png.AniPNG.FNumIterations;
+             bmp.FAnimated := bmp.FNumFrames > 1;
+             for I := 0 to png.AniPNG.FNumFrames-1 do
+              begin
+                Frame := TAniFrame.Create;
+                try
+                  Frame.frDisposalMethod := TAniDisposalType(png.AniPNG.Frames.Item[i].DisposeOp);
+                  Frame.frLeft := png.AniPNG.Frames.Item[i].XOffset;
+                  Frame.frTop := png.AniPNG.Frames.Item[i].YOffset;
+                  Frame.frWidth := png.AniPNG.Frames.Item[i].SelfWidth;
+                  Frame.frHeight := png.AniPNG.Frames.Item[i].SelfHeight;
+        //          Frame.frDelay := IntMax(30, AGif.ImageDelay[I] * 10);
+                  Frame.frDelay := IntMax(100, png.AniPNG.Frames.Item[i].DelayMS);
+                 except
+                  Frame.Free;
+                  Raise;
+                end;
+                bmp.fFrames.Add(Frame);
+              end;
+             if bmp.fAnimated then
+              bmp.WasDisposal := dtToBackground;
+            end
+           else
              begin
               if not Assigned(bmp.fBmp) then
                bmp.fBmp :=TBitmap.Create;
@@ -1135,8 +1252,14 @@ begin
               bmp.Clear;
             bmp.f32Alpha := False;
             bmp.fFormat := ff;
+{
             bmp.fWidth := icon_size;
             bmp.fHeight := icon_size;
+}
+
+            bmp.fWidth  := GetSystemMetrics(SM_CXICON);
+            bmp.fHeight := GetSystemMetrics(SM_CYICON);
+
 //            bmp.fWidth := icn.Width;
 //            bmp.fHeight := icn.Height;
 //            bmp.fHI := icn.ReleaseHandle;
@@ -1277,6 +1400,220 @@ begin
   end;
 end;
 }
+
+{$ifdef CopyPaletteMissing}
+// -----------
+// CopyPalette
+// -----------
+// Copies a HPALETTE.
+//
+// Copied from D3 graphics.pas. This is declared private in some old versions
+// of Delphi 2 and is missing in Lazarus Component Library (LCL), so we have
+// to implement it here to support those versions.
+//
+// Parameters:
+// Palette	The palette to copy.
+//
+// Returns:
+// The handle to a new palette.
+//
+function CopyPalette(Palette: HPALETTE): HPALETTE;
+var
+  PaletteSize: Integer;
+  LogPal: TMaxLogPalette;
+begin
+  Result := 0;
+  if Palette = 0 then Exit;
+  PaletteSize := 0;
+  if GetObject(Palette, SizeOf(PaletteSize), @PaletteSize) = 0 then Exit;
+  if PaletteSize = 0 then Exit;
+  with LogPal do
+  begin
+    palVersion := $0300;
+    palNumEntries := PaletteSize;
+    GetPaletteEntries(Palette, 0, PaletteSize, palPalEntry);
+  end;
+  Result := CreatePalette(PLogPalette(@LogPal)^);
+end;
+{$endif}
+{$ifdef TransparentStretchBltMissing}
+(*
+**  GDI Error handling
+**  Adapted from graphics.pas
+*)
+{$IFOPT R+}
+  {$DEFINE R_PLUS}
+  {$RANGECHECKS OFF}
+{$ENDIF}
+{$ifdef D3_BCB3}
+function GDICheck(Value: Integer): Integer;
+{$else}
+function GDICheck(Value: Cardinal): Cardinal;
+{$endif}
+var
+  ErrorCode		: integer;
+// 2008.10.19 ->
+{$IFDEF VER20_PLUS}
+  Buf			: array [byte] of WideChar;
+{$ELSE}
+  Buf			: array [byte] of AnsiChar;
+{$ENDIF}
+// 2008.10.19 <-
+
+  function ReturnAddr: Pointer;
+  // From classes.pas
+  asm
+    MOV		EAX,[EBP+4] // sysutils.pas says [EBP-4], but this works !
+  end;
+
+begin
+  if (Value = 0) then
+  begin
+    ErrorCode := GetLastError;
+    if (ErrorCode <> 0) and (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, nil,
+      ErrorCode, LOCALE_USER_DEFAULT, Buf, sizeof(Buf), nil) <> 0) then
+      raise EOutOfResources.Create(Buf) at ReturnAddr
+    else
+     raise EOutOfResources.Create('Out of resources') at ReturnAddr;
+      //raise EOutOfResources.Create(SOutOfResources) at ReturnAddr;
+  end;
+  Result := Value;
+end;
+{$IFDEF R_PLUS}
+  {$RANGECHECKS ON}
+  {$UNDEF R_PLUS}
+{$ENDIF}
+
+var
+  // From Delphi 3 graphics.pas
+  SystemPalette16: HPalette; // 16 color palette that maps to the system palette
+
+// Copied from D3 graphics.pas
+// Fixed by Brian Lowe of Acro Technology Inc. 30Jan98
+function TransparentStretchBlt(DstDC: HDC; DstX, DstY, DstW, DstH: Integer;
+  SrcDC: HDC; SrcX, SrcY, SrcW, SrcH: Integer; MaskDC: HDC; MaskX,
+  MaskY: Integer): Boolean;
+const
+  ROP_DstCopy		= $00AA0029;
+var
+  MemDC			,
+  OrMaskDC		: HDC;
+  MemBmp		,
+  OrMaskBmp		: HBITMAP;
+  Save			,
+  OrMaskSave		: THandle;
+  crText, crBack	: TColorRef;
+  SavePal		: HPALETTE;
+
+begin
+  Result := True;
+  if (Win32Platform = VER_PLATFORM_WIN32_NT) and (SrcW = DstW) and (SrcH = DstH) then
+  begin
+    MemBmp := GDICheck(CreateCompatibleBitmap(SrcDC, 1, 1));
+    MemBmp := SelectObject(MaskDC, MemBmp);
+    try
+      MaskBlt(DstDC, DstX, DstY, DstW, DstH, SrcDC, SrcX, SrcY, MemBmp, MaskX,
+        //MaskY, MakeRop4(ROP_DstCopy, SrcCopy));
+        MaskY, SrcCopy);
+    finally
+      MemBmp := SelectObject(MaskDC, MemBmp);
+      DeleteObject(MemBmp);
+    end;
+    Exit;
+  end;
+
+  SavePal := 0;
+  MemDC := GDICheck(CreateCompatibleDC(DstDC));
+  try
+    { Color bitmap for combining OR mask with source bitmap }
+    MemBmp := GDICheck(CreateCompatibleBitmap(DstDC, SrcW, SrcH));
+    try
+      Save := SelectObject(MemDC, MemBmp);
+      try
+        { This bitmap needs the size of the source but DC of the dest }
+        OrMaskDC := GDICheck(CreateCompatibleDC(DstDC));
+        try
+          { Need a monochrome bitmap for OR mask!! }
+          OrMaskBmp := GDICheck(CreateBitmap(SrcW, SrcH, 1, 1, nil));
+          try
+            OrMaskSave := SelectObject(OrMaskDC, OrMaskBmp);
+            try
+
+              // OrMask := 1
+              // Original: BitBlt(OrMaskDC, SrcX, SrcY, SrcW, SrcH, OrMaskDC, SrcX, SrcY, WHITENESS);
+              // Replacement, but not needed: PatBlt(OrMaskDC, SrcX, SrcY, SrcW, SrcH, WHITENESS);
+              // OrMask := OrMask XOR Mask
+              // Not needed: BitBlt(OrMaskDC, SrcX, SrcY, SrcW, SrcH, MaskDC, SrcX, SrcY, SrcInvert);
+              // OrMask := NOT Mask
+              BitBlt(OrMaskDC, SrcX, SrcY, SrcW, SrcH, MaskDC, SrcX, SrcY, NotSrcCopy);
+
+              // Retrieve source palette (with dummy select)
+              SavePal := SelectPalette(SrcDC, SystemPalette16, False);
+              // Restore source palette
+              SelectPalette(SrcDC, SavePal, False);
+              // Select source palette into memory buffer
+              if SavePal <> 0 then
+                SavePal := SelectPalette(MemDC, SavePal, True)
+              else
+                SavePal := SelectPalette(MemDC, SystemPalette16, True);
+              RealizePalette(MemDC);
+
+              // Mem := OrMask
+              BitBlt(MemDC, SrcX, SrcY, SrcW, SrcH, OrMaskDC, SrcX, SrcY, SrcCopy);
+              // Mem := Mem AND Src
+{$IFNDEF GIF_TESTMASK} // Define GIF_TESTMASK if you want to know what it does...
+              BitBlt(MemDC, SrcX, SrcY, SrcW, SrcH, SrcDC, SrcX, SrcY, SrcAnd);
+{$ELSE}
+              StretchBlt(DstDC, DstX, DstY, DstW DIV 2, DstH, MemDC, SrcX, SrcY, SrcW, SrcH, SrcCopy);
+              StretchBlt(DstDC, DstX+DstW DIV 2, DstY, DstW DIV 2, DstH, SrcDC, SrcX, SrcY, SrcW, SrcH, SrcCopy);
+              exit;
+{$ENDIF}
+            finally
+              if (OrMaskSave <> 0) then
+                SelectObject(OrMaskDC, OrMaskSave);
+            end;
+          finally
+            DeleteObject(OrMaskBmp);
+          end;
+        finally
+          DeleteDC(OrMaskDC);
+        end;
+
+        crText := SetTextColor(DstDC, $00000000);
+        crBack := SetBkColor(DstDC, $00FFFFFF);
+
+        { All color rendering is done at 1X (no stretching),
+          then final 2 masks are stretched to dest DC }
+        // Neat trick!
+        // Dst := Dst AND Mask
+        StretchBlt(DstDC, DstX, DstY, DstW, DstH, MaskDC, SrcX, SrcY, SrcW, SrcH, SrcAnd);
+        // Dst := Dst OR Mem
+        StretchBlt(DstDC, DstX, DstY, DstW, DstH, MemDC, SrcX, SrcY, SrcW, SrcH, SrcPaint);
+
+        SetTextColor(DstDC, crText);
+        SetTextColor(DstDC, crBack);
+
+      finally
+        if (Save <> 0) then
+          SelectObject(MemDC, Save);
+      end;
+    finally
+      DeleteObject(MemBmp);
+    end;
+  finally
+    if (SavePal <> 0) then
+      SelectPalette(MemDC, SavePal, False);
+    DeleteDC(MemDC);
+  end;
+end;
+{$endif}
+
+{$IFDEF FPC}
+function TransparentBlt(hdcSrc: HDC; nXOriginSrc, nYOriginSrc, nWidthSrc,
+  nHeightSrc: Integer; hdcDest: HDC; nXOriginDest, nYOriginDest, nWidthDest,
+  nHeightDest: Integer; crTransparent: LongWord): BOOL; stdcall; external msimg32 name 'TransparentBlt';
+{$ENDIF}
+
 procedure TRnQBitmap.MaskDraw(DC : HDC; const DestBnd, SrcBnd: TGPRect);
 {Draw parts of this bitmap on ACanvas}
 var
@@ -1640,7 +1977,12 @@ begin
          begin
           hBMP := fBmp.Canvas.Handle;
 //       fBmp.Canvas.Lock;
-          Windows.AlphaBlend(DC, DestBnd.X, DestBnd.Y, DestBnd.Width, DestBnd.Height,
+        {$IFDEF FPC}
+          //JwaWinGDI.
+        {$ELSE ~FPC}
+          Windows.
+        {$ENDIF ~FPC}
+          AlphaBlend(DC, DestBnd.X, DestBnd.Y, DestBnd.Width, DestBnd.Height,
             HBMP, SrcBnd.X, SrcBnd.Y, SrcBnd.Width, SrcBnd.Height, blend);
          end;
 //       fBmp.Canvas.Unlock;
@@ -1778,8 +2120,14 @@ begin
        blend.BlendFlags          := 0;
        blend.SourceConstantAlpha := $FF;
        //StretchDIBits(DC,DX,DY,Width,Height,0, 0, Width, Height,pAND, PBitmapInfo(@iAND)^, DIB_RGB_COLORS,SRCAND);
-       Windows.AlphaBlend(DC, DX, DY, fWidth, fHeight, MyDC,
-                              LeftTop.X, LeftTop.Y, fWidth, fHeight, blend);
+       {$IFDEF FPC}
+         //JwaWinGDI.
+       {$ELSE ~FPC}
+         Windows.
+       {$ENDIF ~FPC}
+//         if not
+           AlphaBlend(DC, DX, DY, fWidth, fHeight, MyDC,
+                              LeftTop.X, LeftTop.Y, fWidth, fHeight, blend)
       end
      else
      if fBmp.Transparent then
@@ -2089,7 +2437,12 @@ begin
 //         blend.SourceConstantAlpha := 100
 //        else
        blend.SourceConstantAlpha := $FF;
-    Windows.AlphaBlend(Result.fBmp.Canvas.Handle, 0, 0, width, height,
+       {$IFDEF FPC}
+         //JwaWinGDI.
+       {$ELSE ~FPC}
+         Windows.
+       {$ENDIF ~FPC}
+           AlphaBlend(Result.fBmp.Canvas.Handle, 0, 0, width, height,
                        fBmp.Canvas.Handle, LeftTop.X, LeftTop.y, width, height, blend);
 {    BitBlt(Result.fBmp.Canvas.Handle, 0, 0, width, height,
            fBmp.Canvas.Handle, LeftTop.X, LeftTop.y, SRCCOPY);
@@ -2115,7 +2468,11 @@ begin
 //  FMaskedBitmap := TBitmap.Create;
 //  FMaskedBitmap.Assign(Strip);
 
+   {$IFDEF FPC}
+     SRect := Rect(LeftTop.x, LeftTop.y, LeftTop.X+Width, LeftTop.Y+Height); {current frame location in Strip bitmap}
+   {$ELSE ~FPC}
      SRect := Rect(LeftTop, Point(LeftTop.X+Width, LeftTop.Y+Height)); {current frame location in Strip bitmap}
+   {$ENDIF ~FPC}
 {
      Result.fBmp.Assign(fBmp);
      Result.fBmp.Canvas.CopyRect(Rect(0, 0, Width, Height), Result.fBmp.Canvas, SRect);
@@ -3106,7 +3463,12 @@ begin
 }
 //          GdiFlush;
 //          if not
-           Windows.AlphaBlend(DC, ARect.Left, ARect.Top, ARect.Right-ARect.Left, ARect.Bottom - ARect.Top,
+          {$IFDEF FPC}
+            //JwaWinGDI.
+          {$ELSE ~FPC}
+            Windows.
+          {$ENDIF ~FPC}
+              AlphaBlend(DC, ARect.Left, ARect.Top, ARect.Right-ARect.Left, ARect.Bottom - ARect.Top,
                               tempDC, 0, 0, udtVertex[1].x, udtVertex[1].y, blend)
 {           then
             loggaEvt('Coudn''t draw AlphaBlend :(', 'draw');
@@ -3275,7 +3637,12 @@ begin
 }
 //          GdiFlush;
 //          if not
-           Windows.AlphaBlend(DC, x, y, res.cx, res.cy,
+        {$IFDEF FPC}
+          //JwaWinGDI.
+        {$ELSE ~FPC}
+          Windows.
+        {$ENDIF ~FPC}
+           AlphaBlend(DC, x, y, res.cx, res.cy,
                               tempDC, 0, 0, res.cx, res.cy, blend)
 {           then
             loggaEvt('Coudn''t draw AlphaBlend :(', 'draw');
@@ -3653,7 +4020,7 @@ end;
 
 function bmp2ico2(bitmap:Tbitmap):Ticon;
 var
-//  iconX, iconY : integer;
+  iconX, iconY : integer;
   IconInfo: TIconInfo;
   IconBitmap, MaskBitmap: TBitmap;
 //  dx,dy,
@@ -3666,9 +4033,15 @@ if bitmap=NIL then
   exit;
   end;
 
- IconBitmap:= createBitmap(icon_size, icon_size);
+// iconX := icon_size;
+// iconY := icon_size;
+
+ iconX := GetSystemMetrics(SM_CXICON);
+ iconY := GetSystemMetrics(SM_CYICON);
+
+ IconBitmap:= createBitmap(iconX, iconY);
  IconBitmap.PixelFormat := bitmap.PixelFormat;
- StretchBlt(IconBitmap.Canvas.Handle, 0, 0, icon_size, icon_size,
+ StretchBlt(IconBitmap.Canvas.Handle, 0, 0, iconX, iconY,
             bitmap.Canvas.Handle, 0, 0, bitmap.Width, bitmap.Height, SRCCOPY);
 // iconX := GetSystemMetrics(SM_CXICON);
 //iconY := GetSystemMetrics(SM_CYICON);
@@ -3698,8 +4071,8 @@ MaskBitmap:= TBitmap.Create;
 MaskBitmap.Assign(IconBitmap);
 Bitmap.transparent:=TRUE;
 with IconBitmap.Canvas do
-  for y:= 0 to icon_size - 1 do
-    for x:= 0 to icon_size - 1 do
+  for y:= 0 to iconY - 1 do
+    for x:= 0 to iconX - 1 do
       if Pixels[x, y]=tc then
         Pixels[x, y]:=clBlack;
 IconInfo.fIcon:= True;
@@ -3715,9 +4088,16 @@ function bmp2ico3(bitmap:Tbitmap):Ticon;
 var
   il : THandle;
   hi : HICON;
+  iconX, iconY : integer;
 begin
   Result := TIcon.Create;
-  il := ImageList_Create(icon_size, icon_size, ILC_COLOR32 or ILC_MASK, 0, 0);
+// iconX := icon_size;
+// iconY := icon_size;
+
+ iconX := GetSystemMetrics(SM_CXICON);
+ iconY := GetSystemMetrics(SM_CYICON);
+
+  il := ImageList_Create(iconX, iconY, ILC_COLOR32 or ILC_MASK, 0, 0);
   ImageList_Add(il, bitmap.Handle, bitmap.MaskHandle);
   hi := ImageList_ExtractIcon(0, il, 0);
   Result.Handle := hi;
@@ -3762,11 +4142,19 @@ var
   i : Integer;
 //  mask : TBitmap;
 //  hi : HICON;
+  iconX, iconY : integer;
 begin
 //  Result := TIcon.Create;
 //  bitmap.PixelFormat := pf32bit;
 //  il := ImageList_Create(icon_size, icon_size, ILC_COLOR32 or ILC_MASK, 0, 0);
-  il := ImageList_Create(Min(bitmap.Width, icon_size), Min(bitmap.Height, icon_size), ILC_COLOR32 or ILC_MASK, 0, 0);
+
+// iconX := icon_size;
+// iconY := icon_size;
+
+ iconX := GetSystemMetrics(SM_CXICON);
+ iconY := GetSystemMetrics(SM_CYICON);
+
+  il := ImageList_Create(Min(bitmap.Width, iconX), Min(bitmap.Height, iconY), ILC_COLOR32 or ILC_MASK, 0, 0);
 {  if ((Win32MajorVersion > 5)or((Win32MajorVersion = 5)and(Win32MinorVersion >= 1))) then
     i := ILC_HIGHQUALITYSCALE or ILC_COLOR32 or ILC_MASK
    else
@@ -3872,8 +4260,10 @@ begin
   ImageList_Destroy(ilh);}
 //  il.AddIcon(ico);
 //  il.GetBitmap(0, bmp);
-  bmp.Width := icon_size; //ico.Width;
-  bmp.Height :=icon_size;
+//  bmp.Width := icon_size; //ico.Width;
+//  bmp.Height :=icon_size;
+  bmp.Width  := GetSystemMetrics(SM_CXICON);
+  bmp.Height := GetSystemMetrics(SM_CYICON);
   bmp.PixelFormat := pf24bit;
   bmp.Canvas.Brush.Color:= $010100;
   bmp.Canvas.FillRect(bmp.Canvas.ClipRect);
@@ -3884,7 +4274,7 @@ begin
 //          ico.Handle := hi;
 //          pic.Width := ico.Width;
 //          pic.Height := ico.Height;
-            bmp.Canvas.StretchDraw(Rect(0, 0, icon_size, icon_size), ico);
+            bmp.Canvas.StretchDraw(Rect(0, 0, bmp.Width, bmp.Height), ico);
 //          bmp.Canvas.Draw(0, 0, ico);
 //          pic.Assign(ico); //CopyImage(hi, IMAGE_ICON, 0, 0, LR_CREATEDIBSECTION)
 //          DestroyIcon(hi);
@@ -3929,6 +4319,7 @@ var
 // hi : HICON;
 // ico : TIcon;
 // R : TRect;
+  iconX, iconY : integer;
 begin
 //  il := TCustomImageList.Create(NIL);
 {   ilH:=  ImageList_Create(icon_size, icon_size, ILC_COLOR32// or ILC_MASK
@@ -3936,12 +4327,16 @@ begin
   ImageList_AddIcon(ilH, ico.Handle);
   ImageList_Draw(ilH, 0, bmp.Canvas.Handle, 0, 0, ILD_NORMAL);
   ImageList_Destroy(ilh);}
+
+iconX := GetSystemMetrics(SM_CXICON);
+iconY := GetSystemMetrics(SM_CYICON);
+
  {$IFDEF DELPHI9_UP}// By Rapid D
-  bmp.SetSize(icon_size, icon_size);
+  bmp.SetSize(iconX, iconY);
  {$ELSE DELPHI_9_dn}
   bmp.Height := 0;
-  bmp.Width := icon_size;
-  bmp.Height := icon_size;
+  bmp.Width := iconX;
+  bmp.Height := iconY;
  {$ENDIF DELPHI9_UP}// By Rapid D
   bmp.TransparentColor := $010100;
 //  il.AddIcon(ico);
@@ -3952,7 +4347,7 @@ begin
 //  hi := CopyImage(pIcon, IMAGE_ICON, icon_size, icon_size, LR_CREATEDIBSECTION);
 //  DrawIconEx(bmp.Canvas.Handle, 0, 0, hi, icon_size, icon_size, 0, 0, DI_NORMAL);
 //  DrawIconEx(bmp.Canvas.Handle, 0, 0, pIcon, icon_size, icon_size, 0, 0, DI_NORMAL);
-      ilH := ImageList_Create(icon_size, icon_size, ILC_COLOR32 or ILC_MASK, 0, 0);
+      ilH := ImageList_Create(iconX, iconY, ILC_COLOR32 or ILC_MASK, 0, 0);
       ImageList_AddIcon(ilH, pIcon);
 //          hi := ImageList_ExtractIcon(0, ilH, 0);
 //          ImageList_Draw(ilH, 0, bmp.Canvas.Handle, 0, 0, ILD_TRANSPARENT);
@@ -4238,6 +4633,16 @@ initialization
     ReleaseDC(0, DC);
   end;
   checkWICCodecs;
+
+{$ifdef TransparentStretchBltMissing}
+  // Note: This doesn't return the same palette as the Delphi 3 system palette
+  // since the true system palette contains 20 entries and the Delphi 3 system
+  // palette only contains 16.
+  // For our purpose this doesn't matter since we do not care about the actual
+  // colors (or their number) in the palette.
+  // Stock objects doesn't have to be deleted.
+  SystemPalette16 := GetStockObject(DEFAULT_PALETTE);
+{$endif}
 
 finalization
   if ThePalette <> 0 then

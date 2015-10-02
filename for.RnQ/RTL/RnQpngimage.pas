@@ -129,6 +129,7 @@ interface
 {.$DEFINE Store16bits}            //Stores the extra 8 bits from 16bits/sample
 {.$DEFINE Debug}                 //For programming purposes
 {$UNDEF Debug}                 //For programming purposes
+{$DEFINE UseAnimation}         // New APNG support
 { $DEFINE SavePicture} //Support encoding
 
 {$RANGECHECKS OFF} {$J+}
@@ -136,12 +137,19 @@ interface
 
 
 uses
+ {$IFDEF FPC}
+   JwaWinGDI,
+   paszlib, zbase,
+ {$ENDIF}
  Windows {$IFDEF UseDelphi} {$ENDIF}
  ,
   Classes,
   Graphics,
-  SysUtils,
-    OverbyteIcsZLibObj;
+ {$IFNDEF FPC}
+    OverbyteIcsZLibObj,
+ {$ENDIF}
+  SysUtils
+;
 
 {$IFNDEF UseDelphi}
   const
@@ -330,6 +338,132 @@ type
     destructor Destroy; override;
   end;
 
+ {$IFDEF UseAnimation}
+
+  TPNGFrame = class
+  const
+     APNG_DISPOSE_OP_NONE       = 0;
+     APNG_DISPOSE_OP_BACKGROUND = 1;
+     APNG_DISPOSE_OP_PREVIOUS   = 2;
+     APNG_BLEND_OP_SOURCE = 0;
+     APNG_BLEND_OP_OVER   = 1;
+  private
+    FBitmapInfo: TMaxBitmapInfo;
+    {Current image}
+    ImageHandle: HBitmap;
+    ImageDC: HDC;
+    ImagePalette: HPalette;
+    {Output windows bitmap}
+//    HasPalette: Boolean;
+    {Contains data}
+    FImageData: Pointer;
+    FImageSize: Cardinal;
+    FAlphaData: Pointer;
+    FAlphaSize: Cardinal;
+
+    FSelfWidth: Cardinal;
+    FSelfHeight: Cardinal;
+
+    FXOffset: Cardinal;
+    FYOffset: Cardinal;
+
+    FDelayNum: Word;
+    FDelayDenum: Word;
+    FDelayMS : Word; // in miliseconds
+
+    FDisposeOp: Byte;
+    FBlendOp: Byte;
+
+    {Stores owner}
+    FOwner: TPngObject;
+
+    {Used with property index}
+    function GetIndex: Integer;
+    {Returns data and size}
+  public
+    {Returns index from list}
+    property Index: Integer read GetIndex;
+
+    property ImageData: Pointer read FImageData;
+    property AlphaData: Pointer read FAlphaData;
+
+    property SelfWidth: Cardinal read FSelfWidth;
+    property SelfHeight: Cardinal read FSelfHeight;
+
+    property XOffset: Cardinal read FXOffset;
+    property YOffset: Cardinal read FYOffset;
+
+    property DelayNum: Word read FDelayNum;
+    property DelayDenum: Word read FDelayDenum;
+    property DelayMS: Word read FDelayMS;
+
+    property DisposeOp: Byte read FDisposeOp;
+    property BlendOp: Byte read FBlendOp;
+
+    function Clone : TPNGFrame;
+{
+    procedure AssignImage(Data: Pointer; DataSize: Cardinal);
+    procedure AssignAlpha(Data: Pointer; DataSize: Cardinal);
+{
+    procedure AssignImageTo(var Dest: Pointer);
+    procedure AssignAlphaTo(var Dest: Pointer);
+}
+    {Returns owner}
+    property Owner: TPngObject read fOwner;
+    {Being destroyed/created}
+    constructor Create(Owner: TPngObject); virtual;
+    destructor Destroy; override;
+
+    function IsEmpty: Boolean;
+    procedure FromHDR;
+    procedure ToBitmap32(var B32:TBitmap);
+    procedure PaletteToDIB(Palette: HPalette);
+    procedure FreeImageData;
+    procedure PrepareImageData();
+  end;
+
+  {Contains a list of objects}
+  TPNGFrameList = class(TPNGPointerList)
+  private
+    {Used with property Item}
+    function GetItem(Index: Cardinal): TPNGFrame;
+    {Removes an item}
+    procedure RemoveFrame(Frame: TPNGFrame); overload;
+  public
+    {Add a new chunk using the class from the parameter}
+    function Add: TPNGFrame; overload;
+    {Returns a chunk item from the list}
+    property Item[Index: Cardinal]: TPNGFrame read GetItem;
+  end;
+
+  TAniPNG = class
+    {Stores owner}
+    fOwner: TPngObject;
+
+    FCurrentFrame: Integer;
+//    FImageWidth : Integer;
+//    FImageHeight: Integer;
+    fPicHeight  : Integer;
+    FNumFrames: Integer;
+    FNumIterations: Integer;
+
+    Frames: TPNGFrameList;
+
+//    BitmapInfo: TMaxBitmapInfo;
+
+    CurrentIteration: Integer;
+    LastTime: DWord;
+    CurrentInterval: DWord;
+
+    constructor Create(AOwner: TPNGObject); OverLoad;
+    destructor Destroy; override;
+    procedure clear;
+    function getFullBitmap : TBitmap;
+    function AddFrame : TPNGFrame;
+    property Owner: TPNGObject read fOwner;
+  end;
+
+ {$ENDIF UseAnimation}
 
   {Forward declaration}
   TChunk = class;
@@ -455,6 +589,12 @@ type
     procedure InitializeGamma;
   private
     FAnimated: Boolean;
+ {$IFDEF UseAnimation}
+    apng : TAniPNG;
+//    FFramesCount: Integer;
+//    FCurrentFrame: Integer;
+//    FFrameList: TPNGFrameList;
+ {$ENDIF UseAnimation}
 
 //    ImagePalette: HPalette;
     {Output windows bitmap}
@@ -488,6 +628,9 @@ type
     function GetTransparencyMode: TPNGTransparencyMode;
     function GetTransparentColor: TColor;
     procedure SetTransparentColor(const Value: TColor);
+ {$IFDEF UseAnimation}
+    procedure SetCurrentFrame(const Value: Integer);
+ {$ENDIF UseAnimation}
   protected
     BeingCreated: Boolean;
     {Creates a grayscale palette}
@@ -523,6 +666,13 @@ type
     {$ENDIF isTGraphic}
   public
     property Animated: Boolean read FAnimated;
+ {$IFDEF UseAnimation}
+    property AniPNG: TAniPNG read aPNG;
+//    property FramesCount: Integer read FFramesCount;
+//    property CurrentFrame: Integer read FCurrentFrame write SetCurrentFrame;
+
+//    property FrameList: TPngFrameList read FFrameList;
+ {$ENDIF UseAnimation}
   {$IFDEF SavePicture}
     {Resizes the PNG image}
     procedure Resize(const CX, CY: Integer);
@@ -781,6 +931,10 @@ type
     procedure Assign(Source: TChunk); override;
   end;
 
+  {$IFDEF FPC}
+  TZStreamRec = z_stream;
+  {$ENDIF}
+
   {ZLIB Decompression extra information}
   TZStreamRec2 = packed record
     {From ZLIB}
@@ -974,6 +1128,66 @@ type
   end;
 
   //**************************************************************************//
+
+ {$IFDEF UseAnimation}
+  {The Animation Control Chunk}
+  TChunkacTL = class(TChunk)
+    Fnum_frames : UInt32;
+    Fnum_plays  : UInt32;
+  public
+    {Loading the chunk from a stream}
+    function LoadFromStream(Stream: TStream; const ChunkName: TChunkName;
+      Size: Integer): Boolean; override;
+  end;
+
+  {The Frame Control Chunk}
+  TChunkfcTL = class(TChunk)
+  private
+    FSelfWidth: Cardinal;
+    FSelfHeight: Cardinal;
+
+    FXOffset: Cardinal;
+    FYOffset: Cardinal;
+
+    FDelayNum: Word;
+    FDelayDenum: Word;
+
+    FDisposeOp: Byte;
+    FBlendOp: Byte;
+  public
+    property SelfWidth: Cardinal read FSelfWidth;
+    property SelfHeight: Cardinal read FSelfHeight;
+
+    property XOffset: Cardinal read FXOffset;
+    property YOffset: Cardinal read FYOffset;
+
+    property DelayNum: Word read FDelayNum;
+    property DelayDenum: Word read FDelayDenum;
+
+    property DisposeOp: Byte read FDisposeOp;
+    property BlendOp: Byte read FBlendOp;
+
+    {Loading the chunk from a stream}
+    function LoadFromStream(Stream: TStream; const ChunkName: TChunkName;
+      Size: Integer): Boolean; override;
+  end;
+
+  {Frame image information}
+  TChunkfdAT = class(TChunkIDAT)
+  public
+    Sequence: Cardinal;
+    function LoadFromStream(Stream: TStream; const ChunkName: TChunkName;
+      Size: Integer): Boolean; override;
+  protected
+    function IDATZlibRead(var ZLIBStream: TZStreamRec2; Buffer: Pointer;
+      Count: Integer; var EndPos: Integer; var crcfile: Cardinal): Integer; override;
+  {$IFDEF SavePicture}
+    {Compress and writes IDAT data}
+    procedure IDATZlibWrite(var ZLIBStream: TZStreamRec2; Buffer: Pointer;
+      const Length: Cardinal); override;
+  {$ENDIF SavePicture}
+  end;
+ {$ENDIF UseAnimation}
 
   //**************************************************************************//
 
@@ -1240,9 +1454,18 @@ begin
       Result := c;
 end;
 
+{$IFDEF FPC}
+function ByteSwap(const a: integer): integer;
+begin
+  PByte(@Result)[0] := PByte(@A)[3];
+  PByte(@Result)[1] := PByte(@A)[2];
+  PByte(@Result)[2] := PByte(@A)[1];
+  PByte(@Result)[3] := PByte(@A)[0];
+end;
+{$ELSE}
 {Invert bytes using assembly}
 function ByteSwap(const a: integer): integer;
-{$IFDEF PUREPASCAL}
+{$IFDEF PUREPASCAL OR FPC}
 begin
   PByte(@Result)[0] := PByte(@A)[3];
   PByte(@Result)[1] := PByte(@A)[2];
@@ -1263,6 +1486,7 @@ end;
 {$ENDIF}
 {$ENDIF PUREPASCAL}
 
+{$ENDIF}
 function ByteSwap16(inp:word): word; inline;
 begin
   Result := Swap(inp);
@@ -1366,6 +1590,12 @@ begin
   RegisterChunk(TChunktEXt);
   RegisterChunk(TChunkzTXt);
 
+ {$IFDEF UseAnimation}
+  {Animated chunks}
+  RegisterChunk(TChunkacTL);
+  RegisterChunk(TChunkfcTL);
+  RegisterChunk(TChunkfdAT);
+ {$ENDIF UseAnimation}
 end;
 
 {Creates a new chunk of this class}
@@ -1414,7 +1644,12 @@ begin
   end;
 
   {Init decompression}
+  {$IFDEF FPC}
+  InflateInit_(Result.zlib, @zlib_version[1], SIZEOF(z_stream));
+  {$ELSE}
   InflateInit_(Result.zlib, zlib_version, SIZEOF(TZStreamRec));
+  {$ENDIF}
+
 end;
 
 {Initializes ZLIB for compression}
@@ -1434,7 +1669,11 @@ begin
   end;
 
   {Inits compression}
+  {$IFDEF FPC}
+  deflateInit_(Result.zlib, Level, @zlib_version[1], sizeof(z_stream));
+  {$ELSE ~FPC}
   deflateInit_(Result.zlib, Level, zlib_version, sizeof(TZStreamRec));
+  {$ENDIF ~FPC}
 end;
 
 {Terminates ZLIB for compression}
@@ -1472,7 +1711,11 @@ begin
 
     {Prepares the data to decompress}
     FillChar(StreamRec, SizeOf(TZStreamRec), #0);
+  {$IFDEF FPC}
+    InflateInit_(StreamRec, @zlib_version[1], SIZEOF(z_stream));
+  {$ELSE ~FPC}
     InflateInit_(StreamRec, zlib_version, SIZEOF(TZStreamRec));
+  {$ENDIF}
     next_in := Input;
     avail_in := InputSize;
 
@@ -1528,7 +1771,11 @@ begin
     OutputSize := 0; {Initialize}
     {Prepares the data to compress}
     FillChar(StreamRec, SizeOf(TZStreamRec), #0);
+  {$IFDEF FPC}
+    DeflateInit_(StreamRec, CompressionLevel, @zlib_version[1], SIZEOF(z_stream));
+  {$ELSE}
     DeflateInit_(StreamRec, CompressionLevel,zlib_version, SIZEOF(TZStreamRec));
+  {$ENDIF}
 
     next_in := Input;
     avail_in := InputSize;
@@ -2022,7 +2269,7 @@ begin
   {If it's a registered class, set the chunk name based on the class}
   {name. For instance, if the class name is TChunkgAMA, the GAMA part}
   {will become the chunk name}
-  ChunkName := Copy(ClassName, Length('TChunk') + 1, Length(ClassName));
+  ChunkName := System.Copy(ClassName, Length('TChunk') + 1, Length(ClassName));
   if Length(ChunkName) = 4 then CopyMemory(@fName[0], @ChunkName[1], 4);
 
   {Initialize data holder}
@@ -2054,7 +2301,7 @@ begin
   {classes which don't declare GetName, it will look for the class name}
   {to extract the chunk kind. Example, if the class name is TChunkIEND }
   {this method extracts and returns IEND}
-  Result := Copy(ClassName, Length('TChunk') + 1, Length(ClassName));
+  Result := system.Copy(ClassName, Length('TChunk') + 1, Length(ClassName));
 end;
 
   {$IFDEF SavePicture}
@@ -3583,6 +3830,9 @@ var
   ZLIBStream: TZStreamRec2;
   CRCCheck,
   CRCFile  : Cardinal;
+ {$IFDEF UseAnimation}
+  frame : TPNGFrame;
+ {$ENDIF UseAnimation}
 begin
   {Get pointer to the header chunk}
   Header := Owner.Chunks.Item[0] as TChunkIHDR;
@@ -3647,6 +3897,23 @@ begin
       exit;
     end;
   {$ELSE}Result := TRUE; {$ENDIF}
+
+ {$IFDEF UseAnimation}
+    if Owner.FAnimated then
+     begin
+//      if ((ChunkName = 'IDAT') or (ChunkName = 'fdAT')) then
+        begin
+//          if Owner.apng.Frames.Count = 0 then
+//            Owner.RaiseError(EPNGInvalidSpec, EPNGMissingMultipleIDATText);
+          if Owner.apng.Frames.Count > 0 then
+            begin
+              Frame:= Owner.apng.Frames.Item[Owner.apng.Frames.Count-1];
+              if Frame = nil then Exit;
+              frame.FromHDR;
+            end;
+        end;
+     end;
+ {$ENDIF UseAnimation}
 
 end;
 
@@ -4587,6 +4854,12 @@ begin
     TChunk(Chunks.Item[i]).Free;
   Chunks.Count := 0;
 
+ {$IFDEF UseAnimation}
+  if Assigned(apng) then
+    apng.clear;
+ {$ENDIF UseAnimation}
+
+
 end;
 
   {$IFDEF SavePicture}
@@ -4652,6 +4925,11 @@ begin
   FreeAndNil(FChunkList);
   {$IFDEF UseDelphi2}if fCanvas <> nil then
     fCanvas.Free;{$ENDIF}
+ {$IFDEF UseAnimation}
+//  FreeAndNil(FFrameList);
+  if Assigned(apng) then
+    FreeAndNil(apng);
+ {$ENDIF UseAnimation}
 
   {Free the temporary palette}
   if TempPalette <> 0 then DeleteObject(TempPalette);
@@ -5249,6 +5527,22 @@ begin
   if not HasIDAT then
     RaiseError(EPNGNoImageData, EPNGNoImageDataText);
 end;
+
+ {$IFDEF UseAnimation}
+procedure TPngObject.SetCurrentFrame(const Value: Integer);
+//var
+//  Frame: TPngFrame;
+begin
+  apng.FCurrentFrame:= 0;
+  if (not Animated) or (apng.FNumFrames = 0) then Exit;
+  if not (Value in [0..apng.FNumFrames-1]) then Exit;
+  apng.FCurrentFrame:= Value;
+
+//  Frame:= apng.Frames.Item[FCurrentFrame];
+//  Frame.AssignImageTo(Header.ImageData);
+//  Frame.AssignAlphaTo(Header.ImageAlpha);
+end;
+ {$ENDIF UseAnimation}
 
   {$IFDEF SavePicture}
 {Changing height is not supported}
@@ -6078,6 +6372,832 @@ begin
   DoSetPalette(Value, true);
 end;
 
+ {$IFDEF UseAnimation}
+
+{ TChunkfdAT }
+
+{Reads from ZLIB}
+function TChunkfdAT.IDATZlibRead(var ZLIBStream: TZStreamRec2;
+  Buffer: Pointer; Count: Integer; var EndPos: Integer;
+  var crcfile: Cardinal): Integer;
+var
+  ProcResult : Integer;
+  fdATHdr : Array[0..3] of AnsiChar;
+  fdATCRC    : Cardinal;
+begin
+  {Uses internal record pointed by ZLIBStream to gather information}
+  with ZLIBStream, ZLIBStream.zlib do
+  begin
+    {Set the buffer the zlib will read into}
+    next_out := Buffer;
+    avail_out := Count;
+
+    {Decode until it reach the Count variable}
+    while avail_out > 0 do
+    begin
+      {In case it needs more data and it's in the end of a fdAT chunk,}
+      {it means that there are more fdAT chunks}
+
+      while (fStream.Position = EndPos) and (avail_out > 0) and (avail_in = 0) do
+      begin
+        {End this chunk by reading and testing the crc value}
+        fStream.Read(fdATCRC, 4);
+
+        {$IFDEF CheckCRC}
+          if crcfile xor $ffffffff <> Cardinal(ByteSwap(fdATCRC)) then
+          begin
+            Result := -1;
+            Owner.RaiseError(EPNGInvalidCRC, EPNGInvalidCRCText);
+            exit;
+          end;
+        {$ENDIF}
+
+        {Start reading the next chunk}
+        fStream.Read(EndPos, 4);        {Reads next chunk size}
+        EndPos := ByteSwap(EndPos);
+        fStream.Read(fdATHdr[0], 4); {Next chunk header}
+
+        fStream.Read(Sequence, 4);
+        Sequence:= ByteSwap(Sequence);
+        Dec(EndPos, 4);
+
+
+        {It must be a fdAT chunk since image data is required and PNG}
+        {specification says that multiple fdAT chunks must be consecutive}
+        if fdATHdr <> 'fdAT' then
+        begin
+          Owner.RaiseError(EPNGMissingMultipleIDAT, EPNGMissingMultipleIDATText);
+          result := -1;
+          exit;
+        end;
+
+        {Calculate chunk name part of the crc}
+        {$IFDEF CheckCRC}
+          crcfile := update_crc($ffffffff, @fdATHdr[0], 4);
+        {$ENDIF}
+        EndPos := fStream.Position + EndPos;
+      end;
+
+
+      {In case it needs compressed data to read from}
+      if avail_in = 0 then
+      begin
+        {In case it's trying to read more than it is avaliable}
+        if fStream.Position + ZLIBAllocate > EndPos then
+          avail_in := fStream.Read(Data^, EndPos - fStream.Position)
+         else
+          avail_in := fStream.Read(Data^, ZLIBAllocate);
+        {Update crc}
+        {$IFDEF CheckCRC}
+          crcfile := update_crc(crcfile, Data, avail_in);
+        {$ENDIF}
+
+        {In case there is no more compressed data to read from}
+        if avail_in = 0 then
+        begin
+          Result := Count - avail_out;
+          Exit;
+        end;
+
+        {Set next buffer to read and record current position}
+        next_in := Data;
+
+      end {if avail_in = 0};
+
+      ProcResult := inflate(zlib, 0);
+
+      {In case the result was not sucessfull}
+      if (ProcResult < 0) then
+      begin
+        Result := -1;
+        Owner.RaiseError(EPNGZLIBError,
+          EPNGZLIBErrorText + zliberrors[procresult]);
+        exit;
+      end;
+
+    end {while avail_out > 0};
+
+  end {with};
+
+  {If everything gone ok, it returns the count bytes}
+  Result := Count;
+end;
+
+{Reads the image data from the stream}
+function TChunkfdAT.LoadFromStream(Stream: TStream; const ChunkName: TChunkName;
+  Size: Integer): Boolean;
+var
+  ZLIBStream: TZStreamRec2;
+  CRCCheck,
+  CRCFile  : Cardinal;
+  Frame : TPNGFrame;
+begin
+  {Get pointer to the header chunk}
+  Header := Owner.Chunks.Item[0] as TChunkIHDR;
+  {Build palette if necessary}
+  if Owner.HasPalette then
+    PreparePalette();
+  Frame := Owner.apng.Frames.Item[Owner.apng.Frames.Count-1];
+  if Frame = NIL then
+   begin
+    Result := false;
+    Exit;
+   end;
+
+  {Copy image width and height}
+  frmWidth := Frame.FSelfWidth;
+  frmHeight := Frame.FSelfHeight;
+
+  frmImageData := Frame.FImageData;
+  frmImageAlpha := Frame.FAlphaData;
+ {$IFDEF Store16bits}
+  hdrExtraImageData := Frame.fExtraImageData;
+ {$ENDIF}
+
+  {Initialize to calculate CRC}
+  {$IFDEF CheckCRC}
+    CRCFile := update_crc($ffffffff, @ChunkName[0], 4);
+  {$ENDIF}
+
+
+//  Owner.GetPixelInfo(Row_Bytes, Offset); {Obtain line information}
+  Row_Bytes := BytesForPixels(frmWidth, Header.ColorType, Header.BitDepth);
+
+  frmBytesPerRow := (((Frame.FBitmapInfo.bmiHeader.biBitCount * frmWidth) + 31)
+    and not 31) div 8;
+
+    {Calculates byte offset}
+    Case Header.ColorType of
+      {Grayscale}
+      COLOR_GRAYSCALE:
+        If Header.BitDepth = 16 Then
+          Offset := 2
+        Else
+          Offset := 1 ;
+      {It always smaller or equal one byte, so it occupes one byte}
+      COLOR_PALETTE:
+        offset := 1;
+      {It might be 3 or 6 bytes}
+      COLOR_RGB:
+        offset := 3 * Header.BitDepth Div 8;
+      {It might be 2 or 4 bytes}
+      COLOR_GRAYSCALEALPHA:
+        offset := 2 * Header.BitDepth Div 8;
+      {4 or 8 bytes}
+      COLOR_RGBALPHA:
+        offset := 4 * Header.BitDepth Div 8;
+      else
+        Offset := 0;
+      End ;
+
+  ZLIBStream := ZLIBInitInflate(Stream);  {Initializes decompression}
+
+  {Calculate ending position for the current IDAT chunk}
+  EndPos := Stream.Position + Size;
+
+  Stream.Read(Sequence, 4);
+  Sequence:= ByteSwap(Sequence);
+
+  {Allocate memory}
+  GetMem(Row_Buffer[false], Row_Bytes + 1);
+  GetMem(Row_Buffer[true], Row_Bytes + 1);
+  ZeroMemory(Row_Buffer[false], Row_bytes + 1);
+  {Set the variable to alternate the Row_Buffer item to use}
+  RowUsed := TRUE;
+
+  {Call special methods for the different interlace methods}
+  case Owner.InterlaceMethod of
+    imNone:  DecodeNonInterlaced(stream, ZLIBStream, Size, crcfile);
+    imAdam7: DecodeInterlacedAdam7(stream, ZLIBStream, size, crcfile);
+  end;
+
+  {Free memory}
+  ZLIBTerminateInflate(ZLIBStream); {Terminates decompression}
+  FreeMem(Row_Buffer[False], Row_Bytes + 1);
+  FreeMem(Row_Buffer[True], Row_Bytes + 1);
+
+  {Now checks CRC}
+  Stream.Read(CRCCheck, 4);
+  {$IFDEF CheckCRC}
+    CRCFile := CRCFile xor $ffffffff;
+    CRCCheck := ByteSwap(CRCCheck);
+    Result := CRCCheck = CRCFile;
+
+    {Handle CRC error}
+    if not Result then
+    begin
+      {In case it coult not load chunk}
+      Owner.RaiseError(EPngInvalidCRC, EPngInvalidCRCText);
+      exit;
+    end;
+  {$ELSE}Result := TRUE; {$ENDIF}
+end;
+
+  {$IFDEF SavePicture}
+{Writes the IDAT using the settings}
+procedure WritefdAT(Stream: TStream; Data: Pointer; const Length: Cardinal);
+var
+  ChunkLen, CRC: Cardinal;
+begin
+  {Writes fdAT header}
+  ChunkLen := ByteSwap(Length);
+  Stream.Write(ChunkLen, 4);                      {Chunk length}
+  Stream.Write(sequence, 4);                      {Chunk sequence}
+  Stream.Write(fdATHeader[0], 4);                 {fdAT header}
+//  CRC := update_crc($ffffffff, @fdATHeader[0], 4); {Crc part for header}
+  CRC := Crc32($ffffffff, @fdATHeader[0], 4); {Crc part for header}
+
+  {Writes fdAT data and calculates CRC for data}
+  Stream.Write(Data^, Length);
+//  CRC := Byteswap(update_crc(CRC, Data, Length) xor $ffffffff);
+  CRC := Byteswap(Crc32(CRC, Data, Length) xor $ffffffff);
+  {Writes final CRC}
+  Stream.Write(CRC, 4);
+end;
+
+{Compress and writes fdAT chunk data}
+procedure TChunkfdAT.IDATZlibWrite(var ZLIBStream: TZStreamRec2;
+  Buffer: Pointer; const Length: Cardinal);
+begin
+  Owner.RaiseError(EPngError, 'Can''t save animated image!');
+
+//  with ZLIBStream, ZLIBStream.ZLIB do
+//  begin
+//    {Set data to be compressed}
+//    next_in := Buffer;
+//    avail_in := Length;
+//
+//    {Compress all the data avaliable to compress}
+//    while avail_in > 0 do
+//    begin
+//      deflate(ZLIB, Z_NO_FLUSH);
+//
+//      {The whole buffer was used, save data to stream and restore buffer}
+//      if avail_out = 0 then
+//      begin
+//        {Writes this fdAT chunk}
+//        WritefdAT(fStream, Data, ZLIBAllocate);
+//
+//        {Restore buffer}
+//        next_out := Data;
+//        avail_out := ZLIBAllocate;
+//      end {if avail_out = 0};
+//
+//    end {while avail_in};
+//
+//  end {with ZLIBStream, ZLIBStream.ZLIB}
+end;
+  {$ENDIF SavePicture}
+
+{ TPNGFrameList }
+
+function TPNGFrameList.Add: TPNGFrame;
+begin
+  Result:= TPNGFrame.Create(Self.FOwner);
+  Add(Result);
+end;
+
+function TPNGFrameList.GetItem(Index: Cardinal): TPNGFrame;
+begin
+  Result := inherited GetItem(Index);
+end;
+
+procedure TPNGFrameList.RemoveFrame(Frame: TPNGFrame);
+begin
+  Remove(Frame);
+  Frame.Free
+end;
+
+{ TPNGFrame }
+{
+procedure TPNGFrame.AssignAlpha(Data: Pointer; DataSize: Cardinal);
+begin
+  if FAlphaSize > 0 then FreeMem(FAlphaData, FAlphaSize);
+  GetMem(FAlphaData, DataSize);
+  FAlphaSize:= DataSize;
+  IF (Data <> NIL) and (DataSize > 0) then
+    Move(Data^, FAlphaData^, FAlphaSize);
+end;
+
+procedure TPNGFrame.AssignAlphaTo(var Dest: Pointer);
+begin
+  Move(FAlphaData^, Dest^, FAlphaSize);
+end;
+
+procedure TPNGFrame.AssignImage(Data: Pointer; DataSize: Cardinal);
+begin
+  if FImageSize > 0 then FreeMem(FImageData, FImageSize);
+  GetMem(FImageData, DataSize);
+  FImageSize:= DataSize;
+  Move(Data^, FImageData^, FImageSize);
+end;
+
+procedure TPNGFrame.AssignImageTo(var Dest: Pointer);
+begin
+  Move(FImageData^, Dest^, FImageSize);
+end;
+}
+
+constructor TPNGFrame.Create(Owner: TPngObject);
+begin
+  {Ancestor create}
+  inherited Create;
+
+  FImageSize:= 0;
+  FAlphaSize:= 0;
+  FreeImageData;
+
+  {Record owner}
+  FOwner:= Owner;
+end;
+
+destructor TPNGFrame.Destroy;
+begin
+  FreeImageData;
+  inherited Destroy;
+end;
+
+function TPNGFrame.Clone : TPNGFrame;
+begin
+  Result := TPNGFrame.Create(Owner);
+  Result.FSelfWidth := FSelfWidth;
+  Result.FSelfHeight := FSelfHeight;
+  Result.FXOffset := FXOffset;
+  Result.FYOffset := FYOffset;
+  Result.FDelayNum := FDelayNum;
+  Result.FDelayDenum := FDelayDenum;
+  Result.FDisposeOp := FDisposeOp;
+  Result.FBlendOp := FBlendOp;
+  Result.FImageSize := FImageSize;
+  Result.FAlphaSize := FAlphaSize;
+
+  {Copy palette colors}
+//  Result.BitmapInfo.bmiColors := BitmapInfo.bmiColors;
+  {Copy palette also}
+//  CopyPalette(ImagePalette, Result.ImagePalette);
+{
+  CopyMemory(Result.FImageData, FImageData, vBytesPerRow * Integer(FSelfHeight));
+  if ImageAlpha <> NIL then
+    CopyMemory(Result.FAlphaData, ImageAlpha,
+        Integer(FSelfWidth) * Integer(FSelfHeight));
+}
+end;
+function TPNGFrame.GetIndex: Integer;
+var
+  i: Integer;
+begin
+  Result := -1; {Avoiding warnings}
+  {Searches in the list}
+  FOR i := 0 TO Owner.apng.Frames.Count - 1 DO
+    if Owner.apng.Frames.Item[i] = Self then
+    begin
+      {Found match}
+      Result := i;
+      exit;
+    end {for i}
+
+end;
+
+function TPNGFrame.IsEmpty: Boolean;
+begin
+  Result:= (FImageSize > 0) and (FAlphaSize > 0);
+end;
+
+procedure TPNGFrame.FreeImageData;
+begin
+  {Free old image data}
+  if ImageHandle <> 0  then DeleteObject(ImageHandle);
+  if ImageDC     <> 0  then DeleteDC(ImageDC);
+  if FAlphaData <> nil then FreeMem(FAlphaData);
+  if ImagePalette <> 0 then DeleteObject(ImagePalette);
+  {$IFDEF Store16bits}
+  if ExtraImageData <> nil then FreeMem(ExtraImageData);
+  {$ENDIF}
+  ImageHandle := 0; ImageDC := 0; FAlphaData := nil; FImageData := nil;
+  FImageSize := 0;
+  FAlphaSize := 0;
+  ImagePalette := 0;
+  {$IFDEF Store16bits} ExtraImageData := nil; {$ENDIF}
+end;
+
+procedure TPNGFrame.PaletteToDIB(Palette: HPalette);
+var
+  j: Integer;
+  palEntries: TMaxLogPalette;
+begin
+  {Copy colors}
+  Fillchar(palEntries, sizeof(palEntries), #0);
+  FBitmapInfo.bmiHeader.biClrUsed := GetPaletteEntries(Palette, 0, 256, palEntries.palPalEntry[0]);
+  for j := 0 to FBitmapInfo.bmiHeader.biClrUsed - 1 do
+  begin
+    FBitmapInfo.bmiColors[j].rgbBlue  := palEntries.palPalEntry[j].peBlue;
+    FBitmapInfo.bmiColors[j].rgbRed   := palEntries.palPalEntry[j].peRed;
+    FBitmapInfo.bmiColors[j].rgbGreen := palEntries.palPalEntry[j].peGreen;
+  end;
+end;
+
+
+procedure TPNGFrame.PrepareImageData();
+  {Set the bitmap info}
+  procedure SetInfo(const Bitdepth: Integer; const Palette: Boolean);
+  begin
+
+    {Copy if the bitmap contain palette entries}
+//    HasPalette := Palette;
+    {Initialize the structure with zeros}
+    fillchar(FBitmapInfo, sizeof(FBitmapInfo), #0);
+    {Fill the strucutre}
+    with FBitmapInfo.bmiHeader do
+    begin
+      biSize := sizeof(TBitmapInfoHeader);
+      biHeight :=  FSelfHeight;// Height;
+      biWidth := FSelfWidth;
+      biPlanes := 1;
+      biBitCount := BitDepth;
+      biCompression := BI_RGB;
+    end {with BitmapInfo.bmiHeader}
+  end;
+var
+  bd : byte;
+  h : TChunkIHDR;
+  vBytesPerRow : Integer;
+//  plt : HPALETTE;
+begin
+  {Prepare bitmap info header}
+  Fillchar(FBitmapInfo, sizeof(TMaxBitmapInfo), #0);
+  {Release old image data}
+  FreeImageData();
+
+  h := Owner.Header;
+  if h = NIL then
+    Exit;
+  {Obtain number of bits for each pixel}
+  case h.ColorType of
+    COLOR_GRAYSCALE, COLOR_PALETTE, COLOR_GRAYSCALEALPHA:
+      case h.BitDepth of
+        {These are supported by windows}
+        1, 4, 8: bd := h.BitDepth;
+        {2 bits for each pixel is not supported by windows bitmap}
+        2      : bd := 4;
+        {Also 16 bits (2 bytes) for each pixel is not supported}
+        {and should be transormed into a 8 bit grayscale}
+        16     : bd := 8;
+      end;
+    {Only 1 byte (8 bits) is supported}
+    COLOR_RGB, COLOR_RGBALPHA: bd := 24;
+  end {case ColorType};
+  SetInfo(bd, not((h.ColorType=COLOR_RGB)or (h.ColorType=COLOR_RGBALPHA)));
+  {Number of bytes for each scanline}
+  vBytesPerRow := (((FBitmapInfo.bmiHeader.biBitCount * FSelfWidth) + 31)
+    and not 31) div 8;
+
+  FImageSize := vBytesPerRow * Integer(fSelfHeight);
+  FAlphaSize := Integer(FSelfWidth) * Integer(FSelfHeight);
+
+  {Build array for alpha information, if necessary}
+  if (h.ColorType = COLOR_RGBALPHA) or (h.ColorType = COLOR_GRAYSCALEALPHA) then
+  begin
+    GetMem(FAlphaData, FAlphaSize);
+    FillChar(FAlphaData^, FAlphaSize, #0);
+  end;
+
+  {Build array for extra byte information}
+  {$IFDEF Store16bits}
+  if (BitDepth = 16) then
+  begin
+    GetMem(ExtraImageData, FImageSize);
+    FillChar(ExtraImageData^, FImageSize, #0);
+  end;
+  {$ENDIF}
+
+  {Creates the image to hold the data, CreateDIBSection does a better}
+  {work in allocating necessary memory}
+  ImageDC := CreateCompatibleDC(0);
+  {$IFDEF UseDelphi2}Self.Owner.Canvas.Handle := ImageDC;{$ENDIF}
+
+  {In case it is a palette image, create the palette}
+  if Owner.HasPalette then
+  begin
+    {Create a standard palette}
+{
+    if h.ColorType = COLOR_PALETTE then
+      ImagePalette := CreateHalfTonePalette(ImageDC)
+    else
+      ImagePalette := Owner.CreateGrayscalePalette(h.Bitdepth);
+}
+//    plt := CreateHalfTonePalette(ImageDC);
+    ImagePalette := Owner.CreateGrayscalePalette(h.Bitdepth);
+    CopyPalette(h.ImagePalette, ImagePalette);
+    if ImagePalette <> 0 then
+     begin
+
+      ResizePalette(ImagePalette, 1 shl FBitmapInfo.bmiHeader.biBitCount);
+      FBitmapInfo.bmiHeader.biClrUsed := 1 shl FBitmapInfo.bmiHeader.biBitCount;
+      SelectPalette(ImageDC, ImagePalette, False);
+      RealizePalette(ImageDC);
+      PaletteTODIB(ImagePalette);
+     end;
+  end;
+
+  {Create the device independent bitmap}
+  ImageHandle := CreateDIBSection(ImageDC, pBitmapInfo(@FBitmapInfo)^,
+    DIB_RGB_COLORS, FImageData, 0, 0);
+  SelectObject(ImageDC, ImageHandle);
+
+  {Build array and allocate bytes for each row}
+//  zeromemory(ImageData, BytesPerRow * Integer(Height));
+  fillchar(ImageData^, FImageSize, 0);
+end;
+
+procedure TPNGFrame.FromHDR;
+var
+  vHDR : TChunkIHDR;
+begin
+  vHDR := Owner.Header;
+
+  FXOffset := 0; FYOffset := 0;
+  fSelfHeight := vHDR.Height;
+  FSelfWidth  := vHDR.Width;
+
+  FImageSize := vHDR.BytesPerRow * Integer(fSelfHeight);
+  FAlphaSize := Integer(FSelfWidth) * Integer(FSelfHeight);
+
+  if FImageData <> NIL then
+    begin
+      CopyMemory(FImageData, vHDR.fImageData, FImageSize);
+    end;
+  if FAlphaData <> NIL then
+    begin
+      CopyMemory(FAlphaData, vHDR.fImageAlpha, FAlphaSize );
+    end;
+end;
+
+procedure TPNGFrame.ToBitmap32(var B32:TBitmap);
+type
+  PColor32 = ^TColor32;
+  TColor32 = type Cardinal;
+  function SetAlpha(Color32: TColor32; NewAlpha: Byte): TColor32; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+    begin
+      Result := (Color32 and $00FFFFFF) or (NewAlpha shl 24);
+    end;
+
+var
+  PB:PByte;
+  PC:PColor32;
+  r, C:Cardinal;
+  frmRect : TRect;
+
+//  i, j : Integer;
+  TransparencyChunk:TChunktRNS;
+//  PaletteChunk:TChunkPLTE;
+//  TransValue,
+  PaletteIndex :Byte;
+  CurBit:Integer;
+  Data:PByte;
+  ImageSource//,ImageSourceOrg
+//     ,AlphaSource
+    :PByteArray;
+//  ImageData:pPixelLine;
+  BytesPerRowSrc : Integer;
+  vHDR : TChunkIHDR;
+begin
+ vHDR := Owner.Header;
+ {$IFDEF DELPHI_9_UP}
+    B32.SetSize(FSelfWidth, FSelfHeight);
+ {$ELSE DELPHI_9_dn}
+    B32.Height := 0;
+    B32.Width := FSelfWidth;
+    B32.Height := FSelfHeight;
+ {$ENDIF DELPHI_9_UP}
+ if (FSelfWidth=0) or (FSelfHeight=0) then exit;
+ SetStretchBltMode(B32.Canvas.Handle,COLORONCOLOR);
+{ StretchDiBits(B32.Canvas.Handle,0,0, Width, Height,0,0,
+               Width, Height, Header.Data,
+               pBitmapInfo(@Header.BitmapInfo)^,DIB_RGB_COLORS,SRCCOPY);}
+// StretchDiBits(B32.Canvas.Handle, 0,0, vHDR.Width, vHDR.Height,0,0,
+//        vHDR.Width, vHDR.Height, vHDR.fImageData,
+//        pBitmapInfo(@vHDR.BitmapInfo)^, DIB_RGB_COLORS, SRCCOPY);
+ StretchDiBits(B32.Canvas.Handle, 0, 0, FSelfWidth, FSelfHeight,
+        0,0, FSelfWidth, FSelfHeight, FImageData,
+        pBitmapInfo(@FBitmapInfo)^, DIB_RGB_COLORS, SRCCOPY);
+
+// frmRect := Rect(FXOffset, FYOffset, FSelfWidth-1, FSelfHeight-1);
+ case vHDR.ColorType of
+  COLOR_GRAYSCALEALPHA,COLOR_RGBALPHA:
+    begin
+
+     PB:=Pointer(FAlphaData);
+     if PB<>nil then
+      begin
+       for R:=0 to FSelfHeight-1 do
+        begin
+         PC:=Pointer(b32.ScanLine[r]);
+         for C:=0 to FSelfWidth-1 do
+          begin
+            PC^:=SetAlpha(PC^,PByte(PB)^);
+            Inc(PB);
+            Inc(PC);
+          end;
+        end;
+      end;
+    end;
+   COLOR_PALETTE:
+    begin
+      TransparencyChunk:=TChunktRNS(Owner.Chunks.ItemFromClass(TChunktRNS));
+//      PaletteChunk:=TChunkPLTE(Chunks.ItemFromClass(TChunkPLTE));
+      BytesPerRowSrc := (((vHDR.BitmapInfo.bmiHeader.biBitCount * FSelfWidth) +
+          31) and not 31) div 8; {Number of bytes for each image row in source}
+//      ImageSourceOrg:=ImageSource;
+
+      PByte(ImageSource):=PByte(FImageData)+
+                          BytesPerRowSrc * Longint(FSelfHeight-1);
+
+      for r:=1 to FSelfHeight do
+      begin
+        c:=0;
+        {Process all the pixels in this line}
+        PC:=Pointer(b32.ScanLine[r-1]);
+        Data := @ImageSource[0];
+        repeat
+          CurBit:=0;
+//            Data:= @ImageSource[c];
+          repeat
+            if TransparencyChunk = NIL then
+             begin
+               PC^:=SetAlpha(PC^, $FF);
+               Inc(PC);
+             end
+            else
+             begin
+              case vHDR.BitDepth of
+                 1:PaletteIndex:=(Data^ shr (7-(c Mod 8))) and 1;
+               2,4:PaletteIndex:=(Data^ shr ((1-(c Mod 2))*4)) and $0F;
+               else PaletteIndex:=Data^;
+              end;
+              begin
+                 if PaletteIndex >= TransparencyChunk.DataSize then
+                   PC^:=SetAlpha(PC^, $FF)
+                  else
+                   PC^:=SetAlpha(PC^,TransparencyChunk.PaletteValues[PaletteIndex]);
+                 Inc(PC);
+              end;
+              Inc(CurBit,vHDR.BitmapInfo.bmiHeader.biBitCount);
+             end;
+            Inc(c);
+          until (CurBit>=8)or(c>=Integer(FSelfWidth));
+          {Move to next source data}
+          inc(Data);
+        until c>=Integer(FSelfWidth);
+//        Longint(ImageData):=Longint(ImageData)+BytesPerRowDest;
+//        if Stretch then j2:=trunc(j / FactorY) else j2:=j;
+//        Longint(ImageSource):=Longint(ImageSourceOrg)-BytesPerRowSrc*r;
+        PByte(ImageSource) := PByte(ImageSource)-BytesPerRowSrc;
+      end
+    end
+   else
+   begin
+     for R:=0 to FSelfHeight-1 do
+      begin
+       PC:=Pointer(b32.ScanLine[r]);
+       for C:=0 to FSelfWidth-1 do
+        begin
+          PC^:=SetAlpha(PC^,$FF);
+          Inc(PC);
+        end;
+      end;
+{    PC:=Pointer(B32.Bits);
+    for C:=0 to PNG.Width*PNG.Height-1 do
+     begin
+      PC^:=SetAlpha(PC^,$FF);
+      Inc(PC);
+     end;}
+   end;
+  end; // end case
+
+//  b32.Canvas.Brush.Color := RGB((10* 5 mod 255), (10* 5 mod 255), (10* 5 mod 255) );
+//  Ellipse(b32.Canvas.Handle, 5, 2, vHDR.Width - 5, vHDR.Height-2);
+
+end;
+
+{ TChunkacTL }
+
+function TChunkacTL.LoadFromStream(Stream: TStream; const ChunkName: TChunkName;
+  Size: Integer): Boolean;
+
+begin
+  {Let ancestor load the data}
+  Result := inherited LoadFromStream(Stream, ChunkName, Size);
+  if not Result or (Size <> 8) then exit; {Size must be 7}
+
+  {Reads data}
+  Fnum_frames := ByteSwap(pinteger(Longint(Data) + 0)^);
+  Fnum_plays := ByteSwap(pinteger(Longint(Data) + 4)^);
+
+  {Copies data from source}
+//  Stream.Read(Fnum_frames, 4); Fnum_frames:= ByteSwap(Fnum_frames);
+//  Stream.Read(Fnum_plays, 4); Fnum_plays:= ByteSwap(Fnum_plays);
+
+  if not Owner.Animated then
+   begin
+    Owner.FAnimated:= True;
+    if not Assigned(Owner.apng) then
+      Owner.apng := TAniPNG.Create(Owner)
+     else
+      Owner.apng.clear;
+   end;
+
+//  Owner.apng.FImageWidth := Owner.Width;
+//  Owner.apng.FImageHeight := Owner.Height;
+  Owner.apng.FNumFrames := Fnum_frames;
+  Owner.apng.FNumIterations := Fnum_plays;
+//  Owner.apng.fPicHeight := Owner.HeightFnum_frames
+  {Prepares data to hold image}
+//  Owner.apng.PrepareImageData();
+
+  Result := True;
+end;
+
+
+{ TChunkfcTL }
+
+function TChunkfcTL.LoadFromStream(Stream: TStream; const ChunkName: TChunkName;
+  Size: Integer): Boolean;
+var
+  CheckCRC: Cardinal;
+  {$IFDEF CheckCRC}RightCRC: Cardinal;{$ENDIF}
+  Frame: TPngFrame;
+begin
+  {Copies data from source}
+  ResizeData(Size);
+  if Size > 0 then Stream.Read(fData^, Size);
+  Stream.Seek(-Size+4, soFromCurrent); // skip sequence
+
+  Stream.Read(FSelfWidth, 4); FSelfWidth:= ByteSwap(FSelfWidth);
+  Stream.Read(FSelfHeight, 4); FSelfHeight:= ByteSwap(FSelfHeight);
+
+  Stream.Read(FXOffset, 4); FXOffset:= ByteSwap(FXOffset);
+  Stream.Read(FYOffset, 4); FYOffset:= ByteSwap(FYOffset);
+
+  Stream.Read(FDelayNum, 2); FDelayNum:= ByteSwap16(FDelayNum);
+  Stream.Read(FDelayDenum, 2); FDelayDenum:= ByteSwap16(FDelayDenum);
+  if FDelayDenum <= 0 then FDelayDenum:= 100;
+  
+
+  Stream.Read(FDisposeOp, 1);
+  Stream.Read(FBlendOp, 1); 
+
+  {Reads CRC}
+  Stream.Read(CheckCRC, 4);
+  CheckCrc := ByteSwap(CheckCRC);
+
+  {Check if crc readed is valid}
+  {$IFDEF CheckCRC}
+    RightCRC := update_crc($ffffffff, @ChunkName[0], 4);
+    RightCRC := update_crc(RightCRC, fData, Size) xor $ffffffff;
+    Result := RightCRC = CheckCrc;
+
+    {Handle CRC error}
+    if not Result then
+    begin
+      {In case it coult not load chunk}
+      Owner.RaiseError(EPngInvalidCRC, EPngInvalidCRCText);
+      exit;
+    end
+  {$ELSE}Result := TRUE; {$ENDIF}
+
+  if not Owner.Animated then
+    begin
+      Owner.FAnimated:= True;
+      if not Assigned(Owner.apng) then
+        Owner.apng := TAniPNG.Create(Owner);
+    end;
+
+  if Owner.FAnimated then
+   begin
+      Frame:= Owner.apng.AddFrame;
+//          if Frame = nil then Break;
+      if Frame = nil then Exit;
+
+//          lfcTL := TChunkfcTL(Chunks.Item[ChunkCount - 1]);
+      Frame.FSelfWidth := Self.SelfWidth;
+      Frame.FSelfHeight:= Self.SelfHeight;
+
+      Frame.FXOffset   := Self.XOffset;
+      Frame.FYOffset   := Self.YOffset;
+
+      Frame.FDelayNum  := Self.DelayNum;
+      Frame.FDelayDenum:= Self.DelayDenum;
+      Frame.FDelayMS   := Word(Integer(1000 * Frame.FDelayNum) div Frame.FDelayDenum);
+
+      Frame.FDisposeOp := Self.DisposeOp;
+      Frame.FBlendOp   := Self.BlendOp;
+      Frame.PrepareImageData;
+   end;
+end;
+
+ {$ENDIF UseAnimation}
+
+
 
 procedure TPNGObject.ToBitmap32(var B32:TBitmap);
 type
@@ -6091,7 +7211,8 @@ begin
 end;}
   function SetAlpha(Color32: TColor32; NewAlpha: Byte): TColor32; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
     begin
-      Result := (Color32 and $00FFFFFF) or (NewAlpha shl 24);
+//      Result := (Color32 and $00FFFFFF) or (NewAlpha shl 24);
+      Result := (Color32 and $00FFFFFF) or TColor32(TColor32(NewAlpha) shl 24);
     end;
 
 
@@ -6224,6 +7345,276 @@ begin
    end;
   end; // end case
 end;
+
+ {$IFDEF UseAnimation}
+
+{ TAniPNG }
+
+function TAniPNG.AddFrame: TPNGFrame;
+begin
+  Result := Frames.Add;
+end;
+
+procedure TAniPNG.clear;
+var
+  i : Integer;
+begin
+  for i := 0 TO Integer(Frames.Count) - 1 do
+    TPNGFrame(Frames.Item[I]).Free;
+  Frames.Count:= 0;
+  FCurrentFrame:= 0;
+  FNumFrames := 0;
+end;
+
+constructor TAniPNG.Create(AOwner: TPNGObject);
+begin
+  FOwner := AOwner;
+//  inherited;
+  Frames := TPNGFrameList.Create(AOwner);
+end;
+
+destructor TAniPNG.Destroy;
+begin
+  FreeAndNil(Frames);
+  inherited;
+end;
+
+
+function TAniPNG.getFullBitmap : TBitmap;
+type
+  PColor32 = ^TColor32;
+  TColor32 = type Cardinal;
+  function SetAlpha(Color32: TColor32; NewAlpha: Byte): TColor32; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+    begin
+      Result := (Color32 and $00FFFFFF) or (NewAlpha shl 24);
+    end;
+
+  procedure Premultiply(var bmp : TBitmap);
+    function mult1(a, b: byte) : byte; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+    var
+      i : Integer;
+    begin
+      if b = 255 then
+        Result := a
+       else
+        begin
+         i := a;
+         i := (i*b + $7F)shr 8;
+         Result := i;
+        end;
+    end;
+  type
+    TColor32 = packed record
+     case boolean of
+      True:
+        (B,R,G,A: Byte);
+  //      (B,G,R,A: Byte);
+      false:
+        (c : Cardinal);
+  //   end;
+    end;
+    PColor32Array = ^TColor32Array;
+    TColor32Array = array [0..MaxInt div SizeOf(TColor32) - 1] of TColor32;
+  var
+   Scan32: pColor32Array;
+   I, X: Cardinal;
+  // A1: Double;
+   h,w : Integer;
+  begin
+    h := bmp.Height-1; // Сразу вычетаем 1 !!!
+    w := bmp.Width-1;  // Сразу вычетаем 1 !!!
+    for I := 0 to h do
+     begin
+      Scan32 := Bmp.ScanLine[i];
+      for X := 0 to w do
+       begin
+        with Scan32^[X] do
+         begin
+  {         A1:= A / $FF;
+           R := round(R * A1);
+           G := round(G * A1);
+           B := round(B * A1);}
+  //         B := (Integer(B)*A + $7F) shl 8;
+  //         R := (Integer(R)*A + $7F) shl 8;
+  //         G := (Integer(G)*A + $7F) shl 8;
+          B := mult1(B, A);
+          R := mult1(R, A);
+          G := mult1(G, A);
+         end;
+       end;
+     end;
+  end;
+
+var
+  FImageWidth, FImageHeight : Integer;
+  I, j: Integer;
+  rBMP, b32 : TBitmap;
+  vHDR : TChunkIHDR;
+  vDC : HDC;
+  fr : TPNGFrame;
+  fullHeight : Integer;
+  l_Top : Integer;
+  lastDisposeOp : Byte;
+  lastFrameRect : TRect;
+  bf : {$IFDEF FPC}JwaWinGDI.{$ENDIF} BLENDFUNCTION;      // structure for alpha blending
+begin
+  rBMP := TBitmap.Create;
+  Result := rBMP;
+  if not Owner.HeaderPresent then
+    begin
+   {$IFDEF DELPHI_9_UP}
+      rBMP.SetSize(0, 0);
+   {$ELSE DELPHI_9_dn}
+      rBMP.Height := 0;
+      rBMP.Width := 0;
+   {$ENDIF DELPHI_9_UP}
+      Exit;
+    end;
+  vHDR := Owner.Header;
+  FImageWidth := Owner.Width;
+  FImageHeight := Owner.Height;
+//  fullWidth := FNumFrames * FImageWidth;
+  fullHeight := FNumFrames * FImageHeight;
+
+  if (vHDR.Width=0) or (vHDR.Height=0) then exit;
+
+  rBMP.PixelFormat := pf32bit;
+  rBMP.SetSize(FImageWidth, fullHeight);
+  vDC := rBMP.Canvas.Handle;
+
+
+ SetStretchBltMode(vDC,COLORONCOLOR);
+ lastDisposeOp := TPNGFrame.APNG_DISPOSE_OP_BACKGROUND;
+ lastFrameRect := Rect(0, 0, FImageWidth, FImageHeight);
+ for i := 0 to FNumFrames-1 do
+   begin
+     l_Top := 0 + FImageHeight*i;
+     fr := Frames.Item[i];
+{
+    with tempBitmapInfo.bmiHeader do
+     begin
+      biHeight := Fr.SelfHeight;
+      biWidth := Fr.SelfWidth;
+     end;
+}
+     if lastDisposeOp = TPNGFrame.APNG_DISPOSE_OP_NONE then
+       begin
+         StretchBlt(vDC, 0, l_Top, FImageWidth, FImageHeight,
+              vDC, 0, l_Top - FImageHeight, FImageWidth, FImageHeight,
+              SRCCOPY);
+//         FillRect(vDC, Rect(0, l_Top, FImageWidth, l_Top + FImageHeight), CreateSolidBrush(0));
+{
+         b32 := TBitmap.Create;
+         b32.PixelFormat := pf32bit;
+         Owner.ToBitmap32(b32);
+         StretchBlt(vDC,
+              0, l_Top, FImageWidth, FImageHeight,
+              b32.Canvas.Handle, 0, 0, FImageWidth, FImageHeight,
+              SRCCOPY);
+         b32.Free;
+{
+         StretchDiBits(vDC,
+              0, l_Top, FImageWidth, FImageHeight,
+              0, 0, FImageWidth, FImageHeight,
+              vHDR.fImageData, pBitmapInfo(@vHDR.BitmapInfo)^, DIB_RGB_COLORS, SRCCOPY);
+         for j := 0 to FImageHeight - 1 do
+          begin
+      //     PC:=Pointer(LongInt(vImgData) + i * lBytesPerRow);
+           PC:= rBMP.ScanLine[l_Top + j];
+          for C:=0 to FImageWidth -1 do
+           begin
+            PC^:=SetAlpha(PC^,$FF);
+      //      PC^:= $FF8800FF;
+      //      PC^:=SetAlpha(PC^, 0);
+            Inc(PC);
+           end;
+          end;}
+
+//         StretchBlt(vDC,
+//              0, l_Top, FImageWidth, FImageHeight,
+//              vDC, 0, l_Top - FImageHeight, FImageWidth, FImageHeight,
+//              SRCCOPY)
+//         StretchDiBits(rBMP.Canvas.Handle,
+//              0, l_Top, FImageWidth, FImageHeight,
+//              l_Top - FImageWidth, 0, FImageWidth, FImageHeight,
+//              Result.ScanLine[0], tempBitmapInfo, DIB_RGB_COLORS, SRCCOPY)
+       end
+      else
+     if (lastDisposeOp = TPNGFrame.APNG_DISPOSE_OP_PREVIOUS) and (i > 0) then
+       begin
+         j := i-1;
+         while (j > 0)and (Frames.Item[j].FDisposeOp = TPNGFrame.APNG_DISPOSE_OP_PREVIOUS) do
+           dec(j);
+         if j>=0 then //Frames.Item[j].FDisposeOp = TPNGFrame.APNG_DISPOSE_OP_NONE then
+           StretchBlt(vDC, 0, l_Top, FImageWidth, FImageHeight,
+              vDC, 0, FImageHeight*j, FImageWidth, FImageHeight,
+              SRCCOPY)
+          else
+           FillRect(vDC, Rect(0, l_Top, FImageWidth, l_Top + FImageHeight), CreateSolidBrush(0));
+       end
+      else
+//       FillRect(vDC, Rect(0, l_Top, FImageWidth, l_Top + FImageHeight), CreateSolidBrush(0));
+       begin
+         if i > 0 then
+           StretchBlt(vDC, 0, l_Top, FImageWidth, FImageHeight,
+              vDC, 0, l_Top - FImageHeight, FImageWidth, FImageHeight,
+              SRCCOPY);
+         FillRect(vDC, lastFrameRect, CreateSolidBrush($00000000));
+       end;
+
+     lastDisposeOp := fr.FDisposeOp;
+     lastFrameRect := Rect(fr.XOffset, l_Top + FImageHeight + fr.YOffset,
+                           fr.XOffset + Fr.SelfWidth, l_Top + FImageHeight + fr.YOffset + Fr.SelfHeight);
+     b32 := TBitmap.Create;
+     b32.PixelFormat := pf32bit;
+     fr.ToBitmap32(b32);
+     Premultiply(b32);
+
+     if fr.FBlendOp = TPNGFrame.APNG_BLEND_OP_SOURCE then
+       begin
+         StretchBlt(vDC,
+            fr.XOffset, l_Top + fr.YOffset, Fr.SelfWidth, Fr.SelfHeight,
+            b32.Canvas.Handle, 0, 0, Fr.SelfWidth, Fr.SelfHeight,
+            SRCCOPY);
+
+{         StretchDiBits(vDC,
+              0, l_Top, FImageWidth, FImageHeight,
+              0, 0, FImageWidth, FImageHeight,
+              vHDR.fImageData, pBitmapInfo(@vHDR.BitmapInfo)^, DIB_RGB_COLORS, SRCCOPY);
+}
+//  rBMP.Canvas.Brush.Color := RGB((10* i mod 255), (10* i mod 255), (10* i mod 255) );
+//  Ellipse(vDC, 5, l_Top + 2, vHDR.Width - 5, l_Top + vHDR.Height-2);
+
+{
+       StretchDiBits(Result.Canvas.Handle,
+            0, l_Top, FImageWidth, FImageHeight,
+            0, 0, FImageWidth, FImageHeight,
+            b32.ScanLine[0], tempBitmapInfo, DIB_RGB_COLORS, SRCCOPY)
+}
+       end
+      else
+      // TPNGFrame.APNG_BLEND_OP_OVER
+       begin
+          bf.BlendOp := AC_SRC_OVER;
+//          bf.BlendFlags := AC_DST_NO_PREMULT_ALPHA or AC_SRC_NO_PREMULT_ALPHA;
+//          bf.BlendFlags := AC_SRC_NO_PREMULT_ALPHA;
+          bf.BlendFlags := 0;
+          bf.SourceConstantAlpha := $FF;
+//          bf.SourceConstantAlpha := 0;
+          bf.AlphaFormat := AC_SRC_ALPHA;
+//         Premultiply(b32);
+         AlphaBlend(vDC,
+            fr.FXOffset, l_Top + fr.FYOffset, fr.FSelfWidth, fr.FSelfHeight,
+            b32.Canvas.Handle, 0,0, fr.FSelfWidth, fr.FSelfHeight, bf)
+       end;
+     b32.Free;
+
+   end;
+
+  Result := rBMP;
+end;
+
+ {$ENDIF UseAnimation}
 
 initialization
   {Initialize}

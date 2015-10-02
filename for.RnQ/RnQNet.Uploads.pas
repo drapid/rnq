@@ -91,8 +91,8 @@ implementation
 
 uses
   Windows, SysUtils, StrUtils, DateUtils, math,
-  Base64, RDFileUtil,
-//  RDUtils, iniLib, utilLib, globalLib,
+  Base64, RDFileUtil, RDUtils,
+//  iniLib, utilLib, globalLib,
   RnQPrefsLib,
 {$IFDEF UNICODE}
   AnsiStrings,
@@ -291,7 +291,7 @@ begin
 
     httpCli.SendStream := TMemoryStream.Create;
 
-    Buf := InputText(Boundry, 'fname', ExtractFileName(Filename))
+    Buf := InputText(Boundry, 'fname', StrToUTF8(ExtractFileName(Filename)))
          + '--' + Boundry + CRLF + 'Content-Disposition: form-data; name="file"; filename="' + UTF8Encode(ExtractFileName(Filename)) + '"' + CRLF +
            'Content-Transfer-Encoding: binary' + CRLF + CRLF;
     httpCli.SendStream.Write(Buf[1], Length(Buf));
@@ -658,14 +658,14 @@ end;
 procedure TtarStream.padInit(full: boolean=FALSE);
 begin
   block.Size := 0;
-  block.WriteString(dupeString(#0, IfThen(full,512,gap512(pos)) ));
+  block.WriteString(dupeString(#0, math.IfThen(full, 512, gap512(pos)) ));
   block.Seek(0, soBeginning);
 end; // padInit
 
 function TtarStream.headerLengthForFilename(fn: string): integer;
 begin
   result := length(fn);
-  result := 512*IfThen(result<100, 1, 3+result div 512);
+  result := 512 * math.IfThen(result<100, 1, 3+result div 512);
 end; // headerLengthForFilename
 
 procedure TtarStream.calculate();

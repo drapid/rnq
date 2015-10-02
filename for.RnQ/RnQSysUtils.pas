@@ -156,14 +156,15 @@ end;
 
 
 //procedure openURL(url: AnsiString);
-procedure openURL(const pURL: String; const useDefaultBrowser : boolean;
-                  const browserCmdLine : String);
+procedure openURL(const pURL: String; const useDefaultBrowser: boolean;
+                  const browserCmdLine: String);
 var
 //  prg, par, proto: AnsiString;
   url, prg, par, proto: String;
   i:integer;
 begin
-  if pURL='' then exit;
+  if pURL='' then
+    exit;
 //  if pos(AnsiString('://'),url) = 0 then
   i := pos('://', pURL);
   if i = 0 then
@@ -249,7 +250,8 @@ var
   mon: TMonitor;
 begin
   mon := Screen.MonitorFromWindow(clHanlde);
-  if (mon = nil) and (Screen.MonitorCount > 0) then mon := Screen.Monitors[0];
+  if (mon = nil) and (Screen.MonitorCount > 0) then
+    mon := Screen.Monitors[0];
   result := mon;
 end;
 
@@ -341,11 +343,11 @@ end; // getURLfromFav
 }
 
 
-function getProxyFromIE : Boolean;
+function getProxyFromIE: Boolean;
 const
   keyName='Software\Microsoft\Windows\CurrentVersion\Internet Settings';
 var
-  reg:Tregistry;
+  reg: Tregistry;
   prox : String;
 begin
   reg:=Tregistry.create;
@@ -402,108 +404,110 @@ end;
 }
 
     {$WARN UNSAFE_CODE OFF}
-function getRegion(bmp:Tbitmap):HRGN;
+function getRegion(bmp: Tbitmap): HRGN;
 var
-  span:HRGN;
-  x,y,sx:integer;
-  p:^integer;
-  transcolor:integer;
+  span: HRGN;
+  x,y,sx: integer;
+  p: ^integer;
+  transcolor: integer;
 
   procedure addspan;
   begin
-  span:=CreateRectRgn(sx,y,x,y+1);
-  CombineRgn(result,result,span, RGN_OR);
-  DeleteObject(span);
-  sx:=-1;
+    span:=CreateRectRgn(sx,y,x,y+1);
+    CombineRgn(result,result,span, RGN_OR);
+    DeleteObject(span);
+    sx:=-1;
   end;
 
 begin
-if not bmp.Transparent then
-  begin
-  result:=0;
-  exit;
-  end;
-result:=CreateRectRgn(0,0,0,0);
-if bmp=NIL then exit;
-with bmp do
+  if not bmp.Transparent then
+   begin
+     result:=0;
+     exit;
+   end;
+  result:=CreateRectRgn(0,0,0,0);
+  if bmp=NIL then
+    exit;
+  with bmp do
   begin
 //  pixelFormat:=pf32bit;
-  transcolor:=ABCD_ADCB(bmp.TransparentColor AND $FFFFFF);
-  for y:=0 to height-1 do
-    begin
-    p:=bmp.scanline[y];
-    sx:=-1;
-    for x:=0 to bmp.width-1 do
-      begin
-      if (p^ <> transcolor) and (sx < 0) then
-        sx:=x;
-      if (p^ = transcolor) and (sx >= 0) then
-        addspan;
-      inc(p);
-      end;
-    if sx >= 0 then
-      addspan;
-    end;
+    transcolor:=ABCD_ADCB(bmp.TransparentColor AND $FFFFFF);
+    for y:=0 to height-1 do
+     begin
+       p:=bmp.scanline[y];
+       sx:=-1;
+       for x:=0 to bmp.width-1 do
+        begin
+         if (p^ <> transcolor) and (sx < 0) then
+           sx:=x;
+         if (p^ = transcolor) and (sx >= 0) then
+           addspan;
+         inc(p);
+        end;
+       if sx >= 0 then
+         addspan;
+     end;
   end;
 end; // getRegion
 
-function getRegion32(bmp:Tbitmap):HRGN;
+function getRegion32(bmp: Tbitmap): HRGN;
 var
-  span:HRGN;
-  x,y,sx:integer;
-  p:^integer;
+  span: HRGN;
+  x,y,sx: integer;
+  p: ^integer;
 //  transcolor:integer;
 
   procedure addspan;
   begin
-  span:=CreateRectRgn(sx,y,x,y+1);
-  CombineRgn(result,result,span, RGN_OR);
-  DeleteObject(span);
-  sx:=-1;
+    span:=CreateRectRgn(sx,y,x,y+1);
+    CombineRgn(result,result,span, RGN_OR);
+    DeleteObject(span);
+    sx:=-1;
   end;
 
 begin
-if not bmp.Transparent then
+  if not bmp.Transparent then
+   begin
+     result:=0;
+     exit;
+   end;
+  result:=CreateRectRgn(0,0,0,0);
+  if bmp=NIL then
+    exit;
+  with bmp do
   begin
-  result:=0;
-  exit;
-  end;
-result:=CreateRectRgn(0,0,0,0);
-if bmp=NIL then exit;
-with bmp do
-  begin
-  pixelFormat:=pf32bit;
+    pixelFormat:=pf32bit;
 //  transcolor:=bmp.TransparentColor AND $FFFFFF;
-  for y:=0 to height-1 do
-    begin
-    p:=bmp.scanline[y];
-    sx:=-1;
-    for x:=0 to bmp.width-1 do
-      begin
-      if (p^ and AlphaMask > 0) and (sx < 0) then
-        sx:=x;
-//      if (p^ <> transcolor) and (sx < 0) then sx:=x;
-      if (p^ and AlphaMask = 0) and (sx >= 0) then
+    for y:=0 to height-1 do
+     begin
+      p:=bmp.scanline[y];
+      sx:=-1;
+      for x:=0 to bmp.width-1 do
+       begin
+        if (p^ and AlphaMask > 0) and (sx < 0) then
+          sx:=x;
+//        if (p^ <> transcolor) and (sx < 0) then sx:=x;
+        if (p^ and AlphaMask = 0) and (sx >= 0) then
+          addspan;
+        inc(p);
+       end;
+      if sx >= 0 then
         addspan;
-      inc(p);
-      end;
-    if sx >= 0 then
-      addspan;
-    end;
+     end;
   end;
 end; // getRegion2
     {$WARN UNSAFE_CODE ON}
 
-function isTopMost(frm:Tform):boolean;
+function isTopMost(frm: Tform): boolean;
 begin
   //result:=frm.FormStyle=fsStayOnTop
   result:=Assigned(frm) and ((getWindowLong(frm.handle, GWL_EXSTYLE) and WS_EX_TOPMOST) > 0)
 end; // isTopMost
 
-function setTopMost(frm:Tform; val:boolean):boolean;
+function setTopMost(frm: Tform; val: boolean): boolean;
 //begin frm.FormStyle:=fsStayOnTop;
 var
-  i:integer;
+  i: integer;
 begin
   if not Assigned(frm) then
      Result := False
@@ -709,8 +713,8 @@ const // firewall management constants
   end; { DSiAddApplicationToFirewallExceptionList }
 
 type
-  ELoadLibraryError = class(EWin32Error);
-  EGetProcAddressError = class(EWin32Error);
+  ELoadLibraryError = class(EOSError);
+  EGetProcAddressError = class(EOSError);
 
 function DelayedFailureHook(dliNotify: dliNotification; pdli: PDelayLoadInfo): Pointer; stdcall;
 var

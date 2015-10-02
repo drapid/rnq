@@ -228,6 +228,10 @@ implementation
 const
   ZL_DEF_COMPRESSIONMETHOD  = $8;  { Deflate }
   ZL_ENCH_COMPRESSIONMETHOD = $9;  { Enchanced Deflate }
+  ZL_BZIP2_COMPRESSIONMETHOD = 12; { BZIP2 }
+  ZL_LZMA_COMPRESSIONMETHOD  = 14;  { LZMA }
+  ZL_WINZIP_AES_COMPRESSIONMETHOD = 99; { AES encrypted}
+
   ZL_DEF_COMPRESSIONINFO    = $7;  { 32k window for Deflate }
   ZL_PRESET_DICT            = $20;
 
