@@ -23,15 +23,15 @@ uses
   procedure TipRemove(cnt : TRnQcontact); overload;
   procedure TipsUpdateByCnt(c : TRnQcontact);
   procedure TipsProced;
-  procedure tipDrawEvent(destDC: HDC; ev : Thevent; pCnt : TRnQContact;
-              var maxX,maxY:integer; calcOnly : Boolean);
+  procedure tipDrawEvent(destDC: HDC; ev: Thevent; pCnt: TRnQContact;
+              var maxX,maxY: integer; calcOnly: Boolean);
 
 implementation
 
  uses
    math, StrUtils, Base64,
-   RQUtil, RnQGraphics32, RnQSysUtils, RnQBinUtils,
-   RDGlobal, RQThemes, RnQLangs,
+   RDUtils, RnQGraphics32, RnQSysUtils, RnQBinUtils,
+   RQUtil, RDGlobal, RQThemes, RnQLangs,
    globalLib, utilLib, RDtrayLib, RnQPics,
  {$IFDEF UNICODE}
    AnsiStrings,
@@ -488,15 +488,15 @@ begin
 end;
 
 
-procedure tipDrawEvent(destDC: HDC; ev : Thevent; pCnt : TRnQContact;
-             var maxX,maxY:integer; calcOnly : Boolean);
+procedure tipDrawEvent(destDC: HDC; ev: Thevent; pCnt: TRnQContact;
+             var maxX,maxY: integer; calcOnly: Boolean);
 var
-  x,y,h:integer;
+  x,y,h: integer;
   fullR, Rcap,
   R,
-  work:Trect;
-//  pc:pchar;
-  vSize:Tsize;
+  work: Trect;
+//  pc: pchar;
+  vSize: Tsize;
   font : TFont;
 
 //  gr: TGPGraphics;
@@ -685,9 +685,9 @@ begin
    {$ENDIF USE_GDIPLUS}
     end;
   if calcOnly then
-    vSize:=theme.GetPicSize(RQteDefault, p)
+    vSize := theme.GetPicSize(RQteDefault, p)
    else
-    vSize:=theme.drawPic(DC, x,y, p)
+    vSize := theme.drawPic(DC, x,y, p)
 ;
   p := '';
   inc(x, vSize.cx+2);

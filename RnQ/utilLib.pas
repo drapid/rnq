@@ -711,7 +711,8 @@ var
   lFileOld,lFileNew, lFileBak: string;
 begin
  Result := False; 
- if fantomWork then Exit;
+ if fantomWork then
+   Exit;
 {
     groups.save;          -- OK
     saveLists(MainProto); -- OK
@@ -3125,21 +3126,22 @@ if ansiContainsText(s, AnsiString('balloon')) then include(result.trig, BE_BALLO
 end; // str2beh
 
 //function event2imgidx(e:integer):integer;
-function event2imgName(e: integer): AnsiString;
+function event2imgName(e: integer): TPicName;
 begin
 case e of
-  EK_URL:       result:= PIC_URL;
-  EK_MSG:       result:= PIC_MSG;
-  EK_CONTACTS:  result:= PIC_CONTACTS;
-  EK_ADDEDYOU:  result:= PIC_ADDEDYOU;
-  EK_AUTHREQ:   result:= PIC_AUTH_REQ;
-  EK_TYPINGBEG: result:= PIC_TYPING;
-  EK_TYPINGFIN: result:= PIC_TYPING;
-  EK_ONCOMING:  result:= PIC_ONCOMING;
-  EK_OFFGOING:  result:= PIC_OFFGOING;
-  EK_file:      result:= PIC_FILE;
-  EK_GCARD:     result:= PIC_GCARD;
-  else          result:= PIC_OTHER_EVENT;
+  EK_URL:       result := PIC_URL;
+  EK_MSG:       result := PIC_MSG;
+  EK_CONTACTS:  result := PIC_CONTACTS;
+  EK_ADDEDYOU:  result := PIC_ADDEDYOU;
+  EK_AUTHREQ:   result := PIC_AUTH_REQ;
+  EK_TYPINGBEG: result := PIC_TYPING;
+  EK_TYPINGFIN: result := PIC_TYPING;
+  EK_ONCOMING:  result := PIC_ONCOMING;
+  EK_OFFGOING:  result := PIC_OFFGOING;
+  EK_file:      result := PIC_FILE;
+  EK_GCARD:     result := PIC_GCARD;
+  EK_BUZZ:      result := PIC_BUZZ;
+  else          result := PIC_OTHER_EVENT;
   end;
 end; // event2imgidx
 

@@ -424,7 +424,7 @@ uses
   RDFileUtil, RQUtil, RDUtils, RnQSysUtils,
   globalLib, viewInfoDlg, //searchhistDlg,
   outboxlib, utilLib, outboxDlg, RnQTips, RnQPics,
-  langLib, roasterLib, ViewHEventDlg,
+  langLib, roasterLib, ViewHEventDlg, ViewPicDimmedDlg,
   RnQNet.Uploads,
  {$IFNDEF DB_ENABLED}
 //    RegExpr,
@@ -2219,7 +2219,10 @@ begin
   else
 //    if pointedItem.kind<>PK_NONE then
     if clickedItem.kind<>PK_NONE then
-      viewHeventWindow(clickedItem.ev);
+      if ((clickedItem.Kind = PK_RQPIC) or (clickedItem.Kind = PK_RQPICEX)) and not (clickedItem.ev.getBodyBin = '')then
+        viewImageDimmed(clickedItem.ev.getBodyBin, clickedItem.ofs)
+      else
+        viewHeventWindow(clickedItem.ev);
 end; // open
 
 procedure TchatFrm.txt1Click(Sender: TObject);

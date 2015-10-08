@@ -692,24 +692,24 @@ type
 
   protected
     // event managing
-    procedure notifyListeners(ev:TicqEvent);
+    procedure notifyListeners(ev: TicqEvent);
     // send packets
-    procedure sendMSGsnac(const uin : TUID; const sn : RawByteString);
-    procedure sendCryptMSGsnac(const uin : TUID; const sn : RawByteString);
-    procedure sendSMS(dest, msg:string; ack:boolean);
+    procedure sendMSGsnac(const uin: TUID; const sn: RawByteString);
+    procedure sendCryptMSGsnac(const uin: TUID; const sn: RawByteString);
+    procedure sendSMS(dest, msg: string; ack: boolean);
 
 //    procedure sendPermissions;
 
 {$IFDEF UseNotSSI}
-    procedure sendAddContact(cl:TRnQCList; OnlyLocal : Boolean = False); overload;
-    procedure sendRemoveContact(cl:TRnQCList); overload;
+    procedure sendAddContact(cl: TRnQCList; OnlyLocal: Boolean = False); overload;
+    procedure sendRemoveContact(cl: TRnQCList); overload;
 {$ENDIF UseNotSSI}
-    procedure sendRemoveVisible(cl:TRnQCList); overload;
-    procedure sendRemoveInvisible(cl:TRnQCList); overload;
-    procedure sendAddInvisible(cl:TRnQCList); overload;
-    procedure sendAddVisible(cl:TRnQCList); overload;
+    procedure sendRemoveVisible(cl: TRnQCList); overload;
+    procedure sendRemoveInvisible(cl: TRnQCList); overload;
+    procedure sendAddInvisible(cl: TRnQCList); overload;
+    procedure sendAddVisible(cl: TRnQCList); overload;
 
-    procedure sendACK(cont : TICQContact; status:integer; const msg:string; DownCnt: word = $FFFF);
+    procedure sendACK(cont: TICQContact; status: integer; const msg: string; DownCnt: word = $FFFF);
     procedure sendVisibility;
 
     procedure parseTYPING_NOTIFICATION(const pkt : RawByteString);
@@ -831,25 +831,25 @@ type
     procedure sendCookie;
     procedure SendReqBuddy(Second: Boolean = False);
 
-    procedure sendIMparameter(chn : AnsiChar);
+    procedure sendIMparameter(chn: AnsiChar);
     procedure sendClientReady;
     procedure sendAckTo107;
-    function  addRef(k:TrefKind; const uin:TUID):integer;
+    function  addRef(k: TrefKind; const uin: TUID):integer;
     function  dontBotherStatus:boolean;
     function  myUINle: RawByteString;
     function  getFullStatusCode:dword;
 
    public // All
-    function  sendMsg(cnt : TRnQContact; var flags:dword; const msg:string; var requiredACK:boolean):integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP} // returns handle
+    function  sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK:boolean):integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP} // returns handle
     function  sendBuzz(cnt: TRnQContact): Boolean;
-    procedure SetListener(l : TProtoNotify); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure AuthGrant(Cnt : TRnQContact); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure AuthRequest(cnt : TRnQContact; const reason : String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure SetListener(l: TProtoNotify); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure AuthGrant(Cnt: TRnQContact); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure AuthRequest(cnt: TRnQContact; const reason: String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    function  isMyAcc(c : TRnQContact) : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  getMyInfo : TRnQContact; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  isMyAcc(c: TRnQContact) : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getMyInfo: TRnQContact; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    procedure setMyInfo(cnt : TRnQContact);
-    function  getStatuses : TStatusArray; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getStatuses: TStatusArray; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  getVisibilitis : TStatusArray; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  getStatusMenu  : TStatusMenu; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  getVisMenu     : TStatusMenu; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -5018,6 +5018,12 @@ begin
      nickFlags := 0;
   cont.isMobile := nickFlags and $0080 > 0;
 
+  i := findTLV($44, snac, ofs); // Last time client was present
+  if i > 0 then
+  begin
+    cont.noClient := not (getTLVdwordBE(@snac[i]) = $FFFFFFFF);
+    cont.clientClosed := UnixToDateTime(getTLVdwordBE(@snac[i]));
+  end;
 (*
 {  i := findTLV($1F, snac,ofs); // NICK_FLAGS2 - Upper bytes of nick flags, can be any size. nickFlags = NICK_FLAG | (NICK_FLAGS2 << 16)
    if i>0 then
@@ -5622,22 +5628,25 @@ procedure TicqSession.notificationForMsg(msgtype:byte; flags:byte; urgent:boolea
 var
   mm : RawByteString;
 begin
-if msgtype in MTYPE_AUTOMSGS then
+  if msgtype in MTYPE_AUTOMSGS then
   begin
-  notifyListeners(IE_automsgreq);
-  exit;
+    notifyListeners(IE_automsgreq);
+    exit;
   end;
 // sefg if msg='' then exit;
 //eventFlags:=0;
-if flags and $80 > 0 then inc(eventFlags, IF_multiple);
-if flags and $40 > 0 then inc(eventFlags, IF_no_matter);
-if urgent then inc(eventFlags, IF_urgent);
+  if flags and $80 > 0 then
+    inc(eventFlags, IF_multiple);
+  if flags and $40 > 0 then
+    inc(eventFlags, IF_no_matter);
+  if urgent then
+    inc(eventFlags, IF_urgent);
 //if offline then inc(eventFlags, IF_offline);
 case msgtype of
   MTYPE_PLAIN:
     begin
-    eventMsgA := msg;
-    notifyListeners(IE_msg);
+      eventMsgA := msg;
+      notifyListeners(IE_msg);
     end;
   MTYPE_URL:
     begin
@@ -5648,33 +5657,33 @@ case msgtype of
     end;
   MTYPE_CONTACTS:
     begin
-    parseContactsString(msg);
-    notifyListeners(IE_contacts);
+      parseContactsString(msg);
+      notifyListeners(IE_contacts);
     end;
   MTYPE_ADDED:
     begin
-    parseAuthString(msg);
-    notifyListeners(IE_addedYou);
+      parseAuthString(msg);
+      notifyListeners(IE_addedYou);
     end;
   MTYPE_AUTHREQ:
     begin
-    parseAuthString(msg);
-    notifyListeners(IE_authReq);
+      parseAuthString(msg);
+      notifyListeners(IE_authReq);
     end;
   MTYPE_EEXPRESS:
     begin
-    parsePagerString(msg);
-    notifyListeners(IE_email);
+      parsePagerString(msg);
+      notifyListeners(IE_email);
     end;
   MTYPE_SERVER:
     begin
-    parsePagerString(msg);
-    notifyListeners(IE_fromMirabilis);
+      parsePagerString(msg);
+      notifyListeners(IE_fromMirabilis);
     end;
   MTYPE_WWP:
     begin
-    parsePagerString(msg);
-    notifyListeners(IE_webpager);
+      parsePagerString(msg);
+      notifyListeners(IE_webpager);
     end;
   end;
 end; // notificationForMsg
@@ -5737,7 +5746,7 @@ else
 notifyListeners(IE_gcard);
 end; // parseGCdata
 
-procedure TicqSession.parseSRV_LOCATION_ERROR(const snac:RawByteString; ref:integer);
+procedure TicqSession.parseSRV_LOCATION_ERROR(const snac: RawByteString; ref: integer);
 //var
 //  i : Integer;
 begin
@@ -5782,7 +5791,7 @@ begin
   notifyListeners(IE_msgError);
 end; // parseMsgError
 
-procedure TicqSession.parseMsgError(const snac: RawByteString; ref:integer);
+procedure TicqSession.parseMsgError(const snac: RawByteString; ref: integer);
 begin
   eventMsgID:=ref;
   eventInt:=word_BEat(@snac[1]);
@@ -6479,15 +6488,15 @@ end; // parseincomingMsg
 
 procedure TicqSession.parsePagerString(s: RawByteString);
 begin
-eventNameA:=chop(#$FE,s);
-chop(#$FE,s);
-chop(#$FE,s);
-eventAddress:=chop(#$FE,s);
-chop(#$FE,s);
-eventMsgA:=s;
+  eventNameA := chop(#$FE,s);
+  chop(#$FE,s);
+  chop(#$FE,s);
+  eventAddress := chop(#$FE,s);
+  chop(#$FE,s);
+  eventMsgA := s;
 end; // parsePagerString
 
-procedure TicqSession.parseAuthReq(const pkt : RawByteString);
+procedure TicqSession.parseAuthReq(const pkt: RawByteString);
 var
   ofs : Integer;
   uin : TUID;
@@ -6570,7 +6579,7 @@ var
       eventwp.email  := unUTF( getTLVSafe(META_COMPAD_EMAIL, snac, ofs));
       eventwp.authRequired:= getTLVSafe(META_COMPAD_AUTH, snac, ofs) = #1;// readBYTE(snac, ofs)=0;
 
-      eventwp.status := 00;//readWORD(snac, ofs);
+      eventwp.status := 00; //readWORD(snac, ofs);
       s := getTLVSafe(META_COMPAD_STATUS, snac, ofs);
       if Length(s) = 2 then
         eventwp.status := word_LEat(Pointer(s));
@@ -10417,7 +10426,7 @@ end;
 
 procedure TicqSession.SSIchkRoster;
 begin
-  sendSNAC(ICQ_LISTS_FAMILY, $05, dword_LEasStr(DateTimeToUnix(localSSI_modTime)) +
+  sendSNAC(ICQ_LISTS_FAMILY, $05, dword_BEasStr(DateTimeToUnix(localSSI_modTime)) +
             word_BEasStr(localSSI_itemCnt));
 end;
 

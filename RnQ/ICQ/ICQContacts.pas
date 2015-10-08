@@ -48,23 +48,25 @@ type
 
   TICQcontact = class(TRnQContact)
    public
-    uinINT:integer;
+    uinINT: integer;
 //   private
 //   public
-    invisible:boolean;
+    invisible: boolean;
+    noClient: boolean;
+    clientClosed: TDateTime;
     status: TICQstatus;
     prevStatus: TICQstatus;
    { $IFDEF CHECK_INVIS}
-    invisibleState:byte;
+    invisibleState: byte;
    { $ENDIF}
     crypt : record
-      supportCryptMsg : Boolean;
-      cryptPWD : RawByteString;
-      qippwd : Integer;
+      supportCryptMsg: Boolean;
+      cryptPWD: RawByteString;
+      qippwd: Integer;
      end;  
     gender: Smallint;
     age: Smallint ;
-    MarStatus : word;
+    MarStatus: word;
     email,
     address,
     city,

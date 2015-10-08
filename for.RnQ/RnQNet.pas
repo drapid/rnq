@@ -23,7 +23,10 @@ type
 
 type
   TproxyProto = (PP_NONE=0, PP_SOCKS4=1, PP_SOCKS5=2, PP_HTTPS=3);
-  Thostport = record host: String; port : Integer; end;
+  Thostport = record
+    host: String;
+    port: Integer;
+  end;
 
   Tproxy = record
     name : string;
@@ -708,7 +711,8 @@ begin
         self.SslEnable := True;
         self.StartSslHandshake;
        except
-          on E : Exception do begin
+         on E: Exception do
+           begin
              if Assigned(FOnSocksError) then
                FOnSocksError(Self, 1001, E.Classname + ' ' + E.Message);
              Close;

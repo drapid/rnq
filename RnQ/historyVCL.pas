@@ -187,7 +187,7 @@ uses
  {$ENDIF UNICODE}
   RnQSysUtils, RnQLangs, RnQFileUtil, RDUtils, RnQBinUtils,
   RQUtil, RQThemes, RnQButtons, RnQGlobal, RnQCrypt, RnQPics,
-  globalLib, mainDlg, chatDlg, utilLib,
+  globalLib, mainDlg, chatDlg, utilLib, ViewPicDimmedDlg,
   roasterLib,
   {$IFDEF USE_GDIPLUS}
 //  KOLGDIPV2,
@@ -2218,7 +2218,12 @@ procedure ThistoryBox.mouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: 
   begin
   result := just2clicked;
   if just2clicked and not justTriggeredAlink and equal(lastClickedItem, pointedItem) then
-    viewHeventWindow(history.getAt(endSel.evIdx));
+    begin
+      if ((lastClickedItem.Kind = PK_RQPIC) or (lastClickedItem.Kind = PK_RQPICEX)) and not (lastClickedItem.ev.getBodyBin = '') then
+        viewImageDimmed(clickedItem.ev.getBodyBin, clickedItem.ofs)
+       else
+        viewHeventWindow(history.getAt(endSel.evIdx));
+    end;
   end; // doubleClick
 
 begin

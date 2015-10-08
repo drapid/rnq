@@ -2404,7 +2404,8 @@ begin
     Result := TRnQBitmap.Create(width, height);
     Result.f32Alpha := f32Alpha;
 //    B32.SetSize(PNG.Width,PNG.Height);
-    if (fBmp.Width=0) or (fBmp.Height=0) then exit;
+    if (fBmp.Width=0) or (fBmp.Height=0) then
+      exit;
 //    SetStretchBltMode(fBmp.Canvas.Handle,COLORONCOLOR);
     if f32Alpha then
       Result.fBmp.PixelFormat := pf32bit
@@ -2567,8 +2568,8 @@ begin
   ImageBits := nil;
 
   //Allocate a DIB for the color data and alpha channel
-  with BitmapInfo.bmiHeader
-  do begin
+  with BitmapInfo.bmiHeader do
+  begin
      bV4Size := SizeOf(BitmapInfo.bmiHeader);
      bV4Width := Self.Width;
      bV4Height := Self.Height;
@@ -3837,13 +3838,14 @@ var
   ThisTime: DWord;
 begin
   Result:= False;
-if not fAnimated then Exit;
+  if not fAnimated then
+    Exit;
 
 //FCurrentFrame := 6; exit;
 
-ThisTime := timeGetTime;
-if ThisTime - LastTime < CurrentInterval then
-   Exit;
+  ThisTime := timeGetTime;
+  if ThisTime - LastTime < CurrentInterval then
+    Exit;
 
 LastTime := ThisTime;
 
@@ -3892,7 +3894,7 @@ begin
   {$ENDIF NOT_USE_GDIPLUS}
 end;
 
-function CreateAni(fs : TStream; var b : Boolean): TRnQBitmap; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+function CreateAni(fs: TStream; var b: Boolean): TRnQBitmap; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
   {$IFDEF NOT_USE_GDIPLUS}
   result := LoadAGifFromStream(b, fs);
@@ -3910,9 +3912,9 @@ begin
               ColorToRGB(Color)) and $ffffff);
 end;
 
-function color2hls(clr:Tcolor):Thls;
+function color2hls(clr: Tcolor): Thls;
 var
-  r,g,b,a,z,d:double;
+  r,g,b,a,z,d: double;
 begin
 clr:=colorToRGB(clr);
 r:=GetRvalue(clr)/255;
@@ -3938,9 +3940,9 @@ with result do
   end;
 end; // color2hls
 
-function hls2color(hls:Thls):Tcolor;
+function hls2color(hls: Thls): Tcolor;
 var
-  r,g,b, p,q,t:double;
+  r,g,b, p,q,t: double;
 begin
 with hls do
   if s = 0 then
@@ -3967,7 +3969,7 @@ with hls do
 result:=round(r*255)+round(g*255) shl 8+round(b*255) shl 16;
 end; // hls2color
 
-function addLuminosity(clr:Tcolor; q:real):Tcolor;
+function addLuminosity(clr: Tcolor; q: real): Tcolor;
 var
   hls:Thls;
 begin
@@ -3981,7 +3983,7 @@ with hls do
 result:=hls2color(hls);
 end; // addLuminosity
 
-function  MidColor(clr1, clr2 : Cardinal) : Cardinal;
+function  MidColor(clr1, clr2: Cardinal): Cardinal;
 begin
   result := 0;
   result := result + ((byte(clr1 shr 24) + byte(clr2 shr 24)) div 2) shl 24;
@@ -3990,7 +3992,7 @@ begin
   result := result + ((byte(clr1) + byte(clr2)) div 2);
 end;
 
-function  MidColor(const clr1, clr2 : Cardinal; koef : Double) : Cardinal; overLoad;
+function  MidColor(const clr1, clr2: Cardinal; koef: Double): Cardinal; overLoad;
 var
   r1, g1, b1, a1 : Byte;
   r2, g2, b2, a2 : Byte;
@@ -4018,9 +4020,9 @@ begin
 end;
 
 
-function bmp2ico2(bitmap:Tbitmap):Ticon;
+function bmp2ico2(bitmap: Tbitmap): Ticon;
 var
-  iconX, iconY : integer;
+  iconX, iconY: integer;
   IconInfo: TIconInfo;
   IconBitmap, MaskBitmap: TBitmap;
 //  dx,dy,
@@ -4084,10 +4086,10 @@ MaskBitmap.Free;
 IconBitmap.Free;
 end; // bmp2ico
 
-function bmp2ico3(bitmap:Tbitmap):Ticon;
+function bmp2ico3(bitmap: Tbitmap): Ticon;
 var
-  il : THandle;
-  hi : HICON;
+  il: THandle;
+  hi: HICON;
   iconX, iconY : integer;
 begin
   Result := TIcon.Create;
@@ -4104,7 +4106,8 @@ begin
 //  DestroyIcon(hi);
   ImageList_Destroy(il);
 end;
-function bmp2ico32(bitmap:Tbitmap):hicon;
+
+function bmp2ico32(bitmap: Tbitmap): HICON;
 var
   il : THandle;
   i : Integer;
@@ -4136,7 +4139,7 @@ begin
   ImageList_Destroy(il);
 end;
 
-function bmp2ico4M(bitmap:Tbitmap):hicon;
+function bmp2ico4M(bitmap: Tbitmap): HICON;
 var
   il : THandle;
   i : Integer;
@@ -4184,7 +4187,7 @@ begin
   ImageList_Destroy(il);
 end;
 
-function bmp2ico(bitmap:Tbitmap):Ticon;
+function bmp2ico(bitmap: Tbitmap): Ticon;
 var
   iconX, iconY : integer;
   IconInfo: TIconInfo;
@@ -4192,11 +4195,11 @@ var
   dx,dy,x,y: Integer;
   tc: TColor;
 begin
-if bitmap=NIL then
-  begin
-  result:=NIL;
-  exit;
-  end;
+  if bitmap=NIL then
+   begin
+    result:=NIL;
+    exit;
+   end;
 iconX := GetSystemMetrics(SM_CXICON);
 iconY := GetSystemMetrics(SM_CYICON);
 IconBitmap:= TBitmap.Create;
@@ -4238,10 +4241,12 @@ MaskBitmap.Free;
 IconBitmap.Free;
 end; // bmp2ico
 
-function pic2ico(pic:Tbitmap):Ticon;
-begin result:=bmp2ico(pic) end;
+function pic2ico(pic: Tbitmap): Ticon;
+begin
+  result:=bmp2ico(pic)
+end;
 
-procedure ico2bmp(ico : TIcon; bmp : TBitmap);
+procedure ico2bmp(ico: TIcon; bmp: TBitmap);
 //var
 //  IcoStream : TIconStream;
 //  str: TMemoryStream;

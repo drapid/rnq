@@ -1537,11 +1537,11 @@ with fZipData^ do
         j := (rCurY * rID^.rWidth) + rCurX;
         if ((0 <= j) and (j < rID^.rPixelCount)) then
             begin
-{$IFDEF DELPHI_12_UP}
+{$IFDEF DELPHI12_UP}
             p := rID^.rPixelList + j;
-{$ELSE ~DELPHI_12_UP}
+{$ELSE ~DELPHI12_UP}
             p := PByte(LongInt(rID^.rPixelList) + j);
-{$ENDIF ~DELPHI_12_UP}
+{$ENDIF ~DELPHI12_UP}
             n := byte(p^);
             end
         else
@@ -1662,11 +1662,11 @@ if ((x < 0) or (x >= id^.rWidth))  then GIF_Error(15);
 if ((y < 0) or (y >= id^.rHeight)) then GIF_Error(15);
 
  n := (y * id^.rWidth) + x;
-{$IFDEF DELPHI_12_UP}
+{$IFDEF DELPHI12_UP}
   p := id^.rPixelList + n;
-{$ELSE ~DELPHI_12_UP}
+{$ELSE ~DELPHI12_UP}
   p := PByte(LongInt(id^.rPixelList) + n);
-{$ENDIF ~DELPHI_12_UP}
+{$ENDIF ~DELPHI12_UP}
  i := byte(p^);
 
 GetColorIndex := i;

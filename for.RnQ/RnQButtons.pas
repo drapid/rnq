@@ -610,7 +610,7 @@ uses Consts, SysUtils, ActnList,
  DwmApi,
  {$ENDIF DELPHI9_UP}
  {$IFDEF RNQ}
- RQUtil,
+ RDUtils,
  {$ENDIF RNQ}
  Types
  ;

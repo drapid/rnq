@@ -481,12 +481,12 @@ begin
     exec('mailto:'+ ml);
 end; // sendEmailTo
 
-function str2db(pProto : TRnQProtocol; const s: RawByteString;
-                var ok:boolean; pCheckGroups : Boolean):TRnQCList;
+function str2db(pProto: TRnQProtocol; const s: RawByteString;
+                var ok: boolean; pCheckGroups: Boolean): TRnQCList;
 const
   ErrCorupted = 'The contacts database is corrupted, some data is lost';
 var
-  t,l,i:integer;
+  t,l,i: integer;
   d: RawByteString;
 //  c:TICQcontact;
   c:TRnQContact;

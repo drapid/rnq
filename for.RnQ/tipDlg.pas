@@ -162,7 +162,8 @@ end;
 
 procedure Ttipfrm.showTip;
 begin
-  if not preshow() then exit;
+  if not preshow() then
+    exit;
   postshow();
   Paint;
 end;
@@ -536,8 +537,10 @@ mousedown:=TRUE;
 actionCount:=3;
 if action=TA_null then
   begin
-  if shift=[ssLeft]  then action:=TA_lclick;
-  if shift=[ssRight] then action:=TA_rclick;
+  if shift=[ssLeft]  then
+    action:=TA_lclick;
+  if shift=[ssRight] then
+    action:=TA_rclick;
   end
 else
   case action of

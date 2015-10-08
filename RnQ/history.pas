@@ -392,12 +392,13 @@ begin
    with Thevent(items[i]) do
    begin
     if ID = pID then
-     begin
+      begin
        Result := Thevent(items[i]);
        break;
-     end
-    else
-     if ID = Max_Event_ID then Exit;
+      end
+     else
+      if ID = Max_Event_ID then
+        Exit;
     dec(i);
    end;
 end;
@@ -410,7 +411,8 @@ begin
  {$IFDEF DB_ENABLED}
  {$ELSE ~DB_ENABLED}
   i:=st;
-  while (st>=en) and (getAt(en) <> NIL)and(getAt(en).fpos < 0) do dec(en);
+  while (st>=en) and (getAt(en) <> NIL)and(getAt(en).fpos < 0) do
+    dec(en);
   while i <= en do
     begin
     if getAt(i).fpos < 0 then

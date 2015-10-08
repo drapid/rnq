@@ -39,10 +39,10 @@ interface
 
 //  function qip_msg_decr(s1 : RawByteString; s2: AnsiString; n:integer): AnsiString;
 //  function qip_msg_crypt(s1, s2: AnsiString;n:integer): RawByteString;
-  function qip_msg_crypt(s : AnsiString; p : Integer): RawByteString;
-  function qip_msg_decr(s1 : RawByteString; p:integer): AnsiString;
+  function qip_msg_crypt(const s : AnsiString; p : Integer): RawByteString;
+  function qip_msg_decr(const s1 : RawByteString; p:integer): AnsiString;
 //  function qip_msg_crypt(s1, s2: AnsiString;n:integer): RawByteString;
-  function qip_str2pass(s : RawByteString) : Integer;
+  function qip_str2pass(const s : RawByteString) : Integer;
 
 
 {$IFDEF usesDC}
@@ -60,7 +60,7 @@ type
  function peer_oft_checksum_file(fn : String; InitChkSum : Cardinal = $ffff0000) : Cardinal;
 {$ENDIF usesDC}
 
- procedure parseImgLinks(var msg: RawByteString);
+ procedure parseImgLinks2(var msg: RawByteString);
 
 var
   Attached_login_email:  string;
@@ -78,7 +78,7 @@ var
 
 implementation
 uses
-  DateUtils,
+  DateUtils, ansistrings, AnsiClasses, JSON,
   math, Types, StrUtils,
   RDGlobal, RnQBinUtils, RDFileUtil, RDUtils, Base64,
   RnQGlobal,
@@ -1137,7 +1137,7 @@ begin
 end;
 
 
-function qip_msg_crypt(s : AnsiString; p : Integer): RawByteString;
+function qip_msg_crypt(const s: AnsiString; p: Integer): RawByteString;
 //                 текст    пароль
 const
   n0=$1B5F;
@@ -1161,7 +1161,7 @@ begin
   Result:= Base64EncodeString(s5);
 end;
 
-function qip_str2pass(s : RawByteString) : Integer;
+function qip_str2pass(const s: RawByteString): Integer;
 var
   l, i : Integer;
 begin
@@ -1175,7 +1175,7 @@ begin
    end;
 end;
 
-function qip_msg_decr(s1 : RawByteString; p:integer): AnsiString;
+function qip_msg_decr(const s1: RawByteString; p: integer): AnsiString;
 const
   n0=$1B5F;
 var
@@ -1202,26 +1202,52 @@ begin
     end;
 end;
 
-procedure parseImgLinks(var msg: RawByteString);
+procedure parseImgLinks2(var msg: RawByteString);
 var
-  msgTmp, sA, imgStr: RawByteString;
+  msgTmp, sA, imgStr, mime, fileIdStr: RawByteString;
   buf: TMemoryStream;
-  strs : TStringDynArray;
-  i: Integer;
+  strs : TAnsiStringDynArray;
+  i, j, p: Integer;
+  JSONObject, JSONObject2: TJSONObject;
 begin
   if (msg <> '') then
   begin
     msgTmp := msg;
-    strs := SplitString(msgTmp, ' ;,"'''#13#10);
+    strs := SplitAnsiString(msgTmp, ' ;,"'''#13#10);
     for i := Low(strs) to High(strs) do
-    if StartsText('http://', strs[i]) or StartsText('https://', strs[i]) or StartsText('www.', strs[i]) then
+{ TODO -oRapid D : Add parallel downloads }
+    if AnsiStartsText('http://', strs[i]) or StartsText('https://', strs[i]) or StartsText('www.', strs[i]) then
     begin
-      if ContainsText(strs[i], 'files.icq.net/get/') then
-        sA := Trim(ReplaceText(strs[i], 'files.icq.net/get', 'files.icq.com/preview/max/1000000'))
-      else
+      if AnsiContainsText(strs[i], 'files.icq.net/') then
+        begin
+          buf := TMemoryStream.Create;
+          fileIdStr := AnsiReplaceText(Trim(strs[i]), 'files.icq.net/get/', 'files.icq.com/getinfo?file_id=');
+          fileIdStr := AnsiReplaceText(fileIdStr, 'files.icq.net/files/get?fileId=', 'files.icq.com/getinfo?file_id=');
+          LoadFromURL(fileIdStr, buf);
+          SetLength(imgStr, buf.Size);
+          buf.ReadBuffer(imgStr[1], buf.Size);
+          buf.Free;
+          if imgStr > '' then
+           begin
+            JSONObject := TJSONObject.ParseJSONValueUTF8(@imgStr[1], 1, length(imgStr)) as TJSONObject;
+            if Assigned(JSONObject) then
+            begin
+              try
+                JSONObject2 := TJSONObject.ParseJSONValue(TJSONArray(JSONObject.GetValue('file_list')).Items[0].ToJSON) as TJSONObject;
+                sA := JSONObject2.GetValue('dlink').Value + '?no-download=1';
+                mime := JSONObject2.GetValue('mime').Value;
+                JSONObject2.Free;
+               except
+              end;
+              JSONObject.Free;
+            end;
+
+           end;
+        end
+       else
         sA := Trim(strs[i]);
 
-      if MatchText(HeaderFromURL(sA), ImageContentTypes) then
+      if MatchText(mime, ImageContentTypes) or MatchText(HeaderFromURL(sA), ImageContentTypes) then
       begin
         buf := TMemoryStream.Create;
         LoadFromURL(sA, buf);

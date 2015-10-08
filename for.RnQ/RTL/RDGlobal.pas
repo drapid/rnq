@@ -93,7 +93,7 @@ type
   end;
   TPointDynArray = array of TGPPoint;
 
-  function MakePoint(p2 : TPoint): TGPPoint; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+  function MakePoint(p2: TPoint): TGPPoint; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 //  function MakePoint(X, Y: Integer): TGPPoint; overload;
 
 //--------------------------------------------------------------------------

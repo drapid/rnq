@@ -21,6 +21,10 @@ function  boundInt(var i: Integer; min, max: Integer): Integer;
 function  bound(i: Integer; min, max: Integer): Integer;
 function  within(pt: Tpoint; x, y, w, h: Integer): boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 function  within(a, b, c: Integer): boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+function  DestRect(const W, H, cw, ch: Integer): TGPRect; overload;
+function  DestRect(const PicSize, DestSize : TGPSize): TGPRect; overload;
+function  BoundsSize(srcSize, maxSize : TSize) : TSize; overload;
+function  BoundsSize(srcCX, srcCY, maxCX, maxCY : Longint) : TSize; overload;
 // strings
 function  isURL(const s: string; ofs: Integer=1): boolean;
 function  ipos(const ss: string; const s: string): Integer;
@@ -162,7 +166,7 @@ var
 
 implementation
   uses
-    StrUtils,
+    StrUtils, Math,
   {$IFDEF UNICODE}
     Character,
   {$ENDIF UNICODE}
@@ -267,6 +271,256 @@ function within(pt: Tpoint; x, y, w, h: Integer): boolean; overload; {$IFDEF HAS
 begin
   result:=(pt.x>=x) and (pt.y>=y) and (pt.x < x+w) and (pt.y < y+h)
 end;
+
+function BoundsSize(srcCX, srcCY, maxCX, maxCY : Longint): TSize;
+begin
+  if (srcCX > maxCX )
+   or (srcCY > maxCY) then
+  begin
+   if srcCX * maxCY < srcCY * maxCX then
+     begin
+       Result.cx := maxCY * srcCX div srcCY;
+//       Result.cx := MulDiv(maxCY, srcCX, srcCY);
+       Result.cy := maxCY;
+     end
+    else
+     begin
+       Result.cx := maxCX;
+       Result.cy := maxCX * srcCY div srcCX;
+//       Result.cy := MulDiv(maxCX, srcCY, srcCX);
+     end;
+  end
+  else
+   begin
+    result.cx := srcCX;
+    result.cy := srcCY;
+   end;
+end;
+
+function BoundsSize(srcSize, maxSize : TSize) : TSize;
+begin
+  if (srcSize.cx > maxSize.cx )
+   or (srcSize.cy > maxSize.cy) then
+  begin
+   if srcSize.cx * maxSize.cy < srcSize.cy * maxSize.cx then
+     begin
+       Result.cx := maxSize.cy*srcSize.cx div srcSize.cy;
+//       Result.cx := MulDiv(maxSize.cy, srcSize.cx, srcSize.cy);
+       Result.cy := maxSize.cy;
+     end
+    else
+     begin
+       Result.cx := maxSize.cx;
+       Result.cy := maxSize.cx*srcSize.cy div srcSize.cx;
+     end;
+  end
+  else
+   result := srcSize;
+end;
+
+{function DestRect(W, H, cw, ch :Integer): TRect;
+const
+  Stretch = false;
+  Proportional = True;
+  Center  = True;
+var
+//  w, h, cw, ch: Integer;
+  xyaspect: Double;
+begin
+//  w := Picture.GetWidth;
+//  h := Picture.GetHeight;
+//  cw := ClientWidth;
+//  ch := ClientHeight;
+  if Stretch or (Proportional and ((w > cw) or (h > ch))) then
+  begin
+    if Proportional and (w > 0) and (h > 0) then
+    begin
+      xyaspect := w / h;
+      if w > h then
+      begin
+        w := cw;
+        h := Trunc(cw / xyaspect);
+        if h > ch then  // woops, too big
+        begin
+          h := ch;
+          w := Trunc(ch * xyaspect);
+        end;
+      end
+      else
+      begin
+        h := ch;
+        w := Trunc(ch * xyaspect);
+        if w > cw then  // woops, too big
+        begin
+          w := cw;
+          h := Trunc(cw / xyaspect);
+        end;
+      end;
+    end
+    else
+    begin
+      w := cw;
+      h := ch;
+    end;
+  end;
+
+  with Result do
+  begin
+    Left := 0;
+    Top := 0;
+    Right := w;
+    Bottom := h;
+  end;
+
+  if Center then
+    OffsetRect(Result, (cw - w) div 2, (ch - h) div 2);
+end;}
+
+function DestRect(const W, H, cw, ch :Integer): TGPRect;
+const
+  Stretch = false;
+  Proportional = True;
+  Center  = True;
+var
+//  w, h, cw, ch: Integer;
+  xyaspect: Double;
+//  i, j : Integer;
+begin
+//  w := Picture.GetWidth;
+//  h := Picture.GetHeight;
+//  cw := ClientWidth;
+//  ch := ClientHeight;
+  with Result do
+  begin
+//    X := 0;
+//    Y := 0;
+    Width := min(cW, w);
+    Height := min(cH, h);
+  end;
+
+  if Stretch or (Proportional and ((w > cw) or (h > ch))) then
+  begin
+    if Proportional and (w > 0) and (h > 0) then
+    begin
+      xyaspect := w / h;
+      if w > h then
+      begin
+//        w := cw;
+//        Result.Width := cw;
+        Result.Height := Trunc(cw / xyaspect);
+        if Result.Height > ch then  // woops, too big
+        begin
+          Result.Height := ch;
+          Result.Width := Trunc(ch * xyaspect);
+        end;
+      end
+      else
+      begin
+//        h := ch;
+        Result.Width := Trunc(ch * xyaspect);
+        if Result.Width > cw then  // woops, too big
+        begin
+          Result.Width := cw;
+          Result.Height := Trunc(cw / xyaspect);
+        end;
+      end;
+    end
+{    else
+    begin
+      w := cw;
+      h := ch;
+    end;}
+  end;
+
+  if Center then
+   begin
+//    OffsetRect(Result, (cw - w) div 2, (ch - h) div 2);
+//     inc(Result.X, (cw - w) div 2);
+//     inc(Result.Y, (ch - h) div 2);
+     Result.X := (cw - Result.Width) div 2;
+     Result.Y := (ch - Result.Height) div 2;
+   end;
+end;
+
+function  DestRect(const PicSize, DestSize : TGPSize): TGPRect;
+const
+  Stretch = false;
+  Proportional = True;
+  Center  = True;
+var
+//  w, h, cw, ch: Integer;
+  xyaspect: Double;
+begin
+//  w := Picture.GetWidth;
+//  h := Picture.GetHeight;
+//  cw := ClientWidth;
+//  ch := ClientHeight;
+//  Result.size := DestSize;
+  with Result do
+  begin
+//    X := 0;
+//    Y := 0;
+    Width := min(DestSize.Width, PicSize.Width);
+    Height := min(DestSize.Height, PicSize.Height);
+  end;
+  if Stretch or (Proportional and ((PicSize.Width > DestSize.Width)
+                               or (PicSize.Height > DestSize.Height))) then
+  begin
+    if Proportional and (PicSize.Width > 0) and (PicSize.Height > 0) then
+    begin
+      xyaspect := PicSize.Width / PicSize.Height;
+      if PicSize.Width > PicSize.Height then
+      begin
+//        Result.Width := DestSize.Width;
+        Result.Height := Trunc(DestSize.Width / xyaspect);
+        if Result.Height > DestSize.Height then  // woops, too big
+        begin
+          Result.Height := DestSize.Height;
+          Result.Width := Trunc(DestSize.Height * xyaspect);
+        end;
+      end
+      else
+      begin
+//        Result.Height := DestSize.Height;
+        Result.Width := Trunc(DestSize.Height * xyaspect);
+        if Result.Width > DestSize.Width then  // woops, too big
+        begin
+          Result.Width := DestSize.Width;
+          Result.Height := Trunc(DestSize.Width / xyaspect);
+        end;
+      end;
+    end
+{    else
+    begin
+      Result.Width := DestSize.Width;
+      Result.Height := DestSize.Height;
+    end;}
+  end
+  ;
+{
+  with Result do
+  begin
+    X := 0;
+    Y := 0;
+    Width := w;
+    Height := h;
+  end;
+}
+  if Center then
+   begin
+//    OffsetRect(Result, (cw - w) div 2, (ch - h) div 2);
+//     inc(Result.X, (DestSize.Width - Result.Width) div 2);
+//     inc(Result.Y, (DestSize.Height - Result.Height) div 2);
+     Result.X := (DestSize.Width - Result.Width) div 2;
+     Result.Y := (DestSize.Height - Result.Height) div 2;
+   end
+  else
+   begin
+     Result.X := 0;
+     Result.Y := 0;
+   end
+end;
+
 
 function isURL(const s: String; ofs: Integer=1): Boolean;
 begin

@@ -9,6 +9,8 @@ uses
   Windows, Messages, Classes, SysUtils, TypInfo, ActiveX;
 
 type
+  TAnsiStringDynArray       = array of AnsiString;
+
 
   TAnsiStrings = class(TPersistent)
   private
@@ -177,6 +179,9 @@ type
     property OnChanging: TNotifyEvent read FOnChanging write FOnChanging;
     property OwnsObjects: Boolean read FOwnsObject write FOwnsObject;
   end;
+
+  function FindDelimiterA(const Delimiters, S: AnsiString; StartIdx: Integer = 1): Integer;
+  function SplitAnsiString(const S, Delimiters: AnsiString): TAnsiStringDynArray;
 
 implementation
 
@@ -1261,6 +1266,63 @@ begin
       Sorted := False;
       Sorted := True;
     end;
+  end;
+end;
+
+function FindDelimiterA(const Delimiters, S: AnsiString; StartIdx: Integer = 1): Integer;
+var
+  Stop: Boolean;
+  Len: Integer;
+begin
+  Result := 0;
+
+  Len := Length(S);
+  Stop := False;
+  while (not Stop) and (StartIdx <= Len) do
+    if IsDelimiter(Delimiters, S, StartIdx) then
+    begin
+      Result := StartIdx;
+      Stop := True;
+    end
+    else
+      Inc(StartIdx);
+end;
+
+function SplitAnsiString(const S, Delimiters: AnsiString): TAnsiStringDynArray;
+var
+  StartIdx: Integer;
+  FoundIdx: Integer;
+  SplitPoints: Integer;
+  CurrentSplit: Integer;
+  i: Integer;
+begin
+  Result := nil;
+
+  if S <> '' then
+  begin
+    { Determine the length of the resulting array }
+    SplitPoints := 0;
+    for i := 1 to Length(S) do
+      if IsDelimiter(Delimiters, S, i) then
+        Inc(SplitPoints);
+
+    SetLength(Result, SplitPoints + 1);
+
+    { Split the string and fill the resulting array }
+    StartIdx := 1;
+    CurrentSplit := 0;
+    repeat
+      FoundIdx := FindDelimiterA(Delimiters, S, StartIdx);
+      if FoundIdx <> 0 then
+      begin
+        Result[CurrentSplit] := Copy(S, StartIdx, FoundIdx - StartIdx);
+        Inc(CurrentSplit);
+        StartIdx := FoundIdx + 1;
+      end;
+    until CurrentSplit = SplitPoints;
+
+    // copy the remaining part in case the string does not end in a delimiter
+    Result[SplitPoints] := Copy(S, StartIdx, Length(S) - StartIdx + 1);
   end;
 end;
 

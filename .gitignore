@@ -4,6 +4,11 @@
 Distro/Stickers/
 Distro/*.map
 Distro/*.exe
+Distro/*/Devils/
+Distro/*/History/
+Distro/*/Themes/
+Distro/*/*.ini
+Distro/*/db5
 RnQ/Units/
 #################
 ## Delphi
