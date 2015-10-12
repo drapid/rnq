@@ -101,7 +101,6 @@ function  enterUinDlg(const proto: TRnQProtocol; var uin: TUID; const title: str
 function  sendProtoMsg(var oe: TOevent): boolean;
 procedure SendEmail2Mail(const email: String);
 function  childParent(child, parent: integer): boolean;
-//procedure redrawUIN(uin: TUID);
 procedure myBeep;
 function  findViewInfo(c: TRnQContact): TRnQViewInfoForm;
 procedure sortCL(cl: TRnQCList);
@@ -1787,9 +1786,6 @@ procedure notAvailable;
 begin
   msgDlg('This feature isn''t available yet.\nCome back tomorrow...', True, mtInformation)
 end;
-
-//procedure redrawUIN(uin:TUID);
-//begin rosterLib.redraw(contactsDB.get(uin)) end;
 
 function childParent(child,parent:integer):boolean;
 begin

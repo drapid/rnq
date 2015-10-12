@@ -329,7 +329,7 @@ begin
  end;
 end; // fromStream
 
-  procedure addStr(var dim : Integer; const s: RawByteString; var Res : RawByteString);
+  procedure addStr(var dim: Integer; const s: RawByteString; var Res: RawByteString);
   begin
     while dim+length(s) > length(Res) do
       setLength(Res, length(Res)+10000);
@@ -339,7 +339,7 @@ end; // fromStream
 
 function Thistory.toString: RawByteString;
 var
-  i,dim:integer;
+  i,dim: integer;
 begin
   result:='';
   dim:=0;
@@ -356,7 +356,7 @@ begin
   setLength(result, dim);
 end; // toString
 
-function Thistory.getAt(idx:integer):Thevent;
+function Thistory.getAt(idx: integer): Thevent;
 begin
 if (idx >= 0) and (idx < count) then
   result:=Thevent(items[idx])

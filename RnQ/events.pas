@@ -871,7 +871,8 @@ else
   if ev.kind in [EK_oncoming, EK_offgoing] then
     ev.expires:=tempBlinkTime;        // tenth of second
   if count = 1 then
-    if assigned(OnNewTop) then OnNewTop;
+    if assigned(OnNewTop) then
+      OnNewTop;
   saveInboxDelayed:=TRUE;
   end;
 end; // add

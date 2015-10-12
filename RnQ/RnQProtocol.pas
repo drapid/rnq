@@ -1390,12 +1390,12 @@ begin
 end;
 
 //function TRnQCList.fromString(cls : TRnQContactType; const s: RawByteString; db:TRnQCList):boolean;
-function TRnQCList.fromString(pr : TRnQProtocol; const s: RawByteString; db:TRnQCList):boolean;
+function TRnQCList.fromString(pr: TRnQProtocol; const s: RawByteString; db: TRnQCList): boolean;
 var
-  i:integer;
-  s1 : RawByteString;
-  ofs : Integer;
-  len : Integer;
+  i: integer;
+  s1: RawByteString;
+  ofs: Integer;
+  len: Integer;
 begin
  result:=TRUE;
  clear;
@@ -1427,7 +1427,7 @@ begin
   end;
 end; // fromString
 
-function TRnQCList.clone:TRnQCList;
+function TRnQCList.clone: TRnQCList;
 var
   i:integer;
 begin
@@ -1439,18 +1439,18 @@ end; // clone
 procedure TRnQCList.resetEnumeration;
 begin enumIdx:=0 end;
 
-function TRnQCList.hasMore:boolean;
+function TRnQCList.hasMore: boolean;
 begin
-  result:=enumIdx<count
+  result := enumIdx<count
 end;
 
-function TRnQCList.getNext:TRnQContact;
+function TRnQCList.getNext: TRnQContact;
 begin
  result:=getAt(enumIdx);
  inc(enumIdx);
 end; // getNext
 
-procedure TRnQCList.assign(cl:TRnQCList);
+procedure TRnQCList.assign(cl: TRnQCList);
 begin
   if cl=NIL then
     clear
@@ -1458,46 +1458,48 @@ begin
     inherited assign(cl, laCopy)
 end;
 
-procedure TRnQCList.apply(p:TcontactProc);
+procedure TRnQCList.apply(p: TcontactProc);
 var
-  i:integer;
+  i: integer;
 begin
-i:=0;
-while i < count do
-  begin
-//  p(PRnQContact(items[i])^);
-  p(TRnQContact(items[i]));
-  inc(i);
-  end;
+  i:=0;
+  while i < count do
+    begin
+  //  p(PRnQContact(items[i])^);
+    p(TRnQContact(items[i]));
+    inc(i);
+    end;
 end;
 
-function TRnQCList.buinlist:RawByteString;
+function TRnQCList.buinlist: RawByteString;
 var
-  i:integer;
+  i: integer;
 begin
-result:='';
-i:=0;
-while i < count do
-  begin
-//    result:=result+ PRnQContact(items[i]).buin;
-    result:=result+ TRnQContact(items[i]).buin;
-    inc(i);
-  end;
+  result:='';
+  i:=0;
+  while i < count do
+    begin
+  //    result:=result+ PRnQContact(items[i]).buin;
+      result:=result+ TRnQContact(items[i]).buin;
+      inc(i);
+    end;
 end; // buinList
 
-function TRnQCList.toIntArray:TIntegerDynArray;
+function TRnQCList.toIntArray: TIntegerDynArray;
 var
-  i:integer;
+  i: integer;
 begin
-  setlength(result,count);
+  setlength(result, count);
   for i:=0 to count-1 do
 //    result[i]:=StrToIntDef(PRnQContact(items[i]).uid, 0);
-    result[i]:=StrToIntDef(TRnQContact(items[i]).uid, 0);
+{$IFDEF  UID_IS_UNICODE}
+{$ENDIF  UID_IS_UNICODE}
+    result[i] := StrToIntDef(TRnQContact(items[i]).uid, 0);
 end; // toIntArray
 
-function TRnQCList.getCount(group:integer; OnlyOnline : Boolean = false):integer;
+function TRnQCList.getCount(group: integer; OnlyOnline: Boolean = false): integer;
 var
-  i:integer;
+  i: integer;
 begin
   if group=-1 then
    begin

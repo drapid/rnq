@@ -153,8 +153,8 @@ var
     groupId :integer;
     node    :Tnode;
     end;
-  contactsPool :Tlist;
-  expandedByTempFocus :Tnode;
+  contactsPool : Tlist;
+  expandedByTempFocus : Tnode;
   FilterTextBy : string;
 
  {$IFDEF USE_SECUREIM}
@@ -734,7 +734,8 @@ begin
   if parent.childrenCount=0 then
    case parent.kind of
      NODE_GROUP: removeNode(parent);
-     NODE_DIV: if parent.divisor in [d_nil,d_contacts] then removeNode(parent);
+     NODE_DIV: if parent.divisor in [d_nil, d_contacts] then
+                 removeNode(parent);
     end;
   autosizeDelayed:=TRUE;
 end; // removeNode
@@ -1657,7 +1658,11 @@ case n.kind of
      else
         if n.contact.fProto.isOnline then
          if n.contact.isOnline then
-           theme.ApplyFont('roaster.online', cnv.font)
+           begin
+             theme.ApplyFont('roaster.online', cnv.font);
+             if c.noClient then
+               theme.ApplyFont('roaster.noclient', cnv.font);
+           end
           else
            if n.contact.isOffline then
              theme.ApplyFont('roaster.offline', cnv.font);
