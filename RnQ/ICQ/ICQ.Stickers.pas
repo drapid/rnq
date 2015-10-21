@@ -18,6 +18,8 @@ type
   function getSticker(const ext, sticker: String;
                       fsPtr: PMemoryStream = nil; forceSize: String = ''): RawByteString;
 
+  function getStickerURL(const ext, sticker: RawByteString; forceSize: String = ''): RawByteString;
+
 implementation
 
 uses
@@ -94,6 +96,30 @@ begin
     pfs.Free
   else
     pfs.Seek(0, 0);
+end;
+
+function getStickerURL(const ext, sticker: RawByteString; forceSize: String = ''): RawByteString;
+var
+  size: string;
+  stickerForChat: RawByteString;
+  StickerResolution: Integer;
+begin
+  if not(forceSize = '') then
+    size := forceSize
+  else
+    begin
+      StickerResolution := MainPrefs.getPrefIntDef('chat-images-sticker-size', 0);
+      case StickerResolution of
+        0:
+          size := 'small';
+        1:
+          size := 'medium';
+        2:
+          size := 'large';
+      end;
+    end;
+
+  Result := 'http://www.icq.com/store/stickers/' + ext + '/' + sticker + '/' + size;
 end;
 
 end.

@@ -60,7 +60,9 @@ type
  function peer_oft_checksum_file(fn : String; InitChkSum : Cardinal = $ffff0000) : Cardinal;
 {$ENDIF usesDC}
 
- procedure parseImgLinks2(var msg: RawByteString);
+  procedure parseImgLinks2(var msg: RawByteString);
+  function parseTzerTag(const sA: RawByteString): RawByteString;
+  function parseTzer2URL(const sA: RawByteString; var sMsg : RawByteString): RawByteString;
 
 var
   Attached_login_email:  string;
@@ -1261,6 +1263,52 @@ begin
 
   if not (msgTmp = msg) then
     msg := msgTmp;
+end;
+
+function parseTzer2URL(const sA: RawByteString; var sMsg : RawByteString): RawByteString;
+var
+  p : Integer;
+begin
+  p := PosEx(AnsiString('name="'), sA);
+  sMsg := getTranslation('tZer') + ': ' + copy(sA, p + 6, PosEx(AnsiString('"'), sA, p + 7) - p - 6) + #13#10;
+  p := PosEx(AnsiString('url="'), sA);
+  sMsg := sMsg + copy(sA, p + 5, PosEx(AnsiString('"'), sA, p + 6) - p - 5) + #13#10;
+
+  p := PosEx(AnsiString('thumb="'), sA);
+  Result := copy(sA, p + 7, PosEx(AnsiString('"'), sA, p + 8) - p - 7);
+end;
+
+function parseTzerTag(const sA: RawByteString): RawByteString;
+var
+  p : Integer;
+  ext, imgStr: RawByteString;
+  buf: TMemoryStream;
+begin
+  p := PosEx(AnsiString('name="'), sA);
+  Result := getTranslation('tZer') + ': ' + copy(sA, p + 6, PosEx(AnsiString('"'), sA, p + 7) - p - 6) + #13#10;
+  p := PosEx(AnsiString('url="'), sA);
+  Result := Result + copy(sA, p + 5, PosEx(AnsiString('"'), sA, p + 6) - p - 5) + #13#10;
+  p := PosEx(AnsiString('thumb="'), sA);
+  ext := copy(sA, p + 7, PosEx(AnsiString('"'), sA, p + 8) - p - 7);
+
+  try
+    imgStr := '';
+    buf := TMemoryStream.Create;
+    if LoadFromURL(ext, buf) then
+      begin
+       SetLength(imgStr, buf.Size);
+       buf.ReadBuffer(imgStr[1], buf.Size);
+      end;
+    buf.Free;
+
+    if Trim(imgStr) = '' then
+      imgStr := ext
+    else
+      imgStr := RnQImageExTag + Base64EncodeString(imgStr) + RnQImageExUnTag;
+   except
+    imgStr := ext;
+  end;
+  Result := Result + imgStr + #13#10;
 end;
 
 

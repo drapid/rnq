@@ -211,7 +211,8 @@ type
 
     IE_getAvtr,
     IE_avatar_changed,
-    IE_srvSomeInfo
+    IE_srvSomeInfo,
+    IE_StickerMsg
   );
 
   TicqPhase=(
@@ -488,155 +489,155 @@ type
 //    class function GetId: Word; override;
     class function _GetProtoName: string; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    class function _isValidUid(var uin:TUID):boolean; OverRide; final;
-    class function _isProtoUid(var uin:TUID):boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    class function _isValidUid1(const uin:TUID):boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    class function _getDefHost : Thostport; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    class function _getContactClass : TRnQCntClass; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    class function _getProtoServers : String; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    class function _getProtoID : Byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    class function _CreateProto(const uid : TUID) : TRnQProtocol; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    class function  _RegisterUser(var pUID : TUID; var pPWD : String) : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _isProtoUid(var uin: TUID): boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _isValidUid1(const uin: TUID): boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _getDefHost: Thostport; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _getContactClass: TRnQCntClass; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _getProtoServers: String; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _getProtoID: Byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _CreateProto(const uid: TUID): TRnQProtocol; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function  _RegisterUser(var pUID: TUID; var pPWD : String) : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     class function _MaxPWDLen: Integer; OverRide; final;
 //    class function isValidUid(var uin:TUID):boolean;
 //    function isValidUid(var uin:TUID):boolean;
 //    function getContact(uid : TUID) : TRnQContact;
-//    class function getICQContact(const uid : TUID) : TICQContact; OverLoad;
-//    class function getICQContact(uin : Integer) : TICQContact; OverLoad;
-    function getICQContact(const uid : TUID) : TICQContact; OverLoad;
-    function getICQContact(uin : Integer) : TICQContact; OverLoad;
+//    class function getICQContact(const uid: TUID): TICQContact; OverLoad;
+//    class function getICQContact(uin: Integer): TICQContact; OverLoad;
+    function getICQContact(const uid: TUID): TICQContact; OverLoad;
+    function getICQContact(uin: Integer): TICQContact; OverLoad;
 
-    function  getContact(const UID : TUID) : TRnQContact; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  getContactClass : TRnQCntClass; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getContact(const UID: TUID): TRnQContact; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getContactClass: TRnQCntClass; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    function pwdEqual(const pass : String) : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function pwdEqual(const pass: String): Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    property DCmode:TicqDCmode read P_dcmode write setDCmode;
-    property DCfakeIP:TInAddr read fDC_Fake_ip write set_DCfakeIP;
-    property DCfakePort:word read fDC_Fake_port write setDCfakePort;
+    property DCmode: TicqDCmode read P_dcmode write setDCmode;
+    property DCfakeIP: TInAddr read fDC_Fake_ip write set_DCfakeIP;
+    property DCfakePort: word read fDC_Fake_port write setDCfakePort;
  {$IFDEF UseNotSSI}
     property UseSSI: boolean read fUseSSI;
     property UseLSI3: boolean read fUseLSI;
  {$ENDIF UseNotSSI}
-    procedure setDCfakeIP(ip : AnsiString);
-//    procedure setStatusStr(s : String; Pic : AnsiString = '');
-    procedure setStatusStr(xSt : byte; stStr : TXStatStr);
-    procedure setStatusFull(st: byte; xSt : byte; stStr : TXStatStr);
+    procedure setDCfakeIP(ip: AnsiString);
+//    procedure setStatusStr(s: String; Pic: AnsiString = '');
+    procedure setStatusStr(xSt: byte; stStr: TXStatStr);
+    procedure setStatusFull(st: byte; xSt: byte; stStr : TXStatStr);
 
 //    constructor Create; override;
 //    destructor Destroy; override;
-    constructor Create(const id : TUID; subType : TICQSessionSubType);
+    constructor Create(const id: TUID; subType : TICQSessionSubType);
     destructor Destroy; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure ResetPrefs; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure GetPrefs(var pp : TRnQPref); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure SetPrefs(pp : TRnQPref); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure GetPrefs(var pp: TRnQPref); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure SetPrefs(pp: TRnQPref); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure Clear; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure connect;
-//    procedure connect(createUIN:boolean; avt_session : Boolean = false); overload;
+//    procedure connect(createUIN: boolean; avt_session : Boolean = false); overload;
     procedure disconnect; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-//    procedure setStatus(s:Tstatus; inv:boolean);
+//    procedure setStatus(s: Tstatus; inv: boolean);
     procedure setStatus(st: byte); overload; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure setStatus(s:TICQstatus; vis: Tvisibility); overload;
-    function  getPwd : String; OverRide; Final;
-    function  getPwdOnly : String; //OverRide; Final;
-    procedure setPwd(const value:String); OverRide; Final;
+    procedure setStatus(s: TICQstatus; vis: Tvisibility); overload;
+    function  getPwd: String; OverRide; Final;
+    function  getPwdOnly: String; //OverRide; Final;
+    procedure setPwd(const value: String); OverRide; Final;
     procedure refreshSessionSecret();
     function  getSession: TSessionParams; //OverRide; Final;
 
     function  getStatus: byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  getVisibility : byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  IsInvisible : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  isOnline:boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  isOffline:boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  isReady:boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}     // we can send commands
-    function  isConnecting:boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  isSSCL:boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  imVisibleTo(c:TRnQContact):boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getVisibility: byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  IsInvisible: Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  isOnline: boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  isOffline: boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  isReady: boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}     // we can send commands
+    function  isConnecting: boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  isSSCL: boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  imVisibleTo(c: TRnQContact): boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  getStatusName: String; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  getStatusImg : TPicName; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  getXStatus:byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getStatusImg: TPicName; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getXStatus: byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
    public
     // manage contact lists
-    function  readList(l : TLIST_TYPES) : TRnQCList; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  readList(l: TLIST_TYPES) : TRnQCList; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    procedure AddToList(l : TLIST_TYPES; cl:TRnQCList); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure RemFromList(l : TLIST_TYPES; cl:TRnQCList); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure AddToList(l: TLIST_TYPES; cl: TRnQCList); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure RemFromList(l: TLIST_TYPES; cl: TRnQCList); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
     // manage contacts
-//    function  validUid(var uin:TUID):boolean;  inline;
-//    function  validUid1(const uin:TUID):boolean;  {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-//    class function  isValidUid(var uin:TUID):boolean; Static;
-    procedure AddToList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure RemFromList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  isInList(l : TLIST_TYPES; cnt:TRnQContact) : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+//    function  validUid(var uin: TUID): boolean;  inline;
+//    function  validUid1(const uin: TUID): boolean;  {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+//    class function  isValidUid(var uin: TUID): boolean; Static;
+    procedure AddToList(l: TLIST_TYPES; cnt: TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure RemFromList(l: TLIST_TYPES; cnt: TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  isInList(l: TLIST_TYPES; cnt: TRnQContact) : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    function  addContact(c:TRnQContact; isLocal : Boolean = false):boolean; overload;OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  removeContact(cnt:TRnQContact):boolean;OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  addContact(c: TRnQContact; isLocal: Boolean = false):boolean; overload;OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  removeContact(cnt: TRnQContact): boolean;OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    procedure InputChangedFor(cnt :TRnQContact; InpIsEmpty : Boolean; timeOut : boolean = false); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure UpdateGroupOf(cnt : TRnQContact); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure getClientPicAndDesc4(cnt:TRnQContact; var pPic : TPicName; var CliDesc : String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  maxCharsFor(const c:TRnQContact; isBin : Boolean = false):integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  compareStatusFor(cnt1, Cnt2 : TRnqContact) : Smallint; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure InputChangedFor(cnt: TRnQContact; InpIsEmpty : Boolean; timeOut : boolean = false); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure UpdateGroupOf(cnt: TRnQContact); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure getClientPicAndDesc4(cnt: TRnQContact; var pPic : TPicName; var CliDesc : String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  maxCharsFor(const c: TRnQContact; isBin : Boolean = false):integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  compareStatusFor(cnt1, Cnt2: TRnqContact) : Smallint; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure sendKeepalive; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  canAddCntOutOfGroup : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  canAddCntOutOfGroup: Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    function  getNewDirect : TProtoDirect; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getNewDirect: TProtoDirect; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
   {$IFDEF UNICODE}
 //    procedure notificationForMsgW(msgtype:byte; flags:byte; urgent:boolean;
 //                    msg:string{; offline:boolean = false});
   {$ENDIF UNICODE}
-    procedure notificationForMsg(msgtype:byte; flags:byte; urgent:boolean;
+    procedure notificationForMsg(msgtype: byte; flags:byte; urgent:boolean;
                     const msg: RawByteString{; offline:boolean = false});
-    function  getLocalIPstr:string;
+    function  getLocalIPstr: string;
 
 {$IFDEF usesDC}
-    function  directTo(c:TICQContact):TICQDirect;
+    function  directTo(c: TICQContact): TICQDirect;
 {$ENDIF usesDC}
    public // ICQ Only
-    property SSLserver : String read fSSLServer;
-    property ProxyServer : String read fOscarProxyServer;
+    property SSLserver: String read fSSLServer;
+    property ProxyServer: String read fOscarProxyServer;
     property getProtoType: TICQSessionSubType read protoType;
-    property webaware:boolean  read P_webaware write setWebaware;
-    property authNeeded:boolean  read P_authNeeded write setAuthNeeded;
-    property showInfo : Byte read P_showInfo write P_showInfo;
+    property webaware: boolean  read P_webaware write setWebaware;
+    property authNeeded: boolean  read P_authNeeded write setAuthNeeded;
+    property showInfo: Byte read P_showInfo write P_showInfo;
     property pwd: String read getPwd write setPwd;
-    property visibility : Tvisibility read fVisibility write setVisibility;
+    property visibility: Tvisibility read fVisibility write setVisibility;
  {$IFDEF UseNotSSI}
     procedure updateVisibility;
  {$ENDIF UseNotSSI}
    private
-    function  getLocalIP:integer;
-    function  serverPort:word;
-    function  serverStart:word;
+    function  getLocalIP: integer;
+    function  serverPort: word;
+    function  serverStart: word;
     procedure sendAddTempContact(const buinlist: RawByteString); overload; // 030F
-    function  sendFLAP(ch:word; const data: RawByteString): boolean;
-    function  sendSNAC(fam,sub:word; const data: RawByteString): boolean; OverLoad;
-    function  sendSNAC(fam,sub, flags:word; const data: RawByteString): boolean; OverLoad;
+    function  sendFLAP(ch: word; const data: RawByteString): boolean;
+    function  sendSNAC(fam,sub: word; const data: RawByteString): boolean; OverLoad;
+    function  sendSNAC(fam,sub, flags: word; const data: RawByteString): boolean; OverLoad;
    public // ICQ Only
-    procedure SSIdeleteContact(cnt : TRnQContact);
-    procedure SSIAddContact(c : TICQContact);
-    procedure SSI_DeleteItem(gID, iID, Tp : word; const iName : AnsiString = ''; const pExtData : RawByteString = '');
-    procedure SSI_UpdateContact(c : TICQContact);
-    procedure SSI_UpdateGroup(c : TICQContact);
-    procedure SSIdeleteGroup(gID:integer);
-    function  SSI_deleteAvatar : Boolean;
-    procedure SSIUpdateGroup(const args:array of integer);
+    procedure SSIdeleteContact(cnt: TRnQContact);
+    procedure SSIAddContact(c: TICQContact);
+    procedure SSI_DeleteItem(gID, iID, Tp: word; const iName : AnsiString = ''; const pExtData : RawByteString = '');
+    procedure SSI_UpdateContact(c: TICQContact);
+    procedure SSI_UpdateGroup(c: TICQContact);
+    procedure SSIdeleteGroup(gID: integer);
+    function  SSI_deleteAvatar: Boolean;
+    procedure SSIUpdateGroup(const args: array of integer);
 
-    procedure addContact(cl:TRnQCList; SendIt : Boolean = True); overload;
+    procedure addContact(cl: TRnQCList; SendIt: Boolean = True); overload;
  {$IFDEF UseNotSSI}
-    procedure setVisibleList(cl:TRnQCList);
-    procedure setInvisibleList(cl:TRnQCList);
+    procedure setVisibleList(cl: TRnQCList);
+    procedure setInvisibleList(cl: TRnQCList);
  {$ENDIF UseNotSSI}
     procedure clearTemporaryVisible;
-    procedure RequestContactList(isImp : Boolean = True);
+    procedure RequestContactList(isImp: Boolean = True);
 
-    function  useMsgType2for(c:TICQContact):boolean;
-    procedure sendWPsearch(wp:TwpSearch; idx : Integer);
-    procedure sendWPsearch2(wp:TwpSearch; idx : Integer; IsWP : Boolean = True);
-    procedure sendAuthReq(const uin:TUID; const msg:string);
-    procedure sendAuth(const uin:TUID);
-    procedure sendAuthDenied(const uin:TUID; const msg:string='');
+    function  useMsgType2for(c: TICQContact):boolean;
+    procedure sendWPsearch(wp: TwpSearch; idx: Integer);
+    procedure sendWPsearch2(wp: TwpSearch; idx: Integer; IsWP : Boolean = True);
+    procedure sendAuthReq(const uin: TUID; const msg:string);
+    procedure sendAuth(const uin: TUID);
+    procedure sendAuthDenied(const uin: TUID; const msg:string='');
     function  getDCModeStr  : AnsiString;
     function  getDCfakeIP   : AnsiString;
     function  getDCfakePort : Integer;
@@ -649,17 +650,17 @@ type
 
     procedure sendCreateUIN(const acceptKey : RawByteString);
     procedure sendDeleteUIN;
-    procedure sendsaveMyInfoNew(c:TICQContact);
-    procedure sendPermsNew;//(c:Tcontact);
+    procedure sendsaveMyInfoNew(c: TICQContact);
+    procedure sendPermsNew;//(c: Tcontact);
     procedure sendSticker(uin: TUID; const sticker: String);
-    procedure sendInfoStatus(const s : String);
-    procedure getUINStatusNEW(const UID : TUID);
+    procedure sendInfoStatus(const s: String);
+    procedure getUINStatusNEW(const UID: TUID);
     procedure sendPrivacy(em : Word; ShareWeb : Boolean; authReq : Boolean);
     procedure sendReqOfflineMsgs;
     procedure sendDeleteOfflineMsgs;
     procedure sendContacts(cnt : TRnQContact;flags:dword; cl:TRnQCList);
     procedure sendQueryInfo(uin: Integer);
-    procedure sendSimpleQueryInfo(const uin:TUID);
+    procedure sendSimpleQueryInfo(const uin: TUID);
     procedure sendAdvQueryInfo(const uin: TUID);
     procedure sendFullQueryInfo(const uin: TUID);
     procedure sendNewQueryInfo(const uin: TUID);
@@ -841,6 +842,7 @@ type
 
    public // All
     function  sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK:boolean):integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP} // returns handle
+    procedure sendSMS2(dest, msg: String; ack: Boolean);
     function  sendBuzz(cnt: TRnQContact): Boolean;
     procedure SetListener(l: TProtoNotify); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure AuthGrant(Cnt: TRnQContact); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -908,9 +910,9 @@ var
 implementation
 
 uses
-   Controls, dateUtils,
+   Controls, dateUtils, Math,
  {$IFDEF UNICODE}
-   AnsiStrings,
+   AnsiStrings, AnsiClasses,
  {$ENDIF UNICODE}
    RnQZip, OverbyteIcsZLibHigh, OverbyteIcsZLibObj,
    OverbyteIcsMD5, OverbyteIcsWSocket,
@@ -924,7 +926,7 @@ uses
    RnQ_Avatars,
  {$ENDIF}
    globalLib, UtilLib,
-   RQ_ICQ, ICQClients,
+   RQ_ICQ, ICQClients, ICQ.Stickers,
    themesLib,
 
    RnQStrings, outboxLib, icq_fr,
@@ -1024,7 +1026,7 @@ begin
    end;
 end;
 
-function SSI_Item2packet(item : TOSSIItem) : RawByteString;
+function SSI_Item2packet(item: TOSSIItem): RawByteString;
 begin
   if Assigned(item) and (item is TOSSIItem) then
    with item do
@@ -1035,8 +1037,8 @@ begin
    Result := '';
 end;
 
-procedure SplitCL2SSI_Items(proc:TsplitSSIProc; cl:TRnQCList;
-                     iExtData : RawByteString; gID, iID, Tp : word);
+procedure SplitCL2SSI_Items(proc: TsplitSSIProc; cl: TRnQCList;
+                     iExtData: RawByteString; gID, iID, Tp: word);
 var
   i, len1, LenAll:integer;
   k : Integer;
@@ -3206,13 +3208,13 @@ begin
   sendSNAC(ICQ_BOS_FAMILY, 7, buinlist);
 end; // sendAddInvisible
 
-procedure TicqSession.sendRemoveInvisible(const buinlist:RawByteString);
+procedure TicqSession.sendRemoveInvisible(const buinlist: RawByteString);
 begin
   if not isReady or isInvisible then exit;
   sendSNAC(ICQ_BOS_FAMILY, 8, buinlist);
 end; // sendRemoveInvisible
 
-procedure TicqSession.sendRemoveContact(cl:TRnQCList);
+procedure TicqSession.sendRemoveContact(cl: TRnQCList);
 begin
   if not useSSI then
     splitCL(sendRemoveContact,cl)
@@ -3221,7 +3223,7 @@ begin
 end;
 {$ENDIF UseNotSSI}
 
-procedure TicqSession.sendAddVisible(cl:TRnQCList);
+procedure TicqSession.sendAddVisible(cl: TRnQCList);
 begin
 {$IFDEF UseNotSSI}
   if not useSSI then
@@ -3231,7 +3233,7 @@ begin
     SplitCL2SSI_Items(SSI_CreateItems, cl, '', 0, 0, FEEDBAG_CLASS_ID_PERMIT);
 end;
 
-procedure TicqSession.sendAddInvisible(cl:TRnQCList);
+procedure TicqSession.sendAddInvisible(cl: TRnQCList);
 begin
 {$IFDEF UseNotSSI}
   if not useSSI then
@@ -3241,7 +3243,7 @@ begin
     SplitCL2SSI_Items(SSI_CreateItems, cl, '', 0, 0, FEEDBAG_CLASS_ID_DENY);
 end;
 
-procedure TicqSession.sendRemoveVisible(cl:TRnQCList);
+procedure TicqSession.sendRemoveVisible(cl: TRnQCList);
 begin
 {$IFDEF UseNotSSI}
   if not useSSI then
@@ -3251,7 +3253,7 @@ begin
     SplitCL2SSI_DelItems(SSI_DeleteItems, cl, FEEDBAG_CLASS_ID_PERMIT);
 end;
 
-procedure TicqSession.sendRemoveInvisible(cl:TRnQCList);
+procedure TicqSession.sendRemoveInvisible(cl: TRnQCList);
 begin
 {$IFDEF UseNotSSI}
   if not useSSI then
@@ -3263,7 +3265,7 @@ end;
 
 
 {$IFDEF UseNotSSI}
-procedure TicqSession.sendAddContact(cl:TRnQCList; OnlyLocal : Boolean);
+procedure TicqSession.sendAddContact(cl: TRnQCList; OnlyLocal: Boolean);
 begin
  if not useSSI then
   splitCL(sendAddContact,cl)
@@ -3298,7 +3300,7 @@ begin
 //  msgDlg(Str_unsupported, mtError);
   splitSSICL60(sendAddTempContact,cl, True)
 end;
-procedure TicqSession.sendRemoveTempContact(const buinlist:AnsiString); // 0310
+procedure TicqSession.sendRemoveTempContact(const buinlist: AnsiString); // 0310
 begin
   if (buinlist='') or not isReady then exit;
   sendSNAC(ICQ_BUDDY_FAMILY, $10, buinlist);
@@ -4428,38 +4430,83 @@ begin
   )));
 end; // sendDeleteUIN
 
-procedure TicqSession.sendSMS(dest, msg:string; ack:boolean);
+procedure TicqSession.sendSMS(dest, msg: string; ack: boolean);
 begin
- if not isReady then exit;
- sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, TLV(1, Length_LE( myUINle
-  + RawByteString(#$D0#7#0#0#$82#14+#0#1#0#$16)+StringOfChar(AnsiChar(#00),18)
-  + Length_BE( xml_sms(getMyInfo, dest, msg, ack) )
+  if not isReady then
+    exit;
+  sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
+     TLV(1, Length_LE( myUINle
+    + word_LEasStr(CLI_META_INFO_REQ)
+    + word_Zero
+    + word_LEasStr(META_REQUEST_SEND_SMS)
+    + RawByteString(#00#01#00#$16)
+    + StringOfChar(AnsiChar(#00),18)
+    + Length_BE( xml_sms(getMyInfo, dest, msg, ack) )
  )));
  addRef(REF_sms, '');
 end; // sendSMS
 
-procedure TicqSession.sendsaveMyInfoNew(c:TICQcontact);
-const
-  tab1:array [boolean] of AnsiChar=(#1,#0);
-  tab2:array [boolean] of AnsiChar=(#0,#1);
+procedure TicqSession.sendSMS2(dest, msg: String; ack: Boolean);
+var
+  req: RawByteString;
+begin
+  if not isReady then Exit;
+
+  msg := '<HTML><BODY dir="ltr"><FONT face="Arial" color="#000000" size="2">' + msg + '</FONT></BODY></HTML>';
+  msg := StrToUnicode(msg);
+
+  OutputDebugString(PChar(hexdumps(msg)));
+
+  req := qword_LEasStr(SNACref) + word_BEasStr(MTYPE_PLAIN)
+    + Length_B(dest)
+    + TLV(CLI_META_MSG_DATA,
+      AnsiChar(CLI_META_REQ_CAPS_BYTE)
+      + AnsiChar(CLI_META_FRAG_VERSION_BYTE)
+      + Length_BE(#$01) // no caps
+      + AnsiChar(CLI_META_FRAG_ID_BYTE)
+      + AnsiChar(CLI_META_FRAG_VERSION_BYTE)
+      + Length_BE(word_BEasStr(CLI_META_MSG_CHARSET) + word_BEasStr(CLI_META_MSG_LANGUAGE) + msg))
+    + TLV(CLI_META_STORE_IF_OFFLINE, '')
+    + TLV(CLI_META_MSG_OWNER, '230490')
+    + TLV(CLI_META_MSG_UNK, #$00#$00#$00#$01);
+
+  if ack then
+    req := req + TLV(CLI_META_MSG_ACK, '');
+
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, req);
+  addRef(REF_sms, '');
+end; // sendSMS2
+
+procedure TicqSession.sendsaveMyInfoNew(c: TICQcontact);
+//const
+//  tab1:array [boolean] of AnsiChar=(#1,#0);
+//  tab2:array [boolean] of AnsiChar=(#0,#1);
 var
   sb : RawByteString;
-  zi : Integer;
+//  zi : Integer;
 begin
   if c.birth > 1 then
-    c.age:=trunc((now-c.birth)/365);
+    c.age := YearsBetween(now, c.birth);
+{
   if c.birth > 1 then
    sb:=Word_LEasStr(yearOf(c.birth))
     +Word_LEasStr(monthOf(c.birth))
     +Word_LEasStr(dayOf(c.birth))
   else
     sb:=#00#00+Z;
+}
+  if c.birth > 712 then
+    sb := QWord_BEasStr(DoubleAsInt64(c.birth - 2))
+   else
+    sb := Z + Z;
+
 //  if not tryStrToInt(c.zip, zi) then
 //    zi := 0;
-  if not tryStrToInt(c.workzip, zi) then
-    zi := 0;
+//  if not tryStrToInt(c.workzip, zi) then
+//    zi := 0;
   savingMyInfo.ACKcount := 3;
 
+{
   sendSnac(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
      TLV(1, Length_LE( myUINle
    + #$D0#07#02#00#$3A#$0C
@@ -4508,7 +4555,7 @@ begin
 
 //   + TLV(User_, WNTS(c.))
    )));
-
+}
   sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
      TLV(1, Length_LE( myUINle
       + word_LEasStr(CLI_META_INFO_REQ)
@@ -4516,18 +4563,97 @@ begin
       + word_LEasStr(META_SAVE_PROFILE)
 
       + Length_LE( SNAC_ver($05B9, $03, $00, 00, 02)
-                   + word_BEasStr($00)
-                   + word_BEasStr(GetACP)
-//                   + word_BEasStr($FDE9) // UTF8
-                   + dword_BEasStr($02)
-                   + TLV(3, TLV(META_COMPAD_NICK, StrToUTF8(c.nick))
-                          + TLV(META_COMPAD_FNAME, StrToUTF8(c.first))
-                          + TLV(META_COMPAD_LNAME, StrToUTF8(c.last))
-                          + TLV(META_COMPAD_ABOUT, StrToUTF8(c.about))
-                         )
-                 )
-             )
-         )
+             + word_BEasStr($00)
+             + word_BEasStr(GetACP)
+//             + word_BEasStr($FDE9) // UTF8
+             + dword_BEasStr($02)
+             + TLV(3, TLV(META_COMPAD_NICK, StrToUTF8(c.nick))
+                    + TLV(META_COMPAD_FNAME, StrToUTF8(c.first))
+                    + TLV(META_COMPAD_LNAME, StrToUTF8(c.last))
+                    + TLV(META_COMPAD_GENDER, AnsiChar(c.gender))
+                    + TLV(META_COMPAD_MARITAL_STATUS, c.MarStatus)
+                    + TLV(META_COMPAD_BDAY, sb)
+                    + TLV(META_COMPAD_LANG1, Word_BEasStr(c.lang[1]))
+                    + TLV(META_COMPAD_LANG2, Word_BEasStr(c.lang[2]))
+                    + TLV(META_COMPAD_LANG3, Word_BEasStr(c.lang[3]))
+                    + TLV(META_COMPAD_ABOUT, StrToUTF8(c.about))
+        // Home info
+        + TLV(META_COMPAD_HP, StrToUTF8(c.homepage))
+        + TLV(META_COMPAD_HOMES, TLV(1,
+            TLV(META_COMPAD_HOMES_ADDRESS, StrToUTF8(c.address))
+          + TLV(META_COMPAD_HOMES_CITY, StrToUTF8(c.city))
+          + TLV(META_COMPAD_HOMES_STATE, copy(StrToUTF8(c.state), 1, 18)) // 19 bytes limit, but it truncates cyrillic
+          + TLV(META_COMPAD_HOMES_COUNTRY, DWord_BEasStr(c.country))
+          + TLV(META_COMPAD_HOMES_ZIP, StrToUTF8(c.zip))
+          ))
+        // Work info
+        + TLV(META_COMPAD_WORKS, TLV(1,
+            TLV(META_COMPAD_WORKS_ORG, StrToUTF8(c.workCompany))
+          + TLV(META_COMPAD_WORKS_POSITION, StrToUTF8(c.workPos))
+          + TLV(META_COMPAD_WORKS_DEPT, StrToUTF8(c.workDep))
+          + TLV(META_COMPAD_WORKS_PAGE, StrToUTF8(c.workpage))
+          + TLV(META_COMPAD_WORKS_ADDRESS, StrToUTF8(c.workaddress))
+          + TLV(META_COMPAD_WORKS_CITY, StrToUTF8(c.workcity))
+          + TLV(META_COMPAD_WORKS_STATE, copy(StrToUTF8(c.workstate), 1, 18)) // 19 bytes limit, but it truncates cyrillic
+          + TLV(META_COMPAD_WORKS_COUNTRY, DWord_BEasStr(c.workcountry))
+          + TLV(META_COMPAD_WORKS_ZIP, StrToUTF8(c.workzip))
+          ))
+        // Mobile
+        + TLV(META_COMPAD_PHONES, word_BEasStr($06) +
+            Length_BE(
+              TLV(META_COMPAD_PHONES_NUM, StrToUTF8(c.regular))
+            + TLV(META_COMPAD_PHONES_CNT, $01)) +
+
+            Length_BE(
+              TLV(META_COMPAD_PHONES_NUM, StrToUTF8(c.workphone))
+            + TLV(META_COMPAD_PHONES_CNT, $02)) +
+
+            Length_BE(
+              TLV(META_COMPAD_PHONES_NUM, StrToUTF8(c.cellular))
+            + TLV(META_COMPAD_PHONES_CNT, $03)) +
+            // Faxes
+            Length_BE(
+              TLV(META_COMPAD_PHONES_NUM, '')
+            + TLV(META_COMPAD_PHONES_CNT, $04)) +
+
+            Length_BE(
+              TLV(META_COMPAD_PHONES_NUM, '')
+            + TLV(META_COMPAD_PHONES_CNT, $05)) +
+            // Empty
+            Length_BE(
+              TLV(META_COMPAD_PHONES_NUM, '')
+            + TLV(META_COMPAD_PHONES_CNT, $06))
+          )
+        // Birth info
+        + TLV(META_COMPAD_FROM, TLV(1,
+            TLV(META_COMPAD_FROM_COUNTRY, DWord_BEasStr(c.birthcountry))
+          + TLV(META_COMPAD_FROM_CITY, copy(StrToUTF8(c.birthcity), 1, 18)) // 19 bytes limit, but it truncates cyrillic
+          + TLV(META_COMPAD_FROM_STATE, StrToUTF8(c.birthstate))
+//          + TLV(META_COMPAD_FROM_ADDRESS, StrToUTF8(''))
+          ))
+        // Interests
+        + TLV(META_COMPAD_INTERESTS, word_BEasStr($04) +
+            Length_BE(
+              TLV(META_COMPAD_INTEREST_TEXT, StrToUTF8(Trim(c.interests.InterestBlock[0].Names.Text)))
+            + TLV(META_COMPAD_INTEREST_ID, Word(c.interests.InterestBlock[0].Code))) +
+
+            Length_BE(
+              TLV(META_COMPAD_INTEREST_TEXT, StrToUTF8(Trim(c.interests.InterestBlock[1].Names.Text)))
+            + TLV(META_COMPAD_INTEREST_ID, Word(c.interests.InterestBlock[1].Code))) +
+
+            Length_BE(
+              TLV(META_COMPAD_INTEREST_TEXT, StrToUTF8(Trim(c.interests.InterestBlock[2].Names.Text)))
+            + TLV(META_COMPAD_INTEREST_ID, Word(c.interests.InterestBlock[2].Code))) +
+
+            Length_BE(
+              TLV(META_COMPAD_INTEREST_TEXT, StrToUTF8(Trim(c.interests.InterestBlock[3].Names.Text)))
+            + TLV(META_COMPAD_INTEREST_ID, Word(c.interests.InterestBlock[3].Code)))
+          )
+        + TLV(META_COMPAD_GMT, word_BEasStr(c.GMThalfs))
+        )
+       )
+      )
+     )
     );
 end;
 
@@ -4552,7 +4678,20 @@ begin
 //    zi := 0;
 }
   savingMyinfo.ACKcount := 0;
-
+{
+  sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
+    TLV(1, Length_LE(myUINle
+      + word_LEasStr(CLI_META_INFO_REQ)
+      + word_LEasStr($02)
+      + word_LEasStr(META_SEND_PERM)
+      + Length_LE(SNAC_ver($05B9, $03, $00, $00, $02)
+      + word_BEasStr($00)
+      + word_BEasStr(GetACP)
+      + dword_BEasStr($02)
+      + TLV(3, TLV(META_COMPAD_INFO_SHOW, 0))))
+    )
+  );
+}
   sendSnac(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
      TLV(1, Length_LE( myUINle
    + #$D0#07#02#00#$3A#$0C
@@ -4589,6 +4728,7 @@ begin
 }
 //   + TLV(User_, WNTS(c.))
    )));
+
 end;
 
 procedure TicqSession.sendInfoStatus(const s : String);
@@ -5623,10 +5763,11 @@ begin
  eventMsgA := s;
 end; // parseAuthString
 
-procedure TicqSession.notificationForMsg(msgtype:byte; flags:byte; urgent:boolean;
+procedure TicqSession.notificationForMsg(msgtype: byte; flags: byte; urgent: boolean;
                               const msg: RawByteString{; offline:boolean = false});
 var
-  mm : RawByteString;
+  mm: RawByteString;
+  strs : TAnsiStringDynArray;
 begin
   if msgtype in MTYPE_AUTOMSGS then
   begin
@@ -5685,12 +5826,20 @@ case msgtype of
       parsePagerString(msg);
       notifyListeners(IE_webpager);
     end;
+  MTYPE_STICKER:
+    begin
+      eventMsgA := msg;
+      strs := SplitAnsiString(msg, ':');
+      if (length(strs) >= 4) then
+        eventAddress := getStickerURL(strs[1], strs[3]);
+      notifyListeners(IE_StickerMsg);
+    end;
   end;
 end; // notificationForMsg
 
-procedure TicqSession.parseGCdata(const snac:RawByteString; offline:boolean=FALSE);
+procedure TicqSession.parseGCdata(const snac: RawByteString; offline: boolean=FALSE);
 var
-  i, ll, ofs,v:integer;
+  i, ll, ofs,v: integer;
   s: AnsiString;
 begin
   if Length(snac) < 40 then
@@ -5809,47 +5958,18 @@ begin
   notifyListeners(IE_serverAck);
 end; // parseServerAck
 
-function parseTzerTag(sA: RawByteString): RawByteString;
-var
-  p : Integer;
-  ext, imgStr: RawByteString;
-  buf: TMemoryStream;
-begin
-  p := PosEx('name="', sA);
-  Result := getTranslation('tZer') + ': ' + copy(sA, p + 6, PosEx('"', sA, p + 7) - p - 6) + #13#10;
-  p := PosEx('url="', sA);
-  Result := Result + copy(sA, p + 5, PosEx('"', sA, p + 6) - p - 5) + #13#10;
-  p := PosEx('thumb="', sA);
-  ext := copy(sA, p + 7, PosEx('"', sA, p + 8) - p - 7);
-
-  try
-    imgStr := '';
-    buf := TMemoryStream.Create;
-    LoadFromURL(ext, buf);
-    SetLength(imgStr, buf.Size);
-    buf.ReadBuffer(imgStr[1], buf.Size);
-    buf.Free;
-
-    if Trim(imgStr) = '' then
-      imgStr := ext
-    else
-      imgStr := RnQImageExTag + Base64EncodeString(imgStr) + RnQImageExUnTag;
-  except
-    imgStr := ext;
-  end;
-  Result := Result + imgStr + #13#10;
-end;
-
 procedure TicqSession.parseIncomingMsg(snac: RawByteString); // 0407
 var
   t, i : Integer;
-  ofs, l :integer;
+  ofs, ofs2, l, l2 :integer;
+  isTzer: Boolean;
+  isAutoMsg: Boolean;
   thisCnt : TICQcontact;
   CharsetNumber, CharsetSubset : Word;
   msgDwnCnt, TLVcnt : Word;
   CompressType : Word;
-  priority, msgtype, msgflags, TypeId :byte;
-  msgLen, origMsgLen, msgCRC, origMsgCRC : Cardinal;
+  priority, msgtype, msgflags, TypeId: byte;
+  msgLen, origMsgLen, msgCRC, origMsgCRC: Cardinal;
 //    buf, destBuf : TStringStream;
   buf, destBuf : TMemoryStream;
 //    key : TAESKey256;
@@ -5871,11 +5991,11 @@ var
 begin
   eventFlags := 0;
 //  msgDwnCnt  := $FFFF;
-eventMsgID:=qword_LEat(@snac[1]);
-ofs:=11;
-thisCnt := getICQContact(getBUIN2(snac,ofs));
-eventTime:=now;
-inc(ofs, 2);
+  eventMsgID:=qword_LEat(@snac[1]);
+  ofs:=11;
+  thisCnt := getICQContact(getBUIN2(snac,ofs));
+  eventTime:=now;
+  inc(ofs, 2);
   TLVCnt := readBEWORD(snac, ofs);
   t := ofs;
   i := 0;
@@ -5889,6 +6009,7 @@ inc(ofs, 2);
    end;
   sA := Copy(snac, ofs, t-ofs);
   Delete(snac, ofs, t-ofs);
+  isAutoMsg := existsTLV(04, sA);
 //  ofs := 1;
   parseOnlineInfo(sA, 1, thisCnt, false);
   sA := '';
@@ -5909,51 +6030,98 @@ case Byte(snac[10]) of // msg format
 //        eventTime:= UnixToDateTime(getTLVdwordBE(@snac[i])) + GMToffset0;
         eventTime:= UnixToDateTime(getTLVdwordBE(@snac[i])) + GMToffset;
      end;
-    ofs := findTLV(2, snac, ofs)+4+3;
-    inc(ofs, 3+ Byte(snac[ofs]));
-    l:=word_BEat(snac,ofs)-4;
-    inc(ofs, 2);
-       CharsetNumber:=word_BEat(snac, ofs);     //The encoding used for the message.
+    sA := getTLVSafe($02, snac, ofs);
+    isTzer := false;
+    if sA >= '' then
+    begin
+      isTzer := false;
+      ofs2 := 5;
+      t := Byte(snac[ofs2]);
+      if t = $05 then
+      begin
+        inc(ofs2, 2);
+        t := word_BEat(sA, ofs2);
+        cap := copy(sA, ofs2, min(16, t)); // first cap only, enough?
+        if cap = BigCapability[CAPS_big_tZers].v then
+          isTzer := True;
+        
+        inc(ofs2, t);
+        if t < length(sA) then
+          t := Byte(snac[ofs2]);
+      end;
+      if t = $10 then // Caps are required
+       begin
+         inc(ofs2, 2);
+         t := word_BEat(sA, ofs2);
+         inc(ofs2, 2);
+         cap := copy(sA, ofs2, min(16, t)); // first cap only, enough?
+         if cap = BigCapability[CAPS_big_tZers].v then
+           isTzer := True;
+         inc(ofs2, t);
+
+        if t < length(sA) then
+          t := Byte(snac[ofs2]);
+       end;
+
+
+      if t = $01 then
+      begin
+        inc(ofs2, 2);
+        l := word_BEat(sA, ofs2)-4;
+        inc(ofs2, 2);
+        CharsetNumber := word_BEat(sA, ofs2);     //The encoding used for the message.
                                                 //0x0000: US-ASCII
                                                 //0x0002: UCS-2BE (or UTF-16?)
                                                 //0x0003: local 8bit encoding, eg iso-8859-1, cp-1257, cp-1251.
                                                 //Beware that UCS-2BE will contain zero-bytes for characters in the US-ASCII range.
                                                 // 0006 - Unicode
-        inc(ofs, 2);
-        CharsetSubset:=word_BEat(snac, ofs);         //Unknown; seen: 0x0000 = 0, 0xffff = -1.
-        inc(ofs, 2);
-        msg := copy(snac,ofs,l);
+        inc(ofs2, 2);
+        CharsetSubset := word_BEat(sA, ofs2);         //Unknown; seen: 0x0000 = 0, 0xffff = -1.
+        inc(ofs2, 2);
+        msg := copy(sA, ofs2, l);
        if CharsetNumber = 6 then
          begin
            eventFlags := eventFlags or IF_Unicode;
-//          {$IFDEF UNICODE}
-//           msgu := UnUTF(msg);
-//          {$ENDIF UNICODE}
          end
         else
        if CharsetNumber = 2 then
          begin
-//          {$IFDEF UNICODE}
-//           msgU := WideBEToStr(msg);
-//          {$ELSE nonUNICODE}
            eventFlags := eventFlags or IF_UTF8_TEXT;
            msg := WideBEToUTF8(msg);
-//          {$ENDIF UNICODE}
          end
-//          {$IFDEF UNICODE}
-//        else
-//         msgu := UnUTF(msg)
-//          {$ENDIF UNICODE}
         ;
+
+    end;
+
+    sA := getTLVSafe($31, snac, ofs);
+    if (sA > '') then
+      begin
+        eventMsgA := msg;
+        eventData := sA;
+        msg := '';
+        eventContact := thisCnt;
+        notificationForMsg(MTYPE_STICKER, eventFlags, TRUE, eventMsgA);
+      end
+     else
+       if isTzer then
+         begin
+           eventAddress := parseTzer2URL(msg, eventMsgA);
+           notificationForMsg(MTYPE_STICKER, eventFlags, TRUE, eventMsgA);
+           Exit;
+         end;
 
 //    if CharsetNumber = 2 then
 //      msg := UnWideStr(msg);
 //    {$IFDEF UNICODE}
 //     notificationForMsgW(MTYPE_PLAIN, eventFlags,TRUE,msgU);
 //    {$ELSE nonUNICODE}
-     eventContact := thisCnt;
-     notificationForMsg(MTYPE_PLAIN, eventFlags,TRUE,msg);
+      begin
+       eventContact := thisCnt;
+       notificationForMsg(MTYPE_PLAIN, eventFlags, TRUE, msg);
+      end;
 //    {$ENDIF UNICODE}
+      end;
+
     end;
   2:begin //Advanced(new-type)
 //    i := findTLV(5, snac,ofs);
@@ -6034,7 +6202,7 @@ case Byte(snac[10]) of // msg format
 
     {$IFDEF usesDC}
        eventDirect := NIL;
-       i := findTLV($0A, snac,ofs);
+       i := findTLV($0A, snac, ofs);
        t := 0;
        if i > 0 then
         t := getTLVwordBE(@snac[i]);
@@ -9013,16 +9181,16 @@ begin
 //  );
 end; // sendACK10
 
-procedure TicqSession.setWebaware(value:boolean);
+procedure TicqSession.setWebaware(value: boolean);
 begin
-  P_webaware:=value;
+  P_webaware := value;
 //  sendPermsNew;
 //sendStatusCode;
 end; // setWebaware
 
-procedure TicqSession.setAuthNeeded(value:boolean);
+procedure TicqSession.setAuthNeeded(value: boolean);
 begin
-  P_authNeeded:=value;
+  P_authNeeded := value;
 //  sendPermsNew;
 //  sendPermissions;
 end; // setAuthNeeded
@@ -11604,10 +11772,10 @@ begin
   localSSI.itemCnt := localSSI.items.Count;
 end;}
 
-procedure TicqSession.SplitCL2SSI_DelItems(proc:TsplitSSIProc; cl:TRnQCList; Tp : word);
+procedure TicqSession.SplitCL2SSI_DelItems(proc: TsplitSSIProc; cl: TRnQCList; Tp: word);
 var
-  i, len1, LenAll:integer;
-  k, l : Integer;
+  i, len1, LenAll: integer;
+  k, l: Integer;
   arr : array of TOSSIItem;
 //  s:string;
 begin

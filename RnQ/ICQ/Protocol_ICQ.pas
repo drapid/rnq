@@ -68,7 +68,7 @@ implementation
    Forms, SysUtils, DateUtils,
    Types, OverbyteIcsWSocket,
  {$IFDEF UNICODE}
-   AnsiStrings,
+   AnsiStrings, AnsiClasses,
  {$ENDIF}
    RnQBinUtils, RnQNet, RQUtil, RnQDialogs, RQlog,
 //   RnQProtocol,
@@ -81,7 +81,7 @@ implementation
    utilLib,
    ICQflap,
    wpDlg,
-   ICQClients,
+   ICQClients, ICQ.Stickers,
    iniLib, mainDlg,
    pluginutil, pluginLib,
    roasterLib, themesLib,
@@ -402,7 +402,7 @@ case getSnacService(s) of
   $1303: result := 'SSI limits response';
   $1304: result := 'contact list request';
   $1305: result := 'contact list check request';
-  $1306:result:='reply CL';
+  $1306: result := 'reply CL';
   $1307: result := 'activate server-side contact list';
   $1308:result:='SSI edit: add item(s)';
   $1309:result:='SSI edit: update item(s)';
@@ -1708,6 +1708,10 @@ case ev of
 //      e.fBin := '';
 //      e.txt := UnUTF(thisICQ.eventMsgA);
 //      e.ParseMsgStr(thisICQ.eventMsgA);
+
+//      if EnableImgLinksIn then
+//         parseImgLinks2(eventMsgA);
+
       vS := plugins.castEv( PE_MSG_GOT, cuid, e.flags, e.when, thisICQ.eventMsgA);
       if not isAbort(vS) then
        begin
@@ -1756,6 +1760,29 @@ case ev of
       msgDlg('___FROM MIRBILIS___'+
          #13+ UnUTF(thisICQ.eventNameA)+' ('+thisICQ.eventAddress+')'+
          #13+ sU, False, mtInformation);
+    end;
+  IE_StickerMsg:
+    begin
+      if thisICQ.eventAddress > '' then
+        begin
+ {$IFDEF DB_ENABLED}
+         e.fBin := '';
+         e.txt := thisICQ.eventAddress;
+ {$ELSE ~DB_ENABLED}
+         e.SetInfo(thisICQ.eventAddress);
+ {$ENDIF ~DB_ENABLED}
+        end
+       else
+        begin
+ {$IFDEF DB_ENABLED}
+         e.fBin := '';
+         e.txt := thisICQ.eventMsgA;
+ {$ELSE ~DB_ENABLED}
+         e.SetInfo(thisICQ.eventMsgA);
+ {$ENDIF ~DB_ENABLED}
+        end;
+      if behave(e, EK_msg) then
+        NILifNIL(c);
     end;
   end;
  if thisICQ.eventFlags and IF_offline > 0 then

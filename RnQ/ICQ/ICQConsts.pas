@@ -305,6 +305,8 @@ const
     MTYPE_XSTATUS = $61;
     MTYPE_GCARD   = $62;
 
+    MTYPE_STICKER = $70; // RnQ Internal
+
     MTYPE_UNKNOWN  = $00; // Unknown message, only used internally by this plugin
 
   MTYPE_AUTOMSGS =[ MTYPE_AUTOAWAY, MTYPE_AUTOBUSY, MTYPE_AUTONA,
