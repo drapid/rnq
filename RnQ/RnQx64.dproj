@@ -62,7 +62,7 @@
         <PreBuildEvent><![CDATA[BuiltTime.exe
 $(PreBuildEvent)]]></PreBuildEvent>
         <Icon_MainIcon>Res\MAINICON_Lite.ico</Icon_MainIcon>
-        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\AES;..\For.rnq\Flash;..\For.rnq\RTL;\ICQ;\MRA;\Prefs;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\AES;..\For.rnq\Flash;..\For.rnq\RTL;\ICQ;\MRA;\Prefs;\xmpp;..\For.rnq\XML;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <SanitizedProjectName>RnQx64</SanitizedProjectName>
         <DCC_UsePackage>rtl;$(DCC_UsePackage)</DCC_UsePackage>
         <Manifest_File>Res\rnq.manifest1</Manifest_File>
@@ -73,7 +73,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MajorVer>0</VerInfo_MajorVer>
         <VerInfo_Release>9999</VerInfo_Release>
-        <DCC_Define>RNQ;ICQ_ONLY;USE_SSL;ZLIB_OBJ;NO_EXTENDED_RTTI;NO_DEBUG_LOG;NO_HTTP_TUNNEL_AUTHDIGEST;$(DCC_Define)</DCC_Define>
+        <DCC_Define>RNQ;USE_SSL;ZLIB_OBJ;NO_EXTENDED_RTTI;NO_DEBUG_LOG;NO_HTTP_TUNNEL_AUTHDIGEST;$(DCC_Define)</DCC_Define>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1124;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=0.11.9999.1124;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1049</VerInfo_Locale>
@@ -118,7 +118,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1123;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q x64;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
-        <VerInfo_Build>1124</VerInfo_Build>
+        <VerInfo_Build>1123</VerInfo_Build>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_MapFile>3</DCC_MapFile>
     </PropertyGroup>
@@ -306,52 +306,52 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCCReference Include="NewAccount.pas">
             <Form>NewAccFrm</Form>
         </DCCReference>
-        <DCCReference Include="ICQ\icq_fr.pas">
-            <Form>icqFr</Form>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="ICQ\ICQcontacts.pas"/>
-        <DCCReference Include="ICQ\RQCodes.pas"/>
-        <DCCReference Include="ICQ\RQ_ICQ.pas"/>
-        <DCCReference Include="ICQ\viewinfoDlg.pas">
-            <Form>viewinfoFrm</Form>
-        </DCCReference>
-        <DCCReference Include="ICQ\ICQv9.pas"/>
-        <DCCReference Include="ICQ\ICQConsts.pas"/>
-        <DCCReference Include="StatusForm.pas">
-            <Form>xStatusForm</Form>
-        </DCCReference>
-        <DCCReference Include="ICQ\wpDlg.pas">
-            <Form>wpFrm</Form>
-        </DCCReference>
-        <DCCReference Include="ICQ\Protocol_ICQ.pas"/>
-        <DCCReference Include="ICQ\viewSSI.pas">
-            <Form>SSIForm</Form>
-        </DCCReference>
-        <DCCReference Include="ICQ\ICQflap.pas"/>
-        <DCCReference Include="ICQ\filetransferDlg.pas">
-            <Form>filetransferFrm</Form>
-        </DCCReference>
-        <DCCReference Include="ICQ\sendfileDlg.pas">
-            <Form>sendfileFrm</Form>
-        </DCCReference>
         <DCCReference Include="..\For.rnq\RDtrayLib.pas"/>
-        <DCCReference Include="ICQ\ICQClients.pas"/>
         <DCCReference Include="..\For.rnq\tipDlg.pas"/>
         <DCCReference Include="..\For.rnq\RnQLangFrm.pas">
             <Form>FrmLangs</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="ViewHEventDlg.pas">
             <Form>HEventFrm</Form>
+        </DCCReference>
+        <DCCReference Include="..\for.RnQ\RTL\RDUtils.pas"/>
+        <DCCReference Include="ICQ\filetransferDlg.pas">
+            <Form>filetransferFrm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="ICQ\ICQ.Stickers.pas"/>
+        <DCCReference Include="ICQ\icq_fr.pas">
+            <Form>icqFr</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="ICQ\ICQClients.pas"/>
+        <DCCReference Include="ICQ\ICQConsts.pas"/>
+        <DCCReference Include="ICQ\ICQContacts.pas"/>
+        <DCCReference Include="ICQ\ICQflap.pas"/>
+        <DCCReference Include="ICQ\ICQv9.pas"/>
         <DCCReference Include="ICQ\MenuStickers.pas">
             <Form>FStickers</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="..\for.RnQ\RTL\RDUtils.pas"/>
+        <DCCReference Include="ICQ\Protocol_ICQ.pas"/>
+        <DCCReference Include="ICQ\RQ_ICQ.pas"/>
+        <DCCReference Include="ICQ\RQCodes.pas"/>
+        <DCCReference Include="ICQ\sendfileDlg.pas">
+            <Form>sendfileFrm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="ICQ\viewinfoDlg.pas">
+            <Form>viewinfoFrm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="ICQ\viewSSI.pas">
+            <Form>SSIForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="ICQ\wpDlg.pas">
+            <Form>wpFrm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="..\For.rnq\RnQConfig.inc"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
@@ -401,9 +401,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
                     <VersionInfoKeys Name="Comments"/>
                 </VersionInfoKeys>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k220.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp220.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Coding\Comps\Webrtc_Android_Trial\Websockets\dcp\Win32\dclsgcWebSocketsDXE8.bpl">SGC WebSockets</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k230.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp230.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>

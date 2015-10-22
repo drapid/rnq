@@ -9,7 +9,17 @@ uses
   Windows, Classes;
 
 
-//const
+const
+  stickerExtNames: array [1..30] of Integer =
+  (1,  2,  79, 80, 81, 87, 95, 97, 106, 107, 109, 111, 112, 113, 118, 119, 121, 123, 124, {149,} 151, 157, 158, 180, 203, 205, 209, 211, 213, 217, 108);
+  stickerExtCounts: array [1..30] of Integer =
+  (26, 36, 10, 10, 10, 8,  25, 10, 10,  10,  36,  20,  20,  24,  24,  24,  24,  8,   24,  {24,}  20,  60,  30,  40,  16,  8,   16,  50,  24,  20,  8);
+  stickerExtHints: array [1..30] of String = (
+    'Pandas', 'Whiskers', 'Super Joe', 'Kittens', 'Holiday Cake', 'Smurfs', 'Memes', 'Bro', 'Boomz Man', 'Boomz Girl',
+    'Crackers', 'Chickens', 'Horror', 'Holiday Cards', 'I Love You', 'Supercharged stickers', 'Obrigado, Brasil!',
+    'Onca', 'Russian words', 'Bate-papo maneiro', 'Emoticons', 'Paranormal Love', 'Warm Together', 'Just in case',
+    'Nauryz', 'Spring festivities', 'Nichosi-meme', 'Snob Dog', 'Sonya', 'Musical Cat'
+  );
 //  ImageContentTypes: array [0 .. 7] of string = ('image/bmp', 'image/jpeg', 'image/gif', 'image/png', 'image/x-icon', 'image/tiff', 'image/x-tiff', 'image/webp');
 
 type
@@ -74,23 +84,27 @@ begin
     pfs.LoadFromFile(fn)
    else
     begin
-      LoadFromURL(URL, pfs^);
-
-      if EnableStickersCache then
-       begin
-         if not FileExists(fn) then
-          begin
-           if not DirectoryExists(myPath + 'Stickers\') then
-             CreateDir(myPath + 'Stickers\');
-           pfs.SaveToFile(fn);
-          end;
+      if LoadFromURL(URL, pfs^) then
+        if EnableStickersCache then
+         begin
+           if not FileExists(fn) then
+            begin
+             if not DirectoryExists(myPath + 'Stickers\') then
+               CreateDir(myPath + 'Stickers\');
+             pfs.SaveToFile(fn);
+            end;
       end;
     end;
 
   pfs.Seek(0, 0);
   SetLength(stickerForChat, pfs.size);
-  pfs.ReadBuffer(stickerForChat[1], pfs.size);
-  Result := RnQImageExTag + Base64EncodeString(stickerForChat) + RnQImageExUnTag;
+  if pfs.size > 0 then
+    begin
+      pfs.ReadBuffer(stickerForChat[1], pfs.size);
+      Result := RnQImageExTag + Base64EncodeString(stickerForChat) + RnQImageExUnTag;
+    end
+   else
+    Result := '';
 
   if fsPtr = nil then
     pfs.Free

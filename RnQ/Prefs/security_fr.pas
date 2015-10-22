@@ -51,8 +51,10 @@ uses
  {$IFDEF DB_ENABLED}
   RnQDB,
  {$ENDIF DB_ENABLED}
-  history,
-  ICQv9;
+ {$IFDEF PROTOCOL_ICQ}
+  ICQv9,
+ {$ENDIF PROTOCOL_ICQ}
+  history;
 
 {$R *.dfm}
 
@@ -84,7 +86,9 @@ begin
   clearPwdOnDSNCT    := CplPwdChk.Checked and dontsavepwdChk.checked;
   askPassOnBossKeyOn := AskPassOnBossChk.Checked;
   MakeBakups     := MakeBakChk.Checked;
+ {$IFDEF PROTOCOL_ICQ}
   addTempVisMsg  := AddTempVisMsgChk.Checked;
+ {$ENDIF PROTOCOL_ICQ}
   histcrypt.savePwd:=histcryptSavePwdChk.checked;
 
   with histcrypt do
@@ -119,7 +123,9 @@ begin
   CplPwdChk.Checked           := clearPwdOnDSNCT;
   AskPassOnBossChk.Checked    := askPassOnBossKeyOn;
   MakeBakChk.Checked          := MakeBakups;
+ {$IFDEF PROTOCOL_ICQ}
   AddTempVisMsgChk.Checked    := addTempVisMsg;
+ {$ENDIF PROTOCOL_ICQ}
   histcryptEnableChk.checked  := histcrypt.enabled;
   histcryptSavePwdChk.checked := histcrypt.savePwd;
   newHistPwd:=histcrypt.pwd;

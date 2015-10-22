@@ -60,7 +60,9 @@ uses
  {$ENDIF UNICODE}
   RDGlobal,
   globalLib, UtilLib, RnQLangs, RQUtil, RnQSysUtils, RnQCrypt,
+ {$IFDEF PROTOCOL_ICQ}
   ICQv9,
+ {$ENDIF PROTOCOL_ICQ}
   iniLib,
   mainDlg, chatDlg;
 
@@ -90,9 +92,11 @@ begin
     rr := compareText(AccPass, pwdBox.text) = 0
    else
     begin
+ {$IFDEF PROTOCOL_ICQ}
       if LoginMD5 and  Account.AccProto.saveMD5Pwd then
         sA := MD5Pass(pwdBox.text)
        else
+ {$ENDIF PROTOCOL_ICQ}
         sA := pwdBox.text;
       rr := compareText(sA, Account.AccProto.pwd) = 0;
     end;

@@ -59,7 +59,7 @@ uses
   mainDlg, usersDlg, utilLib,
   RnQNet,
 //  prefDlg,
-  RQUtil, RQGlobal,
+  RQUtil, RDGlobal,
   RQThemes,
   ICQConsts, Protocol_ICQ;
 

@@ -422,7 +422,7 @@ uses
   math, Types, System.Threading,
   Base64,
   RDFileUtil, RQUtil, RDUtils, RnQSysUtils,
-  globalLib, viewInfoDlg, //searchhistDlg,
+  globalLib, //searchhistDlg,
   outboxlib, utilLib, outboxDlg, RnQTips, RnQPics,
   langLib, roasterLib, ViewHEventDlg, ViewPicDimmedDlg,
   RnQNet.Uploads,
@@ -437,7 +437,7 @@ uses
   Protocols_all,
  {$IFDEF PROTOCOL_ICQ}
    Protocol_ICQ, ICQv9, ICQConsts, ICQContacts, RQ_ICQ,
-   ICQ.Stickers, MenuStickers,
+   viewInfoDlg, ICQ.Stickers, MenuStickers,
  {$ENDIF PROTOCOL_ICQ}
   RQThemes, themesLib,
  {$IFDEF USE_SECUREIM}
@@ -1615,8 +1615,11 @@ begin
   if isVisible and enabled and pagectrl.visible and pagectrl.enabled then
    ch.input.setFocus;
    
+ {$IFDEF PROTOCOL_ICQ}
     BuzzBtn.Visible := CAPS_big_Buzz in TICQContact(ch.who).capabilitiesBig;
     BuzzBtn.Left := RnQFileBtn.Left + RnQFileBtn.Width;
+    stickersBtn.Visible := True;
+ {$ENDIF PROTOCOL_ICQ}
 
 //    stickersBtn.Enabled := EnableStickers;
     stickersBtn.Enabled := MainPrefs.getPrefBoolDef('chat-images-enable-stickers', True);
@@ -1644,6 +1647,7 @@ else
     plugins.castEv(PE_SELECTTAB, ch.id);
     BuzzBtn.Visible := False;
     stickersBtn.Enabled := False;
+    stickersBtn.Visible := False;
   end;
 
   sendBtn.enabled := ch.chatType <> CT_PLUGING;
@@ -2272,6 +2276,7 @@ begin
   sendBtn.Invalidate;
   sbar.Invalidate;
 
+ {$IFDEF PROTOCOL_ICQ}
   if (thisChat.chatType = CT_IM) and not (thisChat.who = nil) then
   begin
     BuzzBtn.Visible := CAPS_big_Buzz in TICQContact(thisChat.who).capabilitiesBig;
@@ -2295,6 +2300,7 @@ begin
             swf.TGotoFrame('face', 0);
        end;
   {$ENDIF RNQ_AVATARS}
+ {$ENDIF PROTOCOL_ICQ}
 end; // updateSendBtn
 
 procedure TchatFrm.closePageAt(idx: Integer);
@@ -2853,10 +2859,12 @@ procedure TchatFrm.ShowStickersExecute(Sender: TObject);
 var
   ch: TchatInfo;
 begin
+ {$IFDEF PROTOCOL_ICQ}
   ch := thisChat;
   if ch = nil then
     exit;
   ShowStickersMenu(ch.who, stickersBtn.ClientOrigin);
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TchatFrm.sbarDblClick(Sender: TObject);
@@ -2951,6 +2959,7 @@ begin
         DrawText(StatusBar.Canvas.Handle, 'TRLT', 4, ARect, DT_CENTER or DT_SINGLELINE or DT_VCENTER);
        end;
      end;
+ {$IFDEF PROTOCOL_ICQ}
   3: if Assigned(ch) then
       if ch.chatType = CT_IM then
       if ch.who.fProto.ProtoID = ICQProtoID then
@@ -2981,6 +2990,7 @@ begin
              end;
 
          end;
+ {$ENDIF PROTOCOL_ICQ}
 
  end;
 
@@ -3750,11 +3760,13 @@ procedure TchatFrm.stickersBtnClick(Sender: TObject);
 var
   ch: TchatInfo;
 begin
+ {$IFDEF PROTOCOL_ICQ}
   ch := thisChat;
   if ch = nil then
     exit;
   ShowStickersMenu(thisChat.who, toolbar.ClientToScreen(Types.point(TRnQSpeedButton(Sender).Left, TRnQSpeedButton(Sender).Top)));
   enterCount := 0;
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TchatFrm.SplitterMoved(Sender: TObject);
@@ -4595,6 +4607,7 @@ begin
   if (ch = nil) or (ch.who = nil) then
     exit;
 
+ {$IFDEF PROTOCOL_ICQ}
   if TICQSession(ch.who.fProto).sendBuzz(ch.who) then
   begin
     ev := THevent.new(EK_buzz, Account.AccProto.getMyInfo, Now, ''{$IFDEF DB_ENABLED}, ''{$ENDIF DB_ENABLED}, 0);
@@ -4604,6 +4617,7 @@ begin
   end
     else
   msgDlg('Wait at least 15 seconds before buzzing again', True, mtInformation)
+ {$ENDIF PROTOCOL_ICQ}
 
 //  Test SMS sending
 
@@ -4889,8 +4903,12 @@ begin
  {$IFDEF RNQ_FULL}
 //  rqSmiles.ClearAniParams;
   theme.ClearAniParams;
-  if Assigned(FSmiles) then FSmiles.Hide;
-  if Assigned(FStickers) then FStickers.Hide;
+  if Assigned(FSmiles) then
+    FSmiles.Hide;
+ {$IFDEF PROTOCOL_ICQ}
+  if Assigned(FStickers) then
+    FStickers.Hide;
+ {$ENDIF PROTOCOL_ICQ}
  {$ENDIF RNQ_FULL}
 end;
 
@@ -5394,8 +5412,7 @@ var
   s: String;
   sA: AnsiString;
 begin
-//  if not UseAnime then Exit;
-//  checkGifTime;
+ {$IFDEF PROTOCOL_ICQ}
   ch := thisChat;
 //  if (ch = NIL)or (ch.chatType <> CT_ICQ)or not (Assigned(ch.avtPic.Pic))  then
   if (ch = NIL)or (ch.chatType <> CT_IM) then
@@ -5411,6 +5428,7 @@ begin
 
   updateContactStatus;
 // activeICQ.sendSNAC()
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TchatFrm.EncryptClearPWD(Sender: TObject);
@@ -5418,8 +5436,7 @@ var
   ch: TchatInfo;
 //  s : AnsiString;
 begin
-//  if not UseAnime then Exit;
-//  checkGifTime;
+ {$IFDEF PROTOCOL_ICQ}
   ch := thisChat;
 //  if (ch = NIL)or (ch.chatType <> CT_ICQ)or not (Assigned(ch.avtPic.Pic))  then
   if (ch = NIL)or (ch.chatType <> CT_IM) then
@@ -5429,6 +5446,7 @@ begin
   TICQcontact(ch.who).crypt.qippwd := 0;
   updateContactStatus;
 // activeICQ.sendSNAC()
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TchatFrm.SetSmilePopup(pIsMenu: Boolean);

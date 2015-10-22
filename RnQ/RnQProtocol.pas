@@ -418,31 +418,31 @@ type
     function  isOnline:boolean; Virtual; Abstract;
     function  isOffline:boolean; Virtual; Abstract;
     function  isReady:boolean;  Virtual; Abstract;    // we can send commands
-    function  isConnecting:boolean; Virtual; Abstract;
-    function  isSSCL:boolean; Virtual; Abstract;
-    function  getStatus:byte; Virtual; Abstract;
-    procedure setStatus(st : Byte); Virtual; Abstract;
-    function  getVisibility : byte; Virtual; Abstract;
+    function  isConnecting: boolean; Virtual; Abstract;
+    function  isSSCL: boolean; Virtual; Abstract;
+    function  getStatus: byte; Virtual; Abstract;
+    procedure setStatus(st: Byte); Virtual; Abstract;
+    function  getVisibility: byte; Virtual; Abstract;
     function  IsInvisible  : Boolean; Virtual; Abstract;
     function  getStatusName: String; Virtual; Abstract;
     function  getStatusImg : TPicName; Virtual; Abstract;
-    function  getXStatus:byte; Virtual; Abstract;
+    function  getXStatus: byte; Virtual; Abstract;
 
-    function  imVisibleTo(c:TRnQContact):boolean; Virtual; Abstract;
-    procedure getClientPicAndDesc4(cnt:TRnQContact; var pPic : TPicName; var CliDesc : String); Virtual; Abstract;
-    function  isMyAcc(c : TRnQContact) : Boolean; Virtual; Abstract;
-    function  maxCharsFor(const c:TRnQContact; isBin : Boolean = false):integer; Virtual; Abstract;
+    function  imVisibleTo(c: TRnQContact): boolean; Virtual; Abstract;
+    procedure getClientPicAndDesc4(cnt: TRnQContact; var pPic: TPicName; var CliDesc: String); Virtual; Abstract;
+    function  isMyAcc(c: TRnQContact): Boolean; Virtual; Abstract;
+    function  maxCharsFor(const c: TRnQContact; isBin: Boolean = false): integer; Virtual; Abstract;
 //    function  canSendMsgFor(c:TRnQContact; msg : String):integer;
-    function  canAddCntOutOfGroup : Boolean; Virtual; Abstract;
+    function  canAddCntOutOfGroup: Boolean; Virtual; Abstract;
 
     // manage contact lists
-    function  readList(l : TLIST_TYPES):TRnQCList; Virtual; Abstract;
-    procedure AddToList(l : TLIST_TYPES; cl:TRnQCList); overLoad; Virtual; Abstract;
-    procedure RemFromList(l : TLIST_TYPES; cl:TRnQCList); OverLoad; Virtual; Abstract;
+    function  readList(l: TLIST_TYPES): TRnQCList; Virtual; Abstract;
+    procedure AddToList(l: TLIST_TYPES; cl: TRnQCList); overLoad; Virtual; Abstract;
+    procedure RemFromList(l: TLIST_TYPES; cl: TRnQCList); OverLoad; Virtual; Abstract;
     // manage contacts
-    procedure AddToList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad; Virtual; Abstract;
-    procedure RemFromList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad; Virtual; Abstract;
-    function  isInList(l : TLIST_TYPES; cnt:TRnQContact) : Boolean; Virtual; Abstract;
+    procedure AddToList(l: TLIST_TYPES; cnt: TRnQContact); OverLoad; Virtual; Abstract;
+    procedure RemFromList(l: TLIST_TYPES; cnt: TRnQContact); OverLoad; Virtual; Abstract;
+    function  isInList(l: TLIST_TYPES; cnt: TRnQContact) : Boolean; Virtual; Abstract;
 
     function  addContact(c:TRnQContact; isLocal : Boolean = false):boolean; Virtual; Abstract;
     function  removeContact(c:TRnQContact):boolean; Virtual; Abstract;
@@ -558,7 +558,7 @@ type
 //    icon : Tbitmap;
       end;
       {$ENDIF RNQ_AVATARS}
-    data:pointer;
+    data: pointer;
     class function trimUID(const uid : TUID) : TUID; virtual; abstract;
     constructor Create(pProto : TRnQProtocol; const uin_: TUID); Virtual;
     destructor Destroy; override;
@@ -591,9 +591,11 @@ type
     function  isInList(l : TLIST_TYPES) : Boolean;
 //   public
 //    function  GetProto : IRnQProtocol;
+    procedure SetGroupName(const pName : String);
     function  buin: RawByteString;
     property  Display : string read fDisplay write SetDisplay;
     property  ProtoID : byte read _getProtoID;
+    property  Status : byte read getStatus;
   end;
 
   TcontactProc=procedure(c:TRnQContact);
@@ -678,14 +680,16 @@ const
   IF_urgent   = 1 shl 2;      // send msg urgent
   IF_noblink  = 1 shl 3;      // send to contact list
 
+  IF_no_matter  = 1 shl 10;  // If set, don't play sound
+
 const // Avatar type
   IS_AVATAR = 0;
   IS_PHOTO  = 1;
   IS_NONE   = 2;
 
 var
-  GMToffset:TdateTime;  // add it to a GMT time, subtract it from your local time
-  GMToffset0:TdateTime;  // For OfflineMsg-s & ViewInfo
+  GMToffset:  TdateTime;  // add it to a GMT time, subtract it from your local time
+  GMToffset0: TdateTime;  // For OfflineMsg-s & ViewInfo
 
 implementation
 
@@ -1109,6 +1113,28 @@ begin
         end;
     Result := Trunc(bd - Date);
    end;
+end;
+
+procedure TRnQcontact.SetGroupName(const pName : String);
+var
+  gId : Integer;
+begin
+  gID := groups.name2id(pName);
+  if gID >= 0 then
+    begin
+      self.group := gID
+    end
+   else
+    begin
+       if pName > '' then
+         begin
+           gID := groups.add();
+           groups.rename(gID, pName);
+         end
+        else
+          gId := 2000;
+    end;
+  self.group := gID;
 end;
 
 

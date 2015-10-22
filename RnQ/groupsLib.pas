@@ -82,7 +82,10 @@ uses
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
-  RQUtil, RDUtils, RnQFileUtil, ICQv9;
+ {$IFDEF PROTOCOL_ICQ}
+   ICQv9,
+ {$ENDIF PROTOCOL_ICQ}
+  RQUtil, RDUtils, RnQFileUtil;
 
 function Tgroups.get(id:integer):Pgroup;
 begin result:=@a[idxOf(id)] end;
@@ -240,12 +243,14 @@ begin
     inc(id);
    end;
   setlength(a,length(a)-1);
+ {$IFDEF PROTOCOL_ICQ}
   if
  {$IFDEF UseNotSSI}
     TicqSession(MainProto.ProtoElem).useSSI and
  {$ENDIF UseNotSSI}
     (i > 0)and Account.AccProto.isReady then
       TicqSession(Account.AccProto.ProtoElem).SSIdeleteGroup(i);
+ {$ENDIF PROTOCOL_ICQ}
 end; // delete
 
 function Tgroups.id2name(id:integer):string;
@@ -329,11 +334,13 @@ procedure Tgroup.ServerUpdate;
 begin
 //               ICQ.SSIRenameGroup(ssiID, name);
 //               if ssiID > 0 then
+ {$IFDEF PROTOCOL_ICQ}
   if Account.AccProto.ProtoElem is TicqSession then
  {$IFDEF UseNotSSI}
    if TicqSession(Account.AccProto.ProtoElem).useSSI then
  {$ENDIF UseNotSSI}
     TicqSession(Account.AccProto.ProtoElem).SSIUpdateGroup(id);
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 {$ELSE DELPHI_9_DOWN}

@@ -23,38 +23,39 @@ interface
   {$IFDEF usesDC}
 //  procedure receiveFile2(thisICQ : TicqSession; evID : Int64; fromCnt : TContact; fn : String);
 //  procedure receiveFile2(d : Tdirect);
-  procedure receiveFile(d:TProtoDirect);
-  procedure ICQsendfile(c:TICQContact; const fn:string);
+  procedure receiveFile(d: TProtoDirect);
+  procedure ICQsendfile(c: TICQContact; const fn: string);
 //  function  sendICQfiles(uin:TUID; files, msg:string):integer;
-  function sendICQfiles(cnt : TRnQContact; files : TFilePacket; msg:string;
-              useLocProxy : Boolean; ThrSrv : Boolean; var drct : TICQdirect):integer;
+  function sendICQfiles(cnt: TRnQContact; files : TFilePacket; msg: string;
+              useLocProxy : Boolean; ThrSrv : Boolean; var drct : TICQdirect): integer;
   function  findSendFile(id: Int64):TsendfileFrm;
   function  findRcvFile(id: Int64):TfiletransferFrm;
   {$ENDIF usesDC}
 
-  function  enterICQpwd(const thisICQ : TRnQProtocol):boolean;
+  function  enterICQpwd(const thisICQ: TRnQProtocol): boolean;
   //function  addToRoster(c:Tcontact):boolean; overload;
-  function addToRoster(c:TRnQcontact; isLocal : Boolean = False):boolean; overload;
-  procedure sendICQcontacts(cnt : TRnQContact; flags:integer; cl:TRnQCList);
-  procedure sendICQaddedYou(cnt : TRnQContact);
+  procedure sendICQcontacts(cnt: TRnQContact; flags: integer; cl: TRnQCList);
+  procedure sendICQaddedYou(cnt: TRnQContact);
   procedure sendICQautomsgreq(cnt : TRnQContact);
   procedure ChangeXStatus(pICQ : TICQSession; const st : Byte;
                           const StName : String = ''; const StText : String = ''
                           ;const ChgdUseOldXSt : Boolean = false);
 
-  procedure loggaICQPkt(const prefix : String; what:TwhatLog; data:RawByteString='');
+  procedure loggaICQPkt(const prefix: String; what: TwhatLog; data: RawByteString='');
 //  function  findICQViewInfo(c:TRnQContact):TviewInfoFrm;
-  procedure ProcessICQEvents(var thisICQ:TICQSession; ev:TicqEvent);
+  procedure ProcessICQEvents(var thisICQ: TICQSession; ev: TicqEvent);
 
 
   //function  statusName(s:Tstatus):string;
-  function  statusNameExt2(s:byte; extSts : byte = 0; const Xsts : String = ''; const sts6 : String = ''):string;
-  function  status2imgName(s:byte; inv:boolean=FALSE):AnsiString;
-  function  status2imgNameExt(s: byte; inv:boolean=FALSE; extSts : byte= 0):AnsiString;
+  function  statusNameExt2(s: byte; extSts : byte = 0; const Xsts: String = ''; const sts6: String = ''):string;
+  function  status2imgName(s: byte; inv:boolean=FALSE):AnsiString;
+  function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts : byte= 0): AnsiString;
 //  function  visibility2imgName(vi:Tvisibility):String;
-  function  visibilityName(vi:Tvisibility):string;
-  function  contactlist2clb(cl:TRnQCList): AnsiString;
-  function  clb2contactlist(data: RawByteString):TRnQCList;
+  function  visibilityName(vi: Tvisibility): string;
+  function  contactlist2clb(cl: TRnQCList): AnsiString;
+  function  clb2contactlist(data: RawByteString): TRnQCList;
+  function  str2status(const s: AnsiString): byte;
+  function  str2visibility(const s: AnsiString): Tvisibility;
 
   function  getRnQVerFor(c:TRnQContact):Integer;
 
@@ -280,35 +281,6 @@ begin
 
 end; // sendfile
 {$ENDIF usesDC}
-
-function addToRoster(c:TRnQContact; isLocal : Boolean = False):boolean;
-begin
-  notInList.remove(c);
-//      c.CntIsLocal := isLocal;
-      if isLocal then
-        c.SSIID := 0;
-      result:= c.fProto.addContact(c, isLocal);
-  if not result then exit;
-  roasterlib.update(c);
-  roasterLib.focus(c);
-  saveListsDelayed:=TRUE;
-  autosizeDelayed:=TRUE;
-  plugins.castEvList( PE_LIST_ADD, PL_ROSTER, c);
- {$IFDEF UseNotSSI}
-  if c is TICQcontact then
-//  if (not icq.useSSI)and icq.useLSI3 then
-   with TicqSession(c.iProto.ProtoElem) do
-    if not UseSSI and useLSI2 then
-     begin
-      if StrToIntDef(c.uid, 0) > 0 then
-       begin
-        if TICQcontact(c).infoUpdatedTo=0 then sendQueryInfo(StrToIntDef(c.UID2cmp, 0));
-        if sendTheAddedYou then
-          Account.outbox.add(OE_addedYou, c);
-       end;
-     end;
- {$ENDIF UseNotSSI}
-end; // addToRoster
 
 procedure ChangeXStatus(pICQ : TICQSession; const st : Byte;
         const StName : String = ''; const StText : String = ''
@@ -631,6 +603,29 @@ for i:=0 to TList(cl).count-1 do
   end;
 end; // contactlist2clb
 
+function str2status(const s: AnsiString): byte;
+var
+  ss : TPicName;
+begin
+  ss:=LowerCase(s);
+ for result:=byte(low(status2img)) to byte(high(status2img)) do
+//  if LowerCase(status2img[TICQStatus(result)]) = s then
+  if status2img[result] = ss then
+    exit;
+ result:= byte(SC_ONLINE); // shut up compiler warning
+end; // str2status
+
+function str2visibility(const s: AnsiString): Tvisibility;
+var
+  ss: TPicName;
+begin
+  ss := LowerCase(s);
+  for result := low(result) to high(result) do
+   if visib2str[result] = ss then
+     exit;
+  result := VI_normal; // shut up compiler warning
+end; // str2visibility
+
 
 function findICQViewInfo(c:TRnQcontact):TviewInfoFrm;
 var
@@ -723,7 +718,8 @@ if ev in [TicqEvent(IE_msg),IE_url,IE_contacts,IE_authReq,IE_addedyou,
       TicqEvent(IE_oncoming), TicqEvent(IE_offgoing),IE_auth,IE_authDenied,
       IE_automsgreq, IE_statuschanged, IE_gcard,IE_ack,
    {$IFDEF usesDC} IE_filereq, {$ENDIF usesDC}
-      IE_email,IE_webpager,IE_fromMirabilis,IE_TYPING, IE_ackXStatus, IE_XStatusReq] then
+      IE_email, IE_webpager, IE_fromMirabilis, IE_TYPING, IE_ackXStatus, IE_XStatusReq,
+      IE_StickerMsg] then
   begin
   e:=Thevent.new(EK_null, c, thisICQ.eventTime,
                  ''{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, thisICQ.eventFlags);
@@ -734,7 +730,7 @@ if ev in [TicqEvent(IE_msg),IE_url,IE_contacts,IE_authReq,IE_addedyou,
      e.cl.remove(thisICQ.getMyInfo);
      e.cl.remove(c);
     end
-   else if ev in [IE_url,IE_authreq] then
+   else if ev in [IE_url, IE_authreq] then
  {$IFDEF DB_ENABLED}
     begin
       e.fBin := '';
@@ -1396,7 +1392,7 @@ case ev of
           reqAvatarsQ.add(c)
         else
          if c.icon.ToShow = IS_AVATAR then
-           ClearAvatar(c);
+           ClearAvatar(TRnQContact(c));
 //      if ShowAvt then
       if TO_SHOW_ICON[CNT_ICON_AVT] then
         redraw(c);
@@ -1767,19 +1763,14 @@ case ev of
         begin
  {$IFDEF DB_ENABLED}
          e.fBin := '';
-         e.txt := thisICQ.eventAddress;
+         e.txt := thisICQ.eventMsgA + CRLF + thisICQ.eventAddress;
  {$ELSE ~DB_ENABLED}
-         e.SetInfo(thisICQ.eventAddress);
+         e.SetInfo(thisICQ.eventMsgA + CRLF + thisICQ.eventAddress);
  {$ENDIF ~DB_ENABLED}
         end
        else
         begin
- {$IFDEF DB_ENABLED}
-         e.fBin := '';
-         e.txt := thisICQ.eventMsgA;
- {$ELSE ~DB_ENABLED}
-         e.SetInfo(thisICQ.eventMsgA);
- {$ENDIF ~DB_ENABLED}
+         e.ParseMsgStr(thisICQ.eventMsgA);
         end;
       if behave(e, EK_msg) then
         NILifNIL(c);

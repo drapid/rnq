@@ -108,8 +108,11 @@ uses
   RnQLangs, RnQFileUtil, RQUtil, RDGlobal, RQThemes, //menusUnit,
   RnQSysUtils,
   RnQMenu, RnQPics,
-  langLib, uinlistLib, globalLib, utilLib, chatDlg, mainDlg, themesLib,
-  ICQv9;
+  langLib, uinlistLib, globalLib, utilLib,
+ {$IFDEF PROTOCOL_ICQ}
+  ICQv9,
+ {$ENDIF PROTOCOL_ICQ}
+  chatDlg, mainDlg, themesLib;
 
 {$R *.DFM}
 

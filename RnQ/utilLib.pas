@@ -25,7 +25,7 @@ uses
 
   roasterLib,
   RnQZip,
-  globalLib, events, ICQConsts,
+  globalLib, events,
   dateutils
   ;
 
@@ -87,7 +87,9 @@ function  filterRefuse(c: TRnQContact; const msg: string=''; flags: dword=0; ev:
 function  rosterImgNameFor(c: TRnQcontact): TPicName;
 procedure setAppBarSize;
 procedure check4update;
+ {$IFDEF PROTOCOL_ICQ}
 function  CheckUpdates(cnt: TRnQContact): Boolean;
+ {$ENDIF PROTOCOL_ICQ}
 function  setAutomsg(const s: String): string;
 function  applyVars(c: TRnQcontact; const s: String; fromAM: boolean = false): String;
 function  getAutomsgFor(c: TRnQcontact): string;
@@ -133,8 +135,6 @@ function  statusDrawExt(const DC: HDC; const x, y: Integer; const s: byte;
 function  beh2str(kind: integer): RawByteString;
 procedure str2beh(const b, s: RawByteString); overload;
 function  str2beh(s: AnsiString): Tbehaviour; overload;
-function  str2status(const s: AnsiString): byte;
-function  str2visibility(const s: AnsiString): Tvisibility;
 function  str2html(const s: string): string;
 function  strFromHTML(const s: string): string;
 function  db2strU(db: TRnQCList): RawByteString;
@@ -301,7 +301,8 @@ uses
   pluginLib, authreqDlg,
   lockDlg, langLib, groupsLib, outboxDlg, pwdDlg, //msgsDlg,
   history,
-  addContactDlg, wpDlg, RnQMacros,
+  addContactDlg,
+  RnQMacros,
   usersDlg, visibilityDlg,
   changepwdDlg, ThemesLib, RnQStrings,
   Protocols_all,
@@ -309,9 +310,12 @@ uses
   MRAv1, MRAcontacts,
   wpMRADlg,
  {$ENDIF PROTOCOL_MRA}
-  RQ_ICQ, ICQv9, ICQContacts,
+ {$IFDEF PROTOCOL_ICQ}
+  RQ_ICQ, ICQv9, ICQContacts, ICQConsts,
   icq_fr,
   Protocol_ICQ,// ICQClients,
+  wpDlg,
+ {$ENDIF PROTOCOL_ICQ}
   {$IFDEF USE_GDIPLUS}
     RnQGraphics,
   {$ELSE}
@@ -452,6 +456,7 @@ var
 begin
 //  clear;
 //  s := loadFile(userPath + extstatusesFilename);
+ {$IFDEF PROTOCOL_ICQ}
   s := loadFromZipOrFile(zp, Account.ProtoPath, extstatusesFilename);
   i := 0;
   while s>'' do
@@ -487,6 +492,7 @@ begin
          except
          end;
   end;
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 {procedure SaveExtSts;
@@ -808,6 +814,7 @@ begin
     AddFile2Zip(reopenchatsFileName, chatFrm.Pages2String);
 
   cfg := '';
+ {$IFDEF PROTOCOL_ICQ}
 //  for I := low(XStatus6) to High(XStatus6) do
   for k := low(ExtStsStrings) to High(ExtStsStrings) do
   begin
@@ -821,6 +828,7 @@ begin
     cfg := cfg+CRLF;
   end;
   AddFile2Zip(extstatusesFilename, cfg);
+ {$ENDIF PROTOCOL_ICQ}
 
   cfg := '';
 
@@ -928,12 +936,14 @@ begin
 // if MainProto.ProtoName = 'ICQ' then
    begin
 //  proxy_http_Enable(ICQ.sock);
+ {$IFDEF PROTOCOL_ICQ}
       if (MainProxy.ssl)
  {$IFNDEF ICQ_ONLY}
           and(pr.ProtoID = ICQProtoID)
  {$ENDIF ICQ_ONLY}
       then
        MainProxy.serv.host := TicqSession(pr).SSLserver;
+ {$ENDIF PROTOCOL_ICQ}
     CopyProxy(pr.aProxy, MainProxy);
     pr.sock.proxySettings(pr.aProxy);
 
@@ -1551,10 +1561,12 @@ case whatForm of
   WF_PREF: begin frmclass:=TprefFrm; frm:=@prefFrm end;
 // {$ENDIF RNQ_LITE}
   WF_USERS: begin frmclass:=TusersFrm; frm:=@usersFrm end;
+ {$IFDEF PROTOCOL_ICQ}
   WF_WP: begin
            frmclass:=TwpFrm;
            frm:=@wpFrm
          end;
+ {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
   WF_WP_MRA: begin
            frmclass:=TwpMRAFrm;
@@ -2004,7 +2016,7 @@ begin
 end; // convertHistoriesDlg
 {$ENDIF}
 
-function addToRoster(c:TRnQContact; group:integer; const isLocal : Boolean = True):boolean;
+function addToRoster(c: TRnQContact; group: integer; const isLocal: Boolean = True): boolean;
 begin
   // Add SSI
   result:=FALSE;
@@ -2017,7 +2029,7 @@ begin
   result := addToRoster(c, isLocal) or roasterLib.update(c);
 end; // addToRoster
 
-function addToNIL(c:TRnQContact; isBulk : Boolean = false):boolean;
+function addToNIL(c: TRnQContact; isBulk: Boolean = false): boolean;
 begin
   result:=FALSE;
   c.fProto.removeContact(c);
@@ -2032,15 +2044,17 @@ begin
   result:=TRUE;
 end; // addToNIL
 
-procedure NILifNIL(c:TRnQContact; isBulk : Boolean = false);
+procedure NILifNIL(c: TRnQContact; isBulk: Boolean = false);
 begin
   if Assigned(c) then
   if not c.isInRoster then
    begin
     addToNIL(c, isBulk);
+ {$IFDEF PROTOCOL_ICQ}
     if not isBulk and (c is TICQContact) then
      if TICQContact(c).infoUpdatedTo=0 then
       TicqSession(c.fProto).sendQueryInfo(TICQcontact(c).uinINT);
+ {$ENDIF PROTOCOL_ICQ}
    end;
 end; // eventFrom
 
@@ -2109,12 +2123,14 @@ end;}
 function statusDrawExt(const DC: HDC; const x, y: integer; const s: byte;
                        const inv: boolean=FALSE; const ExtSts: Byte = 0): TSize;
 begin
+ {$IFDEF PROTOCOL_ICQ}
   if XStatusAsMain and (ExtSts > 0) then
     if DC = 0 then
       Result := theme.GetPicSize(RQteDefault, XStatusArray[ExtSts].PicName)
      else
       Result := theme.drawPic(DC, x, y, XStatusArray[ExtSts].PicName)
    else
+ {$ENDIF PROTOCOL_ICQ}
     begin
      if statusPics[s, inv].picName = '' then
       begin
@@ -2150,10 +2166,10 @@ var
   cl:TRnQCList;
   i:integer;
 begin
-result:=0;
-cl:=TRnQCList(proto.readList(LT_ROSTER));
-for i:=0 to TList(cl).count-1 do
-  if byte(TICQcontact(cl[i]).status) = st then
+  result := 0;
+  cl := TRnQCList(proto.readList(LT_ROSTER));
+  for i:=0 to TList(cl).count-1 do
+  if byte(TRnQContact(cl[i]).status) = st then
     inc(result); 
 end; // countContactsIn
 
@@ -2212,6 +2228,7 @@ begin
   ]);
   if Assigned(c) then
     begin
+ {$IFDEF PROTOCOL_ICQ}
      if (c is TICQContact) then
        begin
          if TICQContact(c).connection.ip=0 then
@@ -2224,6 +2241,7 @@ begin
            s2 := intToStr(TICQContact(c).proto);
        end
       else
+ {$ENDIF PROTOCOL_ICQ}
        begin
         s1 := getTranslation(Str_unk);
         s2 := s1;
@@ -2250,20 +2268,22 @@ begin
 ;
 end;
 
-function getAutomsgFor(c:TRnQcontact):string;
+function getAutomsgFor(c: TRnQcontact): string;
 begin
   result := applyVars(c, automessages[0], True);
 end; // getAutomsg
 
-function getXStatusMsgFor(c:TRnQcontact):string;
+function getXStatusMsgFor(c: TRnQcontact): string;
 begin
 //  result := applyVars(c, curXStatusDesc, True);
 //  result := applyVars(c, ExtStsStrings[ICQ.curXStatus][1], True);
 //  result := applyVars(c, ExtStsStrings[TicqSession(c.fProto).curXStatus], True);
+ {$IFDEF PROTOCOL_ICQ}
   if Assigned(c) then
     result := applyVars(c, ExtStsStrings[TicqSession(c.fProto).curXStatus].Desc, True)
    else
     result := applyVars(NIL, ExtStsStrings[TicqSession(Account.AccProto.ProtoElem).curXStatus].Desc, True)
+ {$ENDIF PROTOCOL_ICQ}
 end; // getAutomsg
 
 procedure check4update;
@@ -2271,6 +2291,7 @@ procedure check4update;
 //  ct : Tcontact;
 begin
 //  ct.uin := uinToUpdate;
+ {$IFDEF PROTOCOL_ICQ}
   if Account.AccProto.ProtoName = 'ICQ' then
   if Account.AccProto.isOnline then
    begin
@@ -2281,8 +2302,10 @@ begin
    if not checkupdate.autochecking then
     OnlFeature(Account.AccProto, false);
 //  icq.sendSimpleQueryInfo(uinToUpdate);
+ {$ENDIF PROTOCOL_ICQ}
 end; // check4update
 
+ {$IFDEF PROTOCOL_ICQ}
 function CheckUpdates(cnt : TRnQContact) : Boolean;
 var
 //  ss:Tstrings;
@@ -2388,6 +2411,7 @@ begin
 // saveCFG;
  saveCfgDelayed := True;
 end;
+ {$ENDIF PROTOCOL_ICQ}
 
 procedure dockSet;
 var
@@ -2607,29 +2631,6 @@ begin
   setLength(result, dim);
 end; // db2str
 
-function str2status(const s: AnsiString): byte;
-var
-  ss : TPicName;
-begin
-  ss:=LowerCase(s);
- for result:=byte(low(status2img)) to byte(high(status2img)) do
-//  if LowerCase(status2img[TICQStatus(result)]) = s then
-  if status2img[result] = ss then
-    exit;
- result:= byte(SC_ONLINE); // shut up compiler warning
-end; // str2status
-
-function str2visibility(const s: AnsiString): Tvisibility;
-var
-  ss: TPicName;
-begin
-  ss := LowerCase(s);
-  for result := low(result) to high(result) do
-   if visib2str[result] = ss then
-     exit;
-  result := VI_normal; // shut up compiler warning
-end; // str2visibility
-
 procedure clearDB(db:TRnQCList);
 var
   i:integer;
@@ -2710,7 +2711,11 @@ function behave(ev:Thevent; kind:integer=-1{; const info: AnsiString=''}):boolea
 //     SetLength(ans, 0);
   end;
 const
-    SpamBotMsgFlags = IF_not_show_chat or IF_not_save_hist or IF_Simple;
+    SpamBotMsgFlags = IF_not_show_chat or IF_not_save_hist
+ {$IFDEF PROTOCOL_ICQ}
+           or IF_Simple
+ {$ENDIF PROTOCOL_ICQ}
+    ;
 var
   ok:boolean;
   wnd: TselectCntsFrm;
@@ -3303,7 +3308,9 @@ end;
 procedure realizeEvent(ev:Thevent);
 var
   wnd: TselectCntsFrm;
+ {$IFDEF PROTOCOL_ICQ}
   dd : TProtoDirect;
+ {$ENDIF PROTOCOL_ICQ}
 //  ev0:Thevent;
 begin
   if not Assigned(ev) then
@@ -3326,9 +3333,11 @@ begin
         msgDlg(getTranslation('%s is online', [ev.who.displayed]), False, mtInformation);
     EK_file:
       begin
+ {$IFDEF PROTOCOL_ICQ}
         dd := TicqSession(ev.who.fProto).directs.findID(ev.ID);
         if Assigned(dd) then
           receiveFile(dd);
+ {$ENDIF PROTOCOL_ICQ}
       end;
     EK_GCARD,
     EK_URL,
@@ -3410,14 +3419,16 @@ else
 end; // loadNewOrOldVersionContactList
 }
 
-function ints2cl(a:Types.TintegerDynArray):TRnQCList;
+function ints2cl(a: Types.TintegerDynArray): TRnQCList;
 var
   i:integer;
 begin
   result:=TRnQCList.create;
+ {$IFDEF PROTOCOL_ICQ}
   for i:=0 to length(a)-1 do
 //    result.add(contactsDB.get(TICQContact, IntToStr(a[i])));
     result.add(contactsDB.get(TICQContact, a[i]));
+ {$ENDIF PROTOCOL_ICQ}
 end; // ints2cl
 
 function doLock : Boolean;
@@ -3840,7 +3851,9 @@ begin
     if not found then
      begin
 //      fantomWork := True;    // New фича 2007.10.09
+ {$IFDEF ICQ_ONLY}
       addAvailableUser(TicqSession, cmdLinePar.startUser, myPath + cmdLinePar.startUser, 'CMD\');
+ {$ENDIF ICQ_ONLY}
      end;
    end;
 
@@ -4112,7 +4125,9 @@ var
   cl:TRnQCList;
   ty : Integer;
   pic : TPicName;
+ {$IFDEF PROTOCOL_ICQ}
   cnt : TICQcontact;
+ {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
 //  cnt2 : TMRAcontact;
  {$ENDIF PROTOCOL_MRA}
@@ -4128,10 +4143,12 @@ begin
     exit;
 
 //  n:=getNode(node);
+ {$IFDEF PROTOCOL_ICQ}
   if c is TICQcontact then
     cnt := TICQContact(c)
    else
     cnt := NIL;;
+ {$ENDIF PROTOCOL_ICQ}
 
   if not calcOnly then
    begin
@@ -4163,12 +4180,14 @@ case kind of
           inc(x, cx+3);
           ty := max(cy,ty);
          end;
+ {$IFDEF PROTOCOL_ICQ}
         if (c is TICQcontact) and (TICQcontact(c).birthFlag) then
           with theme.GetPicSize(RQteDefault, PIC_BIRTH) do
            begin
             inc(x, cx+3);
             ty := max(cy,ty);
            end;
+ {$ENDIF PROTOCOL_ICQ}
        end
       else
        with theme.drawpic(cnv.Handle,x,y, rosterImgNameFor(c)) do
@@ -4181,12 +4200,14 @@ case kind of
           inc(x, cx+3);
           ty := max(cy,ty);
          end;
+ {$IFDEF PROTOCOL_ICQ}
         if (c is TICQcontact) and (TICQcontact(c).birthFlag) then
           with theme.drawpic(cnv.Handle,x,y, PIC_BIRTH) do
            begin
             inc(x, cx+3);
             ty := max(cy,ty);
            end;
+ {$ENDIF PROTOCOL_ICQ}
        end;
      ty := Max(ty, 16);
      inc(y, ty-dy);
@@ -4198,6 +4219,7 @@ case kind of
       fieldOutDP('Status', c.getStatusName);
 
 //     if (not XStatusAsMain) and (cnt.xStatus > 0) then
+ {$IFDEF PROTOCOL_ICQ}
     if Assigned(cnt) then // ICQ
     begin
      if cnt.xStatusStr > '' then
@@ -4221,6 +4243,7 @@ case kind of
        fieldOutDP('Idle time',
          getTranslation('%d:%.2d',[cnt.IdleTime div 60, cnt.IdleTime mod 60]));
     end;
+ {$ENDIF PROTOCOL_ICQ}
 
  {$IFDEF PROTOCOL_MRA}
     if (c is TMRAcontact) then // MRA
@@ -4246,12 +4269,14 @@ case kind of
     rulerOut();
 
     tS := getTranslation('Important')+': ';
+ {$IFDEF PROTOCOL_ICQ}
     if Assigned(cnt) then
      if cnt.ssImportant > '' then
        begin
         fieldOut(ts, cnt.ssImportant);
         tS := '';
        end;
+ {$ENDIF PROTOCOL_ICQ}
     if c.lclImportant > '' then
       fieldOut(tS, c.lclImportant);
 
@@ -4264,6 +4289,7 @@ case kind of
      if c.birth <> 0 then
       fieldOutDP('Birthday',DateToStr(c.birth));
     fieldOutDP('Group', groups.id2name(c.group));
+ {$IFDEF PROTOCOL_ICQ}
     if Assigned(cnt) then
      begin
         tS := ifThen(cnt.connection.ip<>0,
@@ -4277,12 +4303,15 @@ case kind of
         if cnt.fServerProto > '' then
          fieldOutDP('Server proto', cnt.fServerProto);
      end;
+ {$ENDIF PROTOCOL_ICQ}
     if c.isOnline then
       begin
 //       fieldOutDP('Client', getClientFor(c));
        fieldOutDP('Client', c.ClientDesc);
+ {$IFDEF PROTOCOL_ICQ}
        if Assigned(cnt) then
          fieldOutDP('Online since', timeToStr(cnt.onlinesince));
+ {$ENDIF PROTOCOL_ICQ}
       end
     else
       fieldOutDP('Last time seen online', timeToStr(c.lastTimeSeenOnline));
@@ -4307,6 +4336,7 @@ case kind of
        not c.CntIsLocal and not c.Authorized then
       fieldOut('', 'Need authorization', True);
    {$IFDEF RNQ_AVATARS}
+ {$IFDEF PROTOCOL_ICQ}
     if Account.AccProto.AvatarsSupport and
        avatarShowInHint then
      if Assigned(c.icon.Bmp) then
@@ -4324,6 +4354,7 @@ case kind of
        if Assigned(cnt) then
         if cnt.ICQIcon.hash > '' then
          fieldOut('', 'Has avatar', True);
+ {$ENDIF PROTOCOL_ICQ}
    {$ENDIF RNQ_AVATARS}
     end;
   NODE_GROUP:
@@ -4369,7 +4400,7 @@ case kind of
     end;
   end;
 //r:=rect(0,0,maxX+ShadowSize+roundsize,y+ShadowSize+roundsize);
-r:=rect(0,0,maxX+ShadowSize + 5,y+ShadowSize);
+r:=rect(0, 0, maxX+ShadowSize + 5, y+ShadowSize);
 // cnv.Rectangle(r);
 // SetWindowRgn(cnv.Handle, region, TRUE);
 
@@ -4378,22 +4409,26 @@ end; // drawHint
 
 function infoToStatus(const info: RawByteString): byte;
 begin
+ {$IFDEF PROTOCOL_ICQ}
   if length(info) < 4 then
     result:= byte(SC_UNK)
    else
     result:= str2int(info);
 if not (result in [byte(SC_ONLINE)..byte(SC_Last)]) then
+ {$ENDIF PROTOCOL_ICQ}
   result:= byte(SC_UNK);
 //if (result<SC_ONLINE) or (result>SC_UNK) then result:=SC_UNK;
 end; // infoToStatus
 
-function infoToXStatus(const info: RawByteString):Byte;
+function infoToXStatus(const info: RawByteString): Byte;
 begin
+ {$IFDEF PROTOCOL_ICQ}
   if length(info) < 6 then
     result:=0
    else
     result:= byte(info[6]);
   if Result > High(XStatusArray) then
+ {$ENDIF PROTOCOL_ICQ}
    result := 0;
 end; // infoToXStatus
 
@@ -4402,6 +4437,7 @@ begin
   result:=FALSE;
   if autoaway.triggered=TR_none then
     exit;
+ {$IFDEF PROTOCOL_ICQ}
   if autoaway.clearXSts and (autoaway.bakxstatus > 0) then
     begin
 //     setStatusFull(autoaway.bakstatus, autoaway.bakxstatus, Account.AccProto.xStsStringArray[autoaway.bakxstatus]);
@@ -4411,8 +4447,9 @@ begin
 //      TicqSession(Account.AccProto.ProtoElem).sendStatusCode(false);
 //      icq.sendCapabilities;
     end
-   else 
+   else
     setStatus(Account.AccProto, autoaway.bakstatus);
+ {$ENDIF PROTOCOL_ICQ}
   setAutomsg(autoaway.bakmsg);
   autoaway.bakmsg:='';
   result:=TRUE;
@@ -4452,11 +4489,15 @@ case oe.kind of
      sendProtoMsg(oe);
   OE_CONTACTS:
     begin
+ {$IFDEF PROTOCOL_ICQ}
      sendICQcontacts( oe.whom, oe.flags, oe.cl);
+ {$ENDIF PROTOCOL_ICQ}
     end;
   OE_AUTH: Protos_auth( oe.whom );
   OE_AUTHDENIED: Protos_AuthDenied( oe.whom, oe.info );
+ {$IFDEF PROTOCOL_ICQ}
   OE_ADDEDYOU: sendICQaddedYou(oe.whom);
+ {$ENDIF PROTOCOL_ICQ}
 //  OE_file:
   end;
 end; // processOevent

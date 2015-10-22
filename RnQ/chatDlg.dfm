@@ -153,6 +153,7 @@ object chatFrm: TchatFrm
         ShowHint = False
         Spacing = 0
         Transparent = False
+        Visible = False
         ImageName = 'stickers'
         OnClick = stickersBtnClick
       end
@@ -290,6 +291,7 @@ object chatFrm: TchatFrm
         ShowHint = False
         Spacing = 0
         Transparent = False
+        Visible = False
         ImageName = 'buzz'
         OnClick = BuzzBtnClick
       end

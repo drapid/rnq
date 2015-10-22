@@ -20,8 +20,8 @@ uses
   events,
  {$IFDEF ICQ_ONLY}
     icqv9,
- {$ENDIF ICQ_ONLY}
   ICQConsts,
+ {$ENDIF ICQ_ONLY}
 //  contacts,
   RnQProtocol,
   groupsLib,

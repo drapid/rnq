@@ -37,7 +37,9 @@ implementation
    AnsiStrings,
 //   Character,
  {$ENDIF}
+ {$IFDEF PROTOCOL_ICQ}
    protocol_ICQ, ICQConsts,
+ {$ENDIF PROTOCOL_ICQ}
    Protocols_all,
    chatDlg, mainDlg;
 
@@ -820,18 +822,20 @@ begin
                   inc(X, 2);
                  end;
   //              with statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s)), (length(s)>4) and boolean(s[5])) do
+ {$IFDEF PROTOCOL_ICQ}
                 if (b > 0) then
                 begin
                  if {(b >= Low(xStsArr)) and} (b <=High(XStatusArray)) then
                  begin
-                  p := XStatusArray[b].PicName;
-                 if calcOnly then
-                    inc(X, theme.GetPicSize(RQteDefault, p).cx+1)
-                  else
-                    theme.drawPic(DC, X+1, Y, p);
+                   p := XStatusArray[b].PicName;
+                   if calcOnly then
+                     inc(X, theme.GetPicSize(RQteDefault, p).cx+1)
+                    else
+                     theme.drawPic(DC, X+1, Y, p);
+                 end;
+               end;
+ {$ENDIF PROTOCOL_ICQ}
               end;
-             end;
-         end;
              end;
          end;
          end;

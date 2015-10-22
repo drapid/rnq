@@ -169,7 +169,9 @@ uses
   RnQStrings, RnQLangs, RDUtils, RnQSysUtils,
   mainDlg, sysutils, utilLib, globalLib, groupsLib,
 //  ICQConsts,
+ {$IFDEF PROTOCOL_ICQ}
   ICQv9, ICQContacts, ICQconsts,
+ {$ENDIF PROTOCOL_ICQ}
   events,
  {$IFDEF USE_SECUREIM}
   cryptoppWrap,
@@ -1361,6 +1363,7 @@ var
                 statusDrawExt(DC, p.X, p.Y, byte(SC_UNK), FALSE, 0)
               end
              else
+ {$IFDEF PROTOCOL_ICQ}
               if cnt is TICQcontact then
       //         if not(not XStatusAsMain and showXStatus and (c.xStatus>0) and (c.status = SC_ONLINE) ) then
                 begin
@@ -1375,6 +1378,7 @@ var
                 end
       //         size:=theme.drawPic(cnv, x,y+1, rosterImgNameFor(c))
                else
+ {$ENDIF PROTOCOL_ICQ}
                 begin
                   if pIsRight then
                    begin
@@ -1397,6 +1401,7 @@ var
               ev.Draw(DC, p.X, p.Y)
            end;
         end;
+ {$IFDEF PROTOCOL_ICQ}
       CNT_ICON_XSTS:
        if (cnt is TICQcontact) then
          begin
@@ -1409,7 +1414,9 @@ var
             Result:= theme.drawPic(DC, p, po);
            end;
          end;
+ {$ENDIF PROTOCOL_ICQ}
       CNT_ICON_AUTH:
+ {$IFDEF PROTOCOL_ICQ}
        if (cnt is TICQcontact) then
         begin
           if
@@ -1422,17 +1429,20 @@ var
            result := theme.drawPic(DC, p, po);
         end
        else
+ {$ENDIF PROTOCOL_ICQ}
         if not cnt.Authorized then
            result := theme.drawPic(DC, p, po);
 
+ {$IFDEF PROTOCOL_ICQ}
       CNT_ICON_LCL:
        if (cnt is TICQcontact) and
- {$IFDEF UseNotSSI}
+   {$IFDEF UseNotSSI}
 //         icq.useSSI and
            (TicqSession(cnt.iProto.ProtoElem).UseSSI) and
- {$ENDIF UseNotSSI}
+   {$ENDIF UseNotSSI}
          (cnt.CntIsLocal) then
          result := theme.drawPic(DC, p, po);
+ {$ENDIF PROTOCOL_ICQ}
       CNT_ICON_VER:
          begin
 //          po.picName := cnt.ClientStr;
@@ -1531,7 +1541,9 @@ var
   cnv:Tcanvas;
   R, rB:Trect;
   cntTxt:TRect;
+ {$IFDEF PROTOCOL_ICQ}
   c:TICQcontact;
+ {$ENDIF PROTOCOL_ICQ}
   s:string;
   b,isNIL:boolean;
   isOnRight : Boolean;
@@ -1599,10 +1611,12 @@ case n.kind of
   NODE_CONTACT:
     begin
     inc(x,2);
+ {$IFDEF PROTOCOL_ICQ}
     if n.contact is TICQcontact then
       c:=  TICQContact(n.contact)
      else
       c := NIL;
+ {$ENDIF PROTOCOL_ICQ}
     if n.contact.UID = '' then
       Exit;
     isNIL:=notinlist.exists(n.contact);
@@ -1660,8 +1674,10 @@ case n.kind of
          if n.contact.isOnline then
            begin
              theme.ApplyFont('roaster.online', cnv.font);
+ {$IFDEF PROTOCOL_ICQ}
              if c.noClient then
                theme.ApplyFont('roaster.noclient', cnv.font);
+ {$ENDIF PROTOCOL_ICQ}
            end
           else
            if n.contact.isOffline then

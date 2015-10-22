@@ -10,7 +10,9 @@ interface
 uses
   Classes, Forms,
   RnQProtocol, langLib,
+ {$IFDEF PROTOCOL_ICQ}
   Protocol_icq, ICQcontacts,
+ {$ENDIF PROTOCOL_ICQ}
   automsgDlg, globalLib,
   RnQPrefsLib, RnQPics,
   RDGlobal, outboxLib;
@@ -18,24 +20,26 @@ uses
 
 procedure Protos_Events(Sender:TRnQProtocol; event:Integer);
 procedure Protos_ShowWP();
-function  Protos_getXstsPic(cnt : TRnQContact; isSelf : Boolean = false) : TPicName;
-procedure Protos_GetOfflineMSGS(pr : TRnQProtocol);
-procedure Protos_DelOfflineMSGS(pr : TRnQProtocol);
+function  Protos_getXstsPic(cnt: TRnQContact; isSelf: Boolean = false): TPicName;
+procedure Protos_GetOfflineMSGS(pr: TRnQProtocol);
+procedure Protos_DelOfflineMSGS(pr: TRnQProtocol);
 procedure Protos_OpenMailBox;
-procedure Protos_SendSMS(Parent : TComponent; cnt : TRnQContact);
-function  Protos_CanSMS(cnt : TRnQContact) : Boolean;
-procedure Protos_auth(cnt : TRnQContact);
-procedure Protos_AuthDenied(cnt : TRnQContact; const msg:string='');
-procedure Protos_DelCntFromSrv(cnt : TRnQContact);
+procedure Protos_SendSMS(Parent: TComponent; cnt: TRnQContact);
+function  Protos_CanSMS(cnt: TRnQContact) : Boolean;
+procedure Protos_auth(cnt: TRnQContact);
+procedure Protos_AuthDenied(cnt: TRnQContact; const msg: string='');
+procedure Protos_DelCntFromSrv(cnt: TRnQContact);
 
-function  status2imgName(s:byte; inv:boolean=FALSE):TPicName; inline;
-function  status2imgNameExt(s: byte; inv:boolean=FALSE; extSts : byte= 0):TPicName; inline;
+function  addToRoster(c: TRnQcontact; isLocal: Boolean = False): boolean; overload;
+function Proto_StsID2Name(Proto: TRnQProtocol; s: Byte; xs: byte): String;
+function  status2imgName(s: byte; inv: boolean=FALSE): TPicName; inline;
+function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts : byte= 0): TPicName; inline;
 
 function  setStatus(const proto : TRnQProtocol; st: byte; isAuto : Boolean = False): byte;
 function  setStatusFull(const proto : TRnQProtocol; st: byte; xSt : byte; xStStr : TXStatStr; isAuto : Boolean = False): byte;
 procedure setVisibility(const proto : TRnQProtocol; vi: byte);
 procedure userSetStatus(const proto : TRnQProtocol; st: byte; isShowAMWin : Boolean = True);
-procedure usersetVisibility(const proto : TRnQProtocol; vi:byte);
+procedure usersetVisibility(const proto: TRnQProtocol; vi: byte);
 
 function  sendEmailTo(c:TRnQContact):boolean;
 //function  str2db(cls : TRnQCntClass; const s: RawByteString; var ok:boolean):TRnQCList; overload;
@@ -45,9 +49,32 @@ function  str2db(pProto : TRnQProtocol; const s: RawByteString):TRnQCList; overl
 //function  getClientFor(c:TRnQcontact; pInInfo : Boolean = False):string;
 function  getProtosPref() : TPrefPagesArr;
 function  getProtoClass(ProtoID : Byte) : TRnQProtoClass;
-function  Proto_Outbox_add(kind: Integer; dest:TRnQContact; flags:integer=0; const info:string=''):Toevent;overload;
-function  Proto_Outbox_add(kind: Integer; dest:TRnQContact; flags:integer; cl:TRnQCList):Toevent; overload;
+function  Proto_Outbox_add(kind: Integer; dest:TRnQContact; flags:integer=0; const info:string=''):Toevent;overload;function  Proto_Outbox_add(kind: Integer; dest:TRnQContact; flags:integer; cl:TRnQCList):Toevent; overload;
 procedure getTrayIconTip(var vPic : TPicName; var vTip : String);
+
+
+var
+  AntiSpamMsgs: array[0..6] of String =
+   (
+//   (
+    ('Your message has been blocked for antispam reason.'),
+    ('You entered invalid code. Try again.'),
+    ('Confirmation accepted. Your message recieved. Thank you.'),
+    ('You failed antispam verification. You have no attemts. Your UIN (%uin%) is ignored.'),
+    ('Please, type digital CODE which you can see below (3 digits).'),
+    ('You have attempts: %attempt%.'), //%code%
+    ('Please, type answer on question which you can see below.')
+{    )
+   (
+    ('Ваше сообщение заблокировано антиспам плагином.'),
+    ('Вы ввели не правильный код. Попробуйте еще раз.'),
+    ('Код принят. Ваше сообщение получено. Спасибо.'),
+    ('Вы не прошли антиспам проверку. У вас не осталось попыток. Ваш UIN (%uin%) игнорируется.'),
+    ('Пожалуйста, введите цифровой КОД который вы видите ниже (3 цифры). '),
+    ('Осталось попыток: %attempt%.'#13#10'%code%')
+   )}
+   );
+
 
 implementation
 uses
@@ -74,23 +101,28 @@ uses
   BIM_proto,
   BIMv1,
  {$ENDIF PROTOCOL_BIM}
+ {$IFDEF PROTOCOL_ICQ}
   ICQv9,
   ICQConsts, RQ_ICQ,
+ {$ENDIF PROTOCOL_ICQ}
 
   pluginutil, pluginLib, history,
 
 //  globalLib,
-  utilLib, themesLib, RQThemes,
+  utilLib, themesLib, RQThemes, roasterlib,
   MainDlg, chatDlg, events, outboxDlg;
 
 procedure Protos_Events(Sender:TRnQProtocol; event:Integer);
+  {$IFDEF PROTOCOL_ICQ}
 var
   icqSess : TicqSession;
+  {$ENDIF PROTOCOL_ICQ}
 begin
  {$IFNDEF ICQ_ONLY}
   case Sender.ProtoID of
     ICQProtoID: begin
  {$ENDIF ICQ_ONLY}
+  {$IFDEF PROTOCOL_ICQ}
                  icqSess := TicqSession(Sender);
                 {$IFDEF RNQ_AVATARS}
                  if icqSess.getProtoType = SESS_AVATARS then
@@ -98,6 +130,7 @@ begin
                   else
                 {$ENDIF RNQ_AVATARS}
                    ProcessICQEvents(icqSess, TicqEvent(event));
+  {$ENDIF PROTOCOL_ICQ}
  {$IFNDEF ICQ_ONLY}
                 end;
   {$IFDEF PROTOCOL_MRA}
@@ -141,10 +174,12 @@ begin
         ICQProtoID:
  {$ENDIF ICQ_ONLY}
          begin
+  {$IFDEF PROTOCOL_ICQ}
           if TICQSession(pr).curXStatus > 0 then
            begin
             Result := XStatusArray[TICQSession(pr).curXStatus].PicName;
            end
+  {$ENDIF PROTOCOL_ICQ}
          end;
    {$IFDEF PROTOCOL_MRA}
         MRAProtoID:
@@ -163,9 +198,11 @@ begin
    else
     begin
       if Assigned(cnt) then
+   {$IFDEF PROTOCOL_ICQ}
        if cnt is TICQcontact then
          Result := XStatusArray[TICQcontact(cnt).xStatus].PicName
         else
+   {$ENDIF PROTOCOL_ICQ}
    {$IFDEF PROTOCOL_MRA}
        if cnt is TMRAcontact then
          Result := 'mra.'+ TMRAcontact(cnt).xStatus.id;
@@ -175,8 +212,10 @@ end;
 
 procedure Protos_GetOfflineMSGS(pr : TRnQProtocol);
 begin
+  {$IFDEF PROTOCOL_ICQ}
  if pr is TicqSession then
    TicqSession(pr).sendReqOfflineMsgs
+  {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
   else
  if pr is TMRASession then
@@ -187,8 +226,10 @@ end;
 
 procedure Protos_DelOfflineMSGS(pr : TRnQProtocol);
 begin
+ {$IFDEF PROTOCOL_ICQ}
  if pr is TicqSession then
    TicqSession(pr).sendDeleteOfflineMsgs
+ {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
   else
  if pr is TMRASession then
@@ -240,7 +281,11 @@ begin
      case ProtoID of
        ICQProtoID :
  {$ENDIF ICQ_ONLY}
-              TicqSession(ProtoElem).SSIAuth_REPLY(cnt.uid, True);
+             begin
+ {$IFDEF PROTOCOL_ICQ}
+               TicqSession(ProtoElem).SSIAuth_REPLY(cnt.uid, True);
+ {$ENDIF PROTOCOL_ICQ}
+             end;
  {$IFNDEF ICQ_ONLY}
 //       XMPProtoID : TxmppSession(ProtoElem).AuthCancel(cnt);
      end;
@@ -266,7 +311,11 @@ begin
    case ProtoID of
      ICQProtoID :
  {$ENDIF ICQ_ONLY}
-           TicqSession(ProtoElem).SSIAuth_REPLY(cnt.uid, False, msg);
+           begin
+ {$IFDEF PROTOCOL_ICQ}
+             TicqSession(ProtoElem).SSIAuth_REPLY(cnt.uid, False, msg);
+ {$ENDIF PROTOCOL_ICQ}
+           end;
  {$IFNDEF ICQ_ONLY}
    {$IFDEF PROTOCOL_XMP}
      XMPProtoID : TxmppSession(ProtoElem).AuthCancel(cnt);
@@ -287,21 +336,53 @@ begin
    case ProtoID of
      ICQProtoID :
  {$ENDIF ICQ_ONLY}
-            TICQSession(ProtoElem).SSIdeleteContact(clickedContact);
+           begin
+ {$IFDEF PROTOCOL_ICQ}
+             TICQSession(ProtoElem).SSIdeleteContact(clickedContact);
+ {$ENDIF PROTOCOL_ICQ}
+           end;
  {$IFNDEF ICQ_ONLY}
 //     XMPProtoID : TxmppSession(ProtoElem).AuthCancel(cnt);
    end;
  {$ENDIF ICQ_ONLY}
 end;
 
+function Proto_StsID2Name(Proto: TRnQProtocol; s: Byte; xs: byte): String;
+var
+  arr : TStatusArray;
+begin
+  arr := Proto.statuses;
+  if (s >= Low(arr)) and (s <= High(arr)) then
+    Result := getTranslation(arr[s].Cptn)
+   else
+    Result := Str_unk;
+end;
+
 function  status2imgName(//pr : TRnQProtocol;
-                         s:byte; inv:boolean=FALSE):TPicName;
+                         s: byte; inv: boolean=FALSE): TPicName;
+ {$IFDEF ICQ_ONLY}
 begin
   result := protocol_icq.status2imgName(s, inv);
+ {$ELSE ~ICQ_ONLY}
+var
+  st : TStatusArray;
+begin
+  st := Account.AccProto.statuses;
+ if s in [byte(LOW(st)).. byte(HIGH(st))] then
+//   result := prefix + st[s].ImageName
+   result := st[s].ImageName
+//   result := sta 'status.' + status2str[s]
+  else
+   result := PIC_STATUS_UNK;
+
+ if inv then
+//  inc(result, PIC_INVISIBLE_STATUS_ONLINE-PIC_STATUS_ONLINE);
+   result := INVIS_PREFIX + result;
+ {$ENDIF ICQ_ONLY}
 end;
 
 //function  status2imgNameExt(pr : TRnQProtocol; s: byte; inv:boolean=FALSE; extSts : byte= 0):TPicName;
-function  status2imgNameExt(s: byte; inv:boolean=FALSE; extSts : byte= 0):TPicName;
+function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts: byte= 0):TPicName;
 begin
 { if XStatusAsMain and (extSts > 0) and
 //    Assigned(pr) and (extSts <= High(pr.xStsStringArray))
@@ -312,16 +393,21 @@ begin
   else
    Result := status2imgName(s, inv)
 }
+ {$IFDEF ICQ_ONLY}
   Result := protocol_icq.status2imgNameExt(s, inv, extSts);
+ {$ELSE ~ICQ_ONLY}
+   Result := status2imgName(s, inv)
+ {$ENDIF ICQ_ONLY}
 end;
 
 
-function setStatus(const proto : TRnQProtocol; st:byte; isAuto : Boolean = False):byte;
+function setStatus(const proto: TRnQProtocol; st: byte; isAuto: Boolean = False): byte;
 begin
   if not isAuto then
     autoaway.triggered:=TR_none;
   result := byte(proto.getStatus);
 
+ {$IFDEF PROTOCOL_ICQ}
   if proto is TicqSession then
     begin
       if not (st in [byte(SC_away), byte(SC_na)]) then
@@ -330,6 +416,7 @@ begin
        if not (byte(lastStatus) in [byte(SC_away), byte(SC_na)]) then
         imAwaySince:=now;
     end
+ {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
   else if proto is TMRASession then
     begin
@@ -354,7 +441,7 @@ begin
    end;
 end; // setStatus
 
-function setStatusFull(const proto : TRnQProtocol; st: byte; xSt : byte; xStStr : TXStatStr; isAuto : Boolean = False): byte;
+function setStatusFull(const proto: TRnQProtocol; st: byte; xSt: byte; xStStr: TXStatStr; isAuto : Boolean = False): byte;
 //var
 //  xStsD : TXStatStr;
 begin
@@ -387,7 +474,9 @@ begin
   lastStatus:=st;
   if proto.isOffline and (st<>byte(SC_OFFLINE)) then
     begin
+ {$IFDEF PROTOCOL_ICQ}
       TicqSession(Proto).setStatusStr(xSt, xStStr);
+ {$ENDIF PROTOCOL_ICQ}
       doConnect
     end
    else
@@ -409,11 +498,12 @@ begin
    end;
 end; // setStatusFull
 
-procedure userSetStatus(const proto : TRnQProtocol; st: byte; isShowAMWin : Boolean = True);
+procedure userSetStatus(const proto: TRnQProtocol; st: byte; isShowAMWin: Boolean = True);
 begin
   setStatus(proto, st);
   if autoaway.bakmsg > '' then
     setAutomsg(autoaway.bakmsg);
+ {$IFDEF PROTOCOL_ICQ}
   if isShowAMWin and popupAutomsg and (st in statusWithAutoMsg) then
    begin
     if not Assigned(automsgFrm) then
@@ -423,14 +513,18 @@ begin
      end;
     automsgFrm.show;
    end;
+ {$ENDIF PROTOCOL_ICQ}
   lastStatusUserSet:=st;
 end; // userSetStatus
 
-procedure setVisibility(const proto : TRnQProtocol; vi: byte);
+procedure setVisibility(const proto: TRnQProtocol; vi: byte);
+ {$IFDEF PROTOCOL_ICQ}
 var
 //  changeStatus:boolean;
   icq : TicqSession;
+ {$ENDIF PROTOCOL_ICQ}
 begin
+ {$IFDEF PROTOCOL_ICQ}
  if proto.ProtoElem is TicqSession then
  begin
   icq := proto.ProtoElem as TicqSession;
@@ -439,6 +533,7 @@ begin
   ICQ.updateVisibility;
  {$ENDIF UseNotSSI}
  end
+ {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
  else
    if proto.ProtoElem is TMRASession then
@@ -451,8 +546,9 @@ begin
  RnQmain.updateStatusGlyphs;
 end; // setVisibility
 
-procedure usersetVisibility(const proto : TRnQProtocol; vi:byte);
+procedure usersetVisibility(const proto: TRnQProtocol; vi: byte);
 begin
+ {$IFDEF PROTOCOL_ICQ}
 //  if proto.ProtoName = 'ICQ' then
   if proto.ProtoElem is TicqSession then
    begin
@@ -461,15 +557,21 @@ begin
     TicqSession(proto.ProtoElem).clearTemporaryVisible;
 // {$ENDIF UseNotSSI}
    end;
+ {$ENDIF PROTOCOL_ICQ}
   setvisibility(proto, vi);
 end; // userSetStatus
 
-function sendEmailTo(c:TRnQContact):boolean;
+function sendEmailTo(c: TRnQContact): boolean;
 var
-  ml : String;
+  ml: String;
 begin
+  if c = NIL then
+    exit
+ {$IFDEF PROTOCOL_ICQ}
+  else
   if c is TICQContact then
     ml := TICQContact(c).email
+ {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
   else if c is TMRAContact then
     ml := c.uid
@@ -489,17 +591,19 @@ var
   t,l,i: integer;
   d: RawByteString;
 //  c:TICQcontact;
-  c:TRnQContact;
+  c: TRnQContact;
  {$IFDEF PROTOCOL_MRA}
   cntMRA : TMRAContact;
  {$ENDIF PROTOCOL_MRA}
+ {$IFDEF PROTOCOL_ICQ}
   cntICQ : TICQContact;
+ {$ENDIF PROTOCOL_ICQ}
   vUID : TUID;
 begin
-ok:=FALSE;
-result:=TRnQCList.create;
-C:=NIL;  // shut up compiler
-i:=0;
+  ok := FALSE;
+  result := TRnQCList.create;
+  C := NIL;  // shut up compiler
+  i := 0;
 while i < length(s) do
   begin
     d := '';
@@ -626,7 +730,9 @@ function  getProtoClass(ProtoID : Byte) : TRnQProtoClass;
 begin
  {$IFNDEF ICQ_ONLY}
   case ProtoID of
+ {$IFDEF PROTOCOL_ICQ}
     ICQProtoID: Result := TicqSession;
+ {$ENDIF PROTOCOL_ICQ}
   {$IFDEF PROTOCOL_MRA}
     MRAProtoID: Result := TMRASession;
   {$ENDIF PROTOCOL_MRA}
@@ -637,7 +743,7 @@ begin
     OBIMProtoID: Result := TBIMSession;
   {$ENDIF PROTOCOL_BIM}
    else
-    Result := TicqSession;
+    Result := NIL;
   end;
  {$ELSE ICQ_ONLY}
     Result := TicqSession;
@@ -771,5 +877,36 @@ begin
       end;
     end;
 end;
+
+function addToRoster(c: TRnQContact; isLocal: Boolean = False): boolean;
+begin
+  notInList.remove(c);
+//      c.CntIsLocal := isLocal;
+      if isLocal then
+        c.SSIID := 0;
+      result:= c.fProto.addContact(c, isLocal);
+  if not result then exit;
+  roasterlib.update(c);
+  roasterLib.focus(c);
+  saveListsDelayed:=TRUE;
+  autosizeDelayed:=TRUE;
+  plugins.castEvList( PE_LIST_ADD, PL_ROSTER, c);
+ {$IFDEF UseNotSSI}
+  if c is TICQcontact then
+//  if (not icq.useSSI)and icq.useLSI3 then
+   with TicqSession(c.iProto.ProtoElem) do
+    if not UseSSI and useLSI2 then
+     begin
+      if StrToIntDef(c.uid, 0) > 0 then
+       begin
+        if TICQcontact(c).infoUpdatedTo=0 then
+          sendQueryInfo(StrToIntDef(c.UID2cmp, 0));
+        if sendTheAddedYou then
+          Account.outbox.add(OE_addedYou, c);
+       end;
+     end;
+ {$ENDIF UseNotSSI}
+end; // addToRoster
+
 
 end.

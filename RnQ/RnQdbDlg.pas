@@ -71,11 +71,14 @@ uses
   RnQLangs, RnQStrings, RDUtils,
   RnQSysUtils, RnQPics,
   RQUtil, RDGlobal, RQThemes, RnQMenu, menusUnit,
-  RnQProtocol,
+  RnQProtocol, protocols_all,
   globalLib, chatDlg, utilLib, themesLib,
-  ViewHEventDlg,
+ {$IFDEF PROTOCOL_ICQ}
   icqv9, ICQcontacts,
-  Protocol_ICQ, icqConsts;
+  Protocol_ICQ, icqConsts,
+ {$ENDIF PROTOCOL_ICQ}
+  ViewHEventDlg
+  ;
 
 const
   COLUMN_UID    = 0;
@@ -235,8 +238,10 @@ var
 begin
  c1 := TRnQcontact(sender.getnodedata(Node1)^);
  c2 := TRnQContact(sender.getnodedata(Node2)^);
+ {$IFDEF PROTOCOL_ICQ}
  isICQ := (c1 is ticqContact)and(c2 is ticqContact);
- 
+ {$ENDIF PROTOCOL_ICQ}
+
  case Column of
    COLUMN_UID:
      if TryStrToInt64(c1.UID, i)
@@ -249,9 +254,11 @@ begin
    COLUMN_IMP :
         result:= CompareText(c1.lclImportant, c2.lclImportant);
    COLUMN_AVTMD5 :
+ {$IFDEF PROTOCOL_ICQ}
        if isICQ then
          result:= CompareText(TICQContact(c1).ICQicon.Hash_safe, TICQContact(c2).ICQicon.Hash_safe)
         else
+ {$ENDIF PROTOCOL_ICQ}
          result := 0;
    COLUMN_BIRTHDAY :
      Result := CompareDate(c1.GetBDay, c2.GetBDay);
@@ -288,9 +295,11 @@ if c.fProto.readList(LT_ROSTER).exists(c) then
     cnv.textout(PaintInfo.ContentRect.Left,2, c.displayed);
    COLUMN_IMP: // Important string
     cnv.textout(PaintInfo.ContentRect.Left,2, c.lclImportant);
+ {$IFDEF PROTOCOL_ICQ}
    COLUMN_AVTMD5: // Avatar MD5
        if c is TICQContact then
          cnv.textout(PaintInfo.ContentRect.Left,2, str2hexU(TICQContact(c).ICQicon.Hash_safe));
+ {$ENDIF PROTOCOL_ICQ}
    COLUMN_BIRTHDAY:
      begin
        dd := c.GetBDay;

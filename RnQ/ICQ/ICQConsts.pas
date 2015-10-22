@@ -1067,28 +1067,6 @@ const
   'Sender too evil (sender warn level > your max_msgs_evil)',
   'You are too evil (sender max_msg_revil < your warn level)');
 
-var
-  AntiSpamMsgs: array[0..6] of String =
-   (
-//   (
-    ('Your message has been blocked for antispam reason.'),
-    ('You entered invalid code. Try again.'),
-    ('Confirmation accepted. Your message recieved. Thank you.'),
-    ('You failed antispam verification. You have no attemts. Your UIN (%uin%) is ignored.'),
-    ('Please, type digital CODE which you can see below (3 digits).'),
-    ('You have attempts: %attempt%.'), //%code%
-    ('Please, type answer on question which you can see below.')
-{    )
-   (
-    ('Ваше сообщение заблокировано антиспам плагином.'),
-    ('Вы ввели не правильный код. Попробуйте еще раз.'),
-    ('Код принят. Ваше сообщение получено. Спасибо.'),
-    ('Вы не прошли антиспам проверку. У вас не осталось попыток. Ваш UIN (%uin%) игнорируется.'),
-    ('Пожалуйста, введите цифровой КОД который вы видите ниже (3 цифры). '),
-    ('Осталось попыток: %attempt%.'#13#10'%code%')
-   )}
-   );
-
   function CAPS_sm2big(i: byte): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 var
 //   ExtStsStrings : array[low(aXStatus)..High(aXStatus),0..1] of string;

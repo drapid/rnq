@@ -526,7 +526,6 @@ uses
    {$IFDEF RNQ_FULL2}
 //     importDlg,
    {$ENDIF}
-  viewinfoDlg,
   aboutDlg, selectContactsDlg,
   incapsulate, visibilityDlg, usersDlg, changePwdDlg,// dbDlg,
   outboxDlg, automsgDlg, Types, globalLib, authreqDlg,
@@ -555,10 +554,14 @@ uses
   RnQTips, tipDlg, RnQMenu,
 
   Protocols_all, // ICQ, MRA
+ {$IFDEF PROTOCOL_ICQ}
+  viewinfoDlg,
   ICQv9,
   ICQConsts, //RQ_ICQ,
   Protocol_icq,
   ICQcontacts,
+  viewSSI,
+ {$ENDIF PROTOCOL_ICQ}
 
   RnQLangs, RnQMacros, RnQStrings, RnQNet,
   {$IFDEF USE_GDIPLUS}
@@ -572,8 +575,7 @@ uses
  {$IFDEF RNQ_PLAYER}
   uSimplePlayer,
  {$ENDIF RNQ_PLAYER}
-  menusUnit, statusform,
-  viewSSI;
+  menusUnit, statusform;
 
 {$R *.DFM}
 
@@ -782,7 +784,11 @@ if Account.AccProto.isOnline then
    changePwdFrm.showModal
   end
 else
+   {$IFDEF PROTOCOL_ICQ}
   enterICQpwd(Account.AccProto);
+   {$ELSEIF PROTOCOL_XMP}
+    enterProtoPWD(Account.AccProto);
+   {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.Delete1Click(Sender: TObject);
@@ -942,8 +948,10 @@ end; // formkeydown
 
 procedure TRnQmain.Sendcontacts1Click(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
   if clickedContact is TICQContact then
    openSendContacts(clickedContact)
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.sendContactsAction(sender:Tobject);
@@ -1364,6 +1372,7 @@ end;
 
 procedure TRnQmain.ViewSSI1Click(Sender: TObject);
 begin
+   {$IFDEF PROTOCOL_ICQ}
   if Assigned(SSIForm) then
     SSIForm.Show
    else
@@ -1374,6 +1383,7 @@ begin
 //      SSIForm.Show;
       showForm(SSIForm);
     end;
+   {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.UIN1Click(Sender: TObject);
@@ -1577,7 +1587,9 @@ end;
 
 procedure TRnQmain.IP1Click(Sender: TObject);
 begin
+   {$IFDEF PROTOCOL_ICQ}
   clipboard.asText := ip2str(TICQContact(clickedContact).connection.ip)
+   {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.doSearch;
@@ -2122,8 +2134,10 @@ end;
 
 procedure TRnQmain.gmAMakeLocalExecute(Sender: TObject);
 begin
+   {$IFDEF PROTOCOL_ICQ}
    if clickedGroup > 0 then
     TicqSession(Account.AccProto.ProtoElem).SSIdeleteGroup(clickedGroup);
+   {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.gmAMakeLocalUpdate(Sender: TObject);
@@ -2166,39 +2180,48 @@ begin
     Exit;
   showHidden:=getShiftState() and (1+2) > 0; // shift OR control
 //menusendaddedyou1.tag:=PIC_ADDEDYOU;
-UIN1.caption:=getTranslation('%s (copy UIN)', [clickedContact.uin2Show]);
-  if (not (clickedContact is TICQcontact)) or (TICQContact(clickedContact).connection.ip = 0) then
-    IP1.visible:=FALSE
-   else
+  UIN1.caption:=getTranslation('%s (copy UIN)', [clickedContact.uin2Show]);
+ {$IFDEF PROTOCOL_ICQ}
+  if (clickedContact is TICQcontact) and (TICQContact(clickedContact).connection.ip <> 0) then
     begin
-      IP1.visible:=TRUE;
+      IP1.visible := TRUE;
       IP1.caption:=getTranslation('%s (copy IP)', [ip2str(TICQContact(clickedContact).connection.ip)] );
-    end;
-Sendemail1.visible:=((not (clickedContact is TICQcontact)) or (TICQcontact(clickedContact).email > ''));
+    end
+   else
+ {$ENDIF PROTOCOL_ICQ}
+    IP1.visible := FALSE;
+ {$IFDEF PROTOCOL_ICQ}
+  Sendemail1.visible:=((not (clickedContact is TICQcontact)) or (TICQcontact(clickedContact).email > ''));
 //                  or (clickedContact is TMRAcontact);
+ {$ENDIF PROTOCOL_ICQ}
 
-movetogroup1.visible:= clickedContact.fProto.readList(LT_ROSTER).exists(clickedContact);
-if clickedContact.group = 0 then
-  movetogroup1.caption:=getTranslation('Move to group')
-else
-  movetogroup1.caption:=getTranslation('Move from %s to group', [dupAmperstand(groups.id2name(clickedContact.group))] );
-addtocontactlist1.visible:=not movetogroup1.visible;
+  movetogroup1.visible:= clickedContact.fProto.readList(LT_ROSTER).exists(clickedContact);
+  if clickedContact.group = 0 then
+    movetogroup1.caption:=getTranslation('Move to group')
+   else
+    movetogroup1.caption:=getTranslation('Move from %s to group', [dupAmperstand(groups.id2name(clickedContact.group))] );
+  addtocontactlist1.visible:=not movetogroup1.visible;
 
-if movetogroup1.visible then
-  addGroupsToMenu(self, movetogroup1, addcontactAction,
+  if movetogroup1.visible then
+    addGroupsToMenu(self, movetogroup1, addcontactAction,
  {$IFDEF UseNotSSI}
 //     not icq.useSSI or
      ((clickedContact.iProto.ProtoElem is TicqSession) and not (TicqSession(clickedContact.iProto.ProtoElem).UseSSI)) or
  {$ENDIF UseNotSSI}
      clickedContact.CntIsLocal)
-else
-  addGroupsToMenu(self, addtocontactlist1, addcontactAction, True);
-readautomessage1.visible:= (clickedContact is TICQcontact) and
-  (showHidden or
-    clickedContact.fProto.isOnline and
-    (CAPS_sm_ICQSERVERRELAY in TICQContact(clickedContact).capabilitiesSm) and
-    (byte(TICQContact(clickedContact).status) in statusWithAutomsg)
-  );
+   else
+    addGroupsToMenu(self, addtocontactlist1, addcontactAction, True);
+  readautomessage1.visible:=
+ {$IFDEF PROTOCOL_ICQ}
+    (clickedContact is TICQcontact) and
+    (showHidden or
+      clickedContact.fProto.isOnline and
+      (CAPS_sm_ICQSERVERRELAY in TICQContact(clickedContact).capabilitiesSm) and
+      (byte(TICQContact(clickedContact).status) in statusWithAutomsg)
+    );
+ {$ELSE ~PROTOCOL_ICQ}
+     false;
+ {$ENDIF PROTOCOL_ICQ}
 
  Openincomingfolder1.Hint := fileIncomePath(clickedContact);
  Openincomingfolder1.Visible := DirectoryExists(Openincomingfolder1.Hint);
@@ -2489,7 +2512,7 @@ procedure TRnQmain.OnTimer(Sender: TObject);
 
   procedure updateClocks;
   var
-    i:integer;
+    i: integer;
   begin
    if Assigned(childWindows) then
    with childWindows do
@@ -2655,8 +2678,10 @@ if (usertime=20) and not skipSplash then
 
   if aNewDawn then // if new day begin
    begin
+ {$IFDEF PROTOCOL_ICQ}
     if Account.AccProto is TicqSession then
       TicqSession(Account.AccProto).applyBalloon;
+ {$ENDIF PROTOCOL_ICQ}
     CheckBDays;
    end;
 
@@ -2673,11 +2698,14 @@ if usertime mod 20=0 then
    begin
     if assigned(retrieveQ) and (Account.AccProto.isOnline) and not retrieveQ.empty then
     begin
+ {$IFDEF PROTOCOL_ICQ}
      TicqSession(Account.AccProto.ProtoElem).sendSimpleQueryInfo(retrieveQ.getAt(0).uid);
+ {$ENDIF PROTOCOL_ICQ}
      retrieveQ.delete(0);
      saveListsDelayed := True;
 //     saveRetrieveQ;
     end;
+ {$IFDEF PROTOCOL_ICQ}
     {$IFDEF RNQ_AVATARS}
     if assigned(reqAvatarsQ) and Account.AccProto.AvatarsSupport and Account.AccProto.isOnline and not reqAvatarsQ.empty then
      if try_load_avatar(TICQContact(reqAvatarsQ.getAt(0)), TICQContact(reqAvatarsQ.getAt(0)).ICQIcon.hash) then
@@ -2700,6 +2728,7 @@ if usertime mod 20=0 then
      if TicqSession(Account.AccProto.ProtoElem).uploadAvatar(ToUploadAvatarFN) then
        ToUploadAvatarFN := '';
     {$ENDIF RNQ_AVATARS}
+ {$ENDIF PROTOCOL_ICQ}
    end;
  end;
 
@@ -2981,6 +3010,7 @@ if delayCount = 0 then
 
   // auto-away (isHooked is needed for keyboard handling)
 
+ {$IFDEF PROTOCOL_ICQ}
   if
       isHooked and
       Account.AccProto.isOnline
@@ -3038,13 +3068,14 @@ if delayCount = 0 then
             end
           else
             begin
-            setStatus(Account.AccProto, byte(SC_NA));
-            setAutomsg(autoaway.msg);
+              setStatus(Account.AccProto, byte(SC_NA));
+              setAutomsg(autoaway.msg);
             end;
           autoaway.triggered := TR_NA;  // has to be set AFTER setstatus
           end;
         end;
    end;
+ {$ENDIF PROTOCOL_ICQ}
 
   if appBarResizeDelayed then
     begin
@@ -3124,7 +3155,9 @@ end;
 procedure TRnQmain.Deleteofflinemessages1Click(Sender: TObject);
 begin
  Protos_DelOfflineMSGS(Account.AccProto.ProtoElem);
+ {$IFDEF PROTOCOL_ICQ}
  Account.AccProto.offlineMsgsChecked := TRUE;
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.mainmenuimportclbClick(Sender: TObject);
@@ -3643,6 +3676,7 @@ end;
 
 procedure TRnQmain.Readautomessage1Click(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
   if not clickedContact.fProto.isOnline then
     exit;
   if warnVisibilityAutoMsgReq and not clickedContact.imVisibleTo then
@@ -3654,10 +3688,12 @@ begin
        exit;
       end;
   sendICQautomsgreq(clickedContact)
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.Readextstatus1Click(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
   if not Assigned(clickedContact) then
     Exit;
   if not clickedContact.fProto.isOnline then
@@ -3671,6 +3707,7 @@ begin
        exit;
       end;
   TicqSession(clickedContact.fProto).RequestXStatus(clickedContact.uid);
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.rosterMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -3792,15 +3829,18 @@ end;
 
 procedure TRnQmain.AAutomessage1Update(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
   if Sender is TAction then
     TAction(Sender).Visible := Assigned(Account.AccProto) and (Account.AccProto.getStatus in statusWithAutoMsg)
    else
     if Sender is TRQMenuItem then
       TRQMenuItem(Sender).Visible := Assigned(Account.AccProto) and (Account.AccProto.getStatus in statusWithAutoMsg);
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.Aautomessage1splitUpdate(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
    { $IFDEF RNQ_FULL}
   if Sender is TAction then
      TAction(Sender).Visible := Assigned(Account.AccProto)and
@@ -3812,6 +3852,7 @@ begin
    { $ELSE RNQ_FULL}
 //  TAction(Sender).Visible := False;
    { $ENDIF RNQ_FULL}
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.AUIN1Update(Sender: TObject);
@@ -3822,24 +3863,28 @@ end;
 
 procedure TRnQmain.AIP1Update(Sender: TObject);
 begin
-if clickedContact <> nil then
-if TICQContact(clickedContact).connection.ip = 0 then
-  TAction(Sender).visible:=FALSE
-else
+ {$IFDEF PROTOCOL_ICQ}
+  if clickedContact <> nil then
+    if TICQContact(clickedContact).connection.ip = 0 then
+      TAction(Sender).visible:=FALSE
+     else
   begin
-  TAction(Sender).visible:=TRUE;
-  TAction(Sender).caption:=getTranslation('%s (copy IP)', [ip2str(TICQContact(clickedContact).connection.ip)] );
+    TAction(Sender).visible:=TRUE;
+    TAction(Sender).caption:=getTranslation('%s (copy IP)', [ip2str(TICQContact(clickedContact).connection.ip)] );
   end;
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.ASendemail1Update(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
   if clickedContact <> nil then
 //    TAction(Sender).visible := Contact.email > ''
     TAction(Sender).visible:=((not (clickedContact is TICQcontact)) or (TICQcontact(clickedContact).email > ''))
 //                  or (Contact is TMRAcontact)
   else
     TAction(Sender).visible := False;
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.ASendSMSExecute(Sender: TObject);
@@ -3873,6 +3918,7 @@ end;
 
 procedure TRnQmain.Atempvisiblelist1Update(Sender: TObject);
 begin //and tag= 3009
+ {$IFDEF PROTOCOL_ICQ}
 if (clickedContact <> nil) {and not useSSI}
    and (clickedContact is TICQcontact)
 then
@@ -3886,6 +3932,7 @@ then
     TAction(Sender).HelpKeyword:='';
  end
  else
+ {$ENDIF PROTOCOL_ICQ}
    TAction(Sender).Visible:=false;
 end;
 
@@ -3893,11 +3940,13 @@ procedure TRnQmain.AReadautomessage1Update(Sender: TObject);
 var
   showHidden:boolean;
 begin
+ {$IFDEF PROTOCOL_ICQ}
 showHidden:=getShiftState() and (1+2)>0; // shift OR control
 if clickedContact <> nil then
  TAction(Sender).visible:=showHidden or
   clickedContact.fProto.isOnline and (CAPS_sm_ICQSERVERRELAY in TICQContact(clickedContact).capabilitiesSm) and
   (byte(TICQContact(clickedContact).status) in statusWithAutomsg);
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.ARename1Update(Sender: TObject);
@@ -3913,6 +3962,7 @@ end;
 
 procedure TRnQmain.ARequestAvtUpdate(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
   {$IFDEF RNQ_AVATARS}
   if clickedContact <> nil then
     TAction(Sender).visible := Account.AccProto.AvatarsSupport and //avt_icq.isOnline and
@@ -3922,6 +3972,7 @@ begin
   {$ELSE RNQ_AVATARS}
   TAction(Sender).visible := false;
   {$ENDIF RNQ_AVATARS}
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.contactMenuNEWPopup(Sender: TObject);
@@ -4129,9 +4180,11 @@ end;
 
 procedure TRnQmain.mAViewSSIUpdate(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
   if Sender is TAction then
     TAction(Sender).Visible := Assigned(Account.AccProto) and
              (Account.AccProto.ProtoElem is TicqSession);
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.mAvisibilityUpdate(Sender: TObject);
@@ -4169,8 +4222,10 @@ end;
 
 procedure TRnQmain.mAgetofflinemsgsUpdate(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
   TAction(Sender).visible := not Account.AccProto.offlineMsgsChecked and
            not getOfflineMsgs and not delOfflineMsgs;
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.mAHelpExecute(Sender: TObject);
@@ -4186,15 +4241,19 @@ end;
 
 procedure TRnQmain.mAdeleteofflinemsgsUpdate(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
   if Assigned( Account.AccProto ) then
     TAction(Sender).visible:=not Account.AccProto.offlineMsgsChecked and not delOfflineMsgs;
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.mARequestCLExecute(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
   if OnlFeature(Account.AccProto) then
 //    icq.SSIreqRoaster
     TicqSession(Account.AccProto).RequesTContactList();
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.mARequestCLUpdate(Sender: TObject);
@@ -4266,6 +4325,7 @@ var
   k : byte;
 begin
   TAction(Sender).Visible := False;
+ {$IFDEF PROTOCOL_ICQ}
   if (Sender is TAction) and Assigned(clickedContact)
      and (clickedContact is TICQContact) then
     begin
@@ -4283,12 +4343,15 @@ begin
           TAction(Sender).HelpKeyword := XStatusArray[0].PicName;
        end;
     end;
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.cARemFrHisCLExecute(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
   if OnlFeature(Account.AccProto) then
     TicqSession(Account.AccProto.ProtoElem).RemoveMeFromHisCL(clickedContact.uid)
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.cASendFileExecute(Sender: TObject);
@@ -4375,8 +4438,10 @@ end;
 
 procedure TRnQmain.cAAuthGrantExecute(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
   if Assigned(clickedContact) then
     TICQSession(clickedContact.fProto).AuthGrant(clickedContact)
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.cAAuthGrantUpdate(Sender: TObject);
@@ -4416,6 +4481,7 @@ end;
 
 procedure TRnQmain.cAChkInvisListUpdate(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
 { $IFDEF RNQ_FULL}
   TAction(Sender).Visible := supportInvisCheck;
  {$IFDEF CHECK_INVIS}
@@ -4427,6 +4493,7 @@ begin
 { $ELSE}
 //  TAction(Sender).Visible := false;
 { $ENDIF}
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.cADeleteOHExecute(Sender: TObject);
@@ -4540,11 +4607,13 @@ end;
 
 procedure TRnQmain.mAChkInvisAllUpdate(Sender: TObject);
 begin
+ {$IFDEF PROTOCOL_ICQ}
  { $IFDEF RNQ_FULL}
   TAction(Sender).Visible := supportInvisCheck
  { $ELSE}
 //  TAction(Sender).Visible := false;
  { $ENDIF}
+ {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.mASinchrCLExecute(Sender: TObject);

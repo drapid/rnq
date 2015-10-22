@@ -65,7 +65,6 @@ implementation
    uSimplePlayer,
  {$ENDIF RNQ_PLAYER}
    mainDlg, RnQTips, tipDlg, chatDlg, addContactDlg,
-   wpDlg,
    RnQProtocol;
 {const
   macroses : array[0..34] of TRnQMACROS = (

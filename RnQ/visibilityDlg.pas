@@ -73,7 +73,7 @@ uses
   RQUtil, RDGlobal, RQThemes,
   RnQSysUtils, RnQPics,
   globalLib, mainDlg, utilLib, themesLib,
-  ICQConsts, ICQv9,
+//  ICQConsts, ICQv9,
   roasterLib;
 
 type

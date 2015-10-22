@@ -65,8 +65,11 @@ implementation
 
 uses
   prefDlg, utilLib, mainDlg, RQUtil,
-  globalLib,
-  ICQv9;
+ {$IFDEF PROTOCOL_ICQ}
+  ICQv9,
+ {$ENDIF PROTOCOL_ICQ}
+  globalLib
+  ;
 
 {$R *.dfm}
 

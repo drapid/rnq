@@ -44,7 +44,7 @@ uses
  {$IFNDEF RNQ_LITE}
   themedit_fr,
  {$ENDIF}
-  RnQProtocol,
+  RnQProtocol, protocols_all,
  {$IFDEF PROTOCOL_ICQ}
   Protocol_ICQ, ICQClients, icqConsts,
  {$ENDIF PROTOCOL_ICQ}
@@ -55,7 +55,9 @@ procedure applyTheme;
 // bmp : TBitmap;
 begin
 
+ {$IFDEF PROTOCOL_ICQ}
   LoadClientsDefs;
+ {$ENDIF PROTOCOL_ICQ}
 
 if (chatFrm<>NIL) then
   begin
@@ -125,7 +127,7 @@ mainFrm.roaster.background.bitmap.ReleaseHandle;}
         menuBtn.width:=cx+6;
       end;
 //     with theme.getPicSize(PIC_STATUS_ONLINE, 16) do
-      with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size) do
+     with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size) do
       begin
         statusBtn.height := max(cy+5, icon_size);
         statusBtn.width  := cx+6;

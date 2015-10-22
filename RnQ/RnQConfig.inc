@@ -17,8 +17,8 @@
    {$UNDEF UID_IS_UNICODE}
  {$ELSE ~ICQ_ONLY}
    {$DEFINE UID_IS_UNICODE}
-   {$DEFINE PROTOCOL_ICQ} // OSCAR protocol
-   {$DEFINE PROTOCOL_MRA} // Mail.ru Agent protocol
+   { $DEFINE PROTOCOL_ICQ} // OSCAR protocol
+   { $DEFINE PROTOCOL_MRA} // Mail.ru Agent protocol
    {$DEFINE PROTOCOL_XMP} // XMPP
 //   {$DEFINE PROTOCOL_BIM} // Obimp protocol
  {$ENDIF ~ICQ_ONLY}

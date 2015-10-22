@@ -76,16 +76,6 @@ var
 const
   stickerWidth: Integer = 120;
   stickerHeight: Integer = 120;
-  stickerExtNames: array [1..30] of Integer =
-  (1,  2,  79, 80, 81, 87, 95, 97, 106, 107, 109, 111, 112, 113, 118, 119, 121, 123, 124, {149,} 151, 157, 158, 180, 203, 205, 209, 211, 213, 217, 108);
-  stickerExtCounts: array [1..30] of Integer =
-  (26, 36, 10, 10, 10, 8,  25, 10, 10,  10,  36,  20,  20,  24,  24,  24,  24,  8,   24,  {24,}  20,  60,  30,  40,  16,  8,   16,  50,  24,  20,  8);
-  stickerExtHints: array [1..30] of String = (
-    'Pandas', 'Whiskers', 'Super Joe', 'Kittens', 'Holiday Cake', 'Smurfs', 'Memes', 'Bro', 'Boomz Man', 'Boomz Girl',
-    'Crackers', 'Chickens', 'Horror', 'Holiday Cards', 'I Love You', 'Supercharged stickers', 'Obrigado, Brasil!',
-    'Onca', 'Russian words', 'Bate-papo maneiro', 'Emoticons', 'Paranormal Love', 'Warm Together', 'Just in case',
-    'Nauryz', 'Spring festivities', 'Nichosi-meme', 'Snob Dog', 'Sonya', 'Musical Cat'
-  );
 
 {$R *.dfm}
 
@@ -144,17 +134,20 @@ begin
         stickerGrid := stickerGrids.Items[FExt];
         if not (stickerGrid = nil) then
           stickerGrid.Items.AddThumb('ext:' + IntToStr(stickerExtNames[FExt]) + ':sticker:' + IntToStr(FSticker), png);
-        if FSticker = stickerExtCounts[FExt] then
+      end
+     else
+      begin
+        fs.Free;
+        png.Free;
+        stickerGrid := stickerGrids.Items[FExt];
+        if not (stickerGrid = nil) then
+          stickerGrid.Items.AddThumb('ext:' + IntToStr(stickerExtNames[FExt]) + ':sticker:' + IntToStr(FSticker), NIL);
+      end;
+    if FSticker = stickerExtCounts[FExt] then
         begin
   //        fStickers.loderPanel.Hide;
           stickerGrid.Items.EndUpdate;
         end;
-      end
-    else
-     begin
-      fs.Free;
-      png.Free;
-     end;
   end, TThreadPool.Default);
   task.Start;
 end;

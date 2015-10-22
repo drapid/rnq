@@ -67,7 +67,10 @@ uses
   Types,
   RDGlobal, RDUtils, RnQLangs, RQThemes, RnQGraphics32,
   utilLib, langLib, GlobalLib,
+  Protocols_all,
+ {$IFDEF PROTOCOL_ICQ}
   ICQConsts, Protocol_ICQ, icqv9,
+ {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
      MRAv1, MRA_proto,
  {$ENDIF PROTOCOL_MRA}
@@ -147,6 +150,7 @@ const
       left   := Bevel1.Left + 5 +(BtnWidth+4)*((k) mod BtnsInRow);
       GroupIndex := 1;
       Flat   := true;
+ {$IFDEF PROTOCOL_ICQ}
       if protoIs = ICQProtoID then
         begin
           ImageName  := XStatusArray[x].PicName;
@@ -161,6 +165,7 @@ const
           Visible := Enabled;
     {$ENDIF ICQ_OLD_STATUS}
         end
+ {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
        else
       if protoIs = IS_MRA then
@@ -192,6 +197,7 @@ begin
      BtnWidth  := bound(cx, icon_size, 32)+8;
    end;
 
+ {$IFDEF PROTOCOL_ICQ}
   if protoIs = ICQProtoID then
     begin
     {$IFDEF ICQ_OLD_STATUS}
@@ -213,6 +219,7 @@ begin
           addBtn(x);}
     {$ENDIF ICQ_OLD_STATUS}
     end
+ {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
    else
   if protoIs = MRAProtoID then
@@ -346,8 +353,10 @@ begin
       btn.down := true;
 //    xstatusname.text:=curXStatusStr;
 //    XStatusStrMemo.Text := curXStatusDesc;
+ {$IFDEF PROTOCOL_ICQ}
   xstatusname.text := ExtStsStrings[tempStatus].Cap;
   XStatusStrMemo.Text := ExtStsStrings[tempStatus].Desc;
+ {$ENDIF PROTOCOL_ICQ}
   XStatusStrMemoChange(XStatusStrMemo);
 (*
  {$IFDEF ICQ_OLD_STATUS}
@@ -373,6 +382,7 @@ var
 begin
 //  curXStatusStr  := xstatusName.Text;
 //  curXStatusDesc := XStatusStrMemo.Text;
+ {$IFDEF PROTOCOL_ICQ}
   if protoIs = ICQProtoID then
    begin
 {  thisICQ.curXStatus     := tempStatus;
@@ -391,6 +401,7 @@ begin
 //     {$ENDIF ICQ_OLD_STATUS}
      ChangeXStatus(TicqSession(thisProto.ProtoElem), tempStatus, xstatusname.text, XStatusStrMemo.Text, b);
    end
+ {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
   else
   if protoIs = MRAProtoID then
@@ -432,6 +443,7 @@ end;
 procedure TxStatusForm.choosingX(sender: TObject);
 begin
 //  if tempStatus <> TStsBtn(Sender).tag then
+ {$IFDEF PROTOCOL_ICQ}
   if protoIs = ICQProtoID then
     begin
       if xstatusname.text <> ExtStsStrings[tempStatus].Cap then
@@ -439,6 +451,7 @@ begin
       if XStatusStrMemo.Text <> ExtStsStrings[tempStatus].Desc then
         ExtStsStrings[tempStatus].Desc := Copy(XStatusStrMemo.Text, 1, MaxXStatusDescLen);
     end
+ {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
    else
   if protoIs = IS_MRA then
@@ -454,11 +467,13 @@ begin
   tempStatus := TStsBtn(Sender).tag;
   XStatusStrMemo.Clear;
 
+ {$IFDEF PROTOCOL_ICQ}
   if protoIs = ICQProtoID then
     begin
       xstatusname.text := ExtStsStrings[tempStatus].Cap;
       XStatusStrMemo.Text := ExtStsStrings[tempStatus].Desc;
     end
+ {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
    else
   if protoIs = IS_MRA then

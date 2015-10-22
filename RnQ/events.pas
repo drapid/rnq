@@ -207,7 +207,10 @@ uses
 //  prefDlg,
   outboxDlg, utilLib, chatDlg, history,
   themesLib, pluginutil, globalLib, mainDlg,
+  Protocols_all,
+ {$IFDEF PROTOCOL_ICQ}
   viewinfoDlg, ICQConsts, protocol_ICQ, ICQv9,
+ {$ENDIF PROTOCOL_ICQ}
 //  Contacts
   roasterLib;
 
@@ -512,7 +515,11 @@ if kind in [EK_ONCOMING, EK_OFFGOING, EK_STATUSCHANGE] then
  {$IFDEF DB_ENABLED}
     result:= statusNameExt2(infoToStatus(fBin), infoToXStatus(fBin));
  {$ELSE ~DB_ENABLED}
+  {$IFDEF PROTOCOL_ICQ}
     result:= statusNameExt2(infoToStatus(f_info), infoToXStatus(f_info));
+  {$ELSE ~PROTOCOL_ICQ}
+    result:= Proto_StsID2Name(Account.AccProto, infoToStatus(f_info), infoToXStatus(f_info));
+  {$ENDIF PROTOCOL_ICQ}
  {$ENDIF ~DB_ENABLED}
   end
 else

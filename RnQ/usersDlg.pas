@@ -93,7 +93,9 @@ uses
  {$IFDEF ICQ_ONLY}
    ICQv9,
  {$ENDIF ICQ_ONLY}
+ {$IFDEF PROTOCOL_ICQ}
    ICQConsts,
+ {$ENDIF PROTOCOL_ICQ}
    { $ENDIF}
 //  newaccountDlg,
   RnQZip, RDUtils, RnQSysUtils, RnQGlobal,

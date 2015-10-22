@@ -18,7 +18,9 @@ interface
 uses
   windows, Graphics, classes, Controls, sysutils, RnQProtocol, //contacts, 
   events, types, strutils, RDGlobal,
+ {$IFDEF PROTOCOL_ICQ}
   ICQConsts,
+ {$ENDIF PROTOCOL_ICQ}
   RnQButtons, ComCtrls;
 
 {$I plugin.inc }
@@ -198,6 +200,7 @@ if c=NIL then
   result:='';
   exit;
   end;
+ {$IFDEF PROTOCOL_ICQ}
   if c is TICQcontact then
     result:=_int(TICQcontact(c).uinInt)
       +AnsiChar(Status2OldStatus[TICQcontact(c).status]) // For old
@@ -206,6 +209,7 @@ if c=NIL then
       +_istring(c.first)
       +_istring(c.last)
    else
+ {$ENDIF PROTOCOL_ICQ}
     result:=_int(StrToIntDef(c.uid2cmp, 0))
       +AnsiChar(0)
       +AnsiChar(0)
@@ -276,6 +280,7 @@ case _byte_at(data,1) of
         end;
       PC_ADD_MSG: if minimum(2+4 + 8+4) then        // By Rapid D
         begin
+ {$IFDEF PROTOCOL_ICQ}
          if Account.AccProto.ProtoElem is TicqSession then
          with TICQSession(Account.AccProto.ProtoElem) do
           begin
@@ -286,6 +291,7 @@ case _byte_at(data,1) of
            notificationForMsg(MTYPE_PLAIN,0, TRUE, _istring_at(data, 15));
 //          ICQ.notifyListeners();
           end;
+ {$ENDIF PROTOCOL_ICQ}
         end;
       PC_POPUP_ADD: if minimum(2+4+4) then        // By Rapid D
         begin
@@ -308,18 +314,22 @@ case _byte_at(data,1) of
         end;
       PC_SEND_CONTACTS: if minimum(2+3*4) then
         begin
+ {$IFDEF PROTOCOL_ICQ}
          if Account.AccProto.ProtoElem is TicqSession then
           begin
             Proto_Outbox_add(OE_contacts, TicqSession(Account.AccProto.ProtoElem).getICQContact(_int_at(data,3)),
                 _int_at(data,7), ints2cl(_intlist_at(data,11)));
           end;
+ {$ENDIF PROTOCOL_ICQ}
         end;
       PC_SEND_ADDEDYOU: if minimum(2+4) then
         begin
            Proto_Outbox_add(OE_addedyou, Account.AccProto.getContact(intToStr(_int_at(data,3))));
         end;
+ {$IFDEF PROTOCOL_ICQ}
       PC_SEND_AUTOMSG_REQ: if minimum(2+4) then
         sendICQautomsgreq(Account.AccProto.getContact(intToStr(_int_at(data,3))));
+ {$ENDIF PROTOCOL_ICQ}
       PC_LIST_REMOVE,
       PC_LIST_ADD: if minimum(2+1+4) then
         begin
@@ -346,6 +356,7 @@ case _byte_at(data,1) of
           end;
         end;
       PC_QUIT: MustQuit := True; //quit;
+ {$IFDEF PROTOCOL_ICQ}
       PC_SET_STATUS: if minimum(2+1) then
         userSetStatus(Account.AccProto, OldStatus2Status[TICQStatus(_byte_at(data,3))], false);
       PC_SET_VISIBILITY: if minimum(2+1) then
@@ -360,6 +371,7 @@ case _byte_at(data,1) of
              tS2 :=_istring_at(data, 2+1+4+length(tS) +1);
             ChangeXStatus(TicqSession(Account.AccProto.ProtoElem), (_byte_at(data,3)), tS, tS2);
           end;
+ {$ENDIF PROTOCOL_ICQ}
       PC_CONNECT: doConnect;
       PC_DISCONNECT: userSetStatus(Account.AccProto, byte(SC_OFFLINE));
       PC_PLAYSOUND  : if minimum(2+4) then        // By Rapid D
@@ -476,6 +488,7 @@ case _byte_at(data,1) of
       PG_ANDRQ_VER_STR: resStr := AnsiChar(PM_DATA)+_istring( ip2str(RQversion) );
       PG_RNQ_BUILD: resStr := AnsiChar(PM_DATA)+_int( RnQBuild ) + _dt(BuiltTime);
       PG_TIME: resStr := AnsiChar(PM_DATA)+_dt( now );
+ {$IFDEF PROTOCOL_ICQ}
       PG_CONTACTINFO:
                if minimum(6) then
                  begin
@@ -484,6 +497,7 @@ case _byte_at(data,1) of
 //                   outBuffer:=AnsiChar(PM_DATA)+_icontactinfo( Account.AccProto.getContact(tS) );
                    resStr :=AnsiChar(PM_DATA)+_icontactinfo( Account.AccProto.getICQContact(i) );
                  end;
+ {$ENDIF PROTOCOL_ICQ}
       PG_LIST: if minimum(3) then
         begin
         cl:=whatlist(_byte_at(data,3));
@@ -590,6 +604,7 @@ case _byte_at(data,1) of
           end;
       PG_STATUS:
           begin
+ {$IFDEF PROTOCOL_ICQ}
             if Assigned(Account.AccProto) then
              begin
               if Account.AccProto.ProtoElem is TICQSession then
@@ -610,10 +625,12 @@ case _byte_at(data,1) of
                      + AnsiChar(0) + _istring('') + _istring('');
              end
             else
+ {$ENDIF PROTOCOL_ICQ}
              resStr := AnsiChar(PM_ERROR);
           end;
       PG_XSTATUS:
           begin
+ {$IFDEF PROTOCOL_ICQ}
              if minimum(2+1) then
                i := byte(data[3])
               else
@@ -623,8 +640,9 @@ case _byte_at(data,1) of
             resStr := AnsiChar(PM_DATA) + AnsiChar(byte(i)) +
                          _istring(getTranslation(ExtStsStrings[i].Cap)) +
                          _istring(getXStatusMsgFor(nil));
+ {$ENDIF PROTOCOL_ICQ}
           end;
-      else resStr :=AnsiChar(PM_ERROR)+AnsiChar(PERR_UNK_REQ);
+       else resStr :=AnsiChar(PM_ERROR)+AnsiChar(PERR_UNK_REQ);
       end;//case
   else resStr :=AnsiChar(PM_ERROR)+AnsiChar(PERR_UNK_REQ);
   end;//case
@@ -906,8 +924,13 @@ function Tplugins.castEv(ev_id: byte; const uin: TUID; b1: Byte; const s1, s2: A
 begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0)) + AnsiChar(b1) +_istring(s1)+_istring(s2) ) end;
 
 function Tplugins.castEv(ev_id: byte; const uin: TUID; status, oldstatus: byte; inv, oldInv: boolean ): RawByteString;
-begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))
+begin
+  result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))
+ {$IFDEF PROTOCOL_ICQ}
         +AnsiChar(Status2OldStatus[TICQStatus(status)])+AnsiChar(Status2OldStatus[TICQStatus(oldstatus)])
+ {$ELSE ~PROTOCOL_ICQ}
+        +AnsiChar(0)+AnsiChar(0)
+ {$ENDIF PROTOCOL_ICQ}
         +AnsiChar(inv)+AnsiChar(oldInv) )
 end;
 

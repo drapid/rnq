@@ -652,32 +652,32 @@ type
     procedure sendDeleteUIN;
     procedure sendsaveMyInfoNew(c: TICQContact);
     procedure sendPermsNew;//(c: Tcontact);
-    procedure sendSticker(uin: TUID; const sticker: String);
+    procedure sendSticker(const uin: TUID; const sticker: String);
     procedure sendInfoStatus(const s: String);
     procedure getUINStatusNEW(const UID: TUID);
-    procedure sendPrivacy(em : Word; ShareWeb : Boolean; authReq : Boolean);
+    procedure sendPrivacy(em: Word; ShareWeb: Boolean; authReq: Boolean);
     procedure sendReqOfflineMsgs;
     procedure sendDeleteOfflineMsgs;
-    procedure sendContacts(cnt : TRnQContact;flags:dword; cl:TRnQCList);
+    procedure sendContacts(cnt: TRnQContact; flags: dword; cl: TRnQCList);
     procedure sendQueryInfo(uin: Integer);
     procedure sendSimpleQueryInfo(const uin: TUID);
     procedure sendAdvQueryInfo(const uin: TUID);
     procedure sendFullQueryInfo(const uin: TUID);
     procedure sendNewQueryInfo(const uin: TUID);
-    procedure sendAddedYou(const uin:TUID);
-    procedure sendStatusCode(sendVis : Boolean = True);
+    procedure sendAddedYou(const uin: TUID);
+    procedure sendStatusCode(sendVis: Boolean = True);
     procedure sendXStatusCodeOnly();
     procedure sendCapabilities;
     procedure resetStatusCode;
-    procedure SSIAuth_REPLY(const uin : TUID; isAccept : Boolean; const msg : String = '');
+    procedure SSIAuth_REPLY(const uin: TUID; isAccept: Boolean; const msg: String = '');
 
-    function  sendAutoMsgReq(const uin:TUID):integer;
-    procedure sendFileAbort(cnt : TICQContact; msgID:TmsgID);
-    procedure sendFileAck(msgID:TmsgID);
+    function  sendAutoMsgReq(const uin: TUID): integer;
+    procedure sendFileAbort(cnt: TICQContact; msgID: TmsgID);
+    procedure sendFileAck(msgID: TmsgID);
 
-    function  RequestIcon(c : TICQContact) : Boolean;
-    function  uploadAvatar(const fn : String) : Boolean;
-    procedure RequestXStatus(const uin : TUID);
+    function  RequestIcon(c: TICQContact): Boolean;
+    function  uploadAvatar(const fn: String): Boolean;
+    procedure RequestXStatus(const uin: TUID);
 {$IFDEF usesDC}
 //    function  sendFileReq(uin:TUID; msg,fn:string; size:integer):integer; // returns handle
     function  sendFileReq(const uin:TUID; const msg:string; fa : TFileAbout; useProxy : Boolean):integer;
@@ -4812,7 +4812,7 @@ begin
   );
 end; // sendChangePwd
 
-procedure TicqSession.sendSticker(uin: TUID; const sticker: String);
+procedure TicqSession.sendSticker(const uin: TUID; const sticker: String);
 begin
   sendSnac(ICQ_MSG_FAMILY, CLI_META_MSG, #$AB#$AB#$AB#$AB#$AB#$AB#$AB#$AB
          + word_BEasStr(MTYPE_PLAIN) + Length_B(uin)
@@ -5829,7 +5829,7 @@ case msgtype of
   MTYPE_STICKER:
     begin
       eventMsgA := msg;
-      strs := SplitAnsiString(msg, ':');
+      strs := SplitAnsiString(eventData, ':');
       if (length(strs) >= 4) then
         eventAddress := getStickerURL(strs[1], strs[3]);
       notifyListeners(IE_StickerMsg);
@@ -6035,49 +6035,45 @@ case Byte(snac[10]) of // msg format
     if sA >= '' then
     begin
       isTzer := false;
-      ofs2 := 5;
-      t := Byte(snac[ofs2]);
+      ofs2 := 1;
+      t := Byte(sA[ofs2]);
       if t = $05 then
       begin
         inc(ofs2, 2);
-        t := word_BEat(sA, ofs2);
+        t := readBEWORD(sA, ofs2);
         cap := copy(sA, ofs2, min(16, t)); // first cap only, enough?
         if cap = BigCapability[CAPS_big_tZers].v then
           isTzer := True;
         
         inc(ofs2, t);
         if t < length(sA) then
-          t := Byte(snac[ofs2]);
+          t := Byte(sA[ofs2]);
       end;
       if t = $10 then // Caps are required
        begin
          inc(ofs2, 2);
-         t := word_BEat(sA, ofs2);
-         inc(ofs2, 2);
+         t := readBEWORD(sA, ofs2);
          cap := copy(sA, ofs2, min(16, t)); // first cap only, enough?
          if cap = BigCapability[CAPS_big_tZers].v then
            isTzer := True;
          inc(ofs2, t);
 
         if t < length(sA) then
-          t := Byte(snac[ofs2]);
+          t := Byte(sA[ofs2]);
        end;
 
 
       if t = $01 then
       begin
         inc(ofs2, 2);
-        l := word_BEat(sA, ofs2)-4;
-        inc(ofs2, 2);
-        CharsetNumber := word_BEat(sA, ofs2);     //The encoding used for the message.
+        l := readBEWORD(sA, ofs2)-4;
+        CharsetNumber := readBEWORD(sA, ofs2);     //The encoding used for the message.
                                                 //0x0000: US-ASCII
                                                 //0x0002: UCS-2BE (or UTF-16?)
                                                 //0x0003: local 8bit encoding, eg iso-8859-1, cp-1257, cp-1251.
                                                 //Beware that UCS-2BE will contain zero-bytes for characters in the US-ASCII range.
                                                 // 0006 - Unicode
-        inc(ofs2, 2);
-        CharsetSubset := word_BEat(sA, ofs2);         //Unknown; seen: 0x0000 = 0, 0xffff = -1.
-        inc(ofs2, 2);
+        CharsetSubset := readBEWORD(sA, ofs2);         //Unknown; seen: 0x0000 = 0, 0xffff = -1.
         msg := copy(sA, ofs2, l);
        if CharsetNumber = 6 then
          begin
@@ -6101,12 +6097,13 @@ case Byte(snac[10]) of // msg format
         msg := '';
         eventContact := thisCnt;
         notificationForMsg(MTYPE_STICKER, eventFlags, TRUE, eventMsgA);
+        exit;
       end
      else
        if isTzer then
          begin
            eventAddress := parseTzer2URL(msg, eventMsgA);
-           notificationForMsg(MTYPE_STICKER, eventFlags, TRUE, eventMsgA);
+           notificationForMsg(MTYPE_PLAIN, eventFlags, TRUE, eventMsgA);
            Exit;
          end;
 

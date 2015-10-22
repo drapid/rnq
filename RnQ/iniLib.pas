@@ -1895,6 +1895,7 @@ if not skipsplash then showSplash;
       lastStatusUserSet:= byte(SC_UNK);
       lastStatus:= RnQstartingStatus;
     end;
+ {$IFDEF PROTOCOL_ICQ}
 if PREVIEWversion and (Account.AccProto.ProtoElem is TicqSession) then
  begin
   checkupdate.autochecking := True;
@@ -1904,6 +1905,7 @@ if PREVIEWversion and (Account.AccProto.ProtoElem is TicqSession) then
      halt(1);
     end;
  end;
+ {$ENDIF PROTOCOL_ICQ}
 //  MainProto.MyInfo := MainProto.getContact(lastUser);
 //ICQ.myinfo:= TicqSession.getICQContact(lastUser);
 {
@@ -2136,7 +2138,9 @@ else
   UnloadAutomessages;
   RnQmain.roster.Clear;
   FreeAndNil(prefFrm);
+ {$IFDEF PROTOCOL_ICQ}
  FreeAndNil(wpFrm);  // we must free it before closeAllChildWindows to avoid AV
+ {$ENDIF PROTOCOL_ICQ}
 //freeandnil();
   RnQmain.closeAllChildWindows;
 

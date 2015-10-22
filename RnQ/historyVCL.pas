@@ -194,7 +194,9 @@ uses
   {$ENDIF USE_GDIPLUS}
 //  historyRnQ,
   Base64,
+ {$IFDEF PROTOCOL_ICQ}
   ICQConsts, ICQv9,
+ {$ENDIF PROTOCOL_ICQ}
   {$IFDEF USE_GDIPLUS}
     RnQGraphics,
   {$ELSE}
@@ -1461,14 +1463,17 @@ var
                   inc(curX, cx+2);
 
   //              with statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s)), (length(s)>4) and boolean(s[5])) do
+ {$IFDEF PROTOCOL_ICQ}
                 if (b > 0) then
                  inc(curX, theme.drawPic(Cnv.Handle, curX+2, curY, XStatusArray[b].PicName).cx+2);
+ {$ENDIF PROTOCOL_ICQ}
               end;
              end;
          end;
        EK_XstatusMsg:
          begin
 //           sa := ev.binfo;
+ {$IFDEF PROTOCOL_ICQ}
            sa := ev.getBodyBin;
            if length(sa) >= 1 then
             if (byte(sa[1]) <= High(XStatusArray)) then
@@ -1476,6 +1481,7 @@ var
 //            statusDrawExt(cnv.Handle, x+2,y, SC_UNK, false, ord(s[1]));
 //            statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s), false, ord(s[1]));
  //            vPicName := status2imgName(Tstatus(str2int(s)), (length(s)>4) and boolean(s[5]));
+ {$ENDIF PROTOCOL_ICQ}
          end;
        EK_OFFGOING:
          statusDrawExt(Cnv.Handle, curX+2, curY, byte(SC_OFFLINE));
