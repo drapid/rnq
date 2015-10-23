@@ -37,12 +37,12 @@ type
 
     langFN0, langFN1: String;
 //    langIsUTF : Boolean;
-    function TranslateString(const Str: AnsiString): String; overload;{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;
+    function TranslateString(const Str: AnsiString): String; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;
  {$IFDEF UNICODE}
-    function TranslateString(const Str: UnicodeString): String; overload;{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;
+    function TranslateString(const Str: UnicodeString): String; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;
  {$ENDIF UNICODE}
     Procedure LangAddStr(const k: String; const v: String; Mas: TLangList);
-    function  fileIsUTF(fn: String): Boolean;
+    function  fileIsUTF(const fn: String): Boolean;
    public
 //    constructor LoadLang(p_fn: String; p_isUTFLang: Boolean);
     constructor Create;
@@ -645,7 +645,7 @@ begin
 *)
 end;
 
-function TRnQLang.fileIsUTF(fn: String): Boolean;
+function TRnQLang.fileIsUTF(const fn: String): Boolean;
 begin
   Result := ExtractFileExt(fn) = '.utflng';
 end;

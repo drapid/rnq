@@ -12,7 +12,12 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ComCtrls, StdCtrls, Menus, ExtCtrls, ToolWin, ActnList, RnQButtons,
   VirtualTrees, StrUtils,
-  history, historyVCL,
+  history,
+ {$IFDEF CHAT_CEF} // Chromium
+  historyCEF,
+ {$ELSE ~CHAT_CEF} // old
+  historyVCL,
+ {$ENDIF CHAT_CEF}
   Commctrl, selectContactsDlg,
   ShockwaveFlashObjects_TLB,
 //    FlashPlayerControl,
@@ -2333,7 +2338,7 @@ begin
      // end typing
       oldCh.who.fProto.InputChangedFor(oldCh.who, True);
      { $ENDIF}
-      oldCh.historyBox.newSession:=0;
+//      oldCh.historyBox.newSession:=0;
       if oldCh.historyBox.history<>NIL then
        begin
   //      historyBox.history.reset;
@@ -2771,77 +2776,17 @@ end; // updatechatfrmXY
 
 
 procedure TchatFrm.historyAllShowChange(ch: TchatInfo; histBtnDown: Boolean);
-var
-  olds, news: integer;
-//  i: Integer;
-  oldTime: TDateTime;
-//  ch: TchatInfo;
-//  str: TStream;
 begin
 //  ch:=thisChat;
   if ch=NIL then
     exit;
-  with ch.historyBox do
-  begin
-    whole := histBtnDown;
-    autoScroll := autoScrollVal;
-    if whole then
-     begin
-      offset := 0;
-      with history do
-      if not loaded then
-        begin
-         olds := count;
-         if olds > 0 then
-           oldTime := getAt(0).when
-          else
-           oldTime := 0;
-         Clear;
-//         fromString(loadFile(userPath+historyPath + ch.who.uid));
-         load(ch.who);
-//         str := GetStream(userPath+historyPath + ch.who.uid);
-//         fromSteam(str);
-//         str.Free;
-         news := Count;
-         if oldTime > 0 then
-          begin
-//            olds := news;
-            while (news >0) and (getAt(news-1).when >= oldTime) do
-             Dec(news);
-//            dec(news, max(0, olds));
-//         news := count-olds;
-          end;
-//         with ch.historyBox do
-         begin
-          inc(newSession, news);
-          inc(startSel.evIdx, news);
-          inc(endSel.evIdx, news);
-          inc(topVisible, news)
-         end;
-        end
-//        else
-//         begin
-//           go2end;
-//         end;
-     end
-    else
-     begin
-       autoscroll := TRUE;
-       offset := newSession;
-       if topVisible < offset then
-         topVisible := offset;
-     end;
-//    setAutoScrollForce(autoScroll);
-    autoScrollVal := autoScroll;
-    ch.repaintAndUpdateAutoscroll();
-    updateRSB(false, 0, True);
-    if self.visible then
+  ch.historyBox.setScrollPrefs(histBtnDown);
+  if self.visible then
      if ch = thischat then
       try
         ch.input.SetFocus;
        except
       end;
-  end;
 end;
 
 procedure TchatFrm.historyBtnClick(Sender: TObject);
@@ -3080,7 +3025,11 @@ begin
       with ch.historyBox do
        begin
       // i := topVisible;
+ {$IFDEF CHAT_CEF} // Chromium
+        go2end;
+ {$ELSE ~CHAT_CEF} // old
         go2end(True);
+ {$ENDIF CHAT_CEF}
         ev := history.getAt(topVisible);
        end;
       if (ev=NIL) or (ev.when > time) then
@@ -4458,8 +4407,6 @@ begin
   if ch=NIL then
     exit;
   ch.historyBox.ManualRepaint;
-//  inc(ch.historyBox.history.Token);
-//  ch.repaint;
 end;
 
 procedure TchatFrm.hAShowSmilesUpdate(Sender: TObject);

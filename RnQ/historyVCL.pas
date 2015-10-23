@@ -162,6 +162,7 @@ type
     procedure histScrollLine(d: integer);
     procedure Scroll;
     function  getQuoteByIdx(var pQuoteIdx: Integer): String;
+    procedure setScrollPrefs(ShowAll: Boolean);
   end; // ThistoryBox
 
 const
@@ -3231,6 +3232,67 @@ begin
    Repaint;
 end;
 
+procedure ThistoryBox.setScrollPrefs(ShowAll: Boolean);
+var
+  olds, news: integer;
+//  i: Integer;
+  oldTime: TDateTime;
+  autoscr: Boolean;
+begin
+    whole := ShowAll;
+    autoscr := autoScrollVal;
+    if whole then
+     begin
+      offset := 0;
+      with history do
+      if not loaded then
+        begin
+         olds := count;
+         if olds > 0 then
+           oldTime := getAt(0).when
+          else
+           oldTime := 0;
+         Clear;
+//         fromString(loadFile(userPath+historyPath + ch.who.uid));
+         load(who);
+//         str := GetStream(userPath+historyPath + ch.who.uid);
+//         fromSteam(str);
+//         str.Free;
+         news := Count;
+         if oldTime > 0 then
+          begin
+//            olds := news;
+            while (news >0) and (getAt(news-1).when >= oldTime) do
+             Dec(news);
+//            dec(news, max(0, olds));
+//         news := count-olds;
+          end;
+//         with ch.historyBox do
+         begin
+          inc(newSession, news);
+          inc(startSel.evIdx, news);
+          inc(endSel.evIdx, news);
+          inc(topVisible, news)
+         end;
+        end
+//        else
+//         begin
+//           go2end;
+//         end;
+     end
+    else
+     begin
+       autoscr := TRUE;
+       offset := newSession;
+       if topVisible < offset then
+         topVisible := offset;
+     end;
+//    setAutoScrollForce(autoScroll);
+  autoScrollVal := autoscr;
+  repaint;
+  Scroll();
+  updateRSB(false, 0, True);
+end;
 
 function ThistoryBox.historyNowCount:integer;
 begin

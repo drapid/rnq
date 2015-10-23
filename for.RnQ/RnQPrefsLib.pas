@@ -855,7 +855,7 @@ begin
    end;
 end;
 
-  function yesnof(l: PAnsiChar): boolean; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function yesnof(l: PAnsiChar): boolean; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
   const
     yyy = AnsiString('yes');
   begin
@@ -890,7 +890,7 @@ begin
 end;
 
 function TRnQPref.getPrefBoolDef(const key: String; const DefVal: Boolean): Boolean;
-(*  function yesno(l: PAnsiChar):boolean; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+(*  function yesno(l: PAnsiChar):boolean; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
   const
     yyy = AnsiString('yes');
   begin
@@ -924,7 +924,7 @@ begin
 end;
 
 procedure TRnQPref.getPrefInt(const key: String; var Val: Integer);
-  function int(l: PAnsiChar): Integer; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function int(l: PAnsiChar): Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
   var
     bb : Integer;
 //    ss : AnsiString;
@@ -961,7 +961,7 @@ begin
 end;
 
 function TRnQPref.getPrefIntDef(const key: String; const DefVal: Integer): Integer;
-  function int(l: PAnsiChar): integer; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function int(l: PAnsiChar): integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
   var
     bb: Integer;
 //    ss : AnsiString;
@@ -999,7 +999,7 @@ begin
 end;
 
 procedure TRnQPref.getPrefDate(const key: String; var Val: TDateTime);
-  function dt(l: PAnsiChar): TDateTime; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function dt(l: PAnsiChar): TDateTime; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
   var
     df: TFormatSettings;
     s: string;
@@ -1041,7 +1041,7 @@ begin
 end;
 
 procedure TRnQPref.getPrefDateTime(const key: String; var Val: TDateTime);
-  function dtt(l: PAnsiChar): TDateTime; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+  function dtt(l: PAnsiChar): TDateTime; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
   var
     df : TFormatSettings;
   begin

@@ -96,6 +96,12 @@ const
   HI_cryptMode=-3;
 
 Type
+  THeventHeader = record
+    prefix: String;
+    what: String;
+    date: String;
+  end;
+
   Thevent=class
    private
     f_flags    : Integer;
@@ -153,10 +159,11 @@ Type
 
     function  getBodyBin:RawByteString;
     function  getBodyText:string;
-    function  getHeaderText:string;
+    function  getHeaderText: string;
+    function  getHeader: THeventHeader;
     procedure ParseMsgStr(const pMsg: RawByteString);
-    procedure setFlags(f : integer);
-    procedure setWho(w : TRnQContact);
+    procedure setFlags(f: integer);
+    procedure setWho(w: TRnQContact);
 //   published
     property  flags : Integer read f_flags write setFlags;
     property  who : TRnQContact read f_who write setWho;
@@ -168,22 +175,22 @@ Type
 
   TeventQ=class(Tlist)
    public
-    OnNewTop :procedure of object;
+    OnNewTop : procedure of object;
 
     constructor Create;
     destructor Destroy; override;
-    function  add(kind_:integer; c:TRnQContact; when:Tdatetime; flags_:integer):Thevent; overload;
-    procedure add(ev:Thevent); overload;
-    function  pop:Thevent;
-    function  top:Thevent;
-    function  empty:boolean;
-    function  chop:boolean;
-    function  find(kind_:integer; c:TRnQcontact):integer;
-    function  removeAt(i:integer):Boolean;
-    function  firstEventFor(c:TRnQContact):Thevent;
-    function  getNextEventFor(c:TRnQContact; idx : Integer): Integer;
-    function  removeEvent(kind_:integer; c:TRnQContact):boolean; overload;
-    function  removeEvent(c:TRnQContact):boolean; overload;
+    function  add(kind_: integer; c: TRnQContact; when: Tdatetime; flags_: integer): Thevent; overload;
+    procedure add(ev: Thevent); overload;
+    function  pop: Thevent;
+    function  top: Thevent;
+    function  empty: boolean;
+    function  chop: boolean;
+    function  find(kind_: integer; c: TRnQcontact): integer;
+    function  removeAt(i: integer): Boolean;
+    function  firstEventFor(c: TRnQContact): Thevent;
+    function  getNextEventFor(c: TRnQContact; idx: Integer): Integer;
+    function  removeEvent(kind_: integer; c: TRnQContact): boolean; overload;
+    function  removeEvent(c: TRnQContact): boolean; overload;
     procedure Clear; override;
     procedure fromString(const Qs: RawByteString);
     function  toString: RawByteString;
@@ -561,13 +568,71 @@ else
    else
     dsp := ''; 
 //result:=___('history header '+event2str[kind], [
-result:=getTranslation(HistHeadPrefix + histheadevent2str[kind], [
+result := getTranslation(HistHeadPrefix + histheadevent2str[kind], [
   formatDatetime(timeformat.chat, when),
   dsp,
   ifThen(IF_multiple and flags>0, getTranslation('(multi-send)')),
   result
 ]);
 end; // getHeaderText
+
+function Thevent.getHeader: THeventHeader;
+var
+  dsp, res: String;
+  sa: RawByteString;
+begin
+  if not assigned(self) then
+    Exit;
+
+  if kind in [EK_ONCOMING, EK_OFFGOING, EK_STATUSCHANGE] then
+  begin
+//    if (flags and IF_XTended_EVENT)>0 then
+{$IFDEF DB_ENABLED}
+    res := statusNameExt2(infoToStatus(fBin), infoToXStatus(fBin));
+{$ELSE ~DB_ENABLED}
+    res := statusNameExt2(infoToStatus(f_info), infoToXStatus(f_info));
+{$ENDIF ~DB_ENABLED}
+  end
+    else
+  if kind = EK_XstatusMsg then
+  begin
+{$IFDEF DB_ENABLED}
+    sa := copy(fBin, 2, length(fBin));
+{$ELSE ~DB_ENABLED}
+    sa := copy(f_info, 2, length(f_info));
+{$ENDIF ~DB_ENABLED}
+    if Length(sa) > 4 then
+    begin
+      if _int_at(sa, 1) > Length(sa) then
+        res := ''
+      else
+        res := UnUTF(_istring_at(sa, 1));
+    end;
+  end;
+
+  if Assigned(who) then
+  begin
+    if (kind = EK_buzz) then
+      if isMyEvent then
+      begin
+        dsp := GetTranslation('You');
+        res := ' ' + GetTranslation('tried to buzz this contact!');
+      end
+        else
+      begin
+        dsp := who.displayed;
+        res := ' ' + GetTranslation('tried to buzz you!');
+      end
+    else
+      dsp := who.displayed
+  end
+    else
+  dsp := '';
+
+  Result.prefix := ifThen(IF_multiple and flags > 0, getTranslation('(multi-send)'));
+  Result.what := dsp + getTranslation(histheadevent2str[kind], [res]);
+  Result.date := formatDatetime(timeformat.chat, when)
+end; // getHeader
 
 function Thevent.getBodyText:string;
 var

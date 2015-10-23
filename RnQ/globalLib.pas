@@ -17,6 +17,7 @@ interface
 
 uses
   Windows, sysutils, graphics, controls, comctrls, types, classes, forms, messages,
+  iniFiles,
   events,
  {$IFDEF ICQ_ONLY}
     icqv9,
@@ -452,28 +453,28 @@ var
   hintMode  : (HM_null,HM_url,HM_comm);
   usertime  : integer;
   startTime : TdateTime;
-  WM_TASKBARCREATED :longword;
+  WM_TASKBARCREATED : longword;
 //  contactsPnl,
 //  freePnl :TstatusPanel;
   contactsPnlStr : String;
-  locked, startingLock :boolean;
-  hotkeysEnabled :boolean;
+  locked, startingLock : boolean;
+  hotkeysEnabled : boolean;
   CloseFTWndAuto : Boolean;
-  outboxSbarRect :Trect;
-  supportedBehactions :array [1..EK_last] of set of Tbehaction;
-  availableUsers :array of TRnQUser;
+  outboxSbarRect : Trect;
+  supportedBehactions : array [1..EK_last] of set of Tbehaction;
+  availableUsers : array of TRnQUser;
   // here i bookmark last selected node, cause it could change between clicks
   clickedContact : TRnQContact;
 //  focusedCnt : TRnQContact;
-  clickedGroup :integer;
-  clickedNode :Tnode;
+  clickedGroup : integer;
+  clickedNode : Tnode;
 
-  prefHeight      :integer;
-  hideScrollTimer :integer;
-  saveDBtimer     :integer;
+  prefHeight      : integer;
+  hideScrollTimer : integer;
+  saveDBtimer     : integer;
 //  loginServer  :string;
-  lastServerIP, lastserverAddr :string;
-  cmdLinePar :record
+  lastServerIP, lastserverAddr : string;
+  cmdLinePar : record
      startUser : TUID;
      extraini,
      userPath,
@@ -483,12 +484,12 @@ var
      ssi : Boolean;
 //     NoSound : Boolean;
     end;
-  lastOnTimer :Tdatetime;
-  showRosterTimer :integer;
-  removeTempVisibleTimer :integer;
-  removeTempVisibleContact :TRnQContact;
-  inactiveTime :integer;
-  noOncomingCounter :integer; // if > 0, IE_oncoming means people was here before (used in the login process)
+  lastOnTimer : Tdatetime;
+  showRosterTimer : integer;
+  removeTempVisibleTimer : integer;
+  removeTempVisibleContact : TRnQContact;
+  inactiveTime : integer;
+  noOncomingCounter : integer; // if > 0, IE_oncoming means people was here before (used in the login process)
   childWindows : Tlist;
   MustQuit : Boolean = False; // Вызывается из плагинов, чтобы их нормально завершить успеть.
 
@@ -533,7 +534,7 @@ var
   lastFilterEditTime :Tdatetime;
   selectedColor :Tcolor;
   dialogFrm :Tform;
-  uinlists :Tuinlists;
+  uinlists : Tuinlists;
 //  myStatus,
 
 //  visibleList, invisibleList,
@@ -586,7 +587,7 @@ var
     pwd     : String;
    end;
   AccPass : String;
-  autoaway :record
+  autoaway : record
     time :cardinal;
 //  {$IFDEF WIN98_SUP}
 //    lastMousePos :Tpoint;
@@ -603,7 +604,7 @@ var
     bakmsg :string;
      vol : Integer;
    end;
-  BossMode:Record  
+  BossMode: Record
     isBossKeyOn,
     activeChat,
     toShowChat,
@@ -647,13 +648,13 @@ var
     active,inactive:integer;
     tray : Integer;
    end;
-  macros :Tmacros;
-  splashFrm :Tform;
+  macros : Tmacros;
+  splashFrm : Tform;
   splashImgElm : TRnQThemedElementDtls;
 //  splashPicTkn : Integer;
 //  splashPicIdx : Integer;
 //  splashPicLoc : TPicLocation;
-  checkupdate :record
+  checkupdate : record
     autochecking,
     checking,
     enabled,
@@ -774,11 +775,12 @@ var
   prefPages : array of TPrefPage;
   Mutex:Cardinal;
   portsListen : TPortList;
+  imgCacheInfo: TMemIniFile;
 
 //const
 //  supportInvisCheck = false;
 
-  procedure AddPrefPage1(index : Byte; cl : TPrefFrameClass; Cpt : String);
+  procedure AddPrefPage1(index: Byte; cl: TPrefFrameClass; Cpt: String);
   procedure ClearPrefPages;
 
 type  
@@ -815,7 +817,7 @@ begin
    end;}
   SetLength(prefPages, 0);
 end;
-procedure AddPrefPage1(index : Byte; cl : TPrefFrameClass; Cpt : String);
+procedure AddPrefPage1(index: Byte; cl: TPrefFrameClass; Cpt: String);
 var
   i : Integer;
 begin

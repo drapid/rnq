@@ -1,5 +1,6 @@
 Unit pluginutil;
 interface
+{$I ForRnQConfig.inc}
 {$I NoRTTI.inc}
 
 uses

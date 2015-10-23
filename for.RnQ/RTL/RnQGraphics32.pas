@@ -40,6 +40,8 @@ type
 const
   PAFormat : array [TPAFormat] of string = ('.dat','.bmp','.jpeg','.gif','.png', '.xml', '.swf', '.ico', '.tif', '.webp');
   PAFormatString : array [TPAFormat] of string = ('Unknown', 'Bitmap', 'JPEG', 'GIF', 'PNG', 'XML', 'SWF', 'ICON', 'TIF', 'WEBP');
+  PAFormatMime : array [TPAFormat] of string = ('image/x-icon', 'image/bmp', 'image/jpeg',
+          'image/gif','image/png', 'text/xml', 'application/x-shockwave-flash', 'image/x-icon', 'image/tiff', 'image/webp');
 
 type
   TAniDisposalType = (dtUndefined,   {Take no action}

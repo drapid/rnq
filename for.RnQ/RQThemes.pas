@@ -99,6 +99,7 @@ type
    public
 //  TPicObj = record
     bmp : TRnQBitmap;
+    pic: TMemoryStream;
 //    bmp : TGPImage;
     ref : integer;
 //    AniIdx : Integer;
@@ -174,6 +175,7 @@ type
  {$ENDIF RNQ_FULL}
 
   TThemeSubClass = (tsc_all, tsc_pics, tsc_smiles, tsc_sounds);
+
 //  Pthemeinfo=^Tthemeinfo;
   ToThemeinfo = Class(TObject)
    public
@@ -274,7 +276,7 @@ type
     destructor Destroy; override;
     procedure Clear(pTSC: TThemeSubClass);
     procedure FreeResource;
-    procedure load(fn0:string; subFile: String = ''; loadBase: Boolean = True;
+    procedure load(fn0: string; subFile: String = ''; loadBase: Boolean = True;
                    subClass: TThemeSubClass = tsc_all);
     procedure loadThemeScript(const fn: String; const path: string); overload;
     procedure loadThemeScript(fn: String; ts: TThemeSourcePath); overload;
@@ -303,6 +305,7 @@ type
 //        var picLoc: TPicLocation; var picIdx: Integer; minSize: Integer = 0): Tsize; overload;
     function  GetPicSize(var PicElm: TRnQThemedElementDtls; minSize: Integer = 0): Tsize; overload;
     function  GetPicOld(const PicName: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
+    procedure GetPicOrigin(pTE: TRnQThemedElement; const name: TPicName; var OrigPic: TPicName; var rr: TGPRect);
 //    function  GetIcoBad(name : String) : TIcon;
     function  GetString(const name: TPicName; isAdd: Boolean = True): String;
     function  GetSound(const name: TPicName): String;
@@ -329,8 +332,8 @@ type
     function  drawPic(DC: HDC; pR: TGPRect; var picElm: TRnQThemedElementDtls): Tsize; overload;
     function  getPic(DC: HDC; p : TPoint; var picElm: TRnQThemedElementDtls; var is32Alpha : Boolean):Tsize; overload;
   {$IFNDEF NOT_USE_GDIPLUS}
-    function  drawPic(gr: TGPGraphics; x, y:integer; picName:string; pEnabled : Boolean = true):Tsize; overload;
-    function  drawPic(gr: TGPGraphics; x, y:integer; picName:string; var ThemeToken: Integer;
+    function  drawPic(gr: TGPGraphics; x, y: integer; picName: string; pEnabled: Boolean = true): Tsize; overload;
+    function  drawPic(gr: TGPGraphics; x, y: integer; picName: string; var ThemeToken: Integer;
         var picLoc: TPicLocation; var picIdx : Integer; pEnabled : Boolean = true): Tsize; overload;
     function  drawPic(gr: TGPGraphics; x, y: integer; picElm: Prnq): Tsize; overload;
   {$ENDIF NOT_USE_GDIPLUS}
@@ -361,9 +364,9 @@ type
     procedure drawStratch(gr:TGPGraphics; r : TGPRectF; const picName : TPicName); overload;
     procedure drawStratch(gr:TGPGraphics; x, y, w, h : Integer; const picName : TPicName); overload;
   {$ENDIF NOT_USE_GDIPLUS}
-    procedure drawTiled(canvas:Tcanvas; const picName : TPicName); overload;
-    procedure drawTiled(dc: HDC; ClipRect : TRect; const picName : TPicName); overload;
-    procedure Draw_wallpaper(DC : HDC; r : TRect); //{$IFDEF DELPHI9_UP } inline; {$ENDIF DELPHI9_UP}
+    procedure drawTiled(canvas: Tcanvas; const picName : TPicName); overload;
+    procedure drawTiled(dc: HDC; ClipRect: TRect; const picName : TPicName); overload;
+    procedure Draw_wallpaper(DC: HDC; r: TRect); //{$IFDEF HAS_INLINE } inline; {$ENDIF HAS_INLINE}
     procedure refreshThemeList;
   //  procedure refreshSmilesList;
     procedure ClearThemelist;
@@ -388,6 +391,7 @@ var
 
 
 implementation
+
  uses
   strUtils,
   math,
@@ -408,7 +412,7 @@ type
 const
 //  sectionLabels:array [Tsection] of string=('','roaster','tip','pics','icons',
 //    'history','smiles','sounds','menu');
-  RQsectionLabels:array [TRQsection] of AnsiString=('','pics','icons','smiles',
+  RQsectionLabels: array [TRQsection] of AnsiString=('','pics','icons','smiles',
     'sounds', 'rnqpics', 'rnqsmiles', 'strings', 'desc', 'font');
 
  {$IFDEF USE_7Z}
@@ -425,7 +429,7 @@ const
    ThemeInis : array[0..2] of string = ('theme.ini', 'smiles.ini', 'sounds.ini');
  {$ENDIF USE_ZIP}
 
- function MakeRectI(x, y, width, height: Integer): TGPRect; {$IFDEF DELPHI9_UP}inline;{$ENDIF DELPHI9_UP}
+ function MakeRectI(x, y, width, height: Integer): TGPRect; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
   begin
     Result.X      := x;
     Result.Y      := y;
@@ -619,7 +623,8 @@ begin
   FFonts2    := TObjList.Create;
 //  FFonts    := TFontList.Create;
 
-  FIntPicsIL := ImageList_Create(icon_size, icon_size, ILC_COLOR32 or ILC_MASK, 0, 0);
+//  FIntPicsIL := ImageList_Create(icon_size, icon_size, ILC_COLOR32 or ILC_MASK, 0, 0);
+  FIntPicsIL := ImageList_Create(GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), ILC_COLOR32 or ILC_MASK, 0, 0);
 
 //  FIconPics.BkColor := clNone;
   FSmiles.CaseSensitive := True;
@@ -718,6 +723,9 @@ begin
         if Assigned(po.bmp) then
           po.bmp.Free;
         po.bmp := NIL;
+          if Assigned(po.pic) then
+            po.pic.Free;
+          po.pic := nil;
        except
       end;
       po.Free;
@@ -746,7 +754,8 @@ begin
      end;
     FFonts2.Clear;
 
-    For i := 0 to FStr.Count-1 do TStrObj(FStr.Objects[i]).Free;
+    For i := 0 to FStr.Count-1 do
+      TStrObj(FStr.Objects[i]).Free;
     FStr.Clear;
   //  For i := 0 to FClr.Count-1 do FClr.Objects[i].Free;
     FClr.Clear;
@@ -808,6 +817,9 @@ begin
         if Assigned(po.bmp) then
           po.bmp.Free;
         po.bmp := NIL;
+          if Assigned(po.pic) then
+            po.pic.Free;
+          po.pic := nil;
        except
       end;
       po.Free;
@@ -887,7 +899,10 @@ begin
  {$ENDIF DELPHI9_UP}
    if Assigned(po) then
    if po.ref = 0 then
-     FreeAndNil(po.bmp);
+      begin
+        FreeAndNil(po.bmp);
+        FreeAndNil(po.pic);
+      end;
   end;
 
  {$IFDEF DELPHI9_UP}
@@ -913,7 +928,10 @@ begin
  {$ENDIF DELPHI9_UP}
    if Assigned(po) then
    if po.ref = 0 then
-     FreeAndNil(po.bmp);
+      begin
+        FreeAndNil(po.bmp);
+        FreeAndNil(po.pic);
+      end;
   end;
 {  For i := 0 to Fpics.Count-1 do
    begin
@@ -1248,7 +1266,7 @@ begin
 end; // loadTheme
 
 
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
 function TRQtheme.GetPic13(const name : TPicName; var pic: TGPImage; AddPic : Boolean = True) : Boolean;
 var
   i : Integer;
@@ -1300,10 +1318,10 @@ begin
         end;
     end; }
 end;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 
-{$IFNDEF NOT_USE_GDIPLUS}
-function TRQtheme.GetPicOld(const name : TPicName; pic: TBitmap; AddPic : Boolean = True) : Boolean;
+{$IFDEF USE_GDIPLUS}
+function TRQtheme.GetPicOld(const name: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
 var
 //  i : Integer;
 //  bmp : TRnQBitmap;
@@ -1365,7 +1383,7 @@ begin
       end; }
 end;
  {$ELSE NOT_USE_GDIPLUS}
-function TRQtheme.GetPicOld(const PicName : TPicName; pic: TBitmap; AddPic : Boolean = True) : Boolean;
+function TRQtheme.GetPicOld(const PicName: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
 var
   i : Integer;
 //  bmp : TRnQBitmap;
@@ -1454,7 +1472,7 @@ begin
 end;
  {$ENDIF NOT_USE_GDIPLUS}
 
-  {$IFDEF NOT_USE_GDIPLUS}
+  {$IFNDEF USE_GDIPLUS}
 function TRQtheme.GetBrush(name : TPicName) : HBRUSH;
 var
   i : Integer;
@@ -1502,8 +1520,9 @@ begin
        i := FIntPics.IndexOf(s1);
       if i >= 0 then
        begin
-         result.cx := icon_size;
-         result.cy := icon_size;
+//         result.cx := icon_size;
+//         result.cy := icon_size;
+         ImageList_GetIconSize(FIntPicsIL, result.cx, result.cy);
 //         result.cx := TRnQBitmap(FIntPics.Objects[i]).GetWidth;
 //         result.cy := TRnQBitmap(FIntPics.Objects[i]).GetHeight;
        end
@@ -1544,6 +1563,113 @@ begin
     end
 end;
 
+procedure TRQtheme.GetPicOrigin(pTE: TRnQThemedElement; const name: TPicName; var OrigPic: TPicName; var rr: TGPRect);
+const
+  minSize : integer = 0;
+var
+  i, j: integer;
+//  s: TPicName;
+//  i: Integer;
+  s, s1: TPicName;
+begin
+  OrigPic := name;
+  s1 := AnsiLowerCase(name);
+
+  i := -1;
+  if pTE <> RQteDefault then
+  begin
+    s := TE2Str[pTE] + s1;
+    i := FThemePics.IndexOf(s);
+  end;
+
+  if i < 0 then
+    i := FThemePics.IndexOf(s1);
+
+  if i >= 0 then
+    begin
+      for j := 0 to FThemePics.Count - 1 do
+      if TThemePic(FThemePics.Objects[j]).picIdx = TThemePic(FThemePics.Objects[i]).picIdx then
+      begin
+        if not (s1 = FThemePics.Strings[j]) then
+        begin
+          OrigPic := FThemePics.Strings[j];
+          Exit;
+        end else
+          Break;
+      end;
+    end
+   else
+    begin
+      i := FSmilePics.IndexOf(s1);
+      for j := 0 to FSmilePics.Count - 1 do
+      if TThemePic(FSmilePics.Objects[j]).picIdx = TThemePic(FSmilePics.Objects[i]).picIdx then
+      begin
+        if not (s1 = FSmilePics.Strings[j]) then
+        begin
+          OrigPic := FSmilePics.Strings[j];
+          Exit;
+        end else
+          Break;
+      end;
+    end;
+  s := TE2Str[pTE] + s1;
+  i := FThemePics.IndexOf(s);
+
+  if i < 0 then
+    i := FThemePics.IndexOf(s1);
+
+  if i >= 0 then
+  with TThemePic(FThemePics.Objects[i]) do
+    rr := r
+  else
+  begin
+    i := FIntPics.IndexOf(s);
+    if i < 0 then
+      i := FIntPics.IndexOf(s1);
+    if i >= 0 then
+    begin
+      rr.X := 0;
+      rr.Y := 0;
+      rr.Width := icon_size;
+      rr.Height := icon_size;
+    end
+      else
+    begin
+{$IFDEF RNQ_FULL}
+      // i := FAniSmls.IndexOf(s);
+      // if i < 0 then
+      i := FAniSmls.IndexOf(name);
+      if i >= 0 then
+      with TRnQAni(FAniSmls.Objects[i]) do
+      begin
+        rr.X := 0;
+        rr.Y := 0;
+        rr.Width := Width;
+        rr.Height := Height;
+      end
+        else
+{$ENDIF RNQ_FULL}
+      begin
+{$IFDEF RNQ_FULL}
+        // i := FSmilePics.IndexOf(s);
+        // if i < 0 then
+        i := FSmilePics.IndexOf(name);
+        if i >= 0 then
+        with TThemePic(FSmilePics.Objects[i]) do
+          r := r
+        else
+{$ENDIF RNQ_FULL}
+        begin
+          rr.X := 0;
+          rr.Y := 0;
+          rr.Width := minSize;
+          rr.Height := minSize;
+        end;
+      end;
+    end;
+  end
+end;
+
 function TRQtheme.GetPicSize(var PicElm : TRnQThemedElementDtls; minSize : Integer = 0):Tsize;
 //var
 //  i : Integer;
@@ -1565,8 +1691,9 @@ begin
     end;
    PL_int:
         begin
-         result.cx := icon_size;
-         result.cy := icon_size;
+//         result.cx := icon_size;
+//         result.cy := icon_size;
+         ImageList_GetIconSize(FIntPicsIL, result.cx, result.cy);
 //         result.cx := TRnQBitmap(FIntPics.Objects[picIdx]).GetWidth;
 //         result.cy := TRnQBitmap(FIntPics.Objects[picIdx]).GetHeight;
         end;
@@ -1674,14 +1801,14 @@ begin
     end
 end;
 
-function TRQtheme.GetSmileName(i : Integer) : TPicName;
+function TRQtheme.GetSmileName(i: Integer): TPicName;
 begin
   if i >= 0 then
     result := FSmiles.Strings[i]
   else
     result := '';
 end;
-function TRQtheme.GetSmileObj(i : Integer) : TSmlObj;
+function TRQtheme.GetSmileObj(i: Integer): TSmlObj;
 begin
   if i >= 0 then
    if Assigned(FSmiles.Objects[i]) then
@@ -1691,12 +1818,13 @@ begin
   else
     result := NIL;
 end;
+
 function TRQtheme.GetSmlCnt : Integer;
 begin
   result := FSmiles.Count;
 end;
 
-function TRQtheme.GetString(const name : TPicName; isAdd : Boolean = True) : String;
+function TRQtheme.GetString(const name: TPicName; isAdd: Boolean = True): String;
 var
   i : Integer;
   ts : TThemeSourcePath;
@@ -1715,7 +1843,7 @@ begin
    end;
 end;
 
-function TRQtheme.GetSound(const name : TPicName) : String;
+function TRQtheme.GetSound(const name: TPicName): String;
 var
   i : Integer;
 begin
@@ -2095,9 +2223,10 @@ var
 //  tempPic :TPicObj;
   thp : TThemePic;
 begin
- result := -1;
- if not Assigned(pBmp) then exit;
- if kind = TP_smile then
+  result := -1;
+  if not Assigned(pBmp) then
+    exit;
+  if kind = TP_smile then
   begin  // pic for smile
 {    i := FSmileBigPics.IndexOf(AnsiLowerCase(name));
     if i < 0 then
@@ -2167,12 +2296,13 @@ begin
   end
 end; // addthemeprop
 
-procedure TRQtheme.addProp(const name:TPicName; kind:TthemePropertyKind; var pic: TThemePic);
+procedure TRQtheme.addProp(const name: TPicName; kind: TthemePropertyKind; var pic: TThemePic);
 var
   i : Integer;
 begin
- if not Assigned(pic) then exit;
- if kind = TP_smile then
+  if not Assigned(pic) then
+    exit;
+  if kind = TP_smile then
   with FSmilePics do
   begin  // pic for smile
 //    i := IndexOf(AnsiLowerCase(name));
@@ -2222,9 +2352,10 @@ var
 //  bmp : TRnQBitmap;
 //  ff : TGUID;
 begin
- if hi = 0 then exit;
+  if hi = 0 then
+    exit;
 
-   if not Internal then
+  if not Internal then
    begin
 {    i := FBigPics.IndexOf(AnsiLowerCase(name));
     if i < 0 then
@@ -2551,8 +2682,13 @@ var
 //  LastLoadedPic : TRnQBitmap;
   LastPicIDX : Integer; // For support '@' at pics
 
-  function fullpath(fn:string):string;
-  begin if ansipos(':',fn)=0 then result:=ts.path+fn else result:=fn end;
+  function fullpath(const fn: string): string;
+  begin
+    if ansipos(':',fn)=0 then
+      result:=ts.path+fn
+     else
+      result:=fn
+  end;
 //  function fullpath(fn:string):string;
 //  begin if ansipos(':',fn)=0 then result:=path+fn else result:=fn end;
 
@@ -2677,7 +2813,8 @@ var
     s:=v;
     result := nil;
     fn:=chop(RawByteString(';'),s);
-    if fn='' then exit;
+    if fn='' then
+      exit;
 //    if bmp=NIL then bmp:=TRnQBitmap.create;
 //    if bmp <> NIL then FreeAndNil(bmp);
 
@@ -2825,13 +2962,13 @@ var
     result:= s;}
   end; // fontAvailable
 
-//  function parseFont(prefix:string; k, v : String; font : TFont):boolean;
-//  function parseFont(prefix:string; k, v : String; var fontProp : TFontObj):boolean;
-  function parseFont(prefix: AnsiString; k, v, ppar : AnsiString):boolean;
+//  function parseFont(prefix: string; k, v : String; font : TFont): boolean;
+//  function parseFont(prefix: string; k, v : String; var fontProp : TFontObj):boolean;
+  function parseFont(prefix: AnsiString; k, v, ppar: AnsiString): boolean;
   var
-    i:integer;
-    s : AnsiString;
-    fontProp : TFontObj;
+    i: integer;
+    s: AnsiString;
+    fontProp: TFontObj;
   begin
     result := true;
     fontProp := TFontObj.Create;
@@ -2954,7 +3091,9 @@ begin
   {$IFNDEF NOT_USE_GDIPLUS}
  loadedpic := TRnQBitmap.Create(icon_size, icon_size, PixelFormat32bppARGB);
   {$ELSE NOT_USE_GDIPLUS}
- loadedpic := TRnQBitmap.Create(icon_size, icon_size);
+
+// loadedpic := TRnQBitmap.Create(icon_size, icon_size);
+ loadedpic := TRnQBitmap.Create(GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
  loadedpic.MakeEmpty;
   {$ENDIF NOT_USE_GDIPLUS}
  addProp(PIC_EMPTY, TP_ico, loadedpic);
@@ -2973,7 +3112,8 @@ begin
    line:=chopline(txt);
    par := trim(line);
    line:=trim(chop('#',line));
-   if (line='')or((line[1]=';') and not ((section = _smiles)and hasSmilePic)) then continue;
+   if (line='')or((line[1]=';') and not ((section = _smiles)and hasSmilePic)) then
+     continue;
    if (line[1]='[') and (line[length(line)]=']') then
     begin
       param := AnsiLowerCase(copy(line,2,length(line)-2));
@@ -3255,8 +3395,9 @@ begin
        begin
 //         result.cx:=TRnQBitmap(FIntPics.Objects[i]).GetWidth;
 //         result.cy:=TRnQBitmap(FIntPics.Objects[i]).GetHeight;
-         result.cx:= icon_size;
-         result.cy:= icon_size;
+//         result.cx:= icon_size;
+//         result.cy:= icon_size;
+         ImageList_GetIconSize(FIntPicsIL, result.cx, result.cy);
          if pEnabled then
           ImageList_Draw(FIntPicsIL, i, DC, pX, pY, ILD_TRANSPARENT)
          else
@@ -3321,8 +3462,9 @@ begin
        begin
 //         result.cx:=TRnQBitmap(FIntPics.Objects[i]).GetWidth;
 //         result.cy:=TRnQBitmap(FIntPics.Objects[i]).GetHeight;
-         result.cx:= icon_size;
-         result.cy:= icon_size;
+//         result.cx:= icon_size;
+//         result.cy:= icon_size;
+         ImageList_GetIconSize(FIntPicsIL, result.cx, result.cy);
          if pEnabled then
           ImageList_Draw(FIntPicsIL, i, DC, pR.X, pR.Y, ILD_TRANSPARENT)
 //          ImageList_DrawEx(FIntPicsIL, i, DC, pX, pY, ILD_TRANSPARENT)
@@ -3468,8 +3610,9 @@ begin
          gr.DrawImage(TRnQBitmap(FIntPics.Objects[picIdx]), x, y, icon_size, icon_size);
 //         gr.DrawImage(TRnQBitmap(FIntPics.Objects[picIdx]), x, y);
          gr.Free;}
-         result.cx:= icon_size;
-         result.cy:= icon_size;
+//         result.cx:= icon_size;
+//         result.cy:= icon_size;
+         ImageList_GetIconSize(FIntPicsIL, result.cx, result.cy);
 //         result.cx:=TRnQBitmap(FIntPics.Objects[picIdx]).GetWidth;
 //         result.cy:=TRnQBitmap(FIntPics.Objects[picIdx]).GetHeight;
         end;
@@ -3550,7 +3693,10 @@ begin
      end;
    PL_int:
      begin
-       r1 := DestRect(icon_size, icon_size, pR.Width, pR.Height);
+//       result.cx := icon_size;
+//       result.cy := icon_size;
+       ImageList_GetIconSize(FIntPicsIL, result.cx, result.cy);
+       r1 := DestRect(result.cx, result.cy, pR.Width, pR.Height);
 
        result.cx := r1.X + r1.Width;
        result.cy := r1.Y + r1.Height;
@@ -3650,9 +3796,9 @@ begin
 end;
 
 
-  {$IFNDEF NOT_USE_GDIPLUS}
-function TRQtheme.drawPic(gr : TGPGraphics; x,y:integer; picName:string; var ThemeToken : Integer;
-       var picLoc : TPicLocation; var picIdx : Integer; pEnabled : Boolean = true):Tsize;
+  {$IFDEF USE_GDIPLUS}
+function TRQtheme.drawPic(gr: TGPGraphics; x, y: integer; picName: string; var ThemeToken: Integer;
+       var picLoc: TPicLocation; var picIdx: Integer; pEnabled: Boolean = true): Tsize;
 var
  dc : HDC;
   ia : TGPImageAttributes;
@@ -3736,7 +3882,7 @@ end; // drawPic
 }
 
 procedure TRQtheme.ClearThemelist;
-  procedure Clear1ThemeList(var tl : aThemeinfo);
+  procedure Clear1ThemeList(var tl: aThemeinfo);
   var
    t : ToThemeinfo;
  {$IFNDEF DELPHI9_UP}
@@ -3801,9 +3947,11 @@ procedure TRQtheme.refreshThemelist;
           end;
         v := '';
         if section='desc' then
-          with ati[n] do desc:=desc+ UnUTF(line)+CRLF;
+          with ati[n] do
+            desc := desc+ UnUTF(line)+CRLF;
         end;
-      with ati[n] do desc:=trimright(desc);
+      with ati[n] do
+        desc := trimright(desc);
   end;
  begin
      line := trim(chopline(s));
@@ -3993,7 +4141,8 @@ begin
        begin
 //      if aRARGetDllVersion > 0 then
          LoadRarLibrary;
-        if not IsRARDLLLoaded then break;
+        if not IsRARDLLLoaded then
+          break;
        end;
       fn:=sr.name;
         ts.pathType := pt_rar;
@@ -4281,10 +4430,12 @@ begin
     for i:= 0 to Length(FAniParamList)-1 do
    //for i:= Length(smlList)-1 to 0 do
     begin
-      if (FAniDrawCnt = 0)or not useAnimated then Exit;
+      if (FAniDrawCnt = 0)or not useAnimated then
+        Exit;
       if (paramSmile.Bounds.X = 0) and (paramSmile.Bounds.Y = 0)
       //наложение на верхние стрелки
-        then Continue;
+        then
+          Continue;
 
 {      //наложение на нижние стрелки
       if hasDownArrow then
@@ -4393,8 +4544,8 @@ begin
   end;
 end;
 
-procedure TRQtheme.AddAniParam( PicIdx : Integer; Bounds: TGPRect;
-              Color: TColor; cnv, cnvSrc : TCanvas; Sel : Boolean = false);
+procedure TRQtheme.AddAniParam( PicIdx: Integer; Bounds: TGPRect;
+              Color: TColor; cnv, cnvSrc: TCanvas; Sel: Boolean = false);
 begin
   Inc(FAniDrawCnt);
   SetLength(FAniParamList,FAniDrawCnt);
@@ -4495,8 +4646,8 @@ end;
 
 
 
-  {$IFDEF NOT_USE_GDIPLUS}
-procedure TRQtheme.drawTiled(canvas:Tcanvas; const picName : TPicName);
+  {$IFNDEF USE_GDIPLUS}
+procedure TRQtheme.drawTiled(canvas: Tcanvas; const picName: TPicName);
 var
   bmp : TBitmap;
   Hdl : HBrush;
@@ -4514,8 +4665,8 @@ begin
 end;
   {$ENDIF USE_GDIPLUS}
 
-  {$IFNDEF NOT_USE_GDIPLUS}
-procedure TRQtheme.drawTiled(canvas:Tcanvas; const picName : TPicName);
+  {$IFDEF USE_GDIPLUS}
+procedure TRQtheme.drawTiled(canvas: Tcanvas; const picName: TPicName);
 var
   gr : TGPGraphics;
 //  bmp : TRnQBitmap;
@@ -4831,6 +4982,7 @@ end;}
 
 
 initialization
+
   theme := TRQtheme.Create;
 //  RQSmiles := TRQtheme.Create;
 //  RQSmiles.supSmiles := True;

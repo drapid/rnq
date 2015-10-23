@@ -5,6 +5,8 @@
  {$DEFINE RNQ_FULL}
  { $DEFINE RNQ_FULL2} // For History Recoding
 
+ { $DEFINE CHAT_CEF} // Chromium
+
  { $DEFINE USE_REGUIN}
  { $DEFINE USE_SECUREIM}
 

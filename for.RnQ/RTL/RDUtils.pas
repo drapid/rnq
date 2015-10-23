@@ -942,8 +942,9 @@ var
 begin
   result:='';
   i := length(s);
-//  if s='' then exit;
-  if i = 0 then exit;
+//  if s='' then
+  if i = 0 then
+    exit;
   while (i > 0) and (s[i] in [#10, #13]) do
     dec(i);
 //  setLength(s,i);
@@ -988,7 +989,8 @@ procedure swap4(var src, dest; count: dword; cond: boolean);
 var
   temp: pointer;
 begin
-  if not cond then exit;
+  if not cond then
+    exit;
   getmem(temp, count);
   move(src, temp^, count);
   move(dest, src, count);
@@ -1015,7 +1017,7 @@ begin
   result := dword_LE2ipU(ip)
 end;
  {$ELSE nonUNICODE}
-function ip2str(ip:Integer):RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+function ip2str(ip: Integer): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
   result:=dword_LE2ip(ip)
 end;
@@ -1083,7 +1085,8 @@ var
   P: PWord;
 begin
   P := PWord(Str);
-  While (P^ <> 0) do begin
+  While (P^ <> 0) do
+  begin
     P^ := MakeWord(HiByte(P^), LoByte(P^));
     Inc(P);
   end;
@@ -1380,7 +1383,8 @@ asm
 end;}
 
 function UTF8ToStrSmart3(const Value: RawByteString): String;
-var Len: cardinal;
+var
+  Len: cardinal;
 
   procedure error;
   begin
@@ -1395,7 +1399,8 @@ var
   c: byte;
   tmp: word;
 begin
-  if Value='' then begin
+  if Value='' then
+  begin
     Result:= '';
     exit;
   end;
@@ -1785,8 +1790,12 @@ c:=0;
 i:=length(s);
 while i > 0 do
   begin
-  if s[i] >= 'a' then v:=byte(s[i])-byte('a')+10 else
-    if s[i] >= 'A' then v:=byte(s[i])-byte('A')+10 else
+  if s[i] >= 'a' then
+    v:=byte(s[i])-byte('a')+10
+   else
+    if s[i] >= 'A' then
+      v:=byte(s[i])-byte('A')+10
+     else
       v:=byte(s[i])-byte('0');
   inc(result, v shl c);
   inc(c,4);
@@ -1912,7 +1921,7 @@ begin
 //  ofs:=0;
   for i:=1 to length(s) do
     begin
-      result:=result+
+      result := result+
               intToHexA(byte(s[i]),2);
 //      result:=result+' ';
     end;
@@ -1927,7 +1936,7 @@ begin
 //  ofs:=0;
   for i:=1 to length(s) do
     begin
-      result:=result+
+      result := result+
               intToHex(byte(s[i]),2);
 //      result:=result+' ';
     end;
@@ -1972,11 +1981,12 @@ function strings2str(const split: string; const ss: array of string): string;
 var
   i:Integer;
 begin
-result:='';
-if length(ss)=0 then exit;
-for i:=0 to length(ss)-2 do
-  result:=result+ss[i]+split;
-result:=result+ss[length(ss)-1];
+  result:='';
+  if length(ss)=0 then
+    exit;
+  for i:=0 to length(ss)-2 do
+    result:=result+ss[i]+split;
+  result:=result+ss[length(ss)-1];
 end;
 
 procedure str2strings(const split: String; src: string; var ss: Tstrings);
@@ -1987,7 +1997,8 @@ ss.clear;
 while src > '' do
   begin
   i:=pos(split,src);
-  if i=0 then i:=length(src)+1;
+  if i=0 then
+    i:=length(src)+1;
   ss.add( copy(src,1,i-1) );
   delete(src, 1, i+length(split)-1);
   end;
@@ -2010,10 +2021,14 @@ begin
       if ofs+i <= length(data) then
         begin
         s:=s+intToHexA(byte(data[ofs+i]),2);
-        if i=8 then s:=s+'  '
-        else s:=s+' ';
-        if data[ofs+i] < #32 then s2:=s2+'.'
-        else s2:=s2+data[ofs+i];
+        if i=8 then
+          s:=s+'  '
+         else
+          s:=s+' ';
+        if data[ofs+i] < #32 then
+          s2:=s2+'.'
+         else
+          s2:=s2+data[ofs+i];
         end;
     s:=s+stringOfChar(AnsiChar(' '),cols*3+4-length(s));
     result:=result+s+s2+CRLF;
@@ -2064,7 +2079,8 @@ begin
       inc(i)
      else
       exit;
-  if i > 1 then result:=TRUE;
+  if i > 1 then
+   result:=TRUE;
 end; // isOnlyDigits
 
 {$IFDEF UNICODE}
@@ -2083,23 +2099,29 @@ if i > 1 then result:=TRUE;
 end; // isOnlyDigits
 {$ENDIF UNICODE}
 
-function str2fontstyle(const s: AnsiString):Tfontstyles;
+function str2fontstyle(const s: AnsiString): Tfontstyles;
 begin
-result:=[];
-if ansipos(Ansichar('b'),s) > 0 then include(result, fsBold);
-if ansipos(Ansichar('i'),s) > 0 then include(result, fsItalic);
-if ansipos(Ansichar('u'),s) > 0 then include(result, fsUnderline);
+  result:=[];
+  if ansipos(Ansichar('b'),s) > 0 then
+    include(result, fsBold);
+  if ansipos(Ansichar('i'),s) > 0 then
+    include(result, fsItalic);
+  if ansipos(Ansichar('u'),s) > 0 then
+    include(result, fsUnderline);
 end; // str2fontstyle
 
-function fontstyle2str(fs:Tfontstyles): AnsiString;
+function fontstyle2str(fs: Tfontstyles): AnsiString;
 begin
-result:='';
-if fsBold in fs then result:=result+'b';
-if fsItalic in fs then result:=result+'i';
-if fsUnderline in fs then result:=result+'u';
+  result:='';
+  if fsBold in fs then
+    result:=result+'b';
+  if fsItalic in fs then
+    result:=result+'i';
+  if fsUnderline in fs then
+    result:=result+'u';
 end; // str2fontstyle
 
-function size2str(sz : Int64) : String;
+function size2str(sz: Int64): String;
 begin
   if sz > GByte then // GB
     result := FloatToStr(round(100*(sz / GByte)) /100) + ' GByte'
@@ -2113,13 +2135,13 @@ begin
         result := intToStr(sz) + ' Byte'
 end;
 
-function chop(const ss:RawByteString; var s:RawByteString):RawByteString;
+function chop(const ss: RawByteString; var s: RawByteString):RawByteString;
 begin result:=chop(pos(ss,s),length(ss),s) end;
 
-function chop(i:Integer; var s:RawByteString):RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+function chop(i: Integer; var s: RawByteString): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin result:=chop(i,1,s) end;
 
-function chop(i,l:Integer; var s:RawByteString):RawByteString;
+function chop(i,l: Integer; var s: RawByteString): RawByteString;
 begin
 if i=0 then
   begin

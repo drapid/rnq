@@ -11,7 +11,7 @@ interface
 uses
   Windows, SysUtils, Graphics, Classes, ExtCtrls,
   Forms, StdCtrls, Controls, Menus,
-  ComCtrls, Messages, RnQGraphics32, AnsiClasses;
+  ComCtrls, Messages, RnQGraphics32;
 
 const
   WM_FADEOUT = WM_USER + 1;
@@ -64,7 +64,6 @@ type
   end;
 }
 function viewImageDimmed(const evimage: RawByteString; evoffset: Integer): Tform;
-procedure parseMsgImages(const imgStr: RawByteString; var imgList: TAnsiStringList);
 
 procedure SetTimeout(AProc: TOnTimerProc; ATimeout: Cardinal);
 
@@ -72,8 +71,8 @@ implementation
 uses
   Types, Generics.Collections,
   strutils, Themes,
-  RnQNet, RDGlobal, RDUtils, Base64,
-  chatDlg, globalLib, RnQProtocol,
+  RnQNet, RDGlobal, RDUtils, Base64, AnsiClasses,
+  chatDlg, globalLib, RnQProtocol, utilLib,
 //  roasterLib,
 //  events, ICQConsts,
   dateutils, ActiveX;
@@ -286,41 +285,6 @@ begin
   end;
 end;
 *)
-
-procedure parseMsgImages(const imgStr: RawByteString; var imgList: TAnsiStringList);
-var
-  pos1, pos2: integer;
-  image: RawByteString;
-begin
-  if not Assigned(imgList) then
-    exit;
-
-  image := imgStr;
-  repeat
-    pos1 := PosEx(RnQImageTag, image);
-    if (pos1 > 0) then
-    begin
-      pos2 := PosEx(RnQImageUnTag, image, pos1 + length(RnQImageTag));
-      imgList.Add(Copy(image, pos1 + length(RnQImageTag), pos2 - (pos1 + length(RnQImageTag))));
-      image := Copy(image, pos2 + length(RnQImageUnTag), length(image));
-    end
-    else
-      Break;
-  until pos1 <= 0;
-
-  image := imgStr;
-  repeat
-    pos1 := PosEx(RnQImageExTag, image);
-    if (pos1 > 0) then
-    begin
-      pos2 := PosEx(RnQImageExUnTag, image, pos1 + length(RnQImageExTag));
-      imgList.Add(Copy(image, pos1 + length(RnQImageExTag), pos2 - (pos1 + length(RnQImageExTag))));
-      image := Copy(image, pos2 + length(RnQImageExUnTag), length(image));
-    end
-    else
-      Break;
-  until pos1 <= 0;
-end;
 
 
 

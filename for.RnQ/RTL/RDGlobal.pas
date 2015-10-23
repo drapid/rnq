@@ -121,8 +121,8 @@ type
   TRectDynArray = array of TGPRect;
 
   function MakeRect(x, y, width, height: Integer): TGPRect; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-  function MakeRect(location: TGPPoint; size: TGPSize): TGPRect; overload;{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-  function MakeRect(const Rect: TRect): TGPRect; overload;{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+  function MakeRect(location: TGPPoint; size: TGPSize): TGPRect; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+  function MakeRect(const Rect: TRect): TGPRect; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 
 type
   TMsgDlgType = (mtWarning, mtError, mtInformation, mtConfirmation, mtCustom);

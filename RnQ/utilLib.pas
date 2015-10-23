@@ -22,7 +22,7 @@ uses
 //    GDIPAPI, GDIPOBJ,
   outboxLib,
   RnQNet, RnQProtocol, RDGlobal,
-
+  AnsiClasses,
   roasterLib,
   RnQZip,
   globalLib, events,
@@ -185,6 +185,7 @@ function  openSaveDlg(parent: Tform; const Cptn: String; IsOpen: Boolean;
 function  str2sortby(const s: AnsiString): TsortBy;
 procedure CheckBDays;
 function GetWidth(chk: TCheckBox): integer;
+procedure parseMsgImages(const imgStr: RawByteString; var imgList: TAnsiStringList);
 
 
 
@@ -4678,6 +4679,42 @@ begin
     c.Free;
   end;
 end;
+
+procedure parseMsgImages(const imgStr: RawByteString; var imgList: TAnsiStringList);
+var
+  pos1, pos2: integer;
+  image: RawByteString;
+begin
+  if not Assigned(imgList) then
+    exit;
+
+  image := imgStr;
+  repeat
+    pos1 := PosEx(RnQImageTag, image);
+    if (pos1 > 0) then
+    begin
+      pos2 := PosEx(RnQImageUnTag, image, pos1 + length(RnQImageTag));
+      imgList.Add(Copy(image, pos1 + length(RnQImageTag), pos2 - (pos1 + length(RnQImageTag))));
+      image := Copy(image, pos2 + length(RnQImageUnTag), length(image));
+    end
+    else
+      Break;
+  until pos1 <= 0;
+
+  image := imgStr;
+  repeat
+    pos1 := PosEx(RnQImageExTag, image);
+    if (pos1 > 0) then
+    begin
+      pos2 := PosEx(RnQImageExUnTag, image, pos1 + length(RnQImageExTag));
+      imgList.Add(Copy(image, pos1 + length(RnQImageExTag), pos2 - (pos1 + length(RnQImageExTag))));
+      image := Copy(image, pos2 + length(RnQImageExUnTag), length(image));
+    end
+    else
+      Break;
+  until pos1 <= 0;
+end;
+
 
 INITIALIZATION
 

@@ -800,7 +800,7 @@ begin
     begin
       FName := myPath + 'R&Q.exe';
       if FindFirst(FName,0, F) <> 0 then
-        FName := myPath + '&RQ.exe';
+        FName := myPath + 'R&Q.exe';
       Registry.WriteString(pKey, FName);
     end
     else

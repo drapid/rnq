@@ -44,17 +44,17 @@ type
   public
     LogList: TVirtualDrawTree;
 //    procedure DestroyHandle; Override;
-    procedure addToLog(pkt : Boolean; const s,Text : String;
-                       const data : rawByteString; const Img : TPicName);
+    procedure addToLog(pkt: Boolean; const s, Text: String;
+                       const data: rawByteString; const Img: TPicName);
   end;
 
-procedure loggaEvtS(s: String; const img : TPicName = '';
-                   const pFlush : Boolean = false);
+procedure loggaEvtS(s: String; const img: TPicName = '';
+                   const pFlush: Boolean = false);
 {
 procedure loggaEvtA(s: AnsiString; const img : TPicName = '';
                    const pFlush : Boolean = false);
 }
-procedure logEvPkt(const Head : String; const TextData : String;
+procedure logEvPkt(const Head: String; const TextData: String;
                    const data: RawByteString; const img : TPicName;
                    needHex : Boolean = True);
 procedure FlushLogEvFile;
