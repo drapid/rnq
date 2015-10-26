@@ -164,7 +164,24 @@ type
 const
   ProxyUnkError = 'PROXY: Unknown reply\n[%d]\n%s';
   SSLError = 'SSL: libeay32.dll or ssleay32.dll not found\n%s';
-  ImageContentTypes: array [0 .. 7] of string = ('image/bmp', 'image/jpeg', 'image/gif', 'image/png', 'image/x-icon', 'image/tiff', 'image/x-tiff', 'image/webp');
+  ImageContentTypes: array [0 .. 25] of string = (
+    'image/bmp', 'image/x-bmp', 'image/x-bitmap', 'image/x-xbitmap', 'image/x-win-bitmap', 'image/x-windows-bmp', 'image/ms-bmp', 'image/x-ms-bmp', 'application/bmp', 'application/x-bmp', 'application/x-win-bitmap',
+    'image/jpeg', 'image/jpg', 'application/jpg', 'application/x-jpg',
+    'image/gif',
+    'image/png', 'application/png', 'application/x-png',
+    'image/ico', 'image/x-icon', 'application/ico', 'application/x-ico',
+    'image/tiff', 'image/x-tiff',
+    'image/webp'
+  );
+  ImageExtensions: array [0 .. 25] of string = (
+    'bmp', 'bmp', 'bmp', 'bmp', 'bmp', 'bmp', 'bmp', 'bmp', 'bmp', 'bmp', 'bmp',
+    'jpg', 'jpg', 'jpg', 'jpg',
+    'gif',
+    'png', 'png', 'png',
+    'ico', 'ico', 'ico', 'ico',
+    'tiff', 'tiff',
+    'webp'
+  );
 
   procedure SetupProxy(var httpCli: TSslHttpCli);
   function HeaderFromURL(const URL: String): String;

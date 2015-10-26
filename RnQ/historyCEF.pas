@@ -21,7 +21,6 @@ uses
 
 type
   TlinkKind = (LK_FTP, LK_EMAIL, LK_WWW, LK_UIN, LK_ED);
-  TDrawStyle = (dsNone, dsBuffer, dsMemory, dsGlobalBuffer32);
   TAutoScrollState = (ASS_FULLSCROLL, // fAutoscroll = True, not2go2end = false
     ASS_ENABLENOTSCROLL, // fAutoscroll = True, not2go2end = True
     ASS_FULLDISABLED); // fAutoscroll = False, not2go2end = Any
@@ -185,7 +184,7 @@ type
     lastClickedItem, P_pointedSpace, P_pointedItem: ThistoryItem;
     linkToUnderline: ThistoryLink;
     FOnLinkClick: TLinkClickEvent;
-    buffer: TBitmap;
+//    buffer: TBitmap;
 
     firstCharactersForSmiles: set of AnsiChar; // for faster smile recognition
   protected
@@ -306,16 +305,7 @@ type
     destructor Destroy; override;
   end;
 
-const
-  dStyle = dsGlobalBuffer32;
-
-  // dStyle = dsGlobalBuffer;
-  // dStyle = dsMemory; // Bad BG and not so fast :(
-  // dStyle = dsNone;
 var
-  // dsNone, dsBuffer, dsGlobalBuffer, dsMemory
-  // dStyle: TDrawStyle = dsGlobalBuffer;
-  // dStyle: TDrawStyle = dsNone;
   hisBGColor, myBGColor: TColor;
   renderInit: Boolean = False;
 
@@ -336,7 +326,7 @@ uses
 {$ENDIF USE_GDIPLUS}
   // historyRnQ,
   Base64,
-  ICQConsts, ICQv9,
+  ICQConsts, ICQv9, RQ_ICQ,
 {$IFDEF USE_GDIPLUS}
   RnQGraphics,
 {$ELSE}
@@ -348,7 +338,6 @@ var
   lastBGCnt: TRnQContact;
   lastBGToken: integer;
   vKeyPicElm: TRnQThemedElementDtls;
-//  globalBuffer32: TBitmap;
   jscode: TDictionary<String, UTF8String>;
 
 function minor(const a, b: ThistoryPos): boolean; overload;
@@ -403,9 +392,6 @@ end;
 
 destructor ThistoryBox.Destroy;
 begin
-  if dStyle = dsBuffer then
-    if buffer <> nil then
-      buffer.Free;
   if Assigned(Self) then
     inherited Destroy;
   // self := NIL;
@@ -1826,136 +1812,6 @@ begin
   end;
 end; // paintOn
 
-procedure ThistoryBox.Paint();
-var
-  MemDC: HDC;
-  ABitmap, HOldBmp: HBITMAP;
-  ARect: Trect;
-  tmpCanvas: Tcanvas;
-  a, b: integer;
-begin
-  // if autoScroll and (TopOfs=0) then
-  if fAutoScrollState < ASS_FULLDISABLED then
-    go2end(true);
-  case dStyle of
-    dsNone:
-      paintOn(canvas, canvas.ClipRect);
-
-    dsBuffer:
-      begin
-        with canvas.ClipRect do
-        begin
-          a := Right - left;
-          b := Bottom - Top;
-        end;
-        // buffer.Width:=  Canvas.ClipRect.Right - Canvas.ClipRect.Left;
-        // buffer.Height:= Canvas.ClipRect.Bottom- Canvas.ClipRect.Top;
-        if (a <> buffer.Width) or (b <> buffer.Height) then
-        begin
-          buffer.Height := 0;
-          buffer.SetSize(a, b);
-        end;
-        buffer.canvas.Lock;
-        paintOn(buffer.canvas, canvas.ClipRect);
-        buffer.canvas.Unlock;
-
-        canvas.Draw(0, 0, buffer);
-      end;
-
-    dsGlobalBuffer32:
-      begin
-        if (globalBuffer32.Width <> clientWidth) or (globalBuffer32.Height <> clientHeight) then
-        begin
-          globalBuffer32.Height := 0;
-          globalBuffer32.SetSize(clientWidth, clientHeight);
-        end;
-        ARect := canvas.ClipRect;
-        globalBuffer32.canvas.Lock;
-        paintOn(globalBuffer32.canvas, ARect);
-        globalBuffer32.DrawTo(canvas.Handle, ARect.left, ARect.Top);
-        globalBuffer32.canvas.Unlock;
-      end;
-
-    dsMemory:
-      begin
-        ARect := canvas.ClipRect;
-        tmpCanvas := Tcanvas.Create; { paint on a memory DC }
-        try
-          MemDC := CreateCompatibleDC(canvas.Handle);
-          ABitmap := 0;
-          HOldBmp := 0;
-          try
-            with ARect do
-            begin
-              ABitmap := CreateCompatibleBitmap(canvas.Handle, Right - left, Bottom - Top);
-              if (ABitmap = 0) and (Right - left + Bottom - Top <> 0) then
-                raise EOutOfResources.Create('Out of Resources');
-
-              try
-                HOldBmp := SelectObject(MemDC, ABitmap);
-                SetWindowOrgEx(MemDC, left, Top, Nil);
-                tmpCanvas.Handle := MemDC;
-
-                paintOn(tmpCanvas, canvas.ClipRect);
-
-                BitBlt(canvas.Handle, left, Top, Right - left, Bottom - Top, MemDC, left, Top, SRCCOPY);
-              finally
-                tmpCanvas.Handle := 0;
-              end;
-            end;
-          finally
-            SelectObject(MemDC, HOldBmp);
-            DeleteObject(ABitmap);
-            DeleteDC(MemDC);
-          end;
-        finally
-          FreeAndNil(tmpCanvas);
-        end;
-      end;
-  end;
-
-  // until (topVisible < offset) or not lastEventIsFullyVisible;
-  // if (dStyle = dsGlobalBuffer) then
-  // else
-  // bmp.free;
-  // topOfs := oldTopOfs;
-  // inc(topVisible);
-  // if not precalc then
-  { if not fautoScroll then
-    if not2go2end then
-    if lastEventIsFullyVisible then
-    begin
-    //        topVisible := oldTopVis;
-    //        fAutoscroll := True;
-    //        Exit;
-    end
-    else
-    begin
-    //        topVisible := oldTopVis;
-    Autoscroll := False;
-    end;
-  }
-  { // Already executed go2end
-    if fAutoScrollState = ASS_ENABLENOTSCROLL then
-    if lastEventIsFullyVisible then
-    begin
-    //        topVisible := oldTopVis;
-    //        fAutoscroll := True;
-    //        Exit;
-    end
-    else
-    begin
-    //        topVisible := oldTopVis;
-    //        Autoscroll := True;
-    Autoscroll := False;
-    //        fAutoScrollState := ASS_FULLSCROLL;
-    end;
-  }
-
-  if Assigned(onPainted) // and (cnv=canvas)
-  then
-    onPainted(Self);
-end;
 *)
 
 function ThistoryBox.getSelText(): string;
@@ -3215,8 +3071,8 @@ begin
           smiles := smiles + '''' + escapeQuotes(smileObj.SmlStr[0]) + ''': [ ''n' + IntToStr(i) + ''', ' +
           IntToStr(smileRect.Width) + ', ' + IntToStr(smileRect.Height);
           if smileObj.SmlStr.Count > 1 then
-          for j := 1 to smileObj.SmlStr.Count - 1 do
-          smiles := smiles + ', ''' + escapeQuotes(smileObj.SmlStr[j]) + '''';
+            for j := 1 to smileObj.SmlStr.Count - 1 do
+              smiles := smiles + ', ''' + escapeQuotes(smileObj.SmlStr[j]) + '''';
           smiles := smiles +  ' ],';
         end;
       end;
@@ -3688,21 +3544,21 @@ begin
   begin
     pic := ReplaceText(copy(request.Url, 7, length(request.Url)), '/', '');
     origPic := nil;
-    if theme.GetOrigPic(RQteDefault, pic, origPic) then
-    begin
-      FDataStream.LoadFromStream(origPic);
-      origPic.Free;
-      SetStatus(200);
-    end
-      else
-    SetStatus(306);
+    if theme.GetBigPic(RQteDefault, pic, origPic) then
+      begin
+        FDataStream.LoadFromStream(origPic);
+        origPic.Free;
+        SetStatus(200);
+      end
+     else
+      SetStatus(306);
   end else if AnsiStartsText('smile:', request.Url) then
   begin
     pic := ReplaceText(copy(request.Url, 7, length(request.Url)), '/', '');
     pic := copy(pic, 2, length(pic));
     origPic := nil;
 
-    if theme.GetOrigSmile(pic, origPic) then
+    if theme.GetBigSmile(pic, origPic) then
     begin
       FDataStream.LoadFromStream(origPic);
       origPic.Free;

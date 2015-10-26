@@ -38,7 +38,13 @@ implementation
 uses
   Forms, virtualtrees, SysUtils, Math, StrUtils,
   RQUtil, RnQMenu, RnQbuttons, RnQGlobal, RnQGraphics32, RnQPics,
-  utilLib, globalLib, chatDlg, historyVCL, events,
+  utilLib, globalLib, chatDlg,
+ {$IFDEF CHAT_CEF} // Chromium
+  historyCEF,
+ {$ELSE ~CHAT_CEF} // old
+  historyVCL,
+ {$ENDIF CHAT_CEF}
+  events,
   mainDlg,
 //  menusUnit,
  {$IFNDEF RNQ_LITE}
@@ -65,8 +71,8 @@ if (chatFrm<>NIL) then
   chatFrm.updateGraphics;
   end;
  TextBGColor := theme.GetColor(ClrHistBG, clWindow);
- historyVCL.hisBGColor  := theme.GetColor(ClrHistBG+'.his', TextBGColor);
- historyVCL.myBGColor   := theme.GetColor(ClrHistBG+'.my', TextBGColor);
+ hisBGColor  := theme.GetColor(ClrHistBG+'.his', TextBGColor);
+ myBGColor   := theme.GetColor(ClrHistBG+'.my', TextBGColor);
   with theme.GetPicSize(RQteDefault, PIC_MSG_OK) do
    hasMsgOK := (cx > 0) and (cy > 0);
   with theme.GetPicSize(RQteDefault, PIC_MSG_SERVER) do

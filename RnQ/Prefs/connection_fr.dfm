@@ -224,7 +224,7 @@ object connectionFr: TconnectionFr
       end
     end
     object SSLChk: TCheckBox
-      Left = 320
+      Left = 310
       Top = 52
       Width = 64
       Height = 17
@@ -232,12 +232,20 @@ object connectionFr: TconnectionFr
       TabOrder = 5
     end
     object SaveIPChk: TCheckBox
-      Left = 320
+      Left = 310
       Top = 32
       Width = 97
       Height = 17
       Caption = 'Save IP'
       TabOrder = 6
+    end
+    object RslvIPChk: TCheckBox
+      Left = 310
+      Top = 12
+      Width = 74
+      Height = 17
+      Caption = 'Resolve IP'
+      TabOrder = 7
     end
   end
   object autoreconnectChk: TCheckBox
@@ -300,13 +308,5 @@ object connectionFr: TconnectionFr
     EditLabel.Caption = 'Use ports for listening'
     LabelPosition = lpLeft
     TabOrder = 7
-  end
-  object RslvIPChk: TCheckBox
-    Left = 326
-    Top = 18
-    Width = 74
-    Height = 17
-    Caption = 'Resolve IP'
-    TabOrder = 8
   end
 end

@@ -15,34 +15,34 @@ interface
   Procedure ProcessSSIItem(curICQ : TicqSession; item : TOSSIItem);
 
   function  TypeStringToTypeId(const s : AnsiString) : Integer;
-  procedure debug_Snac(const snac : RawByteString; Fn : String);
+  procedure debug_Snac(const snac: RawByteString; const Fn : String);
   function  unFakeUIN(uin : int64 ) : TUID;
  {$IFDEF RNQ_AVATARS}
-  procedure avt_icqEvent(thisICQ:TicqSession; ev:TicqEvent);
+  procedure avt_icqEvent(thisICQ: TicqSession; ev: TicqEvent);
 
  {$ENDIF RNQ_AVATARS}
 // procedure EvilRequest(sn : TUID);
 
 //type
 
-  function  parse1306(curICQ : TICQSession; var ssiList : Tssi; const snac: RawByteString; ref:integer) : Boolean;
+  function  parse1306(curICQ: TICQSession; var ssiList: Tssi; const snac: RawByteString; ref:integer) : Boolean;
 
-  function  FindSSIItemType(si : Tssi; pType : Byte) : Integer;
-  function  FindSSIItemID(si : Tssi; iID : Word) : Integer;
-  function  FindSSIItemIDType(si : Tssi; iID : Word; pType : byte) : Integer;
-  function  FindSSIItemIDgID(si : Tssi; iID, gID : Word) : Integer;
-  function  FindSSIItemName(si : Tssi; iType : Word; const iName : TUID) : Integer;
+  function  FindSSIItemType(si: Tssi; pType : Byte) : Integer;
+  function  FindSSIItemID(si: Tssi; iID : Word) : Integer;
+  function  FindSSIItemIDType(si: Tssi; iID: Word; pType : byte) : Integer;
+  function  FindSSIItemIDgID(si: Tssi; iID, gID : Word) : Integer;
+  function  FindSSIItemName(si: Tssi; iType: Word; const iName: TUID) : Integer;
   procedure clearSSIList(var list : Tssi);
-  Function  ReadSSIChunk(const snac : RawByteString; var ofs : Integer; ExtractInfo : Boolean = True) : TOSSIItem;
+  Function  ReadSSIChunk(const snac: RawByteString; var ofs: Integer; ExtractInfo : Boolean = True) : TOSSIItem;
 
   function getFirstFlap:word;
 
 //  function qip_msg_decr(s1 : RawByteString; s2: AnsiString; n:integer): AnsiString;
 //  function qip_msg_crypt(s1, s2: AnsiString;n:integer): RawByteString;
-  function qip_msg_crypt(const s : AnsiString; p : Integer): RawByteString;
-  function qip_msg_decr(const s1 : RawByteString; p:integer): AnsiString;
+  function qip_msg_crypt(const s: AnsiString; p: Integer): RawByteString;
+  function qip_msg_decr(const s1: RawByteString; p: integer): AnsiString;
 //  function qip_msg_crypt(s1, s2: AnsiString;n:integer): RawByteString;
-  function qip_str2pass(const s : RawByteString) : Integer;
+  function qip_str2pass(const s: RawByteString): Integer;
 
 
 {$IFDEF usesDC}
@@ -63,6 +63,7 @@ type
   procedure parseImgLinks2(var msg: RawByteString);
   function parseTzerTag(const sA: RawByteString): RawByteString;
   function parseTzer2URL(const sA: RawByteString; var sMsg : RawByteString): RawByteString;
+  function DownloadAndCache(const lnk: String; checkType: Boolean = False): Boolean;
 
 var
   Attached_login_email:  string;
@@ -574,7 +575,7 @@ begin
 	result := nTypeID;
 end;
 
-procedure debug_Snac(const snac : RawByteString; Fn : String);
+procedure debug_Snac(const snac : RawByteString; const Fn : String);
 begin
 //        appendFile(mypath+Fn, snac);
 //        appendFile(mypath+Fn, '---------------------'#$0A);
@@ -1311,6 +1312,66 @@ begin
   Result := Result + imgStr + #13#10;
 end;
 
+function DownloadAndCache(const lnk: String; checkType: Boolean = False): Boolean;
+var
+  idx: Integer;
+  ctype, ext: String;
+  sA, imgStr, mime, fileIdStr: RawByteString;
+  buf: TMemoryStream;
+  JSONObject: TJSONObject;
+begin
+  Result := False;
+  if ContainsText(lnk, 'files.icq.net/') then
+    begin
+      buf := TMemoryStream.Create;
+      fileIdStr := ReplaceText(Trim(lnk), 'files.icq.net/get/', 'files.icq.com/getinfo?file_id=');
+      fileIdStr := ReplaceText(fileIdStr, 'files.icq.net/files/get?fileId=', 'files.icq.com/getinfo?file_id=');
+      LoadFromURL(fileIdStr, buf);
+      SetLength(imgStr, buf.Size);
+      buf.ReadBuffer(imgStr[1], buf.Size);
+      buf.Free;
+
+      JSONObject := TJSONObject.ParseJSONValue(imgStr) as TJSONObject;
+      if Assigned(JSONObject) then
+      try
+        JSONObject := TJSONObject.ParseJSONValue(TJSONArray(JSONObject.GetValue('file_list')).Items[0].ToJSON) as TJSONObject;
+        sA := JSONObject.GetValue('dlink').Value + '?no-download=1';
+        mime := JSONObject.GetValue('mime').Value;
+        JSONObject.Free;
+      except end;
+    end
+   else
+    sA := Trim(lnk);
+
+  ctype := HeaderFromURL(sA);
+  if MatchText(mime, ImageContentTypes) or MatchText(ctype, ImageContentTypes) then
+  begin
+    if checkType then
+    begin
+      Result := True;
+      Exit;
+    end;
+
+    buf := TMemoryStream.Create;
+    LoadFromURL(sA, buf);
+
+    idx := IndexText(mime, ImageContentTypes);
+    if idx < 0 then
+      idx := IndexText(ctype, ImageContentTypes);
+
+    if idx >= 0 then
+      ext := ImageExtensions[idx]
+    else
+      ext := 'jpg';
+
+    Result := CacheImage(buf, sA, ext);
+    if sA <> Trim(lnk) then
+      CacheImage(buf, Trim(lnk), ext);
+
+    if Assigned(buf) then
+      buf.Free;
+  end;
+end;
 
 end.
 

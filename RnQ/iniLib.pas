@@ -38,7 +38,8 @@ implementation
 
 uses
   menus, windows, graphics, classes, sysutils, forms, shellapi,
-  controls, types, strutils, SysConst, ThemesLib,
+  controls, types, strutils, SysConst, iniFiles,
+  ThemesLib,
   RnQDialogs, RnQLangs, RnQNet, RDtrayLib, RnQGlobal,
   RnQPrefsLib,
   RDUtils, RnQMacros, RnQStrings, RnQCrypt,
@@ -62,8 +63,10 @@ uses
 //                                             DateUtils,
 //                                             EBase64,
     RnQBinUtils,
-//  fxRegistryFile,
-//   rtf2html,
+ {$IFDEF CHAT_CEF} // Chromium
+  ceflib,
+  historyCEF,
+ {$ENDIF CHAT_CEF} // Chromium
  {$IFDEF PROTOCOL_ICQ}
    RQ_ICQ, icqv9, ICQConsts,
    wpDlg,
@@ -242,7 +245,9 @@ closeAuthAfterReply:=TRUE;
 CloseFTWndAuto := False;
 autoConsumeEvents:=TRUE;
 DsblEvnt4ClsdGrp := False;
+
 RnQmain.roster.ShowHint:=TRUE;
+
 warnVisibilityAutoMsgReq:=TRUE;
 showStatusOnTabs:=TRUE;
 //webaware:=TRUE;
@@ -258,11 +263,15 @@ autoReconnectStop:=false;
 SaveIP := false;
 quitconfirmation:=FALSE;
 minimizeRoster:=TRUE;
-showLSB:=TRUE;
-popupLSB:=TRUE;
+
 ShowHintsInChat := True;
+   {$IFNDEF CHAT_CEF}
+chatFrm.showLSB:=TRUE;
+chatFrm.popupLSB:=TRUE;
+   {$ENDIF CHAT_CEF}
 closeChatOnSend := True;
 ClosePageOnSingle := False;
+
 getOfflineMsgs:=TRUE;
 delOfflineMsgs:=TRUE;
 lockOnStart:=FALSE;
@@ -637,8 +646,10 @@ begin
   pp.addPrefInt('spam-bot-tryes', spamfilter.BotTryesCount);
   pp.addPrefBool('history-crypt-enabled', histcrypt.enabled);
   pp.addPrefBool('history-crypt-save-password', histcrypt.savePwd);
-  pp.addPrefBool('chat-lsb-popup', popupLSB);
-  pp.addPrefBool('chat-lsb-show', showLSB);
+ {$IFNDEF CHAT_CEF} // Chromium
+  pp.addPrefBool('chat-lsb-popup', chatFrm.popupLSB);
+  pp.addPrefBool('chat-lsb-show', chatFrm.showLSB);
+ {$ENDIF ~CHAT_CEF} // Chromium
   pp.addPrefBool('chat-hints-show', ShowHintsInChat);
   pp.addPrefBool('chat-close-on-send', closeChatOnSend);
   pp.addPrefBool('chat-close-page-on-single', ClosePageOnSingle);
@@ -900,8 +911,10 @@ begin
   pp.getPrefBool('save-ip', SaveIP);
   pp.getPrefBool('auto-check-update', checkupdate.enabled);
   pp.getPrefBool('lock-on-start', lockOnStart);
-  pp.getPrefBool('chat-lsb-popup', popupLSB);
-  pp.getPrefBool('chat-lsb-show', showLSB);
+ {$IFNDEF CHAT_CEF} // Chromium
+  pp.getPrefBool('chat-lsb-popup', chatFrm.popupLSB);
+  pp.getPrefBool('chat-lsb-show', chatFrm.showLSB);
+ {$ENDIF CHAT_CEF} // Chromium
   pp.getPrefBool('chat-hints-show', ShowHintsInChat);
   pp.getPrefBool('chat-close-on-send', closeChatOnSend);
   pp.getPrefBool('chat-close-page-on-single', ClosePageOnSingle);
@@ -1289,6 +1302,18 @@ findClose(sr);
 //result:=FALSE;
 end; // readOnlyFiles
 
+{$IFDEF CHAT_CEF}
+procedure RegisterSchemes(const registrar: ICefSchemeRegistrar);
+begin
+  registrar.AddCustomScheme('theme', True, False, False);
+  registrar.AddCustomScheme('smile', True, False, False);
+  registrar.AddCustomScheme('http', True, False, False);
+  registrar.AddCustomScheme('https', True, False, False);
+  registrar.AddCustomScheme('res', True, False, False);
+end;
+{$ENDIF CHAT_CEF}
+
+
 procedure beforeWindowsCreation;
 
   procedure parseCmdLinePar;
@@ -1654,6 +1679,33 @@ begin
   hotkeysEnabled:=TRUE;
   plugins:=Tplugins.create;
   portsListen := TPortList.Create;
+  cache := myPath + 'Cache\';
+  if not DirectoryExists(cache) then
+    ForceDirectories(cache);
+  imgCacheInfo := TMemIniFile.Create(cache + 'Images.ini');
+
+{$IFDEF CHAT_CEF}
+  CefLibrary := IncludeTrailingPathDelimiter(myPath) + 'CEF\libcef.dll';
+  CefCache := IncludeTrailingPathDelimiter(myPath) + 'Cache\Chat\';
+  CefWindowlessRenderingEnabled := False;
+  CefLocale := 'ru';
+  CefResourcesDirPath := IncludeTrailingPathDelimiter(myPath) + 'CEF\';
+  CefLocalesDirPath := IncludeTrailingPathDelimiter(myPath) + 'CEF\locales\';
+  CefBackgroundColor := $fff0f0f0;
+  CefSingleProcess := True;
+  CefNoSandbox := True;
+  CefJavaScriptFlags := '--expose-gc';
+  CefRenderProcessHandler := TCustomRenderProcessHandler.Create;
+  CefOnRegisterCustomSchemes := RegisterSchemes;
+  CefRegisterSchemeHandlerFactory('theme', '', TResourceHandler);
+  CefRegisterSchemeHandlerFactory('smile', '', TResourceHandler);
+  CefRegisterSchemeHandlerFactory('http', '', TResourceHandler);
+  CefRegisterSchemeHandlerFactory('https', '', TResourceHandler);
+  CefRegisterSchemeHandlerFactory('res', '', TResourceHandler);
+
+  SetCurrentDir(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)));
+{$ENDIF CHAT_CEF}
+
 end; // beforeWindowsCreation
 
 procedure startUser;
@@ -2363,6 +2415,7 @@ begin
 // freeAndNIL(Account.AccProto);
  freeAndNIL(prefFrm);
  FreeAndNil( portsListen );
+ FreeAndNil( imgCacheInfo);
   FlushLogPktFile();
  loggaEvtS('shutdown', '', True);
 //  FlushLogEvFile();

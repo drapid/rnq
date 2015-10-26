@@ -116,8 +116,8 @@ implementation
     ;
 
 
-function loadFile(pt: TThemeSourcePath; fn : string): RawByteString;
-  function fullpath(fn:string):string;
+function loadFile(pt: TThemeSourcePath; fn: string): RawByteString;
+  function fullpath(const fn:string):string;
   begin if ansipos(':',fn)=0 then result:=pt.path+fn else result:=fn end;
 var
   ZipStream : TMemoryStream;
@@ -186,8 +186,8 @@ function RARCallbackProc(msg: UINT; UserData, P1, P2: integer) :integer; stdcall
     end;
   end;
 {$ENDIF USE_RAR}
-function  loadFile(pt: TThemeSourcePath; fn : string; var ResStream : TStream):Boolean;
-  function fullpath(fn:string):string;
+function  loadFile(pt: TThemeSourcePath; fn: string; var ResStream: TStream):Boolean;
+  function fullpath(const fn: string): string;
   begin if ansipos(':',fn)=0 then result:=pt.path+fn else result:=fn end;
    { $IFDEF USE_ZIP}
 var
@@ -202,14 +202,14 @@ var
 var
   hArcData: THandle;
   RHCode, PFCode: Integer;
-  CmtBuf: array[0..Pred(16384)] of AnsiChar;
+  CmtBuf: array[0..Pred(16384)] of Char;
 //  HeaderData: RARHeaderData;
   HeaderDataEx: RARHeaderDataEx;
   OpenArchiveData: RAROpenArchiveDataEx;
   Operation: Integer;
   WeLoadedDLL : Boolean;
 //  Mode: Integer;
-  s : String;
+  s: String;
    {$ENDIF USE_RAR}
 begin
   Result := False;
@@ -309,7 +309,7 @@ begin
               begin
  {$IFDEF UNICODE}
                 OpenArchiveData.ArcName := '';
-                OpenArchiveData.ArcNameW := PChar(pt.ArcFile);
+                OpenArchiveData.ArcNameW := PWideChar(pt.ArcFile);
  {$ELSE nonUNICODE}
                 OpenArchiveData.ArcName := PAnsiChar(pt.ArcFile);
                 OpenArchiveData.ArcNameW := '';

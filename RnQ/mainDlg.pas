@@ -2808,17 +2808,8 @@ if blinkCount = 0 then
     prefFrm.onTimer;
 // {$ENDIF RNQ_LITE}
 
-// hide message scrollbar
-if popupLSB and (hideScrollTimer>0) then
-  begin
-   dec(hideScrollTimer);
-   if hideScrollTimer=0 then
-    with chatFrm do
-      if thisChat<>NIL then
-       with thisChat do
-       if Assigned(lsb) then
-         lsb.width:=minimizedScroll;
-  end;
+  if assigned(chatFrm) then
+    chatFrm.onTimer;
 
 if removeTempVisibleTimer > 0 then
 	begin

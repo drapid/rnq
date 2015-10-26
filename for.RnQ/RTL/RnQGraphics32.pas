@@ -48,6 +48,8 @@ type
                    dtDoNothing,   {Leave graphic, next frame goes on top of it}
                    dtToBackground,{restore original background for next frame}
                    dtToPrevious); {restore image as it existed before this frame}
+  TRnQPicState = (PS_HAS_IRIGIN, PS_INIT_PICS);
+  TRnQPicStates = set of TRnQPicState;
 
   TAniFrame = class
   private
@@ -97,6 +99,8 @@ type
     CurrentIteration: Integer;
     LastTime: DWord;
     CurrentInterval: DWord;
+    OriginalFile: TMemoryStream;
+    FState  : TRnQPicStates;
    public
     fBmp    : TBitmap;
     htMask  : TBitmap;
@@ -107,9 +111,9 @@ type
     fWidth  : Integer;
     fHeight : Integer;
    private
-     fAnimated : Boolean;
+    fAnimated : Boolean;
 //    procedure Draw32bit(DC: HDC; DX, DY: Integer);
-     procedure SetCurrentFrame(AFrame: Integer);
+    procedure SetCurrentFrame(AFrame: Integer);
     procedure NextFrame(OldFrame: Integer);
    public
     constructor Create; overload;
@@ -118,7 +122,8 @@ type
     constructor Create(hi: HICON); Overload;
     destructor  Destroy; override;
     procedure   Clear;
-    procedure MakeEmpty;
+    procedure   MakeEmpty;
+    procedure   loadFromStream(stream: TStream);
 //    procedure   Free; overload;
 //    function  loadPic(fn:string):Tbitmap;
 
@@ -130,7 +135,7 @@ type
 //    procedure Draw(DC: HDC; DestR, SrcR: TRect); Overload;
     procedure Draw(DC: HDC; DestR: TGPRect); Overload;
 //    function  Clone(x, y, pWidth, pHeight: Integer): TRnQBitmap;
-    function  Clone(bnd : TGPRect): TRnQBitmap;
+    function  Clone(bnd: TGPRect): TRnQBitmap;
     function  CloneFrame(frame: Integer): TRnQBitmap;
     procedure SetTransparentColor(clr : cardinal);
     function  bmp2ico32: HIcon;
@@ -154,7 +159,9 @@ type
                        pEnabled: Boolean= True; isCopy: Boolean = false); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 
    function  loadPic(const fn: string; var bmp: TRnQBitmap; idx: Integer = 0): Boolean; Overload;
-   function  loadPic(var str: TStream; var bmp: TRnQBitmap; idx: Integer = 0; ff: TPAFormat = PA_FORMAT_UNK; name: string = ''): Boolean; Overload;
+   function  loadPic(var str0: TStream; var bmp: TRnQBitmap; idx: Integer = 0;
+                     ff: TPAFormat = PA_FORMAT_UNK; name: string = '';
+                     PreserveStream: Boolean = false): Boolean; Overload;
  {$IFDEF RNQ}
    function  loadPic(pt: TThemeSourcePath; fn: string; var bmp: TRnQBitmap; idx: Integer = 0): boolean; overload;
  {$ENDIF RNQ}
@@ -459,6 +466,11 @@ constructor TRnQBitmap.Create(fn: String);
 begin
   Create;
   loadPic(fn, Self);
+end;
+
+procedure TRnQBitmap.loadFromStream(stream: TStream);
+begin
+  loadpic(stream, self, 0, PA_FORMAT_UNK, '', True);
 end;
 
 function  TRnQBitmap.GetWidth: Integer;
@@ -894,7 +906,9 @@ begin
   icn.Free;
 end;
 
-function  loadPic(var str: TStream; var bmp: TRnQBitmap; idx: Integer = 0; ff: TPAFormat = PA_FORMAT_UNK; name : string = ''):boolean;
+function  loadPic(var str0: TStream; var bmp: TRnQBitmap; idx: Integer = 0;
+                  ff: TPAFormat = PA_FORMAT_UNK; name: string = '';
+                  PreserveStream: Boolean = false): boolean;
 var
 //  png: TPNGGraphic;
   png: TPNGObject;
@@ -914,7 +928,7 @@ var
   vBmp: TBitmap;
 //  {$ENDIF RNQ_LITE}
   IcoStream: TIconStream;
-//  MemStream : TMemoryStream;
+  MemStream : TMemoryStream;
   i: Integer;
   Frame: TAniFrame;
 //  Grph: TGraphic;
@@ -924,12 +938,12 @@ begin
 //  fBMP32 := NIL;
 //  f32Alpha := False;
   Result := False;
-  if not Assigned(str) then
+  if not Assigned(str0) then
     Exit;
 
   if ff = PA_FORMAT_UNK then
-    ff := DetectFileFormatStream(str);
-  str.Position := 0;
+    ff := DetectFileFormatStream(str0);
+  str0.Position := 0;
   case ff of
    PA_FORMAT_BMP:
        begin
@@ -941,8 +955,8 @@ begin
         bmp.f32Alpha := False;
         bmp.fFormat := ff;
          if not Assigned(bmp.fBmp) then
-           bmp.fBmp :=TBitmap.Create;
-         bmp.fBmp.LoadFromStream(str);
+           bmp.fBmp := TBitmap.Create;
+         bmp.fBmp.LoadFromStream(str0);
          bmp.fWidth  := bmp.fBmp.Width;
          bmp.fHeight := bmp.fBmp.Height;
 {          f32Alpha := False;
@@ -953,8 +967,12 @@ begin
            end;}
 //        bmp.fBmp.Transparent := True;
            bmp.fTransparentColor := ColorToRGB(bmp.fBmp.TransparentColor);
-        str.Free;
-        str := NIL;
+        Include(bmp.FState, PS_INIT_PICS);
+        if not PreserveStream then
+         begin
+          str0.Free;
+          str0 := NIL;
+         end;
         Result := True;
        end;
 //  {$IFNDEF RNQ_LITE}
@@ -967,7 +985,6 @@ begin
 //         jpeg_CreateDecompress(@vJpg, JPEG_LIB_VERSION, SizeOf(vJpg));
 //         JPegR := TFPReaderJPEG.Create;
 //         vJpg.LoadOptions := [loTileMode];
-         str.Position := 0;
          vBmp := NIL;
          try
           try
@@ -990,7 +1007,10 @@ begin
                FreeAndNil(MemStream);
              end;}
 
-           LoadPictureStream(str, pic);
+           MemStream := TMemoryStream.Create;
+           MemStream.CopyFrom(str0, str0.Size);
+           MemStream.Position := 0;
+           LoadPictureStream(MemStream, pic);
            if pic <> NIL then
              begin
 //              scr := CreateDC('DISPLAY', nil, nil, nil);
@@ -1017,7 +1037,9 @@ begin
              end;
 
            finally
-            FreeAndNil(str);
+            FreeAndNil(MemStream);
+            if not PreserveStream then
+              FreeAndNil(str0);
             try
 //              if Assigned(JPegR) then
 //                JPegR.Free;
@@ -1055,6 +1077,7 @@ begin
            bmp.fHeight := bmp.fBmp.Height;
            bmp.fBmp.Transparent := False;
 //           InitTransAlpha(bmp.fBmp);
+           Include(bmp.FState, PS_INIT_PICS);
 
            try
 //             vJpg.Free;
@@ -1074,7 +1097,7 @@ begin
           bmp.Free;
 //         else
 //          bmp.Clear;
-        bmp := LoadAGifFromStream(NonAnimated, str);
+        bmp := LoadAGifFromStream(NonAnimated, str0);
 //        if Assigned(aniImg) and (aniImg.NumFrames > 0) then
         if Assigned(bmp) and (bmp.NumFrames > 0) then
         begin
@@ -1101,8 +1124,11 @@ begin
 //          aniImg.Free;
            bmp.fTransparentColor := ColorToRGB(bmp.fBmp.TransparentColor);
            bmp.fFormat := ff;
-         str.Free;
-         str := NIL;
+         if not PreserveStream then
+          begin
+           str0.Free;
+           str0 := NIL;
+          end;
          Result := True;
         end;
        exit;
@@ -1112,7 +1138,7 @@ begin
 //         png := TPNGGraphic.Create;
          png := TPNGObject.Create;
          try
-           png.LoadFromStream(str);
+           png.LoadFromStream(str0);
           except
          end;
          if not png.empty then
@@ -1205,9 +1231,12 @@ begin
              end;
 
             png.free;
-          str.Free;
-          str := NIL;
-          Result := True;
+           if not PreserveStream then
+            begin
+             str0.Free;
+             str0 := NIL;
+            end;
+           Result := True;
          end;
        end;
    PA_FORMAT_ICO:
@@ -1218,7 +1247,7 @@ begin
 //        if 1 = 1 then
           begin
            IcoStream := TIconStream.Create;
-           IcoStream.LoadFromStream(str);
+           IcoStream.LoadFromStream(str0);
             if (idx < 1) or (idx > IcoStream.Count) then
               idx := 1;
             dec(idx);
@@ -1265,15 +1294,18 @@ begin
 //            bmp.fWidth := icn.Width;
 //            bmp.fHeight := icn.Height;
 //            bmp.fHI := icn.ReleaseHandle;
-            bmp.fHI := LoadIconFromStream(str);
+            bmp.fHI := LoadIconFromStream(str0);
             if bmp.fHI = 0 then
               begin
                 bmp.Free;
                 bmp := NIL;
               end;
           end;
-        str.Free;
-        str := NIL;
+         if not PreserveStream then
+          begin
+           str0.Free;
+           str0 := NIL;
+          end;
         if Assigned(bmp) then
           Result := True;
        exit;
@@ -1282,7 +1314,7 @@ begin
       begin
         WICpic := TWICImage.Create;
         try
-          WICpic.LoadFromStream(str);
+          WICpic.LoadFromStream(str0);
           if not WICpic.empty then
           begin
             if not Assigned(bmp) then
@@ -1305,9 +1337,12 @@ begin
             Result := True;
           end;
          finally
-          WICPic.Free;
-          str.Free;
-          str := NIL;
+           WICPic.Free;
+           if not PreserveStream then
+            begin
+             str0.Free;
+             str0 := NIL;
+            end;
         end;
       end;
 //   PA_FORMAT_XML: ;
@@ -1327,9 +1362,14 @@ begin
 end;
 
  {$IFDEF RNQ}
-function loadPic(pt: TThemeSourcePath; fn : string; var bmp:TRnQbitmap; idx : Integer = 0):boolean;
-  function fullpath(fn:string):string;
-  begin if ansipos(':',fn)=0 then result:=pt.path+fn else result:=fn end;
+function loadPic(pt: TThemeSourcePath; fn : string; var bmp: TRnQbitmap; idx: Integer = 0): boolean;
+  function fullpath(const fn: string): string;
+  begin
+    if ansipos(':',fn)=0 then
+      result:=pt.path+fn
+     else
+      result:=fn
+  end;
 var
   Stream : TMemoryStream;
   ff : TPAFormat;
@@ -3744,7 +3784,8 @@ var
   ABitmap, AMask: TBitmap;
 begin
   Result := Nil;
-  if not Assigned(Stream) then Exit;
+  if not Assigned(Stream) then
+    Exit;
 try
   NonAnimated := True;
   AGif := TGif.Create;

@@ -186,8 +186,7 @@ function  str2sortby(const s: AnsiString): TsortBy;
 procedure CheckBDays;
 function GetWidth(chk: TCheckBox): integer;
 procedure parseMsgImages(const imgStr: RawByteString; var imgList: TAnsiStringList);
-
-
+function CacheImage(var mem: TMemoryStream; url, ext: RawByteString): Boolean;
 
 // costants for files
 const
@@ -285,6 +284,7 @@ uses
   RQMenuItem, RQThemes, RQLog, RnQDialogs,
   RnQLangs, RnQButtons, RnQBinUtils, RnQGlobal, RnQCrypt, RnQPics,
   RDtrayLib, RnQTips,
+  Murmur2,
    {$IFDEF RNQ_FULL2}
      converthistoriesDlg,
    {$ENDIF}
@@ -4713,6 +4713,51 @@ begin
     else
       Break;
   until pos1 <= 0;
+end;
+
+function CacheImage(var mem: TMemoryStream; url, ext: RawByteString): Boolean;
+var
+  imgcache, fn: String;
+  hash: LongWord;
+  winimg: TWICImage;
+begin
+  Result := False;
+  winimg := TWICImage.Create;
+  mem.Seek(0, 0);
+
+  try
+    winimg.LoadFromStream(mem);
+  except
+    if Assigned(winimg) then
+      winimg.Free;
+    Exit;
+  end;
+
+  if winimg.Empty then
+  begin
+    winimg.Free;
+    Exit;
+  end;
+
+  imgcache := myPath + 'Cache\Images\';
+  if not DirectoryExists(imgcache) then
+    ForceDirectories(imgcache);
+
+  hash := CalcMurmur2(BytesOf(url));
+  fn := imgcache + IntToStr(hash) + '.' + ext;
+  winimg.SaveToFile(fn);
+
+  try
+    imgCacheInfo.WriteString(url, 'ext', ext);
+    imgCacheInfo.WriteString(url, 'hash', IntToStr(hash));
+    imgCacheInfo.WriteInteger(url, 'width', winimg.Width);
+    imgCacheInfo.WriteInteger(url, 'height', winimg.Height);
+    imgCacheInfo.UpdateFile;
+  finally
+    winimg.Free;
+  end;
+
+  Result := True;
 end;
 
 

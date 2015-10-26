@@ -470,7 +470,6 @@ var
   clickedNode : Tnode;
 
   prefHeight      : integer;
-  hideScrollTimer : integer;
   saveDBtimer     : integer;
 //  loginServer  :string;
   lastServerIP, lastserverAddr : string;
@@ -687,8 +686,6 @@ var
   autoRequestXsts,
   warnVisibilityExploit,
   warnVisibilityAutoMsgReq,
-  popupLSB,
-  showLSB,
   ShowHintsInChat,
 //  ShowHintsInChat2,
 //  showClientID,
@@ -775,6 +772,7 @@ var
   prefPages : array of TPrefPage;
   Mutex:Cardinal;
   portsListen : TPortList;
+  cache: String;
   imgCacheInfo: TMemIniFile;
 
 //const
