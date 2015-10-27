@@ -27,7 +27,6 @@ uses
     RnQGraphics,
   {$ELSE}
     RnQGraphics32,
-//    RnQAni,
   {$ENDIF USE_GDIPLUS}
 //  rnqCtrls,
   RnQProtocol,
@@ -1080,10 +1079,10 @@ var
   chat: TchatInfo;
   pnl: Tpanel;
 begin
- {$IFDEF RNQ_FULL}
+ {$IFDEF SMILES_ANI_ENGINE}
 //  rqSmiles.ClearAniParams;
   theme.ClearAniParams;
- {$ENDIF RNQ_FULL}
+ {$ENDIF SMILES_ANI_ENGINE}
   chat := TchatInfo.create;
   chat.who := c;
   chat.chatType := CT_IM;
@@ -1132,7 +1131,7 @@ begin
     OnBeforeContextMenu := showHistMenu;
     OnBeforeBrowse := customBrowsing;
 
-    CreateBrowserInstance;
+//    CreateBrowserInstance;
     Load('about:blank'); // Required for Browser.MainFrame.LoadString to work
     while not renderInit or (Browser.MainFrame = nil) do
     begin
@@ -1179,10 +1178,10 @@ begin
   end;
 {$ENDIF ~CHAT_CEF}
 
- {$IFDEF RNQ_FULL}
+ {$IFDEF SMILES_ANI_ENGINE}
 //  rqSmiles.ClearAniParams;
   theme.ClearAniParams;
- {$ENDIF RNQ_FULL}
+ {$ENDIF SMILES_ANI_ENGINE}
 //pnl.insertControl(chat.historyBox);
 
 
@@ -1302,10 +1301,10 @@ begin
   resize;
 //  savePages;
   saveListsDelayed := True;
- {$IFDEF RNQ_FULL}
+ {$IFDEF SMILES_ANI_ENGINE}
 //  rqSmiles.ClearAniParams;
   theme.ClearAniParams;
- {$ENDIF RNQ_FULL}
+ {$ENDIF SMILES_ANI_ENGINE}
   chat.historyBox.updateRSB(false);
 end; // newIMchannel
 
@@ -1663,10 +1662,10 @@ var
   ch: TchatInfo;
   I: Integer;
 begin
- {$IFDEF RNQ_FULL}
+ {$IFDEF SMILES_ANI_ENGINE}
 //  rqSmiles.ClearAniParams;
   theme.ClearAniParams;
- {$ENDIF RNQ_FULL}
+ {$ENDIF SMILES_ANI_ENGINE}
   ch := thisChat;
   if ch=NIL then
     exit;
@@ -2453,10 +2452,10 @@ var
 begin
   if (idx<0) or (idx >= pageCtrl.PageCount) then
     exit;
- {$IFDEF RNQ_FULL}
+ {$IFDEF SMILES_ANI_ENGINE}
 //  rqSmiles.ClearAniParams;
   theme.ClearAniParams;
- {$ENDIF RNQ_FULL}
+ {$ENDIF SMILES_ANI_ENGINE}
   oldCh := chats.byIdx(idx);
 //  with  do
    begin
@@ -5135,9 +5134,11 @@ end;
 
 procedure TchatFrm.FormHide(Sender: TObject);
 begin
- {$IFDEF RNQ_FULL}
+ {$IFDEF SMILES_ANI_ENGINE}
 //  rqSmiles.ClearAniParams;
   theme.ClearAniParams;
+ {$ENDIF SMILES_ANI_ENGINE}
+ {$IFDEF RNQ_FULL}
   if Assigned(FSmiles) then
     FSmiles.Hide;
  {$IFDEF PROTOCOL_ICQ}
@@ -5210,8 +5211,10 @@ var
   i: Integer;
 begin
 
+ {$IFDEF SMILES_ANI_ENGINE}
 //  rqSmiles.ClearAniParams;
   theme.ClearAniParams;
+ {$ENDIF SMILES_ANI_ENGINE}
 
   for i:=0 to chatFrm.chats.count-1 do
   begin

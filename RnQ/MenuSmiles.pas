@@ -595,7 +595,8 @@ begin
     for i:= 0 to Length(FAniParamList)-1 do
    //for i:= Length(smlList)-1 to 0 do
     begin
-      if (FAniDrawCnt = 0)or not theme.useAnimated then Exit;
+      if (FAniDrawCnt = 0)or not theme.useAnimated then
+        Exit;
 {      if (paramSmile.Bounds.Left = 0) and (paramSmile.Bounds.Top = 0)
       //наложение на верхние стрелки
         then Continue;
@@ -612,41 +613,8 @@ begin
      if Assigned(paramSmile.Canvas) then
       if paramSmile.idx >= 0 then
       begin
-//        testSmile := TGIFImage.Create;
-//        testSmile := theme.GetAniPic(paramSmile.Name);
-//        tmp_sml.Assign(testSmile.Bitmap);
-//        tmp_sml.Transparent := True;
-//        gr := TGPGraphics.Create(paramSmile.Canvas.Handle);
-//        if gr.IsVisible(MakeRect(paramSmile.Bounds)) then
         with theme.GetAniPic(paramSmile.Idx) do
         begin
-//         bmp:= TRnQBitmap.Create(Width, Height, PixelFormat32bppRGB);
-//          b2 := createBitmap(Width, Height);
-{          if Assigned(paramSmile.bg) then
-           BitBlt(bmp.Canvas.Handle, 0, 0,
-            bmp.Width, bmp.Height, paramSmile.bg.Canvas.Handle, 0, 0, SRCCOPY)
-          else}
-//          grb := TGPGraphics.Create(b2.Canvas.Handle);
-//          grb.Clear(aclBlack);
-//          grb := TGPGraphics.c
-{          if Assigned(AnibgPic) and (not paramSmile.selected) then
-            grb.DrawImage(AnibgPic, 0, 0,
-             paramSmile.Bounds.Left, paramSmile.Bounds.Top,
-             Width, Height, UnitPixel)
-           else
-            begin
-             grb.Clear(paramSmile.color);
-//             br := TGPSolidBrush.Create(paramSmile.color);
-//             grb.FillRectangle(br, 0, 0, Width, Height);
-//             br.Free;
-            end;
-}
-{          if Assigned(AnibgPic) and (not paramSmile.selected) then
-            BitBlt(b2.Canvas.Handle, 0, 0,
-              b2.Width, b2.Height, AnibgPic.Canvas.Handle,
-              paramSmile.Bounds.Left, paramSmile.Bounds.Top, SRCCOPY)
-           else
-}
            begin
              if paramSmile.smileIDX = menusel then
                begin
@@ -664,41 +632,13 @@ begin
 //           Draw(b2.Canvas.Handle, 0, 0);
             Draw(b2.Canvas.Handle, (Btn_Width-Width)div 2,
                  (Btn_Height- Height) div 2)
-//           BitBlt()
-//          paramSmile.Canvas.FillRect(paramSmile.Bounds);
-//          Draw(paramSmile.Canvas, paramSmile.Bounds.Left, paramSmile.Bounds.Top);
-//          bmp.Transparent := True;
-//          bmp.TransparentMode := tmAuto;
         end;
 
-//        if paramSmile.Canvas.HandleAllocated then
-//         try
-//           if chat
-//        gr.DrawImage(bmp, paramSmile.Bounds.Left, paramSmile.Bounds.Top);
-//        gr.DrawImage(bmp, MakeRect(paramSmile.Bounds));
-
-//        gr.Free;
           if Assigned(paramSmile.Canvas)
 //           and (paramSmile.Canvas.HandleAllocated )
           then
-//           BitBlt(paramSmile.Canvas.Handle, paramSmile.Bounds.Left, paramSmile.Bounds.Top,
-//            bmp.Width, bmp.Height, paramSmile.bg.Canvas.Handle, 0, 0, SRCCOPY);
-//           TransparentBlt(paramSmile.Canvas.Handle, paramSmile.Bounds.Left, paramSmile.Bounds.Top,
-//            bmp.Width, bmp.Height, bmp.Canvas.Handle, 0, 0,
-//            bmp.Width, bmp.Height, bmp.TransparentColor);   {LDB}
-
            BitBlt(paramSmile.Canvas.Handle, paramSmile.Bounds.X, paramSmile.Bounds.Y,
             b2.Width, b2.Height, b2.Canvas.Handle, 0, 0, SRCCOPY);
-//          paramSmile.Canvas.Draw(paramSmile.Bounds.Left,
-//                      paramSmile.Bounds.Top, bmp);
-//         except
-//         end;
-{        for j:= 0 to paramSmile.Count-1 do
-        begin
-          Canvas.Draw((paramSmile.Bounds.Left - j*tmp_sml.Width),
-                      (paramSmile.Bounds.Top), tmp_sml);
-        end;
-}
       end;
     end;
     b2.Free;

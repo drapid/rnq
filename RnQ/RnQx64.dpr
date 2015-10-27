@@ -44,9 +44,9 @@ uses
   utilLib in 'utilLib.pas',
   authreqDlg in 'authreqDlg.pas' {authreqFrm},
   changepwddlg in 'changepwddlg.pas' {changePwdFrm},
- {$IFNDEF CHAT_CEF} // ~Chromium
+  {$IFNDEF CHAT_CEF}
   historyVCL in 'historyVCL.pas',
- {$ENDIF CHAT_CEF} // Chromium
+  {$ENDIF CHAT_CEF}
   chatDlg in 'chatDlg.pas' {chatFrm},
   pluginLib in 'pluginLib.pas',
   outboxLib in 'outboxLib.pas',

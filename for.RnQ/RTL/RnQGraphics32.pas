@@ -48,7 +48,7 @@ type
                    dtDoNothing,   {Leave graphic, next frame goes on top of it}
                    dtToBackground,{restore original background for next frame}
                    dtToPrevious); {restore image as it existed before this frame}
-  TRnQPicState = (PS_HAS_IRIGIN, PS_INIT_PICS);
+  TRnQPicState = (PS_HAS_ORIGIN, PS_INIT_PICS);
   TRnQPicStates = set of TRnQPicState;
 
   TAniFrame = class

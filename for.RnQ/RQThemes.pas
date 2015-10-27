@@ -4,16 +4,13 @@ Under same license
 }
 unit RQThemes;
 {$I ForRnQConfig.inc}
- { $DEFINE RQDEBUG2}
-
- { $DEFINE USE_32Aplha_Images}
-  { $DEFINE NOT_USE_GDIPLUS}
-
- { $IFDEF CHAT_CEF}
-  { $DEFINE PRESERVE_BIG_FILE}
- { $ENDIF}
-
 {$I NoRTTI.inc}
+
+ { $DEFINE RQDEBUG2}
+ { $DEFINE USE_32Aplha_Images}
+ { $DEFINE USE_GDIPLUS}
+
+
 
 {$WRITEABLECONST OFF} // Read-only typed constants
 
@@ -26,7 +23,7 @@ uses
     RnQGraphics,
   {$ELSE}
     RnQGraphics32,
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF NOT USE_GDIPLUS}
   RDGlobal,
 //  ImgList,
  {$IFDEF RNQ_FULL}
@@ -163,9 +160,9 @@ type
     SmileIDX : Integer;
 //    Bounds: TRect;
     Bounds: TGPRect;
-  {$IFDEF NOT_USE_GDIPLUS}
+  {$IFNDEF USE_GDIPLUS}
     Color: TColor;
-  {$ELSE NOT_USE_GDIPLUS}
+  {$ELSE USE_GDIPLUS}
     Color: Cardinal;
 //    DC : HDC;
   {$ENDIF NOT_USE_GDIPLUS}
@@ -209,18 +206,9 @@ type
   TRQtheme = class
    private
     curToken : Integer;
-  { $IFDEF NOT_USE_GDIPLUS}
-//    Fpics : TObjList;
-  { $ELSE  USE_GDIPLUS}
-//    FBigPics : TObjList;
-//    FSmileBigPics : TObjList;
-//    FFonts : TFontList;
     FBigPics, FSmileBigPics : array of TPicObj;
     FThemePics,
     FSmilePics,
-//    FGPpics : ThaStringList;
-  { $ENDIF NOT_USE_GDIPLUS}
-//    FFonts : TObjList;
     FFonts2,
     FClr,
     FStr,
@@ -232,10 +220,12 @@ type
     FAniSmls: TObjList;
 //    FAniPics: TObjList;
 //    FAniSmls: TStrListEx;
+ {$IFDEF SMILES_ANI_ENGINE}
     FAniParamList: TAniSmileParamsArray;
     FAniDrawCnt: Integer;
     FAniTimer : TTimer;
     FdrawCS : TCriticalSection;
+ {$ENDIF SMILES_ANI_ENGINE}
  {$ENDIF RNQ_FULL}
 //    addProp : procedure (name: TPicName; kind:TthemePropertyKind; s: String);
     procedure addProp(name: TPicName; ts: TThemeSourcePath; kind: TthemePropertyKind; const s: String); overload;
@@ -249,14 +239,14 @@ type
                       var pTP: TThemePic; bStretch: Boolean = false;
                       Ani: Boolean = false; AniIdx: Integer = -1); overload;
 //    function  GetIco2(name : String; ico : TIcon) : Boolean;
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     function  GetPic13(name: TPicName; var pic: TGPImage; AddPic: Boolean = True): boolean;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
     function GetSmlCnt: Integer;
 //    procedure GetPic(name : String; var pic : TRnQBitmap); overload;
-   {$IFDEF RNQ_FULL}
+ {$IFDEF SMILES_ANI_ENGINE}
     procedure TickAniTimer(Sender: TObject);
-   {$ENDIF RNQ_FULL}
+ {$ENDIF SMILES_ANI_ENGINE}
    public
     ThemePath: TThemePath;
 //    MasterFN, subfn :string;
@@ -299,9 +289,9 @@ type
    public
     procedure addHIco(const name: TPicName; hi: HICON; Internal: Boolean = false);
     function  AddPicResource(const name: TPicName; ResourceName: String; Internal: Boolean = false) : Boolean;
-  {$IFDEF NOT_USE_GDIPLUS}
+  {$IFNDEF USE_GDIPLUS}
     function  GetBrush(name: TPicName): HBRUSH;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF NOT USE_GDIPLUS}
 //    procedure initPic(name : String; var ThemeToken : Integer;
 //               var picLoc : TPicLocation; var picIdx : Integer); overload;
     procedure initPic(var picElm: TRnQThemedElementDtls); overload;
@@ -324,9 +314,9 @@ type
     function  GetColor(const name: TPicName; pDefColor: TColor = clDefault): TColor;
     function  GetAColor(const name: TPicName; pDefColor: Integer = clDefault): Cardinal;
     function  GetTColor(const name: TPicName; pDefColor: Cardinal): Cardinal;
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
 //    function  pic2ico2(picName:String; ico:Ticon) : Boolean;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
     function  pic2ico(pTE: TRnQThemedElement; const picName: TPicName; ico: Ticon): Boolean;
     function  pic2hIcon(const picName: TPicName; var ico: HICON): Boolean;
 //    function  drawPic(cnv: Tcanvas; x,y: integer; pic: TRnQBitmap): Tsize; overload;
@@ -338,25 +328,27 @@ type
     function  drawPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls): Tsize; overload;
     function  drawPic(DC: HDC; pR: TGPRect; var picElm: TRnQThemedElementDtls): Tsize; overload;
     function  getPic(DC: HDC; p : TPoint; var picElm: TRnQThemedElementDtls; var is32Alpha : Boolean):Tsize; overload;
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     function  drawPic(gr: TGPGraphics; x, y: integer; picName: string; pEnabled: Boolean = true): Tsize; overload;
     function  drawPic(gr: TGPGraphics; x, y: integer; picName: string; var ThemeToken: Integer;
         var picLoc: TPicLocation; var picIdx : Integer; pEnabled : Boolean = true): Tsize; overload;
     function  drawPic(gr: TGPGraphics; x, y: integer; picElm: Prnq): Tsize; overload;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 //    function  GetPicRGN(picName:string; var ThemeToken : Integer;
 //        var picLoc : TPicLocation; var picIdx : Integer):HRGN;
 //    function drawPic(cnv:Tcanvas; x,y:integer; picName:String):Tsize; overload;
     function  GetSmileName(i: Integer): TPicName;
     function  GetSmileObj(i: Integer): TSmlObj;
     procedure checkAnimationTime;
+ {$IFDEF SMILES_ANI_ENGINE}
+    procedure  AddAniParam( PicIdx: Integer; Bounds: TGPRect;
+                    Color: TColor; cnv, cnvSrc: TCanvas; Sel: Boolean = false);
+    procedure  ClearAniParams;
+    procedure  ClearAniMNUParams;
+ {$ENDIF SMILES_ANI_ENGINE}
 
    {$IFDEF RNQ_FULL}
     function  GetAniPic(idx: integer): TRnQAni;
-    procedure  AddAniParam( PicIdx: Integer; Bounds: TGPRect;
-              Color: TColor; cnv, cnvSrc: TCanvas; Sel: Boolean = false);
-    procedure  ClearAniParams;
-    procedure  ClearAniMNUParams;
    {$ENDIF RNQ_FULL}
 
     Property SmilesCount : Integer read GetSmlCnt;
@@ -366,11 +358,11 @@ type
  {$ENDIF RNQ_LITE}
 
     procedure initThemeIcons;
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     procedure drawTiled(gr:TGPGraphics; r: TGPRectF; const picName : TPicName); overload;
     procedure drawStratch(gr:TGPGraphics; r : TGPRectF; const picName : TPicName); overload;
     procedure drawStratch(gr:TGPGraphics; x, y, w, h : Integer; const picName : TPicName); overload;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
     procedure drawTiled(canvas: Tcanvas; const picName : TPicName); overload;
     procedure drawTiled(dc: HDC; ClipRect: TRect; const picName : TPicName); overload;
     procedure Draw_wallpaper(DC: HDC; r: TRect); //{$IFDEF HAS_INLINE } inline; {$ENDIF HAS_INLINE}
@@ -611,10 +603,12 @@ end;
 constructor TRQtheme.Create;
 begin
   curToken := 101;
+ {$IFDEF SMILES_ANI_ENGINE}
   FAniTimer := NIL;
+  FdrawCS := TCriticalSection.Create;
+ {$ENDIF SMILES_ANI_ENGINE}
   useTSC := tsc_all;
 //  supSmiles := False;
-  FdrawCS := TCriticalSection.Create;
 //  FGPpics := TStringList.Create;
 //  FBigPics   := TStringList.Create;
 
@@ -661,8 +655,11 @@ begin
   if Assigned(AnibgPic) then
    AnibgPic.Free;
   AnibgPic := NIL;
+ {$IFDEF SMILES_ANI_ENGINE}
   if Assigned(FAniTimer) then
    FreeAndNil(FAniTimer);
+  FdrawCS.Free;
+ {$ENDIF SMILES_ANI_ENGINE}
 
 //  FBigPics.Free;
 //  FSmileBigPics.Free;
@@ -683,7 +680,6 @@ begin
  {$IFDEF RNQ_FULL}
   FAniSmls.Free;
  {$ENDIF RNQ_FULL}
-  FdrawCS.Free;
 end;
 
 
@@ -1256,7 +1252,7 @@ begin
 // FIntPics.Sorted := True;
  FreeResource;
 
- {$IFDEF RNQ_FULL}
+ {$IFDEF SMILES_ANI_ENGINE}
  if subClass in [tsc_all, tsc_smiles] then
  begin
    if useAnimated then
@@ -1271,8 +1267,8 @@ begin
    else
     if (FAniTimer <> NIL) and Assigned(FAniTimer) then
       FreeAndNil(FAniTimer);
- end;     
- {$ENDIF RNQ_FULL}
+ end;
+ {$ENDIF SMILES_ANI_ENGINE}
 // msgDlg(IntToStr(GDIPlus.Version), mtInformation);
 
 // if useAnimated then
@@ -1397,7 +1393,7 @@ begin
 //       else
       end; }
 end;
- {$ELSE NOT_USE_GDIPLUS}
+ {$ELSE NOT USE_GDIPLUS}
 function TRQtheme.GetPicOld(const PicName: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
 var
   i : Integer;
@@ -1485,7 +1481,7 @@ begin
 //       else
       end; 
 end;
- {$ENDIF NOT_USE_GDIPLUS}
+ {$ENDIF USE_GDIPLUS}
 
   {$IFNDEF USE_GDIPLUS}
 function TRQtheme.GetBrush(name : TPicName) : HBRUSH;
@@ -1509,7 +1505,7 @@ begin
 //    result := true;
    end
 end;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF NOT USE_GDIPLUS}
 
 function TRQtheme.GetBigPic(pTE: TRnQThemedElement; const picName: TPicName; var mem: TMemoryStream): Boolean;
 var
@@ -2062,21 +2058,21 @@ begin
   if i >= 0 then
 //    result := ColorFromAlphaColor($FF, ABCD_ADCB(ColorToRGB(TColor(FClr.Objects[i]))))
  {$WARN UNSAFE_CAST OFF}
-   {$IFNDEF NOT_USE_GDIPLUS}
+   {$IFDEF USE_GDIPLUS}
     result := AlphaMask or ABCD_ADCB(ColorToRGB(TColor(FClr.Objects[i])))
-   {$ELSE NOT_USE_GDIPLUS}
+   {$ELSE NOT USE_GDIPLUS}
     result := AlphaMask or ColorToRGB(TColor(FClr.Objects[i]))
-   {$ENDIF NOT_USE_GDIPLUS}
+   {$ENDIF USE_GDIPLUS}
  {$WARN UNSAFE_CAST ON}
   else
     begin
 //      addProp(name, pDefColor);
 //      result := ColorFromAlphaColor($FF, ABCD_ADCB(ColorToRGB(pDefColor)));
-      {$IFNDEF NOT_USE_GDIPLUS}
+      {$IFDEF USE_GDIPLUS}
       result := AlphaMask or ABCD_ADCB(ColorToRGB(pDefColor));
-      {$ELSE NOT_USE_GDIPLUS}
+      {$ELSE NOT USE_GDIPLUS}
        result := AlphaMask or ColorToRGB(pDefColor)
-      {$ENDIF NOT_USE_GDIPLUS}
+      {$ENDIF USE_GDIPLUS}
     end
 end;
 
@@ -2088,21 +2084,21 @@ begin
   if i >= 0 then
 //    result := ColorFromAlphaColor($FF, ABCD_ADCB(ColorToRGB(TColor(FClr.Objects[i]))))
  {$WARN UNSAFE_CAST OFF}
-   {$IFNDEF NOT_USE_GDIPLUS}
+   {$IFDEF USE_GDIPLUS}
     result := cardinal(FClr.Objects[i])
-   {$ELSE NOT_USE_GDIPLUS}
+   {$ELSE NOT USE_GDIPLUS}
     result := cardinal(FClr.Objects[i])
-   {$ENDIF NOT_USE_GDIPLUS}
+   {$ENDIF USE_GDIPLUS}
  {$WARN UNSAFE_CAST ON}
   else
     begin
 //      addProp(name, pDefColor);
 //      result := ColorFromAlphaColor($FF, ABCD_ADCB(ColorToRGB(pDefColor)));
-      {$IFNDEF NOT_USE_GDIPLUS}
+      {$IFDEF USE_GDIPLUS}
       result := pDefColor;
-      {$ELSE NOT_USE_GDIPLUS}
+      {$ELSE NOT USE_GDIPLUS}
        result := pDefColor
-      {$ENDIF NOT_USE_GDIPLUS}
+      {$ENDIF USE_GDIPLUS}
     end
 end;
 
@@ -2168,9 +2164,9 @@ begin
         else
          begin
            bmp := FBigPics[PicIDX].bmp.Clone(r
-      {$IFNDEF NOT_USE_GDIPLUS}
+      {$IFDEF USE_GDIPLUS}
                       ,TPicObj(FBigPics.Objects[PicIDX]).bmp.GetPixelFormat
-      {$ENDIF NOT_USE_GDIPLUS}
+      {$ENDIF USE_GDIPLUS}
                       );
            if Assigned(bmp) then
              begin
@@ -2239,9 +2235,9 @@ begin
 //       TPicObj(FBigPics.Objects[TThemePic(FThemePics.Objects[i]).PicIDX]).bmp.GetHICON(hi);
 //{
        bmp := FBigPics[PicIDX].bmp.Clone(r
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
                   ,TPicObj(FBigPics.Objects[PicIDX]).bmp.GetPixelFormat
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
                   );
        if Assigned(bmp) then
          begin
@@ -3206,12 +3202,12 @@ begin
  // Adding one empty image
     {$IFDEF USE_GDIPLUS}
    loadedpic := TRnQBitmap.Create(icon_size, icon_size, PixelFormat32bppARGB);
-    {$ELSE NOT_USE_GDIPLUS}
+    {$ELSE NOT USE_GDIPLUS}
 
   // loadedpic := TRnQBitmap.Create(icon_size, icon_size);
    loadedpic := TRnQBitmap.Create(GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
    loadedpic.MakeEmpty;
-    {$ENDIF NOT_USE_GDIPLUS}
+    {$ENDIF NOT USE_GDIPLUS}
    addProp(PIC_EMPTY, TP_ico, loadedpic);
    loadedpic.Free;
  loadedpic := NIL;
@@ -3633,8 +3629,8 @@ begin
     end;
 end;
 
-  {$IFNDEF NOT_USE_GDIPLUS}
-function TRQtheme.drawPic(gr:TGPGraphics; x,y:integer; picName:string; pEnabled : Boolean = true):Tsize;
+  {$IFDEF USE_GDIPLUS}
+function TRQtheme.drawPic(gr: TGPGraphics; x,y: integer; const picName: String; pEnabled: Boolean = true): Tsize;
 var
   i : Integer;
 //  pic : TRnQBitmap;
@@ -3691,7 +3687,7 @@ begin
          end
     end;
 end;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 
 //function TRQtheme.drawPic(DC: HDC; x,y:integer; var picElm : TRnQThemedElementDtls):Tsize;
 function TRQtheme.drawPic(DC: HDC; p :TPoint; var picElm : TRnQThemedElementDtls):Tsize;
@@ -3998,7 +3994,7 @@ begin
           end;
   end
 end;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 {
 function TRQtheme.drawPic(cnv:Tcanvas; x,y:integer; pic:TRnQBitmap):Tsize;
 //var
@@ -4523,6 +4519,7 @@ begin
    TRnQAni(FAniSmls.Objects[I]).RnQCheckTime;
 end;
 
+ {$IFDEF SMILES_ANI_ENGINE}
 procedure TRQtheme.TickAniTimer(Sender: TObject);
 var
   i: Integer;
@@ -4679,7 +4676,7 @@ procedure TRQtheme.AddAniParam( PicIdx: Integer; Bounds: TGPRect;
               Color: TColor; cnv, cnvSrc: TCanvas; Sel: Boolean = false);
 begin
   Inc(FAniDrawCnt);
-  SetLength(FAniParamList,FAniDrawCnt);
+  SetLength(FAniParamList, FAniDrawCnt);
   FAniParamList[FAniDrawCnt-1].idx := PicIdx;
   FAniParamList[FAniDrawCnt-1].Bounds := Bounds;
   FAniParamList[FAniDrawCnt-1].Color := Color;
@@ -4732,6 +4729,7 @@ begin
   if Assigned(FAniTimer) then
     FAniTimer.Enabled := false;}
 end;
+ {$ENDIF SMILES_ANI_ENGINE}
 
 {$ENDIF RNQ_FULL}
 
@@ -4879,7 +4877,7 @@ begin
   gr.DrawImage(bmp, x, y, w, h);
  end;
 end;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 
 procedure TRQtheme.drawTiled(dc: HDC; ClipRect : TRect; const picName : TPicName);
 //var
@@ -4901,8 +4899,8 @@ end;
 // wallImgLoc : TPicLocation;
 // wallImgIdx : Integer;
 
-  {$IFDEF NOT_USE_GDIPLUS}
-procedure TRQtheme.Draw_wallpaper(DC : HDC; r : TRect);
+  {$IFNDEF USE_GDIPLUS}
+procedure TRQtheme.Draw_wallpaper(DC: HDC; r: TRect);
 var
 //  bmp : TRnQBitmap;
   Hbr : HBrush;
@@ -4953,7 +4951,7 @@ begin
   drawTiled(gr, r1, PIC_WALLPAPER);
   gr.Free;
 end; // wallpaperize
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF NOT USE_GDIPLUS}
 {
 function TRQtheme.GetPicRGN(picName:string; var ThemeToken : Integer;
         var picLoc : TPicLocation; var picIdx : Integer):HRGN;
@@ -5012,8 +5010,8 @@ begin
 end;
 }
 
-  {$IFNDEF NOT_USE_GDIPLUS}
-procedure drawdisabled(bmp : TRnQBitmap; gr: TGPGraphics; x, y : Integer);
+  {$IFDEF USE_GDIPLUS}
+procedure drawdisabled(bmp: TRnQBitmap; gr: TGPGraphics; x, y: Integer);
 var
   FMonoBitmap : TRnQBitmap;
   ia   : TGPImageAttributes;
@@ -5097,7 +5095,7 @@ begin
       BitBlt(DestDC, X, Y, Width, Height, SrcDC, 0, 0, ROP_DSPDxax);
 *)
 end;
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
 
 {function TE2Str(pTE : TRnQThemedElement) : TPicName;
 begin

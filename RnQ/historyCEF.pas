@@ -223,8 +223,8 @@ type
     property OnScroll: TNotifyEvent read FOnScroll write FOnScroll;
     property onLinkClick: TLinkClickEvent read FOnLinkClick write FOnLinkClick;
 
-    function escapeQuotes(text: String): String;
-    function escapeNewlines(text: String): String;
+    function escapeQuotes(const text: String): String;
+    function escapeNewlines(const text: String): String;
 
     procedure CreateBrowserInstance;
     procedure LoadTemplate;
@@ -235,9 +235,9 @@ type
     procedure RememberScrollPos;
     procedure RestoreScrollPos;
     procedure addChatItem(hev: Thevent; evIdx: Integer; animate: Boolean);
-    procedure addJScode(code: string; thread: string = 'default');
-    procedure execJS(thread: string = 'default');
-    function hasJScode(thread: string = 'default'): Boolean;
+    procedure addJScode(const code: string; const thread: string = 'default');
+    procedure execJS(const thread: string = 'default');
+    function hasJScode(const thread: string = 'default'): Boolean;
 
     constructor Create(AOwner: Tcomponent); override;
     destructor Destroy; override;
@@ -1816,6 +1816,8 @@ end; // paintOn
 
 function ThistoryBox.getSelText(): string;
 begin
+//  addJScode('getQuote();', 'copy');
+//  execJS('copy');
   result := '';
 end;
 
@@ -1824,7 +1826,7 @@ begin
   result := '';
 end;
 
-function applyHtmlFont(fnt: Tfont; s: string): string;
+function applyHtmlFont(fnt: Tfont; const s: string): string;
 var
   h, q: string;
 begin
@@ -1849,7 +1851,7 @@ var
   i, dim: integer;
   ev: Thevent;
 
-  procedure addStr(s: string);
+  procedure addStr(const s: string);
   begin
     while dim + length(s) > length(result) do
       setLength(result, length(result) + 10000);
@@ -1892,7 +1894,7 @@ begin
   fnt.Free;
 end; // getSelHtml
 
-function str2html2(s: string): string;
+function str2html2(const s: string): string;
 begin
   result := template(s, ['&', '&amp;', '<', '&lt;', '>', '&gt;', CRLF, '<br/>', #13, '<br/>', #10, '<br/>']);
 end; // str2html
@@ -3007,13 +3009,13 @@ begin
   OutputDebugString(PChar('WMVScroll'));
 end;
 
-function ThistoryBox.escapeQuotes(text: String): String;
+function ThistoryBox.escapeQuotes(const text: String): String;
 begin
   Result := StringReplace(text, '\', '\\', [rfReplaceAll]);
   Result := StringReplace(Result, '''', '\''', [rfReplaceAll]);
 end;
 
-function ThistoryBox.escapeNewlines(text: String): String;
+function ThistoryBox.escapeNewlines(const text: String): String;
 begin
   Result := StringReplace(text, #13#10, '\n', [rfReplaceAll]);
   Result := StringReplace(Result, #13, '\n', [rfReplaceAll]);
@@ -3244,7 +3246,7 @@ begin
   addJScode(codeStr, 'events');
 end;
 
-procedure ThistoryBox.addJScode(code: string; thread: string = 'default');
+procedure ThistoryBox.addJScode(const code: string; const thread: string = 'default');
 var
   prevCode: UTF8String;
 begin
@@ -3257,7 +3259,7 @@ begin
   jscode.AddOrSetValue(thread, prevCode + UTF8String(code));
 end;
 
-function ThistoryBox.hasJScode(thread: string = 'default'): Boolean;
+function ThistoryBox.hasJScode(const thread: string = 'default'): Boolean;
 var
   curCode: UTF8String;
 begin
@@ -3268,7 +3270,7 @@ begin
   Result := not (curCode = '');
 end;
 
-procedure ThistoryBox.execJS(thread: string = 'default');
+procedure ThistoryBox.execJS(const thread: string = 'default');
 var
   execCode: UTF8String;
 begin
@@ -3364,7 +3366,7 @@ begin
 
   jscode := TDictionary<String, UTF8String>.Create;
   template := TStringList.Create;
-  template.LoadFromFile('CEF\template.htm');
+  template.LoadFromFile(themesPath + 'template.htm');
 end;
 
 { TExtension }
