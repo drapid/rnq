@@ -2113,8 +2113,13 @@ if shift = [ssCtrl] then
       if ch.chatType = CT_IM then
         if ch.input.selLength=0 then
           begin
+ {$IFDEF CHAT_CEF} // Chromium
             ch.historyBox.addJScode('execCopy();', 'copy');
             ch.historyBox.execJS('copy');
+ {$ELSE ~CHAT_CEF} // Old
+            if Length(ch.historyBox.getSelText) > 0 then
+              clipboard.asText := ch.historyBox.getSelText;
+ {$ENDIF CHAT_CEF}
           end;
     VK_F6: pageCtrl.SelectNextPage(TRUE);
     VK_F4, VK_W: try
@@ -2866,8 +2871,12 @@ end;
 
 procedure TchatFrm.copy2clpbClick(Sender: TObject);
 begin
+ {$IFDEF CHAT_CEF}
   thisChat.historyBox.addJScode('execCopy();', 'copy');
   thisChat.historyBox.execJS('copy');
+ {$ELSE ~CHAT_CEF}
+  clipboard.asText := thisChat.historyBox.getSelText
+ {$ENDIF CHAT_CEF}
 end;
 
 procedure TchatFrm.btnContactsClick(Sender: TObject);
