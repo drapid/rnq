@@ -295,7 +295,7 @@ type
 //    procedure initPic(name : String; var ThemeToken : Integer;
 //               var picLoc : TPicLocation; var picIdx : Integer); overload;
     procedure initPic(var picElm: TRnQThemedElementDtls); overload;
-    function  GetBigPic(pTE: TRnQThemedElement; const picName: TPicName; var mem: TMemoryStream): Boolean;
+    function  GetBigPic(const picName: TPicName; var mem: TMemoryStream): Boolean;
     function  GetBigSmile(const picName: TPicName; var mem: TMemoryStream): Boolean;
     function  GetPicSize(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0):Tsize; overload;
 //    function  GetPicSize(name: String; var ThemeToken: Integer;
@@ -1507,7 +1507,7 @@ begin
 end;
   {$ENDIF NOT USE_GDIPLUS}
 
-function TRQtheme.GetBigPic(pTE: TRnQThemedElement; const picName: TPicName; var mem: TMemoryStream): Boolean;
+function TRQtheme.GetBigPic(const picName: TPicName; var mem: TMemoryStream): Boolean;
 var
   i: integer;
   s: TPicName;
@@ -1521,14 +1521,7 @@ begin
   Result := false;
  {$IFDEF PRESERVE_BIG_FILE}
   i := -1;
-  if pTE <> RQteDefault then
-  begin
-    s := TE2Str[pTE] + AnsiLowerCase(picName);
-    i := FThemePics.IndexOf(s);
-  end;
-
-  if i < 0 then
-    i := FThemePics.IndexOf(AnsiLowerCase(picName));
+  i := FThemePics.IndexOf(AnsiLowerCase(picName));
 
   if i >= 0 then
   begin

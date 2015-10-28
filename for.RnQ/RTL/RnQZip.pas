@@ -214,7 +214,9 @@ function CheckZIPFilePass(const zipfn, fn : String; const pass : AnsiString) : B
 implementation
   uses
 //     zlibEx,
-     OverbyteIcsZLibObj,
+//     OverbyteIcsZLibObj,
+     System.ZLib,
+     System.ZLibConst,
      OverbyteIcsZLibHigh,
   {$IFDEF ZIP_AES}
      AES_HMAC,
@@ -248,8 +250,8 @@ const
 
 //procedure make_crc_table;
 var
-  crc_table:array[0..255]of Cardinal;
-  crc_table_computed:Boolean;
+  crc_table: array[0..255]of Cardinal;
+  crc_table_computed: Boolean;
 
 procedure make_crc_table;
 var c:Cardinal;
@@ -779,7 +781,7 @@ begin
           ComprStream.Position := 0;
   //        CompressedStream.CopyFrom(ComprStream, dataLen);
           try
-             ZlibDecompressStream(ComprStream, Stream);
+             ZLibDecompressStream(ComprStream, Stream);
   //           ZDecompressStream(ComprStream, Stream);
 //           ReadBytes := Stream.Size;
           finally
@@ -802,7 +804,7 @@ begin
       INT_PTR(data) := INT_PTR(data) + Length(AHeader);
 //      inc(data, Length(AHeader));
       CopyMemory(data, @Files[I].CompressedData[1], Length(Files[I].CompressedData));
-      ZlibDecompressStream(ComprStream, Stream);
+      ZLibDecompressStream(ComprStream, Stream);
 //      ZDecompressStream(ComprStream, Stream);
       ComprStream.Free;
 //    LoadedCRC32:=ZipCRC32(Result);
@@ -852,7 +854,6 @@ begin
 // SetLength(s, 0);
 end;
 
-
 procedure TZipFile.SetUncompressed(i: integer; const Value: RawByteString);
 const
   TestRPNG = RawByteString(#$CC#$7D#$42#$93#$04#$FE#$63#$7C#$B0#$46#$AD#$CE#$8F#$85#$63#$11);
@@ -900,7 +901,7 @@ begin
         CopyMemory(UnComprStream.Memory, Pointer(Value), Length(Value));
         resStream := TMemoryStream.Create;
     //    ZlibCompressStreamEx(UnComprStream, resStream, clMax, zsZLib, false);
-        ZlibCompressStreamEx(UnComprStream, resStream, clMax, zsZLib, True);
+        ZLibCompressStreamEx(UnComprStream, resStream, clMax, zsZLib, True);
         UnComprStream.Free;
     //    ZCompressStream(UnComprStream, resStream, clMax);
         ComprSize := resStream.Size - 6;

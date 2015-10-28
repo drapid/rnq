@@ -661,7 +661,7 @@ type
     procedure sendContacts(cnt: TRnQContact; flags: dword; cl: TRnQCList);
     procedure sendQueryInfo(uin: Integer);
     procedure sendSimpleQueryInfo(const uin: TUID);
-    procedure sendAdvQueryInfo(const uin: TUID);
+    procedure sendAdvQueryInfo(const uin: TUID; const token: RawByteString);
     procedure sendFullQueryInfo(const uin: TUID);
     procedure sendNewQueryInfo(const uin: TUID);
     procedure sendAddedYou(const uin: TUID);
@@ -774,15 +774,15 @@ type
     procedure parseREDIRECTxSERVICE(const pkt : RawByteString); // 0105
     procedure parseOncomingUser(const snac : RawByteString);
     procedure parseOffgoingUser(const snac : RawByteString);
-    procedure parseMsgError(const snac : RawByteString; ref:integer);
-    procedure parseServerAck(const snac : RawByteString; ref:integer);
-    procedure parseSRV_LOCATION_ERROR(const snac : RawByteString; ref:integer);
-    procedure parseSRV_LOGIN_REPLY(const snac : RawByteString);
-    procedure parseAuthKey(const snac : RawByteString);
-    procedure parse1503(const snac : RawByteString; ref:integer; flags : word);
-    procedure parse040A(const snac : RawByteString);
-    procedure parse040B(const snac : RawByteString);
-    procedure parse010F(const snac : RawByteString);
+    procedure parseMsgError(const snac : RawByteString; ref: integer);
+    procedure parseServerAck(const snac : RawByteString; ref: integer);
+    procedure parseSRV_LOCATION_ERROR(const snac: RawByteString; ref: integer);
+    procedure parseSRV_LOGIN_REPLY(const snac: RawByteString);
+    procedure parseAuthKey(const snac: RawByteString);
+    procedure parse1503(const snac: RawByteString; ref:integer; flags : word);
+    procedure parse040A(const snac: RawByteString);
+    procedure parse040B(const snac: RawByteString);
+    procedure parse010F(const snac: RawByteString);
     procedure parse0206(snac : RawByteString);
     procedure parse020C(const snac : RawByteString; ref : Integer);
     procedure parseIncomingMsg(snac : RawByteString);
@@ -914,7 +914,7 @@ uses
  {$IFDEF UNICODE}
    AnsiStrings, AnsiClasses,
  {$ENDIF UNICODE}
-   RnQZip, OverbyteIcsZLibHigh, OverbyteIcsZLibObj,
+   RnQZip, OverbyteIcsZLibHigh,
    OverbyteIcsMD5, OverbyteIcsWSocket,
 //   ElAES,
    aes_type, aes_ecb,
@@ -4149,7 +4149,8 @@ procedure TicqSession.sendFullQueryInfo(const uin: TUID);
 var
   a : Integer;
 begin
-  if not isReady then Exit;
+  if not isReady then
+    Exit;
   a := StrToIntDef(uin, 0);
   if a > 0 then
   sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, TLV(1, Length_LE(myUINle
@@ -4161,7 +4162,7 @@ begin
   addRef(REF_query, uin);
 end; // sendMultiQueryInfo
 
-procedure TicqSession.sendQueryInfo(uin:Integer);
+procedure TicqSession.sendQueryInfo(uin: Integer);
 //const
 //  TAB:array [boolean] of AnsiChar=(#$B2,#$D0);
 var
@@ -4194,7 +4195,7 @@ begin
   sendWPsearch(wp, 0);
 end; // sendQueryInfo}
 
-procedure TicqSession.sendWPsearch(wp:TwpSearch; idx : Integer);
+procedure TicqSession.sendWPsearch(wp: TwpSearch; idx : Integer);
   function TLVIfNotNull(t : word; s : RawByteString) : RawByteString;
   begin
     if s > '' then
@@ -4268,77 +4269,85 @@ begin
 end; // sendWPsearch
 
 procedure TicqSession.sendWPsearch2(wp:TwpSearch; idx : Integer; IsWP : Boolean = True);
-  function TLVIfNotNull(t : word; const s : RawByteString) : RawByteString;
+  function TLVIfNotNull(t: word; const s: RawByteString) : RawByteString; inline;
   begin
     if s > '' then
      result := TLV(t, WNTS(s));
   end;
-  function TLVIfbNotNull(t : word; b : byte) : RawByteString;
+  function TLVIfbNotNull(t: word; b: byte) : RawByteString; inline;
   begin
     if b > 0 then
      result := TLV(t, AnsiChar(b));
   end;
-  function TLVIfWNotNull(t : word; w : word) : RawByteString;
+  function TLVIfWNotNull(t: word; w: word): RawByteString; inline;
   begin
     if w > 0 then
      result := TLV(t, word_BEasStr(w));
   end;
-  function TLVIfDWNotNull(t : word; d : dword) : RawByteString;
+  function TLVIfDWNotNull(t: word; d: dword): RawByteString; inline;
   begin
     if d > 0 then
      result := TLV(t, dword_BEasStr(d));
   end;
-  function TLVIfDWLENotNull(t : word; d : dword) : RawByteString;
+  function TLVIfDWLENotNull(t: word; d: dword): RawByteString; inline;
   begin
     if d > 0 then
      result := TLV(t, dword_LEasStr(d));
   end;
-  function TLVIfINotNull(t : word; w : word; const s : RawByteString) : RawByteString;
+  function TLVIfINotNull(t: word; w: word; const s: RawByteString): RawByteString; inline;
   begin
     if (w > 0) or (s > '') then
      result := TLV(t, word_LEasStr(w) + WNTS(s));
   end;
-{  function TLVIfSNotNull(t : word; s : String) : String;
+{
+  function TLVIfSNotNull(t : word; s : RawByteString) : RawByteString;
   begin
     if (s > '') then
      result := TLV(t, Length_LE(s));
   end;}
-  function TLVIfSNotNull(t : word; const s : RawByteString) : RawByteString;
-  begin
-    if (s > '') then
-     result := TLV(t, s);
-  end;
 //const
 //  TAB:array [boolean] of AnsiChar=(#$B2,#$D0);
 var
   s : RawByteString;
 begin
-  if not isReady then exit;
+  if not isReady then
+    exit;
 
   wasUINwp := false;
 
   if (not IsWP) and (wp.uin > '') then
-   s:= TLV($05B9, Word($8000)) +  #$00#$00#$00#$00+
-      Length_BE(#00#01#00#02#00#02) +
-      #$00#$00#$04#$E3#$00#$00
-      + #$00#$02#$00#$03#$00#$00
+   s:= //TLV($05B9, Word($8000)) +  #$00#$00#$00#$00+
+//      Length_BE(#00#01#00#02#00#02)
+//      + #$00#$00#$04#$E3#$00#$00#$00#$02
+//      + #$00#$03#$00#$00
+      SNAC_ver($05B9, 02, $8000, 0, 02)
+      + word_BEasStr($00)
+      + word_BEasStr(GetACP)
+      + dword_BEasStr($02)
+      + TLV(03, '')
 //      + TLV(02, Word(idx))
         + TLV(01,
-           TLVIfSNotNull(META_COMPAD_UID, wp.uin)+
-           TLVIfSNotNull(META_COMPAD_INFO_HASH, wp.Token)
+           TLV_IFNN(META_COMPAD_UID, wp.uin)+
+           TLV_IFNN(META_COMPAD_INFO_HASH, wp.Token)
              )
   else
    begin
-     s := #$05#$B9#$0F#$A0#$00#$00#$00#$00#$00#$00#$00#$00#$04#$E3#$00#$00
+     s := #$05#$B9#$0F#$A0#$00#$00#$00#$00#$00#$00
+      //  SNAC_shortver($05B9, $0FA0, 0, 0, 02)
+//      + #$00#$00#$04#$E3#$00#$00
+             + word_BEasStr($00)
+//             + word_BEasStr(GetACP)
+             + word_BEasStr($FDE9) // UTF8
+             + word_BEasStr($00)
       + TLV(02, Word(idx))
       + TLV(01,
 //        + TLVIfNotNull(User_First, wp.first)
 //        + TLVIfNotNull(User_Last, wp.last)
 //          TLVIfNotNull(META_COMPAD_UID, wp.uin)
-          TLVIfSNotNull(CP_User_NICK, StrToUTF8(wp.nick))
+          TLV_IFNN(CP_User_NICK, StrToUTF8(wp.nick))
 //        + TLVIfNotNull(User_email, wp.email)
          + TLVIfDWNotNull(CP_User_Cntry, wp.country)
-         + TLVIfSNotNull(CP_User_City, StrToUTF8(wp.city))
+         + TLV_IFNN(CP_User_City, StrToUTF8(wp.city))
 //        + TLVIfNotNull(User_State, wp.state)
 //        + TLVIfINotNull(User_Inter, wp.wInterest, wp.keyword)
          + TLVIfWNotNull(CP_User_Lang, wp.lang)
@@ -4362,7 +4371,7 @@ begin
       addRef(REF_wp, '');
 end; // sendWPsearch2
 
-procedure TicqSession.getUINStatusNEW(const UID : TUID);
+procedure TicqSession.getUINStatusNEW(const UID: TUID);
 begin
   if not isReady then
     exit;
@@ -4372,8 +4381,10 @@ begin
            + word_LEasStr(CLI_META_INFO_REQ)
            + word_LEasStr($03)
            + word_LEasStr(META_SEARCH_COMPAD)
-           + Length_LE(#$05#$b9#$00#$02#$80#$00#$00#$00#$00#$00#$00#$06#$00#$01+
-              #$00#$02#$00#$02#$00#$00#$04#$e3#$00#$00#$00#$02+
+           + Length_LE(//#$05#$b9#$00#$02#$80#$00#$00#$00#$00#$00+
+//              #$00#$06#$00#$01#$00#$02#$00#$02+
+              SNAC_ver($05B9, 02, $8000, 0, 02)+
+              #$00#$00#$04#$e3#$00#$00#$00#$02+
               TLV(3, '')+
               TLV(1,  #00#$32 + Length_LE(UID))
                     )
@@ -4382,9 +4393,10 @@ begin
           );
 end;
 
-procedure TicqSession.sendAdvQueryInfo(const uin: TUID);
+procedure TicqSession.sendAdvQueryInfo(const uin: TUID; const token: RawByteString);
 begin
-  if not isReady then exit;
+  if not isReady then
+    exit;
   if not (uin = '') then
   sendSnac(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
     TLV(1, Length_LE(myUINle
@@ -4396,7 +4408,9 @@ begin
              + word_BEasStr(GetACP)
              + dword_BEasStr($02)
              + TLV(3, '')
-             + TLV(1, #00#$32 + Length_BE(uin))
+             + TLV(1,
+                  TLV_IFNN(META_COMPAD_UID, uin)
+                + TLV_IFNN(META_COMPAD_INFO_HASH, token))
            ))
     )
   );
@@ -4450,7 +4464,8 @@ procedure TicqSession.sendSMS2(dest, msg: String; ack: Boolean);
 var
   req: RawByteString;
 begin
-  if not isReady then Exit;
+  if not isReady then
+    Exit;
 
   msg := '<HTML><BODY dir="ltr"><FONT face="Arial" color="#000000" size="2">' + msg + '</FONT></BODY></HTML>';
   msg := StrToUnicode(msg);
@@ -4564,8 +4579,8 @@ begin
 
       + Length_LE( SNAC_ver($05B9, $03, $00, 00, 02)
              + word_BEasStr($00)
-             + word_BEasStr(GetACP)
-//             + word_BEasStr($FDE9) // UTF8
+//             + word_BEasStr(GetACP)
+             + word_BEasStr($FDE9) // UTF8
              + dword_BEasStr($02)
              + TLV(3, TLV(META_COMPAD_NICK, StrToUTF8(c.nick))
                     + TLV(META_COMPAD_FNAME, StrToUTF8(c.first))
@@ -5938,7 +5953,7 @@ begin
   eventFlags := IF_urgent;
 //  event
   notifyListeners(IE_msgError);
-end; // parseMsgError
+end; // parseSRV_LOCATION_ERROR
 
 procedure TicqSession.parseMsgError(const snac: RawByteString; ref: integer);
 begin
@@ -5961,7 +5976,7 @@ end; // parseServerAck
 procedure TicqSession.parseIncomingMsg(snac: RawByteString); // 0407
 var
   t, i : Integer;
-  ofs, ofs2, l, l2 :integer;
+  ofs, ofs2, l, l2 : integer;
   isTzer: Boolean;
   isAutoMsg: Boolean;
   thisCnt : TICQcontact;
@@ -6044,7 +6059,7 @@ case Byte(snac[10]) of // msg format
         cap := copy(sA, ofs2, min(16, t)); // first cap only, enough?
         if cap = BigCapability[CAPS_big_tZers].v then
           isTzer := True;
-        
+
         inc(ofs2, t);
         if t < length(sA) then
           t := Byte(sA[ofs2]);

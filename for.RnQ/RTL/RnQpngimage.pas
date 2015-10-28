@@ -146,7 +146,8 @@ uses
   Classes,
   Graphics,
  {$IFNDEF FPC}
-    OverbyteIcsZLibObj,
+//    OverbyteIcsZLibObj,
+    System.ZLib,
  {$ENDIF}
   SysUtils
 ;

@@ -41,17 +41,18 @@ function TLV(t: word; v: word): RawByteString; overload;
 function TLV(t: word; v: Integer): RawByteString; overload;
 function TLV(t: word; v: Int64): RawByteString; overload;
 function TLV(t: word; const v: RawByteString): RawByteString; overload;
+function TLV_IFNN(t: word; const v: RawByteString): RawByteString; inline;
 function TLV_LE(t: word; const v: RawByteString): RawByteString;
-function TLV2(code: Integer; const data:RawByteString): RawByteString; overload;
-function TLV2(code: Integer; const data:TDateTime): RawByteString;overload;
-function TLV2(code: Integer; const data:Integer): RawByteString;overload;
-function TLV2(code: Integer; const data:Boolean): RawByteString; overload;
+function TLV2(code: Integer; const data: RawByteString): RawByteString; overload;
+function TLV2(code: Integer; const data: TDateTime): RawByteString;overload;
+function TLV2(code: Integer; const data: Integer): RawByteString;overload;
+function TLV2(code: Integer; const data: Boolean): RawByteString; overload;
 function TLV2_IFNN(code: Integer; const data: RawByteString): RawByteString; overload; // if data not null
-function TLV2_IFNN(code: Integer; const data:TDateTime): RawByteString;overload; // if data not null
+function TLV2_IFNN(code: Integer; const data: TDateTime): RawByteString;overload; // if data not null
 function TLV2_IFNN(code: Integer; data: Integer): RawByteString; overload; // if data not null
-function TLV2U_IFNN(code: Integer; const str:String): RawByteString;// overload; // if data not null. Unicode String
-function TLV3(code: Integer; const data:RawByteString): RawByteString;
-function TLV3U(code: Integer; const Str:UnicodeString): RawByteString;
+function TLV2U_IFNN(code: Integer; const str: String): RawByteString;// overload; // if data not null. Unicode String
+function TLV3(code: Integer; const data: RawByteString): RawByteString;
+function TLV3U(code: Integer; const Str: UnicodeString): RawByteString;
 function Length_LE(const data: RawByteString): RawByteString;
 function Length_BE(const data: RawByteString): RawByteString;
 function Length_DLE(const data: RawByteString): RawByteString;
@@ -580,7 +581,7 @@ end;
 
 function Length_LE(const data: RawByteString): RawByteString;
 begin
-  result:=word_LEasStr(length(data))+data
+  result := word_LEasStr(length(data))+data
 end;
 
 function Length_DLE(const data: RawByteString): RawByteString;
@@ -590,17 +591,17 @@ end;
 
 function Length_BE(const data: RawByteString): RawByteString;
 begin
-  result:=word_BEasStr(length(data))+data
+  result := word_BEasStr(length(data))+data
 end;
 
 function Length_B(const data: RawByteString): RawByteString;
 begin
-  result:= AnsiChar(byte(length(data)))+data
+  result := AnsiChar(byte(length(data)))+data
 end;
 
 function WNTS(const s: RawByteString): RawByteString;
 begin
-  result:=Word_LEasStr(length(s)+1)+s+#0
+  result := Word_LEasStr(length(s)+1)+s+#0
 end;
 
 function WNTSU(const s: String): RawByteString;
@@ -653,12 +654,19 @@ begin
   Result := s;
 end;
 
+function TLV_IFNN(t: word; const v: RawByteString): RawByteString;
+begin
+  if (v > '') then
+    result := TLV(t, v)
+   else
+    result := '';
+end;
 //function TLV_LE(t:word; v:word):string;
 //begin result:= TLV_LE(t, word_LEasStr(v)) end;
 
 function TLV_LE(t: word; const v: RawByteString): RawByteString;
 begin
-  result:=word_LEasStr(t)+word_LEasStr(length(v))+v
+  result := word_LEasStr(t)+word_LEasStr(length(v))+v
 end;
 
 function TLV2(code: integer; const data: RawByteString): RawByteString;
@@ -692,7 +700,7 @@ begin
 }
 end;
 
-function TLV3U(code:integer; const Str:UnicodeString):RawByteString;
+function TLV3U(code: integer; const Str: UnicodeString): RawByteString;
 begin
   if Str > '' then
     Result := TLV3(code, StrToUTF8(Str))
@@ -700,7 +708,7 @@ begin
     Result := TLV3(code, '');
 end;
 
-function TLV3(code:integer; const data:RawByteString):RawByteString;
+function TLV3(code: integer; const data: RawByteString): RawByteString;
 var
   s : RawByteString;
   ps : Pointer;
@@ -727,7 +735,7 @@ begin
   Result := s;
 end;
 
-function TLV2(code:integer; const data:TDateTime):RawByteString;
+function TLV2(code: integer; const data: TDateTime): RawByteString;
 var
   s : RawByteString;
   ps : Pointer;

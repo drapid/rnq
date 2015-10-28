@@ -1109,6 +1109,7 @@ begin
   pnl.BevelInner := bvNone;
   pnl.BevelOuter := bvNone;
   pnl.BorderStyle := bsSingle;
+//  pnl.BorderStyle := bsNone;
 
   chat.historyBox := ThistoryBox.create(pnl);
   with chat.historyBox do
@@ -2111,8 +2112,10 @@ if shift = [ssCtrl] then
     VK_C:
       if ch.chatType = CT_IM then
         if ch.input.selLength=0 then
-         if Length(ch.historyBox.getSelText) > 0 then
-           clipboard.asText := ch.historyBox.getSelText;
+          begin
+            ch.historyBox.addJScode('execCopy();', 'copy');
+            ch.historyBox.execJS('copy');
+          end;
     VK_F6: pageCtrl.SelectNextPage(TRUE);
     VK_F4, VK_W: try
             sawAllHere;
@@ -2863,7 +2866,8 @@ end;
 
 procedure TchatFrm.copy2clpbClick(Sender: TObject);
 begin
-  clipboard.asText:=thisChat.historyBox.getSelText
+  thisChat.historyBox.addJScode('execCopy();', 'copy');
+  thisChat.historyBox.execJS('copy');
 end;
 
 procedure TchatFrm.btnContactsClick(Sender: TObject);
@@ -3308,6 +3312,12 @@ procedure TchatFrm.del1Click(Sender: TObject);
 var
   st, en: Integer;
 begin
+  if not thisChat.historyBox.history.loaded then
+  begin
+    MessageDlg(getTranslation('Load the whole history before removing messages'), mtInformation, [mbOK], 0);
+    Exit;
+  end;
+
   with thisChat.historyBox do
    begin
     if not wholeEventsAreSelected then

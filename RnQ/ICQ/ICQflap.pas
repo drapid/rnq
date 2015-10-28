@@ -112,9 +112,9 @@ begin
   result:=word_BEasStr(fam)+word_BEasStr(sub)+word_BEasStr(flags)+dword_BEasStr(ref)
 end;
 
-function SNAC(fam,sub:word; ref:integer):RawByteString; overload;
+function SNAC(fam,sub: word; ref: integer):RawByteString; overload;
 begin
-  result:=word_BEasStr(fam)+word_BEasStr(sub)+word_BEasStr(0)+dword_BEasStr(ref)
+  result := word_BEasStr(fam)+word_BEasStr(sub)+word_BEasStr(0)+dword_BEasStr(ref)
 end;
 
 function SNAC_ver(fam, sub, flags: word; ref: integer; ver: word): RawByteString; overload;

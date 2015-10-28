@@ -109,7 +109,7 @@ procedure sortCL(cl: TRnQCList);
 procedure sortCLbyGroups(cl: TRnQCList);
 procedure updateViewInfo(c: TRnQContact);
  {$IFDEF RNQ_FULL2}
-procedure convertHistoriesDlg(oldPwd, newPwd: string);
+procedure convertHistoriesDlg(const oldPwd, newPwd: string);
  {$ENDIF}
 procedure openSendContacts(dest: TRnQContact);
 function  isEmailAddress(const s: string; start: integer): integer;
@@ -161,7 +161,7 @@ procedure wallpaperize(DC: THandle; r: TRect); {$IFDEF HAS_INLINE} inline; {$END
 // file management
 function  delSUBtree(subPath: string): boolean;
 function  deltree(path: string): boolean;
-function  deleteFromTo(fn: string; from, to_: integer): boolean;
+function  deleteFromTo(const fn: string; from, to_: integer): boolean;
 function  saveAllLists(const uPath: String; const pr: TRnQProtocol; pProxys : Tarrproxy) : Boolean;
 function  loadDB(zp: TZipFile; pCheckGroups: Boolean): boolean;
 //procedure saveDB;
@@ -184,9 +184,12 @@ function  openSaveDlg(parent: Tform; const Cptn: String; IsOpen: Boolean;
 
 function  str2sortby(const s: AnsiString): TsortBy;
 procedure CheckBDays;
-function GetWidth(chk: TCheckBox): integer;
+function  GetWidth(chk: TCheckBox): integer;
 procedure parseMsgImages(const imgStr: RawByteString; var imgList: TAnsiStringList);
-function CacheImage(var mem: TMemoryStream; url, ext: RawByteString): Boolean;
+function  CacheImage(var mem: TMemoryStream; url, ext: RawByteString): Boolean;
+procedure CacheType(const url, mime, ctype: RawByteString);
+function  CheckType(const lnk: String; var sA: RawByteString; var ext: String): Boolean; overload;
+function  CheckType(const lnk: String): Boolean; overload;
 
 // costants for files
 const
@@ -284,7 +287,7 @@ uses
   RQMenuItem, RQThemes, RQLog, RnQDialogs,
   RnQLangs, RnQButtons, RnQBinUtils, RnQGlobal, RnQCrypt, RnQPics,
   RDtrayLib, RnQTips,
-  Murmur2,
+  Murmur2, json,
    {$IFDEF RNQ_FULL2}
      converthistoriesDlg,
    {$ENDIF}
@@ -1920,12 +1923,12 @@ begin
     exec('mailto:'+ email);
 end;
 
-function deleteFromTo(fn:string; from,to_:integer):boolean;
+function deleteFromTo(const fn: string; from,to_:integer):boolean;
 begin
   result := partDeleteFile(fn,from,to_-from)
 end;
 
-function enterUinDlg(const proto : TRnQProtocol; var uin : TUID; const title:string=''):boolean;
+function enterUinDlg(const proto: TRnQProtocol; var uin: TUID; const title: string=''): boolean;
 var
   res: TUID;
   ttl : String;
@@ -3016,7 +3019,7 @@ else
      if ev.flags and IF_no_matter = 0 then
       if not vProto.getStatusDisable.OpenChat then
        if not BossMode.isBossKeyOn and (BE_flashchat in behaviour[ev.kind].trig) then
-         chatFrm.flash;
+          chatFrm.flash;
 // POP UP
 if not BossMode.isBossKeyOn and (BE_popup in behaviour[ev.kind].trig) then
   if not chatFrm.isVisible then
@@ -3027,7 +3030,7 @@ if not BossMode.isBossKeyOn and (BE_popup in behaviour[ev.kind].trig) then
   if ev.kind = EK_BUZZ then
     if not BossMode.isBossKeyOn and (BE_flashchat in behaviour[ev.kind].trig) then
       if chatFrm.Visible then
-        chatFrm.shake
+        chatFrm.shake;
 end; // behave
 
 function beh2str(kind: integer): RawByteString;
@@ -4311,7 +4314,11 @@ case kind of
        fieldOutDP('Client', c.ClientDesc);
  {$IFDEF PROTOCOL_ICQ}
        if Assigned(cnt) then
-         fieldOutDP('Online since', timeToStr(cnt.onlinesince));
+          begin
+            if cnt.noClient then
+              fieldOutDP('Client was closed', timeToStr(cnt.clientClosed));
+            fieldOutDP('Online since', timeToStr(cnt.onlinesince));
+          end;
  {$ENDIF PROTOCOL_ICQ}
       end
     else
@@ -4713,6 +4720,72 @@ begin
     else
       Break;
   until pos1 <= 0;
+end;
+
+procedure CacheType(const url, mime, ctype: RawByteString);
+begin
+  try
+    if not (mime = '') then
+      imgCacheInfo.WriteString(url, 'mime', mime)
+    else
+      imgCacheInfo.WriteString(url, 'mime', ctype);
+    imgCacheInfo.UpdateFile;
+  except end;
+end;
+
+function CheckType(const lnk: String; var sA: RawByteString; var ext: String): Boolean;
+var
+  idx: Integer;
+  ctype: String;
+  imgStr, mime, fileIdStr: RawByteString;
+  buf: TMemoryStream;
+  JSONObject: TJSONObject;
+begin
+  Result := False;
+  if ContainsText(lnk, 'files.icq.net/') then
+  begin
+    buf := TMemoryStream.Create;
+    fileIdStr := ReplaceText(Trim(lnk), 'files.icq.net/get/', 'files.icq.com/getinfo?file_id=');
+    fileIdStr := ReplaceText(fileIdStr, 'files.icq.net/files/get?fileId=', 'files.icq.com/getinfo?file_id=');
+    LoadFromURL(fileIdStr, buf);
+    SetLength(imgStr, buf.Size);
+    buf.ReadBuffer(imgStr[1], buf.Size);
+    buf.Free;
+
+    JSONObject := TJSONObject.ParseJSONValue(imgStr) as TJSONObject;
+    if Assigned(JSONObject) then
+    try
+      JSONObject := TJSONObject.ParseJSONValue(TJSONArray(JSONObject.GetValue('file_list')).Items[0].ToJSON) as TJSONObject;
+      sA := JSONObject.GetValue('dlink').Value + '?no-download=1';
+      mime := JSONObject.GetValue('mime').Value;
+      JSONObject.Free;
+    except end;
+  end else
+    sA := Trim(lnk);
+
+  ctype := HeaderFromURL(sA);
+  CacheType(lnk, mime, ctype);
+  if MatchText(mime, ImageContentTypes) or MatchText(ctype, ImageContentTypes) then
+  begin
+    Result := True;
+
+    idx := IndexText(mime, ImageContentTypes);
+    if idx < 0 then
+      idx := IndexText(ctype, ImageContentTypes);
+
+    if idx >= 0 then
+      ext := ImageExtensions[idx]
+    else
+      ext := 'jpg';
+  end;
+end;
+
+function CheckType(const lnk: String): Boolean;
+var
+  ext: String;
+  sA: RawByteString;
+begin
+  Result := CheckType(lnk, sA, ext);
 end;
 
 function CacheImage(var mem: TMemoryStream; url, ext: RawByteString): Boolean;

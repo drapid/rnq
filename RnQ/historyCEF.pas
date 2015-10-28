@@ -234,7 +234,7 @@ type
     procedure InitSmiles;
     procedure RememberScrollPos;
     procedure RestoreScrollPos;
-    procedure addChatItem(hev: Thevent; evIdx: Integer; animate: Boolean);
+    procedure addChatItem(hev: Thevent; evIdx: Integer; animate: Boolean; last: Boolean = True);
     procedure addJScode(const code: string; const thread: string = 'default');
     procedure execJS(const thread: string = 'default');
     function hasJScode(const thread: string = 'default'): Boolean;
@@ -2884,14 +2884,10 @@ procedure ThistoryBox.updateMsgStatus(hev: Thevent);
 var
   evPicRect: TGPRect;
   evPicSpriteName: TPicName;
-//  pe : TRnQThemedElementDtls;
   picStr: String;
   idx: Integer;
 begin
   idx := history.IndexOf(hev);
-//  pe.picName := hev.pic;
-//  pe.ThemeToken := -1;
-//  theme.initPic(pe);
   theme.GetPicOrigin(RQteDefault, hev.pic, evPicSpriteName, evPicRect);
   picStr := '[ ''' + evPicSpriteName + ''', ' + inttostr(-evPicRect.X) + ', ' + inttostr(-evPicRect.Y) + ', ' + inttostr(evPicRect.Width) + ', ' + inttostr(evPicRect.Height) + ' ]';
   addJScode('updateMsgStatus(' + IntToStr(idx) + ', ' + picStr + ');', 'msgstatus');
@@ -3102,7 +3098,7 @@ begin
   Result := StartsText('http://', link) or StartsText('https://', link) or StartsText('www.', link);
 end;
 
-procedure ThistoryBox.addChatItem(hev: Thevent; evIdx: Integer; animate: Boolean);
+procedure ThistoryBox.addChatItem(hev: Thevent; evIdx: Integer; animate: Boolean; last: Boolean = True);
 var
   codeStr, msgText, bodyText, bodyImages, cachedLinks: String;
   evPicRect,
@@ -3242,6 +3238,11 @@ begin
   else
     codeStr := codeStr + ', false';
 
+  if last then
+    codeStr := codeStr + ', true'
+  else
+    codeStr := codeStr + ', false';
+
   codeStr := codeStr + ');'#13#10;
   addJScode(codeStr, 'events');
 end;
@@ -3286,7 +3287,7 @@ end;
 
 procedure ThistoryBox.ReloadLast;
 var
-  evId, startId: Integer;
+  evId, endId, startId: Integer;
   evIcon: TIcon;
   iconStream: TMemoryStream;
   hev: Thevent;
@@ -3310,11 +3311,18 @@ begin
   end else
     startId := topVisible;
 
+  for endId := history.Count - 1 downto startId do
+  begin
+    hev := history.getAt(endId);
+    if (BE_save in behaviour[hev.kind].trig) and (hev.flags and IF_not_save_hist = 0) then
+      Break;
+  end;
+
   for evId := startId to history.Count - 1 do
   begin
     hev := history.getAt(evId);
     if (BE_save in behaviour[hev.kind].trig) and (hev.flags and IF_not_save_hist = 0) then
-      addChatItem(hev, evId, False);
+      addChatItem(hev, evId, False, evId = endId);
   end;
   execJS('events');
 
@@ -3546,7 +3554,7 @@ begin
   begin
     pic := ReplaceText(copy(request.Url, 7, length(request.Url)), '/', '');
     origPic := nil;
-    if theme.GetBigPic(RQteDefault, pic, origPic) then
+    if theme.GetBigPic(pic, origPic) then
       begin
         FDataStream.LoadFromStream(origPic);
         origPic.Free;
@@ -3572,6 +3580,9 @@ begin
   else if AnsiStartsText('res:', request.Url) then
   begin
     url := ReplaceText(copy(request.Url, 5, length(request.Url)), '/', '');
+    if url = 'load' then
+      url := 'dummy';
+
     rs := TResourceStream.Create(HInstance, uppercase(url), RT_RCDATA);
     try
       rs.SaveToStream(FDataStream);
@@ -3582,20 +3593,27 @@ begin
   end
   else
   begin
-    if LooksLikeALink(request.Url) then
+    if not LooksLikeALink(request.Url) then
     begin
-      hash := imgCacheInfo.ReadString(request.Url, 'hash', '0');
-      fn := myPath + 'Cache\Images\' + hash + '.' + imgCacheInfo.ReadString(request.Url, 'ext', 'jpg');
-      cached := not (hash = '0') and FileExists(fn);
+      SetStatus(306);
+      Exit;
+    end;
 
-      if request.Method = 'HEAD' then
-      begin
-        if cached then
-          SetStatus(302)
-        else
-          SetStatus(306);
-      end
-        else
+    fn := myPath + 'Cache\Images\' + imgCacheInfo.ReadString(request.Url, 'hash', '0') + '.' + imgCacheInfo.ReadString(request.Url, 'ext', 'jpg');
+    cached := FileExists(fn);
+
+    if request.Method = 'HEAD' then
+    begin
+      if cached then
+        SetStatus(302)
+      else if imgCacheInfo.ValueExists(request.Url, 'mime') and not MatchText(imgCacheInfo.ReadString(request.Url, 'mime', ''), ImageContentTypes) then
+        SetStatus(306)
+      else if CheckType(request.Url) then
+        SetStatus(302)
+      else
+        SetStatus(306);
+    end
+     else
       begin
         if not cached then
           cached := DownloadAndCache(request.Url);
@@ -3604,6 +3622,7 @@ begin
           SetStatus(306)
         else
         try
+        fn := myPath + 'Cache\Images\' + imgCacheInfo.ReadString(request.Url, 'hash', '0') + '.' + imgCacheInfo.ReadString(request.Url, 'ext', 'jpg');
           fs := TFileStream.Create(fn, fmOpenRead);
           FDataStream.LoadFromStream(fs);
           SetStatus(200);
@@ -3614,9 +3633,6 @@ begin
         if Assigned(fs) then
           fs.Free;
       end;
-    end
-      else
-    SetStatus(306);
   end;
   FDataStream.Seek(0, soFromBeginning);
 
@@ -3659,13 +3675,13 @@ begin
     302:
       begin
         FStatus := 302;
-        FStatusText := 'Cached';
+        FStatusText := 'Accept';
         FMimeType := 'text/html';
       end;
     306:
       begin
         FStatus := 306;
-        FStatusText := 'Not Cached';
+        FStatusText := 'Ignore';
         FMimeType := 'text/html';
       end;
   end;
