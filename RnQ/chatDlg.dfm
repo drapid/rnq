@@ -505,6 +505,10 @@ object chatFrm: TchatFrm
     object chatpopuplsb1: TMenuItem
       Action = hAchatpopuplsb
     end
+    object chatShowDevTools: TMenuItem
+      Caption = 'Show Dev tools'
+      OnClick = chatShowDevToolsClick
+    end
   end
   object ActList1: TActionList
     Left = 264
@@ -570,6 +574,12 @@ object chatFrm: TchatFrm
       SecondaryShortCuts.Strings = (
         'Ctrl+Shift+S')
       OnExecute = ShowStickersExecute
+    end
+    object hAShowDevTools: TAction
+      Category = 'histMenu'
+      Caption = 'hAShowDevTools'
+      HelpKeyword = 'debug'
+      OnExecute = chatShowDevToolsClick
     end
   end
 end

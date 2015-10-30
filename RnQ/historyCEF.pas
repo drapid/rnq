@@ -213,6 +213,7 @@ type
     rightClickedChatItem: TChatItem;
     templateLoaded: Boolean;
 
+
     property lastEventIsFullyVisible: boolean read P_lastEventIsFullyVisible;
     property pointedItem: ThistoryItem read P_pointedItem;
     property clickedItem: ThistoryItem read lastClickedItem;
@@ -242,28 +243,30 @@ type
     constructor Create(AOwner: Tcomponent); override;
     destructor Destroy; override;
     procedure go2end();
-    function getSelText(): string;
-    function getSelBin(): AnsiString;
-    function getSelHtml(smiles: boolean): string;
-    function getSelHtml2(smiles: boolean): RawByteString;
-    function somethingIsSelected(): boolean;
-    function wholeEventsAreSelected(): boolean;
-    function nothingIsSelected(): boolean;
-    function partialTextIsSelected(): boolean;
+    function  getSelText(): string;
+    function  copySel2Clpb(): Boolean;
+    procedure copySel2Quote;
+    function  getSelBin(): AnsiString;
+    function  getSelHtml(smiles: boolean): string;
+    function  getSelHtml2(smiles: boolean): RawByteString;
+    function  somethingIsSelected(): boolean;
+    function  wholeEventsAreSelected(): boolean;
+    function  nothingIsSelected(): boolean;
+    function  partialTextIsSelected(): boolean;
 
-    function offsetPos: integer;
+    function  offsetPos: integer;
     procedure select(from, to_: integer);
     procedure deselect();
 
     procedure updateRSB(SetPos: boolean; pos: integer = 0; doRedraw: boolean = true);
     procedure addEvent(ev: Thevent);
-    function historyNowCount: integer;
-    function historyNowOffset: integer;
+    function  historyNowCount: integer;
+    function  historyNowOffset: integer;
     procedure trySetNot2go2end;
     procedure histScrollEvent(d: integer);
     procedure histScrollLine(d: integer);
     procedure Scroll;
-    function getQuoteByIdx(var pQuoteIdx: integer): String;
+    function  getQuoteByIdx(var pQuoteIdx: integer): String;
     procedure setScrollPrefs(ShowAll: Boolean);
     procedure updateMsgStatus(hev: Thevent);
     procedure ManualRepaint;
@@ -304,6 +307,8 @@ type
       const schemeName: ustring; const request: ICefRequest); override;
     destructor Destroy; override;
   end;
+
+  function InitRnQCEFLibrary : Boolean;
 
 var
   hisBGColor, myBGColor: TColor;
@@ -1826,6 +1831,19 @@ begin
   result := '';
 end;
 
+function ThistoryBox.copySel2Clpb(): Boolean;
+begin
+  addJScode('execCopy();', 'copy');
+  execJS('copy');
+  Result := false;
+end;
+
+procedure ThistoryBox.copySel2Quote;
+begin
+  addJScode('getQuote();', 'copy');
+  execJS('copy');
+end;
+
 function applyHtmlFont(fnt: Tfont; const s: string): string;
 var
   h, q: string;
@@ -2928,8 +2946,10 @@ begin
 end; // histScrollEvent
 
 procedure ThistoryBox.histScrollLine(d: integer);
+var
+  a:   TCefMouseEvent;
 begin
-  startWithLastLine := false;
+{  startWithLastLine := false;
   // fAutoscroll := False;
   // not2go2end := True;
   if d > 0 then
@@ -2958,7 +2978,10 @@ begin
   // updatePointedItem()
   // else
 //  repaint;
+}
+  Browser.Host.SendMouseWheelEvent(@a, 0, d*3);
   Scroll();
+
 end; // histScrollLine
 
 procedure ThistoryBox.LoadEnd(Sender: TObject; const browser: ICefBrowser; const frame: ICefFrame; httpStatusCode: Integer);
@@ -3687,12 +3710,45 @@ begin
   end;
 end;
 
+procedure RegisterSchemes(const registrar: ICefSchemeRegistrar);
+begin
+  registrar.AddCustomScheme('theme', True, False, False);
+  registrar.AddCustomScheme('smile', True, False, False);
+  registrar.AddCustomScheme('http', True, False, False);
+  registrar.AddCustomScheme('https', True, False, False);
+  registrar.AddCustomScheme('res', True, False, False);
+end;
+
+
+function InitRnQCEFLibrary : Boolean;
+begin
+  CefLibrary := IncludeTrailingPathDelimiter(myPath) + 'CEF\libcef.dll';
+  CefCache := IncludeTrailingPathDelimiter(myPath) + 'Cache\Chat\';
+  CefWindowlessRenderingEnabled := False;
+  CefLocale := 'ru';
+  CefResourcesDirPath := IncludeTrailingPathDelimiter(myPath) + 'CEF\';
+  CefLocalesDirPath := IncludeTrailingPathDelimiter(myPath) + 'CEF\locales\';
+  CefBackgroundColor := $fff0f0f0;
+  CefSingleProcess := True;
+  CefNoSandbox := True;
+  CefJavaScriptFlags := '--expose-gc';
+  CefRenderProcessHandler := TCustomRenderProcessHandler.Create;
+  CefOnRegisterCustomSchemes := RegisterSchemes;
+  CefRegisterSchemeHandlerFactory('theme', '', TResourceHandler);
+  CefRegisterSchemeHandlerFactory('smile', '', TResourceHandler);
+  CefRegisterSchemeHandlerFactory('http', '', TResourceHandler);
+  CefRegisterSchemeHandlerFactory('https', '', TResourceHandler);
+  CefRegisterSchemeHandlerFactory('res', '', TResourceHandler);
+
+  SetCurrentDir(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)));
+end;
+
 initialization
 
-vKeyPicElm.ThemeToken := -1;
-vKeyPicElm.picName := PIC_KEY;
-vKeyPicElm.Element := RQteDefault;
-vKeyPicElm.pEnabled := true;
+  vKeyPicElm.ThemeToken := -1;
+  vKeyPicElm.picName := PIC_KEY;
+  vKeyPicElm.Element := RQteDefault;
+  vKeyPicElm.pEnabled := true;
 
 finalization
 

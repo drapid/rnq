@@ -140,6 +140,7 @@ type
     procedure paintOn(cnv: Tcanvas; vR: TRect; const JustCalc: Boolean = false);
     procedure go2end(const calcOnly: Boolean = False; const precalc: Boolean = False);
     function  getSelText(): string;
+    function  copySel2Clpb(): Boolean;
     function  getSelBin(): AnsiString;
     function  getSelHtml(smiles: boolean): string;
     function  getSelHtml2(smiles: boolean): RawByteString;
@@ -1957,7 +1958,17 @@ begin
   Result := '';
 end;
 
-function applyHtmlFont(fnt: Tfont; s: string): string;
+function ThistoryBox.copySel2Clpb(): Boolean;
+var
+  s: String;
+begin
+  s := getSelText;
+  Result := s > '';
+  if Result then
+    clipboard.asText := s;
+end;
+
+function applyHtmlFont(fnt: Tfont; const s: string): string;
 var
   h,q: string;
 begin
@@ -1983,7 +1994,7 @@ var
   i, dim: integer;
   ev: Thevent;
 
-  procedure addStr(s: string);
+  procedure addStr(const s: string);
   begin
   while dim+length(s) > length(result) do
     setLength(result, length(result)+10000);

@@ -687,7 +687,6 @@ var
   warnVisibilityExploit,
   warnVisibilityAutoMsgReq,
   ShowHintsInChat,
-//  ShowHintsInChat2,
 //  showClientID,
   connectOnConnection,
   reopenchats,

@@ -64,7 +64,6 @@ uses
 //                                             EBase64,
     RnQBinUtils,
  {$IFDEF CHAT_CEF} // Chromium
-  ceflib,
   historyCEF,
  {$ENDIF CHAT_CEF} // Chromium
  {$IFDEF PROTOCOL_ICQ}
@@ -1302,24 +1301,13 @@ findClose(sr);
 //result:=FALSE;
 end; // readOnlyFiles
 
-{$IFDEF CHAT_CEF}
-procedure RegisterSchemes(const registrar: ICefSchemeRegistrar);
-begin
-  registrar.AddCustomScheme('theme', True, False, False);
-  registrar.AddCustomScheme('smile', True, False, False);
-  registrar.AddCustomScheme('http', True, False, False);
-  registrar.AddCustomScheme('https', True, False, False);
-  registrar.AddCustomScheme('res', True, False, False);
-end;
-{$ENDIF CHAT_CEF}
-
 
 procedure beforeWindowsCreation;
 
   procedure parseCmdLinePar;
   var
-    i:integer;
-    s:string;
+    i: integer;
+    s: string;
     UIN : TUID;
    prCl : TRnQProtoClass;
   begin
@@ -1685,25 +1673,11 @@ begin
   imgCacheInfo := TMemIniFile.Create(cache + 'Images.ini');
 
 {$IFDEF CHAT_CEF}
-  CefLibrary := IncludeTrailingPathDelimiter(myPath) + 'CEF\libcef.dll';
-  CefCache := IncludeTrailingPathDelimiter(myPath) + 'Cache\Chat\';
-  CefWindowlessRenderingEnabled := False;
-  CefLocale := 'ru';
-  CefResourcesDirPath := IncludeTrailingPathDelimiter(myPath) + 'CEF\';
-  CefLocalesDirPath := IncludeTrailingPathDelimiter(myPath) + 'CEF\locales\';
-  CefBackgroundColor := $fff0f0f0;
-  CefSingleProcess := True;
-  CefNoSandbox := True;
-  CefJavaScriptFlags := '--expose-gc';
-  CefRenderProcessHandler := TCustomRenderProcessHandler.Create;
-  CefOnRegisterCustomSchemes := RegisterSchemes;
-  CefRegisterSchemeHandlerFactory('theme', '', TResourceHandler);
-  CefRegisterSchemeHandlerFactory('smile', '', TResourceHandler);
-  CefRegisterSchemeHandlerFactory('http', '', TResourceHandler);
-  CefRegisterSchemeHandlerFactory('https', '', TResourceHandler);
-  CefRegisterSchemeHandlerFactory('res', '', TResourceHandler);
-
-  SetCurrentDir(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)));
+   if not InitRnQCEFLibrary then
+     begin
+      msgDlg('Couldn''t load CEF library ', True, mtError);
+      halt(1);
+     end;
 {$ENDIF CHAT_CEF}
 
 end; // beforeWindowsCreation
@@ -2426,7 +2400,7 @@ end; // quit
 
 procedure afterWindowsCreation;
 var
-  i:integer;
+  i: integer;
 begin
   hintMode:=HM_null;
   application.OnHint := RnQmain.displayHint;

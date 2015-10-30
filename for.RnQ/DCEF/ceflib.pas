@@ -28,10 +28,15 @@ unit ceflib;
 {$ENDIF}
 {$I cef.inc}
 
+{$I NoRTTI.inc}
+
 interface
 uses
 {$IFDEF DELPHI14_UP}
-  Rtti, TypInfo, Variants, Generics.Collections,
+  {$IFNDEF NO_EXTENDED_RTTI}
+  Rtti,
+  {$ENDIF NO_EXTENDED_RTTI}
+  TypInfo, Variants, Generics.Collections,
 {$ENDIF}
 {$IFDEF CEF_MULTI_THREADED_MESSAGE_LOOP}
   Messages,
@@ -8459,6 +8464,7 @@ type
   end;
 
 {$IFDEF DELPHI14_UP}
+{$IFNDEF NO_EXTENDED_RTTI}
   TCefRTTIExtension = class(TCefv8HandlerOwn)
   private
     FValue: TValue;
@@ -8486,6 +8492,7 @@ type
     class procedure Register(const name: string; const value: TValue
       {$IFDEF CEF_MULTI_THREADED_MESSAGE_LOOP}; SyncMainThread: Boolean{$ENDIF});
   end;
+{$ENDIF ~NO_EXTENDED_RTTI}
 {$ENDIF}
 
   TCefV8AccessorOwn = class(TCefBaseOwn, ICefV8Accessor)
@@ -14745,7 +14752,7 @@ end;
 { TCefRTTIExtension }
 
 {$IFDEF DELPHI14_UP}
-
+{$IFNDEF NO_EXTENDED_RTTI}
 constructor TCefRTTIExtension.Create(const value: TValue
 {$IFDEF CEF_MULTI_THREADED_MESSAGE_LOOP}
 ; SyncMainThread: Boolean
@@ -15513,6 +15520,7 @@ begin
   end else
     Exit(False);
 end;
+{$ENDIF ~NO_EXTENDED_RTTI}
 {$ENDIF}
 
 { TCefV8AccessorOwn }

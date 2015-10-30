@@ -179,6 +179,8 @@ type
     stickersBtn: TRnQSpeedButton;
     ShowStickers: TAction;
     BuzzBtn: TRnQSpeedButton;
+    chatShowDevTools: TMenuItem;
+    hAShowDevTools: TAction;
     procedure closemenuPopup(Sender: TObject);
     procedure prefBtnMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -297,6 +299,7 @@ type
     procedure RnQFileBtnMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,
       Y: Integer);
     procedure OnUploadSendData(Sender: TObject; Buffer: Pointer; Len: Integer);
+    procedure chatShowDevToolsClick(Sender: TObject);
   {$IFDEF usesDC}
     procedure WMDROPFILES(var Message: TWMDROPFILES);  message WM_DROPFILES;
   {$ENDIF usesDC}
@@ -1139,7 +1142,7 @@ begin
       Application.ProcessMessages;
       sleep(100);
     end;
-    ShowDevTools;
+//    ShowDevTools;
     templateLoaded := False;
     LoadTemplate;
     while not templateLoaded do
@@ -2113,13 +2116,7 @@ if shift = [ssCtrl] then
       if ch.chatType = CT_IM then
         if ch.input.selLength=0 then
           begin
- {$IFDEF CHAT_CEF} // Chromium
-            ch.historyBox.addJScode('execCopy();', 'copy');
-            ch.historyBox.execJS('copy');
- {$ELSE ~CHAT_CEF} // Old
-            if Length(ch.historyBox.getSelText) > 0 then
-              clipboard.asText := ch.historyBox.getSelText;
- {$ENDIF CHAT_CEF}
+            ch.historyBox.copySel2Clpb;
           end;
     VK_F6: pageCtrl.SelectNextPage(TRUE);
     VK_F4, VK_W: try
@@ -2218,26 +2215,24 @@ begin
   if ch = nil then
     exit;
 
-  with ch do
   if Length(qs) > 0 then
     quoteCallback(qs, true, MakeCarret)
   else
   begin
-    if historyBox.history.count = 0 then // there's nothing to quote for sure
+    if ch.historyBox.history.count = 0 then // there's nothing to quote for sure
       Exit;
 
 {$IFDEF CHAT_CEF}
     if quoting.quoteselected then
     begin
-      ch.historyBox.addJScode('getQuote();', 'copy');
-      ch.historyBox.execJS('copy');
+      ch.historyBox.copySel2Quote;
     end
     else
     begin
       // save original reply at the beginning of a quoting-cycle
-      if quoteIdx < 0 then
-        lastInputText := input.text;
-      quoteCallback(historyBox.getQuoteByIdx(quoteIdx), false, MakeCarret);
+      if ch.quoteIdx < 0 then
+        ch.lastInputText := ch.input.text;
+      quoteCallback(ch.historyBox.getQuoteByIdx(ch.quoteIdx), false, MakeCarret);
     end;
 
 {$ELSE ~CHAT_CEF}
@@ -2245,19 +2240,19 @@ begin
      begin
       AddToInput := True;
       if quoting.quoteselected then
-        qs := trim(historyBox.getSelText)
+        qs := trim(ch.historyBox.getSelText)
        else
         qs := '';
       if qs='' then
        begin
         AddToInput := False;
         // save original reply at the beginning of a quoting-cycle
-        if quoteIdx < 0 then
-          lastInputText := input.text;
+        if ch.quoteIdx < 0 then
+          ch.lastInputText := ch.input.text;
 
-        qs := historyBox.getQuoteByIdx(quoteIdx);
+        qs := ch.historyBox.getQuoteByIdx(ch.quoteIdx);
        end;
-      quoteCallback(qs, false, MakeCarret);
+      quoteCallback(qs, AddToInput, MakeCarret);
      end;
 {$ENDIF CHAT_CEF}
 
@@ -2772,10 +2767,14 @@ begin
 
   WM_mousewheel, WM_VSCROLL:
    if (Assigned(chats)) and (thisChat <> NIL) and (thisChat.chatType = CT_IM) then
+ {$IFDEF CHAT_CEF} // Chromium
+    SendMessage(thisChat.historyBox.Handle, message.msg, message.WParam, message.LParam);
+ {$ELSE ~CHAT_CEF} // old
     if message.wparam shr 31 > 0 then
       thisChat.historyBox.histScrollEvent(+wheelVelocity)
     else
       thisChat.historyBox.histScrollEvent(-wheelVelocity);
+ {$ENDIF ~CHAT_CEF}
 {  WM_VSCROLL:
    if (Assigned(chats))and(thisChat <> NIL) and (thisChat.chatType = CT_IM) then
     if message.wparam shr 31 > 0 then
@@ -2871,12 +2870,7 @@ end;
 
 procedure TchatFrm.copy2clpbClick(Sender: TObject);
 begin
- {$IFDEF CHAT_CEF}
-  thisChat.historyBox.addJScode('execCopy();', 'copy');
-  thisChat.historyBox.execJS('copy');
- {$ELSE ~CHAT_CEF}
-  clipboard.asText := thisChat.historyBox.getSelText
- {$ENDIF CHAT_CEF}
+  thisChat.historyBox.copySel2Clpb;
 end;
 
 procedure TchatFrm.btnContactsClick(Sender: TObject);
@@ -3532,6 +3526,15 @@ begin
   thisChat.input.setFocus;
 end;
 
+procedure TchatFrm.chatShowDevToolsClick(Sender: TObject);
+var
+  ch : TchatInfo;
+begin
+  ch := thisChat;
+  ch.historyBox.ShowDevTools;
+
+end;
+
 procedure TchatFrm.chatcloseignore1Click(Sender: TObject);
 begin
   sawAllHere;
@@ -3705,10 +3708,12 @@ begin
  {$IFDEF CHAT_CEF}
   chatshowlsb1.Visible := false;
   chatpopuplsb1.visible := false;
+  chatShowDevTools.Visible := True;
  {$ELSE ~CHAT_CEF}
   chatshowlsb1.checked := showLSB;
   chatpopuplsb1.visible := showLSB;
   chatpopuplsb1.checked := popupLSB;
+  chatShowDevTools.Visible := False;
  {$ENDIF CHAT_CEF}
 end;
 
