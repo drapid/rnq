@@ -415,6 +415,7 @@ var
   tipFrm : TtipFrm;
   cur_ev : Thevent;
   rt : TRnQTip;
+  vCnt: TRnQContact;
 begin
   If Assigned(tipsList) then
   if tipsList.Count > 0 then
@@ -468,9 +469,13 @@ begin
           case action of
             TA_2lclick:
               begin
-                 chatFrm.openOn(cur_ev.who);
-                 if not chatFrm.moveToTimeOrEnd(cur_ev.who, cur_ev.when) then
-                  chatFrm.addEvent(cur_ev.who, cur_ev.clone);
+                if Assigned(cur_ev.otherpeer) then
+                  vCnt := cur_ev.otherpeer
+                 else
+                  vCnt := cur_ev.who;
+                 chatFrm.openOn(vCnt);
+                 if not chatFrm.moveToTimeOrEnd(vCnt, cur_ev.when) then
+                  chatFrm.addEvent(vCnt, cur_ev.clone);
               end;
             TA_rclick: eventQ.removeEvent(cur_ev.who);
           end;
@@ -587,15 +592,25 @@ begin
 
  try
   thisCnt := NIL;
-  if Assigned(ev) and Assigned(ev.who) then
-    thisCnt := ev.who
+
+   if Assigned(ev) and Assigned(ev.otherpeer) then
+     thisCnt := ev.otherpeer
    else
-    if Assigned(pCnt) then
-      thisCnt := pCnt
-     else
-      s := '';
+   if Assigned(ev) and Assigned(ev.who) then
+     thisCnt := ev.who
+    else
+     if Assigned(pCnt) then
+       thisCnt := pCnt
+      else
+       s := '';
   if Assigned(thisCnt) then
     s := thisCnt.displayed;
+
+    if Assigned(ev) and Assigned(ev.otherpeer) and
+       Assigned(ev.who) and (ev.who <> ev.otherpeer) then
+     s := s + ' (' +ev.who.displayed + ')';
+
+
 //cname:=contact.displayed;
   work := desktopWorkArea(Application.MainFormHandle);
 

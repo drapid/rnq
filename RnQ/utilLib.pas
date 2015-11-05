@@ -2654,7 +2654,7 @@ begin
   db:=NIL;
 end; // freeDB
 
-procedure contactCreation(c:TRnQContact);
+procedure contactCreation(c: TRnQContact);
 begin
 //  getMem(c.data, sizeof(TCE));
 //  new(TCE(c.data));
@@ -2663,7 +2663,7 @@ begin
   TCE(c.data^).toquery:=TRUE;
 end;
 
-procedure contactDestroying(c:TRnQContact);
+procedure contactDestroying(c: TRnQContact);
 begin
   if Assigned(c.data) then
   begin
@@ -2690,7 +2690,7 @@ begin
 //  RnQmain.timer.OnTimer := NIL;
 end;
 
-function behave(ev:Thevent; kind:integer=-1{; const info: AnsiString=''}):boolean;
+function behave(ev: Thevent; kind:integer=-1{; const info: AnsiString=''}): boolean;
   function IsAnswer(ans : array of string; text : String) : Boolean;
   var
     I: Integer;
@@ -2721,7 +2721,7 @@ const
  {$ENDIF PROTOCOL_ICQ}
     ;
 var
-  ok:boolean;
+  ok: boolean;
   wnd: TselectCntsFrm;
 //  str1:string;
 //  spamCnt : Tcontact;
@@ -2732,6 +2732,7 @@ var
   fn : string;
   foundInSpam : Boolean;
   vProto : TRnQProtocol;
+  vCnt: TRnQContact;
   tipsAllowed : Boolean;
   SkipEvent   : Boolean;
   picsFound : Boolean;
@@ -2761,11 +2762,18 @@ begin
 
   tipsAllowed := IsCanShowNotifications;
 
-  vProto := ev.who.fProto;
- if (spamfilter.useBotInInvis or (ev.who.imVisibleTo)) and spamfilter.useBot then
-  if not (vProto.isInList(LT_ROSTER, ev.who) or
-          notInList.exists(ev.who) or
-          chatFrm.isChatOpen(ev.who)) then
+  if Assigned(ev.otherpeer) then
+    vCnt := ev.otherpeer
+   else
+    vCnt := ev.who;
+
+  vProto := vCnt.fProto;
+
+ if (spamfilter.useBotInInvis or (vCnt.imVisibleTo)) and spamfilter.useBot then
+  if not (vProto.isInList(LT_ROSTER, vCnt) or
+          notInList.exists(vCnt) or
+          chatFrm.isChatOpen(vCnt)
+          ) then
   begin
    if kind in [EK_typingBeg .. EK_Xstatusreq, EK_oncoming, EK_offgoing,
                EK_auth, EK_authDenied, EK_statuschange] then
@@ -2781,13 +2789,13 @@ begin
 
      end
    else
-   if ((kind = EK_MSG) and (Length(ev.who.antispam.lastQuests) > 0) and
-        IsAnswer(ev.who.antispam.lastQuests, ev.getBodyText)
+   if ((kind = EK_MSG) and (Length(vCnt.antispam.lastQuests) > 0) and
+        IsAnswer(vCnt.antispam.lastQuests, ev.getBodyText)
       )  then
     begin
-     ev.who.antispam.Tryes := 0;
-     Answers0(ev.who.antispam.lastQuests);
-     SetLength(ev.who.antispam.lastQuests, 0);
+     vCnt.antispam.Tryes := 0;
+     Answers0(vCnt.antispam.lastQuests);
+     SetLength(vCnt.antispam.lastQuests, 0);
 
  {$IFNDEF DB_ENABLED}
      try
@@ -2847,7 +2855,7 @@ begin
  {$ENDIF ~DB_ENABLED}
 //     utilLib.deleteFromTo(fn, getAt(st).fpos, getAt(en).fpos+length(getAt(en).toString));
 //     history.deleteFromTo(userPath+historyPath + spamCnt.uid, st,en);
-     Proto_Outbox_add(OE_msg, ev.who, SpamBotMsgFlags,
+     Proto_Outbox_add(OE_msg, vCnt, SpamBotMsgFlags,
                       getTranslation(AntiSpamMsgs[2]))
     end
    else
@@ -2862,12 +2870,12 @@ begin
       if ev.who.antispam.Tryes = spamfilter.BotTryesCount then
        begin
         inc(ev.who.antispam.Tryes);
-        Proto_Outbox_add(OE_msg, ev.who, SpamBotMsgFlags,
+        Proto_Outbox_add(OE_msg, vCnt, SpamBotMsgFlags,
                    AnsiReplaceStr(getTranslation(AntiSpamMsgs[3]), '%uin%', ev.who.UID));
         exit;
        end
       else
-      if ev.who.antispam.Tryes > spamfilter.BotTryesCount then
+      if vCnt.antispam.Tryes > spamfilter.BotTryesCount then
        exit
       else
        begin
@@ -2879,10 +2887,10 @@ begin
            begin
             with spamfilter.quests[i] do
              begin
-              Answers0(ev.who.antispam.lastQuests);
-              SetLength(ev.who.antispam.lastQuests, length(ans));
+              Answers0(vCnt.antispam.lastQuests);
+              SetLength(vCnt.antispam.lastQuests, length(ans));
               for j := 0 to Length(ans) - 1 do
-                ev.who.antispam.lastQuests[j] := ans[j];
+                vCnt.antispam.lastQuests[j] := ans[j];
               s := q;
              end;
            end
@@ -2895,19 +2903,19 @@ begin
          else
           begin
            i := RandomRange(100, 999);
-           Answers0(ev.who.antispam.lastQuests);
-           SetLength(ev.who.antispam.lastQuests, 1);
-           ev.who.antispam.lastQuests[0] := IntToStr(i);
+           Answers0(vCnt.antispam.lastQuests);
+           SetLength(vCnt.antispam.lastQuests, 1);
+           vCnt.antispam.lastQuests[0] := IntToStr(i);
            s := TxtFromInt(i)
           end;
-        if Length(ev.who.antispam.lastQuests) > 0 then
+        if Length(vCnt.antispam.lastQuests) > 0 then
          begin
-           inc(ev.who.antispam.Tryes);
+           inc(vCnt.antispam.Tryes);
            if spamfilter.UseBotFromFile and (Length(spamfilter.quests) > 0) then
-             Proto_Outbox_add(OE_msg, ev.who, SpamBotMsgFlags,
+             Proto_Outbox_add(OE_msg, vCnt, SpamBotMsgFlags,
                         AnsiReplaceStr(getTranslation(AntiSpamMsgs[5]), '%attempt%', IntToStr( spamfilter.BotTryesCount+1-ev.who.antispam.Tryes)) + CRLF+ getTranslation(AntiSpamMsgs[6]) + CRLF + s)
             else
-             Proto_Outbox_add(OE_msg, ev.who, SpamBotMsgFlags,
+             Proto_Outbox_add(OE_msg, vCnt, SpamBotMsgFlags,
                         AnsiReplaceStr(getTranslation(AntiSpamMsgs[5]), '%attempt%', IntToStr( spamfilter.BotTryesCount+1-ev.who.antispam.Tryes)) + CRLF+ getTranslation(AntiSpamMsgs[4]) + CRLF + s);
            exit;
          end;
@@ -2919,15 +2927,15 @@ begin
 
 // prevent annoying fast oncoming/offgoing sequences
 if minOnOff then
-  if (ev.kind=EK_ONCOMING) and (now-ev.who.lastTimeSeenOnline < minOnOffTime*DTseconds)
-  or (ev.kind=EK_OFFGOING) and (now-TCE(ev.who.data^).lastOncoming < minOnOffTime*DTseconds) then
+  if (ev.kind=EK_ONCOMING) and (now-vCnt.lastTimeSeenOnline < minOnOffTime*DTseconds)
+  or (ev.kind=EK_OFFGOING) and (now-TCE(vCnt.data^).lastOncoming < minOnOffTime*DTseconds) then
     exit;
 
   result:=TRUE;
   if ev.kind in [EK_msg..EK_automsg] then
     TCE(ev.who.data^).lastEventTime:=now;
   if ev.kind in [EK_MSG,EK_URL,EK_CONTACTS,EK_auth,EK_authDenied,EK_AUTHREQ] then
-    TCE(ev.who.data^).lastMsgTime:=ev.when;
+    TCE(vCnt.data^).lastMsgTime := ev.when;
 
  // SAVE
  if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
@@ -2941,7 +2949,7 @@ if minOnOff then
                 EK_XstatusMsg, EK_Xstatusreq]) then
    begin
 //     gr := ev.who.group;
-     gr := groups.get(ev.who.group);
+     gr := groups.get(vCnt.group);
      if OnlOfflInOne then
        dd := d_contacts
       else
@@ -2958,14 +2966,14 @@ if minOnOff then
       picsFound := false;
       if UseContactThemes and Assigned(ContactsTheme) then
        begin
-         picsName := TPicName(ev.who.UID2cmp) + '.' + event2str[ev.kind];
+         picsName := TPicName(vCnt.UID2cmp) + '.' + event2str[ev.kind];
          picsFound := (ContactsTheme.GetSound(picsName) > '');
          if picsFound then
            ContactsTheme.PlaySound(picsName)
           else
            begin
               begin
-               picsName := TPicName('group.') + TPicName(AnsiLowerCase(groups.id2name(ev.who.group))) + '.' + TPicName(event2str[ev.kind]);
+               picsName := TPicName('group.') + TPicName(AnsiLowerCase(groups.id2name(vCnt.group))) + '.' + TPicName(event2str[ev.kind]);
                picsFound := (ContactsTheme.GetSound(picsName) > '');
               end;
              if picsFound then
@@ -3010,12 +3018,12 @@ else
   if (BE_openchat in behaviour[ev.kind].trig)
      and not vProto.getStatusDisable.OpenChat then
    if ev.flags and IF_no_matter = 0 then
-    if chatFrm.openchat(ev.who, false, True) then
+    if chatFrm.openchat(vCnt, false, True) then
      if not BossMode.isBossKeyOn and (BE_flashchat in behaviour[ev.kind].trig) then
        chatFrm.flash;
   // HISTORY
   if BE_history in behaviour[ev.kind].trig then
-    if chatFrm.addEvent(ev.who, ev.clone) then
+    if chatFrm.addEvent(vCnt, ev.clone) then
      if ev.flags and IF_no_matter = 0 then
       if not vProto.getStatusDisable.OpenChat then
        if not BossMode.isBossKeyOn and (BE_flashchat in behaviour[ev.kind].trig) then
@@ -3025,7 +3033,7 @@ if not BossMode.isBossKeyOn and (BE_popup in behaviour[ev.kind].trig) then
   if not chatFrm.isVisible then
    if not vProto.getStatusDisable.OpenChat then
     if ev.flags and IF_no_matter = 0 then
-     chatFrm.openOn(ev.who, focusOnChatPopup);
+     chatFrm.openOn(vCnt, focusOnChatPopup);
   // SHAKE IT BABY!
   if ev.kind = EK_BUZZ then
     if not BossMode.isBossKeyOn and (BE_flashchat in behaviour[ev.kind].trig) then
@@ -3309,21 +3317,27 @@ begin
      until (k<0);
 end;
 
-procedure realizeEvent(ev:Thevent);
+procedure realizeEvent(ev: Thevent);
 var
   wnd: TselectCntsFrm;
  {$IFDEF PROTOCOL_ICQ}
   dd : TProtoDirect;
  {$ENDIF PROTOCOL_ICQ}
 //  ev0:Thevent;
+  vCnt: TRnQContact;
 begin
   if not Assigned(ev) then
     Exit;
 
-  roasterLib.redraw(ev.who);
+  if Assigned(ev.otherpeer) then
+    vCnt := ev.otherpeer
+   else
+    vCnt := ev.who;
+
+  roasterLib.redraw(vCnt);
     TipRemove(ev);
   if ev.kind in [EK_ADDEDYOU, EK_AUTHREQ, EK_MSG, EK_GCARD, EK_URL, EK_CONTACTS] then
-    NILifNIL(ev.who);
+    NILifNIL(vCnt);
   case ev.kind of
     EK_ADDEDYOU:
       if ev.who.isInList(LT_ROSTER) then
@@ -3334,7 +3348,7 @@ begin
     EK_AUTHREQ: showAuthreq((ev.who), ev.getBodyText);
     EK_ONCOMING:
       if showOncomingDlg then
-        msgDlg(getTranslation('%s is online', [ev.who.displayed]), False, mtInformation);
+        msgDlg(getTranslation('%s is online', [vCnt.displayed]), False, mtInformation);
     EK_file:
       begin
  {$IFDEF PROTOCOL_ICQ}
@@ -3348,15 +3362,15 @@ begin
     EK_MSG:
       with chatFrm do
         begin
-         openOn(ev.who);
+         openOn(vCnt);
 //         moveToTimeOrEnd(ev.who, ev.when);
 
 //         ev0:=eventQ.firstEventFor(ev.who);
 //         if (ev0 = nil)or(ev = ev0)  then
            begin
 //            if not chatFrm.moveToTimeOrEnd(ev.who, ev.when) then
-            if not chatFrm.moveToTimeOrEnd(ev.who, ev.when, false) then
-              chatFrm.addEvent(ev.who, ev.clone);
+            if not chatFrm.moveToTimeOrEnd(vCnt, ev.when, false) then
+              chatFrm.addEvent(vCnt, ev.clone);
            end
 //          else
 //           begin

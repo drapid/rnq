@@ -212,7 +212,8 @@ type
     IE_getAvtr,
     IE_avatar_changed,
     IE_srvSomeInfo,
-    IE_StickerMsg
+    IE_StickerMsg,
+    IE_MultiChat
   );
 
   TicqPhase=(
@@ -5849,6 +5850,11 @@ case msgtype of
         eventAddress := getStickerURL(strs[1], strs[3]);
       notifyListeners(IE_StickerMsg);
     end;
+  MTYPE_CHAT:
+    begin
+      eventMsgA := msg;
+      notifyListeners(IE_MultiChat);
+    end;
   end;
 end; // notificationForMsg
 
@@ -6006,10 +6012,10 @@ var
 begin
   eventFlags := 0;
 //  msgDwnCnt  := $FFFF;
-  eventMsgID:=qword_LEat(@snac[1]);
-  ofs:=11;
+  eventMsgID := qword_LEat(@snac[1]);
+  ofs := 11;
   thisCnt := getICQContact(getBUIN2(snac,ofs));
-  eventTime:=now;
+  eventTime := now;
   inc(ofs, 2);
   TLVCnt := readBEWORD(snac, ofs);
   t := ofs;
@@ -6102,6 +6108,19 @@ case Byte(snac[10]) of // msg format
          end
         ;
 
+    end;
+
+    sA := getTLVSafe($24, snac, ofs); // MSG-GUID
+
+    sA := getTLVSafe($32, snac, ofs); // Original Sender
+    if sA > '' then
+    begin
+        // MultiChatMsg
+           eventContact := thisCnt;
+           eventAddress := sA; // Original Sender
+           eventMsgA := msg;
+           notificationForMsg(MTYPE_CHAT, eventFlags, TRUE, eventMsgA);
+           exit;
     end;
 
     sA := getTLVSafe($31, snac, ofs);
@@ -8265,19 +8284,19 @@ begin
   Result.Port := 5190;
 end;
 
-function TicqSession.getICQContact(const uid : TUID) : TICQContact;
+function TicqSession.getICQContact(const uid: TUID) : TICQContact;
 begin
 //  result := TICQContact(contactsDB.get(TICQContact, uid));
   result := TICQContact(contactsDB.add(Self, uid));
 end;
 
-function TicqSession.getICQContact(uin : Integer) : TICQContact;
+function TicqSession.getICQContact(uin: Integer): TICQContact;
 begin
 //  result := TICQContact(contactsDB.get(TICQContact, uin));
   result := TICQContact(contactsDB.add(Self, IntToStr(uin)));
 end;
 
-class function TicqSession._isProtoUid(var uin:TUID):boolean; //Static;
+class function TicqSession._isProtoUid(var uin: TUID): boolean; //Static;
 //function TicqSession.isValidUid(var uin:TUID):boolean; //Static;
 var
 // i : Int64;
@@ -11263,7 +11282,7 @@ end;
 
 Procedure TICQSession.ProcessSSIacks;
 var
-  i, t  : Integer;
+  i, t, j: Integer;
   item1 : TSSIEvent;
   item  : TOSSIItem;
   cnt   : TICQcontact;
@@ -11341,6 +11360,9 @@ begin
                   cnt.SSIID := item.ItemID;
                   cnt.CntIsLocal := False;
                   cnt.Authorized := not existsTLV($66, item.ExtData);
+                  j := groups.ssi2id(item.GroupID);
+                  if j > 0 then
+                    cnt.group := j;
 //                  addContact(roster.getAt(i), True);
                   eventContact := cnt;
                   notifyListeners(IE_contactupdate);
@@ -11365,6 +11387,10 @@ begin
 //                    cnt.Authorized := False;
 //                    addContact(cnt, True);
                    end;
+                end;
+              FEEDBAG_CLASS_ID_GROUP:
+                begin
+                 groups.add(item.ItemName, item.ItemID);
                 end;
             end;
 //            TOSSIItem(serverSSI.items.Objects[i]).Free;
@@ -11412,7 +11438,7 @@ begin
 end;
 
 // Server ask us to add, update or delete item
-procedure TicqSession.parse1308090A(const snac: RawByteString; ref:integer; iType : Word);
+procedure TicqSession.parse1308090A(const snac: RawByteString; ref: integer; iType: Word);
 var
   ofs, l, n : Integer;
   item:  TOSSIItem;

@@ -615,24 +615,24 @@ end;
 var
   writingQ:Tlist;
 
-procedure writeHistorySafely(ev:Thevent; other:TRnQContact=NIL);
+procedure writeHistorySafely(ev: Thevent; other: TRnQContact=NIL);
 begin
-ev:=ev.clone;
-if other<>NIL then
-  ev.otherpeer:=other;
-if ev.otherpeer=NIL then
-  ev.otherpeer:=ev.who;
-writingQ.add(ev)
+  ev := ev.clone;
+  if other<>NIL then
+    ev.otherpeer := other;
+  if ev.otherpeer=NIL then
+    ev.otherpeer := ev.who;
+  writingQ.add(ev)
 end; // addToHistoryWritingQ
 
 
 procedure flushHistoryWritingQ;
 var
-  ev:Thevent;
+  ev: Thevent;
 begin
 while writingQ.count > 0 do
   begin
-  ev:=writingQ.first;
+  ev := writingQ.first;
   writingQ.delete(0);
   ev.appendToHistoryFile(ev.otherpeer.uid);
   ev.Free;

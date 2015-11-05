@@ -720,7 +720,7 @@ begin
   result:=ansiReplaceStr(result,'\n', #13);
 end; // getTranslation
 
-function getTranslation(const key:string; const args:array of const):string;
+function getTranslation(const key: string; const args: array of const):string;
 //var
 //  s : extended;
 begin

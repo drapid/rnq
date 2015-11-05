@@ -52,21 +52,22 @@ type
 type
   Tgroups=class
    public
-    a:array of Tgroup;
+    a: array of Tgroup;
     procedure clear;
 //    procedure save;
 //    procedure load(s : AnsiString);
     procedure fromString(s: RawByteString);
     function  toString: RawByteString;
     function  idxOf(id: integer): integer;
-    function  add(id_: integer=0): integer;
+    function  add(id_: integer=0): integer; OverLoad;
+    function  add(const name: String; ssid: Integer = -1): integer; OverLoad;
     function  get(id: integer): Pgroup;
     function  exists(id: integer): boolean;
     function  count: integer;
-    procedure rename(id: integer; newname: string);
+    procedure rename(id: integer; const newname: string);
     function  delete(id: integer): boolean;
     procedure changeId(oldId, newId: integer; db: TRnQCList);
-    function  name2id(name_: string): integer;
+    function  name2id(const name_: string): integer;
     function  ssi2id(ssiN: integer): integer;
     function  id2ssi(id: integer): Integer;
     function  id2name(id: integer): string;
@@ -176,7 +177,7 @@ begin
   setlength(a,0)
 end;
 
-function Tgroups.idxOf(id:integer):integer;
+function Tgroups.idxOf(id: integer): integer;
 begin
 for result:=0 to count-1 do
   if a[result].id = id then
@@ -194,31 +195,46 @@ for i:=0 to count-1 do
     result:=a[i].id+1;
 end; // freeID
 
-function Tgroups.add(id_:integer=0):integer;
+function Tgroups.add(id_: integer=0): integer;
 var
-  d:Tdivisor;
-  p:Pgroup;
+  d: Tdivisor;
+  p: Pgroup;
 begin
-setlength(a, length(a)+1);
-p:=last;
-if id_=0 then
-  p.id:=freeID
-else
-  p.id:=id_;
-p.name:='';
-p.order:=0;
-for d:=low(d) to high(d) do
-  begin
-  p.node[d]:=NIL;
-  p.expanded[d]:=TRUE;
-  end;
-result:=p.id;
+  setlength(a, length(a)+1);
+  p:=last;
+  if id_=0 then
+    p.id:=freeID
+   else
+    p.id:=id_;
+  p.name:='';
+  p.order:=0;
+  for d:=low(d) to high(d) do
+    begin
+      p.node[d]:=NIL;
+      p.expanded[d]:=TRUE;
+    end;
+  result:=p.id;
 end; // add
 
-function Tgroups.exists(id:integer):boolean;
+function Tgroups.add(const name: String; ssid: Integer = -1): integer;
+var
+  i: Integer;
+  gr: Pgroup;
+begin
+  if (ssid < 0) or exists(ssid) then
+    i := 0
+   else
+    i := ssid;
+  Result := add(i);
+  gr := get(Result);
+  gr.ssiID := ssid;
+  gr.name := name;
+end;
+
+function Tgroups.exists(id: integer): boolean;
 begin result:=idxOf(id) >= 0 end;
 
-procedure Tgroups.rename(id:integer; newname:string);
+procedure Tgroups.rename(id: integer; const newname: string);
 begin
   with a[idxOf(id)] do
    begin
@@ -227,7 +243,7 @@ begin
    end;
 end;
 
-function Tgroups.delete(id:integer):boolean;
+function Tgroups.delete(id: integer): boolean;
 var
   i : Integer;
 begin
@@ -260,22 +276,22 @@ if id<0 then result:=''
 else result:=a[id].name;
 end; // id2name
 
-function Tgroups.name2id(name_:string):integer;
+function Tgroups.name2id(const name_: string): integer;
 var
-  i:integer;
+  i: integer;
 begin
-for i:=0 to count-1 do
-  if a[i].name = name_ then
-    begin
-    result:=a[i].id;
-    exit;
-    end;
-result:=-1;
+  for i:=0 to count-1 do
+    if a[i].name = name_ then
+      begin
+        result :=a[i].id;
+        exit;
+      end;
+  result:=-1;
 end; // name2id
 
-function Tgroups.ssi2id(ssiN:Integer):integer;
+function Tgroups.ssi2id(ssiN: Integer): integer;
 var
-  i:integer;
+  i: integer;
 begin
 for i:=0 to count-1 do
   if a[i].ssiID = ssiN then
@@ -286,7 +302,7 @@ for i:=0 to count-1 do
 result:=-1;
 end; // name2id
 
-function Tgroups.id2ssi(id:integer):Integer;
+function Tgroups.id2ssi(id: integer): Integer;
 begin
   id:=idxOf(id);
   if id<0 then

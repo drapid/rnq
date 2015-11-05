@@ -694,11 +694,11 @@ end; // findRcvfile
 
 procedure ProcessICQEvents(var thisICQ:TICQSession; ev:TicqEvent);
 var
-  c:TICQcontact;
-  b:boolean;
-  i:integer;
-  sU :string;
-  e, TempEv:Thevent;
+  c: TICQcontact;
+  b: boolean;
+  i: integer;
+  sU : string;
+  e, TempEv: Thevent;
   TempCh : TchatInfo;
   vS : AnsiString;
   cuid : TUID;
@@ -719,7 +719,7 @@ if ev in [TicqEvent(IE_msg),IE_url,IE_contacts,IE_authReq,IE_addedyou,
       IE_automsgreq, IE_statuschanged, IE_gcard,IE_ack,
    {$IFDEF usesDC} IE_filereq, {$ENDIF usesDC}
       IE_email, IE_webpager, IE_fromMirabilis, IE_TYPING, IE_ackXStatus, IE_XStatusReq,
-      IE_StickerMsg] then
+      IE_StickerMsg, IE_MultiChat] then
   begin
   e:=Thevent.new(EK_null, c, thisICQ.eventTime,
                  ''{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, thisICQ.eventFlags);
@@ -1707,6 +1707,24 @@ case ev of
 
 //      if EnableImgLinksIn then
 //         parseImgLinks2(eventMsgA);
+
+      vS := plugins.castEv( PE_MSG_GOT, cuid, e.flags, e.when, thisICQ.eventMsgA);
+      if not isAbort(vS) then
+       begin
+        if (vS>'') and (ord(vS[1])=PM_DATA) then
+         begin
+           thisICQ.eventMsgA := _istring_at(vS, 2);
+           e.flags := e.flags and not IF_CODEPAGE_MASK;
+         end;
+        e.ParseMsgStr(thisICQ.eventMsgA);
+        if behave(e, EK_msg) then
+          NILifNIL(c);
+       end;
+     end;
+  IE_MultiChat:
+     begin
+      if thisICQ.eventAddress > '' then
+        e.who := thisICQ.getICQContact(thisICQ.eventAddress);
 
       vS := plugins.castEv( PE_MSG_GOT, cuid, e.flags, e.when, thisICQ.eventMsgA);
       if not isAbort(vS) then

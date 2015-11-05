@@ -130,8 +130,8 @@ Type
 //    picLoc   : TPicLocation;
     HistoryToken : Cardinal;
     PaintHeight : Integer;
-    otherpeer  :TRnQcontact; // used to keep track of other peer when "who" is us
-    class function new(kind_:integer; who_:TRnQContact; when_:TdateTime;
+    otherpeer  : TRnQcontact; // used to keep track of other peer when "who" is us
+    class function new(kind_:integer; who_: TRnQContact; when_: TdateTime;
              const info_:RawByteString;
  {$IFDEF DB_ENABLED}
              txt_ : String;
@@ -232,6 +232,7 @@ result:=Thevent.create;
 result.ID:=ID;
 result.kind:=kind;
 result.who:=who;
+result.otherpeer:=otherpeer;
 result.when:=when;
 Result.fIsMyEvent := fIsMyEvent;
  {$IFDEF DB_ENABLED}
@@ -270,7 +271,7 @@ begin
 end;
 
  {$IFNDEF DB_ENABLED}
-procedure Thevent.appendToHistoryFile(par:TUID='');
+procedure Thevent.appendToHistoryFile(par: TUID='');
 var
   s:string;
 begin
@@ -405,13 +406,13 @@ else
 end; // setInfo
  {$ENDIF ~DB_ENABLED}
 
-class function Thevent.new(kind_:integer;
-            who_:TRnQContact; when_:TdateTime;
+class function Thevent.new(kind_: integer;
+            who_: TRnQContact; when_: TdateTime;
             const info_: RawByteString;
  {$IFDEF DB_ENABLED}
             txt_ : String;
  {$ENDIF DB_ENABLED}
-            flags_:integer; pID : Integer = 0):Thevent;
+            flags_:integer; pID : Integer = 0): Thevent;
 begin
 result:=Thevent.create;
 result.kind:=kind_;
@@ -634,7 +635,7 @@ begin
   Result.date := formatDatetime(timeformat.chat, when)
 end; // getHeader
 
-function Thevent.getBodyText:string;
+function Thevent.getBodyText: string;
 var
   s, s2:string;
   sa : RawByteString;
@@ -881,7 +882,7 @@ case kind of
   end;
 end;
 
-procedure Thevent.setFlags(f : integer);
+procedure Thevent.setFlags(f: integer);
 begin
   f_flags := f;
   fImgElm.ThemeToken := -1;
@@ -889,7 +890,7 @@ begin
   fImgElm.pEnabled := True;
 end;
 
-procedure Thevent.setWho(w : TRnQContact);
+procedure Thevent.setWho(w: TRnQContact);
 begin
   f_Who := w;
 
@@ -906,7 +907,7 @@ inherited create;
 blinking:=TRUE;
 end; // create
 
-function TeventQ.find(kind_:integer; c:TRnQcontact):integer;
+function TeventQ.find(kind_: integer; c: TRnQcontact): integer;
 begin
 result:=count;
 while result > 0 do
