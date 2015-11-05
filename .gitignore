@@ -2,6 +2,8 @@
 ## RnQ
 #################
 Distro/Stickers/
+Distro/Cache/
+Distro/*/Cache/
 Distro/*.map
 Distro/*.exe
 Distro/*/Devils/

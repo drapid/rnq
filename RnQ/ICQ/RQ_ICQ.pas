@@ -82,7 +82,7 @@ var
 implementation
 uses
   DateUtils, ansistrings, AnsiClasses, JSON,
-  math, Types, StrUtils,
+  math, Types, StrUtils, System.Threading,
   RDGlobal, RnQBinUtils, RDFileUtil, RDUtils, Base64,
   RnQGlobal,
  {$IFDEF RNQ_AVATARS}
@@ -1317,19 +1317,29 @@ var
   idx: Integer;
   ctype, ext: String;
   sA, imgStr, mime, fileIdStr: RawByteString;
-  buf: TMemoryStream;
   JSONObject: TJSONObject;
+  Task: ITask;
+  res: Boolean;
 begin
   Result := False;
   if ContainsText(lnk, 'files.icq.net/') then
     begin
-      buf := TMemoryStream.Create;
       fileIdStr := ReplaceText(Trim(lnk), 'files.icq.net/get/', 'files.icq.com/getinfo?file_id=');
       fileIdStr := ReplaceText(fileIdStr, 'files.icq.net/files/get?fileId=', 'files.icq.com/getinfo?file_id=');
-      LoadFromURL(fileIdStr, buf);
-      SetLength(imgStr, buf.Size);
-      buf.ReadBuffer(imgStr[1], buf.Size);
-      buf.Free;
+      Task := TTask.Create(procedure()
+        var
+          buf: TMemoryStream;
+        begin
+          buf := TMemoryStream.Create;
+          LoadFromURL(fileIdStr, buf);
+          SetLength(imgStr, buf.Size);
+          buf.ReadBuffer(imgStr[1], buf.Size);
+          buf.Free;
+        end, TThreadPool.Default);
+      task.Start;
+      while task.Wait(100) do
+       Application.ProcessMessages;
+
 
       JSONObject := TJSONObject.ParseJSONValue(imgStr) as TJSONObject;
       if Assigned(JSONObject) then
@@ -1343,7 +1353,14 @@ begin
    else
     sA := Trim(lnk);
 
-  ctype := HeaderFromURL(sA);
+      Task := TTask.Create(procedure()
+        begin
+          ctype := HeaderFromURL(sA);
+        end, TThreadPool.Default);
+      task.Start;
+      while task.Wait(100) do
+       Application.ProcessMessages;
+
   if MatchText(mime, ImageContentTypes) or MatchText(ctype, ImageContentTypes) then
   begin
     if checkType then
@@ -1352,24 +1369,35 @@ begin
       Exit;
     end;
 
-    buf := TMemoryStream.Create;
-    LoadFromURL(sA, buf);
+      res := Result;
+      Task := TTask.Create(procedure()
+        var
+          buf: TMemoryStream;
+        begin
+          buf := TMemoryStream.Create;
+          LoadFromURL(sA, buf);
 
-    idx := IndexText(mime, ImageContentTypes);
-    if idx < 0 then
-      idx := IndexText(ctype, ImageContentTypes);
+          idx := IndexText(mime, ImageContentTypes);
+          if idx < 0 then
+            idx := IndexText(ctype, ImageContentTypes);
 
-    if idx >= 0 then
-      ext := ImageExtensions[idx]
-    else
-      ext := 'jpg';
+          if idx >= 0 then
+            ext := ImageExtensions[idx]
+          else
+            ext := 'jpg';
 
-    Result := CacheImage(buf, sA, ext);
-    if sA <> Trim(lnk) then
-      CacheImage(buf, Trim(lnk), ext);
+          res := CacheImage(buf, sA, ext);
+          if sA <> Trim(lnk) then
+            CacheImage(buf, Trim(lnk), ext);
 
-    if Assigned(buf) then
-      buf.Free;
+          if Assigned(buf) then
+            buf.Free;
+        end, TThreadPool.Default);
+      task.Start;
+      while task.Wait(100) do
+       Application.ProcessMessages;
+
+     Result := res;
   end;
 end;
 

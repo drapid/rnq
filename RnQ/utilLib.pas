@@ -4843,11 +4843,14 @@ INITIALIZATION
   @g_pUpdateLayeredWindow := GetProcAddress(g_hLib_User32, 'UpdateLayeredWindow');
 
  {$IFDEF EUREKALOG}
+{
+ //   if ExceptionLog7.IsEurekaLogActive then
    ExceptionLog7.CurrentEurekaLogOptions.SupportURL := rnqSite;
 //   ExceptionLog.CurrentEurekaLogOptions.SetCustomizedTexts(mtLog_CustInfoHeader, getTranslation('Build %d', [RnQBuild]));
    ExceptionLog7.CurrentEurekaLogOptions.CustomizedTexts[mtLog_CustInfoHeader] := getTranslation('Build %d', [RnQBuild]);
    ExceptionLog7.CurrentEurekaLogOptions.CustomField['Built'] := DateTimeToStr(builtTime);
 //   ExceptionLog7.CurrentEurekaLogOptions.CustomizedExpandedTexts[mtLog_CustInfoHeader] := 'Built: '+ DateTimeToStr(builtTime);
+}
  {$ENDIF EUREKALOG}
 
 finalization

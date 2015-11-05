@@ -12,7 +12,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ComCtrls, StdCtrls, Menus, ExtCtrls, ToolWin, ActnList, RnQButtons,
   VirtualTrees, StrUtils,
-  history,
+  history, System.Actions,
  {$IFDEF CHAT_CEF} // Chromium
   ceflib,
   historyCEF,
@@ -31,7 +31,7 @@ uses
 //  rnqCtrls,
   RnQProtocol,
   incapsulate, events,
-  pluginLib, RQMenuItem, System.Actions;
+  pluginLib, RQMenuItem;
 
 const
   minimizedScroll = 5;
@@ -1081,6 +1081,7 @@ var
   sheet: TtabSheet;
   chat: TchatInfo;
   pnl: Tpanel;
+  i: Integer;
 begin
  {$IFDEF SMILES_ANI_ENGINE}
 //  rqSmiles.ClearAniParams;
@@ -1137,11 +1138,18 @@ begin
 
 //    CreateBrowserInstance;
     Load('about:blank'); // Required for Browser.MainFrame.LoadString to work
-    while not renderInit or (Browser.MainFrame = nil) do
+    i := 0;
+    while (i < 1000) and (not renderInit or (Browser.MainFrame = nil)) do
     begin
       Application.ProcessMessages;
       sleep(100);
+      inc(i);
     end;
+    if (not renderInit) and (i >= 1000) then
+     begin
+       msgDlg('Error initializing CEF', True, mtError);
+       Exit;
+     end;
 //    ShowDevTools;
     templateLoaded := False;
     LoadTemplate;

@@ -22,7 +22,7 @@ type
     loading   : boolean;
     cryptMode : byte;
     hashed    : RawByteString;
-    function  fromStream(str:Tstream; quite : Boolean = false):boolean;
+    function  fromStream(str: Tstream; quite : Boolean = false):boolean;
    public
     loaded    :boolean;
     fToken, themeToken,SmilesToken : Cardinal;

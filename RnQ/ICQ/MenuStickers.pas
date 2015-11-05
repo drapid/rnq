@@ -112,15 +112,16 @@ end;
 
 procedure getStickerAsync(FExt, FSticker: Integer);
 var
-  fs: TMemoryStream;
-  png: TRnQBitmap;
-  stickerGrid: TAwImageGrid;
-  url, fn: String;
   Task: ITask;
 begin
-  TThreadPool.Default.SetMinWorkerThreads(3);
+  TThreadPool.Default.SetMinWorkerThreads(2);
   TThreadPool.Default.SetMaxWorkerThreads(5);
   Task := TTask.Create(procedure()
+   var
+    fs: TMemoryStream;
+    png: TRnQBitmap;
+    stickerGrid: TAwImageGrid;
+    url, fn: String;
   begin
     png := TRnQBitmap.Create;
     fs := TMemoryStream.Create;
