@@ -1688,7 +1688,7 @@ begin
             tlBottom:
               Offset.Y := R.Bottom - R.Top - TempThumb.fBmp.Height;
           end;
-
+         *)
           //MouseOverThumb := Types.PtInRect(R, ScreenToClient(Mouse.CursorPos));
           if Focused and (not Scrolling) and (FItemIndex = Index) then
           begin
@@ -1701,7 +1701,7 @@ begin
             Canvas.RoundRect(R.Left + 2, R.Top + 2, R.Right - 2, R.Bottom - 2, 10, 10);
             Canvas.Brush.Color := Color;
           end;
-
+          (*
           DrawRbmp(Canvas.Handle, TempThumb, R.Left + Offset.X, R.Top + Offset.Y);
           TempThumb.Free;
           *)

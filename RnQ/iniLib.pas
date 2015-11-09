@@ -265,9 +265,11 @@ minimizeRoster:=TRUE;
 
 ShowHintsInChat := True;
    {$IFNDEF CHAT_CEF}
+   {$IFNDEF CHAT_SCI}
 chatFrm.showLSB:=TRUE;
 chatFrm.popupLSB:=TRUE;
-   {$ENDIF CHAT_CEF}
+   {$ENDIF ~CHAT_SCI}
+   {$ENDIF ~CHAT_CEF}
 closeChatOnSend := True;
 ClosePageOnSingle := False;
 
@@ -645,9 +647,11 @@ begin
   pp.addPrefInt('spam-bot-tryes', spamfilter.BotTryesCount);
   pp.addPrefBool('history-crypt-enabled', histcrypt.enabled);
   pp.addPrefBool('history-crypt-save-password', histcrypt.savePwd);
- {$IFNDEF CHAT_CEF} // Chromium
+ {$IFNDEF CHAT_CEF} // NOT Chromium
+   {$IFNDEF CHAT_SCI}
   pp.addPrefBool('chat-lsb-popup', chatFrm.popupLSB);
   pp.addPrefBool('chat-lsb-show', chatFrm.showLSB);
+   {$ENDIF ~CHAT_SCI}
  {$ENDIF ~CHAT_CEF} // Chromium
   pp.addPrefBool('chat-hints-show', ShowHintsInChat);
   pp.addPrefBool('chat-close-on-send', closeChatOnSend);
@@ -910,9 +914,11 @@ begin
   pp.getPrefBool('save-ip', SaveIP);
   pp.getPrefBool('auto-check-update', checkupdate.enabled);
   pp.getPrefBool('lock-on-start', lockOnStart);
- {$IFNDEF CHAT_CEF} // Chromium
+ {$IFNDEF CHAT_CEF} // NOT Chromium
+   {$IFNDEF CHAT_SCI}
   pp.getPrefBool('chat-lsb-popup', chatFrm.popupLSB);
   pp.getPrefBool('chat-lsb-show', chatFrm.showLSB);
+   {$ENDIF ~CHAT_SCI}
  {$ENDIF CHAT_CEF} // Chromium
   pp.getPrefBool('chat-hints-show', ShowHintsInChat);
   pp.getPrefBool('chat-close-on-send', closeChatOnSend);

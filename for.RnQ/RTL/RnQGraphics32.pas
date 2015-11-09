@@ -151,7 +151,7 @@ type
   end;
 
    procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR, SrcR: TGPRect); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR: TGPRect); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR: TGPRect; Bound: Boolean = True); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
    procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
    procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; X, Y: Integer); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 //    procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; DestRect : TRect; SrcX, SrcY, SrcW, SrcH : Integer; pEnabled : Boolean= True); OverLoad; inline;
@@ -3234,18 +3234,31 @@ begin
 //   SetStretchBltMode(DC, HALFTONE);
   bmp.Draw(DC, DestR, SrcR);
 end;
-procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; DestR : TGPRect); OverLoad;
+procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; DestR : TGPRect; Bound: Boolean = True); OverLoad;
 var
   Pt: TPoint;
+  r2: TGPRect;
 begin
   if ((DestR.Width) <> (bmp.fWidth))
      and ((DestR.Height) <> (bmp.fHeight)) then
    begin
-    GetBrushOrgEx(dc, pt);
-    SetStretchBltMode(dc, HALFTONE);
-    SetBrushOrgEx(dc, pt.x, pt.y, @pt);
-   end;
-  bmp.Draw(DC, DestR);
+    if not Bound then
+      begin
+       GetBrushOrgEx(dc, pt);
+       SetStretchBltMode(dc, HALFTONE);
+       SetBrushOrgEx(dc, pt.x, pt.y, @pt);
+       bmp.Draw(DC, DestR);
+      end
+     else
+      begin
+       r2 := DestRect(bmp.fWidth, bmp.fHeight, DestR.Width, DestR.Height);
+       inc(r2.X, DestR.X);
+       inc(r2.Y, DestR.Y);
+       bmp.Draw(DC, r2);
+      end;
+   end
+  else
+    bmp.Draw(DC, DestR);
 end;
 procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap); OverLoad;
 begin

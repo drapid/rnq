@@ -1101,6 +1101,7 @@ begin
   try
     httpCli := TSslHttpCli.Create(nil);
     httpCli.URL := URL;
+    httpCli.FollowRelocation := True;
     SetupProxy(httpCli);
 
     AvStream := TMemoryStream.Create;

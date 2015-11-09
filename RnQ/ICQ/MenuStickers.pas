@@ -110,12 +110,10 @@ begin
   end;
 end;
 
-procedure getStickerAsync(FExt, FSticker: Integer);
+function getStickerAsync(tpool: TThreadPool; FExt, FSticker: Integer) : ITask;
 var
   Task: ITask;
 begin
-  TThreadPool.Default.SetMinWorkerThreads(2);
-  TThreadPool.Default.SetMaxWorkerThreads(5);
   Task := TTask.Create(procedure()
    var
     fs: TMemoryStream;
@@ -144,19 +142,21 @@ begin
         if not (stickerGrid = nil) then
           stickerGrid.Items.AddThumb('ext:' + IntToStr(stickerExtNames[FExt]) + ':sticker:' + IntToStr(FSticker), NIL);
       end;
-    if FSticker = stickerExtCounts[FExt] then
+{    if FSticker = stickerExtCounts[FExt] then
         begin
   //        fStickers.loderPanel.Hide;
           stickerGrid.Items.EndUpdate;
-        end;
-  end, TThreadPool.Default);
+        end;}
+  end, tpool);
   task.Start;
+  Result := task;
 end;
 
 procedure TFStickers.showStickerExt(ext: Integer);
 var
   stickerGrid: TAwImageGrid;
   i: Integer;
+  a: array of ITask;
 begin
   if not stickerGrids.ContainsKey(ext) then
   begin
@@ -191,14 +191,29 @@ begin
     stickerGrid.OnClickCell := SendSelectedSticker;
     stickerGrids.AddOrSetValue(ext, stickerGrid);
 
-    stickerGrid.Items.BeginUpdate;
+//    stickerGrid.Items.BeginUpdate;
 {
     loderPanel.Left := Round(fStickers.Width / 2 - loderPanel.Width / 2);
     loderPanel.Top := Round(fStickers.Height / 2 - loderPanel.Height / 2 + exts.Height / 2);
     loderPanel.Show;
 }
+
+    TThreadPool.Default.SetMinWorkerThreads(2);
+    TThreadPool.Default.SetMaxWorkerThreads(5);
+    SetLength(a, stickerExtCounts[ext]);
     for i := 1 to stickerExtCounts[ext] do
-      getStickerAsync(ext, i);
+      begin
+       a[i-1] := getStickerAsync(TThreadPool.Default, ext, i);
+      end;
+    i := 0;
+    while (i< 100) and not TTask.WaitForAll(a, 100) do
+     begin
+       inc(i);
+       Application.ProcessMessages;
+     end;
+  //        fStickers.loderPanel.Hide;
+    stickerGrid.Items.EndUpdate;
+
   end
     else
   stickerGrid := stickerGrids.Items[ext];

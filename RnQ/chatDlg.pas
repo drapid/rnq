@@ -17,7 +17,11 @@ uses
   ceflib,
   historyCEF,
  {$ELSE ~CHAT_CEF} // old
-  historyVCL,
+   {$IFDEF CHAT_SCI} // Sciter
+    historySCI,
+   {$ELSE ~CHAT_CEF and ~CHAT_SCI} // old
+    historyVCL,
+   {$ENDIF CHAT_SCI}
  {$ENDIF CHAT_CEF}
   Commctrl, selectContactsDlg,
   ShockwaveFlashObjects_TLB,
@@ -90,11 +94,11 @@ type
     btnPnl    : TPanel;
     avtsplitr : Tsplitter;
     avtPic    : TAvatr;
-{$IFNDEF CHAT_CEF}
+{$IFDEF CHAT_USE_LSB}
 //    rsb:TscrollBar;
     lsb       : TscrollBarEx;
     procedure updateLSB;
-{$ENDIF CHAT_CEF}
+{$ENDIF CHAT_USE_LSB}
 
     constructor create;
     procedure setAutoscroll(v: boolean);
@@ -373,17 +377,17 @@ type
     MainFormWidth : Integer;
 //    favMenuExt   : TPopupMenu;
     FileSendMenu : TPopupMenu;
-   {$IFNDEF CHAT_CEF}
+  {$IFDEF CHAT_USE_LSB}
     popupLSB,
     showLSB : Boolean;
     hideScrollTimer : integer;
-   {$ENDIF ~CHAT_CEF}
+  {$ENDIF CHAT_USE_LSB}
 
     procedure SetSmilePopup(pIsMenu: Boolean);
     procedure UpdatePluginPanel;
     function  isChatOpen(otherHand: TRnQContact): Boolean;
     function  openchat(otherHand: TRnQContact; ForceActive: Boolean = false;
-                       isAuto: Boolean = false):boolean;
+                       isAuto: Boolean = false): boolean;
     function  addEvent_openchat(otherhand: TRnQcontact; ev: Thevent): Boolean; // opens chat if not already open
 //    function  addEvent(uin: TUID; ev: Thevent): Boolean; overload;// tells if ev has been inserted in a list, or can be freed
     function  addEvent(c: TRnQcontact; ev: Thevent): Boolean; overload; // tells if ev has been inserted in a list, or can be freed
@@ -427,11 +431,11 @@ type
     procedure loadPages(const s: RawByteString);
     procedure updateGraphics;
     procedure addSmileAction(Sender: TObject);
-   {$IFNDEF CHAT_CEF}
+  {$IFDEF CHAT_USE_LSB}
     procedure lsbScroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
     procedure lsbEnter;
     procedure setLeftSB(visible: Boolean);
-   {$ENDIF ~CHAT_CEF}
+  {$ENDIF CHAT_USE_LSB}
     procedure addcontactAction(Sender: TObject);
     procedure AvtPBoxPaint(Sender: TObject);
     procedure onTimer;
@@ -877,6 +881,7 @@ begin
     begin
       if i >= 0 then
         setTab(i);
+      pageCtrlChange(self);
       if docking.Docked2chat then
         applyDocking;
     end
@@ -1055,6 +1060,7 @@ begin
   if i < 0 then
     i := newIMchannel(c);
   setTab(i);
+  pageCtrlChange(self);
   if wasEmpty then
    if docking.Docked2chat then
     applyDocking;
@@ -1164,7 +1170,7 @@ begin
 {$ENDIF CHAT_CEF}
   end;
 
-{$IFNDEF CHAT_CEF}
+ {$IFDEF CHAT_USE_LSB}
   chat.lsb := TscrollbarEx.create(pnl);
   with chat.lsb do
   begin
@@ -1188,7 +1194,7 @@ begin
     visible := showLSB;
     hint := getTranslation('Scrolls the message line by line');
   end;
-{$ENDIF ~CHAT_CEF}
+ {$ENDIF CHAT_USE_LSB}
 
  {$IFDEF SMILES_ANI_ENGINE}
 //  rqSmiles.ClearAniParams;
@@ -1320,7 +1326,7 @@ begin
   chat.historyBox.updateRSB(false);
 end; // newIMchannel
 
- {$IFNDEF CHAT_CEF}
+ {$IFDEF CHAT_USE_LSB}
 procedure TchatFrm.lsbScroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
 var
   ch: TchatInfo;
@@ -1395,7 +1401,7 @@ begin
     ch.lsb.visible := showLSB;
 end;
 
- {$ENDIF ~CHAT_CEF}
+ {$ENDIF CHAT_USE_LSB}
 
 procedure Tchatinfo.CheckTypingTime;
 begin
@@ -1624,7 +1630,7 @@ begin
    end;
   sbar.Height := boundInt(i,22,50);
   sbar.repaint;
- {$IFNDEF CHAT_CEF}
+  {$IFDEF CHAT_USE_LSB}
   if popupLSB then
     if ch.lsb.Enabled and (ch.lsb.Position > ch.lsb.Min) then
       ch.lsb.width := maximizedScroll
@@ -1632,12 +1638,12 @@ begin
       ch.lsb.width := minimizedScroll
    else
     ch.lsb.width := maximizedScroll;
- {$ENDIF ~CHAT_CEF}
+  {$ENDIF CHAT_USE_LSB}
   ch.historyBox.color := ch.input.color;
   if chatFrm.visible and not IsIconic(chatFrm.handle) then
-  ch.historyBox.repaint;
- panel.Realign;
- panel.repaint;
+    ch.historyBox.repaint;
+  panel.Realign;
+  panel.repaint;
 
   i := 21;
   with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size) do
@@ -1685,9 +1691,9 @@ begin
     begin
      lastClick := 0;
      inputChange(self);    // update char counter
-   {$IFNDEF CHAT_CEF}
+   {$IFDEF CHAT_USE_LSB}
      setLeftSB(showLSB);
-   {$ENDIF ~CHAT_CEF}
+   {$ENDIF CHAT_USE_LSB}
      if autoSwitchKL
         and assigned(lastContact)
         and (lastContact<>ch.who)
@@ -1807,8 +1813,8 @@ begin
           dec(x);
         i:=x-1;
  {$IFDEF UNICODE}
-        b :=  TCharacter.IsLetterOrDigit(s[x]);
-        while (i>0) and ((i > Length(s)) or ((b) = TCharacter.IsLetterOrDigit(s[i]))) do
+        b :=  s[x].IsLetterOrDigit;
+        while (i>0) and ((i > Length(s)) or ((b) = s[i].IsLetterOrDigit)) do
  {$ELSE nonUNICODE}
         b := s[x] in ALPHANUMERIC;
         while (i>0) and ((i > Length(s)) or ((b) = (s[i] in ALPHANUMERIC))) do
@@ -3538,9 +3544,10 @@ procedure TchatFrm.chatShowDevToolsClick(Sender: TObject);
 var
   ch : TchatInfo;
 begin
+ {$IFDEF CHAT_CEF} // Chromium
   ch := thisChat;
   ch.historyBox.ShowDevTools;
-
+ {$ENDIF CHAT_CEF} // Chromium
 end;
 
 procedure TchatFrm.chatcloseignore1Click(Sender: TObject);
@@ -3959,7 +3966,7 @@ end;
 
 procedure TchatFrm.onTimer;
 begin
-{$IFNDEF CHAT_CEF}
+{$IFDEF CHAT_USE_LSB}
   // hide message scrollbar
   if popupLSB and (hideScrollTimer>0) then
     begin
@@ -3971,7 +3978,7 @@ begin
          if Assigned(lsb) then
            lsb.width:=minimizedScroll;
     end;
-{$ENDIF CHAT_CEF}
+{$ENDIF CHAT_USE_LSB}
 end;
 
 

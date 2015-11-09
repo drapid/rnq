@@ -7,6 +7,12 @@
 
 // defined in ForRnQConfig.inc { $DEFINE CHAT_CEF} // Chromium
 
+   {$IFNDEF CHAT_SCI}
+   {$IFNDEF CHAT_CEF}
+     {$DEFINE CHAT_USE_LSB}
+   {$ENDIF ~CHAT_CEF}
+   {$ENDIF ~CHAT_SCI}
+
  { $DEFINE USE_REGUIN}
  { $DEFINE USE_SECUREIM}
 
