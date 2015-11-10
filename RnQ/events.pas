@@ -131,51 +131,51 @@ Type
     HistoryToken : Cardinal;
     PaintHeight : Integer;
     otherpeer  : TRnQcontact; // used to keep track of other peer when "who" is us
-    class function new(kind_:integer; who_: TRnQContact; when_: TdateTime;
-             const info_:RawByteString;
+    class function new(kind_: integer; who_: TRnQContact; when_: TdateTime;
+             const info_: RawByteString;
  {$IFDEF DB_ENABLED}
-             txt_ : String;
+             const txt_ : String;
  {$ENDIF DB_ENABLED}
-             flags_:integer; pID : integer = 0):Thevent;
+             flags_: integer; pID: integer = 0): Thevent;
     destructor Destroy; override;
     function  pic: TPicName;
-    function  PicSize : TSize;
-    function  Draw(DC : HDC; x, y : Integer) : TSize;
+    function  PicSize: TSize;
+    function  Draw(DC: HDC; x, y: Integer): TSize;
 //    function  GetImgElm : TRnQThemedElementDtls;
 //    function  font:Tfont;
-    procedure applyFont(font:Tfont);
-    function  getFont:Tfont;
+    procedure applyFont(font: Tfont);
+    function  getFont: Tfont;
 //    function  useFont : String;
-    function  clone:Thevent;
+    function  clone: Thevent;
     function  toString: RawByteString;
-    function  urgent:boolean;
-    function  isHasBody : Boolean;
+    function  urgent: boolean;
+    function  isHasBody: Boolean;
  {$IFNDEF DB_ENABLED}
     procedure setInfo(const info_: RawByteString);
     function  decrittedInfo: String;
     function  decrittedInfoOrg: RawByteString;
-    procedure appendToHistoryFile(par:TUID='');
+    procedure appendToHistoryFile(par: TUID='');
  {$ENDIF ~DB_ENABLED}
 
-    function  getBodyBin:RawByteString;
-    function  getBodyText:string;
+    function  getBodyBin: RawByteString;
+    function  getBodyText: string;
     function  getHeaderText: string;
     function  getHeader: THeventHeader;
     procedure ParseMsgStr(const pMsg: RawByteString);
     procedure setFlags(f: integer);
     procedure setWho(w: TRnQContact);
 //   published
-    property  flags : Integer read f_flags write setFlags;
-    property  who : TRnQContact read f_who write setWho;
-    property  isMyEvent : Boolean read fIsMyEvent;
+    property  flags: Integer read f_flags write setFlags;
+    property  who: TRnQContact read f_who write setWho;
+    property  isMyEvent: Boolean read fIsMyEvent;
  {$IFNDEF DB_ENABLED}
-    property  bInfo : RawByteString read getBodyBin;
+    property  bInfo: RawByteString read getBodyBin;
  {$ENDIF ~DB_ENABLED}
   end; // Thevent
 
   TeventQ=class(Tlist)
    public
-    OnNewTop : procedure of object;
+    OnNewTop: procedure of object;
 
     constructor Create;
     destructor Destroy; override;
@@ -410,7 +410,7 @@ class function Thevent.new(kind_: integer;
             who_: TRnQContact; when_: TdateTime;
             const info_: RawByteString;
  {$IFDEF DB_ENABLED}
-            txt_ : String;
+            const txt_ : String;
  {$ENDIF DB_ENABLED}
             flags_:integer; pID : Integer = 0): Thevent;
 begin

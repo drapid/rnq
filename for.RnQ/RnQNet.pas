@@ -1100,6 +1100,7 @@ begin
   // idx:=  HasAvatar(UIN);
   try
     httpCli := TSslHttpCli.Create(nil);
+    httpCli.MultiThreaded := True;
     httpCli.URL := URL;
     httpCli.FollowRelocation := True;
     SetupProxy(httpCli);

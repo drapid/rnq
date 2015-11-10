@@ -21,7 +21,6 @@ uses
 
 type
   TlinkKind = (LK_FTP, LK_EMAIL, LK_WWW, LK_UIN, LK_ED);
-  TDrawStyle = (dsNone, dsBuffer, dsMemory, dsGlobalBuffer32);
   TAutoScrollState = (ASS_FULLSCROLL, // fAutoscroll = True, not2go2end = false
     ASS_ENABLENOTSCROLL, // fAutoscroll = True, not2go2end = True
     ASS_FULLDISABLED); // fAutoscroll = False, not2go2end = Any
@@ -185,7 +184,6 @@ type
     lastClickedItem, P_pointedSpace, P_pointedItem: ThistoryItem;
     linkToUnderline: ThistoryLink;
     FOnLinkClick: TLinkClickEvent;
-    buffer: TBitmap;
 
     firstCharactersForSmiles: set of AnsiChar; // for faster smile recognition
   protected
@@ -194,7 +192,8 @@ type
     procedure setAutoScrollForce(vAS: boolean);
   public
     topVisible, topOfs: integer;
-    offsetMsg, offsetAll: integer; // can't show hevents before this
+    offset, offsetAll: integer; // can't show hevents before this
+    newSession: integer; // where, in the history, does start new session
     startSel, endSel: ThistoryPos;
     isWholeEvents: Boolean;
     who: TRnQContact;
@@ -235,6 +234,7 @@ type
     destructor Destroy; override;
     procedure go2end();
     function copySel2Clpb: Boolean;
+    function getSelText: String;
     function getSelBin(): RawByteString;
     function getSelHtml(smiles: boolean): string;
     function getSelHtml2(smiles: boolean): RawByteString;
@@ -256,7 +256,9 @@ type
     procedure histScrollLine(d: integer);
     procedure Scroll;
     function getQuoteByIdx(var pQuoteIdx: integer): String;
+    procedure setScrollPrefs(ShowAll: Boolean);
     procedure updateMsgStatus(hev: Thevent);
+    procedure ManualRepaint;
 
     procedure MouseWheelHandler(var Message: TMessage); override;
     procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
@@ -295,16 +297,7 @@ type
     destructor Destroy; override;
   end;
 }
-const
-  dStyle = dsGlobalBuffer32;
-
-  // dStyle = dsGlobalBuffer;
-  // dStyle = dsMemory; // Bad BG and not so fast :(
-  // dStyle = dsNone;
 var
-  // dsNone, dsBuffer, dsGlobalBuffer, dsMemory
-  // dStyle: TDrawStyle = dsGlobalBuffer;
-  // dStyle: TDrawStyle = dsNone;
   hisBGColor, myBGColor: TColor;
   renderInit: Boolean = False;
 
@@ -314,7 +307,7 @@ uses
   clipbrd, Types, math,
 {$IFDEF UNICODE}
   Character,
-  AnsiStrings,
+  AnsiStrings, AnsiClasses,
 {$ENDIF UNICODE}
   RnQSysUtils, RnQLangs, RnQFileUtil, RDUtils, RnQBinUtils,
   RQUtil, RQThemes, RnQButtons, RnQGlobal, RnQCrypt, RnQPics, RnQNet,
@@ -337,7 +330,6 @@ var
   lastBGCnt: TRnQContact;
   lastBGToken: integer;
   vKeyPicElm: TRnQThemedElementDtls;
-  globalBuffer32: TBitmap32;
 
 function minor(const a, b: ThistoryPos): boolean; overload;
 begin
@@ -391,9 +383,6 @@ end;
 
 destructor ThistoryBox.Destroy;
 begin
-  if dStyle = dsBuffer then
-    if buffer <> nil then
-      buffer.Free;
   if Assigned(Self) then
     inherited Destroy;
   // self := NIL;
@@ -407,6 +396,11 @@ end;
 function ThistoryBox.copySel2Clpb: Boolean;
 begin
   Perform(EM_GETSEL, 0, 0);
+end;
+
+function ThistoryBox.getSelText: String;
+begin
+  Result := '';
 end;
 
 function applyHtmlFont(fnt: Tfont; const s: string): string;
@@ -717,7 +711,7 @@ end;
 
 function ThistoryBox.offsetPos(): integer;
 begin
-  result := topVisible - offsetMsg
+  result := topVisible - offset
 end;
 
 function ThistoryBox.wholeEventsAreSelected(): boolean;
@@ -1226,7 +1220,7 @@ begin
   evIdx := history.add(ev);
   inc(offsetAll);
   if (BE_save in behaviour[ev.kind].trig) and (ev.flags and IF_not_save_hist = 0) then
-    inc(offsetMsg);
+    inc(offset);
   addChatItem(ev, evIdx, True);
 
   // if autoScroll and (not not2go2end or P_lastEventIsFullyVisible) then
@@ -1327,6 +1321,68 @@ begin
       go2end;
 end;
 
+procedure ThistoryBox.setScrollPrefs(ShowAll: Boolean);
+var
+  olds, news: integer;
+//  i: Integer;
+  oldTime: TDateTime;
+  autoscr: Boolean;
+begin
+    whole := ShowAll;
+    autoscr := autoScrollVal;
+    if whole then
+     begin
+      offset := 0;
+      with history do
+      if not loaded then
+        begin
+         olds := count;
+         if olds > 0 then
+           oldTime := getAt(0).when
+          else
+           oldTime := 0;
+         Clear;
+//         fromString(loadFile(userPath+historyPath + ch.who.uid));
+         load(who);
+//         str := GetStream(userPath+historyPath + ch.who.uid);
+//         fromSteam(str);
+//         str.Free;
+         news := Count;
+         if oldTime > 0 then
+          begin
+//            olds := news;
+            while (news >0) and (getAt(news-1).when >= oldTime) do
+             Dec(news);
+//            dec(news, max(0, olds));
+//         news := count-olds;
+          end;
+//         with ch.historyBox do
+         begin
+          inc(newSession, news);
+          inc(startSel.evIdx, news);
+          inc(endSel.evIdx, news);
+          inc(topVisible, news)
+         end;
+        end
+//        else
+//         begin
+//           go2end;
+//         end;
+     end
+    else
+     begin
+       autoscr := TRUE;
+       offset := newSession;
+       if topVisible < offset then
+         topVisible := offset;
+     end;
+//    setAutoScrollForce(autoScroll);
+  autoScrollVal := autoscr;
+  repaint;
+  Scroll();
+  updateRSB(false, 0, True);
+end;
+
 function ThistoryBox.historyNowCount: integer;
 begin
   if Assigned(history) then
@@ -1404,8 +1460,7 @@ var
   idx: Integer;
 begin
   idx := history.IndexOf(hev);
-  evPicRect := theme.GetPicRect(RQteDefault, hev.pic);
-  evPicSpriteName := theme.GetPicSprite(RQteDefault, hev.pic);
+  theme.GetPicOrigin(hev.pic, evPicSpriteName, evPicRect);
   picStr := '[ ''' + evPicSpriteName + ''', ' + inttostr(-evPicRect.X) + ', ' + inttostr(-evPicRect.Y) + ', ' + inttostr(evPicRect.Width) + ', ' + inttostr(evPicRect.Height) + ' ]';
   Call('updateMsgStatus', [IntToStr(idx), picStr]);
 end;
@@ -1454,7 +1509,7 @@ begin
     begin
       inc(topOfs);
     end
-    else if topVisible < offsetMsg + historyNowCount - 1 then
+    else if topVisible < offset + historyNowCount - 1 then
     begin
       histScrollEvent(+1);
       exit;
@@ -1464,7 +1519,7 @@ begin
   begin
     dec(topOfs);
   end
-  else if topVisible > offsetMsg then
+  else if topVisible > offset then
   begin
     updateRSB(true, rsb_position - 1, true);
     startWithLastLine := true;
@@ -1538,32 +1593,39 @@ begin
   RestoreScrollPos;
 end;
 
+procedure ThistoryBox.ManualRepaint;
+begin
+  RefreshTemplate;
+end;
+
 procedure ThistoryBox.InitSmiles;
 var
   i, j: Integer;
   smileObj: TSmlObj;
   smiles, content: String;
   smileRect: TGPRect;
+  pic : TPicName;
 begin
   smiles := '{ ';
-  if theme.SmilesCount > 0 then
-  begin
-    for i := 0 to theme.SmilesCount - 1 do
+  if useSmiles then
+    if theme.SmilesCount > 0 then
     begin
-      smileObj := theme.GetSmileObj(i);
-      if smileObj.SmlStr.Count > 0 then
+      for i := 0 to theme.SmilesCount - 1 do
       begin
-        smileRect := theme.GetPicRect(RQteDefault, smileObj.SmlStr[0]);
-        smiles := smiles + '"' + escapeQuotes(smileObj.SmlStr[0]) + '": [ "n' + IntToStr(i) + '", ' +
-        IntToStr(smileRect.Width) + ', ' + IntToStr(smileRect.Height);
-        if smileObj.SmlStr.Count > 1 then
-        for j := 1 to smileObj.SmlStr.Count - 1 do
-        smiles := smiles + ', "' + escapeQuotes(smileObj.SmlStr[j]) + '"';
-        smiles := smiles +  ' ],';
+        smileObj := theme.GetSmileObj(i);
+        if smileObj.SmlStr.Count > 0 then
+        begin
+          theme.GetPicOrigin(smileObj.SmlStr[0], pic, smileRect);
+          smiles := smiles + '"' + escapeQuotes(smileObj.SmlStr[0]) + '": [ "n' + IntToStr(i) + '", ' +
+          IntToStr(smileRect.Width) + ', ' + IntToStr(smileRect.Height);
+          if smileObj.SmlStr.Count > 1 then
+            for j := 1 to smileObj.SmlStr.Count - 1 do
+              smiles := smiles + ', "' + escapeQuotes(smileObj.SmlStr[j]) + '"';
+          smiles := smiles +  ' ],';
+        end;
       end;
+      delete(smiles, length(smiles), 1);
     end;
-    delete(smiles, length(smiles), 1);
-  end;
   smiles := smiles +  ' }';
   Call('initSmiles', [smiles]);
 end;
@@ -1593,12 +1655,12 @@ var
   cryptPicSpriteName,
   statusImg1PicName, statusImg2PicName,
   statusImg1PicSpriteName, statusImg2PicSpriteName: TPicName;
-  hdr: THeader;
+  hdr: THeventHeader;
   st: Integer;
   b: Byte;
   sA: RawByteString;
   inv: Boolean;
-  imgList: TStringList;
+  imgList: TAnsiStringList;
   linkList: TStringDynArray;
   bodyBin: RawByteString;
   i: Integer;
@@ -1607,13 +1669,11 @@ begin
   if hev = nil then
     Exit;
 
-  hdr := hev.getHeaderTexts;
+  hdr := hev.getHeader;
   msgText := hev.getBodyText;
   bodyText := escapeNewlines(escapeQuotes(msgText));
-  evPicRect := theme.GetPicRect(RQteDefault, hev.pic);
-  evPicSpriteName := theme.GetPicSprite(RQteDefault, hev.pic);
-  cryptPicRect := theme.GetPicRect(RQteDefault, vKeyPicElm.picName);
-  cryptPicSpriteName := theme.GetPicSprite(RQteDefault, vKeyPicElm.picName);
+  theme.GetPicOrigin(hev.pic, evPicSpriteName, evPicRect);
+  theme.GetPicOrigin(vKeyPicElm.picName, cryptPicSpriteName, cryptPicRect);
 
   SetLength(params, 11);
 
@@ -1621,7 +1681,7 @@ begin
   bodyImages := 'false';
   if length(bodyBin) > 0 then
   begin
-    imgList := TStringList.Create;
+    imgList := TAnsiStringList.Create;
     parseMsgImages(bodyBin, imgList);
     if imgList.Count > 0 then
     begin
@@ -1672,7 +1732,7 @@ begin
   params[6] := 'false';
 
   case hev.kind of
-    EK_INCOMING, EK_STATUSCHANGE:
+    EK_ONCOMING, EK_STATUSCHANGE:
     begin
       sA := hev.getBodyBin;
       if length(sA) >= 4 then
@@ -1699,7 +1759,7 @@ begin
         if (Byte(sA[1]) <= High(XStatusArray)) then
           statusImg1PicName := XStatusArray[Byte(sA[1])].picName;
     end;
-    EK_OUTGOING:
+    EK_OFFGOING:
     begin
       statusImg1PicName := status2imgName(Byte(SC_OFFLINE), False);
     end;
@@ -1707,16 +1767,14 @@ begin
 
   if not (statusImg1PicName = '') then
   begin
-    statusImg1Rect := theme.GetPicRect(RQteDefault, statusImg1PicName);
-    statusImg1PicSpriteName := theme.GetPicSprite(RQteDefault, statusImg1PicName);
+    theme.GetPicOrigin(statusImg1PicName, statusImg1PicSpriteName, statusImg1Rect);
     params[7] := '["' + statusImg1PicSpriteName + '", ' + inttostr(-statusImg1Rect.X) + ', ' + inttostr(-statusImg1Rect.Y) + ', ' + inttostr(statusImg1Rect.Width) + ', ' + inttostr(statusImg1Rect.Height) + ']'
   end else
     params[7] := 'false';
 
   if not (statusImg2PicName = '') then
   begin
-    statusImg2Rect := theme.GetPicRect(RQteDefault, statusImg2PicName);
-    statusImg2PicSpriteName := theme.GetPicSprite(RQteDefault, statusImg2PicName);
+    theme.GetPicOrigin(statusImg2PicName, statusImg2PicSpriteName, statusImg2Rect);
     params[8] := '["' + statusImg2PicSpriteName + '", ' + inttostr(-statusImg2Rect.X) + ', ' + inttostr(-statusImg2Rect.Y) + ', ' + inttostr(statusImg2Rect.Width) + ', ' + inttostr(statusImg2Rect.Height) + ']'
   end else
     params[8] := 'false';
@@ -1751,8 +1809,8 @@ begin
     begin
       history.Clear;
       history.Load(who);
-      topVisible := history.Count - offsetMsg;
-      offsetAll := offsetMsg;
+      topVisible := history.Count - offset;
+      offsetAll := offset;
     end
       else
     topVisible := history.Count - offsetAll;
@@ -1804,9 +1862,10 @@ begin
   fAutoScrollState := ASS_FULLSCROLL;
   Color := clBtnFace;
   topVisible := 0;
-  offsetMsg := 0;
+  offset := 0;
   offsetAll := 0;
   whole := false;
+  newSession := 0;
 end;
 
 { TExtension }
@@ -2120,21 +2179,11 @@ end;
 *)
 initialization
 
-if dStyle = dsGlobalBuffer32 then
-begin
-  globalBuffer32 := TBitmap32.Create;
-  globalBuffer32.SetSize(0, 0);
-end;
-
 vKeyPicElm.ThemeToken := -1;
 vKeyPicElm.picName := PIC_KEY;
 vKeyPicElm.Element := RQteDefault;
 vKeyPicElm.pEnabled := true;
 
 finalization
-
-if dStyle = dsGlobalBuffer32 then
-  if globalBuffer32 <> nil then
-    globalBuffer32.Free;
 
 end.

@@ -18,7 +18,7 @@ uses
   historyCEF,
  {$ELSE ~CHAT_CEF} // old
    {$IFDEF CHAT_SCI} // Sciter
-    historySCI,
+    SciterApi, historySCI,
    {$ELSE ~CHAT_CEF and ~CHAT_SCI} // old
     historyVCL,
    {$ENDIF CHAT_SCI}
@@ -1166,7 +1166,14 @@ begin
     end;
     InitSmiles;
 {$ELSE ~CHAT_CEF}
-   onPainted := onHistoryRepaint;
+  {$IFDEF CHAT_SCI}
+//      SetOption(SCITER_SET_DEBUG_MODE, UINT_PTR(True));
+      SetOption(SCITER_SMOOTH_SCROLL, UINT_PTR(True));
+      LoadTemplate;
+      InitSmiles;
+  {$ELSE OLD VCL}
+     onPainted := onHistoryRepaint;
+  {$ENDIF}
 {$ENDIF CHAT_CEF}
   end;
 
@@ -3200,11 +3207,11 @@ begin
       with ch.historyBox do
        begin
       // i := topVisible;
- {$IFDEF CHAT_CEF} // Chromium
+ {$IF Defined(CHAT_CEF) or Defined(CHAT_SCI)} // Chromium
         go2end;
  {$ELSE ~CHAT_CEF} // old
         go2end(True);
- {$ENDIF CHAT_CEF}
+ {$IFEND ~CHAT_CEF}
         ev := history.getAt(topVisible);
        end;
       if (ev=NIL) or (ev.when > time) then
@@ -3548,6 +3555,10 @@ begin
   ch := thisChat;
   ch.historyBox.ShowDevTools;
  {$ENDIF CHAT_CEF} // Chromium
+ {$IFDEF CHAT_SCI} // Sciter
+  ch := thisChat;
+  ch.historyBox.SetOption(SCITER_SET_DEBUG_MODE, UINT_PTR(True));
+ {$ENDIF CHAT_SCI} // Sciter
 end;
 
 procedure TchatFrm.chatcloseignore1Click(Sender: TObject);
@@ -3720,35 +3731,35 @@ end;
 
 procedure TchatFrm.histmenuPopup(Sender: TObject);
 begin
- {$IFDEF CHAT_CEF}
-  chatshowlsb1.Visible := false;
-  chatpopuplsb1.visible := false;
-  chatShowDevTools.Visible := True;
- {$ELSE ~CHAT_CEF}
+ {$IFDEF CHAT_USE_LSB}
   chatshowlsb1.checked := showLSB;
   chatpopuplsb1.visible := showLSB;
   chatpopuplsb1.checked := popupLSB;
   chatShowDevTools.Visible := False;
- {$ENDIF CHAT_CEF}
+ {$ELSE CHAT_USE_LSB}
+  chatshowlsb1.Visible := false;
+  chatpopuplsb1.visible := false;
+  chatShowDevTools.Visible := True;
+ {$ENDIF ~CHAT_USE_LSB}
 end;
 
 procedure TchatFrm.chatshowlsb1Click(Sender: TObject);
 begin
- {$IFNDEF CHAT_CEF}
+ {$IFDEF CHAT_USE_LSB}
   setLeftSB(not showLSB)
- {$ENDIF ~CHAT_CEF}
+ {$ENDIF ~CHAT_USE_LBM}
 end;
 
 procedure TchatFrm.chathide1Click(Sender: TObject);
 begin
- {$IFNDEF CHAT_CEF}
+ {$IFDEF CHAT_USE_LSB}
   setLeftSB(false)
  {$ENDIF CHAT_CEF}
 end;
 
 procedure TchatFrm.chatpopuplsb1Click(Sender: TObject);
 begin
- {$IFNDEF CHAT_CEF}
+ {$IFDEF CHAT_USE_LSB}
   popupLSB := not popupLSB;
  {$ENDIF CHAT_CEF}
   updateGraphics;
@@ -3956,7 +3967,9 @@ begin
   begin
     autoscrollBtn.down := ch.historyBox.autoScrollVal;
     ch.historyBox.updateRSB(false);
+ {$IFDEF CHAT_USE_LSB}
     ch.updateLSB;
+ {$ENDIF CHAT_USE_LSB}
   end;
 end;
 
@@ -4708,7 +4721,7 @@ end;
 
 procedure TchatFrm.hAchatshowlsbUpdate(Sender: TObject);
 begin // 3011
- {$IFNDEF CHAT_CEF}
+ {$IFDEF CHAT_USE_LSB}
   with TAction(Sender) do
    if showLSB then
      HelpKeyword := PIC_RIGHT
@@ -4754,7 +4767,7 @@ end;
 
 procedure TchatFrm.hAchatpopuplsbUpdate(Sender: TObject);
 begin // 3012
- {$IFNDEF CHAT_CEF}
+ {$IFDEF CHAT_USE_LSB}
   with TAction(Sender) do
    if popupLSB then
      HelpKeyword := PIC_RIGHT
@@ -5234,7 +5247,7 @@ begin
     if Assigned(chatFrm)and Assigned(chatFrm.autoscrollBtn) then
       chatFrm.autoscrollBtn.down := historyBox.autoScrollVal;
 //    historyBox.autoscroll := historyBox.autoscroll;
-   {$IFNDEF CHAT_CEF}
+   {$IFDEF CHAT_USE_LSB}
     updateLSB();
    {$ENDIF CHAT_CEF}
   end;

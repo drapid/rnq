@@ -26,9 +26,9 @@ type
   PMemoryStream = ^TMemoryStream;
 
   function getSticker(const ext, sticker: String;
-                      fsPtr: PMemoryStream = nil; forceSize: String = ''): RawByteString;
+                      pifs: TMemoryStream = NIL; const forceSize: String = ''): RawByteString;
 
-  function getStickerURL(const ext, sticker: RawByteString; forceSize: String = ''): RawByteString;
+  function getStickerURL(const ext, sticker: RawByteString; const forceSize: String = ''): RawByteString;
 
 implementation
 
@@ -43,22 +43,22 @@ uses
   RnQNet;
 
 function getSticker(const ext, sticker: String;
-                    fsPtr: PMemoryStream = nil; forceSize: String = ''): RawByteString;
+                    pifs: TMemoryStream = NIL; const forceSize: String = ''): RawByteString;
 var
   URL, fn, size: string;
   stickerForChat: RawByteString;
   fs: TMemoryStream;
-  pfs: PMemoryStream;
+//  pfs: PMemoryStream;
   StickerResolution: Integer;
   EnableStickersCache: Boolean;
 begin
-  if fsPtr = nil then
+  if pifs = nil then
   begin
     fs := TMemoryStream.Create;
-    pfs := @fs;
+//    pfs := @fs;
   end
   else
-    pfs := fsPtr;
+    fs := pifs;
 
   if not(forceSize = '') then
     size := forceSize
@@ -81,38 +81,38 @@ begin
   EnableStickersCache := MainPrefs.getPrefBoolDef('chat-images-enable-stickers-cache', True);
 
   if EnableStickersCache and FileExists(fn) then
-    pfs.LoadFromFile(fn)
+    fs.LoadFromFile(fn)
    else
     begin
-      if LoadFromURL(URL, pfs^) then
+      if LoadFromURL(URL, fs) then
         if EnableStickersCache then
          begin
            if not FileExists(fn) then
             begin
              if not DirectoryExists(myPath + 'Stickers\') then
                CreateDir(myPath + 'Stickers\');
-             pfs.SaveToFile(fn);
+             fs.SaveToFile(fn);
             end;
       end;
     end;
 
-  pfs.Seek(0, 0);
-  SetLength(stickerForChat, pfs.size);
-  if pfs.size > 0 then
+  fs.Seek(0, 0);
+  SetLength(stickerForChat, fs.size);
+  if fs.size > 0 then
     begin
-      pfs.ReadBuffer(stickerForChat[1], pfs.size);
+      fs.ReadBuffer(stickerForChat[1], fs.size);
       Result := RnQImageExTag + Base64EncodeString(stickerForChat) + RnQImageExUnTag;
     end
    else
     Result := '';
 
-  if fsPtr = nil then
-    pfs.Free
-  else
-    pfs.Seek(0, 0);
+  if pifs = nil then
+    fs.Free
+   else
+    fs.Seek(0, 0);
 end;
 
-function getStickerURL(const ext, sticker: RawByteString; forceSize: String = ''): RawByteString;
+function getStickerURL(const ext, sticker: RawByteString; const forceSize: String = ''): RawByteString;
 var
   size: string;
   stickerForChat: RawByteString;

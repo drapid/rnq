@@ -1489,7 +1489,7 @@ var
   idx: Integer;
 begin
   idx := history.IndexOf(hev);
-  theme.GetPicOrigin(RQteDefault, hev.pic, evPicSpriteName, evPicRect);
+  theme.GetPicOrigin(hev.pic, evPicSpriteName, evPicRect);
   picStr := '[ ''' + evPicSpriteName + ''', ' + inttostr(-evPicRect.X) + ', ' + inttostr(-evPicRect.Y) + ', ' + inttostr(evPicRect.Width) + ', ' + inttostr(evPicRect.Height) + ' ]';
   addJScode('updateMsgStatus(' + IntToStr(idx) + ', ' + picStr + ');', 'msgstatus');
   execJS('msgstatus');
@@ -1671,8 +1671,7 @@ begin
         smileObj := theme.GetSmileObj(i);
         if smileObj.SmlStr.Count > 0 then
         begin
-//          smileRect := theme.GetPicRect(RQteDefault, smileObj.SmlStr[0]);
-          theme.GetPicOrigin(RQteDefault, smileObj.SmlStr[0], pic, smileRect);
+          theme.GetPicOrigin(smileObj.SmlStr[0], pic, smileRect);
           smiles := smiles + '''' + escapeQuotes(smileObj.SmlStr[0]) + ''': [ ''n' + IntToStr(i) + ''', ' +
           IntToStr(smileRect.Width) + ', ' + IntToStr(smileRect.Height);
           if smileObj.SmlStr.Count > 1 then
@@ -1731,8 +1730,8 @@ begin
   hdr := hev.getHeader;
   msgText := hev.getBodyText;
   bodyText := escapeNewlines(escapeQuotes(msgText));
-  theme.GetPicOrigin(RQteDefault, hev.pic, evPicSpriteName, evPicRect);
-  theme.GetPicOrigin(RQteDefault, vKeyPicElm.picName, cryptPicSpriteName, cryptPicRect);
+  theme.GetPicOrigin(hev.pic, evPicSpriteName, evPicRect);
+  theme.GetPicOrigin(vKeyPicElm.picName, cryptPicSpriteName, cryptPicRect);
 //  evPicRect := theme.GetPicRect(RQteDefault, hev.pic);
 //  evPicSpriteName := theme.GetPicSprite(RQteDefault, hev.pic);
 //  cryptPicRect := theme.GetPicRect(RQteDefault, vKeyPicElm.picName);
@@ -1826,7 +1825,7 @@ begin
 
   if not (statusImg1PicName = '') then
   begin
-    theme.GetPicOrigin(RQteDefault, statusImg1PicName, statusImg1PicSpriteName, statusImg1Rect);
+    theme.GetPicOrigin(statusImg1PicName, statusImg1PicSpriteName, statusImg1Rect);
     codeStr := codeStr + ', ' +
     '[''' + statusImg1PicSpriteName + ''', ' + inttostr(-statusImg1Rect.X) + ', ' + inttostr(-statusImg1Rect.Y) + ', ' + inttostr(statusImg1Rect.Width) + ', ' + inttostr(statusImg1Rect.Height) + ']'
   end else
@@ -1834,7 +1833,7 @@ begin
 
   if not (statusImg2PicName = '') then
   begin
-    theme.GetPicOrigin(RQteDefault, statusImg2PicName, statusImg2PicSpriteName, statusImg2Rect);
+    theme.GetPicOrigin(statusImg2PicName, statusImg2PicSpriteName, statusImg2Rect);
     codeStr := codeStr + ', ' +
     '[''' + statusImg2PicSpriteName + ''', ' + inttostr(-statusImg2Rect.X) + ', ' + inttostr(-statusImg2Rect.Y) + ', ' + inttostr(statusImg2Rect.Width) + ', ' + inttostr(statusImg2Rect.Height) + ']'
   end else

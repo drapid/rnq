@@ -124,7 +124,7 @@ begin
     png := TRnQBitmap.Create;
     fs := TMemoryStream.Create;
 
-    getSticker(IntToStr(stickerExtNames[FExt]), IntToStr(FSticker), @fs, 'small');
+    getSticker(IntToStr(stickerExtNames[FExt]), IntToStr(FSticker), fs, 'small');
     if loadPic(TStream(fs), png) then
 //    if not png.Empty then
       begin
@@ -191,7 +191,7 @@ begin
     stickerGrid.OnClickCell := SendSelectedSticker;
     stickerGrids.AddOrSetValue(ext, stickerGrid);
 
-//    stickerGrid.Items.BeginUpdate;
+    stickerGrid.Items.BeginUpdate;
 {
     loderPanel.Left := Round(fStickers.Width / 2 - loderPanel.Width / 2);
     loderPanel.Top := Round(fStickers.Height / 2 - loderPanel.Height / 2 + exts.Height / 2);
@@ -258,27 +258,27 @@ var
   extStiker: TStringList;
 begin
   if OnlFeature(rnqContact.fProto) then
-  begin
-    Self.Hide;
-    GoToChat;
+    begin
+      Self.Hide;
+      GoToChat;
 
-    TICQSession(rnqContact.fProto).sendSticker(rnqContact.UID, StickerMsg);
+      TICQSession(rnqContact.fProto).sendSticker(rnqContact.UID, StickerMsg);
 
-    // Add sticker to chat
-    extStiker := TStringList.Create;
-    extStiker.Delimiter := ':';
-    extStiker.StrictDelimiter := true;
-    extStiker.DelimitedText := StickerMsg;
-    ev := Thevent.new(EK_MSG, rnqContact.fProto.getMyInfo, Now, getSticker(extStiker.Strings[1], extStiker.Strings[3])
-                      {$IFDEF DB_ENABLED}, ''{$ENDIF DB_ENABLED}, 0);
-    ev.fIsMyEvent := True;
-    writeHistorySafely(ev, rnqContact);
-    chatFrm.addEvent(rnqContact, ev.clone);
-    ev.Free;
-    extStiker.Free;
-  end
-    else
-  Self.Hide
+      // Add sticker to chat
+      extStiker := TStringList.Create;
+      extStiker.Delimiter := ':';
+      extStiker.StrictDelimiter := true;
+      extStiker.DelimitedText := StickerMsg;
+      ev := Thevent.new(EK_MSG, rnqContact.fProto.getMyInfo, Now, getSticker(extStiker.Strings[1], extStiker.Strings[3])
+                        {$IFDEF DB_ENABLED}, ''{$ENDIF DB_ENABLED}, 0);
+      ev.fIsMyEvent := True;
+      writeHistorySafely(ev, rnqContact);
+      chatFrm.addEvent(rnqContact, ev.clone);
+      ev.Free;
+      extStiker.Free;
+    end
+   else
+    Self.Hide
 end;
 
 procedure TFStickers.SendSelectedSticker(Sender: TCustomImageGrid; Index: Integer);

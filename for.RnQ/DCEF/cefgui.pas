@@ -56,6 +56,7 @@ type
   TOnAddressChange = procedure(Sender: TObject; const browser: ICefBrowser; const frame: ICefFrame; const url: ustring) of object;
   TOnTitleChange = procedure(Sender: TObject; const browser: ICefBrowser; const title: ustring) of object;
   TOnFavIconUrlChange = procedure(Sender: TObject; const browser: ICefBrowser; const iconUrls: TStrings) of object;
+  TOnFullScreenModeChange = procedure(Sender: TObject; const browser: ICefBrowser; fullscreen: Boolean) of object;
   TOnTooltip = procedure(Sender: TObject; const browser: ICefBrowser; var text: ustring; out Result: Boolean) of object;
   TOnStatusMessage = procedure(Sender: TObject; const browser: ICefBrowser; const value: ustring) of object;
   TOnConsoleMessage = procedure(Sender: TObject; const browser: ICefBrowser; const message, source: ustring; line: Integer; out Result: Boolean) of object;
@@ -77,7 +78,8 @@ type
     const messageText: ustring; isReload: Boolean;
     const callback: ICefJsDialogCallback; out Result: Boolean) of object;
   TOnResetDialogState = procedure(Sender: TObject; const browser: ICefBrowser) of object;
-  TOnDialogClosed = procedure(Sender: TObject; const browser: ICefBrowser) of object;
+
+  TOnDialogClosed = procedure(Sender: TObject; const browser: ICefBrowser) of object;
   TOnBeforePopup = procedure(Sender: TObject; const browser: ICefBrowser;
     const frame: ICefFrame; const targetUrl, targetFrameName: ustring;
     targetDisposition: TCefWindowOpenDisposition; userGesture: Boolean;
@@ -111,8 +113,7 @@ type
     out Result: Boolean) of object;
   TOnProtocolExecution = procedure(Sender: TObject; const browser: ICefBrowser;
     const url: ustring; out allowOsExecution: Boolean) of object;
-  TOnBeforePluginLoad = procedure(Sender: TObject; const browser: ICefBrowser;
-    const url, policyUrl: ustring; const info: ICefWebPluginInfo; out Result: Boolean) of Object;
+
   TOnCertificateError = procedure(Sender: TObject; const browser: ICefBrowser;
     certError: TCefErrorcode; const requestUrl: ustring; const sslInfo: ICefSslInfo;
     const callback: ICefRequestCallback; out Result: Boolean) of Object;
@@ -271,6 +272,7 @@ type
     procedure doOnAddressChange(const browser: ICefBrowser; const frame: ICefFrame; const url: ustring);
     procedure doOnTitleChange(const browser: ICefBrowser; const title: ustring);
     procedure doOnFaviconUrlChange(const browser: ICefBrowser; iconUrls: TStrings);
+    procedure doOnFullScreenModeChange(const browser: ICefBrowser; fullscreen: Boolean);
     function doOnTooltip(const browser: ICefBrowser; var text: ustring): Boolean;
     procedure doOnStatusMessage(const browser: ICefBrowser; const value: ustring);
     function doOnConsoleMessage(const browser: ICefBrowser; const message, source: ustring; line: Integer): Boolean;
@@ -324,15 +326,14 @@ type
     function doOnQuotaRequest(const browser: ICefBrowser; const originUrl: ustring;
       newSize: Int64; const callback: ICefRequestCallback): Boolean;
     procedure doOnProtocolExecution(const browser: ICefBrowser; const url: ustring; out allowOsExecution: Boolean);
-    function doOnBeforePluginLoad(const browser: ICefBrowser; const url, policyUrl: ustring;
-      const info: ICefWebPluginInfo): Boolean;
     function doOnCertificateError(const browser: ICefBrowser; certError: TCefErrorcode;
       const requestUrl: ustring; const sslInfo: ICefSslInfo; const callback: ICefRequestCallback): Boolean;
     procedure doOnPluginCrashed(const browser: ICefBrowser; const pluginPath: ustring);
     procedure doOnRenderViewReady(const browser: ICefBrowser);
     procedure doOnRenderProcessTerminated(const browser: ICefBrowser; status: TCefTerminationStatus);
 
-    function doOnFileDialog(const browser: ICefBrowser; mode: TCefFileDialogMode;
+
+    function doOnFileDialog(const browser: ICefBrowser; mode: TCefFileDialogMode;
       const title, defaultFilePath: ustring; acceptFilters: TStrings;
       selectedAcceptFilter: Integer; const callback: ICefFileDialogCallback): Boolean;
 
@@ -478,6 +479,7 @@ type
     procedure OnAddressChange(const browser: ICefBrowser; const frame: ICefFrame; const url: ustring); override;
     procedure OnTitleChange(const browser: ICefBrowser; const title: ustring); override;
     procedure OnFaviconUrlChange(const browser: ICefBrowser; iconUrls: TStrings); override;
+    procedure OnFullScreenModeChange(const browser: ICefBrowser; fullscreen: Boolean); override;
     function OnTooltip(const browser: ICefBrowser; var text: ustring): Boolean; override;
     procedure OnStatusMessage(const browser: ICefBrowser; const value: ustring); override;
     function OnConsoleMessage(const browser: ICefBrowser; const message, source: ustring; line: Integer): Boolean; override;
@@ -502,7 +504,8 @@ type
     FEvent: IChromiumEvents;
   protected
     function OnRequestGeolocationPermission(const browser: ICefBrowser;
-      const requestingUrl: ustring; requestId: Integer; const callback: ICefGeolocationCallback): Boolean; override;
+
+      const requestingUrl: ustring; requestId: Integer; const callback: ICefGeolocationCallback): Boolean; override;
     procedure OnCancelGeolocationPermission(const browser: ICefBrowser;
       const requestingUrl: ustring; requestId: Integer); override;
   public
@@ -527,9 +530,11 @@ type
 
   TCustomLifeSpanHandler = class(TCefLifeSpanHandlerOwn)
   private
-    FEvent: IChromiumEvents;
+
+    FEvent: IChromiumEvents;
   protected
-    function OnBeforePopup(const browser: ICefBrowser; const frame: ICefFrame;
+
+    function OnBeforePopup(const browser: ICefBrowser; const frame: ICefFrame;
       const targetUrl, targetFrameName: ustring; targetDisposition: TCefWindowOpenDisposition;
       userGesture: Boolean; var popupFeatures: TCefPopupFeatures;
       var windowInfo: TCefWindowInfo; var client: ICefClient; var settings: TCefBrowserSettings;
@@ -565,8 +570,6 @@ type
     function OnQuotaRequest(const browser: ICefBrowser; const originUrl: ustring;
       newSize: Int64; const callback: ICefRequestCallback): Boolean; override;
     procedure OnProtocolExecution(const browser: ICefBrowser; const url: ustring; out allowOsExecution: Boolean); override;
-    function OnBeforePluginLoad(const browser: ICefBrowser; const url: ustring;
-      const policyUrl: ustring; const info: ICefWebPluginInfo): Boolean; override;
     function OnCertificateError(const browser: ICefBrowser; certError: TCefErrorcode;
       const requestUrl: ustring; const sslInfo: ICefSslInfo; const callback: ICefRequestCallback): Boolean; override;
     procedure OnPluginCrashed(const browser: ICefBrowser; const pluginPath: ustring); override;
@@ -901,6 +904,12 @@ begin
   FEvent.doOnFaviconUrlChange(browser, iconUrls);
 end;
 
+procedure TCustomDisplayHandler.OnFullScreenModeChange(
+  const browser: ICefBrowser; fullscreen: Boolean);
+begin
+  FEvent.doOnFullScreenModeChange(browser, fullscreen);
+end;
+
 procedure TCustomDisplayHandler.OnStatusMessage(const browser: ICefBrowser;
   const value: ustring);
 begin
@@ -1064,12 +1073,6 @@ function TCustomRequestHandler.OnBeforeBrowse(const browser: ICefBrowser;
   isRedirect: Boolean): Boolean;
 begin
   Result := FEvent.doOnBeforeBrowse(browser, frame, request, isRedirect);
-end;
-
-function TCustomRequestHandler.OnBeforePluginLoad(const browser: ICefBrowser;
-  const url, policyUrl: ustring; const info: ICefWebPluginInfo): Boolean;
-begin
-  Result := FEvent.doOnBeforePluginLoad(browser, url, policyUrl, info);
 end;
 
 function TCustomRequestHandler.OnBeforeResourceLoad(const browser: ICefBrowser;

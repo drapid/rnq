@@ -302,7 +302,7 @@ type
 //        var picLoc: TPicLocation; var picIdx: Integer; minSize: Integer = 0): Tsize; overload;
     function  GetPicSize(var PicElm: TRnQThemedElementDtls; minSize: Integer = 0): Tsize; overload;
     function  GetPicOld(const PicName: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
-    procedure GetPicOrigin(pTE: TRnQThemedElement; const name: TPicName; var OrigPic: TPicName; var rr: TGPRect);
+    procedure GetPicOrigin(const name: TPicName; var OrigPic: TPicName; var rr: TGPRect);
 //    function  GetIcoBad(name : String) : TIcon;
     function  GetString(const name: TPicName; isAdd: Boolean = True): String;
     function  GetSound(const name: TPicName): String;
@@ -1631,7 +1631,7 @@ begin
     end
 end;
 
-procedure TRQtheme.GetPicOrigin(pTE: TRnQThemedElement; const name: TPicName; var OrigPic: TPicName; var rr: TGPRect);
+procedure TRQtheme.GetPicOrigin(const name: TPicName; var OrigPic: TPicName; var rr: TGPRect);
 const
   minSize : integer = 0;
 var
@@ -1643,15 +1643,7 @@ begin
   OrigPic := name;
   s1 := AnsiLowerCase(name);
 
-  i := -1;
-  if pTE <> RQteDefault then
-  begin
-    s := TE2Str[pTE] + s1;
-    i := FThemePics.IndexOf(s);
-  end;
-
-  if i < 0 then
-    i := FThemePics.IndexOf(s1);
+  i := FThemePics.IndexOf(s1);
 
   try
     if i >= 0 then
@@ -1683,10 +1675,6 @@ begin
           end;
       end;
   finally
-  s := TE2Str[pTE] + s1;
-  i := FThemePics.IndexOf(s);
-
-  if i < 0 then
     i := FThemePics.IndexOf(s1);
 
   if i >= 0 then
