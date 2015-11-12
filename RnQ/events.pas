@@ -226,7 +226,7 @@ var
     myFont  : TFont;
     fntToken : Integer;
 
-function Thevent.clone:Thevent;
+function Thevent.clone: Thevent;
 begin
 result:=Thevent.create;
 result.ID:=ID;
@@ -318,14 +318,14 @@ function Thevent.pic:TPicName;
 begin
  if (kind = EK_msg) then
    begin
-    if hasMsgOK and
+    if hasMsgOK and((Self.flags and IF_not_delivered) > 0)then
+       Result := PIC_MSG_BAD// + 'ok'
+     else
+      if hasMsgOK and
 //    ((Self.flags and (IF_delivered or IF_not_delivered)) > 0) then
 //    if
-    ((Self.flags and IF_delivered) > 0) then
-     Result := PIC_MSG_OK// + 'ok'
-    else
-     if hasMsgOK and((Self.flags and IF_not_delivered) > 0)then
-       Result := PIC_MSG_BAD// + 'ok'
+      ((Self.flags and IF_delivered) > 0) then
+       Result := PIC_MSG_OK// + 'ok'
       else
        if hasMsgSRV and ((Self.flags and IF_SERVER_ACCEPT) > 0)then
          Result := PIC_MSG_SERVER// + 'ok'

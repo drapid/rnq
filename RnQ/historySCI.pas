@@ -395,7 +395,8 @@ end;
 
 function ThistoryBox.copySel2Clpb: Boolean;
 begin
-  Perform(EM_GETSEL, 0, 0);
+//  Perform(EM_GETSEL, 0, 0);
+  Call('execCopy', [])
 end;
 
 function ThistoryBox.getSelText: String;
@@ -1378,7 +1379,8 @@ begin
      end;
 //    setAutoScrollForce(autoScroll);
   autoScrollVal := autoscr;
-  repaint;
+  ReloadLast;
+//  repaint;
   Scroll();
   updateRSB(false, 0, True);
 end;
@@ -1576,8 +1578,14 @@ begin
 end;
 
 procedure ThistoryBox.LoadTemplate;
+var
+ fn: String;
 begin
-  LoadURL(FilePathToURL(myPath + 'template.htm'))
+  fn := themesPath + 'template.htm';
+  if not FileExists(fn) then
+    msgDlg(getTranslation('Chat template not found at "%s"', [fn]), false, mtError)
+   else
+    LoadURL(FilePathToURL(fn))
 end;
 
 procedure ThistoryBox.ClearTemplate;
@@ -1627,7 +1635,12 @@ begin
       delete(smiles, length(smiles), 1);
     end;
   smiles := smiles +  ' }';
-  Call('initSmiles', [smiles]);
+  try
+    Call('initSmiles', [smiles]);
+  except
+    on e: ESciterCallException do
+      msgDlg('Error in InitSmiles: ' + e.Message, false, mtError);
+  end;
 end;
 
 procedure ThistoryBox.RememberScrollPos;

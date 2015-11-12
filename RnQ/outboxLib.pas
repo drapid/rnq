@@ -181,19 +181,19 @@ begin
 end;
 
 
-function Toutbox.add(kind:Integer; dest:TRnQContact; flags:integer; cl:TRnQCList):TOevent;
+function Toutbox.add(kind: Integer; dest: TRnQContact; flags: integer; cl: TRnQCList): TOevent;
 begin
 result:=add(kind,dest,flags);
 result.cl:=TRnQCList.create;
 result.cl.assign(cl);
 end; // add
 
-function Toutbox.add(kind:Integer; dest:TRnQContact; flags:integer=0; const info:string=''):TOevent;
+function Toutbox.add(kind: Integer; dest: TRnQContact; flags: integer=0; const info: string=''):TOevent;
 var
-  found:boolean;
-  i:integer;
+  found: boolean;
+  i: integer;
 begin
-  result:=NIL;
+  result := NIL;
   found:=FALSE;
   if (kind in [OE_addedyou,OE_auth,OE_authDenied]) then
    for i:=0 to count-1 do

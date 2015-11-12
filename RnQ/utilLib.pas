@@ -1873,7 +1873,7 @@ begin
   if Length(send_msg) = 0 then
     exit;
   result := True;
-  oe.id:= oe.whom.fProto.sendMsg(oe.whom, oe.flags, send_msg,result);
+  oe.id := oe.whom.fProto.sendMsg(oe.whom, oe.flags, send_msg, result);
   oe.timeSent:=now;
   if result then
     Account.acks.add(oe.kind, oe.whom, oe.flags, 'MSG').ID := oe.ID;

@@ -795,7 +795,7 @@ begin
           ch.inputPnl.height := pagectrl.ActivePage.ClientHeight - 30
        end
        else
-        if (ch.input.height > pagectrl.ActivePage.ClientHeight)
+        if Assigned(ch.input) and (ch.input.height > pagectrl.ActivePage.ClientHeight)
            and (ch.input.height > 32) then
           ch.input.height := pagectrl.ActivePage.ClientHeight - 30;
 //   updatea

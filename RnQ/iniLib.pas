@@ -264,12 +264,10 @@ quitconfirmation:=FALSE;
 minimizeRoster:=TRUE;
 
 ShowHintsInChat := True;
-   {$IFNDEF CHAT_CEF}
-   {$IFNDEF CHAT_SCI}
+{$IFDEF CHAT_USE_LSB}
 chatFrm.showLSB:=TRUE;
 chatFrm.popupLSB:=TRUE;
-   {$ENDIF ~CHAT_SCI}
-   {$ENDIF ~CHAT_CEF}
+{$ENDIF CHAT_USE_LSB}
 closeChatOnSend := True;
 ClosePageOnSingle := False;
 
@@ -647,12 +645,10 @@ begin
   pp.addPrefInt('spam-bot-tryes', spamfilter.BotTryesCount);
   pp.addPrefBool('history-crypt-enabled', histcrypt.enabled);
   pp.addPrefBool('history-crypt-save-password', histcrypt.savePwd);
- {$IFNDEF CHAT_CEF} // NOT Chromium
-   {$IFNDEF CHAT_SCI}
+{$IFDEF CHAT_USE_LSB}
   pp.addPrefBool('chat-lsb-popup', chatFrm.popupLSB);
   pp.addPrefBool('chat-lsb-show', chatFrm.showLSB);
-   {$ENDIF ~CHAT_SCI}
- {$ENDIF ~CHAT_CEF} // Chromium
+{$ENDIF CHAT_USE_LSB}
   pp.addPrefBool('chat-hints-show', ShowHintsInChat);
   pp.addPrefBool('chat-close-on-send', closeChatOnSend);
   pp.addPrefBool('chat-close-page-on-single', ClosePageOnSingle);
@@ -737,12 +733,14 @@ end;*)
 
 procedure setcommoncfg(cfg: RawByteString);
 var
-  l,h, v: RawByteString;
+  l, h, v: RawByteString;
 
-  function yesno:boolean;
-  begin result:=l='yes' end;
+  function yesno: boolean;
+  begin
+    result:=l='yes'
+  end;
 
-  function int:integer;
+  function int: integer;
   var
     bb : Integer;
   begin
@@ -754,8 +752,9 @@ var
   end;
 
 begin
-if cfg = '' then exit;
-docking.pos:=DP_right;
+  if cfg = '' then
+    exit;
+  docking.pos:=DP_right;
 
 while cfg > '' do
   begin
@@ -914,12 +913,10 @@ begin
   pp.getPrefBool('save-ip', SaveIP);
   pp.getPrefBool('auto-check-update', checkupdate.enabled);
   pp.getPrefBool('lock-on-start', lockOnStart);
- {$IFNDEF CHAT_CEF} // NOT Chromium
-   {$IFNDEF CHAT_SCI}
+{$IFDEF CHAT_USE_LSB}
   pp.getPrefBool('chat-lsb-popup', chatFrm.popupLSB);
   pp.getPrefBool('chat-lsb-show', chatFrm.showLSB);
-   {$ENDIF ~CHAT_SCI}
- {$ENDIF CHAT_CEF} // Chromium
+{$ENDIF CHAT_USE_LSB}
   pp.getPrefBool('chat-hints-show', ShowHintsInChat);
   pp.getPrefBool('chat-close-on-send', closeChatOnSend);
   pp.getPrefBool('chat-close-page-on-single', ClosePageOnSingle);
@@ -1230,7 +1227,9 @@ begin
 end;
 
 procedure loadCommonCFG;
-begin setcommonCFG(loadfileA(myPath+commonFileName)) end;
+begin
+  setcommonCFG(loadfileA(myPath+commonFileName))
+end;
 
 procedure saveCommonCFG;
 begin
@@ -1612,7 +1611,8 @@ begin
 //     needCheckPass := False;
     end;
 
-  if uin2Bstarted='' then halt(0);
+  if uin2Bstarted='' then
+    halt(0);
 
   repeat
     s := 'R&Q' + uin2Bstarted;
@@ -1624,7 +1624,8 @@ begin
 //      mutex := 0;
       msgDlg(Str_already_run, True, mtWarning);
       uin2Bstarted:=showUsers(AccPass);
-      if uin2Bstarted='' then halt(0);
+      if uin2Bstarted='' then
+        halt(0);
   //    Halt(0);
     end;
   until Mutex=0;
@@ -1853,8 +1854,10 @@ begin
   setCFG(MainPrefs);
 
 // reset log files
-  if logpref.evts.clear then deletefile(logPath+eventslogFilename);
-  if logpref.pkts.clear then deletefile(logPath+packetslogFilename);
+  if logpref.evts.clear then
+    deletefile(logPath+eventslogFilename);
+  if logpref.pkts.clear then
+    deletefile(logPath+packetslogFilename);
 
   if logpref.evts.onfile and not fileIsWritible(logPath+eventslogFilename) then
    begin
@@ -1913,12 +1916,14 @@ begin
   setProgBar(nil, 7/maxProg);
   toggleMainfrmBorder(True, showMainBorder);
   chatFrm.SetSmilePopup(not ShowAniSmlPanel);
-loggaEvtS('hotkeys: loading');
-loadMacros(dbZip);
+  loggaEvtS('hotkeys: loading');
+  loadMacros(dbZip);
   setProgBar(nil, 8/maxProg);
-updateSWhotkeys;
-loggaEvtS('hotkeys: loaded');
-if not skipsplash then showSplash;
+  updateSWhotkeys;
+  loggaEvtS('hotkeys: loaded');
+
+  if not skipsplash then
+    showSplash;
   lastUser  := uin2Bstarted;
   if RnQStartingStatus < 0 then
     lastStatus := lastStatusUserSet
@@ -2107,8 +2112,9 @@ procedure quitUser;
 var
   pr : TRnQProtocol;
 begin
-if userTime < 0 then exit;
-userTime:=-1;
+  if userTime < 0 then
+    exit;
+  userTime:=-1;
 
   loggaEvtS('Quit user');
   stopMainTimer;
@@ -2318,7 +2324,8 @@ end;
 
 procedure quit;
 begin
- if not initOnce then exit;
+ if not initOnce then
+   exit;
  initOnce:=FALSE;
    plugins.castEv( PE_QUIT); // Added For Test Purpose
 

@@ -945,6 +945,7 @@ case ev of
 
           end
           else
+           {$ENDIF}
               if ( info = 'MSG') then
                begin
                  TempCh := chatFrm.chats.byContact(c);
@@ -962,7 +963,6 @@ case ev of
                end;
 //			      if not thisICQ.imVisibleTo(c) then
 //            	addTempVisibleFor(5, c);
-           {$ENDIF}
           Account.acks.Delete(i);
           end;
        end;
@@ -1149,7 +1149,7 @@ case ev of
         pTCE(c.data).lastAutoMsg := sU;//thisICQ.eventMsg;
         c.lastAccept  := thisICQ.eventAccept;
        end;
-      Account.acks.delete(i);
+//      Account.acks.delete(i);
      end;
     end;
   IE_authDenied:

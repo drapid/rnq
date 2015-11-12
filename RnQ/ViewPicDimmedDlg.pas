@@ -54,15 +54,7 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
     constructor CreateNew(AOwner: TComponent; DimmedParam: Boolean = False);
   end;
-{
-  TImageEx = class(TImage)
-  public
-    ImageStream: TMemoryStream;
-    destructor Destroy; override;
-    constructor Create(AOwner: TComponent); override;
-    procedure OnMouseDownImg(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-  end;
-}
+
 function viewImageDimmed(const evimage: RawByteString; evoffset: Integer): Tform;
 
 procedure SetTimeout(AProc: TOnTimerProc; ATimeout: Cardinal);

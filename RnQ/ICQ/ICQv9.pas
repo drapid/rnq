@@ -3727,10 +3727,11 @@ begin
   );
 end;
 
-function TicqSession.sendMsg(cnt: TRnQContact; var flags:dword; const msg:string; var requiredACK:boolean):integer;
+function TicqSession.sendMsg(cnt: TRnQContact; var flags: dword; const msg: string;
+                             var requiredACK: boolean): integer;
 // $0406
 var
-  c:TICQcontact;
+  c: TICQcontact;
   status : AnsiString;
   sutf   : RawByteString;
 
@@ -3757,10 +3758,11 @@ var
   isBin : boolean;
 begin
   result:=-1;
-  if not isReady then exit;
+  if not isReady then
+    exit;
 
 //  c:= getICQContact(uin);
-  c:= TICQcontact(cnt);
+  c := TICQcontact(cnt);
   isBin := (AnsiPos(RnQImageTag, msg) > 0) or ((AnsiPos(RnQImageExTag, msg) > 0))
       or (IF_Bin and flags>0)
       ;
@@ -3985,7 +3987,8 @@ begin
       +TLV(6, '')  // <--	if (args->flags & AIM_IMFLAGS_OFFLINE)
   );
   end;
-result:=addRef(REF_msg,c.UID2Cmp);
+
+  result := addRef(REF_msg, c.UID2Cmp);
 //  if requiredACK then
 //    acks.add(OE_msg, uin, 0, 'MSG').ID := result;
 
@@ -9296,17 +9299,17 @@ end; // updateICQvisibility
 
 
 
-function TicqSession.addRef(k:TrefKind; const uin:TUID):integer;
+function TicqSession.addRef(k: TrefKind; const uin: TUID):integer;
 begin
-result:=SNACref;
-refs[SNACref].kind:=k;
-refs[SNACref].uid:=uin;
-inc(SNACref);
-if SNACref > maxRefs then
-  SNACref:=1;
+  result := SNACref;
+  refs[SNACref].kind:=k;
+  refs[SNACref].uid:=uin;
+  inc(SNACref);
+  if SNACref > maxRefs then
+    SNACref:=1;
 end; // addRef
 
-function TicqSession.dontBotherStatus:boolean;
+function TicqSession.dontBotherStatus: boolean;
 begin result:=getStatus in [byte(SC_occupied), byte(SC_dnd)] end;
 
 procedure TicqSession.parse010F(const snac: RawByteString);
