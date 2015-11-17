@@ -14,17 +14,17 @@ uses
   tipDlg;
 
 
-//  procedure TipAdd2(ev:Thevent; bmp2 : tbitmap; seconds : Integer = -1);
-  procedure TipAdd3(ev: Thevent; bmp2: tbitmap = NIL; pCnt : TRnQContact = NIL; seconds : Integer = -1);
-//  procedure TipAdd(bmp : Tbitmap; seconds : Integer = -1); overload;
-//  procedure TipAdd(ev:Thevent; seconds : Integer = -1); overload;
-//  procedure TipAdd(gpBmp : tGPbitmap; seconds : Integer = -1); overload;
-  procedure TipRemove(ev:Thevent); overload;
-  procedure TipRemove(cnt : TRnQcontact); overload;
-  procedure TipsUpdateByCnt(c : TRnQcontact);
+//  procedure TipAdd2(ev: Thevent; bmp2: tbitmap; seconds: Integer = -1);
+  procedure TipAdd3(ev: Thevent; bmp2: tbitmap = NIL; pCnt: TRnQContact = NIL; seconds: Integer = -1);
+//  procedure TipAdd(bmp: Tbitmap; seconds: Integer = -1); overload;
+//  procedure TipAdd(ev: Thevent; seconds: Integer = -1); overload;
+//  procedure TipAdd(gpBmp: tGPbitmap; seconds: Integer = -1); overload;
+  procedure TipRemove(ev: Thevent); overload;
+  procedure TipRemove(cnt: TRnQcontact); overload;
+  procedure TipsUpdateByCnt(c: TRnQcontact);
   procedure TipsProced;
   procedure tipDrawEvent(destDC: HDC; ev: Thevent; pCnt: TRnQContact;
-              var maxX,maxY: integer; calcOnly: Boolean);
+              var maxX, maxY: integer; calcOnly: Boolean);
 
 implementation
 
@@ -43,7 +43,7 @@ implementation
    Protocols_all,
    chatDlg, mainDlg;
 
-procedure TipsDraw(Sender: TtipFrm; mode : Tmodes; info : Pointer; pMaxX, pMaxY : Integer; calcOnly : Boolean);
+procedure TipsDraw(Sender: TtipFrm; mode: Tmodes; info: Pointer; pMaxX, pMaxY: Integer; calcOnly : Boolean);
 begin
   case mode of
     TM_EVENT:
@@ -87,7 +87,7 @@ begin
   end;
 end;
 
-function CopyPic(BMP : TBitmap) : TBitmap;
+function CopyPic(BMP: TBitmap): TBitmap;
 type
   PColor32 = ^TColor32;
   TColor32 = type Cardinal;
@@ -101,8 +101,8 @@ begin
 end;
 var
 //  R:TRect;
-    r, C:Cardinal;
-    PC:PColor32;
+    r, C: Cardinal;
+    PC: PColor32;
 begin
   Result := Tbitmap.create;
    begin
@@ -135,7 +135,7 @@ begin
 //  ev := NIL;
 end;
 
-procedure TipAdd3(ev:Thevent; bmp2 : tbitmap = NIL; pCnt : TRnQContact = NIL; seconds : Integer = -1);
+procedure TipAdd3(ev: Thevent; bmp2: tbitmap = NIL; pCnt: TRnQContact = NIL; seconds: Integer = -1);
 var
 //  isEv : Boolean;
 //  isPic : Boolean;
@@ -326,7 +326,7 @@ begin
       end;
 end;
 
-procedure TipRemove(ev:Thevent);
+procedure TipRemove(ev: Thevent);
 var
   i : Integer;
   rt : TRnQTip;
@@ -354,7 +354,7 @@ begin
   end;
 end;
 
-procedure TipRemove(cnt : TRnQcontact);
+procedure TipRemove(cnt: TRnQcontact);
 var
   i : Integer;
   rt : TRnQTip;
@@ -389,10 +389,10 @@ begin
   MoveTips;
 end;
 
-procedure TipsUpdateByCnt(c : TRnQcontact);
+procedure TipsUpdateByCnt(c: TRnQcontact);
 var
-  i : Integer;
-  rt : TRnQTip;
+  i: Integer;
+  rt: TRnQTip;
 begin
   If Assigned(tipsList) then
   for I := 0 to tipsList.Count - 1 do

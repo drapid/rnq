@@ -164,6 +164,7 @@ Type
     procedure ParseMsgStr(const pMsg: RawByteString);
     procedure setFlags(f: integer);
     procedure setWho(w: TRnQContact);
+    function  isHis(c: TRnQContact): Boolean;
 //   published
     property  flags: Integer read f_flags write setFlags;
     property  who: TRnQContact read f_who write setWho;
@@ -899,6 +900,15 @@ begin
  {$ENDIF DB_ENABLED}
 end;
 
+function Thevent.isHis(c: TRnQContact): Boolean;
+begin
+  if Assigned(c) then
+    if Assigned(otherpeer) then
+      Result := c.equals(otherpeer)
+     else
+      Result := c.equals(who)
+end;
+
 //////////////////////////////////////////////////////////////
 
 constructor TeventQ.create;
@@ -914,13 +924,13 @@ while result > 0 do
   begin
   dec(result);
   with Thevent(items[result]) do
-    if (kind = kind_) and who.equals(c) then
+    if (kind = kind_) and isHis(c) then
       exit;
   end;
 result:=-1;
 end; // find
 
-procedure TeventQ.add(ev:Thevent);
+procedure TeventQ.add(ev: Thevent);
 //var
 //  i:integer;
 begin
@@ -950,7 +960,7 @@ else
   end;
 end; // add
 
-function TeventQ.add(kind_:integer; c:TRnQContact; when:Tdatetime; flags_:integer):Thevent;
+function TeventQ.add(kind_: integer; c: TRnQContact; when: Tdatetime; flags_: integer): Thevent;
 begin
 result:=Thevent.create;
 result.kind:=kind_;
@@ -960,31 +970,36 @@ result.flags:=flags_;
 add(result);
 end; // add
 
-function TeventQ.pop:Thevent;
+function TeventQ.pop: Thevent;
 begin
-result:=top;
-removeAt(0);
+  result:=top;
+  removeAt(0);
 end; // pop
 
-function TeventQ.top:Thevent;
-begin if count=0 then result:=NIL else result:=first end;
+function TeventQ.top: Thevent;
+begin
+  if count=0 then
+    result:=NIL
+   else
+    result:=first
+end;
 
 procedure TeventQ.clear;
 begin
-while count > 0 do
-  pop.free;
+  while count > 0 do
+    pop.free;
 end; // clear
 
 destructor TeventQ.Destroy;
 begin
- clear;
-inherited;
+  clear;
+  inherited;
 end; // destroy
 
-function TeventQ.empty:boolean;
+function TeventQ.empty: boolean;
 begin result:= count=0 end;
 
-function TeventQ.chop:boolean;
+function TeventQ.chop: boolean;
 begin
 result:=FALSE;
 if not empty then
@@ -994,47 +1009,50 @@ if not empty then
   end;
 end; // chop
 
-function TeventQ.removeAt(i:integer):boolean;
+function TeventQ.removeAt(i: integer): boolean;
 var
-  c:TRnQcontact;
+  c, c2: TRnQcontact;
 begin
-result:=(i >= 0) and (i < count);
-if result then
-  begin
-  c:=Thevent(items[i]).who;
-  delete(i);
-  if i=0 then
-    if assigned(OnNewTop) then OnNewTop;
-  roasterLib.redraw(c);
-  end;
+  result := (i >= 0) and (i < count);
+  if result then
+   begin
+    c := Thevent(items[i]).who;
+    c2 := Thevent(items[i]).otherpeer;
+    delete(i);
+    if i=0 then
+      if assigned(OnNewTop) then
+        OnNewTop;
+    if Assigned(c2) and (c2 <> c) then
+      roasterLib.redraw(c2);
+    roasterLib.redraw(c);
+   end;
 end; // removeAt
 
-function TeventQ.firstEventFor(c:TRnQContact):Thevent;
+function TeventQ.firstEventFor(c: TRnQContact): Thevent;
 var
-  i:integer;
+  i: integer;
 begin
-i:=0;
-if Assigned(c) and (c is TRnQContact) then
+  i:=0;
+  if Assigned(c) and (c is TRnQContact) then
 //result := NIL;
-while i < count do
-  begin
-   try
-    result:=Thevent(items[i]);
-//    if result.who.equals(c) then
-    if c.equals(result.who) then
-     exit;
-   except
-     result := NIL;
-     // May be need to remove bad item
-   end;
-  inc(i);
-  end;
-result:=NIL;
+  while i < count do
+    begin
+     try
+      result := Thevent(items[i]);
+      if Result.isHis(c) then
+        Exit;
+     except
+       result := NIL;
+       // May be need to remove bad item
+     end;
+    inc(i);
+    end;
+  result:=NIL;
 end; // firstEventFor
 
-function TeventQ.getNextEventFor(c:TRnQContact; idx : Integer): Integer;
+function TeventQ.getNextEventFor(c: TRnQContact; idx: Integer): Integer;
 var
-  i:integer;
+  i: integer;
 begin
   if idx >= 0 then
     i:=idx
@@ -1045,9 +1063,8 @@ begin
   while i < count do
     begin
      try
-      result:=i;
-  //    if result.who.equals(c) then
-      if c.equals(Thevent(items[i]).who) then
+      result := i;
+      if Thevent(items[i]).isHis(c) then
        exit;
      except
        result := -1;
@@ -1058,33 +1075,33 @@ begin
   result:=-1;
 end; // firstEventFor
 
-function TeventQ.removeEvent(kind_:integer; c:TRnQContact):boolean;
+function TeventQ.removeEvent(kind_: integer; c: TRnQContact): boolean;
 var
   i : Integer;
 begin
   Result := false;
   repeat
-    i := find(kind_,c);
+    i := find(kind_, c);
     if i >= 0 then
-     result:=removeAt(i);
+     result := removeAt(i);
   until (i < 0);
 end;
 
-function TeventQ.removeEvent(c:TRnQContact):boolean; 
+function TeventQ.removeEvent(c: TRnQContact): boolean;
 var
-  i:integer;
+  i: integer;
 begin
-result:=FALSE;
-i:=count;
-while i > 0 do
-  begin
-  dec(i);
-  if Thevent(items[i]).who.equals(c) then
+  result := FALSE;
+  i := count;
+  while i > 0 do
     begin
-    result:=TRUE;
-    removeAt(i)
-    end
-  end;
+     dec(i);
+     if Thevent(items[i]).isHis(c) then
+      begin
+       result:=TRUE;
+       removeAt(i)
+      end
+    end;
 end; // removeEvent
 
 const

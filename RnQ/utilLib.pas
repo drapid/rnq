@@ -1033,9 +1033,9 @@ begin
    end;
 end; // connect_after_dns
 
-function findAuthReq(c:TRnQContact):TauthreqFrm;
+function findAuthReq(c: TRnQContact): TauthreqFrm;
 var
-  i:integer;
+  i: integer;
 begin
 with childWindows do
   begin
@@ -1044,7 +1044,7 @@ with childWindows do
     begin
     if Tobject(items[i]) is TauthreqFrm then
       begin
-      result:=TauthreqFrm(items[i]);
+      result := TauthreqFrm(items[i]);
       if result.contact.equals(c) then
         exit;
       end;
@@ -1054,9 +1054,9 @@ with childWindows do
 result:=NIL;
 end; // findAuthreq
 
-function findViewInfo(c:TRnQContact):TRnQViewInfoForm;
+function findViewInfo(c: TRnQContact): TRnQViewInfoForm;
 var
-  i:integer;
+  i: integer;
 begin
 with childWindows do
   begin
@@ -1913,7 +1913,7 @@ begin
     writeHistorySafely(ev, oe.whom);
 //  if oe.flags and IF_not_show_chat = 0 then
 //    chatFrm.addEvent_openchat(c, ev.clone);
-    chatFrm.addEvent(oe.whom, ev.clone);
+  chatFrm.addEvent(oe.whom, ev.clone);
   ev.Free;
 end; // sendProtoMsg
 
@@ -3991,14 +3991,14 @@ begin
    end;
 end;
 
-function unexistant(const uin: TUID):boolean;
+function unexistant(const uin: TUID): boolean;
 begin
 result:=not (Account.AccProto.getMyInfo.equals(uin))
     and not Account.AccProto.readList(LT_ROSTER).exists(Account.AccProto, uin)
     and not notInlist.exists(Account.AccProto, uin)
 end; // unexistant
 
-function findInAvailableUsers(const uin:TUID):integer;
+function findInAvailableUsers(const uin: TUID): integer;
 begin
 for result:=0 to length(availableusers)-1 do
   if availableusers[result].uin = uin then

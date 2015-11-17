@@ -2548,16 +2548,16 @@ procedure TRnQmain.OnTimer(Sender: TObject);
   end; // processOutbox
 
 var
-  i:integer;
-  vi1:TRnQViewInfoForm;
+  i: integer;
+  vi1: TRnQViewInfoForm;
   Fcs : THandle;
 //  cnt : Tcontact;
   cnt1 : TRnQContact;
-  aNewDawn:boolean;   // TRUE once after each midnight
+  aNewDawn: boolean;   // TRUE once after each midnight
 //  vLastInput : DWord;
-  isSSRuning : Boolean;
-  b:boolean;
-  AwayXsts : TXStatStr;
+  isSSRuning: Boolean;
+  b: boolean;
+  AwayXsts: TXStatStr;
 begin
   aNewDawn:=FALSE;
 
@@ -2796,9 +2796,15 @@ if blinkCount = 0 then
   with eventQ do
     while i < count do
       begin
-       cnt1 := Thevent(items[i]).who;
+       cnt1 := Thevent(items[i]).otherpeer;
        if (cnt1 <> NIL)and(cnt1 is TRnQcontact) then
-         roasterLib.redraw(cnt1);
+         roasterLib.redraw(cnt1)
+        else
+         begin
+           cnt1 := Thevent(items[i]).who;
+           if (cnt1 <> NIL)and(cnt1 is TRnQcontact) then
+             roasterLib.redraw(cnt1);
+         end;
        inc(i);
       end;
   end;

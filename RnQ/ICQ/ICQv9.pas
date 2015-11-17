@@ -1084,36 +1084,36 @@ begin
    end;
 end;
 
-function code2status(code:dword):TICQstatus;
+function code2status(code: dword): TICQstatus;
 begin
-code:=code and ($FFFF-8-flag_invisible);
-case code of
-  $10: begin result:=SC_OCCUPIED; exit end;
-  4: begin result:=SC_NA; exit end;
-  2: begin result:=SC_DND; exit end;
-  end;
-for result:=low(result) to high(result) do
-  if status2code[result] = code then
-    exit;
-result:= SC_ONLINE;
+  code := code and ($FFFF-8-flag_invisible);
+  case code of
+    $10: begin result:=SC_OCCUPIED; exit end;
+    4: begin result:=SC_NA; exit end;
+    2: begin result:=SC_DND; exit end;
+   end;
+  for result:=low(result) to high(result) do
+    if status2code[result] = code then
+      exit;
+  result:= SC_ONLINE;
 end; // code2status
 
-function sameMethods(a,b:TicqNotify):boolean;
-begin result:= double((@a)^) = double((@b)^) end;
+function sameMethods(a,b: TicqNotify): boolean;
+begin result := double((@a)^) = double((@b)^) end;
 
 function encrypted(const s: RawByteString): RawByteString;
 const
-  cryptData:array [1..16] of byte=($F3,$26,$81,$C4,$39,$86,$DB,$92,$71,$A3,$B9,$E6,$53,$7A,$95,$7C);
+  cryptData: array [1..16] of byte=($F3,$26,$81,$C4,$39,$86,$DB,$92,$71,$A3,$B9,$E6,$53,$7A,$95,$7C);
 var
-  i:integer;
+  i: integer;
 begin
-i:=length(s);
-setLength(result,i);
-while i > 0 do
-  begin
-  byte(result[i]):=byte(s[i]) xor cryptData[i];
-  dec(i);
-  end;
+  i := length(s);
+  setLength(result, i);
+  while i > 0 do
+   begin
+     byte(result[i]):=byte(s[i]) xor cryptData[i];
+     dec(i);
+   end;
 end; // encrypted
 
 {
@@ -1136,7 +1136,7 @@ end; // str2url}
 
 function str2url(const s: AnsiString): AnsiString;
 var
-  i:integer;
+  i: integer;
   ss: AnsiString;
 begin
 result:='';
@@ -1153,7 +1153,7 @@ end; // str2url
 
 function str2html(const s: AnsiString): AnsiString;
 var
-  i:integer;
+  i: integer;
   ss: AnsiString;
 begin
 result:='';
@@ -1202,7 +1202,7 @@ begin
   ]);
 end; // str2html
 
-function xml_sms(me:TRnQcontact; const dest,msg: AnsiString; ack:boolean): AnsiString;
+function xml_sms(me: TRnQcontact; const dest, msg: AnsiString; ack:boolean): AnsiString;
 const
   yesno:array [boolean] of AnsiString=('No','Yes');
 begin

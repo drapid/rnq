@@ -57,7 +57,7 @@ interface
   function  str2status(const s: AnsiString): byte;
   function  str2visibility(const s: AnsiString): Tvisibility;
 
-  function  getRnQVerFor(c:TRnQContact):Integer;
+  function  getRnQVerFor(c: TRnQContact): Integer;
 
   procedure updateClients(pr : TRnQProtocol);
 
@@ -141,15 +141,15 @@ begin
   result:=TRUE;
 end; // enterICQpwd
 
-procedure sendICQaddedYou(cnt : TRnQContact);
+procedure sendICQaddedYou(cnt: TRnQContact);
 var
 //  c:Tcontact;
-  ev:THevent;
+  ev: THevent;
 begin
 //  c:=Tcontact(contactsDB.get(TICQContact, uin));
   plugins.castEv( PE_ADDEDYOU_SENT, cnt.uid);
   TicqSession(cnt.fProto).sendAddedYou(cnt.uid);
-  ev:=Thevent.new(EK_ADDEDYOU, cnt.fProto.getMyInfo, now,
+  ev := Thevent.new(EK_ADDEDYOU, cnt.fProto.getMyInfo, now,
                   ''{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, 0);
   ev.fIsMyEvent := True;
   if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
