@@ -27,19 +27,19 @@ interface
   procedure ICQsendfile(c: TICQContact; const fn: string);
 //  function  sendICQfiles(uin:TUID; files, msg:string):integer;
   function sendICQfiles(cnt: TRnQContact; files : TFilePacket; msg: string;
-              useLocProxy : Boolean; ThrSrv : Boolean; var drct : TICQdirect): integer;
-  function  findSendFile(id: Int64):TsendfileFrm;
-  function  findRcvFile(id: Int64):TfiletransferFrm;
+              useLocProxy: Boolean; ThrSrv: Boolean; var drct: TICQdirect): integer;
+  function  findSendFile(id: Int64): TsendfileFrm;
+  function  findRcvFile(id: Int64): TfiletransferFrm;
   {$ENDIF usesDC}
 
   function  enterICQpwd(const thisICQ: TRnQProtocol): boolean;
   //function  addToRoster(c:Tcontact):boolean; overload;
   procedure sendICQcontacts(cnt: TRnQContact; flags: integer; cl: TRnQCList);
   procedure sendICQaddedYou(cnt: TRnQContact);
-  procedure sendICQautomsgreq(cnt : TRnQContact);
-  procedure ChangeXStatus(pICQ : TICQSession; const st : Byte;
-                          const StName : String = ''; const StText : String = ''
-                          ;const ChgdUseOldXSt : Boolean = false);
+  procedure sendICQautomsgreq(cnt: TRnQContact);
+  procedure ChangeXStatus(pICQ: TICQSession; const st: Byte;
+                          const StName: String = ''; const StText: String = ''
+                          ;const ChgdUseOldXSt: Boolean = false);
 
   procedure loggaICQPkt(const prefix: String; what: TwhatLog; data: RawByteString='');
 //  function  findICQViewInfo(c:TRnQContact):TviewInfoFrm;
@@ -48,7 +48,7 @@ interface
 
   //function  statusName(s:Tstatus):string;
   function  statusNameExt2(s: byte; extSts : byte = 0; const Xsts: String = ''; const sts6: String = ''):string;
-  function  status2imgName(s: byte; inv:boolean=FALSE):AnsiString;
+  function  status2imgName(s: byte; inv: boolean=FALSE): AnsiString;
   function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts : byte= 0): AnsiString;
 //  function  visibility2imgName(vi:Tvisibility):String;
   function  visibilityName(vi: Tvisibility): string;
@@ -59,9 +59,9 @@ interface
 
   function  getRnQVerFor(c: TRnQContact): Integer;
 
-  procedure updateClients(pr : TRnQProtocol);
+  procedure updateClients(pr: TRnQProtocol);
 
-  procedure openICQURL(pr : TRnQProtocol; const pURL: String);
+  procedure openICQURL(pr: TRnQProtocol; const pURL: String);
 
 implementation
 
@@ -487,7 +487,7 @@ case what of
   logProtoPkt(what, head, data)
 end; // loggaPkt
 
-function  statusNameExt2(s:byte; extSts : byte = 0; const Xsts : String = ''; const sts6 : String = ''):string;
+function  statusNameExt2(s: byte; extSts: byte = 0; const Xsts: String = ''; const sts6: String = ''): string;
 begin
   if (XStatusAsMain or (s = byte(SC_ONLINE))) and (extSts > 0) then
     begin
@@ -508,7 +508,7 @@ begin
       result := getTranslation(status2ShowStr[TICQstatus(s)])
 end;
 
-function status2imgName(s: byte; inv:boolean=FALSE):TPicName;
+function status2imgName(s: byte; inv: boolean=FALSE): TPicName;
 const
   prefix = 'status.';
 begin
@@ -538,7 +538,7 @@ if inv then
  result := INVIS_PREFIX + result;
 end; // status2imgdx
 
-function status2imgNameExt(s: byte; inv:boolean=FALSE; extSts : byte= 0):TPicName;
+function status2imgNameExt(s: byte; inv: boolean=FALSE; extSts: byte= 0): TPicName;
 const
   prefix = 'status.';
 begin
@@ -555,10 +555,10 @@ begin
  end;
 end; // status2imgdx
 
-function visibilityName(vi:Tvisibility):string;
+function visibilityName(vi: Tvisibility): string;
 begin result:=getTranslation(visibility2ShowStr[vi]) end;
 
-function clb2contactlist(data: RawByteString):TRnQCList;
+function clb2contactlist(data: RawByteString): TRnQCList;
 var
   grpname : String;
   line : RawByteString;

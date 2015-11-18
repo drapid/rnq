@@ -229,24 +229,24 @@ var
 
 function Thevent.clone: Thevent;
 begin
-result:=Thevent.create;
-result.ID:=ID;
-result.kind:=kind;
-result.who:=who;
-result.otherpeer:=otherpeer;
-result.when:=when;
-Result.fIsMyEvent := fIsMyEvent;
- {$IFDEF DB_ENABLED}
-result.fBin := fBin;
-result.txt:= txt;
- {$ELSE ~DB_ENABLED}
-result.f_info:= f_info;
- {$ENDIF ~DB_ENABLED}
-result.flags:=flags;
-result.fpos:=fpos;
-result.cryptMode:=cryptMode;
-Result.HistoryToken := 0;
-Result.fImgElm.ThemeToken := -1;
+  result:=Thevent.create;
+  result.ID:=ID;
+  result.kind:=kind;
+  result.who:=who;
+  result.otherpeer:=otherpeer;
+  result.when:=when;
+  Result.fIsMyEvent := fIsMyEvent;
+   {$IFDEF DB_ENABLED}
+  result.fBin := fBin;
+  result.txt:= txt;
+   {$ELSE ~DB_ENABLED}
+  result.f_info:= f_info;
+   {$ENDIF ~DB_ENABLED}
+  result.flags:=flags;
+  result.fpos:=fpos;
+  result.cryptMode:=cryptMode;
+  Result.HistoryToken := 0;
+  Result.fImgElm.ThemeToken := -1;
   try
    if cl <> NIL then // By Rapid !
     result.cl:=cl.clone
@@ -255,7 +255,7 @@ Result.fImgElm.ThemeToken := -1;
   except
     result.cl:=NIL
   end;
-result.expires:=expires;
+  result.expires:=expires;
 end; // clone
 
 destructor Thevent.Destroy;
@@ -783,9 +783,9 @@ case kind of
 end; // getBodyText
 
  {$IFDEF DB_ENABLED}
-function Thevent.getBodyBin:RawByteString;
+function Thevent.getBodyBin: RawByteString;
 var
-  sa : RawByteString;
+  sa: RawByteString;
   i, k//, foundPicSize
     : Integer;
 begin
@@ -795,9 +795,9 @@ begin
     result := '';
 end;
  {$ELSE ~DB_ENABLED}
-function Thevent.getBodyBin:RawByteString;
+function Thevent.getBodyBin: RawByteString;
 var
-  sa : RawByteString;
+  sa: RawByteString;
   i, k//, foundPicSize
     : Integer;
 begin
@@ -848,7 +848,7 @@ case kind of
 end;
  {$ENDIF ~DB_ENABLED}
 
-function  Thevent.isHasBody : Boolean;
+function  Thevent.isHasBody: Boolean;
 begin
 case kind of
   EK_AUTH,

@@ -33,24 +33,24 @@ procedure Protos_DelCntFromSrv(cnt: TRnQContact);
 function  addToRoster(c: TRnQcontact; isLocal: Boolean = False): boolean; overload;
 function Proto_StsID2Name(Proto: TRnQProtocol; s: Byte; xs: byte): String;
 function  status2imgName(s: byte; inv: boolean=FALSE): TPicName; inline;
-function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts : byte= 0): TPicName; inline;
+function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts: byte= 0): TPicName; inline;
 
-function  setStatus(const proto : TRnQProtocol; st: byte; isAuto : Boolean = False): byte;
-function  setStatusFull(const proto : TRnQProtocol; st: byte; xSt : byte; xStStr : TXStatStr; isAuto : Boolean = False): byte;
-procedure setVisibility(const proto : TRnQProtocol; vi: byte);
-procedure userSetStatus(const proto : TRnQProtocol; st: byte; isShowAMWin : Boolean = True);
+function  setStatus(const proto: TRnQProtocol; st: byte; isAuto: Boolean = False): byte;
+function  setStatusFull(const proto: TRnQProtocol; st: byte; xSt: byte; xStStr: TXStatStr; isAuto : Boolean = False): byte;
+procedure setVisibility(const proto: TRnQProtocol; vi: byte);
+procedure userSetStatus(const proto: TRnQProtocol; st: byte; isShowAMWin: Boolean = True);
 procedure usersetVisibility(const proto: TRnQProtocol; vi: byte);
 
-function  sendEmailTo(c:TRnQContact):boolean;
-//function  str2db(cls : TRnQCntClass; const s: RawByteString; var ok:boolean):TRnQCList; overload;
-//function  str2db(cls : TRnQCntClass; const s: RawByteString):TRnQCList; overload;
-function  str2db(pProto : TRnQProtocol; const s: RawByteString; var ok:boolean; pCheckGroups : Boolean):TRnQCList; overload;
-function  str2db(pProto : TRnQProtocol; const s: RawByteString):TRnQCList; overload;
+function  sendEmailTo(c: TRnQContact): boolean;
+//function  str2db(cls : TRnQCntClass; const s: RawByteString; var ok: boolean):TRnQCList; overload;
+//function  str2db(cls : TRnQCntClass; const s: RawByteString): TRnQCList; overload;
+function  str2db(pProto: TRnQProtocol; const s: RawByteString; var ok: boolean; pCheckGroups : Boolean):TRnQCList; overload;
+function  str2db(pProto: TRnQProtocol; const s: RawByteString): TRnQCList; overload;
 //function  getClientFor(c:TRnQcontact; pInInfo : Boolean = False):string;
-function  getProtosPref() : TPrefPagesArr;
-function  getProtoClass(ProtoID : Byte) : TRnQProtoClass;
-function  Proto_Outbox_add(kind: Integer; dest:TRnQContact; flags:integer=0; const info:string=''):Toevent;overload;function  Proto_Outbox_add(kind: Integer; dest:TRnQContact; flags:integer; cl:TRnQCList):Toevent; overload;
-procedure getTrayIconTip(var vPic : TPicName; var vTip : String);
+function  getProtosPref(): TPrefPagesArr;
+function  getProtoClass(ProtoID: Byte): TRnQProtoClass;
+function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer=0; const info:string=''):Toevent;overload;function  Proto_Outbox_add(kind: Integer; dest:TRnQContact; flags:integer; cl:TRnQCList):Toevent; overload;
+procedure getTrayIconTip(var vPic: TPicName; var vTip: String);
 
 
 var
