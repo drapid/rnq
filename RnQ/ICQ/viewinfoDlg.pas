@@ -164,6 +164,7 @@ type
 
     CellularEdt2: TLabeledEdit;
     CellularEdt3: TLabeledEdit;
+    HEXCapsChk: TCheckBox;
     procedure PhtBigLoadBtnClick(Sender: TObject);
     procedure StatusBtnClick(Sender: TObject);
     procedure PhtLoadBtnClick(Sender: TObject);
@@ -203,10 +204,12 @@ type
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure removeAllPhotos();
     procedure verifyPhoneClick(Sender: TObject);
+    procedure HEXCapsChkClick(Sender: TObject);
   protected
     addmenu: TPopupMenu;
     procedure SetPhtBtnEnb(val : Boolean);
     procedure TickAniTimer(Sender: TObject);
+    procedure FillCaps;
   public
 //    contact: TICQContact;
    {$IFDEF RNQ_AVATARS}
@@ -568,28 +571,7 @@ with TICQcontact(contact) do
     loginMailEdt.Text := '';
     loginMailEdt.Visible := False;
    end;
-
-  CliCapsMemo.Clear;
-//  CliCapsList.Clear;
-//  for I := 1 to Length(CapsSmall) do
-//    if i in contact.capabilitiesSm then
-  for i in capabilitiesSm do
-      CliCapsMemo.Lines.Append(getTranslation(CapsSmall[i].s));
-//       CliCapsList.AddItem(getTranslation(CapsSmall[i].s), NIL);
-//  for I := 1 to Length(BigCapability) do
-//    if i in contact.capabilitiesBig then
-  for i in capabilitiesBig do
-       CliCapsMemo.Lines.Append(getTranslation(BigCapability[i].s));
-//       CliCapsList.AddItem(getTranslation(BigCapability[i].s), NIL);
-//  for I := 1 to Length(XStatusArray) do
-//    if i in contact.capabilitiesXTraz then
-  for i in capabilitiesXTraz do
-       CliCapsMemo.Lines.Append(getTranslation('Old XStatus "%s"', [getTranslation(XStatusArray[i].Caption)]));
-  if length(extracapabilities) > 15 then
-    for I := 0 to length(extracapabilities) div 16 - 1 do
-      CliCapsMemo.Lines.Append(str2HexU(copy(extracapabilities, i*16+1, 16))
-          + ' - ' + BetterStr(copy(extracapabilities, i*16+1, 16)));
-//      CliCapsList.AddItem(str2Hex(copy(contact.extracapabilities, i*16+1, 16)), NIL);
+  FillCaps;
   clientBox.ReadOnly    := True;
   protoBox.ReadOnly     := True;
   loginMailEdt.ReadOnly := True;
@@ -996,6 +978,43 @@ begin
   if not Imatches(s, 1, 'http://') and not Imatches(s, 1, 'https://') then
     s:='http://'+s;
   openURL(s);
+end;
+
+procedure TviewinfoFrm.HEXCapsChkClick(Sender: TObject);
+begin
+  fillcaps;
+end;
+
+procedure TviewinfoFrm.FillCaps;
+  procedure addHex(Const s: RawByteString);
+  begin
+    CliCapsMemo.Lines.Append(str2HexU(s) + ' - ' + BetterStr(s));
+  end;
+var
+  i: Integer;
+begin
+  CliCapsMemo.Clear;
+  for i in  TICQcontact(contact).capabilitiesSm do
+    if HEXCapsChk.Checked then
+      addHex(CAPS_sm2big(i))
+     else
+      CliCapsMemo.Lines.Append(getTranslation(CapsSmall[i].s));
+
+  for i in  TICQcontact(contact).capabilitiesBig do
+    if HEXCapsChk.Checked then
+      addHex(BigCapability[i].v)
+     else
+       CliCapsMemo.Lines.Append(getTranslation(BigCapability[i].s));
+
+  for i in  TICQcontact(contact).capabilitiesXTraz do
+    if HEXCapsChk.Checked then
+      addHex(XStatusArray[i].pidOld)
+     else
+       CliCapsMemo.Lines.Append(getTranslation('Old XStatus "%s"', [getTranslation(XStatusArray[i].Caption)]));
+
+  if length( TICQcontact(contact).extracapabilities) > 15 then
+    for I := 0 to length( TICQcontact(contact).extracapabilities) div 16 - 1 do
+      addHex(copy( TICQcontact(contact).extracapabilities, i*16+1, 16));
 end;
 
 procedure TviewinfoFrm.mailBtnClick(Sender: TObject);

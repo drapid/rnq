@@ -23,7 +23,7 @@ object viewinfoFrm: TviewinfoFrm
     Top = 33
     Width = 432
     Height = 423
-    ActivePage = TabSheet2
+    ActivePage = InterSheet
     Align = alClient
     TabOrder = 0
     OnChange = pagectrlChange
@@ -1060,6 +1060,15 @@ object viewinfoFrm: TviewinfoFrm
         AutoSize = False
         TabOrder = 8
         Text = '000.000.000.000'
+      end
+      object HEXCapsChk: TCheckBox
+        Left = 128
+        Top = 73
+        Width = 49
+        Height = 17
+        Caption = 'Hex'
+        TabOrder = 9
+        OnClick = HEXCapsChkClick
       end
     end
     object TabSheet1: TTabSheet
