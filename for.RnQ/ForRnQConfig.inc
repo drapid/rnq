@@ -32,11 +32,12 @@
  {$DEFINE UseNTLMAuthentication}
  {$DEFINE USE_SSL}      // SSL
 
- {$IFDEF CHAT_CEF}
+ {$IF Defined(CHAT_CEF) or Defined(CHAT_SCI)}
    {$DEFINE PRESERVE_BIG_FILE}
  {$ELSE old CHAT}
+
    {$DEFINE SMILES_ANI_ENGINE}
- {$ENDIF}
+ {$IFEND}
 
  { $DEFINE LANGDEBUG}
  { $DEFINE RQDEBUG}

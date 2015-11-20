@@ -592,7 +592,11 @@ begin
 {$IFDEF DB_ENABLED}
     res := statusNameExt2(infoToStatus(fBin), infoToXStatus(fBin));
 {$ELSE ~DB_ENABLED}
+  {$IFDEF PROTOCOL_ICQ}
     res := statusNameExt2(infoToStatus(f_info), infoToXStatus(f_info));
+  {$ELSE ~PROTOCOL_ICQ}
+    res := Proto_StsID2Name(Account.AccProto, infoToStatus(f_info), infoToXStatus(f_info));
+  {$ENDIF PROTOCOL_ICQ}
 {$ENDIF ~DB_ENABLED}
   end
     else

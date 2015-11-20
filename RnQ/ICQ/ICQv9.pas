@@ -5308,6 +5308,8 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
 	   icq2go:=(CAPS_sm_UTF8 in capabilitiesSm) and not (CAPS_sm_ICQSERVERRELAY in capabilitiesSm);
       if not (CAPS_sm_ICQSERVERRELAY in capabilitiesSm) then
         icq2go := True;
+      if (CAPS_big_CryptMsg in capabilitiesBig) then
+        icq2go := False;
      if CAPS_big_Tril in capabilitiesBig then icq2go := true;
      if (proto = 8) and (CAPS_big_Lite in capabilitiesBig) then icq2go := true;
      if CAPS_big_MTN in capabilitiesBig then cont.typing.bSupport := True;
@@ -8937,7 +8939,7 @@ begin
   removeTemporaryVisible(tempVisibleList)
 end;
 
-function TicqSession.useMsgType2for(c:TICQcontact):boolean;
+function TicqSession.useMsgType2for(c: TICQcontact): boolean;
 begin
   result:=(not (c.status in [SC_OFFLINE, SC_UNK])) //and (not c.invisible)
               and (not c.icq2go)
@@ -8949,7 +8951,7 @@ begin
                    )
 end;
 
-procedure TicqSession.sendCreateUIN(const acceptKey : RawByteString);
+procedure TicqSession.sendCreateUIN(const acceptKey: RawByteString);
 const
   s=#03#$46#0#0;
 //  unk = #0#0#0#0;
@@ -8981,7 +8983,7 @@ begin
 }  
 end; // sendCreateUIN
 
-function TicqSession.maxCharsFor(const c:TRnQcontact; isBin : Boolean = false):integer;
+function TicqSession.maxCharsFor(const c: TRnQcontact; isBin: Boolean = false): integer;
 begin
 {  if not c.isOnline then
 //    result:=450
@@ -8999,7 +9001,7 @@ begin
   end;
 end; // maxCharsFor
 
-function TicqSession.imVisibleTo(c:TRnQcontact):boolean;
+function TicqSession.imVisibleTo(c: TRnQcontact): boolean;
 begin
  {$IFDEF UseNotSSI}
   if not useSSI then

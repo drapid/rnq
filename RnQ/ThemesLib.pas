@@ -41,8 +41,12 @@ uses
   utilLib, globalLib, chatDlg,
  {$IFDEF CHAT_CEF} // Chromium
   historyCEF,
- {$ELSE ~CHAT_CEF} // old
-  historyVCL,
+ {$ELSE ~CHAT_CEF} // 
+   {$IFDEF CHAT_SCI} // Sciter
+    historySCI,
+   {$ELSE ~CHAT_CEF and ~CHAT_SCI} // old
+    historyVCL,
+   {$ENDIF CHAT_SCI}
  {$ENDIF CHAT_CEF}
   events,
   mainDlg,

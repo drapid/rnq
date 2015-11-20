@@ -10,9 +10,9 @@
 @IF EXIST ".\Units\*.res" del .\Units\*.res
 @IF EXIST "Prefs\__history\*" del /q Prefs\__history\*
 @IF EXIST "Prefs\*.dcu" del /q Prefs\*.dcu
-@IF EXIST "__history\*" del /q __history\*
-@IF EXIST "ICQ\__history\*" del /q ICQ\__history\*
+@IF EXIST "__history\*" rd /q /s __history\
+@IF EXIST "ICQ\__history\*" rd /q ICQ\__history\
 @IF EXIST "ICQ\*.dcu" del /q ICQ\*.dcu
-@IF EXIST "MRA\__history\*" del /q MRA\__history\*
-@IF EXIST "xmpp\__history\*" del /q xmpp\__history\*
+@IF EXIST "MRA\__history\*" rd /q MRA\__history\
+@IF EXIST "xmpp\__history\*" rd /q xmpp\__history\
 @exit

@@ -533,9 +533,6 @@ uses
   themesLib,
   history, iniLib, //flap,
   //smsDlg,
-  {$IFDEF usesDC}
-    sendfileDlg,
-  {$ENDIF usesDC}
   Clipbrd, ShellAPI, strutils, math, langLib, outboxLib, uinlistLib,
   RDtrayLib, RnQGlobal, RnQPics,
   pluginutil,
@@ -554,6 +551,9 @@ uses
   RnQTips, tipDlg, RnQMenu,
 
   Protocols_all, // ICQ, MRA
+  {$IFDEF usesDC}
+    sendfileDlg,
+  {$ENDIF usesDC}
  {$IFDEF PROTOCOL_ICQ}
   viewinfoDlg,
   ICQv9,

@@ -32,7 +32,6 @@ uses
   {$ELSE}
     RnQGraphics32,
   {$ENDIF USE_GDIPLUS}
-//  rnqCtrls,
   RnQProtocol,
   incapsulate, events,
   pluginLib, RQMenuItem;

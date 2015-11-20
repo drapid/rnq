@@ -18,7 +18,7 @@
 @IF EXIST Zip\*.dcu @del Zip\*.dcu
 @IF EXIST "Zip\__history\*" del /q Zip\__history\*
 @IF EXIST .\Units\*.dcu @del .\Units\*.dcu
-@IF EXIST "__history\*" del /q __history\*
+@IF EXIST "__history\*" rd /q /s __history\
 @IF EXIST "RTL\*.dcu" del RTL\*.dcu
 @IF EXIST "RTL\*.a" del RTL\*.a
-@IF EXIST "RTL\__history" del /s /q RTL\__history
+@IF EXIST "RTL\__history" rd /s /q RTL\__history
