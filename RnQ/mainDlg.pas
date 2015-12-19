@@ -449,6 +449,8 @@ type
   {$ENDIF usesDC}
     procedure WMDNSLookUp(var pMsg: TMessage); message WM_RESOLVE_DNS;
     procedure MMGenErrorClick(Sender: TObject);
+    procedure FormAfterMonitorDpiChanged(Sender: TObject; OldDPI,
+      NewDPI: Integer);
   private
     FMouseInControl : Boolean;
     toggling        : Boolean;
@@ -591,6 +593,12 @@ begin
 canClose := True;
 canClose:=not quitconfirmation or (messageDlg(getTranslation('Really quit?'), mtConfirmation, [mbYes,mbNo],0) = mrYes);
 //if canclose then quit;
+end;
+
+procedure TRnQmain.FormAfterMonitorDpiChanged(Sender: TObject; OldDPI,
+  NewDPI: Integer);
+begin
+  themeslib.applySizes(OldDPI, NewDPI);
 end;
 
 procedure TRnQmain.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -1902,7 +1910,7 @@ begin
   end;
 end;
 
-procedure TRnQmain.dnslookup(sender:Tobject; error:word);
+procedure TRnQmain.dnslookup(sender: Tobject; error: word);
 begin
   if not resolving then
     exit;

@@ -206,6 +206,7 @@ type
   TRQtheme = class
    private
     curToken : Integer;
+    fDPI : Integer;
     FBigPics, FSmileBigPics : array of TPicObj;
     FThemePics,
     FSmilePics,
@@ -297,7 +298,8 @@ type
     procedure initPic(var picElm: TRnQThemedElementDtls); overload;
     function  GetBigPic(const picName: TPicName; var mem: TMemoryStream): Boolean;
     function  GetBigSmile(const picName: TPicName; var mem: TMemoryStream): Boolean;
-    function  GetPicSize(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0):Tsize; overload;
+    function  GetPicSize(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0;
+                             DPI: Integer = cDefaultDPI): Tsize; overload;
 //    function  GetPicSize(name: String; var ThemeToken: Integer;
 //        var picLoc: TPicLocation; var picIdx: Integer; minSize: Integer = 0): Tsize; overload;
     function  GetPicSize(var PicElm: TRnQThemedElementDtls; minSize: Integer = 0): Tsize; overload;
@@ -603,6 +605,7 @@ end;
 constructor TRQtheme.Create;
 begin
   curToken := 101;
+  fDPI := cdefaultDPI;
  {$IFDEF SMILES_ANI_ENGINE}
   FAniTimer := NIL;
   FdrawCS := TCriticalSection.Create;
@@ -1564,10 +1567,11 @@ begin
  {$ENDIF PRESERVE_BIG_FILE}
 end;
 
-function TRQtheme.GetPicSize(pTE : TRnQThemedElement; const name : TPicName; minSize : Integer = 0):Tsize;
+function TRQtheme.GetPicSize(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0;
+                             DPI: Integer = cDefaultDPI): Tsize;
 var
-  i : Integer;
-  s, s1 : TPicName;
+  i: Integer;
+  s, s1: TPicName;
 begin
   s1 := AnsiLowerCase(name);
   s := TE2Str[pTE] + s1;
@@ -1628,7 +1632,12 @@ begin
             end;
           end;
         end;
-    end
+    end;
+  if dpi <> fDPI then
+   begin
+     result.cx := MulDiv(result.cx, dpi, fDPI);
+     result.cy := MulDiv(result.cy, dpi, fDPI);
+   end;
 end;
 
 procedure TRQtheme.GetPicOrigin(const name: TPicName; var OrigPic: TPicName; var rr: TGPRect);

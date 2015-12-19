@@ -77,11 +77,11 @@ uses
    histUtilsDlg,
    Protocols_all;
 var
-  initOnce:boolean;
+  initOnce: boolean;
 
 procedure resetCFG;
 var
-  i:integer;
+  i: integer;
 //  pp:Tproxyproto;
 begin
   rosterTitle:='%uin% %nick%';

@@ -29,6 +29,8 @@ procedure SetContactsThemeUse(b : Boolean);
 
 procedure reloadCurrentTheme();
 
+procedure applySizes(OldDPI, NewDPI: Integer);
+
 var
   statusPics : array[0..15] of array[boolean] of TRnQThemedElementDtls;
   RQSmilesPath, RQSoundsPath : TThemePath;
@@ -122,36 +124,15 @@ mainFrm.roaster.background.bitmap.ReleaseHandle;}
     roster.colors.unfocusedselectionbordercolor := roster.colors.focusedselectioncolor;
 
 
-    menuBtn.Top:=0;
-    statusBtn.Top:=0;
-    visibilityBtn.Top:=0;
+    menuBtn.Top := 0;
+    statusBtn.Top := 0;
+    visibilityBtn.Top := 0;
     menuBtn.ImageName := PIC_CLIENT_LOGO;
+    applySizes(Application.MainForm.PixelsPerInch, Application.MainForm.PixelsPerInch);
     //mainfrm.menuBtn.glyph.FreeImage;
 //    ApplyThemeComponent(menuBtn);
 //    ApplyThemeComponent(statusBtn);
 //    ApplyThemeComponent(visibilityBtn);
-     with theme.getPicSize(RQteButton, PIC_CLIENT_LOGO, icon_size) do
-      begin
-        bar.Height:=cy+7;
-        menuBtn.height:=cy+5;
-        menuBtn.width:=cx+6;
-      end;
-//     with theme.getPicSize(PIC_STATUS_ONLINE, 16) do
-     with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size) do
-      begin
-        statusBtn.height := max(cy+5, icon_size);
-        statusBtn.width  := cx+6;
-    //  end;
-    // with theme.getPicSize(PIC_STATUS_ONLINE) do
-    //  begin
-        visibilityBtn.height := max(cy+5, icon_size);
-        visibilityBtn.width  := cx+6;
-        roster.DefaultNodeHeight := cy+2;
-    //    for i in mainfrm.roster.
-      end;
-    menuBtn.left:=0;
-    statusBtn.left:=menuBtn.boundsrect.right+1;
-    visibilityBtn.left:=statusBtn.boundsrect.right+1;
 
     mainmenugetthemes1Click(nil);
     updateStatusGlyphs;
@@ -164,6 +145,35 @@ mainFrm.roaster.background.bitmap.ReleaseHandle;}
 statusIcon.ReDraw;
 repaintAllWindows;
 end; // applyTheme
+
+procedure applySizes(OldDPI, NewDPI: Integer);
+begin
+  with RnQmain, roster.treeoptions do
+  begin
+     with theme.getPicSize(RQteButton, PIC_CLIENT_LOGO, icon_size, NewDPI) do
+      begin
+        bar.Height := cy+7;
+        menuBtn.height := cy+5;
+        menuBtn.width := cx+6;
+      end;
+//     with theme.getPicSize(PIC_STATUS_ONLINE, 16) do
+     with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size, NewDPI) do
+      begin
+        statusBtn.height := max(cy+5, icon_size);
+        statusBtn.width  := cx+6;
+    //  end;
+    // with theme.getPicSize(PIC_STATUS_ONLINE) do
+    //  begin
+        visibilityBtn.height := max(cy+5, icon_size);
+        visibilityBtn.width  := cx+6;
+        roster.DefaultNodeHeight := cy+2;
+    //    for i in mainfrm.roster.
+      end;
+    menuBtn.left := 0;
+    statusBtn.left := menuBtn.boundsrect.right+1;
+    visibilityBtn.left := statusBtn.boundsrect.right+1;
+  end;
+end;
 
 procedure resetTheme;
 begin
@@ -246,9 +256,9 @@ end;
 
 procedure refreshMenuThemelist(menuItem: TMenuItem; StartIDX: byte; proc: TnotifyEvent);
 var
-  i : Integer;
-  old, oldSub:string;
-  bCh : Boolean;
+  i: Integer;
+  old, oldSub: string;
+  bCh: Boolean;
 begin
   for i := StartIDX to menuItem.Count - 1 do
     begin
@@ -272,11 +282,11 @@ begin
   end;
 end;
 
-procedure refreshMenuSmileslist(menuItem : TMenuItem; StartIDX : byte; proc : TnotifyEvent);
+procedure refreshMenuSmileslist(menuItem: TMenuItem; StartIDX: byte; proc: TnotifyEvent);
 var
-  i : Integer;
-  old, oldSub:string;
-  bCh : Boolean;
+  i: Integer;
+  old, oldSub: string;
+  bCh: Boolean;
 begin
   for i := StartIDX to menuItem.Count - 1 do
     begin
@@ -310,11 +320,11 @@ begin
   end;
 end;
 
-procedure refreshMenuSoundslist(menuItem : TMenuItem; StartIDX : byte; proc : TnotifyEvent);
+procedure refreshMenuSoundslist(menuItem: TMenuItem; StartIDX: byte; proc: TnotifyEvent);
 var
-  i : Integer;
-  old, oldSub:string;
-  bCh : Boolean;
+  i: Integer;
+  old, oldSub: string;
+  bCh: Boolean;
 begin
   for i := StartIDX to menuItem.Count - 1 do
     begin
@@ -349,7 +359,7 @@ begin
 end;
 
 
-procedure SetContactsThemeUse(b : Boolean);
+procedure SetContactsThemeUse(b: Boolean);
 //var
 
 begin

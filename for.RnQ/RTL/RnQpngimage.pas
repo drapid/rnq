@@ -6963,13 +6963,13 @@ var
   vHDR : TChunkIHDR;
 begin
  vHDR := Owner.Header;
- {$IFDEF DELPHI_9_UP}
+ {$IFDEF DELPHI9_UP}
     B32.SetSize(FSelfWidth, FSelfHeight);
  {$ELSE DELPHI_9_dn}
     B32.Height := 0;
     B32.Width := FSelfWidth;
     B32.Height := FSelfHeight;
- {$ENDIF DELPHI_9_UP}
+ {$ENDIF DELPHI9_UP}
  if (FSelfWidth=0) or (FSelfHeight=0) then exit;
  SetStretchBltMode(B32.Canvas.Handle,COLORONCOLOR);
 { StretchDiBits(B32.Canvas.Handle,0,0, Width, Height,0,0,
@@ -7463,12 +7463,12 @@ begin
   Result := rBMP;
   if not Owner.HeaderPresent then
     begin
-   {$IFDEF DELPHI_9_UP}
+   {$IFDEF DELPHI9_UP}
       rBMP.SetSize(0, 0);
    {$ELSE DELPHI_9_dn}
       rBMP.Height := 0;
       rBMP.Width := 0;
-   {$ENDIF DELPHI_9_UP}
+   {$ENDIF DELPHI9_UP}
       Exit;
     end;
   vHDR := Owner.Header;

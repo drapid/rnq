@@ -31,7 +31,6 @@ Type
 Implementation
 
 uses
-//   RQUtil,
    RDGlobal;
 
 Procedure error_exit(cinfo: j_common_ptr); Cdecl;

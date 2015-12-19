@@ -46,12 +46,13 @@ type
     procedure WMSetFocus(var Message: TWMSetFocus); message WM_SETFOCUS;
     procedure WMKillFocus(var Message: TWMKillFocus); message WM_KILLFOCUS;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
-    procedure WMEraseBkgnd(var Msg: TWmEraseBkgnd); message WM_ERASEBKGND;
+    procedure WMEraseBkgnd(var Message: TWmEraseBkgnd); message WM_ERASEBKGND;
   protected
     procedure Loaded; override;
     procedure KeyDown(var Key: Word; Shift: TShiftState); override;
     procedure Notification(AComponent: TComponent;
       Operation: TOperation); override;
+    procedure CreateWnd; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer); override;
@@ -75,6 +76,7 @@ type
     property TabStop;
 //    property UpGlyph: TBitmap read GetUpGlyph write SetUpGlyph;
 //    property UpNumGlyphs: TNumGlyphs read GetUpNumGlyphs write SetUpNumGlyphs default 1;
+    property StyleElements;
     property Visible;
     property OnDownClick: TNotifyEvent read FOnDownClick write FOnDownClick;
     property OnDragDrop;
@@ -141,6 +143,7 @@ type
     procedure CMExit(var Message: TCMExit);   message CM_EXIT;
     procedure WMPaste(var Message: TWMPaste);   message WM_PASTE;
     procedure WMCut(var Message: TWMCut);   message WM_CUT;
+    procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
   protected
     function IsValidChar(Key: Char): Boolean; virtual;
     function DefaultDisplayFormat: string; virtual;
@@ -280,6 +283,12 @@ begin
   Result.Constraints.MaxHeight := Result.Constraints.MinHeight;
 end;
 
+procedure TRnQSpinButton.CreateWnd;
+begin
+  inherited;
+  DoubleBuffered := StyleServices.Enabled;
+end;
+
 procedure TRnQSpinButton.Notification(AComponent: TComponent;
   Operation: TOperation);
 begin
@@ -308,6 +317,27 @@ begin
   H := AHeight;
   AdjustSize(W, H);
   inherited SetBounds(ALeft, ATop, W, H);
+end;
+
+procedure TRnQSpinButton.WMEraseBkgnd(var Message: TWMEraseBkgnd);
+var
+  Canvas: TCanvas;
+begin
+  if TStyleManager.IsCustomStyleActive then
+  begin
+    Canvas := TCanvas.Create;
+    Canvas.Handle := Message.DC;
+    try
+      Canvas.Brush.Color := StyleServices.GetSystemColor(clBtnFace);
+      Canvas.FillRect(ClientRect);
+    finally
+      Canvas.Handle := 0;
+      Canvas.Free;
+    end;
+    Message.Result := 1;
+  end
+  else
+    inherited;
 end;
 
 procedure TRnQSpinButton.WMSize(var Message: TWMSize);
@@ -395,13 +425,6 @@ end;
 procedure TRnQSpinButton.WMGetDlgCode(var Message: TWMGetDlgCode);
 begin
   Message.Result := DLGC_WANTARROWS;
-end;
-
-procedure TRnQSpinButton.WMEraseBkgnd(var Msg: TWmEraseBkgnd);
-begin
-  PerformEraseBackground(Self, msg.DC);
-   msg.Result := 1;
-   msg.Msg := 0;
 end;
 
 
@@ -556,13 +579,13 @@ procedure TRnQSpinEdit.SetEditRect;
 var
   Loc: TRect;
 begin
-  SendMessage(Handle, EM_GETRECT, 0, LongInt(@Loc));
+  SendMessage(Handle, EM_GETRECT, 0, IntPtr(@Loc));
   Loc.Bottom := ClientHeight + 1;  {+1 is workaround for windows paint bug}
   Loc.Right := ClientWidth - FButton.Width - 2;
   Loc.Top := 0;  
   Loc.Left := 0;  
-  SendMessage(Handle, EM_SETRECTNP, 0, LongInt(@Loc));
-  SendMessage(Handle, EM_GETRECT, 0, LongInt(@Loc));  {debug}
+  SendMessage(Handle, EM_SETRECTNP, 0, IntPtr(@Loc));
+  SendMessage(Handle, EM_GETRECT, 0, IntPtr(@Loc));  {debug}
 end;
 
 procedure TRnQSpinEdit.WMSize(var Message: TWMSize);
@@ -624,6 +647,12 @@ procedure TRnQSpinEdit.WMCut(var Message: TWMPaste);
 begin
   if not FEditorEnabled or ReadOnly then Exit;
   inherited;
+end;
+
+procedure TRnQSpinEdit.WMGetDlgCode(var Message: TWMGetDlgCode);
+begin
+  inherited;
+  Message.Result := Message.Result and not DLGC_WANTALLKEYS;
 end;
 
 procedure TRnQSpinEdit.CMExit(var Message: TCMExit);
@@ -999,7 +1028,46 @@ end;
 procedure TTimerSpeedButton.Paint;
 var
   R: TRect;
+  Details: TThemedElementDetails;
+  ArrowColor: TColor;
+  P: TPoint;
+  SaveIndex: Integer;
 begin
+  if TStyleManager.IsCustomStyleActive and (Parent <> nil) and (Parent is TRnQSpinButton) and
+    (seClient in Parent.StyleElements) then
+   begin
+    if not Enabled then
+      Details := StyleServices.GetElementDetails(ttbButtonDisabled)
+    else
+      if FState in [bsDown, bsExclusive] then
+        Details := StyleServices.GetElementDetails(ttbButtonPressed)
+      else
+        if MouseInControl then
+          Details := StyleServices.GetElementDetails(ttbButtonHot)
+        else
+          Details := StyleServices.GetElementDetails(ttbButtonNormal);
+    R := Bounds(0, 0, Width, Height);
+    SaveIndex := SaveDC(Canvas.Handle);
+    try
+      if Transparent then
+        StyleServices.DrawParentBackground(0, Canvas.Handle, nil, True)
+      else
+        PerformEraseBackground(Self, Canvas.Handle);
+      StyleServices.DrawElement(Canvas.Handle, Details, R);
+    finally
+      RestoreDC(Canvas.Handle, SaveIndex);
+    end;
+    if not StyleServices.GetElementColor(Details, ecTextColor, ArrowColor) then
+      ArrowColor := StyleServices.GetSystemColor(clBtnText);
+    Canvas.Pen.Color := ArrowColor;
+    P.X := R.CenterPoint.X - 3;
+    P.Y := R.CenterPoint.Y - 2;
+{    if FDownButton then
+      DrawArrow(Canvas, sdDown, P, 3)
+    else
+      DrawArrow(Canvas, sdUp, P, 3);}
+  end
+  else
   inherited Paint;
   if tbFocusRect in FTimeBtnState then
   begin

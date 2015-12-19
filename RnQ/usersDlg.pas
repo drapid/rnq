@@ -67,9 +67,9 @@ type
     resAccPass : String;
     procedure refreshUsers;
     function  doSelect:TUID;
-    function  selectUIN(uin : TUID):boolean;
-    function  uinAt(idx:integer) : TUID;
-    procedure newuser(cls: TRnQProtoClass; uin:TUID);
+    function  selectUIN(const uin: TUID): boolean;
+    function  uinAt(idx: integer): TUID;
+    procedure newuser(cls: TRnQProtoClass; uin: TUID);
   end;
 
 var
@@ -110,7 +110,7 @@ var
 procedure TusersFrm.refreshUsers;
 var
 //  toSelect:integer;
-  i:integer;
+  i: integer;
   ur : PRnQUser;
   n, s : PVirtualNode;
 begin
@@ -157,9 +157,9 @@ if Assigned(s) then
   
 end;  // refreshUsers
 
-function TusersFrm.doSelect:TUID;
+function TusersFrm.doSelect: TUID;
 begin
-  startIt:=FALSE;
+  startIt := FALSE;
   resAccPass := '';
   showModal;
   if not selected and not startIt then
@@ -179,8 +179,8 @@ begin okBtnClick(sender) end;
 procedure TusersFrm.UsersBoxDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-  s : String;
-  x : Integer;
+  s: String;
+  x: Integer;
 //  cr : Boolean;
 begin
   with TRnQUser(PRnQUser(usersBox.getnodedata(PaintInfo.Node))^) do
@@ -272,8 +272,8 @@ end;
 
 procedure TusersFrm.newuserBtnClick(Sender: TObject);
 var
-  uin:TUID;
-  NewAccDlg : TNewAccFrm;
+  uin: TUID;
+  NewAccDlg: TNewAccFrm;
 begin
   uin:='';
   NewAccDlg := TNewAccFrm.Create(Application);
@@ -291,7 +291,7 @@ end;
 procedure TusersFrm.FormShow(Sender: TObject);
 begin
 //applyTaskButton(self);
-selected:=FALSE;
+  selected:=FALSE;
 //hideTaskButtonIfUhave2;
 // ActiveControl := UsersBox;
 
@@ -343,12 +343,12 @@ begin
     wallpaperize(canvas)
 end;
 
-function TusersFrm.selectUIN(uin:TUID):boolean;
+function TusersFrm.selectUIN(const uin: TUID): boolean;
 var
 //  i:integer;
-  n : PVirtualNode;
+  n: PVirtualNode;
 begin
-result:=FALSE;
+  result := FALSE;
 //i:=0;
   n := UsersBox.GetFirst;
   while n <> NIL do
@@ -378,13 +378,15 @@ result:=FALSE;
 }
 end;
 
-function TusersFrm.uinAt(idx:integer): TUID;
+function TusersFrm.uinAt(idx: integer): TUID;
 begin
-if idx >= length(availableUsers) then
-  result:=''
-else
-  result := availableUsers[idx].uin;
-end; procedure TusersFrm.UsersBoxChecked(Sender: TBaseVirtualTree;
+  if idx >= length(availableUsers) then
+    result:=''
+   else
+    result := availableUsers[idx].uin;
+end;
+
+procedure TusersFrm.UsersBoxChecked(Sender: TBaseVirtualTree;
   Node: PVirtualNode);
 begin
 
@@ -394,11 +396,11 @@ end;
 
 procedure TusersFrm.deleteuserBtnClick(Sender: TObject);
 var
-  UINtoDelete : TUID;
-  Path : String;
-  itsme:boolean;
-  continue:boolean;
-  u : TRnQUser;
+  UINtoDelete: TUID;
+  Path: String;
+  itsme: boolean;
+  continue: boolean;
+  u: TRnQUser;
 begin
 //if usersBox.itemIndex < 0 then
 if usersBox.FocusedNode = NIL then
@@ -458,20 +460,20 @@ end;
 
 procedure TusersFrm.PntBoxPaint(Sender: TObject);
 const
-  sizeM = 48;
+  sizeM: Integer = 48;
 var
 //  vImgElm : TRnQThemedElementDtls;
 //  thmTkn : Integer;
 //  picLoc : TPicLocation;
 //  picIdx : Integer;
-  cnv:Tcanvas;
-  oldMode : Integer;
+  cnv: Tcanvas;
+  oldMode: Integer;
 //  bmp : TBitmap;
    TextLen: Integer;
    TextRect, R: TRect;
    TextFlags: Cardinal;
    Options: TDTTOpts;
-   PaintOnGlass : Boolean;
+   PaintOnGlass: Boolean;
   MemDC: HDC;
   PaintBuffer: HPAINTBUFFER;
 //  br : HBRUSH;
@@ -481,6 +483,7 @@ var
 begin
   cnv:=(Sender as TPaintBox).Canvas;
   R := (Sender as TPaintBox).ClientRect;
+//  SizeM :=
     PaintOnGlass := StyleServices.Enabled and DwmCompositionEnabled and
       not (csDesigning in ComponentState);
     if PaintOnGlass then

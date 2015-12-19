@@ -2,7 +2,7 @@
 {                                                       }
 {            Delphi Visual Component Library            }
 {                                                       }
-{ Copyright(c) 1995-2012 Embarcadero Technologies, Inc. }
+{ Copyright(c) 1995-2015 Embarcadero Technologies, Inc. }
 {                                                       }
 {*******************************************************}
 // This unit contains a special speed button which can be used to let the user select
@@ -689,8 +689,7 @@ begin
       else
       begin
         Pen.Color := clBtnShadow;
-        PolyLine([Point(R.Left, R.Bottom - 1), Point(R.Left, R.Top),
-          Point(R.Right, R.Top)]);
+        PolyLine([Point(R.Left, R.Bottom - 1), R.TopLeft, Point(R.Right, R.Top)]);
       end;
     end;*)
   end;

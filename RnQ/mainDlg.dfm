@@ -29,6 +29,7 @@ object RnQmain: TRnQmain
   ScreenSnap = True
   SnapBuffer = 15
   OnActivate = AppActivate
+  OnAfterMonitorDpiChanged = FormAfterMonitorDpiChanged
   OnClick = ANothingExecute
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
@@ -178,7 +179,7 @@ object RnQmain: TRnQmain
     TabOrder = 1
     TextMargin = 0
     TreeOptions.AnimationOptions = [toAnimatedToggle]
-    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking]
+    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoChangeScale]
     TreeOptions.MiscOptions = [toAcceptOLEDrop, toEditable, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning, toFullRowDrag]
     TreeOptions.PaintOptions = [toHideFocusRect, toHideSelection, toThemeAware, toUseBlendedImages, toAlwaysHideSelection, toUseBlendedSelection]
     TreeOptions.SelectionOptions = [toFullRowSelect, toRightClickSelect]

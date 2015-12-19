@@ -427,7 +427,6 @@ type
 
 implementation
   uses
-//    RQUtil,
     RDGlobal;
 
 function StrCmpLogicalW(const sz1, sz2: WideString): Integer; stdcall;

@@ -61,6 +61,7 @@ type
  {$ENDIF UNICODE}
   TPicName = AnsiString;
 //  TPicName = String;
+  TPicNameW = WideString;
 
   TStrObj = class(TObject)
    public
@@ -151,6 +152,8 @@ const
 
   GByte = 1024*1024*1024;
   MByte = 1024*1024;
+
+  cDefaultDPI = 96;
 
 var
 //  myPath           : String;

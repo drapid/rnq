@@ -20,5 +20,7 @@
 @IF EXIST .\Units\*.dcu @del .\Units\*.dcu
 @IF EXIST "__history\*" rd /q /s __history\
 @IF EXIST "RTL\*.dcu" del RTL\*.dcu
+@IF EXIST "RTL\*.ppu" del RTL\*.ppu
+@IF EXIST "RTL\*.o" del RTL\*.o
 @IF EXIST "RTL\*.a" del RTL\*.a
 @IF EXIST "RTL\__history" rd /s /q RTL\__history

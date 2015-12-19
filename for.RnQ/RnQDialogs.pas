@@ -86,6 +86,8 @@ implementation
    Controls,
  {$IFDEF RNQ}
    RnQLangs, RQThemes, RnQGlobal,
+ {$ELSE}
+   NotRnQUtils,
  {$ENDIF RNQ}
    RDUtils, RnQButtons,
  {$IFDEF RNQ_PLUGIN}
