@@ -1,5 +1,5 @@
 {
-This file is part of RaDIuM.
+This file is part of R&Q.
 Under same license
 }
 unit RQThemes;
