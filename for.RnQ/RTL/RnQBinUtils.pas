@@ -96,9 +96,9 @@ function getTLVwordBE(idx:integer; const s:RawByteString; ofs:integer=1):word; o
 function getTLVdwordBE(idx:integer; const s:RawByteString; ofs:integer=1):dword; overload;
 function getTLVqwordBE(idx:integer; const s:RawByteString; ofs:integer=1): Int64;
 
-function getTLVSafe(idx:integer; s:RawByteString; ofs:integer=1): RawByteString;
-function getTLVSafeDelete(idx:integer; var s:RawByteString; ofs:integer=1): RawByteString;
-function replaceAddTLV(idx:integer; s:RawByteString; ofs:integer=1; NewTLV : RawByteString = '') : RawByteString;
+function getTLVSafe(idx: integer; const s: RawByteString; ofs: integer=1): RawByteString;
+function getTLVSafeDelete(idx: integer; var s: RawByteString; ofs: integer=1): RawByteString;
+function replaceAddTLV(idx: integer; const s: RawByteString; ofs: integer=1; NewTLV: RawByteString = ''): RawByteString;
 
 //----------------------------
 function findTLV3(const idx:integer; const s:RawByteString; ofs:integer):integer;
@@ -417,7 +417,7 @@ begin
   result := getTLV(@s[findTLV(idx,s,ofs)])
 end;
 
-function getTLVSafe(idx: integer; s: RawByteString; ofs: integer): RawByteString;
+function getTLVSafe(idx: integer; const s: RawByteString; ofs: integer): RawByteString;
 var
   i: Integer;
 begin
@@ -442,7 +442,7 @@ begin
   result:='';
 end;
 
-function replaceAddTLV(idx:integer; s: RawByteString; ofs:integer=1; NewTLV : RawByteString = '') : RawByteString;
+function replaceAddTLV(idx: integer; const s: RawByteString; ofs:integer=1; NewTLV: RawByteString = ''): RawByteString;
 var
   i, l : Integer;
 begin
@@ -456,17 +456,17 @@ begin
    Result := s + TLV(idx, NewTLV);
 end;
 
-function getTLVwordBE(idx:integer; const s:RawByteString; ofs:integer=1):word;
+function getTLVwordBE(idx: integer; const s: RawByteString; ofs: integer=1): word;
 begin
   result:=getTLVwordBE(@s[findTLV(idx,s,ofs)])
 end;
 
-function getTLVdwordBE(idx:integer; const s:RawByteString;ofs:integer=1):dword;
+function getTLVdwordBE(idx: integer; const s: RawByteString;ofs: integer=1): dword;
 begin
   result:=getTLVdwordBE(@s[findTLV(idx,s,ofs)])
 end;
 
-function getTLVqwordBE(idx:integer; const s:RawByteString;ofs:integer=1): Int64;
+function getTLVqwordBE(idx: integer; const s: RawByteString;ofs: integer=1): Int64;
 var
   i : Integer;
 begin
@@ -478,7 +478,7 @@ begin
 end;
 
 
-function findTLV3(const idx:integer; const s:RawByteString; ofs:integer):integer;
+function findTLV3(const idx: integer; const s: RawByteString; ofs:integer):integer;
 var
  l :  Integer;
 begin
@@ -497,7 +497,7 @@ begin
   end;
 end; // findTLV3
 
-function getTLV3(p:pointer):RawByteString;
+function getTLV3(p: pointer): RawByteString;
 var
 //  pw:PDWord absolute p;
   pw: PINT absolute p;
@@ -517,7 +517,7 @@ else
   end;
 end; // getTLV
 
-function getTLV3Safe(const idx:integer; const s:RawByteString; const ofs:integer):RawByteString;
+function getTLV3Safe(const idx: integer; const s: RawByteString; const ofs:integer):RawByteString;
 var
   i : Integer;
 begin
@@ -528,7 +528,7 @@ begin
   result:='';
 end;
 
-function getTLV3dwordBE(p:pointer):dword;
+function getTLV3dwordBE(p: pointer): dword;
 var
   pw:PDWORD absolute p;
   pd:pinteger absolute p;
@@ -538,7 +538,7 @@ begin
   result:= IcsSwap32(pd^);
 end;
 
-function getTLV3wordBE(p:pointer):dword;
+function getTLV3wordBE(p: pointer): dword;
 var
   pw:PDWORD absolute p;
   pd:pword absolute p;
@@ -547,7 +547,7 @@ begin
   result:= swap(pd^);
 end;
 
-function getwTLD(const s:RawByteString; var ofs:integer): RawByteString;
+function getwTLD(const s: RawByteString; var ofs: integer): RawByteString;
 var
   i:integer;
 begin
@@ -562,9 +562,9 @@ else
   end;
 end; // getwTLD
 
-function getwTLD_DWORD(const s:RawByteString; var ofs:integer): LongWord;
+function getwTLD_DWORD(const s: RawByteString; var ofs: integer): LongWord;
 var
-  i:integer;
+  i: integer;
 begin
   inc(ofs, 4);
 //  i:= BSwapInt(integer((@s[ofs])^));

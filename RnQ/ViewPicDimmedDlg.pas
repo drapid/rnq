@@ -422,7 +422,7 @@ begin
   end;
 
   alphaValue := 0;
-  animTimer := TTimer.Create(Self);
+  animTimer := TTimer.Create(AOwner);
   animTimer.Enabled := false;
   animTimer.OnTimer := onAnimTimer;
   animTimer.Interval := 10;

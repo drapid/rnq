@@ -269,11 +269,13 @@ begin
  {$ENDIF PROTOCOL_ICQ}
 end; // delete
 
-function Tgroups.id2name(id:integer):string;
+function Tgroups.id2name(id: integer): string;
 begin
-id:=idxOf(id);
-if id<0 then result:=''
-else result:=a[id].name;
+  id:=idxOf(id);
+  if id<0 then
+    result:=''
+   else
+    result:=a[id].name;
 end; // id2name
 
 function Tgroups.name2id(const name_: string): integer;

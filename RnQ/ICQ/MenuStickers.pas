@@ -125,28 +125,27 @@ begin
     fs := TMemoryStream.Create;
 
     getSticker(IntToStr(stickerExtNames[FExt]), IntToStr(FSticker), fs, 'small');
-    if loadPic(TStream(fs), png) then
-//    if not png.Empty then
-      begin
-  //      if (png.Header.ColorType = COLOR_PALETTE) then
-  //        ConvertToRGBA(png);
-        stickerGrid := stickerGrids.Items[FExt];
-        if not (stickerGrid = nil) then
-          stickerGrid.Items.AddThumb('ext:' + IntToStr(stickerExtNames[FExt]) + ':sticker:' + IntToStr(FSticker), png);
-      end
-     else
+    if not loadPic(TStream(fs), png) then
       begin
         fs.Free;
         png.Free;
+        png := NIL;
+      end;
+
+    TThread.Synchronize(nil, procedure
+      var
+        stickerGrid: TAwImageGrid;
+      begin
         stickerGrid := stickerGrids.Items[FExt];
         if not (stickerGrid = nil) then
-          stickerGrid.Items.AddThumb('ext:' + IntToStr(stickerExtNames[FExt]) + ':sticker:' + IntToStr(FSticker), NIL);
-      end;
-{    if FSticker = stickerExtCounts[FExt] then
         begin
-  //        fStickers.loderPanel.Hide;
-          stickerGrid.Items.EndUpdate;
-        end;}
+          stickerGrid.Items.AddThumb('ext:' + IntToStr(stickerExtNames[FExt]) + ':sticker:' + IntToStr(FSticker), png);
+          if stickerGrid.Count = stickerExtCounts[FExt] then
+          begin
+            stickerGrid.Items.EndUpdate;
+          end;
+        end;
+      end);
   end, tpool);
   task.Start;
   Result := task;

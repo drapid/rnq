@@ -1930,10 +1930,11 @@ var
 //  FullWidth,
   FullHeight,
   RowByteSize,
+  MaskRowByteSize, MaskPixelSize,
 //  vBottom,
-  vTopByte, vLeftByte,
+  vTopByte, vMaskTopByte, vLeftByte, vMaskLeftByte,
   PixelSize, FileSize: integer;
-  DeltaBytes{, vRowDelta} : Integer; // Delta between frames
+  DeltaBytes, MaskDeltaBytes{, vRowDelta} : Integer; // Delta between frames
   Stream, MStream: TMemoryStream;
   PL, MPL: PLayoutType;
   Color: TColor;
@@ -1944,25 +1945,33 @@ var
 //  C: char;
   C: Byte;
   IsTransparent: boolean;
-  vWidth : Integer; // Added for Optimization by Rapid D!
+  vWidth: Integer; // Added for Optimization by Rapid D!
+  wasTransparent: Boolean;
 begin
-MStream := Nil;
-Result := Nil;
-Mask := Nil;
-MP := Nil;
-MPix := Nil;
+  MStream := Nil;
+  Result := Nil;
+  Mask := Nil;
+  MP := Nil;
+  MPix := Nil;
+  wasTransparent := false;
   vWidth := Width;
   FullHeight := Height * ImageCount;
-{find size needed for strip bitmap}
-//RowByteSize := vWidth * 3 * ImageCount;  {3 bytes per pixel}
-RowByteSize := vWidth * 3;  {3 bytes per pixel}
-if RowByteSize and $3 <> 0 then         {make sure it is DWord boundary}
-  RowByteSize := (RowByteSize and $FFFFFFFC) + $4;
-PixelSize := FullHeight * RowByteSize;
-FileSize := Sizeof(LayoutType)+PixelSize;
-if (FileSize > 200000000) or Transparent and (FileSize > 100000000) then
-  GIF_Error(25);
-Stream := TMemoryStream.Create;
+  {find size needed for strip bitmap}
+  //RowByteSize := vWidth * 3 * ImageCount;  {3 bytes per pixel}
+  RowByteSize := vWidth * 3;  {3 bytes per pixel}
+  if RowByteSize and $3 <> 0 then         {make sure it is DWord boundary}
+    RowByteSize := (RowByteSize and $FFFFFFFC) + $4;
+  PixelSize := FullHeight * RowByteSize;
+  FileSize := Sizeof(LayoutType)+PixelSize;
+  if (FileSize > 200000000) or Transparent and (FileSize > 200000000) then
+    GIF_Error(25);
+
+  MaskRowByteSize := vWidth;  {1 byte per pixel}
+  if MaskRowByteSize and $3 <> 0 then         {make sure it is DWord boundary}
+    MaskRowByteSize := (MaskRowByteSize and $FFFFFFFC) + $4;
+  MaskPixelSize := FullHeight * MaskRowByteSize;
+
+  Stream := TMemoryStream.Create;
 try
   Stream.Size := FileSize;
   PL := Stream.Memory;
@@ -1970,7 +1979,7 @@ try
 
   with PL^.BFH do
     begin          {set up the bitmap file header}
-    bfType := 19778;
+    bfType := $4D42;
     bfSize := FileSize;
     bfReserved1 := 0;
     bfReserved2 := 0;
@@ -1997,16 +2006,22 @@ try
   if IsTransparent then
    begin           {set up a mask similarly}
     MStream := TMemoryStream.Create;
-    MStream.Size := FileSize;
+    MStream.Size := Sizeof(LayoutType) + (1 shl (8+2)) + MaskPixelSize;
     MPL := MStream.Memory;
-    Move(PL^, MPL^, FileSize);   {for now, this is a direct copy}
-    MPix := PByte(PByte(MPL) + Sizeof(LayoutType));   {where mask pixels start}
-    FillChar(MPix^, PixelSize, $FF);   {Need to make first frame totally transparent}
+    Move(PL^, MPL^, MStream.Size);   {for now, this is a direct copy}
+    MPL.BIH.biBitCount := 8;
+    MPL.BFH.bfSize := MStream.Size;
+    PDWORD(PByte(PL) + Sizeof(LayoutType))^ := 0;
+    MPix := PByte(PByte(MPL) + Sizeof(LayoutType) + (1 shl (8+2)));   {where mask pixels start}
+    PDWORD(PByte(MPix) - 4)^ := $FF;
+    FillChar(MPix^, MaskPixelSize, $FF);   {Need to make first frame totally transparent}
+//    FillChar(MPix^, Height * MaskRowByteSize, $FF);   {Need to make first frame totally transparent}
    end;
 
   for i := 0 to (fImageDescriptorList.Count - 1) do  {for all the frames}
     begin
       vTopByte := (fImageDescriptorList.Count - i - 1) * Height * RowByteSize;
+      vMaskTopByte := (fImageDescriptorList.Count - i - 1) * Height * MaskRowByteSize;
     id := fImageDescriptorList.Items[i];
     if (id <> nil) then
       with id^ do
@@ -2015,6 +2030,7 @@ try
         TrIndex := GetTransparentIndex(i);
 
         vLeftByte := rLeft*3;
+        vMaskLeftByte := rLeft;
 
         N := 0;   {pixel index in rPixelList, the frame source pixels}
 //        for Y := Height-1 downto IntMax(Height-rHeight, ImageTop[I]) do
@@ -2027,51 +2043,48 @@ try
           PRight := PByte(P) + RowByteSize - vLeftByte;
 //          PRight := PByte(Cardinal(P) + rWidth * 3);
           if IsTransparent then  {same for mask}
-            MP := PByte(MPix) + vTopByte + ((Y-rTop) * RowByteSize) + vLeftByte;
+            MP := PByte(MPix) + vMaskTopByte + ((Y-rTop) * MaskRowByteSize) + vMaskLeftByte;
           for X := 0 to rWidth-1 do
             begin
             if PByte(P) < PByte(PRight) then   {prevent write beyond proper right side in case rwidth to wide}
               begin
-            Index := Integer((PByte(rPixelList) + N)^);  {Source pixel index in colortable}
-            Color := ct^.rColors[Index];          {its color}
-            {for frames after the 0th, only the non transparent pixels are written
-             as writing transparent ones might cover results copied from the previous frame}
-            if (Index <> trIndex) then
-              begin
-              P^ := Byte((Color shr 16) and $FF);
-              Inc(P);
-              P^ := Byte((Color shr 8) and $FF);
-              Inc(P);
-              P^ := Byte(Color and $FF);
-              Inc(P);
-              end
-            else if i = 0 then
-              begin     {transparent pixel, first frame, write black}
-              P^ := 0;
-              Inc(P);
-              P^ := 0;
-              Inc(P);
-              P^ := 0;
-              Inc(P);
-              end
-            else Inc(P, 3);   {ignore transparent pixel}
-            if IsTransparent then   {also do the mask}
-              begin
-              if Index = trIndex then
-                C := $FF  {transparent part is white}
-              else C := 0;  {non transparent is black}
-              {again for frames after the 0th, only non-transparent pixels are written}
-              if (i = 0) or (C = 0) then
-                begin
-                MP^ := C;
-                Inc(MP);
-                MP^ := C;
-                Inc(MP);
-                MP^ := C;
-                Inc(MP);
-                end
-              else Inc(MP, 3);
-              end;
+                Index := Integer((PByte(rPixelList) + N)^);  {Source pixel index in colortable}
+                Color := ct^.rColors[Index];          {its color}
+                {for frames after the 0th, only the non transparent pixels are written
+                 as writing transparent ones might cover results copied from the previous frame}
+                if (Index <> trIndex) then
+                  begin
+                  P^ := Byte((Color shr 16) and $FF);
+                  Inc(P);
+                  P^ := Byte((Color shr 8) and $FF);
+                  Inc(P);
+                  P^ := Byte(Color and $FF);
+                  Inc(P);
+                  end
+                else if i = 0 then
+                  begin     {transparent pixel, first frame, write black}
+                  P^ := 0;
+                  Inc(P);
+                  P^ := 0;
+                  Inc(P);
+                  P^ := 0;
+                  Inc(P);
+                  end
+                else Inc(P, 3);   {ignore transparent pixel}
+
+                if IsTransparent then   {also do the mask}
+                 begin
+                  if Index = trIndex then
+                    begin
+                      wasTransparent := True;
+                      C := $FF;  {transparent part is white}
+                    end
+                  else C := 0;  {non transparent is black}
+                  {again for frames after the 0th, only non-transparent pixels are written}
+                  if (i = 0) or (C = 0) then
+                    MP^ := C;
+                  Inc(MP);
+                 end;
               end;
             Inc(N);    {bump source pixel index}
             end;
@@ -2083,7 +2096,7 @@ try
     if (i < fImageDescriptorList.Count-1) then
       begin
         DeltaBytes := Height * RowByteSize;
-//        MskDeltaBytes := Height * Width;
+        MaskDeltaBytes := Height * MaskRowByteSize;
 //        vTopByte := i * DeltaBytes;
 (*
 // For Horizontal
@@ -2101,11 +2114,12 @@ try
 *)
 // For vertical:
         P := PByte(Pix) + vTopByte;
-        if IsTransparent then
-          MP := PByte(MPix) + vTopByte;
         Move(P^, (PByte(P) - DeltaBytes)^, DeltaBytes);
         if IsTransparent then
-          Move(MP^, (PByte(MP) - DeltaBytes)^, DeltaBytes);
+         begin
+          MP := PByte(MPix) + vMaskTopByte;
+          Move(MP^, (PByte(MP) - MaskDeltaBytes)^, MaskDeltaBytes);
+         end;
 
       {for dtBackground, fill the mask area occupied by the current copied image with
        white. This makes it transparent so the original background will appear here
@@ -2114,8 +2128,8 @@ try
         with id^ do
           for Y := Height-1 downto IntMax(Height-rHeight, rTop) do
             begin
-            MP := PByte(MPix) + vTopByte - DeltaBytes + ((Y-rTop) * RowByteSize) + rLeft*3;
-            FillChar(MP^, rWidth*3, $FF);
+            MP := PByte(MPix) + vMaskTopByte - MaskDeltaBytes + ((Y-rTop) * MaskRowByteSize) + rLeft;
+            FillChar(MP^, rWidth, $FF);
             end;
       end;
     end;
@@ -2125,7 +2139,7 @@ try
   Result.HandleType  := bmDIB;
  {$endif}
   Result.LoadFromStream(Stream); {turn the stream just formed into a TBitmap}
-  if IsTransparent then
+  if IsTransparent and wasTransparent then
    begin
     Mask := TBitmap.Create;
     Mask.HandleType := bmDIB;

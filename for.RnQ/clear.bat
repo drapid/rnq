@@ -1,10 +1,10 @@
 @FOR /r %%R IN (*.~*) DO @IF EXIST %%R (del /s /q "%%R")
+@FOR /r %%R IN (*.o) DO IF EXIST %%R (del /s /q "%%R")
 @FOR /r %%R IN (*.identcache) DO @IF EXIST %%R (del /s /q "%%R")
 @FOR /r %%R IN (*.bak) DO @IF EXIST %%R (del /s /q "%%R")
 @FOR /r %%R IN (*.stat) DO @IF EXIST %%R (del /s /q "%%R")
 @IF EXIST "*.dcu" del *.dcu
 @IF EXIST "*.ppu" del *.ppu
-@IF EXIST "*.o" del *.o
 @IF EXIST "AES\*.dcu" del AES\*.dcu
 @IF EXIST "Bass\*.dcu" del Bass\*.dcu
 @IF EXIST "Flash\*.dcu" del Flash\*.dcu
@@ -24,3 +24,4 @@
 @IF EXIST "RTL\*.o" del RTL\*.o
 @IF EXIST "RTL\*.a" del RTL\*.a
 @IF EXIST "RTL\__history" rd /s /q RTL\__history
+@IF EXIST "SciDe\__history\*" rd /q /s SciDe\__history\

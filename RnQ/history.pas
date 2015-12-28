@@ -29,14 +29,17 @@ type
 
 //    destructor Destroy; override;
     function  toString: RawByteString;
-    function  getAt(idx:integer):Thevent;
-    function  getByID(pID: int64):Thevent;
+    function  getAt(idx: integer): Thevent;
+    function  getByID(pID: int64): Thevent;
+    function  getByTime(time: TDateTime): Thevent;
+    function  getIdxBeforeTime(time: TDateTime; inclusive: Boolean = True): Integer;
     procedure reset;
 //    function Clear;
-    procedure deleteFromTo(uid: TUID; st,en:integer);
+    procedure deleteFromTo(const uid: TUID; st,en: integer);
+    procedure deleteFromToTime(const uid: TUID; st, en: TDateTime);
 //    function  load(uid:AnsiString; quite : Boolean = false):boolean;
-    function  load(cnt: TRnQContact; const quite : Boolean = false):boolean;
-//    function  RepaireHistoryFile(fn : String; var rslt : String) : Boolean;
+    function  load(cnt: TRnQContact; const quite: Boolean = false):boolean;
+//    function  RepaireHistoryFile(fn: String; var rslt : String) : Boolean;
      property Token : Cardinal read fToken;
    protected
     procedure Notify(Ptr: Pointer; Action: TListNotification); OverRide;
@@ -48,7 +51,7 @@ type
   function  DelHistWith(uid : TUID) : Boolean;
   function  ExistsHistWith(uid : TUID) : Boolean;
 
-procedure writeHistorySafely(ev:Thevent; other:TRnQContact=NIL);
+procedure writeHistorySafely(ev: Thevent; other: TRnQContact=NIL);
 procedure flushHistoryWritingQ;
 
 implementation
@@ -403,10 +406,49 @@ begin
    end;
 end;
 
+function Thistory.getByTime(time: TDateTime): Thevent;
+var
+  i: integer;
+begin
+  i := count - 1;
+  Result := nil;
+  while i >= 0 do
+    with Thevent(items[i]) do
+    begin
+      if CompareDateTime(when, time) = 0 then
+      begin
+        Result := Thevent(items[i]);
+        Break;
+      end;
+      dec(i);
+    end;
+end;
 
-procedure Thistory.deleteFromTo(uid: TUID; st,en:integer);
+function Thistory.getIdxBeforeTime(time: TDateTime; inclusive: Boolean = True): Integer;
+var
+  i: integer;
+begin
+  i := count - 1;
+  Result := -1;
+  while i >= 0 do
+    with Thevent(items[i]) do
+    begin
+      if CompareDateTime(when, time) < 0 then
+      begin
+        if inclusive then
+          Result := i
+        else
+          Result := i + 1;
+        Break;
+      end;
+      dec(i);
+    end;
+end;
+
+procedure Thistory.deleteFromTo(const uid: TUID; st,en: integer);
 var
   i:integer;
+  hev: Thevent;
 begin
  {$IFDEF DB_ENABLED}
  {$ELSE ~DB_ENABLED}
@@ -418,14 +460,18 @@ begin
     if getAt(i).fpos < 0 then
       begin
       if i > st then
-        utilLib.deleteFromTo(Account.ProtoPath+historyPath + uid, getAt(st).fpos, getAt(i-1).fpos+length(getAt(i-1).toString));
-      st:=i+1;
+      begin
+        hev := getAt(i - 1);
+        utilLib.deleteFromTo(Account.ProtoPath+historyPath + uid, getAt(st).fpos, hev.fpos+length(hev.toString));
+      end;
+      st := i+1;
       end;
     inc(i);
     end;
   if st > en then
     exit;
-  utilLib.deleteFromTo(Account.ProtoPath+historyPath + uid, getAt(st).fpos, getAt(en).fpos+length(getAt(en).toString));
+  hev := getAt(en);
+  utilLib.deleteFromTo(Account.ProtoPath+historyPath + uid, getAt(st).fpos, hev.fpos+length(hev.toString));
 
   reset;
 //      Clear;
@@ -439,6 +485,20 @@ for i:=en downto st do
   end;
 }
  {$ENDIF ~DB_ENABLED}
+end; // deleteFromTo
+
+procedure Thistory.deleteFromToTime(const uid: TUID; st, en: TDateTime);
+var
+  hev: Thevent;
+begin
+{$IFDEF DB_ENABLED}
+{$ELSE ~DB_ENABLED}
+  hev := getByTime(en);
+  utilLib.deleteFromTo(Account.ProtoPath + historyPath + uid, getByTime(st).fpos, hev.fpos + Length(hev.toString));
+
+  Reset;
+  Load(Account.AccProto.getContact(uid))
+{$ENDIF ~DB_ENABLED}
 end; // deleteFromTo
 
 function DelHistWith(uid : TUID) : Boolean;

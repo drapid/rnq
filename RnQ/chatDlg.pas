@@ -358,6 +358,9 @@ type
 {$ELSE ~CHAT_CEF}
     procedure onHistoryRepaint(Sender: TObject);
 {$ENDIF CHAT_CEF}
+{$IFDEF CHAT_SCI}
+    procedure showHistMenu(Sender: TObject; const Data: String; clickedTime: TDateTime; linkClicked, imgClicked: Boolean);
+{$ENDIF CHAT_SCI}
   public
     chats        : Tchats;
     poppedup     : TPoint;
@@ -366,7 +369,7 @@ type
     sendMenuExt  : TPopupMenu;
     closeMenuExt : TPopupMenu;
  { $IFDEF USE_SECUREIM}
-    EncryptMenuExt : TPopupMenu;
+    EncryptMenuExt: TPopupMenu;
  { $ENDIF USE_SECUREIM}
     enterCount   : integer;
   {$IFDEF USE_SMILE_MENU}
@@ -383,6 +386,10 @@ type
   {$ENDIF CHAT_USE_LSB}
 
     procedure SetSmilePopup(pIsMenu: Boolean);
+{$IFDEF CHAT_SCI}
+    procedure UpdateChatSettings;
+    procedure UpdateChatSmiles;
+{$ENDIF CHAT_SCI}
     procedure UpdatePluginPanel;
     function  isChatOpen(otherHand: TRnQContact): Boolean;
     function  openchat(otherHand: TRnQContact; ForceActive: Boolean = false;
@@ -451,7 +458,7 @@ var
 implementation
 
 uses
-  Clipbrd, ShellAPI, Themes,
+  Clipbrd, ShellAPI, Themes, DateUtils,
   math, Types, System.Threading,
   Base64,
   RDFileUtil, RQUtil, RDUtils, RnQSysUtils,
@@ -1077,8 +1084,11 @@ begin
   i := chats.idxOf(cnt);
   if i < 0 then
     i:=newIMchannel(cnt);
-  setTab(i);
-  open(focus);
+  if i >= 0 then
+   begin
+    setTab(i);
+    open(focus);
+   end;
 end; // openOn}
 
 function TchatFrm.newIMchannel(c: TRnQContact): Integer;
@@ -1143,6 +1153,7 @@ begin
 
 //    CreateBrowserInstance;
     Load('about:blank'); // Required for Browser.MainFrame.LoadString to work
+
     i := 0;
     while (i < 1000) and (not renderInit or (Browser.MainFrame = nil)) do
     begin
@@ -1169,7 +1180,9 @@ begin
 //      SetOption(SCITER_SET_DEBUG_MODE, UINT_PTR(True));
       SetOption(SCITER_SMOOTH_SCROLL, UINT_PTR(True));
       LoadTemplate;
-      InitSmiles;
+      InitFunctions;
+      OnShowMenu := showHistMenu;
+//      InitSmiles;
   {$ELSE OLD VCL}
      onPainted := onHistoryRepaint;
   {$ENDIF}
@@ -2371,10 +2384,13 @@ begin
   with ch.historyBox do
   if historyNowCount > 0 then
    begin
+ {$IFDEF CHAT_SCI}
+    select(topVisible, history.getAt(history.count - 1).when);
+ {$ELSE ~CHAT_SCI}
     select(historyNowOffset, history.count-1);
-//  clipboard.asText := getSelText;
     repaint;
     ch.updateAutoscroll(nil);
+ {$ENDIF CHAT_SCI}
    end;
 end; // select all
 
@@ -2959,7 +2975,11 @@ begin
     autoScrollVal := autoScroll;
   end;
  {$ELSE ~CHAT_CEF}
+  {$IFDEF CHAT_SCI}
+    ;
+  {$ELSE ~CHAT_SCI}
   ch.historyBox.setScrollPrefs(histBtnDown);
+  {$ENDIF ~CHAT_SCI}
  {$ENDIF CHAT_CEF}
 
   if self.visible then
@@ -3203,6 +3223,19 @@ begin
 //    result := True
    else
     begin
+
+ {$IFDEF CHAT_SCI} // Sciter
+    ev := ch.historyBox.history.getAt(ch.historyBox.history.count - 1);
+    if (ev <> nil) then
+      Result := CompareDateTime(ev.when, time) >= 0;
+
+    if Result then
+      ch.historyBox.go2end(true)
+     else
+      ch.historyBox.moveToTime(time);
+
+ {$ELSE ~CHAT_SCI} // ~Sciter
+
       with ch.historyBox do
        begin
       // i := topVisible;
@@ -3219,6 +3252,8 @@ begin
         ev := ch.historyBox.history.getAt(ch.historyBox.history.Count-1);
       if (ev <> NIL) then
         result := ev.when >= time
+ {$ENDIF CHAT_SCI}
+
     end;
 end; // moveToTimeOrEnd
 
@@ -3249,6 +3284,11 @@ begin
   ch := chats.byContact(c);
   if ch=NIL then
     exit;
+
+ {$IFDEF CHAT_SCI} // Sciter
+  ch.historyBox.moveToTime(time);
+ {$ELSE ~CHAT_SCI} // ~Sciter
+
   h := ch.historyBox.history;
   i := search(ch.historyBox.offset);
   if NeedOpen and (i < 0) and not ch.historyBox.whole then
@@ -3276,6 +3316,7 @@ begin
     end;
   ch.historyBox.repaint;
   ch.updateAutoscroll(nil);
+ {$ENDIF CHAT_SCI}
 end; // moveToTime
 
 procedure TchatFrm.Sendwhenimvisibletohimher1Click(Sender: TObject);
@@ -3332,32 +3373,8 @@ begin
 end; // sendmessage action
 
 procedure TchatFrm.del1Click(Sender: TObject);
-var
-  st, en: Integer;
 begin
-  if not thisChat.historyBox.history.loaded then
-  begin
-    MessageDlg(getTranslation('Load the whole history before removing messages'), mtInformation, [mbOK], 0);
-    Exit;
-  end;
-
-  with thisChat.historyBox do
-   begin
-    if not wholeEventsAreSelected then
-      exit;
-    st := startSel.evIdx;
-    en := endSel.evIdx;
-    if st > en then
-      swap4(st, en);
-//  chatFrm.visible := False;
-    Visible := false;
-//  history.deleteFromTo(userPath+historyPath + thisContact.uid, st,en);
-    history.deleteFromTo(thisContact.uid, st, en);
-    Visible := True;
-//  chatFrm.visible:=TRUE;
-    deselect();
-    thischat.repaintAndUpdateAutoscroll();
-   end;
+  thisChat.historyBox.DeleteSelected;
 end;
 
 procedure TchatFrm.Closeall1Click(Sender: TObject);
@@ -3955,6 +3972,64 @@ begin
 end;
 
 {$ELSE ~CHAT_CEF}
+
+{$IFDEF CHAT_SCI}
+procedure TchatFrm.showHistMenu(Sender: TObject; const Data: String; clickedTime: TDateTime; linkClicked, imgClicked: Boolean);
+var
+  hb: THistoryBox;
+begin
+  if not (Sender is THistoryBox) then
+   Exit;
+  hb := Sender as THistoryBox;
+
+  hb.rightClickedChatItem.timeData := clickedTime;
+  with hb do
+  if linkClicked then
+  begin
+    rightClickedChatItem.kind := PK_LINK;
+    rightClickedChatItem.stringData := Data;
+  end else if imgClicked then
+  begin
+    if StartsText('embedded:', Data) then
+      rightClickedChatItem.kind := PK_RQPIC
+    else if StartsText('download:', Data) then
+      rightClickedChatItem.kind := PK_RQPICEX;
+    rightClickedChatItem.stringData := Data;
+  end else
+    rightClickedChatItem.kind := PK_NONE;
+
+  del1.enabled := hb.wholeEventsAreSelected;
+  saveas1.enabled := hb.somethingIsSelected;
+  copy2clpb.visible := hb.somethingIsSelected;
+  toantispam.visible := hb.somethingIsSelected;
+  N2.visible := hb.somethingIsSelected;
+  copylink2clpbd.visible := linkClicked;
+  addlink2fav.visible := linkClicked and StartsText('url:', Data);
+  savePicMnu.visible := imgClicked;
+  ViewinfoM.visible := clickedTime > 0;
+  viewmessageinwindow1.enabled := hb.somethingIsSelected or (clickedTime > 0);
+  selectall1.enabled := hb.topVisible > 0;
+
+  add2rstr.visible := linkClicked and StartsText('uin:', Data);
+  if add2rstr.visible then
+  try
+    selectedUIN := copy(Data, 5, length(Data));
+{$IFDEF UseNotSSI}
+    addGroupsToMenu(Self, add2rstr, addcontactAction, not hb.who.iProto.isOnline or
+    // not icq.useSSI
+    ((hb.who.iProto.ProtoElem is TicqSession) and not(TicqSession(hb.who.iProto.ProtoElem).UseSSI)));
+{$ELSE UseNotSSI}
+    addGroupsToMenu(Self, add2rstr, addcontactAction, not hb.who.fProto.isOnline); // false);
+{$ENDIF UseNotSSI}
+  except
+    add2rstr.visible := false;
+  end;
+
+//  lastClickedItem := pointedItem;
+//  popupHistmenu(MousePos.X, MousePos.Y);
+  histmenu.popup(mousePos.X, mousePos.Y);
+end;
+{$ENDIF CHAT_SCI}
 
 procedure TchatFrm.onHistoryRepaint(sender: TObject);
 var
@@ -4739,10 +4814,15 @@ var
 begin
 //  useSmiles := TAction(Sender).Checked;
   useSmiles := not useSmiles;
+{$IFDEF CHAT_SCI}
+  UpdateChatSettings;
+  UpdateChatSmiles;
+{$ELSE ~CHAT_SCI}
   ch := thisChat;
   if ch=NIL then
     exit;
   ch.historyBox.ManualRepaint;
+{$ENDIF ~CHAT_SCI}
 end;
 
 procedure TchatFrm.hAShowSmilesUpdate(Sender: TObject);
@@ -4961,7 +5041,8 @@ if thisChat<>NIL then with thisChat do
  {$ENDIF ~DB_ENABLED}
     end;
   i:=start;
-  while (i >= historyBox.historyNowOffset) and (i < historyBox.history.Count) do
+//  while (i >= historyBox.historyNowOffset) and (i < historyBox.history.Count) do
+    while (i >= historyBox.topVisible) and (i < historyBox.history.count) do
     begin
     s:=Thevent(historyBox.history[i]).getBodyText;
  {$IFNDEF DB_ENABLED}
@@ -4981,20 +5062,18 @@ if thisChat<>NIL then with thisChat do
     if found then
       begin
 //      historyBox.rsb_position:=i-historyBox.offset;
-      historyBox.topVisible:=i;
-      historyBox.topOfs:=0;
-//      if historyBox.autoscroll then
-        historyBox.updateRSB(True, i-historyBox.offset, False);
-      historyBox.w2s := w2s;
-      chatFrm.autoscrollBtn.down:=historyBox.autoScrollVal;
-      historyBox.repaint;
-//      historyBox.autoscroll:=historyBox.lastEventIsFullyVisible;
-      sbar.simpletext:=getTranslation('Found!');
-      case directionGrp.itemIndex of
+//      historyBox.topVisible:=i;
+//      historyBox.topOfs:=0;
+       historyBox.updateRSB(true, i - historyBox.offset, false);
+       historyBox.w2s := w2s;
+       chatFrm.autoscrollBtn.down:=historyBox.autoScrollVal;
+//      historyBox.repaint;
+       sbar.simpletext:=getTranslation('Found!');
+       case directionGrp.itemIndex of
         0: directionGrp.itemIndex:=3;
         1: directionGrp.itemIndex:=2;
         end;
-      exit;
+       exit;
       end;
     case directionGrp.itemIndex of
       0,3: inc(i);
@@ -5011,10 +5090,10 @@ begin
  if (thisChat<>NIL)and(thisChat.chatType = CT_IM)
  then with thisChat do
   case directionGrp.itemIndex of
-    0:searchFrom(historyBox.historyNowOffset);
+//    0:searchFrom(historyBox.historyNowOffset);
     1:searchFrom(historyBox.history.count-1);
-    2:searchFrom(historyBox.topVisible-1);
-    3:searchFrom(historyBox.topVisible+1);
+//    2:searchFrom(historyBox.topVisible-1);
+//    3:searchFrom(historyBox.topVisible+1);
     end;
 end;
 
@@ -5199,6 +5278,25 @@ begin
  {$ENDIF RNQ_FULL}
 end;
 
+{$IFDEF CHAT_SCI}
+procedure TchatFrm.UpdateChatSettings;
+var
+  i: Integer;
+begin
+  for i := 0 to chats.count - 1 do
+    if Assigned(chats.byIdx(i)) and (chats.byIdx(i).chatType = CT_IM) then
+      chats.byIdx(i).historyBox.InitSettings;
+end;
+
+procedure TchatFrm.UpdateChatSmiles;
+var
+  i: Integer;
+begin
+  for i := 0 to chats.count - 1 do
+    if Assigned(chats.byIdx(i)) and (chats.byIdx(i).chatType = CT_IM) then
+      chats.byIdx(i).historyBox.UpdateSmiles;
+end;
+{$ENDIF CHAT_SCI}
 
 procedure TchatFrm.UpdatePluginPanel;
 begin

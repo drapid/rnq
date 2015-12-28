@@ -557,6 +557,7 @@ type
     SciterSetOption: function(hwnd: HWINDOW; option: SCITER_RT_OPTIONS; value: UINT_PTR): BOOL; stdcall;
     SciterGetPPI: procedure(hWndSciter: HWINDOW; var px: UINT; var py: UINT); stdcall;
     SciterGetViewExpando: function( hwnd: HWINDOW; pval: PSciterValue ): BOOL; stdcall;
+    //SciterEnumUrlData: Pointer;  // TODO:
     SciterRenderD2D: TProcPointer;
     SciterD2DFactory: TProcPointer;
     SciterDWFactory: TProcPointer;
@@ -564,6 +565,10 @@ type
     SciterSetHomeURL: function(hWndSciter: HWINDOW; baseUrl: PWideChar): BOOL; stdcall;
     SciterCreateWindow: function( creationFlags: UINT; var frame: TRect; delegate: PSciterWindowDelegate; delegateParam: LPVOID; parent: HWINDOW): HWINDOW; stdcall;
     SciterSetupDebugOutput: procedure(hwndOrNull: HWINDOW; param: Pointer; pfOutput: PDEBUG_OUTPUT_PROC); stdcall;
+    //SciterDebugSetupClient: TProcPointer;
+    //SciterDebugAddBreakpoint: TProcPointer;
+    //SciterDebugRemoveBreakpoint: TProcPointer;
+    //SciterDebugEnumBreakpoints: TProcPointer;
 
 //|
 //| DOM Element API
@@ -958,10 +963,14 @@ function  V2T(const vm: HVM; const Value: OleVariant): tiscript_value;
 function  API: PSciterApi;
 function NI: ptiscript_native_interface;
 function IsNameExists(const vm: HVM; const Name: WideString): boolean;
+function IsNameExistsCurr(const vm: HVM; const Name: WideString): boolean;
 function IsNativeClassExists(const vm: HVM; const Name: WideString): boolean;
 function GetNativeObject(const vm: HVM; const Name: WideString): tiscript_value;
 function GetNativeClass(const vm: HVM; const ClassName: WideString): tiscript_class;
-function RegisterNativeFunction(const vm: HVM; const Name: WideString; Handler: ptiscript_method; ThrowIfExists: Boolean = False): Boolean;
+function RegisterNativeFunction(const vm: HVM; const Name: WideString; Handler: ptiscript_method;
+                                ThrowIfExists: Boolean = False; Tag: Pointer = NIL): Boolean;
+function RegisterNativeFunctionCurr(const vm: HVM; Root: HELEMENT; const Name: WideString; Handler: ptiscript_method;
+              ThrowIfExists: Boolean = False; Tag: Pointer = NIL): Boolean;
 function RegisterNativeClass(const vm: HVM; ClassDef: ptiscript_class_def; ThrowIfExists: Boolean; ReplaceClassDef: Boolean): tiscript_class;
 function CreateObjectInstance(const vm: HVM; Obj: Pointer; OfClass: tiscript_class): tiscript_object; overload;
 function CreateObjectInstance(const vm: HVM; Obj: Pointer; OfClass: WideString): tiscript_object; overload;
@@ -1051,6 +1060,18 @@ begin
   Result := not NI.is_undefined(var_value);
 end;
 
+function IsNameExistsCurr(const vm: HVM; const Name: WideString): boolean;
+var
+  var_name: tiscript_string;
+  var_value: tiscript_object;
+  zns: tiscript_value;
+begin
+  zns := NI.get_current_ns(vm);
+  var_name  := NI.string_value(vm, PWideChar(Name), Length(Name));
+  var_value := NI.get_prop(vm, zns, var_name);
+  Result := not NI.is_undefined(var_value);
+end;
+
 function GetNativeObject(const vm: HVM; const Name: WideString): tiscript_value;
 var
   var_name: tiscript_string;
@@ -1082,7 +1103,8 @@ end;
 { Returns true if a function registration was successfull,
   false if a function with same name was already registered,
   throws an exception otherwise }
-function RegisterNativeFunction(const vm: HVM; const Name: WideString; Handler: ptiscript_method; ThrowIfExists: Boolean = False): Boolean;
+function RegisterNativeFunction(const vm: HVM; const Name: WideString; Handler: ptiscript_method;
+              ThrowIfExists: Boolean = False; Tag: Pointer = NIL): Boolean;
 var
   method_def: ptiscript_method_def;
   smethod_name: AnsiString;
@@ -1105,7 +1127,54 @@ begin
     method_def.dispatch := nil;
     method_def.name := StrNew(PAnsiChar(smethod_name));
     method_def.handler := Handler;
-    method_def.tag := nil;
+    method_def.tag := Tag;
+    func_def := NI.native_function_value(vm, method_def);
+    if not NI.is_native_function(func_def) then
+    begin
+      raise Exception.CreateFmt('Failed to register native function "%s".', [Name]);
+    end;
+    NI.set_prop(vm, zns, func_name, func_def);
+    Result := True;
+  end
+    else
+  if NI.is_native_function(func_def) then
+  begin
+    Result := False;
+  end
+    else
+  begin
+    raise ESciterException.CreateFmt('Cannot register native function "%s" (unexpected error). Seems that object with same name already exists.', [Name]);
+  end;
+end;
+
+function RegisterNativeFunctionCurr(const vm: HVM; Root: HELEMENT; const Name: WideString; Handler: ptiscript_method;
+              ThrowIfExists: Boolean = False; Tag: Pointer = NIL): Boolean;
+var
+  method_def: ptiscript_method_def;
+  smethod_name: AnsiString;
+  func_def: tiscript_value;
+  func_name: tiscript_value;
+  zns: tiscript_value;
+begin
+  if IsNameExistsCurr(vm, Name) and ThrowIfExists then
+    raise ESciterException.CreateFmt('Failed to register native function %s. Object with same name already exists.', [Name]);
+
+  if (Root <> NIL) then
+    API.SciterGetElementNamespace(Root, zns)
+   else
+    zns := NI.get_current_ns(vm);
+
+  smethod_name := AnsiString(Name);
+  func_name := NI.string_value(vm, PWideChar(Name), Length(Name));
+  func_def := NI.get_prop(vm, zns, func_name);
+
+  if NI.is_undefined(func_def) then
+  begin
+    New(method_def);
+    method_def.dispatch := nil;
+    method_def.name := StrNew(PAnsiChar(smethod_name));
+    method_def.handler := Handler;
+    method_def.tag := Tag;
     func_def := NI.native_function_value(vm, method_def);
     if not NI.is_native_function(func_def) then
     begin
@@ -1223,7 +1292,11 @@ var
 begin
   if FAPI = nil then
   begin
+    {$IFDEF CPUX64}
+    HSCITER := LoadLibrary('sciter64.dll');
+    {$ELSE}
     HSCITER := LoadLibrary('sciter32.dll');
+    {$ENDIF CPUX64}
     if HSCITER = 0 then
       raise ESciterException.Create('Failed to load Sciter DLL.');
 

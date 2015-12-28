@@ -283,7 +283,7 @@ const
   OP_LAST=33;
  {$ENDIF RNQ_PLAYER}
 
-  macro2str:array [OP_CHAT..OP_LAST] of AnsiString=(
+  macro2str: array [OP_CHAT..OP_LAST] of AnsiString=(
     'Show/hide chat window',          //'chat',
     'Show/hide contact list',         //'roster',
     'Simulate double-click on tray',  //'tray',

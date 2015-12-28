@@ -286,6 +286,7 @@ type
   TSciterOnDataLoaded = procedure(ASender: TObject; const url: WideString; resType: SciterResourceType;
                                                     data: PByte; dataLength: Integer; status: Integer;
                                                     requestId: Integer) of object;
+  TSciterOnFocus = procedure(ASender: TObject) of object;
 
   TSciterOnDocumentCompleteEventArgs = class
   private
@@ -756,6 +757,7 @@ type
     FHomeURL: WideString;
     FHtml: WideString;
     FManagedElements: TElementList;
+    FOnFocus: TSciterOnFocus;
     FOnDataLoaded: TSciterOnDataLoaded;
     FOnDocumentComplete: TSciterOnDocumentComplete;
     FOnEngineDestroyed: TNotifyEvent;
@@ -842,6 +844,7 @@ type
     function RegisterNativeClass(const ClassInfo: ISciterClassInfo; ThrowIfExists: Boolean; ReplaceClassDef: Boolean = False): tiscript_class; overload;
     function RegisterNativeClass(const ClassDef: ptiscript_class_def; ThrowIfExists: Boolean; ReplaceClassDef: Boolean { reserved } = False): tiscript_class; overload;
     procedure RegisterNativeFunction(const Name: WideString; Handler: ptiscript_method);
+    procedure RegisterNativeFunctionTag(const Name: WideString; Handler: ptiscript_tagged_method; Tag: Pointer);
     procedure SaveToFile(const FileName: WideString; const Encoding: WideString = 'UTF-8' { reserved, TODO:} );
     function SciterValueToJson(Obj: TSciterValue): WideString;
     function Select(const Selector: WideString): IElement;
@@ -903,6 +906,7 @@ type
     property TabOrder;
     property TabStop default True;
     property Visible;
+    property OnFocus: TSciterOnFocus read FOnFocus write FOnFocus;
     property OnDataLoaded: TSciterOnDataLoaded read FOnDataLoaded write FOnDataLoaded;
     property OnDocumentComplete: TSciterOnDocumentComplete read FOnDocumentComplete write FOnDocumentComplete;
     property OnEngineDestroyed: TNotifyEvent read FOnEngineDestroyed write FOnEngineDestroyed;
@@ -1376,6 +1380,7 @@ end;
 procedure TSciter.CreateWindowHandle(const Params: TCreateParams);
 begin
   inherited;
+  Application.ProcessMessages;
 end;
 
 procedure TSciter.CreateWnd;
@@ -1392,7 +1397,6 @@ begin
     API.SciterSetCallback(Handle, LPSciterHostCallback(@HostCallback), Self);
 
     SR := API.SciterWindowAttachEventHandler(Handle, LPELEMENT_EVENT_PROC(@_SciterViewEventProc), Self, UINT(HANDLE_ALL));
-    OutputDebugString(PChar(inttostr(integer(sr))));
     if SR <> SCDOM_OK then
       raise ESciterException.Create('Failed to setup Sciter window element callback function.');
 
@@ -1411,6 +1415,7 @@ begin
     end;
     if Assigned(FOnHandleCreated) then
       FOnHandleCreated(Self);
+    Application.ProcessMessages;
   end;
 end;
 
@@ -1964,7 +1969,7 @@ procedure TSciter.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Integer);
 begin
   inherited MouseDown(Button, Shift, X, Y);
-  SetFocus;
+  //SetFocus;
 end;
 
 { Tweaking TWinControl MouseWheel behavior }
@@ -2100,6 +2105,19 @@ procedure TSciter.RegisterNativeFunction(const Name: WideString;
 begin
   SciterAPI.RegisterNativeFunction(VM, Name, Handler);
 end;
+
+//>>> Added by Rapid D 26.12.2015
+procedure TSciter.RegisterNativeFunctionTag(const Name: WideString; Handler: ptiscript_tagged_method; Tag: Pointer);
+var
+  e: HELEMENT;
+begin
+  if Assigned(Self.Root) then
+    e := Self.Root.Handle
+   else
+    e := NIL;
+  SciterAPI.RegisterNativeFunctionCurr(VM, e, Name, ptiscript_method(Handler), True, Tag);
+end;
+// <<<
 
 { Exprerimental }
 procedure TSciter.SaveToFile(const FileName, Encoding: WideString);
@@ -2375,10 +2393,15 @@ begin
     if HandleAllocated then
     begin
       case Message.Msg of
+        WM_SETFOCUS:
+          begin
+            if Assigned(FOnFocus) then
+              FOnFocus(Self);
+          end;
         WM_GETDLGCODE:
           // Tweaking arrow keys and TAB handling (VCL-specific)
           begin
-            Message.Result := DLGC_WANTALLKEYS or DLGC_WANTTAB or DLGC_WANTARROWS or DLGC_WANTCHARS or DLGC_HASSETSEL;
+            Message.Result := DLGC_WANTALLKEYS {or DLGC_WANTTAB} or DLGC_WANTARROWS or DLGC_WANTCHARS or DLGC_HASSETSEL;
             if Message.lParam <> 0 then
             begin
               M := PMsg(Message.lParam);

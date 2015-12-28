@@ -26,30 +26,13 @@ interface
 uses
   windows, sysutils, messages, classes;
 
- {$IFNDEF NO_WIN98}
-const
-  HOOK_VER=5;
-  DLLname='hook.dll';
-  mapfile='andrqHook5';
-type
-  Tshared=record
-    sign:array [1..3] of char;
-    ver:integer;
-    runs:integer;
-    keyMoved :integer;
-    end;
- {$ENDIF WIN98}
 
 procedure installHook(hdl : THandle);
 //procedure installHook;
 procedure uninstallHook;
-//function  isHooked:boolean; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
 function isMoved : Boolean;
 
 var
- {$IFNDEF NO_WIN98}
-  shared:^Tshared;
- {$ENDIF WIN98}
   isHooked  : boolean;
   isLocked  : Boolean = false; 
 
@@ -85,44 +68,13 @@ const
   NOTIFY_FOR_ALL_SESSIONS = 1; 
 
 var
- {$IFNDEF NO_WIN98}
-  hookOn, hookOff, hookVer : procedure; stdcall;
-  fileHnd, DLLhnd:Thandle;
- {$ENDIF NO_WIN98}
   oldHook : Boolean;
   FRegisteredSessionNotification : Boolean;
   SessNotifHndl : THandle;
- {$IFNDEF NO_WIN98}
-   lastMousePos :Tpoint;
-   lastKeybPos :integer;
- {$ENDIF NO_WIN98}
   GetLII  : function (var plii: TLastInputInfo): BOOL; stdcall;
 
 //  GetLastInputInfo
 
- {$IFNDEF NO_WIN98}
-procedure unload;
-begin
-if shared<>NIL then
-  begin
-  if shared^.runs=0 then
-    hookOff;
-  UnmapViewOfFile(shared);
-  shared:=NIL;
-  end;
-if fileHnd<>0 then
-  begin
-  CloseHandle(fileHnd);
-  fileHnd:=0;
-  end;
-if DLLhnd<>0 then
-  begin
-  loggaEvt('hook.dll: unloading');
-  FreeLibrary(DLLhnd);
-  DLLhnd:=0;
-  end;
-end; // unload
- {$ENDIF WIN98}
 
 procedure installHook(hdl : THandle);
 var
@@ -139,64 +91,6 @@ begin
    isHooked:=TRUE;
    oldHook := false;
  end
- {$IFNDEF NO_WIN98}
- else
- begin
-  // load DLL
-  DLLhnd:=LoadLibrary(PChar(DLLname));
-  if DLLhnd = 0 then
-    begin
-    loggaEvt('hook.dll: unable to load');
-    unload;
-    exit;
-    end;
-  @hookOn :=GetProcAddress(DLLhnd, 'hookOn');
-  @hookOff:=GetProcAddress(DLLhnd, 'hookOff');
-  @hookVer:=GetProcAddress(DLLhnd, 'hookVer');
-  if not assigned(hookOn)
-  or not assigned(hookOff)
-  or not assigned(hookVer)
-  or (TintFun(HookVer) <> HOOK_VER) then
-    begin
-    loggaEvt('hook.dll: wrong version');
-    unload;
-    exit;
-    end;
-  // open mapped file
-  fileHnd:=OpenFileMapping(FILE_MAP_WRITE,False,mapfile);
-  if fileHnd=0 then
-    begin
-    if TintFun(hookOn)<>0 then
-      begin
-      loggaEvt('hook.dll: unable to init');
-      unload;
-      exit;
-      end;
-    fileHnd:=OpenFileMapping(FILE_MAP_WRITE,False,mapfile);
-    if fileHnd=0 then
-      begin
-      loggaEvt('hook.dll: unable to communicate');
-      unload;
-      exit;
-      end;
-    end;
-  shared:=MapViewOfFile(fileHnd,FILE_MAP_WRITE,0,0,0);
-  if shared=NIL then
-    loggaEvt('hook.dll: unable to communicate(2)')
-  else
-    if (shared^.sign<>'&RQ') or (shared^.ver<>HOOK_VER) then
-      loggaEvt('hook.dll: wrong version')
-    else
-      begin
-      loggaEvt('hook.dll: on');
-      inc(shared^.runs);
-      oldHook := True;
-      isHooked:=TRUE;
-      exit;
-      end;
-  unload;
- end;
- {$ENDIF NO_WIN98}
 end; // installHook
 
 procedure uninstallHook;
@@ -207,19 +101,7 @@ begin
     UnRegisterSessionNotification(SessNotifHndl) ;
   SessNotifHndl := 0;
   isHooked:=FALSE;
- {$IFNDEF NO_WIN98}
-  if oldHook then
-  begin
-    dec(shared^.runs);
-    loggaEvt('hook.dll: off');
-    unload;
-  end;
- {$ENDIF WIN98}
 end; // uninstallHook
-
-//function isHooked:boolean; {$IFDEF DELPHI9_UP} inline; {$ENDIF DELPHI9_UP}
-//begin result:=hooked end;
-//
 
 function LastInput: DWord;
 var
@@ -231,26 +113,8 @@ begin
 end;
 
 function isMoved : Boolean;
- {$IFNDEF NO_WIN98}
-var
-  pt:Tpoint;
- {$ENDIF NO_WIN98}
 begin
  result := False;
- {$IFNDEF NO_WIN98}
- if oldHook then
-  begin
-    pt:=mousePos;
-    // track mouse activity
-    if (pt.x<>lastMousePos.x) or (pt.y<>lastMousePos.y) or (shared^.keyMoved<>lastKeybPos) then
-      begin
-       lastMousePos:=pt;
-       lastKeybPos:=shared^.keyMoved;
-       result := True;
-      end;
-  end
- else
- {$ENDIF WIN98}
     if (LastInput+5 < autoaway.time) then
       result := True;
 end;
@@ -272,8 +136,9 @@ begin
   hWTSAPI32DLL := LoadLibrary('Wtsapi32.dll'); 
   if (hWTSAPI32DLL > 0) then 
   begin 
-    try @WTSRegisterSessionNotification := 
-        GetProcAddress(hWTSAPI32DLL, 'WTSRegisterSessionNotification'); 
+    try
+      @WTSRegisterSessionNotification := 
+        GetProcAddress(hWTSAPI32DLL, 'WTSRegisterSessionNotification');
       if Assigned(WTSRegisterSessionNotification) then 
       begin 
         Result:= WTSRegisterSessionNotification(Wnd, dwFlags); 
@@ -299,8 +164,9 @@ begin
   hWTSAPI32DLL := LoadLibrary('Wtsapi32.dll'); 
   if (hWTSAPI32DLL > 0) then 
   begin 
-    try @WTSUnRegisterSessionNotification := 
-        GetProcAddress(hWTSAPI32DLL, 'WTSUnRegisterSessionNotification'); 
+    try
+      @WTSUnRegisterSessionNotification := 
+        GetProcAddress(hWTSAPI32DLL, 'WTSUnRegisterSessionNotification');
       if Assigned(WTSUnRegisterSessionNotification) then 
       begin 
         Result:= WTSUnRegisterSessionNotification(Wnd); 
@@ -345,9 +211,4 @@ begin
   isHooked:=FALSE;
   SessNotifHndl := 0;
   FRegisteredSessionNotification := false;
- {$IFNDEF NO_WIN98}
-  shared:=NIL;
-  DLLhnd:=0;
-  fileHnd:=0;
- {$ENDIF WIN98}
 end.

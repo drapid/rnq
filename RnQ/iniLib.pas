@@ -2426,11 +2426,6 @@ begin
   applyTransparency;
   for i:=0 to Screen.FormCount-1 do
     applyCommonSettings(screen.forms[i]);
- {$IFNDEF NO_WIN98}
-  if not isHooked then
-    msgDlg('Error loading HOOK.DLL\nSome features won''t work', True, mtWarning);
- {$ENDIF NO_WIN98}
-
   SoundInit;
 //ShowHintsInChat2 := True;
 end; // afterWindowsCreation

@@ -153,6 +153,7 @@ type
     function  offsetPos: integer;
     procedure select(from, to_: integer);
     procedure deselect();
+    procedure DeleteSelected;
 
     procedure updateRSB(SetPos: Boolean; pos: Integer = 0; doRedraw: Boolean = true);
     procedure addEvent(ev: Thevent);
@@ -161,7 +162,7 @@ type
     procedure trySetNot2go2end;
     procedure histScrollEvent(d: integer);
     procedure histScrollLine(d: integer);
-    procedure Scroll;
+    procedure DoOnScroll;
     function  getQuoteByIdx(var pQuoteIdx: Integer): String;
     procedure setScrollPrefs(ShowAll: Boolean);
   end; // ThistoryBox
@@ -2553,6 +2554,35 @@ begin
   startSel.evIdx := -1;
 end; // deselect
 
+procedure ThistoryBox.DeleteSelected;
+var
+  st, en: Integer;
+begin
+  if not history.loaded then
+  begin
+    MsgDlg('Load the whole history before removing messages', True, mtInformation);
+    Exit;
+  end;
+
+   begin
+    if not wholeEventsAreSelected then
+      exit;
+    st := startSel.evIdx;
+    en := endSel.evIdx;
+    if st > en then
+      swap4(st, en);
+//  chatFrm.visible := False;
+    Visible := false;
+//  history.deleteFromTo(userPath+historyPath + thisContact.uid, st,en);
+    history.deleteFromTo(who.uid, st, en);
+    Visible := True;
+//  chatFrm.visible:=TRUE;
+    deselect();
+    repaint;
+    DoOnScroll;
+   end;
+end;
+
 procedure ThistoryBox.updatePointedItem();
 var
   p, pEnd: ThistoryPos;
@@ -3301,7 +3331,7 @@ begin
 //    setAutoScrollForce(autoScroll);
   autoScrollVal := autoscr;
   repaint;
-  Scroll();
+  DoOnScroll();
   updateRSB(false, 0, True);
 end;
 
@@ -3321,7 +3351,7 @@ begin
     result:=newSession
 end;
 
-procedure ThistoryBox.Scroll;
+procedure ThistoryBox.DoOnScroll;
 begin
     if Assigned(FOnScroll) then
       FOnScroll(Self);
@@ -3407,7 +3437,7 @@ begin
 //   else
 //    repaint;
   SendMessage(Self.Handle, CM_INVALIDATE, 0, 0);
-  Scroll();
+  DoOnScroll();
 end; // histScrollEvent
 
 procedure ThistoryBox.histScrollLine(d: integer);
@@ -3445,7 +3475,7 @@ begin
 //    updatePointedItem()
 //   else
     repaint;
-  Scroll();
+  DoOnScroll();
 end; // histScrollLine
 
 
@@ -3509,7 +3539,7 @@ begin
         topOfs:=0;
         updateRSB(True, si.nTrackPos, True);
         repaint;
-        Scroll();
+        DoOnScroll();
       end;
     else
 //     Msg.Result := 0;

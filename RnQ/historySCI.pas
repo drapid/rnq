@@ -4,20 +4,17 @@
 }
 unit historySCI;
 {$I RnQConfig.inc}
+{$I NoRTTI.inc}
 
 interface
 
 uses
-{$IFDEF USE_GDIPLUS}
-  GDIPAPI, GDIPOBJ,
-{$ENDIF USE_GDIPLUS}
   Windows, Controls, Classes, Generics.Collections,
   SysUtils, Graphics, Forms, StdCtrls, ExtCtrls,
-  Messages, StrUtils, System.UITypes, NetEncoding,
+  Messages, StrUtils, System.UITypes, Variants,
   RDGlobal, history, RnQProtocol, events,
-  Sciter, SciterApi;
+  Sciter, SciterApi, TiScriptApi, SciterNative;
 
-{$I NoRTTI.inc}
 
 type
   TlinkKind = (LK_FTP, LK_EMAIL, LK_WWW, LK_UIN, LK_ED);
@@ -25,7 +22,7 @@ type
     ASS_ENABLENOTSCROLL, // fAutoscroll = True, not2go2end = True
     ASS_FULLDISABLED); // fAutoscroll = False, not2go2end = Any
 
-  TitemKind = (PK_NONE, PK_HEAD, PK_TEXT, PK_ARROWS_UP, PK_ARROWS_DN, PK_LINK, PK_SMILE, PK_CRYPTED, PK_RQPIC, PK_RQPICEX, PK_RNQBUTTON, PK_EVENT);
+  TitemKind = (PK_NONE, PK_HEAD, PK_TEXT, PK_ARROWS_UP, PK_ARROWS_DN, PK_LINK, PK_SMILE, PK_CRYPTED, PK_RQPIC, PK_RQPICEX, PK_RNQBUTTON);
   PhistoryItem = ^ThistoryItem;
 
   ThistoryLink = record
@@ -38,11 +35,12 @@ type
   end;
 
   TLinkClickEvent = procedure(const Sender: TObject; const LinkHref: String; const LinkText: String) of object;
+  TonShowMenu = procedure (Sender: TObject; const Data: String; clickedTime: TDateTime; linkClicked, imgClicked: Boolean) of Object;
 
   TChatItem = record
     kind: TitemKind;
     stringData: String;
-    intData: Integer;
+    timeData: TDateTime;
   end;
 
   ThistoryItem = record
@@ -55,7 +53,7 @@ type
 
   ThistoryPos = record
     ev: Thevent; // NIL for null positions
-    evIdx: integer; // -1 for void positions
+    //evIdx: integer; // -1 for void positions
     ofs: integer; // -1 when the whole event is selected
   end;
 (*
@@ -167,13 +165,16 @@ type
     function getQuoteByIdx(var pQuoteIdx: integer): String;
   end; // ThistoryBox
 *)
+  TParams = array of OleVariant;
+
+//  PHistoryBox = ^THistoryBox;
+
   THistoryBox = class(TSciter)
   private
     //template: TStringList;
     // For History at all
     items: array of ThistoryItem;
     P_lastEventIsFullyVisible: boolean;
-    startWithLastLine: boolean;
     P_topEventNrows, P_bottomEvent: integer;
     fAutoScrollState: TAutoScrollState; // auto scrolls along messages
     FOnScroll: TNotifyEvent;
@@ -184,22 +185,24 @@ type
     lastClickedItem, P_pointedSpace, P_pointedItem: ThistoryItem;
     linkToUnderline: ThistoryLink;
     FOnLinkClick: TLinkClickEvent;
+    fOnShowMenu: TonShowMenu;
 
-    firstCharactersForSmiles: set of AnsiChar; // for faster smile recognition
+//    firstCharactersForSmiles: set of AnsiChar; // for faster smile recognition
+
   protected
     function getAutoScroll: boolean;
     procedure setAutoScroll(asState: TAutoScrollState);
     procedure setAutoScrollForce(vAS: boolean);
   public
-    topVisible, topOfs: integer;
-    offset, offsetAll: integer; // can't show hevents before this
-    newSession: integer; // where, in the history, does start new session
+    selectedText: String;
+    topVisible: TDateTime;
+    topOfs: integer;
+    offsetMsg, offsetAll: integer; // can't show hevents before this
     startSel, endSel: ThistoryPos;
     isWholeEvents: Boolean;
     who: TRnQContact;
     history: Thistory;
     margin: Trect;
-    whole: boolean; // see whole history
     rsb_visible: boolean;
     rsb_position: integer;
     rsb_rowPerPos: integer;
@@ -207,6 +210,7 @@ type
     w2s: String;
     rightClickedChatItem: TChatItem;
     //templateLoaded: Boolean;
+    embeddedImgs: TDictionary<LongWord, RawByteString>;
 
     property lastEventIsFullyVisible: boolean read P_lastEventIsFullyVisible;
     property pointedItem: ThistoryItem read P_pointedItem;
@@ -217,51 +221,55 @@ type
     property autoScrollVal: boolean read getAutoScroll write setAutoScrollForce;
     property OnScroll: TNotifyEvent read FOnScroll write FOnScroll;
     property onLinkClick: TLinkClickEvent read FOnLinkClick write FOnLinkClick;
+    property OnShowMenu: TonShowMenu read fOnShowMenu write fOnShowMenu;
 
     function escapeQuotes(const text: String): String;
-    function escapeNewlines(const text: String): String;
+//    function escapeNewlines(const text: String): String;
 
     procedure LoadTemplate;
-    procedure ClearTemplate;
-    procedure RefreshTemplate;
+    procedure InitFunctions;
+    procedure ClearEvents;
     procedure ReloadLast;
+    procedure InitSettings;
     procedure InitSmiles;
+    procedure UpdateSmiles;
     procedure RememberScrollPos;
     procedure RestoreScrollPos;
-    procedure addChatItem(hev: Thevent; evIdx: Integer; animate: Boolean; last: Boolean = True);
+    procedure addChatItem(var params: TParams; hev: Thevent; animate: Boolean; last: Boolean = True);
+    procedure sendChatItems(params: TParams; prepend: Boolean = False; hidehist: Boolean = False);
+    procedure copySel2Clpb;
+    function  getSelText: String;
 
     constructor Create(AOwner: Tcomponent); override;
-    destructor Destroy; override;
-    procedure go2end();
-    function copySel2Clpb: Boolean;
-    function getSelText: String;
-    function getSelBin(): RawByteString;
-    function getSelHtml(smiles: boolean): string;
-    function getSelHtml2(smiles: boolean): RawByteString;
-    function somethingIsSelected(): boolean;
-    function wholeEventsAreSelected(): boolean;
-    function nothingIsSelected(): boolean;
-    function partialTextIsSelected(): boolean;
+    destructor  Destroy; override;
+    procedure go2start();
+    procedure go2end(animate: Boolean = False);
+    procedure moveToTime(time: TDateTime);
+    function  getSelBin(): AnsiString;
+    //function  getSelHtml(smiles: boolean): string;
+    function  getSelHtml2(smiles: boolean): RawByteString;
+    function  somethingIsSelected(): boolean;
+    function  wholeEventsAreSelected(): boolean;
+    function  nothingIsSelected(): boolean;
+    function  partialTextIsSelected(): boolean;
 
-    function offsetPos: integer;
-    procedure select(from, to_: integer);
+    procedure select(from, to_: TDateTime);
     procedure deselect();
+    procedure DeleteSelected;
 
     procedure updateRSB(SetPos: boolean; pos: integer = 0; doRedraw: boolean = true);
     procedure addEvent(ev: Thevent);
     function historyNowCount: integer;
-    function historyNowOffset: integer;
-    procedure trySetNot2go2end;
     procedure histScrollEvent(d: integer);
     procedure histScrollLine(d: integer);
     procedure Scroll;
-    function getQuoteByIdx(var pQuoteIdx: integer): String;
-    procedure setScrollPrefs(ShowAll: Boolean);
+    procedure histScrollWheel(d: integer);
+    function  getQuoteByIdx(var pQuoteIdx: integer): String;
+    procedure requestQuote;
     procedure updateMsgStatus(hev: Thevent);
-    procedure ManualRepaint;
-
-    procedure MouseWheelHandler(var Message: TMessage); override;
-    procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
+    procedure InitRequest(ASender: TObject; const url: WideString; resType: SciterResourceType; requestId: Integer; out discard: Boolean);
+    procedure ReturnFocus(Sender: TObject);
+    procedure DoShowMenu(const Data: String; clickedTime: TDateTime; linkClicked, imgClicked: Boolean);
     property  Color;
   end;
 {
@@ -277,26 +285,22 @@ type
     procedure OnWebKitInitialized; override;
     function OnProcessMessageReceived(const browser: ICefBrowser; sourceProcess: TCefProcessId; const message: ICefProcessMessage): Boolean; override;
   end;
-
-  TResourceHandler = class(TCefResourceHandlerOwn)
+}
+  TRequestHandler = class
   private
+    FSciter: TSciter;
     FDataStream: TMemoryStream;
     FStatus: Integer;
     FStatusText: string;
-    FMimeType: string;
-    FRedirectURL: string;
   protected
-    function DetectStreamMimeType: String;
-    function ProcessRequest(const request: ICefRequest; const callback: ICefCallback): Boolean; override;
-    procedure GetResponseHeaders(const response: ICefResponse; out responseLength: Int64; out redirectUrl: ustring); override;
-    function ReadResponse(const dataOut: Pointer; bytesToRead: Integer; var bytesRead: Integer; const callback: ICefCallback): Boolean; override;
-    procedure SetStatus(status: Integer);
+    procedure ProcessRequest(ASender: TObject; const url: WideString; resType: SciterResourceType; requestId: Integer; out discard: Boolean);
+    procedure CheckAnimatedGifSize;
+//    procedure GetResponseHeaders(const response: ICefResponse; out responseLength: Int64; out redirectUrl: ustring); override;
   public
-    constructor Create(const browser: ICefBrowser; const frame: ICefFrame;
-      const schemeName: ustring; const request: ICefRequest); override;
+    constructor Create(Sciter: TSciter);
     destructor Destroy; override;
   end;
-}
+
 var
   hisBGColor, myBGColor: TColor;
   renderInit: Boolean = False;
@@ -311,28 +315,27 @@ uses
 {$ENDIF UNICODE}
   RnQSysUtils, RnQLangs, RnQFileUtil, RDUtils, RnQBinUtils,
   RQUtil, RQThemes, RnQButtons, RnQGlobal, RnQCrypt, RnQPics, RnQNet,
-  globalLib, mainDlg, chatDlg, utilLib, Protocols_all,
+  globalLib, mainDlg, utilLib, Protocols_all,
+//  chatDlg,
   roasterLib,
 {$IFDEF USE_GDIPLUS}
   // KOLGDIPV2,
 {$ENDIF USE_GDIPLUS}
   // historyRnQ,
   Base64,
- {$IFDEF PROTOCOL_ICQ}
   ICQConsts, ICQv9,
- {$ENDIF PROTOCOL_ICQ}
 {$IFDEF USE_GDIPLUS}
   RnQGraphics,
 {$ELSE}
   RnQGraphics32,
 {$ENDIF USE_GDIPLUS}
-  themesLib, menusUnit;
+  themesLib, menusUnit, ViewPicDimmedDlg, Murmur2;
 
 var
   lastBGCnt: TRnQContact;
   lastBGToken: integer;
   vKeyPicElm: TRnQThemedElementDtls;
-
+{
 function minor(const a, b: ThistoryPos): boolean; overload;
 begin
   result := (a.evIdx < b.evIdx) or (a.evIdx = b.evIdx) and (a.ofs < b.ofs)
@@ -357,7 +360,7 @@ function equal(const a, b: ThistoryLink): boolean; overload;
 begin
   result := (a.evIdx = b.evIdx) and (a.from = b.from) and (a.to_ = b.to_)
 end;
-
+}
 function minor(const a, b: Tpoint): boolean; overload;
 begin
   result := (a.Y < b.Y) or (a.Y = b.Y) and (a.X < b.Y)
@@ -373,37 +376,38 @@ begin
   if a.kind = PK_NONE then
   begin
     result.ev := nil;
-    result.evIdx := -1;
+//    result.evIdx := -1;
   end
   else
   begin
     result.ev := a.ev;
-    result.evIdx := a.evIdx;
+//    result.evIdx := a.evIdx;
     result.ofs := a.ofs;
   end
 end;
 
 destructor ThistoryBox.Destroy;
 begin
+  FreeAndNil(embeddedImgs);
+
   if Assigned(Self) then
     inherited Destroy;
   // self := NIL;
 end;
 
-function ThistoryBox.getSelBin(): RawByteString;
+procedure ThistoryBox.copySel2Clpb;
 begin
-  result := '';
-end;
-
-function ThistoryBox.copySel2Clpb: Boolean;
-begin
-//  Perform(EM_GETSEL, 0, 0);
-  Call('execCopy', [])
+  Call('copySelected', [])
 end;
 
 function ThistoryBox.getSelText: String;
 begin
-  Result := '';
+  Result := selectedText;
+end;
+
+function ThistoryBox.getSelBin(): AnsiString;
+begin
+  result := '';
 end;
 
 function applyHtmlFont(fnt: Tfont; const s: string): string;
@@ -424,7 +428,7 @@ begin
   end;
   result := h + s + q;
 end; // applyHtmlFont
-
+{
 function ThistoryBox.getSelHtml(smiles: boolean): string;
 var
   SOS, EOS: ThistoryPos;
@@ -473,7 +477,7 @@ begin
   setLength(result, dim);
   fnt.Free;
 end; // getSelHtml
-
+}
 function str2html2(const s: string): string;
 begin
   result := template(s, ['&', '&amp;', '<', '&lt;', '>', '&gt;', CRLF, '<br/>', #13, '<br/>', #10, '<br/>']);
@@ -707,154 +711,106 @@ begin
   updatePointedItem()
 end; // mouseMove
 *)
-procedure ThistoryBox.go2end();
+procedure ThistoryBox.go2start();
 begin
-  Call('chatScrollToBottom', []);
+  Call('chatScrollToTop', []);
 end;
 
-function ThistoryBox.offsetPos(): integer;
+procedure ThistoryBox.go2end(animate: Boolean = False);
 begin
-  result := topVisible - offset
+  Call('chatScrollToBottom', [animate]);
+end;
+
+procedure ThistoryBox.moveToTime(time: TDateTime);
+var
+  f: TFormatSettings;
+begin
+  f.Create;
+  f.DecimalSeparator := '.';
+  Call('moveToTime', [floattostr(time, f)]);
 end;
 
 function ThistoryBox.wholeEventsAreSelected(): boolean;
 begin
-  result := (startSel.ev <> nil) and isWholeEvents
+  result := (startSel.ev <> nil) and (endSel.ev <> nil) and isWholeEvents
 end;
 
 function ThistoryBox.nothingIsSelected(): boolean;
 begin
-  result := startSel.ev = nil;
+  result := selectedText = '';
 end;
 
 function ThistoryBox.somethingIsSelected(): boolean;
 begin
-  result := startSel.ev <> nil;
+  result := not (selectedText = '');
 end;
 
 function ThistoryBox.partialTextIsSelected(): boolean;
 begin
-  result := (startSel.ev <> nil) and not isWholeEvents
+  result := not (selectedText = '') and not isWholeEvents
 end;
 
-procedure ThistoryBox.select(from, to_: integer);
+procedure ThistoryBox.select(from, to_: TDateTime);
+var
+  args: array of OleVariant;
+  f: TFormatSettings;
 begin
   startSel.ofs := -1;
-  startSel.evIdx := from;
-  startSel.ev := history.getAt(from);
+  startSel.ev := history.getByTime(from);
   endSel.ofs := -1;
-  endSel.evIdx := to_;
-  endSel.ev := history.getAt(to_);
+  endSel.ev := history.getByTime(to_);
   isWholeEvents := True;
-  Call('setSelection', [inttostr(from), inttostr(to_)]);
+  SetLength(args, 2);
+  f.DecimalSeparator := '.';
+  args[0] := FloatToStr(from, f);
+  args[1] := FloatToStr(to_, f);
+  Call('setSelection', args);
 end; // select
 
 procedure ThistoryBox.deselect();
 begin
   startSel.ev := nil;
-  startSel.evIdx := -1;
   isWholeEvents := False;
   Call('clearSelection', []);
 end; // deselect
-(*
-procedure ThistoryBox.updatePointedItem();
+
+procedure ThistoryBox.DeleteSelected;
 var
-  p, pEnd: ThistoryPos;
-  oldIt, oldSp: ThistoryItem;
-  oldLink: ThistoryLink;
-  pt: Tpoint;
+  st, en: TDateTime;
+  f: TFormatSettings;
+  t: TDateTime;
 begin
-  pt := screenToClient(mousePos);
-  oldIt := P_pointedItem;
-  oldSp := P_pointedSpace;
-  oldLink := linkToUnderline;
-  P_pointedItem := itemAt(pt);
-  P_pointedSpace := spaceAt(pt);
-  // no interesting movement
-  if equal(oldIt, P_pointedItem) and equal(oldSp, P_pointedSpace) then
-    exit;
-  // link underlining, mouse cursor shape
-  if isLink(pointedItem) and (pointedItem.link.kind in linksToUnderline) then
   begin
-    linkToUnderline := pointedItem.link;
-    cursor := crHandPoint
-  end
-  else
-  begin
-    linkToUnderline.evIdx := -1;
-    cursor := crDefault;
-  end;
-  // if pointedItem.kind = PK_RNQBUTTON then
-  // P_pointedItem.link
+    if not history.loaded then
+    begin
+      history.Clear;
+      history.Load(who);
+      //MessageDlg(getTranslation('Load the whole history before removing messages'), mtInformation, [mbOK], 0);
+      //Exit;
+    end;
 
-  // repaint necessary?
-  if not equal(linkToUnderline, oldLink) then
-  begin
-    // avoidErase:=TRUE;
-    Paint();
-    // avoidErase:=FALSE;
-  end;
-  // here the selecting management section begins
-  if not selecting then
-    exit;
-  // selecting, no link has to be triggered
-  dontTriggerLink := true;
-  // updating the selection end point
-  if pointedSpace.kind = PK_NONE then
-    exit;
-  p := historyitem2pos(pointedSpace);
-  if minor(startSel, p) then
-    inc(p.ofs, pointedSpace.l - 1);
-  if equal(endSel, p) then
-    exit; // no change?
-  endSel := p;
-  pEnd := p;
-  pEnd.ofs := p.ofs + pointedSpace.l - 1;
-  if (pointedSpace.kind = PK_SMILE) and minor(endSel, startSel) and (minor(p, startSel) and minor(startSel, pEnd)) then
-    inc(startSel.ofs, pointedSpace.l - 1);
+    if not wholeEventsAreSelected then
+      Exit;
 
-  // some adjustment could be needed
-  if nothingIsSelected() then
-    startSel := historyitem2pos(pointedItem)
-  else if startSel.ofs < 0 then
-    endSel.ofs := -1
-  else if endSel.ofs < 0 then
-    endSel.ofs := 0;
-  Paint();
-end; // updatePointedItem
+    st := startSel.ev.when;
+    en := endSel.ev.when;
+    if st > en then
+      begin
+//        swap(st, en);
+        t := st;
+        st := en;
+        en := t;
+      end;
 
-function ThistoryBox.triggerLink(item: ThistoryItem): boolean;
-var
-  s: string;
-begin
-  result := false;
-  if item.kind <> PK_LINK then
-    exit;
-  s := item.link.str;
-  case item.link.kind of
-    LK_WWW:
-      begin
-        if not(Imatches(s, 1, 'http://') or Imatches(s, 1, 'https://')) then
-          s := 'http://' + s;
-        // if Assigned(onLinkClick) then
-        // onLinkClick(self, s, item.link.str);
-        openURL(s);
-      end;
-    LK_FTP:
-      begin
-        if not(Imatches(s, 1, 'ftp://') or Imatches(s, 1, 'sftp://')) then
-          s := 'ftp://' + s;
-        openURL(s);
-      end;
-    LK_EMAIL:
-      begin
-        if not Imatches(s, 1, 'mailto:') then
-          s := 'mailto:' + s;
-        exec(s);
-      end;
+    // history.deleteFromTo(userPath+historyPath + thisContact.uid, st,en);
+    history.deleteFromToTime(thisContact.uid, st, en);
+    F.DecimalSeparator := '.';
+    Call('deleteEvents', [floattostr(st, f), floattostr(en, f)]);
+    deselect();
   end;
-end; // triggerLink
-*)
+
+end;
+
 
 procedure ThistoryBox.updateRSB(SetPos: boolean; pos: integer = 0; doRedraw: boolean = true);
 var
@@ -913,12 +869,14 @@ end; // updateRSB
 procedure ThistoryBox.addEvent(ev: Thevent);
 var
   evIdx: Integer;
+  params: TParams;
 begin
   evIdx := history.add(ev);
   inc(offsetAll);
   if (BE_save in behaviour[ev.kind].trig) and (ev.flags and IF_not_save_hist = 0) then
-    inc(offset);
-  addChatItem(ev, evIdx, True);
+    inc(offsetMsg);
+  addChatItem(params, ev, True);
+  sendChatItems(params);
 
   // if autoScroll and (not not2go2end or P_lastEventIsFullyVisible) then
   if (fAutoScrollState = ASS_FULLSCROLL) or ((fAutoScrollState = ASS_ENABLENOTSCROLL) and P_lastEventIsFullyVisible) then
@@ -957,10 +915,6 @@ end;
 procedure ThistoryBox.setAutoScroll(asState: TAutoScrollState);
 begin
   fAutoScrollState := asState;
-  if fAutoScrollState < ASS_FULLDISABLED then
-    Call('setAutoScrollState', ['true'])
-  else
-    Call('setAutoScrollState', ['false']);
 end;
 
 procedure ThistoryBox.setAutoScrollForce(vAS: boolean);
@@ -1018,83 +972,12 @@ begin
       go2end;
 end;
 
-procedure ThistoryBox.setScrollPrefs(ShowAll: Boolean);
-var
-  olds, news: integer;
-//  i: Integer;
-  oldTime: TDateTime;
-  autoscr: Boolean;
-begin
-    whole := ShowAll;
-    autoscr := autoScrollVal;
-    if whole then
-     begin
-      offset := 0;
-      with history do
-      if not loaded then
-        begin
-         olds := count;
-         if olds > 0 then
-           oldTime := getAt(0).when
-          else
-           oldTime := 0;
-         Clear;
-//         fromString(loadFile(userPath+historyPath + ch.who.uid));
-         load(who);
-//         str := GetStream(userPath+historyPath + ch.who.uid);
-//         fromSteam(str);
-//         str.Free;
-         news := Count;
-         if oldTime > 0 then
-          begin
-//            olds := news;
-            while (news >0) and (getAt(news-1).when >= oldTime) do
-             Dec(news);
-//            dec(news, max(0, olds));
-//         news := count-olds;
-          end;
-//         with ch.historyBox do
-         begin
-          inc(newSession, news);
-          inc(startSel.evIdx, news);
-          inc(endSel.evIdx, news);
-          inc(topVisible, news)
-         end;
-        end
-//        else
-//         begin
-//           go2end;
-//         end;
-     end
-    else
-     begin
-       autoscr := TRUE;
-       offset := newSession;
-       if topVisible < offset then
-         topVisible := offset;
-     end;
-//    setAutoScrollForce(autoScroll);
-  autoScrollVal := autoscr;
-  ReloadLast;
-//  repaint;
-  Scroll();
-  updateRSB(false, 0, True);
-end;
-
 function ThistoryBox.historyNowCount: integer;
 begin
   if Assigned(history) then
-    result := history.Count - historyNowOffset
+    result := history.getIdxBeforeTime(topVisible, False)
   else
     result := 0;
-end;
-
-function ThistoryBox.historyNowOffset: integer;
-begin
-  if whole then
-    result := 0
-  else
-    result := topVisible
 end;
 
 procedure ThistoryBox.Scroll;
@@ -1150,85 +1033,46 @@ begin
   end;
 end;
 
-procedure ThistoryBox.updateMsgStatus(hev: Thevent);
-var
-  evPicRect: TGPRect;
-  evPicSpriteName: TPicName;
-  picStr: String;
-  idx: Integer;
+procedure ThistoryBox.requestQuote;
 begin
-  idx := history.IndexOf(hev);
-  theme.GetPicOrigin(hev.pic, evPicSpriteName, evPicRect);
-  picStr := '[ ''' + evPicSpriteName + ''', ' + inttostr(-evPicRect.X) + ', ' + inttostr(-evPicRect.Y) + ', ' + inttostr(evPicRect.Width) + ', ' + inttostr(evPicRect.Height) + ' ]';
-  Call('updateMsgStatus', [IntToStr(idx), picStr]);
+  Call('getQuote', [])
 end;
 
-procedure ThistoryBox.trySetNot2go2end;
-// var
-// vTopVis : Integer;
+procedure ThistoryBox.updateMsgStatus(hev: Thevent);
+var
+  evPic: array of OleVariant;
+  evPicRect: TGPRect;
+  evPicSpriteName: TPicName;
+  f: TFormatSettings;
 begin
-  // vTopVis := topVisible;
-  // go2end(True, True);
-  // if topVisible > vTopVis then
+//  evPicRect := theme.GetPicRect(RQteDefault, hev.pic);
+  SetLength(evPic, 6);
+  theme.GetPicOrigin(hev.pic, evPicSpriteName, evPicRect);
 
-  // not2go2end := True;
-  if fAutoScrollState = ASS_FULLSCROLL then
-    setAutoScroll(ASS_ENABLENOTSCROLL);
-
-  // topVisible := vTopVis;
+  f.DecimalSeparator := '.';
+  evPic[0] := FloatToStr(hev.when, f);
+  evPic[1] := evPicSpriteName;
+  evPic[2] := -evPicRect.X;
+  evPic[3] := -evPicRect.Y;
+  evPic[4] := evPicRect.Width;
+  evPic[5] := evPicRect.Height;
+  Call('updateMsgStatus', [evPic]);
 end;
 
 procedure ThistoryBox.histScrollEvent(d: integer);
 begin
-  if not rsb_visible or ((rsb_position = 0) and (d < 0)) or ((rsb_position = historyNowCount - 1) and (d > 0)) then
-    exit;
-  startWithLastLine := false;
-  //previousMsgId := historyNowOffset + min(max(rsb_position + d, 0), historyNowCount - 1);
-  updateRSB(false, rsb_position + d, true);
-  topOfs := 0;
-  // fAutoscroll := False;
-  trySetNot2go2end;
-  // if selecting then
-  // updatePointedItem()
-  // else
-  // repaint;
-  SendMessage(Self.Handle, CM_INVALIDATE, 0, 0);
-  Scroll();
-end; // histScrollEvent
+  Call('scrollEvent', [d]);
+end;
 
 procedure ThistoryBox.histScrollLine(d: integer);
 begin
-  startWithLastLine := false;
-  // fAutoscroll := False;
-  // not2go2end := True;
-  if d > 0 then
-  begin
-    if topOfs < topEventNrows - 1 then
-    begin
-      inc(topOfs);
-    end
-    else if topVisible < offset + historyNowCount - 1 then
-    begin
-      histScrollEvent(+1);
-      exit;
-    end;
-  end
-  else if topOfs > 0 then
-  begin
-    dec(topOfs);
-  end
-  else if topVisible > offset then
-  begin
-    updateRSB(true, rsb_position - 1, true);
-    startWithLastLine := true;
-  end;
-  trySetNot2go2end;
-  // if selecting then
-  // updatePointedItem()
-  // else
-//  repaint;
-  Scroll();
-end; // histScrollLine
+  Call('scrollLine', [d]);
+end;
+
+procedure ThistoryBox.histScrollWheel(d: integer);
+begin
+  Call('scrollWheel', [d]);
+end;
 {
 procedure ThistoryBox.LoadEnd(Sender: TObject; const browser: ICefBrowser; const frame: ICefFrame; httpStatusCode: Integer);
 begin
@@ -1236,43 +1080,19 @@ begin
     templateLoaded := True;
 end;
 }
-procedure ThistoryBox.MouseWheelHandler(var Message: TMessage);
-begin
-  case message.msg of
-    WM_MOUSEWHEEL, WM_VSCROLL:
-    begin
-      //message.WParamHi := round(message.WParamHi / 3);
-      {
-      if SmallInt(message.WParamHi) > 0 then
-        OutputDebugString(PChar('UP!'))
-      else
-        OutputDebugString(PChar('DOWN!'));
-      }
-      //message.Msg := 0;
-      //OutputDebugString(PChar('ThistoryBox: ' + inttostr(smallint(message.WParamHi))));
-      //inherited MouseWheelHandler(Message);
-    end;
-  end;
-end;
-
-procedure ThistoryBox.WMVScroll(var Message: TWMVScroll);
-begin
-  OutputDebugString(PChar('WMVScroll'));
-end;
-
 function ThistoryBox.escapeQuotes(const text: String): String;
 begin
   Result := StringReplace(text, '\', '\\', [rfReplaceAll]);
-  Result := StringReplace(Result, '''', '\''', [rfReplaceAll]);
+  Result := StringReplace(Result, '"', '\"', [rfReplaceAll]);
 end;
-
+{
 function ThistoryBox.escapeNewlines(const text: String): String;
 begin
   Result := StringReplace(text, #13#10, '\n', [rfReplaceAll]);
   Result := StringReplace(Result, #13, '\n', [rfReplaceAll]);
   Result := StringReplace(Result, #10, '\n', [rfReplaceAll]);
 end;
-
+}
 procedure ThistoryBox.LoadTemplate;
 var
  fn: String;
@@ -1281,25 +1101,57 @@ begin
   if not FileExists(fn) then
     msgDlg(getTranslation('Chat template not found at "%s"', [fn]), false, mtError)
    else
-    LoadURL(FilePathToURL(fn))
+    begin
+      LoadURL(FilePathToURL(fn));
+      InitSettings;
+      InitSmiles;
+    end;
 end;
 
-procedure ThistoryBox.ClearTemplate;
+
+procedure ThistoryBox.ClearEvents;
 begin
   Call('clearEvents', []);
 end;
 
-procedure ThistoryBox.RefreshTemplate;
+procedure ThistoryBox.InitSettings;
+var
+  args: array of OleVariant;
+  LimitMaxChatImgWidth,
+  LimitMaxChatImgHeight : Boolean;
 begin
-  RememberScrollPos;
-  InitSmiles;
-  ReloadLast;
-  RestoreScrollPos;
-end;
+  SetLength(args, 9);
+  args[0] := autocopyHist;
+  args[1] := useSmiles;
+  args[2] := wheelVelocity;
+  args[3] := //ChatImageQuality;
+             MainPrefs.getPrefIntDef('chat-images-resample-preset', 0);
 
-procedure ThistoryBox.ManualRepaint;
-begin
-  RefreshTemplate;
+  LimitMaxChatImgWidth := MainPrefs.getPrefBoolDef('chat-images-limit-width', True);
+  LimitMaxChatImgHeight := MainPrefs.getPrefBoolDef('chat-images-limit-height', True);
+
+  if LimitMaxChatImgWidth then
+    args[4] := MainPrefs.getPrefIntDef('chat-images-width-value', 512)
+  else
+    args[4] := 0;
+
+  if LimitMaxChatImgHeight then
+    args[5] := MainPrefs.getPrefIntDef('chat-images-height-value', 512)
+  else
+    args[5] := 0;
+
+//  args[6] := EnableImgLinksIn;
+//  args[7] := EnableImgLinksOut;
+  args[6] := MainPrefs.getPrefBoolDef('chat-parse-image-links-in', True);
+  args[7] := MainPrefs.getPrefBoolDef('chat-parse-image-links-out', True);
+  args[8] := FontStyleCodes.Enabled;
+
+  try
+    Call('initSettings', args);
+  except
+    on e: ESciterCallException do
+      msgDlg('Error in InitSettings: ' + e.Message, false, mtError);
+  end;
 end;
 
 procedure ThistoryBox.InitSmiles;
@@ -1323,8 +1175,8 @@ begin
           smiles := smiles + '"' + escapeQuotes(smileObj.SmlStr[0]) + '": [ "n' + IntToStr(i) + '", ' +
           IntToStr(smileRect.Width) + ', ' + IntToStr(smileRect.Height);
           if smileObj.SmlStr.Count > 1 then
-            for j := 1 to smileObj.SmlStr.Count - 1 do
-              smiles := smiles + ', "' + escapeQuotes(smileObj.SmlStr[j]) + '"';
+          for j := 1 to smileObj.SmlStr.Count - 1 do
+          smiles := smiles + ', "' + escapeQuotes(smileObj.SmlStr[j]) + '"';
           smiles := smiles +  ' ],';
         end;
       end;
@@ -1337,6 +1189,11 @@ begin
     on e: ESciterCallException do
       msgDlg('Error in InitSmiles: ' + e.Message, false, mtError);
   end;
+end;
+
+procedure ThistoryBox.UpdateSmiles;
+begin
+  Call('updateSmiles', []);
 end;
 
 procedure ThistoryBox.RememberScrollPos;
@@ -1354,17 +1211,18 @@ begin
   Result := StartsText('http://', link) or StartsText('https://', link) or StartsText('www.', link);
 end;
 
-procedure ThistoryBox.addChatItem(hev: Thevent; evIdx: Integer; animate: Boolean; last: Boolean = True);
+procedure ThistoryBox.addChatItem(var params: TParams; hev: Thevent; animate: Boolean; last: Boolean = True);
 var
-  codeStr, msgText, bodyText, bodyImages, cachedLinks: String;
+  headerText, bodyImages, cachedLink, cachedLinks, evPic, cryptPic, statusImg1, statusImg2: array of OleVariant;
+  codeStr, msgText: String;
   evPicRect,
   cryptPicRect,
   statusImg1Rect, statusImg2Rect: TGPRect;
   evPicSpriteName,
   cryptPicSpriteName,
-  statusImg1PicName, statusImg2PicName,
+  statusImg1PicName, statusImg2PicName: TPicName;
   statusImg1PicSpriteName, statusImg2PicSpriteName: TPicName;
-  hdr: THeventHeader;
+  hdr: THEventHeader;
   st: Integer;
   b: Byte;
   sA: RawByteString;
@@ -1372,73 +1230,96 @@ var
   imgList: TAnsiStringList;
   linkList: TStringDynArray;
   bodyBin: RawByteString;
-  i: Integer;
-  params: array of OleVariant;
+  i, pos: Integer;
+  hash: LongWord;
+  f: TFormatSettings;
 begin
   if hev = nil then
     Exit;
 
   hdr := hev.getHeader;
   msgText := hev.getBodyText;
-  bodyText := escapeNewlines(escapeQuotes(msgText));
   theme.GetPicOrigin(hev.pic, evPicSpriteName, evPicRect);
   theme.GetPicOrigin(vKeyPicElm.picName, cryptPicSpriteName, cryptPicRect);
 
-  SetLength(params, 11);
+
+  SetLength(params, Length(params) + 1);
+  pos := Length(params) - 1;
+  params[pos] := VarArrayCreate([0, 11], varVariant);
+
+  SetLength(headerText, 3);
+  headerText[0] := hdr.what;
+  headerText[1] := hdr.date;
+  headerText[2] := hdr.prefix;
+
+  params[pos][0] := hev.isMyEvent;
+  params[pos][1] := headerText;
+  params[pos][2] := msgText;
 
   bodyBin := hev.getBodyBin;
-  bodyImages := 'false';
+  params[pos][3] := False;
   if length(bodyBin) > 0 then
   begin
     imgList := TAnsiStringList.Create;
     parseMsgImages(bodyBin, imgList);
-    if imgList.Count > 0 then
+    if Assigned(embeddedImgs) and (imgList.Count > 0) then
     begin
-      bodyImages := '[';
       for i := 0 to imgList.Count - 1 do
       begin
-        if i > 0 then
-        bodyImages := bodyImages + ', ';
-        bodyImages := bodyImages + '"' + imgList.Strings[i] + '"';
+        SetLength(bodyImages, Length(bodyImages) + 1);
+        hash := CalcMurmur2(TBytes(imgList.Strings[i]));
+        if not embeddedImgs.ContainsKey(hash) then
+          embeddedImgs.Add(hash, imgList.Strings[i]);
+        bodyImages[Length(bodyImages) - 1] := IntToStr(hash);
       end;
-      bodyImages := bodyImages + ']';
+      params[pos][3] := bodyImages;
     end;
+    imgList.Free;
   end;
 
-  cachedLinks := 'false';
+  params[pos][4] := False;
   if length(msgText) > 0 then
   begin
     linkList := SplitString(msgText, ' ;,"'''#13#10);
     if Length(linkList) > 0 then
     begin
-      cachedLinks := '[';
       for i := Low(linkList) to High(linkList) do
       if LooksLikeALink(linkList[i]) and imgCacheInfo.ValueExists(linkList[i], 'hash') then
       begin
-        if Length(cachedLinks) > 1 then
-        cachedLinks := cachedLinks + ', ';
-        cachedLinks := cachedLinks + '["' + linkList[i] + '", ' +
-        IntToStr(imgCacheInfo.ReadInteger(linkList[i], 'width', 50)) + ', ' +
-        IntToStr(imgCacheInfo.ReadInteger(linkList[i], 'height', 50)) + ']';
+        SetLength(cachedLinks, Length(cachedLinks) + 1);
+        SetLength(cachedLink, 3);
+        cachedLink[0] := linkList[i];
+        cachedLink[1] := imgCacheInfo.ReadInteger(linkList[i], 'width', 50);
+        cachedLink[2] := imgCacheInfo.ReadInteger(linkList[i], 'height', 50);
+        cachedLinks[Length(cachedLinks) - 1] := cachedLink;
       end;
-      cachedLinks := cachedLinks + ']';
+      if Length(cachedLinks) > 0 then
+        params[pos][4] := cachedLinks;
     end;
-    if cachedLinks = '[]' then
-      cachedLinks := 'false';
   end;
 
-  params[0] := '["' + hdr.what + '", "' + hdr.date + '", "' + hdr.prefix + '"]';
-  params[1] := '"' + bodyText + '"';
-  params[2] := bodyImages;
-  params[3] := cachedLinks;
-  params[4] := IntToStr(evIdx);
-  params[5] := '["' + evPicSpriteName + '", ' + inttostr(-evPicRect.X) + ', ' + inttostr(-evPicRect.Y) + ', ' +
-  inttostr(evPicRect.Width) + ', ' + inttostr(evPicRect.Height) + ']';
+  f.DecimalSeparator := '.';
+  params[pos][5] := floattostr(hev.when, f);
+
+  SetLength(evPic, 5);
+  evPic[0] := evPicSpriteName;
+  evPic[1] := -evPicRect.X;
+  evPic[2] := -evPicRect.Y;
+  evPic[3] := evPicRect.Width;
+  evPic[4] := evPicRect.Height;
+  params[pos][6] := evPic;
 
   if IF_Encrypt and hev.flags > 0 then
-  params[6] := '["' + cryptPicSpriteName + '", ' + inttostr(-cryptPicRect.X) + ', ' + inttostr(-cryptPicRect.Y) + ', ' + inttostr(cryptPicRect.Width) + ', ' + inttostr(cryptPicRect.Height) + ']'
-    else
-  params[6] := 'false';
+  begin
+    SetLength(cryptPic, 5);
+    cryptPic[0] := cryptPicSpriteName;
+    cryptPic[1] := -cryptPicRect.X;
+    cryptPic[2] := -cryptPicRect.Y;
+    cryptPic[3] := cryptPicRect.Width;
+    cryptPic[4] := cryptPicRect.Height;
+    params[pos][7] := cryptPic;
+  end else
+    params[pos][7] := False;
 
   case hev.kind of
     EK_ONCOMING, EK_STATUSCHANGE:
@@ -1477,28 +1358,37 @@ begin
   if not (statusImg1PicName = '') then
   begin
     theme.GetPicOrigin(statusImg1PicName, statusImg1PicSpriteName, statusImg1Rect);
-    params[7] := '["' + statusImg1PicSpriteName + '", ' + inttostr(-statusImg1Rect.X) + ', ' + inttostr(-statusImg1Rect.Y) + ', ' + inttostr(statusImg1Rect.Width) + ', ' + inttostr(statusImg1Rect.Height) + ']'
+
+    SetLength(statusImg1, 5);
+    statusImg1[0] := statusImg1PicSpriteName;
+    statusImg1[1] := -statusImg1Rect.X;
+    statusImg1[2] := -statusImg1Rect.Y;
+    statusImg1[3] := statusImg1Rect.Width;
+    statusImg1[4] := statusImg1Rect.Height;
+    params[pos][8] := statusImg1;
   end else
-    params[7] := 'false';
+    params[pos][8] := False;
 
   if not (statusImg2PicName = '') then
   begin
     theme.GetPicOrigin(statusImg2PicName, statusImg2PicSpriteName, statusImg2Rect);
-    params[8] := '["' + statusImg2PicSpriteName + '", ' + inttostr(-statusImg2Rect.X) + ', ' + inttostr(-statusImg2Rect.Y) + ', ' + inttostr(statusImg2Rect.Width) + ', ' + inttostr(statusImg2Rect.Height) + ']'
+    SetLength(statusImg2, 5);
+    statusImg2[0] := statusImg2PicSpriteName;
+    statusImg2[1] := -statusImg2Rect.X;
+    statusImg2[2] := -statusImg2Rect.Y;
+    statusImg2[3] := statusImg2Rect.Width;
+    statusImg2[4] := statusImg2Rect.Height;
+    params[pos][9] := statusImg2;
   end else
-    params[8] := 'false';
+    params[pos][9] := False;
 
-  if animate then
-    params[9] := 'true'
-  else
-    params[9] := 'false';
+  params[pos][10] := animate;
+  params[pos][11] := last;
+end;
 
-  if last then
-    params[10] := 'true'
-  else
-    params[10] := 'false';
-
-  Call('addEvent', params);
+procedure ThistoryBox.sendChatItems(params: TParams; prepend: Boolean = False; hidehist: Boolean = False);
+begin
+  Call('addEvents', [params, prepend, hidehist]);
 end;
 
 procedure ThistoryBox.ReloadLast;
@@ -1507,25 +1397,21 @@ var
   evIcon: TIcon;
   iconStream: TMemoryStream;
   hev: Thevent;
-begin
-  ClearTemplate;
-  Application.ProcessMessages;
-  Exit;
+  params: TParams;
 
-  if whole then
-  begin
-    if not history.loaded then
-    begin
-      history.Clear;
-      history.Load(who);
-      topVisible := history.Count - offset;
-      offsetAll := offset;
-    end
-      else
-    topVisible := history.Count - offsetAll;
-    startId := 0;
-  end else
-    startId := topVisible;
+//  Freq, StartCount, StopCount: Int64;
+  TimingSeconds: real;
+begin
+//QueryPerformanceFrequency(Freq);
+//Freq := Freq div 1000;
+//QueryPerformanceCounter(StartCount);
+  if history.Count = 0 then
+    Exit;
+
+  if not history.loaded then
+    startId := history.Count - offsetMsg
+  else
+    startId := history.Count - offsetAll;
 
   for endId := history.Count - 1 downto startId do
   begin
@@ -1534,47 +1420,281 @@ begin
       Break;
   end;
 
-  //for evId := startId to history.Count - 1 do
-  for evId := history.Count - 1 to history.Count - 1 do
+  OutputDebugString(PChar('startId: ' + inttostr(startId)));
+  OutputDebugString(PChar('endId: ' + inttostr(endId)));
+  OutputDebugString(PChar('history.Count-1: ' + inttostr(history.Count - 1)));
+
+  for evId := startId to history.Count - 1 do
   begin
     hev := history.getAt(evId);
     if (BE_save in behaviour[hev.kind].trig) and (hev.flags and IF_not_save_hist = 0) then
-      addChatItem(hev, evId, False, evId = endId);
+    begin
+      addChatItem(params, hev, False, evId = endId);
+      if length(params) = 1 then
+        topVisible := hev.when;
+    end;
   end;
+  sendChatItems(params);
 
   if fAutoScrollState < ASS_FULLDISABLED then
-    Call('chatScrollToBottom', []);
+    go2end;
+
+  GC;
+//QueryPerformanceCounter(StopCount);
+//TimingSeconds := (StopCount - StartCount) / Freq;
+//OutputDebugString(PChar(floattostr(TimingSeconds)));
 end;
-{
-constructor ThistoryBox.Create(AOwner: Tcomponent);
+
+procedure ThistoryBox.DoShowMenu(const Data: String; clickedTime: TDateTime; linkClicked, imgClicked: Boolean);
 begin
-  inherited Create(AOwner);
-  // avoidErase:=FALSE;
-  tabStop := false;
-  P_lastEventIsFullyVisible := false;
-  onPainted := NIL;
-  // autoscroll:=TRUE;
-  fAutoScrollState := ASS_FULLSCROLL;
-  newSession := 0;
-  offset := 0;
-  deselect;
+  if Assigned(fOnShowMenu) then
+    fOnShowMenu(Self, Data, clickedTime, linkClicked, imgClicked);
+end;
 
-  if dStyle = dsBuffer then
-    buffer := TBitmap.Create;
+//function LoadHistory(vm: HVM): tiscript_value; cdecl;
+function LoadHistory(vm: HVM; self: tiscript_value; tag: Pointer): tiscript_value; cdecl;
+var
+//  ch: TchatInfo;
+  numOfDays, evId, startId, endId: Integer;
+  hev: Thevent;
+  topTime: Double;
+  params: TParams;
+  histObj: tiscript_value;
+  hb: THistoryBox;
+begin
+  if tag = nil then
+    Exit;
+  hb := THistoryBox(tag);
+  if hb = NIL then
+    Exit;
 
-end; // create
+  if (NI.get_arg_count(vm) = 4) then
+  begin
+    numOfDays := 1;
+    topTime := 0;
+    NI.get_int_value(NI.get_arg_n(vm, 2), numOfDays);
+    NI.get_float_value(NI.get_arg_n(vm, 3), topTime);
+  end;
+
+  with hb do
+  begin
+    if not history.loaded then
+    begin
+      history.Clear;
+      history.Load(who);
+    end;
+
+    if topTime = 0 then
+      topTime := now;
+
+    if numOfDays < 0 then
+    begin
+      startId := 0;
+      endId := history.Count - 1;
+    end
+      else
+    begin
+      startId := history.getIdxBeforeTime(floor(topTime - numOfDays), False);
+      endId := history.getIdxBeforeTime(topTime);
+    end;
+
+    if endId >= startId then
+    for evId := startId to endId do
+    begin
+      hev := history.getAt(evId);
+      if not (hev = nil) then
+      if (BE_save in behaviour[hev.kind].trig) and (hev.flags and IF_not_save_hist = 0) then
+      begin
+        addChatItem(params, hev, False, evId = endId);
+        if length(params) = 1 then
+          topVisible := hev.when;
+      end;
+    end;
+
+    if Length(params) > 0 then
+      sendChatItems(params, True, startId <= 0);
+  end;
+end;
+
+//function UpdateSelection(vm: HVM): tiscript_value; cdecl;
+function UpdateSelection(vm: HVM; self: tiscript_value; tag: Pointer): tiscript_value; cdecl;
+var
+  text: PWideChar;
+  strLen: UINT;
+  sOfs, eOfs: Double;
+  isWhole: Bool;
+  hb: THistoryBox;
+begin
+  if tag = nil then
+    Exit;
+  hb := THistoryBox(tag);
+  if hb = NIL then
+    Exit;
+
+
+  if (NI.get_arg_count(vm) = 6) then
+  begin
+    NI.get_string_value(NI.get_arg_n(vm, 2), text, strLen);
+    hb.selectedText := text;
+
+    NI.get_float_value(NI.get_arg_n(vm, 3), sOfs);
+    NI.get_float_value(NI.get_arg_n(vm, 4), eOfs);
+    NI.get_bool_value(NI.get_arg_n(vm, 5), isWhole);
+
+    with hb do
+    if (sOfs = -1) or (eOfs = -1) then
+    begin
+      startSel.ofs := -1;
+      startSel.ev := nil;
+      endSel.ofs := -1;
+      endSel.ev := nil;
+      isWholeEvents := false;
+    end
+      else
+    begin
+      startSel.ofs := -1;
+      startSel.ev := history.getByTime(sOfs);
+      endSel.ofs := -1;
+      endSel.ev := history.getByTime(eOfs);
+      isWholeEvents := isWhole;
+    end;
+  end;
+end;
+
+//function SendQuote(vm: HVM): tiscript_value; cdecl;
+function SendQuote(vm: HVM; self: tiscript_value; tag: Pointer): tiscript_value; cdecl;
+var
+  text: PWideChar;
+  strLen: UINT;
+  hb: THistoryBox;
+begin
+  if tag = nil then
+    Exit;
+  hb := THistoryBox(tag);
+  if hb = NIL then
+    Exit;
+
+  if (NI.get_arg_count(vm) > 2) then
+  begin
+    NI.get_string_value(NI.get_arg_n(vm, 2), text, strLen);
+//    chatFrm.quoteCallback(text, true);
+  end;
+end;
+
+//function OpenChatMenu(vm: HVM): tiscript_value; cdecl;
+function OpenChatMenu(vm: HVM; self: tiscript_value; tag: Pointer): tiscript_value; cdecl;
+var
+  clickedTime, data: PWideChar;
+  strLen: UINT;
+  linkClicked, imgClicked: LongBool;
+  hb: THistoryBox;
+begin
+  if tag = nil then
+    Exit;
+  hb := THistoryBox(tag);
+  if hb = NIL then
+    Exit;
+
+  if (NI.get_arg_count(vm) > 2) then
+  begin
+    data := '';
+    linkClicked := False;
+    imgClicked := False;
+    NI.get_string_value(NI.get_arg_n(vm, 2), data, strLen);
+    NI.get_string_value(NI.get_arg_n(vm, 3), clickedTime, strLen);
+    NI.get_bool_value(NI.get_arg_n(vm, 4), linkClicked);
+    NI.get_bool_value(NI.get_arg_n(vm, 5), imgClicked);
+    hb.DoShowMenu(data, StrToFloat(clickedTime), linkClicked, imgClicked);
+//    chatFrm.showHistMenu(data, StrToFloat(clickedTime), linkClicked, imgClicked);
+  end;
+end;
+
+//function ShowPreview(vm: HVM): tiscript_value; cdecl;
+function ShowPreview(vm: HVM; self: tiscript_value; tag: Pointer): tiscript_value; cdecl;
+var
+  strdata: PWideChar;
+  eventImages: TStringList;
+  imgLinks, arrItem: tiscript_value;
+  selImg, arrSize, i: Integer;
+  itemLen: UINT;
+  bytedata: PByte;
+  rbs: RawByteString;
+  hb: THistoryBox;
+begin
+  if tag = nil then
+    Exit;
+  hb := THistoryBox(tag);
+  if hb = NIL then
+    Exit;
+
+  if (NI.get_arg_count(vm) = 4) then
+  begin
+    strdata := '';
+    selImg := 0;
+    imgLinks := NI.get_arg_n(vm, 2);
+    arrSize := NI.get_array_size(vm, imgLinks);
+{ ToDo
+    eventImages := TStringList.Create;
+    eventImages.Sorted := False;
+    for i := 0 to arrSize - 1 do
+      if NI.get_string_value(NI.get_elem(vm, imgLinks, i), strdata, itemLen) then
+        eventImages.Add(strdata);
+    NI.get_int_value(NI.get_arg_n(vm, 3), selImg);
+
+//    if eventImages.Count > 0 then
+//      viewImageDimmed(eventImages, selImg);
 }
+  end;
+end;
+
+procedure ThistoryBox.InitFunctions;
+begin
+  RegisterNativeFunctionTag('LoadHistory', @LoadHistory, Pointer(Self));
+  RegisterNativeFunctionTag('UpdateSelection', @UpdateSelection, Pointer(Self));
+  RegisterNativeFunctionTag('SendQuote', @SendQuote, Pointer(Self));
+  RegisterNativeFunctionTag('OpenChatMenu', @OpenChatMenu, Pointer(Self));
+  RegisterNativeFunctionTag('ShowPreview', @ShowPreview, Pointer(Self));
+end;
+
+
 constructor ThistoryBox.Create(AOwner: Tcomponent);
 begin
   inherited Create(AOwner);
+  SetParentComponent(AOwner);
+
   tabStop := False;
   fAutoScrollState := ASS_FULLSCROLL;
-  Color := clBtnFace;
+  Color := $00F6F6F6;
   topVisible := 0;
-  offset := 0;
+  offsetMsg := 0;
   offsetAll := 0;
-  whole := false;
-  newSession := 0;
+
+  embeddedImgs := TDictionary<LongWord, RawByteString>.Create;
+
+  OnLoadData := InitRequest;
+//  OnFocus := ReturnFocus;
+
+end;
+
+procedure ThistoryBox.ReturnFocus(Sender: TObject);
+//var
+//  ch: TchatInfo;
+begin
+//  ch := chatFrm.thisChat;
+//  if ch = nil then
+//    Exit;
+
+//  PostMessage(chatFrm.handle, WM_NEXTDLGCTL, ch.input.handle, 1);
+//  PostMessage(ParentWindow, WM_NEXTDLGCTL, ch.input.handle, 1);
+
+end;
+
+procedure ThistoryBox.InitRequest(ASender: TObject; const url: WideString; resType: SciterResourceType; requestId: Integer; out discard: Boolean);
+var
+  handler: TRequestHandler;
+begin
+  handler := TRequestHandler.Create(Self);
+  handler.ProcessRequest(ASender, url, resType, requestId, discard);
 end;
 
 { TExtension }
@@ -1588,51 +1708,10 @@ begin
   if Assigned(chatFrm) then
   if (name = 'sendQuote') then
   begin
-    if (Length(arguments) > 0) and arguments[0].isString then
-      chatFrm.quoteCallback(arguments[0].getStringValue, true);
+
   end else if (name = 'updateSelection') then
   begin
-    ch := chatFrm.thisChat;
-    if not (ch = nil) then
-    if (Length(arguments) > 3) and arguments[0].IsString and arguments[1].IsInt and arguments[2].IsInt and arguments[3].IsBool then
-    with ch.historyBox do
-    if (arguments[1].getIntValue = -1) or (arguments[2].getIntValue = -1) then
-    begin
-      startSel.ofs := -1;
-      startSel.ev := nil;
-      startSel.evIdx := -1;
-      endSel.ofs := -1;
-      endSel.ev := nil;
-      endSel.evIdx := -1;
-      isWholeEvents := false;
-    end
-      else
-    begin
-      startSel.ofs := -1;
-      startSel.evIdx := arguments[1].getIntValue;
-      startSel.ev := history.getAt(startSel.evIdx);
-      endSel.ofs := -1;
-      endSel.evIdx := arguments[2].getIntValue;
-      endSel.ev := history.getAt(endSel.evIdx);
-      isWholeEvents := arguments[3].getBoolValue
-    end;
-  end else if (name = 'updateRightClickedItem') then
-  begin
-    ch := chatFrm.thisChat;
-    if not (ch = nil) then
-    if (Length(arguments) > 1) and arguments[0].IsInt and arguments[1].IsString then
-    if arguments[0].getIntValue >= 0 then
-    begin
-      ch.historyBox.rightClickedChatItem.kind := PK_EVENT;
-      ch.historyBox.rightClickedChatItem.intData := arguments[0].getIntValue;
-      ch.historyBox.rightClickedChatItem.stringData := arguments[1].getStringValue;
-    end
-      else
-    begin
-      ch.historyBox.rightClickedChatItem.kind := PK_NONE;
-      ch.historyBox.rightClickedChatItem.intData := -1;
-      ch.historyBox.rightClickedChatItem.stringData := '';
-    end
+
   end else if (name = 'updateAutoscroll') then
   begin
     //autoScrollVal
@@ -1648,17 +1727,6 @@ begin
 end;
 
 { TCustomRenderProcessHandler }
-
-procedure UpdateTabsVisitor(const doc: ICefDomDocument);
-var
-  chat: ICefDomNode;
-begin
-  chat := doc.GetElementById('chat');
-  if Assigned(chat) then
-  begin
-    OutputDebugString(PChar('chat!!!'));
-  end;
-end;
 
 const
   extCode =
@@ -1683,216 +1751,227 @@ const
   '    updateAutoscroll(bottom);' +
   '  };' +
   '})();';
+*)
+{ TRequestHandler }
 
-procedure TCustomRenderProcessHandler.OnWebKitInitialized;
+constructor TRequestHandler.Create(Sciter: TSciter);
 begin
-  renderInit := True;
-  CefRegisterExtension('v8/sendresult', extCode, TExtension.Create as ICefV8Handler);
-end;
-
-function TCustomRenderProcessHandler.OnProcessMessageReceived(const browser: ICefBrowser; sourceProcess: TCefProcessId; const message: ICefProcessMessage): Boolean;
-begin
-  if (message.Name = 'visitdom') then
-  begin
-    browser.MainFrame.VisitDomProc(UpdateTabsVisitor);
-    Result := True;
-  end else
-    Result := False;
-end;
-
-{ TResourceHandler }
-
-constructor TResourceHandler.Create(const browser: ICefBrowser; const frame: ICefFrame;
-  const schemeName: ustring; const request: ICefRequest);
-begin
-  inherited;
+  inherited Create;
+  FSciter := Sciter;
   FDataStream := nil;
-  FRedirectURL := '';
 end;
 
-destructor TResourceHandler.Destroy;
+destructor TRequestHandler.Destroy;
 begin
-  if FDataStream <> nil then
+  if Assigned(FDataStream) then
     FreeAndNil(FDataStream);
   inherited;
 end;
 
-function TResourceHandler.DetectStreamMimeType: String;
+procedure TRequestHandler.CheckAnimatedGifSize;
 var
-  ff: TPAFormat;
+//  aGif: TGIFImage;
+  sz: Single;
+  FStreamFormat: TPAFormat;
 begin
-  if Assigned(FDataStream) then
+  FStreamFormat := DetectFileFormatStream(FDataStream);
+  if (FStreamFormat = PA_FORMAT_GIF) then
   begin
-    ff := DetectFileFormatStream(FDataStream);
-    if ff = PA_FORMAT_BMP then FMimeType := 'image/bmp'
-    else if ff = PA_FORMAT_JPEG then FMimeType := 'image/jpeg'
-    else if ff = PA_FORMAT_GIF then FMimeType := 'image/gif'
-    else if ff = PA_FORMAT_PNG then FMimeType := 'image/png'
-    else if ff = PA_FORMAT_ICO then FMimeType := 'image/x-icon'
-    else if ff = PA_FORMAT_TIF then FMimeType := 'image/tiff'
-    else if ff = PA_FORMAT_WEBP then FMimeType := 'image/webp'
-    else FMimeType := 'image/x-icon';
-  end else
-    FMimeType := 'text/html';
+{
+    aGif := TGIFImage.Create;
+    FDataStream.Seek(0, soFromBeginning);
+    aGif.LoadFromStream(FDataStream);
+
+    with aGif do
+    if Images.Count > 1 then
+    begin
+      sz := 4.85 * Images.Count * Width * Height / 1048576;
+      if sz > 50 then
+      try
+        FDataStream.Clear;
+        aGif.Images[0].Bitmap.SaveToStream(FDataStream);
+        FDataStream.Seek(0, soFromBeginning);
+      except end;
+    end;
+    aGif.Free;
+}
+  end;
 end;
 
-function TResourceHandler.ProcessRequest(const request: ICefRequest; const callback: ICefCallback): Boolean;
+procedure TRequestHandler.ProcessRequest(ASender: TObject; const url: WideString; resType: SciterResourceType; requestId: Integer; out discard: Boolean);
 var
-  i, j: Integer;
-  error, url, fn: String;
+  i: Integer;
+  hash: LongWord;
+  PIn, POut: Pointer;
+  OutSize: Cardinal;
+  img: RawByteString;
+  realurl, fn: String;
+  response: TStringStream;
   pic: TPicName;
   origPic: TMemoryStream;
   rs: TResourceStream;
   fs: TFileStream;
-  cached: Boolean;
+  cached, isimg, check, ignore: Boolean;
 begin
-  Result := True;
-
+  ignore := False;
   FDataStream := TMemoryStream.Create;
-  if AnsiStartsText('theme:', request.Url) then
+
+  if StartsText('themepic:', url) then
   begin
-    pic := ReplaceText(copy(request.Url, 7, length(request.Url)), '/', '');
+    pic := copy(url, 10, length(url));
     origPic := nil;
-    if theme.GetOrigPic(RQteDefault, pic, origPic) then
+    if theme.GetBigPic(pic, origPic) then
     begin
       FDataStream.LoadFromStream(origPic);
       origPic.Free;
-      SetStatus(200);
     end
-      else
-    SetStatus(306);
-  end else if AnsiStartsText('smile:', request.Url) then
+  end else if StartsText('smile:', url) then
   begin
-    pic := ReplaceText(copy(request.Url, 7, length(request.Url)), '/', '');
+    pic := copy(url, 7, length(url));
     pic := copy(pic, 2, length(pic));
     origPic := nil;
 
-    if theme.GetOrigSmile(pic, origPic) then
+    if theme.GetBigSmile(pic, origPic) then
     begin
       FDataStream.LoadFromStream(origPic);
       origPic.Free;
-      SetStatus(200);
+    end
+  end else if StartsText('resource:', url) then
+  begin
+    ignore := True;
+//    realurl := copy(url, 10, length(url));
+//    rs := TResourceStream.Create(HInstance, uppercase(realurl), RT_RCDATA);
+//    try
+//      rs.SaveToStream(FDataStream);
+//    finally
+//      rs.Free;
+//    end;
+  end else if StartsText('uin:', url) then
+  begin
+//    if Assigned(chatFrm) then
+//      chatFrm.showHistMenu(url, 0, true, false);
+    ignore := True;
+  end else if StartsText('link:', url) then
+  begin
+    realurl := copy(url, 6, length(url));
+    if StartsText('www.', realurl) then
+      realurl := 'http://' + realurl;
+    openURL(realurl);
+    ignore := True;
+  end else if StartsText('mailto:', url) then
+  begin
+    openURL(url);
+    ignore := True;
+  end else if StartsText('embedded:', url) then
+  begin
+    ignore := True;
+    //if url = 'embedded:1284491416' then
+    //begin
+    //  ignore := True;
+    //  Exit;
+    //end;
+{ ToDo
+    if TryStrToLongWord(copy(url, 10, length(url)), hash) and Assigned(embeddedImgs) and embeddedImgs.TryGetValue(hash, img) then
+    begin
+      PIn := @img[1];
+      OutSize := CalcDecodedSize(PIn, Length(img));
+      origPic := TMemoryStream.Create;
+      origPic.SetSize(OutSize);
+      origPic.position := 0;
+      POut := origPic.Memory;
+      Base64Decode(PIn^, Length(img), POut^);
+      FDataStream.LoadFromStream(origPic);
+      origPic.Free;
+      CheckAnimatedGifSize;
+    end;
+}
+  end else if StartsText('check:', url) or StartsText('download:', url) then
+  begin
+    if StartsText('check:', url) then
+    begin
+      check := True;
+      realurl := copy(url, 7, length(url))
     end
       else
-    SetStatus(306);
-  end
-  else if AnsiStartsText('res:', request.Url) then
-  begin
-    url := ReplaceText(copy(request.Url, 5, length(request.Url)), '/', '');
-    if url = 'load' then
-      url := 'dummy';
-
-    rs := TResourceStream.Create(HInstance, uppercase(url), RT_RCDATA);
-    try
-      rs.SaveToStream(FDataStream);
-    finally
-      rs.Free;
-    end;
-    SetStatus(200);
-  end
-  else
-  begin
-    if not LooksLikeALink(request.Url) then
     begin
-      SetStatus(306);
-      Exit;
+      check := False;
+      realurl := copy(url, 10, length(url));
     end;
 
-    fn := myPath + 'Cache\Images\' + imgCacheInfo.ReadString(request.Url, 'hash', '0') + '.' + imgCacheInfo.ReadString(request.Url, 'ext', 'jpg');
-    cached := FileExists(fn);
-
-    if request.Method = 'HEAD' then
+    if LooksLikeALink(realurl) then
     begin
-      if cached then
-        SetStatus(302)
-      else if imgCacheInfo.ValueExists(request.Url, 'mime') and not MatchText(imgCacheInfo.ReadString(request.Url, 'mime', ''), ImageContentTypes) then
-        SetStatus(306)
-      else if CheckType(request.Url) then
-        SetStatus(302)
-      else
-        SetStatus(306);
-    end
-      else
-    begin
-      if not cached then
-        cached := DownloadAndCache(request.Url);
+      fn := myPath + 'Cache\Images\' + imgCacheInfo.ReadString(realurl, 'hash', '0') + '.' + imgCacheInfo.ReadString(realurl, 'ext', 'jpg');
+      cached := FileExists(fn);
+      isimg := False;
 
-      if not cached then
-        SetStatus(306)
-      else
-      try
-        fn := myPath + 'Cache\Images\' + imgCacheInfo.ReadString(request.Url, 'hash', '0') + '.' + imgCacheInfo.ReadString(request.Url, 'ext', 'jpg');
-        fs := TFileStream.Create(fn, fmOpenRead);
-        FDataStream.LoadFromStream(fs);
-        SetStatus(200);
-      except
-        SetStatus(306);
+      if check then
+      begin
+        if cached then
+          isimg := True
+        else if imgCacheInfo.ValueExists(realurl, 'mime') and not MatchText(imgCacheInfo.ReadString(realurl, 'mime', ''), ImageContentTypes) then
+          isimg := False
+        else if CheckType(realurl) then
+          isimg := True
+        else
+          isimg := False;
+
+        if isimg then
+          i := 1
+        else
+          i := 0;
+
+        response := TStringStream.Create('{ isImg: ' + IntToStr(i) + ', link: "' + realurl + '" }', TEncoding.UTF8);
+        FDataStream.WriteBuffer(response.Memory, response.Size);
+        response.Free;
+      end
+        else
+      begin
+{ ToDo
+        if not cached then
+          cached := DownloadAndCache(realurl);
+}
+        if not cached then
+          ignore := True
+        else
+        try
+          fn := myPath + 'Cache\Images\' + imgCacheInfo.ReadString(realurl, 'hash', '0') + '.' + imgCacheInfo.ReadString(realurl, 'ext', 'jpg');
+          fs := TFileStream.Create(fn, fmOpenRead);
+          FDataStream.LoadFromStream(fs);
+          CheckAnimatedGifSize;
+        except
+          ignore := True;
+        end;
+
+        if Assigned(fs) then
+          fs.Free;
       end;
-
-      if Assigned(fs) then
-        fs.Free;
-    end;
-  end;
-  FDataStream.Seek(0, soFromBeginning);
-
-  callback.Cont;
-end;
-
-procedure TResourceHandler.GetResponseHeaders(const response: ICefResponse; out responseLength: Int64; out redirectUrl: ustring);
-begin
-  if not (FRedirectURL = '') then
+    end else
+      ignore := True;
+  end else
   begin
-    redirectUrl := FRedirectURL;
-    response.MimeType := 'text/html';
-    responseLength := 0;
-  end
-    else
+    FDataStream.Free;
+    discard := False;
+    Exit;
+  end;
+
+  if not ignore then
   begin
-    response.MimeType := FMimeType;
-    responseLength := FDataStream.Size;
-  end;
-  response.Status := FStatus;
-  response.StatusText := FStatusText;
+    FDataStream.Seek(0, soFromBeginning);
+    FSciter.DataReady(url, FDataStream.Memory, FDataStream.Size);
+    discard := False;
+  end else
+    discard := True;
+
+  if Assigned(FDataStream) then
+    FDataStream.Free;
 end;
 
-function TResourceHandler.ReadResponse(const dataOut: Pointer; bytesToRead: Integer; var bytesRead: Integer; const callback: ICefCallback): Boolean;
-begin
-  BytesRead := FDataStream.Read(DataOut^, BytesToRead);
-  Result := True;
-  callback.Cont;
-end;
-
-procedure TResourceHandler.SetStatus(status: Integer);
-begin
-  case status of
-    200:
-      begin
-        FStatus := 200;
-        FStatusText := 'OK';
-        DetectStreamMimeType;
-      end;
-    302:
-      begin
-        FStatus := 302;
-        FStatusText := 'Accept';
-        FMimeType := 'text/html';
-      end;
-    306:
-      begin
-        FStatus := 306;
-        FStatusText := 'Ignore';
-        FMimeType := 'text/html';
-      end;
-  end;
-end;
-*)
 initialization
+
 
 vKeyPicElm.ThemeToken := -1;
 vKeyPicElm.picName := PIC_KEY;
 vKeyPicElm.Element := RQteDefault;
 vKeyPicElm.pEnabled := true;
-
-finalization
 
 end.
