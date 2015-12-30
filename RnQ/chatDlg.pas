@@ -18,7 +18,7 @@ uses
   historyCEF,
  {$ELSE ~CHAT_CEF} // old
    {$IFDEF CHAT_SCI} // Sciter
-    SciterApi, historySCI,
+    historySCI,
    {$ELSE ~CHAT_CEF and ~CHAT_SCI} // old
     historyVCL,
    {$ENDIF CHAT_SCI}
@@ -1130,17 +1130,11 @@ begin
   pnl.BorderStyle := bsSingle;
 //  pnl.BorderStyle := bsNone;
 
-  chat.historyBox := ThistoryBox.create(pnl);
+  chat.historyBox := ThistoryBox.create(pnl, c);
   with chat.historyBox do
   begin
-   chat.historyBox.Parent := pnl;
-   who := c;
    color := theme.getColor(ClrHistBG, clWindow); // history.bgcolor;
-//   history:=pTCE(c.data).history as Thistory;
-   history := Thistory.create;
-   history.Reset;
 
-   SetParentComponent(pnl);
    align := alClient;
    Realign;
    onDragOver := chatDragOver;
@@ -1150,43 +1144,15 @@ begin
     OnPreKeyEvent := preKeyEvent;
     OnBeforeContextMenu := showHistMenu;
     OnBeforeBrowse := customBrowsing;
-
-//    CreateBrowserInstance;
-    Load('about:blank'); // Required for Browser.MainFrame.LoadString to work
-
-    i := 0;
-    while (i < 1000) and (not renderInit or (Browser.MainFrame = nil)) do
-    begin
-      Application.ProcessMessages;
-      sleep(100);
-      inc(i);
-    end;
-    if (not renderInit) and (i >= 1000) then
-     begin
-       msgDlg('Error initializing CEF', True, mtError);
-       Exit;
-     end;
-//    ShowDevTools;
-    templateLoaded := False;
-    LoadTemplate;
-    while not templateLoaded do
-    begin
-      Application.ProcessMessages;
-      sleep(100);
-    end;
-    InitSmiles;
 {$ELSE ~CHAT_CEF}
   {$IFDEF CHAT_SCI}
-//      SetOption(SCITER_SET_DEBUG_MODE, UINT_PTR(True));
-      SetOption(SCITER_SMOOTH_SCROLL, UINT_PTR(True));
-      LoadTemplate;
-      InitFunctions;
       OnShowMenu := showHistMenu;
 //      InitSmiles;
   {$ELSE OLD VCL}
      onPainted := onHistoryRepaint;
   {$ENDIF}
 {$ENDIF CHAT_CEF}
+    InitAll;
   end;
 
  {$IFDEF CHAT_USE_LSB}
@@ -1787,6 +1753,7 @@ begin
 
   sendBtn.enabled := ch.chatType <> CT_PLUGING;
   historyBtn.enabled  := sendBtn.enabled;
+  historyBtn.Visible  := sendBtn.enabled and (ch.chatType = CT_IM) and ch.historyBox.AllowShowAll;
   findBtn.enabled     := sendBtn.enabled;
   smilesBtn.enabled   := sendBtn.enabled;
   autoscrollBtn.enabled := sendBtn.enabled;
@@ -2381,17 +2348,7 @@ begin
   ch := thischat;
   if ch=NIL then
     exit;
-  with ch.historyBox do
-  if historyNowCount > 0 then
-   begin
- {$IFDEF CHAT_SCI}
-    select(topVisible, history.getAt(history.count - 1).when);
- {$ELSE ~CHAT_SCI}
-    select(historyNowOffset, history.count-1);
-    repaint;
-    ch.updateAutoscroll(nil);
- {$ENDIF CHAT_SCI}
-   end;
+  ch.historyBox.SelectAll;
 end; // select all
 
 procedure TchatFrm.viewmessageinwindow1Click(Sender: TObject);
@@ -3262,61 +3219,15 @@ var
   ch: TchatInfo;
   h: Thistory;
   i: integer;
-
-  function search(ofs: Integer): Integer;
-  begin
-  result := h.Count-1;
-//  while result >= 0 do
-  while result >= ofs do
-    if h.getAt(result).when <= time then
-      break
-    else
-      dec(result);
-  if result < ofs then
-   Result := -1;
-  if result >= ofs then
-    if h.getAt(result).when <> time then
-      result := -1;
-  end; // search
-
 begin
   result := False;
   ch := chats.byContact(c);
   if ch=NIL then
     exit;
 
- {$IFDEF CHAT_SCI} // Sciter
-  ch.historyBox.moveToTime(time);
- {$ELSE ~CHAT_SCI} // ~Sciter
-
-  h := ch.historyBox.history;
-  i := search(ch.historyBox.offset);
-  if NeedOpen and (i < 0) and not ch.historyBox.whole then
-    begin
-      if ch = thisChat then
-       historyBtn.down := TRUE;
-      historyAllShowChange(ch, True);
-//    historyBtnClick(self);
-      i := search(ch.historyBox.offset);
-      if i < 0 then
-       begin
-        if ch = thisChat then
-         historyBtn.down := FALSE;
-        historyAllShowChange(ch, False);
-//        historyBtnClick(self);
-       end;
-    end;
-  if i >= 0 then
-    with ch.historyBox do
-    begin
-     Result := True;
-      updateRSB(True, i, True);
-      topVisible := offset + rsb_position;
-      topOfs := 0;
-    end;
-  ch.historyBox.repaint;
-  ch.updateAutoscroll(nil);
- {$ENDIF CHAT_SCI}
+  Result := ch.historyBox.moveToTime(time, NeedOpen);
+  if ch = thisChat then
+    historyBtn.down := ch.historyBox.whole;
 end; // moveToTime
 
 procedure TchatFrm.Sendwhenimvisibletohimher1Click(Sender: TObject);
@@ -3573,7 +3484,7 @@ begin
  {$ENDIF CHAT_CEF} // Chromium
  {$IFDEF CHAT_SCI} // Sciter
   ch := thisChat;
-  ch.historyBox.SetOption(SCITER_SET_DEBUG_MODE, UINT_PTR(True));
+  ch.historyBox.ShowDebug;
  {$ENDIF CHAT_SCI} // Sciter
 end;
 

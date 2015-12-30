@@ -190,14 +190,14 @@ type
 //    firstCharactersForSmiles: set of AnsiChar; // for faster smile recognition
 
   protected
-    function getAutoScroll: boolean;
+    function  getAutoScroll: boolean;
     procedure setAutoScroll(asState: TAutoScrollState);
     procedure setAutoScrollForce(vAS: boolean);
   public
     selectedText: String;
     topVisible: TDateTime;
     topOfs: integer;
-    offsetMsg, offsetAll: integer; // can't show hevents before this
+    offset, offsetAll: integer; // can't show hevents before this
     startSel, endSel: ThistoryPos;
     isWholeEvents: Boolean;
     who: TRnQContact;
@@ -227,24 +227,28 @@ type
 //    function escapeNewlines(const text: String): String;
 
     procedure LoadTemplate;
+    class function  PreLoadTemplate: Boolean;
     procedure InitFunctions;
     procedure ClearEvents;
     procedure ReloadLast;
     procedure InitSettings;
     procedure InitSmiles;
+    procedure InitAll;
     procedure UpdateSmiles;
     procedure RememberScrollPos;
     procedure RestoreScrollPos;
     procedure addChatItem(var params: TParams; hev: Thevent; animate: Boolean; last: Boolean = True);
     procedure sendChatItems(params: TParams; prepend: Boolean = False; hidehist: Boolean = False);
-    procedure copySel2Clpb;
-    function  getSelText: String;
+    procedure ShowDebug;
 
-    constructor Create(AOwner: Tcomponent); override;
+//    constructor Create(AOwner: Tcomponent; cnt: TRnQContact); override;
+    constructor Create(AOwner: Tcomponent; cnt: TRnQContact); OverLoad;
     destructor  Destroy; override;
     procedure go2start();
     procedure go2end(animate: Boolean = False);
-    procedure moveToTime(time: TDateTime);
+    function  moveToTime(time: TDateTime; NeedOpen: Boolean = false): Boolean;
+
+    function  getSelText: String;
     function  getSelBin(): AnsiString;
     //function  getSelHtml(smiles: boolean): string;
     function  getSelHtml2(smiles: boolean): RawByteString;
@@ -252,17 +256,21 @@ type
     function  wholeEventsAreSelected(): boolean;
     function  nothingIsSelected(): boolean;
     function  partialTextIsSelected(): boolean;
+    procedure copySel2Clpb;
+    function  getWhole: Boolean;
+    function  AllowShowAll: Boolean;
 
     procedure select(from, to_: TDateTime);
+    procedure selectAll;
     procedure deselect();
     procedure DeleteSelected;
 
     procedure updateRSB(SetPos: boolean; pos: integer = 0; doRedraw: boolean = true);
     procedure addEvent(ev: Thevent);
-    function historyNowCount: integer;
+    function  historyNowCount: integer;
     procedure histScrollEvent(d: integer);
     procedure histScrollLine(d: integer);
-    procedure Scroll;
+    procedure doOnScroll;
     procedure histScrollWheel(d: integer);
     function  getQuoteByIdx(var pQuoteIdx: integer): String;
     procedure requestQuote;
@@ -271,6 +279,7 @@ type
     procedure ReturnFocus(Sender: TObject);
     procedure DoShowMenu(const Data: String; clickedTime: TDateTime; linkClicked, imgClicked: Boolean);
     property  Color;
+    property  whole: Boolean read getWhole;
   end;
 {
   TExtension = class(TCefv8HandlerOwn)
@@ -303,7 +312,8 @@ type
 
 var
   hisBGColor, myBGColor: TColor;
-  renderInit: Boolean = False;
+//  renderInit: Boolean = False;
+  templateFile: RawByteString;
 
 implementation
 
@@ -313,17 +323,15 @@ uses
   Character,
   AnsiStrings, AnsiClasses,
 {$ENDIF UNICODE}
+  RDFileUtil,
   RnQSysUtils, RnQLangs, RnQFileUtil, RDUtils, RnQBinUtils,
   RQUtil, RQThemes, RnQButtons, RnQGlobal, RnQCrypt, RnQPics, RnQNet,
   globalLib, mainDlg, utilLib, Protocols_all,
 //  chatDlg,
   roasterLib,
-{$IFDEF USE_GDIPLUS}
-  // KOLGDIPV2,
-{$ENDIF USE_GDIPLUS}
   // historyRnQ,
   Base64,
-  ICQConsts, ICQv9,
+  ICQConsts, ICQv9, RQ_ICQ,
 {$IFDEF USE_GDIPLUS}
   RnQGraphics,
 {$ELSE}
@@ -721,13 +729,41 @@ begin
   Call('chatScrollToBottom', [animate]);
 end;
 
-procedure ThistoryBox.moveToTime(time: TDateTime);
+function ThistoryBox.moveToTime(time: TDateTime; NeedOpen: Boolean): Boolean;
 var
   f: TFormatSettings;
+
+  function search(ofs: Integer): Integer;
+  begin
+    result := history.Count-1;
+  //  while result >= 0 do
+    while result >= ofs do
+      if history.getAt(result).when <= time then
+        break
+      else
+        dec(result);
+    if result < ofs then
+     Result := -1;
+    if result >= ofs then
+      if history.getAt(result).when <> time then
+        result := -1;
+  end; // search
+
 begin
+  result := search(offset) >= 0;
   f.Create;
   f.DecimalSeparator := '.';
   Call('moveToTime', [floattostr(time, f)]);
+end;
+
+function ThistoryBox.getWhole: Boolean;
+begin
+  result := false;
+end;
+
+function ThistoryBox.AllowShowAll: Boolean;
+begin
+  result := false;
 end;
 
 function ThistoryBox.wholeEventsAreSelected(): boolean;
@@ -767,6 +803,11 @@ begin
   Call('setSelection', args);
 end; // select
 
+procedure ThistoryBox.selectAll;
+begin
+  select(topVisible, history.getAt(history.count - 1).when);
+end;
+
 procedure ThistoryBox.deselect();
 begin
   startSel.ev := nil;
@@ -803,7 +844,7 @@ begin
       end;
 
     // history.deleteFromTo(userPath+historyPath + thisContact.uid, st,en);
-    history.deleteFromToTime(thisContact.uid, st, en);
+    history.deleteFromToTime(Who.uid, st, en);
     F.DecimalSeparator := '.';
     Call('deleteEvents', [floattostr(st, f), floattostr(en, f)]);
     deselect();
@@ -874,7 +915,7 @@ begin
   evIdx := history.add(ev);
   inc(offsetAll);
   if (BE_save in behaviour[ev.kind].trig) and (ev.flags and IF_not_save_hist = 0) then
-    inc(offsetMsg);
+    inc(offset);
   addChatItem(params, ev, True);
   sendChatItems(params);
 
@@ -980,7 +1021,7 @@ begin
     result := 0;
 end;
 
-procedure ThistoryBox.Scroll;
+procedure ThistoryBox.DoOnScroll;
 begin
   if Assigned(FOnScroll) then
     FOnScroll(Self);
@@ -1108,6 +1149,20 @@ begin
     end;
 end;
 
+class function ThistoryBox.PreLoadTemplate: Boolean;
+var
+ fn: String;
+begin
+  Result := False;
+  fn := themesPath + 'template.htm';
+  if not FileExists(fn) then
+    msgDlg(getTranslation('Chat template not found at "%s"', [fn]), false, mtError)
+   else
+    begin
+      templateFile := loadFileA(fn);
+//      LoadURL(FilePathToURL(fn));
+    end;
+end;
 
 procedure ThistoryBox.ClearEvents;
 begin
@@ -1191,6 +1246,12 @@ begin
   end;
 end;
 
+procedure ThistoryBox.InitAll;
+begin
+      LoadTemplate;
+      InitFunctions;
+end;
+
 procedure ThistoryBox.UpdateSmiles;
 begin
   Call('updateSmiles', []);
@@ -1205,6 +1266,12 @@ procedure ThistoryBox.RestoreScrollPos;
 begin
   Call('chatRestoreScrollPos', []);
 end;
+
+procedure ThistoryBox.ShowDebug;
+begin
+  SetOption(SCITER_SET_DEBUG_MODE, UINT_PTR(True));
+end;
+
 
 function LooksLikeALink(link: String): Boolean;
 begin
@@ -1409,7 +1476,7 @@ begin
     Exit;
 
   if not history.loaded then
-    startId := history.Count - offsetMsg
+    startId := history.Count - offset
   else
     startId := history.Count - offsetAll;
 
@@ -1588,6 +1655,7 @@ var
   strLen: UINT;
   linkClicked, imgClicked: LongBool;
   hb: THistoryBox;
+  f: TFormatSettings;
 begin
   if tag = nil then
     Exit;
@@ -1604,7 +1672,8 @@ begin
     NI.get_string_value(NI.get_arg_n(vm, 3), clickedTime, strLen);
     NI.get_bool_value(NI.get_arg_n(vm, 4), linkClicked);
     NI.get_bool_value(NI.get_arg_n(vm, 5), imgClicked);
-    hb.DoShowMenu(data, StrToFloat(clickedTime), linkClicked, imgClicked);
+    f.DecimalSeparator := '.';
+    hb.DoShowMenu(data, StrToFloat(clickedTime, f), linkClicked, imgClicked);
 //    chatFrm.showHistMenu(data, StrToFloat(clickedTime), linkClicked, imgClicked);
   end;
 end;
@@ -1657,22 +1726,32 @@ begin
 end;
 
 
-constructor ThistoryBox.Create(AOwner: Tcomponent);
+constructor ThistoryBox.Create(AOwner: Tcomponent; cnt: TRnQContact);
 begin
   inherited Create(AOwner);
   SetParentComponent(AOwner);
+  if aowner is TWinControl then
+    Parent := TWinControl(AOwner);
+  Who := cnt;
 
   tabStop := False;
   fAutoScrollState := ASS_FULLSCROLL;
   Color := $00F6F6F6;
   topVisible := 0;
-  offsetMsg := 0;
+  offset := 0;
   offsetAll := 0;
 
   embeddedImgs := TDictionary<LongWord, RawByteString>.Create;
 
   OnLoadData := InitRequest;
 //  OnFocus := ReturnFocus;
+
+//   history:=pTCE(c.data).history as Thistory;
+   history := Thistory.create;
+   history.Reset;
+
+//   SetOption(SCITER_SET_DEBUG_MODE, UINT_PTR(True));
+   SetOption(SCITER_SMOOTH_SCROLL, UINT_PTR(True));
 
 end;
 
@@ -1926,10 +2005,9 @@ begin
       end
         else
       begin
-{ ToDo
         if not cached then
           cached := DownloadAndCache(realurl);
-}
+
         if not cached then
           ignore := True
         else

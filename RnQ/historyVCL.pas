@@ -134,11 +134,15 @@ type
     property OnScroll: TNotifyEvent read FOnScroll write FOnScroll;
     property onLinkClick: TLinkClickEvent read FOnLinkClick write FOnLinkClick;
 
-    constructor Create(owner_: Tcomponent); override;
+    constructor Create(owner_: Tcomponent; cnt: TRnQContact); overLoad;
     destructor Destroy; override;
+
+    procedure InitAll;
+
     procedure Paint(); override;
     procedure paintOn(cnv: Tcanvas; vR: TRect; const JustCalc: Boolean = false);
     procedure go2end(const calcOnly: Boolean = False; const precalc: Boolean = False);
+    function  moveToTime(time: TDateTime; NeedOpen: Boolean): Boolean;
     function  getSelText(): string;
     function  copySel2Clpb(): Boolean;
     function  getSelBin(): AnsiString;
@@ -148,13 +152,14 @@ type
     function  wholeEventsAreSelected(): boolean;
     function  nothingIsSelected(): boolean;
     function  partialTextIsSelected(): boolean;
-    procedure ManualRepaint;
 
     function  offsetPos: integer;
     procedure select(from, to_: integer);
+    procedure selectAll;
     procedure deselect();
     procedure DeleteSelected;
 
+    procedure ManualRepaint;
     procedure updateRSB(SetPos: Boolean; pos: Integer = 0; doRedraw: Boolean = true);
     procedure addEvent(ev: Thevent);
     function  historyNowCount: Integer;
@@ -165,6 +170,7 @@ type
     procedure DoOnScroll;
     function  getQuoteByIdx(var pQuoteIdx: Integer): String;
     procedure setScrollPrefs(ShowAll: Boolean);
+    function  AllowShowAll: Boolean;
   end; // ThistoryBox
 
 const
@@ -263,9 +269,13 @@ begin
   end
 end;
 
-constructor ThistoryBox.Create(owner_: Tcomponent);
+constructor ThistoryBox.Create(owner_: Tcomponent; cnt: TRnQContact);
 begin
   inherited Create(owner_);
+  SetParentComponent(Owner_);
+  if owner_ is TWinControl then
+    Parent :=  TWinControl(Owner_);
+  Who := cnt;
 //  avoidErase:=FALSE;
   tabStop := False;
   P_lastEventIsFullyVisible := False;
@@ -279,6 +289,10 @@ begin
   if dStyle = dsBuffer then
     buffer := TBitmap.Create;
 
+//   history:=pTCE(c.data).history as Thistory;
+   history := Thistory.create;
+   history.Reset;
+
 end; // create
 
 destructor ThistoryBox.Destroy;
@@ -289,6 +303,11 @@ begin
   if Assigned(Self) then
    inherited Destroy;
 //  self := NIL;
+end;
+
+procedure ThistoryBox.InitAll;
+begin
+  ;
 end;
 
 procedure ThistoryBox.paintOn(cnv: Tcanvas; vR: TRect; const JustCalc: Boolean = false);
@@ -2513,6 +2532,57 @@ begin
 //  appendFile(myPath+'Paint.txt', s);
 end; // go2end
 
+function ThistoryBox.moveToTime(time: TDateTime; NeedOpen: Boolean): Boolean;
+var
+  h: Thistory;
+  i: integer;
+
+  function search(ofs: Integer): Integer;
+  begin
+    result := h.Count-1;
+  //  while result >= 0 do
+    while result >= ofs do
+      if h.getAt(result).when <= time then
+        break
+      else
+        dec(result);
+    if result < ofs then
+     Result := -1;
+    if result >= ofs then
+      if h.getAt(result).when <> time then
+        result := -1;
+  end; // search
+begin
+  h := history;
+  i := search(offset);
+  if NeedOpen and (i < 0) and not whole then
+    begin
+//      if ch = thisChat then
+//       historyBtn.down := TRUE;
+//      historyAllShowChange(ch, True);
+
+      setScrollPrefs(True);
+//    historyBtnClick(self);
+      i := search(offset);
+      if i < 0 then
+       begin
+//        if ch = thisChat then
+//         historyBtn.down := FALSE;
+//        historyAllShowChange(ch, False);
+         setScrollPrefs(False);
+       end;
+    end;
+  if i >= 0 then
+    begin
+     Result := True;
+      updateRSB(True, i, True);
+      topVisible := offset + rsb_position;
+      topOfs := 0;
+    end;
+  repaint;
+  DoOnScroll;
+end;
+
 function ThistoryBox.offsetPos():integer;
 begin
   result := topVisible-offset
@@ -2547,6 +2617,16 @@ begin
   endSel.evIdx := history.count - 1;
   endSel.ev := history.getAt(to_);
 end; // select
+
+procedure ThistoryBox.selectAll;
+begin
+  if historyNowCount > 0 then
+   begin
+    select(historyNowOffset, history.count-1);
+    repaint;
+    DoOnScroll;
+   end;
+end;
 
 procedure ThistoryBox.deselect();
 begin
@@ -3333,6 +3413,11 @@ begin
   repaint;
   DoOnScroll();
   updateRSB(false, 0, True);
+end;
+
+function ThistoryBox.AllowShowAll: Boolean;
+begin
+  Result := True;
 end;
 
 function ThistoryBox.historyNowCount:integer;

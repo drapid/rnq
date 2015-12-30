@@ -233,12 +233,13 @@ type
     procedure RefreshTemplate;
     procedure ReloadLast;
     procedure InitSmiles;
+    procedure InitAll;
     procedure RememberScrollPos;
     procedure RestoreScrollPos;
     procedure addChatItem(hev: Thevent; evIdx: Integer; animate: Boolean; last: Boolean = True);
     procedure addJScode(const code: string; const thread: string = 'default');
     procedure execJS(const thread: string = 'default');
-    function hasJScode(const thread: string = 'default'): Boolean;
+    function  hasJScode(const thread: string = 'default'): Boolean;
 
     constructor Create(AOwner: Tcomponent); override;
     destructor Destroy; override;
@@ -1685,6 +1686,34 @@ begin
   smiles := smiles +  ' }';
   addJScode('initSmiles(' + smiles + ');');
   execJS;
+end;
+
+procedure ThistoryBox.InitAll;
+begin
+//    CreateBrowserInstance;
+   Load('about:blank'); // Required for Browser.MainFrame.LoadString to work
+
+    i := 0;
+    while (i < 1000) and (not renderInit or (Browser.MainFrame = nil)) do
+    begin
+      Application.ProcessMessages;
+      sleep(100);
+      inc(i);
+    end;
+    if (not renderInit) and (i >= 1000) then
+     begin
+       msgDlg('Error initializing CEF', True, mtError);
+       Exit;
+     end;
+//    ShowDevTools;
+    templateLoaded := False;
+    LoadTemplate;
+    while not templateLoaded do
+    begin
+      Application.ProcessMessages;
+      sleep(100);
+    end;
+    InitSmiles;
 end;
 
 procedure ThistoryBox.RememberScrollPos;
