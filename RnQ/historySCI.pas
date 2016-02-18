@@ -170,7 +170,9 @@ type
 //  PHistoryBox = ^THistoryBox;
 
   THistoryBox = class(TSciter)
-  private
+   private
+    class var templateFile: String;
+   private
     //template: TStringList;
     // For History at all
     items: array of ThistoryItem;
@@ -313,7 +315,6 @@ type
 var
   hisBGColor, myBGColor: TColor;
 //  renderInit: Boolean = False;
-  templateFile: RawByteString;
 
 implementation
 
@@ -1135,15 +1136,15 @@ begin
 end;
 }
 procedure ThistoryBox.LoadTemplate;
-var
- fn: String;
+//var
+// fn: String;
 begin
-  fn := themesPath + 'template.htm';
-  if not FileExists(fn) then
-    msgDlg(getTranslation('Chat template not found at "%s"', [fn]), false, mtError)
-   else
+//  fn := themesPath + 'template.htm';
+//  if not FileExists(fn) then
+//    msgDlg(getTranslation('Chat template not found at "%s"', [fn]), false, mtError)
+//   else
     begin
-      LoadURL(FilePathToURL(fn));
+      LoadHtml(templateFile, 'template');
       InitSettings;
       InitSmiles;
     end;
@@ -1152,14 +1153,19 @@ end;
 class function ThistoryBox.PreLoadTemplate: Boolean;
 var
  fn: String;
+ t: RawByteString;
 begin
-  Result := False;
+  Result := templateFile > '';
+  if Result then
+    Exit;
   fn := themesPath + 'template.htm';
   if not FileExists(fn) then
     msgDlg(getTranslation('Chat template not found at "%s"', [fn]), false, mtError)
    else
     begin
-      templateFile := loadFileA(fn);
+      t := loadFileA(fn);
+      templateFile := unutf(t);
+      result := templateFile > '';
 //      LoadURL(FilePathToURL(fn));
     end;
 end;

@@ -22,6 +22,7 @@ type
    amiEv      : TNotifyEvent;
    amiUpd     : TNotifyEvent;
    amiTag     : Integer;
+   amiParent  : String;
   end;
   aTaMenuItem = array of TaMenuItem;
 
@@ -33,26 +34,26 @@ type
   aTaMenuItemUpd = array of TaMenuItemUpd;
 
 
-  function AddToMenu(ppi : TMenuItem; const Cptn : String; ImName : TPicName;
-      isDef : Boolean; Ev : TNotifyEvent=nil; Translate : Boolean = True) : TRQMenuItem; overload;
+  function AddToMenu(ppi: TMenuItem; const Cptn: String; const ImName: TPicName;
+      isDef: Boolean; Ev: TNotifyEvent=nil; Translate: Boolean = True): TRQMenuItem; overload;
 
-  function AddToMenu(const namePrefix : String;
-                     ami : TaMenuItem; ppi : TMenuItem;
-                     var updArr : aTaMenuItemUpd;
-                     idx : Integer = -1) : TRQMenuItem; overload;
-
-
-  procedure clearMenu(root:Tmenuitem);
-  procedure clearAMI(var pAMI : TaMenuItem);
+  function AddToMenu(const namePrefix: String;
+                     ami: TaMenuItem; ppi: TMenuItem;
+                     var updArr: aTaMenuItemUpd;
+                     idx: Integer = -1) : TRQMenuItem; overload;
 
 
-  procedure createMenuAs(ami : aTaMenuItem; var ppm : TPopupMenu; Own : TComponent);
+  procedure clearMenu(root: Tmenuitem);
+  procedure clearAMI(var pAMI: TaMenuItem);
 
-  procedure addToMenuMass(var mass : aTaMenuItem; idx : Integer; const name : String;
-              const Cptn, Hint : String;
-              const ImName : TPicName; Ev, Upd : TNotifyEvent);
 
-  procedure ClearMenuMass(var mass : aTaMenuItem);
+  procedure createMenuAs(ami: aTaMenuItem; var ppm: TPopupMenu; Own: TComponent);
+
+  procedure addToMenuMass(var mass: aTaMenuItem; idx: Integer; const name: String;
+              const Cptn, Hint: String;
+              const ImName: TPicName; Ev, Upd: TNotifyEvent);
+
+  procedure ClearMenuMass(var mass: aTaMenuItem);
 
 implementation  uses
     SysUtils,
@@ -68,7 +69,7 @@ var
 //        ((amiName: 'About'; Ev: TmainFrm.About1Click),
 //        ( ID: 2; Value: 'Male'));
 
-procedure ClearMenuMass(var mass : aTaMenuItem);
+procedure ClearMenuMass(var mass: aTaMenuItem);
 var
   i : Byte;
 begin
@@ -87,9 +88,9 @@ begin
   end;
 end;
 
-procedure addToMenuMass(var mass : aTaMenuItem; idx : Integer; const name : String;
-              const Cptn, Hint : String;
-              const ImName : TPicName; Ev, Upd : TNotifyEvent);
+procedure addToMenuMass(var mass: aTaMenuItem; idx: Integer; const name: String;
+              const Cptn, Hint: String;
+              const ImName: TPicName; Ev, Upd: TNotifyEvent);
 var
   i : Byte;
 begin
@@ -106,10 +107,10 @@ begin
     end;
 end;
 
-function AddToMenu(const namePrefix : String;
-                   ami : TaMenuItem; ppi : TMenuItem;
-                   var updArr : aTaMenuItemUpd;
-                   idx : Integer = -1) : TRQMenuItem; overload;
+function AddToMenu(const namePrefix: String;
+                   ami: TaMenuItem; ppi: TMenuItem;
+                   var updArr: aTaMenuItemUpd;
+                   idx: Integer = -1): TRQMenuItem; overload;
 var
   k : Integer;
 begin
@@ -134,8 +135,8 @@ begin
      end;
 end;
 
-function AddToMenu(ppi : TMenuItem; const Cptn : String; ImName : TPicName;
-      isDef : Boolean; Ev : TNotifyEvent = nil; Translate : Boolean = True) : TRQMenuItem;
+function AddToMenu(ppi: TMenuItem; const Cptn: String; const ImName: TPicName;
+      isDef: Boolean; Ev: TNotifyEvent = nil; Translate: Boolean = True): TRQMenuItem;
 begin
   result := TRQMenuItem.Create(ppi);
 //  result.Name := ;
@@ -148,12 +149,12 @@ begin
   ppi.Add(result);
 end;
 
-procedure createMenuAs(ami : aTaMenuItem; var ppm : TPopupMenu; Own : TComponent);
+procedure createMenuAs(ami: aTaMenuItem; var ppm: TPopupMenu; Own: TComponent);
 var
-  i : Integer;
+  i: Integer;
 //  , k
 //  mi : TRQMenuItem;
-  updArr : aTaMenuItemUpd;
+  updArr: aTaMenuItemUpd;
 begin
   ppm := TPopupMenu.Create(Own);
   for i := 0 to Length(ami) - 1 do
@@ -163,23 +164,24 @@ begin
   SetLength(updArr, 0);
 end;
 
-procedure clearMenu(root:Tmenuitem);
+procedure clearMenu(root: Tmenuitem);
 var
-  i:integer;
+  i: integer;
 begin
-  if not Assigned(root) then Exit;
-  
-i:=root.count-1;
-while i >= 0 do
-  begin
-  clearmenu(root.Items[i]);
-  root.Items[i].Free;
-//  root.Delete(i);
-  dec(i);
-  end;
+  if not Assigned(root) then
+    Exit;
+
+  i := root.count-1;
+  while i >= 0 do
+   begin
+    clearmenu(root.Items[i]);
+    root.Items[i].Free;
+//    root.Delete(i);
+    dec(i);
+   end;
 end; // clearMenu
 
-procedure clearAMI(var pAMI : TaMenuItem);
+procedure clearAMI(var pAMI: TaMenuItem);
 begin
   pAMI.amiIdx     := 0;
   pAMI.amiName    := '';

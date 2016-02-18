@@ -22,8 +22,8 @@ type
   Tlistitem = record
      kind:(LI_group, LI_contact);
 //     check:TchkState;
-     grpId:integer;
-     UID : String;
+     grpId: integer;
+     UID : TUID;
     end;
 
   TscOptions=set of (sco_multi,sco_groups, sco_selected, sco_predefined);
@@ -591,9 +591,10 @@ end; // toggleAt
 
 procedure TselectCntsFrm.listKeyPress(Sender: TObject; var Key: Char);
 begin
-if key in [' ','+','-'] then
-  toggleAt(list.FocusedNode);
-if key=' ' then key:=#0;
+  if key in [' ','+','-'] then
+    toggleAt(list.FocusedNode);
+  if key=' ' then
+    key := #0;
 end;
 
 procedure TselectCntsFrm.saveBtnClick(Sender: TObject);
@@ -661,7 +662,7 @@ begin chatFrm.openOn(current) end;
 procedure TselectCntsFrm.subBtnClick(Sender: TObject);
 var
 //  i:integer;
-  cl:TRnQCList;
+  cl: TRnQCList;
   n : PVirtualNode;
 begin
 if not uinlists.exists(uinlistbox.text) then exit;

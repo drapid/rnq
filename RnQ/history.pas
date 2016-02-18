@@ -17,15 +17,16 @@ const
   CRYPT_SIMPLE=0;
   CRYPT_KEY1=1;
 type
-  Thistory=class(Tlist)
+  Thistory = class(Tlist)
    private
     loading   : boolean;
     cryptMode : byte;
     hashed    : RawByteString;
-    function  fromStream(str: Tstream; quite : Boolean = false):boolean;
+    function  fromStream(str: Tstream; quite: Boolean = false): boolean;
    public
-    loaded    :boolean;
-    fToken, themeToken,SmilesToken : Cardinal;
+    loaded    : boolean;
+    fToken    : Cardinal;
+    themeToken, SmilesToken: Integer;
 
 //    destructor Destroy; override;
     function  toString: RawByteString;

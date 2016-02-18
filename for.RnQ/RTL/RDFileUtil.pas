@@ -73,24 +73,24 @@ type
   function RARCallbackProc(msg: UINT; UserData, P1, P2: integer) :integer; stdcall;
  {$ENDIF USE_RAR}
 
-  function  loadFile(pt: TThemeSourcePath; fn : string):RawByteString; overload;
-  function  loadFile(pt: TThemeSourcePath; fn : string; var ResStream : TStream):Boolean; overload;
-  function  GetStream(fn : String) : TStream;
+  function  loadFile(pt: TThemeSourcePath; fn: string): RawByteString; overload;
+  function  loadFile(pt: TThemeSourcePath; fn: string; var ResStream: TStream): Boolean; overload;
+  function  GetStream(fn: String): TStream;
 //  function  loadFile(fn:string): RawByteString; overload;
-  function  loadFileA(const fn:string):RawByteString; overload;
-  function  loadFile(fs:TStream; const StreamName : String): AnsiString; overload;
-  function  saveFile2(const fn:string; const data: RawByteString;
-               needSafe : Boolean = false; MakeBakups : Boolean = false):boolean;
+  function  loadFileA(const fn: string): RawByteString; overload;
+  function  loadFile(fs: TStream; const StreamName: String): AnsiString; overload;
+  function  saveFile2(const fn: string; const data: RawByteString;
+               needSafe: Boolean = false; MakeBakups: Boolean = false): boolean;
   function  fileIsWritible(fn: String): boolean;
-  function  sizeOfFile(const fn:string):int64;
-  function  partDeleteFile(fn:string; from,length:integer):boolean;
-  function  CreateDirRecursive(fpath : String) : Boolean;
+  function  sizeOfFile(const fn: string):int64;
+  function  partDeleteFile(fn: string; from, length: integer): boolean;
+  function  CreateDirRecursive(fpath: String): Boolean;
 
   {$IFDEF USE_ZIP}
-  function  loadFromZipOrFile(zp : TZipFile; const uPath : String;
-                              const fn : String) : RawByteString;
+  function  loadFromZipOrFile(zp : TZipFile; const uPath: String;
+                              const fn: String): RawByteString;
   {$ENDIF}
-  function NeedPassForFile(pt: TThemeSourcePath; fn : string):Boolean;
+  function NeedPassForFile(pt: TThemeSourcePath; fn: string): Boolean;
 
 //  procedure WorkThread(LV: Pointer); stdcall;
 
@@ -578,7 +578,7 @@ begin
   end;
 end; // loadFile
 }
-function  loadFileA(const fn:string):RawByteString; overload;
+function  loadFileA(const fn: string): RawByteString; overload;
 var
  fs : TFileStream;
 begin
@@ -597,9 +597,9 @@ begin
   end;
 end; // loadFile
 
-function loadFile(fs:TStream; const StreamName : String):AnsiString;
+function loadFile(fs: TStream; const StreamName: String): AnsiString;
 begin
-  result:='';
+  result := '';
   try
     fs.Position := 0;
     setLength(result, fs.Size);
@@ -613,8 +613,8 @@ begin
   end;
 end; // loadFile
 
-function saveFile2(const fn:string; const data: RawByteString;
-                  needSafe : Boolean = false; MakeBakups : Boolean = false):boolean;
+function saveFile2(const fn: string; const data: RawByteString;
+                  needSafe: Boolean = false; MakeBakups: Boolean = false): boolean;
 {var
   f:file;
 begin

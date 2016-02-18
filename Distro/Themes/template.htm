@@ -782,9 +782,8 @@
 
 	function moveToTime(time) {
 		var events = $$(.msgFull);
-                var t = time.toFloat(0);
 		for (var ev in events)
-		if (ev.attributes["time"].toFloat(0) == t) {
+		if (ev.attributes["time"] == time) {
 			ev.scrollToView(false, true);
 			break;
 		}

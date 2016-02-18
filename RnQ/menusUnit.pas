@@ -20,40 +20,8 @@ interface
   procedure createFavMenu(root:Tmenuitem; action:TnotifyEvent);
 
   procedure ClearAllMenuArrays;
-{
-  procedure clearMenu(root:Tmenuitem);
-  function AddToMenu(ppi : TMenuItem; const Cptn : String; ImName : TPicName;
-      isDef : Boolean; Ev : TNotifyEvent=nil; Translate : Boolean = True) : TRQMenuItem; overload;
 
 
-type
-//  TMenuEvent = procedure(mi: TRQMenuItem);
-
-  TaMenuItem = record
-   amiIdx     : Integer;
-   amiName    : String;
-   amiCaption : String;
-   amiHint    : String;
-   amiImage   : TPicName;
-   amiEv      : TNotifyEvent;
-   amiUpd     : TNotifyEvent;
-   amiTag     : Integer;
-  end;
-  aTaMenuItem = array of TaMenuItem;
-
-  procedure createMenuAs(ami : aTaMenuItem; var ppm : TPopupMenu; Own : TComponent);
-
-  procedure addToMenuMass(var mass : aTaMenuItem; idx : Integer; const name : String;
-              const Cptn, Hint : String;
-              const ImName : TPicName; Ev, Upd : TNotifyEvent);
-
-type
-  TaMenuItemUpd = record
-   amiuMenu    : TRQMenuItem;
-   amiuEv      : TNotifyEvent;
-  end;
-  aTaMenuItemUpd = array of TaMenuItemUpd;
-}
 var
   aMainMenuUpd, aMainMenuUpd2,
   aStatusMenuUpd, aVisMenuUpd : aTaMenuItemUpd;
@@ -63,7 +31,7 @@ var
  {$IFDEF USE_SECUREIM}
   aEncryptMenu  : aTaMenuItem; // Menu of button "Encrypt" in chat
  {$ENDIF USE_SECUREIM}
-  aEncryptMenu2  : aTaMenuItem; // Menu of button "Encrypt" in chat
+  aEncryptMenu2 : aTaMenuItem; // Menu of button "Encrypt" in chat
   aFileSendMenu : aTaMenuItem; // Menu of button "Send File" in chat
 
 implementation
@@ -79,6 +47,7 @@ var
   aMainMenu : aTaMenuItem;
   aStsMenu  : aTaMenuItem;
   aVisMenu  : aTaMenuItem;
+
 
 //const
 //  aMainMenu: array[0..1] of TaMenuItem =
@@ -296,7 +265,7 @@ begin
    end;
 end;
 
-procedure addSmilesToMenu(own:Tcomponent; mi:Tmenuitem; action:TnotifyEvent);
+procedure addSmilesToMenu(own: Tcomponent; mi: Tmenuitem; action: TnotifyEvent);
 var
   i:integer;
   smiles_count, smlcnt: Integer;
@@ -336,7 +305,7 @@ begin
 //applyCommonSettings(own);
 end; // addSmilesToMenu
 
-procedure addGroupsToMenu(own:Tcomponent; mi:Tmenuitem; action:TnotifyEvent; pAddOut : Boolean);
+procedure addGroupsToMenu(own: Tcomponent; mi: Tmenuitem; action: TnotifyEvent; pAddOut: Boolean);
 var
   i:integer;
   ss:Tstringlist;
@@ -365,7 +334,7 @@ begin
   //mi.Enabled := true;
 end; // addGroupsToMenu
 
-procedure createFavMenuFrom(path:String; root:TMenuItem; action:TnotifyEvent );
+procedure createFavMenuFrom(path: String; root: TMenuItem; action: TnotifyEvent );
 var
   sr:TSearchRec;
 Begin
@@ -388,55 +357,12 @@ if findFirst( path+'*.*', faDirectory, sr ) = 0 then
 findClose( SR );
 end; // createFavMenuFrom
 
-procedure createFavMenu(root:Tmenuitem; action:TnotifyEvent);
+procedure createFavMenu(root: Tmenuitem; action: TnotifyEvent);
 begin
 //  createFavMenuFrom(getSpecialFolder('Favorites'), root, action)
   createFavMenuFrom(getSpecialFolder(CSIDL_FAVORITES), root, action)
 end;
 
-{function AddToMenu(ppi : TMenuItem; const Cptn : String; ImName : TPicName;
-      isDef : Boolean; Ev : TNotifyEvent = nil; Translate : Boolean = True) : TRQMenuItem;
-begin
-  result := TRQMenuItem.Create(ppi);
-//  result.Name := ;
-  if Translate then
-    result.Caption := getTranslation(Cptn)
-   else
-    result.Caption := Cptn;
-  result.ImageName := ImName;
-  result.OnClick := Ev;
-  ppi.Add(result);
-end;
-
-procedure createMenuAs(ami : aTaMenuItem; var ppm : TPopupMenu; Own : TComponent);
-var
-  i : Integer;
-//  , k
-//  mi : TRQMenuItem;
-  updArr : aTaMenuItemUpd;
-begin
-  ppm := TPopupMenu.Create(Own);
-  for i := 0 to Length(ami) - 1 do
-    begin
-      AddToMenu(ami[i], ppm.Items, updArr);
-    end;
-  SetLength(updArr, 0);
-end;
-
-procedure clearMenu(root:Tmenuitem);
-var
-  i:integer;
-begin
-i:=root.count-1;
-while i >= 0 do
-  begin
-  clearmenu(root.Items[i]);
-  root.Items[i].Free;
-//  root.Delete(i);
-  dec(i);
-  end;
-end; // clearMenu
-}
 
 procedure ClearAllMenuArrays;
 begin

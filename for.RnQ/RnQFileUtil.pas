@@ -12,7 +12,7 @@ interface
     Classes;
 
 // file management
-  function  appendFile(const fn:string; const data: RawByteString):boolean;
+  function  appendFile(const fn: string; const data: RawByteString): boolean;
 
 implementation
   uses
@@ -25,7 +25,7 @@ implementation
     ;
 
 
-function appendFile(const fn:string; const data: RawByteString):boolean;
+function appendFile(const fn: string; const data: RawByteString): boolean;
 var
  fs : TFileStream;
  md : Word;

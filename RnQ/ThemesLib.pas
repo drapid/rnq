@@ -234,7 +234,7 @@ procedure repaintAllWindows;
 
   procedure repaintRecur(c: Tcontrol);
   var
-    i:integer;
+    i: integer;
   begin
     if c = NIL then
       Exit;
@@ -247,10 +247,10 @@ procedure repaintAllWindows;
   end; // repaintRecur
 
 var
-  i:integer;
+  i: integer;
 begin
-for i:=0 to Screen.FormCount-1 do
-  repaintRecur(screen.forms[i]);
+  for i:=0 to Screen.FormCount-1 do
+    repaintRecur(screen.forms[i]);
 end;
 
 
