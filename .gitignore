@@ -3,6 +3,7 @@
 #################
 Distro/Stickers/
 Distro/Cache/
+Distro/Accounts/
 Distro/*/Cache/
 Distro/*.map
 Distro/*.exe
