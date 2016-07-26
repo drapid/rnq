@@ -12,7 +12,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ExtCtrls, RnQButtons, RnQDialogs, VirtualTrees, StdCtrls,
-  RnQProtocol;
+  RnQProtocol, globallib;
 
 type
   TusersFrm = class(TForm)
@@ -58,29 +58,36 @@ type
       var Allowed: Boolean);
     procedure PntBoxPaint(Sender: TObject);
   private
-    selected:boolean;
-    RnQVer, RnQVer0, RnQVerT : String;
-    MouseOnLabel : Boolean;
-    function CheckPass : Boolean;
+    selected: boolean;
+    RnQVer, RnQVer0, RnQVerT: String;
+    MouseOnLabel: Boolean;
+    function CheckPass: Boolean;
   public
-    startIt:boolean;
-    resAccPass : String;
+    startIt: boolean;
+    resAccPass: String;
     procedure refreshUsers;
     function  doSelect:TUID;
     function  selectUIN(const uin: TUID): boolean;
     function  uinAt(idx: integer): TUID;
-    procedure newuser(cls: TRnQProtoClass; uin: TUID);
+    procedure newuser(cls: TRnQProtoClass; const uin: TUID);
   end;
+
+  function  findInAvailableUsers(const uin: TUID): integer;
+  procedure clearAvailableUsers;
+  procedure refreshAvailableUsers;
+  function getUserAutoStart(var pass: String): TUID;
 
 var
   usersFrm: TusersFrm;
+  availableUsers : array of TRnQUser;
 
 implementation
 
 {$R *.DFM}
 
 uses
-  globallib, mainDlg, UxTheme, DwmApi, Themes,
+  UxTheme, DwmApi, Themes, strutils,
+  ShlObj,
    NewAccount,
    { $IFDEF RNQ_FULL}
 //     importDlg,
@@ -98,14 +105,16 @@ uses
  {$ENDIF PROTOCOL_ICQ}
    { $ENDIF}
 //  newaccountDlg,
+  RDFileUtil,
   RnQZip, RDUtils, RnQSysUtils, RnQGlobal,
-  utilLib, RnQLangs, langLib, strutils, iniLib, RQUtil, RDGlobal;
+  mainDlg,
+  utilLib, RnQLangs, langLib, iniLib, RQUtil, RDGlobal;
 
 const
  Have2Sel = 'You have to select a user to delete it';
 
 var
-  deletedMe:boolean;
+  deletedMe: boolean;
 
 procedure TusersFrm.refreshUsers;
 var
@@ -114,11 +123,11 @@ var
   ur : PRnQUser;
   n, s : PVirtualNode;
 begin
- usersBox.clear;
+  usersBox.clear;
 // toSelect:=-1;
   s := nil;
- for i:=0 to length(availableUsers)-1 do
-  with availableUsers[i] do
+  for i:=0 to length(availableUsers)-1 do
+   with availableUsers[i] do
     begin
      n := UsersBox.AddChild(nil);
      ur := UsersBox.GetNodeData(n);
@@ -126,21 +135,21 @@ begin
 //     ur.name := name;
 //     ur.uinStr :=
 //    usersBox.items.add(uinStr+'  '+name);
-    if LowerCase(uin)=lastUser then
-     begin
-//      toSelect:=i;
-      s := n;
-     end;
+     if LowerCase(uin)=lastUser then
+      begin
+//      toSelect := i;
+       s := n;
+      end;
     end;
 //  UsersBox.Sort;
 //if toSelect >= 0 then
-if Assigned(s) then
-  begin
-   UsersBox.Selected[s] := True;
-   usersBox.FocusedNode := s;
-//  usersBox.itemIndex:=toSelect;
-  okbtn.enabled:=TRUE;
-  end;
+  if Assigned(s) then
+   begin
+    UsersBox.Selected[s] := True;
+    usersBox.FocusedNode := s;
+//    usersBox.itemIndex := toSelect;
+    okbtn.enabled := TRUE;
+   end;
 {else
   if usersBox.items.count > 0 then
     begin
@@ -153,7 +162,7 @@ if Assigned(s) then
     okBtn.enabled:=FALSE;
     end;    }
   if UsersBox.GetLast = nil then
-    okBtn.enabled:=FALSE;
+    okBtn.enabled := FALSE;
   
 end;  // refreshUsers
 
@@ -163,12 +172,12 @@ begin
   resAccPass := '';
   showModal;
   if not selected and not startIt then
-    result:=''
+    result := ''
   else
     if usersBox.FocusedNode <> NIL then
-      result:= TRnQUser(PRnQUser(usersBox.getnodedata(usersBox.FocusedNode))^).uin
+      result := TRnQUser(PRnQUser(usersBox.getnodedata(usersBox.FocusedNode))^).uin
      else
-      result:='';
+      result := '';
 // if Result > '' then
 //  masterUseSSI := ssiChk.Checked;
 end; // doSelect
@@ -248,7 +257,7 @@ end;
 procedure TusersFrm.newaccountBtnClick(Sender: TObject);
 begin
 {$IFDEF USE_REGUIN}
-  newaccountFrm:=TnewaccountFrm.create(NIL);
+  newaccountFrm := TnewaccountFrm.create(NIL);
   translateWindow(newaccountFrm);
   newaccountFrm.showModal;
   ForceForegroundWindow(handle);
@@ -425,7 +434,7 @@ else
     if continue then quitUser;
     end
   else
-    continue:=messageDlg(getTranslation('Are you sure you want to delete %s ?',[UINtoDelete]), mtConfirmation, [mbYes,mbNo], 0) = mrYes;
+    continue := messageDlg(getTranslation('Are you sure you want to delete %s ?',[UINtoDelete]), mtConfirmation, [mbYes,mbNo], 0) = mrYes;
   if continue then
 //    if delSUBtree(UINtoDelete) then
     if delTree(Path) then
@@ -481,7 +490,7 @@ var
   ico : HICON;
   sz : TSize;
 begin
-  cnv:=(Sender as TPaintBox).Canvas;
+  cnv := (Sender as TPaintBox).Canvas;
   R := (Sender as TPaintBox).ClientRect;
 //  SizeM :=
     PaintOnGlass := StyleServices.Enabled and DwmCompositionEnabled and
@@ -611,7 +620,7 @@ begin
 //      Tcontact(Sender.getnodedata(Node2)^).displayed);
 end;
 
-procedure TusersFrm.newuser(cls: TRnQProtoClass; uin: TUID);
+procedure TusersFrm.newuser(cls: TRnQProtoClass; const uin: TUID);
 var
 //  s:string;
 //  i, k:integer;
@@ -620,13 +629,13 @@ var
   u : PRnQUser;
   n : PVirtualNode;
   onlyUID : TUID;
-   prCl : TRnQProtoClass;
+  prCl : TRnQProtoClass;
 begin
 //  s:= uin;
     if cmdLinePar.userPath > '' then
       tUserPath := cmdLinePar.userPath
      else
-      tUserPath := myPath;
+      tUserPath := myPath + accountsPath;
 //   prCl := NIL;
    prCl := cls;
 //   if cls = NIL then
@@ -711,9 +720,9 @@ end; // newuser
 
 procedure TusersFrm.FormCreate(Sender: TObject);
 begin
-  RnQVer:=getTranslation('Build %d', [RnQBuild]);
+  RnQVer := getTranslation('Build %d', [RnQBuild]);
 {$IFDEF CPUX64}
-  RnQVer:= RnQVer + ' x64';
+  RnQVer := RnQVer + ' x64';
 {$ENDIF CPUX64}
 
    RnQVer0:= RnQVer;
@@ -733,7 +742,7 @@ begin
       RnQVerT := RnQVerT+' ';
     RnQVerT := RnQVerT+'Test';
    end;
-  RnQVer:= RnQVer + RnQVerT;
+  RnQVer := RnQVer + RnQVerT;
 
   UsersBox.NodeDataSize := SizeOf(TrnqUser);
   { $IFDEF RNQ_FULL}
@@ -811,6 +820,358 @@ begin
        else
         msgDlg('Please enter password', True, mtWarning);
 }
+    end;
+end;
+
+function findInAvailableUsers(const uin: TUID): integer;
+begin
+  for result:=0 to length(availableusers)-1 do
+    if availableusers[result].uin = uin then
+      exit;
+  result := -1;
+end; // findInAvailableUsers
+
+procedure clearAvailableUsers;
+var
+  i: Integer;
+begin
+  for i := 0 to Length(availableUsers)-1 do
+   begin
+     SetLength(availableUsers[i].name, 0);
+//     SetLength(availableUsers[i].uinStr, 0);
+     SetLength(availableUsers[i].SubPath, 0);
+     SetLength(availableUsers[i].path, 0);
+     SetLength(availableUsers[i].uin, 0);
+     SetLength(availableUsers[i].Prefix, 0);
+   end;
+  setlength(availableUsers, 0);
+end;
+
+procedure refreshAvailableUsers;
+  function getNick_SSI(protoClass: TRnQProtoClass; path: string;
+                       var pSSI: Boolean; uid: TUID;
+                       var nick: String; var isEncripted: Boolean): Boolean;
+      function yesno(const l: String): boolean;
+      begin result := LowerCase(l)='yes' end;
+  var
+    db: TRnQCList;
+    ini: TStrings;
+    zf: TZipFile;
+    s: AnsiString;
+    cf: string;
+    i: Integer;
+//    cnt: TRnQcontact;
+    save: Boolean;
+  begin
+    result := False;
+    nick := '';
+    save := false;
+    isEncripted := False;
+    ini := TstringList.create;
+    db := nil;
+    pSSI := masterUseSSI;
+    cf := path+ PathDelim +dbFileName + '5';
+    if not FileExists(cf) then
+      cf := path+ PathDelim +dbFileName + '4';
+    if FileExists(cf) then
+      begin
+         zf := TZipFile.Create;
+         try
+           zf.LoadFromFile(cf);
+           i := zf.IndexOf('about.txt');
+           if i >=0 then
+            begin
+             isEncripted := zf.IsEncrypted(i);
+             Result := True;
+             if not isEncripted then
+              begin
+               ini.Text := zf.data[i];
+               s := ini.values['account-name'];
+               nick := unUTF( s );
+               pSSI := yesno(ini.Values['use-ssi']);
+              end;
+            end;
+           if not Result then
+            begin
+             i := zf.IndexOf(configFileName);
+             if i >=0 then
+              begin
+               isEncripted := zf.IsEncrypted(i);
+               Result := True;
+               if not isEncripted then
+                begin
+                 ini.Text := zf.data[i];
+                 s := ini.values['account-name'];
+                 nick := unUTF(s);
+                 pSSI := yesno(ini.Values['use-ssi']);
+                end;
+              end;
+            end;
+{
+           if not Result then
+            begin
+             i := zf.IndexOf(dbFileName);
+             if i >=0 then
+              begin
+               isEncripted := zf.IsEncrypted(i);
+               Result := True;
+               if not isEncripted then
+                begin
+                  s := zf.data[i];
+                  db := str2db(protoClass._getContactClass, s);
+                  cnt := db.get(protoClass._getContactClass, uid);
+                  if Assigned(cnt) then
+                    nick := cnt.nick;
+                  freeDB(db);
+                end;
+              end;
+            end;
+}
+          except
+           s := '';
+         end;
+         zf.Free;
+      end;
+    if not result then
+     begin
+      cf := path+ PathDelim + configFileName;
+      if fileExists(cf) then
+        begin
+          save := True;
+          result := True;
+          try
+            ini.LoadFromFile(cf);
+           except
+            ini.Clear;
+          end;
+          nick := UnUTF(ini.values['account-name']);
+          pSSI := yesno(ini.Values['use-ssi']);
+        end
+       else
+        begin
+          cf := path + PathDelim +OldconfigFileName;
+          if fileExists(cf) then
+            begin
+              Result := True;
+              save := True;
+              ini.LoadFromFile(cf);
+              nick := ini.values['account-name'];
+              pSSI := yesno(ini.Values['use-ssi']);
+            end
+        end;
+     end;
+    if not result then
+     begin
+  //     loadDB(path+ PathDelim, db)
+        begin
+         zf := TZipFile.Create;
+         try
+           if FileExists(path+ PathDelim +dbFileName + '3') then
+             zf.LoadFromFile(path+ PathDelim +dbFileName + '3');
+           i := zf.IndexOf(dbFileName);
+           if i >=0 then
+             s := zf.data[i];
+          except
+           s := '';
+         end;
+         zf.Free;
+        end;
+       if s = '' then
+         s := loadFileA(path+ PathDelim +dbFileName);
+{
+      if s > '' then
+       begin
+        Result := True;
+        db:=str2db(protoClass._getContactClass, s);
+        cnt := db.get(protoClass._getContactClass, uid);
+        if Assigned(cnt) then
+          nick := cnt.nick;
+       end;
+}
+//      if not result then
+//        nick := ' ';
+      if save then
+       begin
+        ini.values['account-name']:= StrToUTF8(nick);
+  //      ini.Values['use-ssi'] := yesno();
+        ini.saveToFile(cf);
+       end;
+      freeDB(db);
+     end;
+    ini.free;
+  end; // getNick
+
+  procedure addAvailableUser(protoClass: TRnQProtoClass; UID: TUID;
+          pPath, pPrefix: string);
+  var
+    n: integer;
+  begin
+    n := length(availableUsers);
+    setlength(availableUsers, n+1);
+//    with availableUsers[n] do
+    begin
+//      availableUsers[n].uinStr:=extractFileName(pPath);
+      with availableUsers[n] do
+       begin
+//        if copy(uinStr, 1, 4) = AIMprefix then
+//         uinStr := copy(uinStr, 5, length(uinStr));
+//        uinStr:=extractFileName(pPath);
+        SubPath := extractFileName(pPath);
+ {$IFNDEF ICQ_ONLY}
+        proto := protoClass;
+//        if (protoClass <> TicqSession) then
+//          uinStr := protoClass._GetProtoName + '_' + uid
+//         else
+ {$ELSE ICQ_ONLY}
+//        uinStr := UID;
+        proto := TICQSession;
+ {$ENDIF ~ICQ_ONLY}
+        uin := UID;
+//         uid := uinStr;
+         getNick_SSI(protoClass, pPath, SSI, UID, name, encr);
+         Prefix := pPrefix;
+         path:= ExtractFilePath(pPath);
+       end;
+    end;
+  end; // addAvailableUser
+
+  procedure searchIn(path: string; Prefix : String = '');
+
+  var
+//  code:integer;
+    sr: TsearchRec;
+//   i:integer;
+    s: String;
+    s2: TUID;
+//   prCl : TRnQProtoHelper;
+    prCl: TRnQProtoClass;
+  begin
+  path := includeTrailingPathDelimiter(path);
+  ZeroMemory(@sr.FindData, SizeOf(TWin32FindData));
+  if FindFirst(path+'*', faDirectory, sr)=0 then
+    repeat
+    if (sr.Attr and faDirectory > 0) and (sr.name <> '.')and (sr.name <> '..') then
+      begin
+        s := ExtractFileName(sr.name);
+//      val(sr.Name, i, code);
+//      if TicqSession.isValidUID(s)
+//      if TRnQProtocol(icq).isValidUID(s)
+       for prCl in RnQProtos do
+        begin
+         s2 := s;
+//         if prCl._isValidUid(s2)
+         if prCl._isProtoUid(s2)
+//      if icq.isValidUID(s)
+//        or (copy(sr.Name, 1, 4) = 'AIM_')
+        then
+         begin
+          addAvailableUser(prCl, s2, path+sr.name, Prefix);
+          break;
+         end;
+        end;
+      end;
+    until FindNext(sr) > 0;
+  FindClose(sr);
+  end;
+
+var
+  s: string;
+  i, j, n: integer;
+  found: Boolean;
+  ss: TUID;
+//  uid : AnsiString;
+begin
+  clearAvailableUsers;
+  searchIn(myPath);
+  if RnQMainPath > '' then
+    searchIn(myPath+RnQMainPath, 'Old\');
+
+//  s := getSpecialFolder('AppData')+'R&Q\';
+  s := getSpecialFolder(CSIDL_APPDATA)+'R&Q\';
+  searchIn(s, 'App\');
+
+  if (cmdLinePar.userPath > '') and not AnsiSameText(cmdLinePar.userPath, usersPath) then
+   if LowerCase(s) <> LowerCase(cmdLinePar.userPath) then
+     searchIn(cmdLinePar.userPath, 'User\');
+
+  s := usersPath;
+  while s>'' do
+    searchIn(chop(';',s), 'Users path\');
+
+  s := mypath + accountsPath;
+  if s <> usersPath then
+    while s>'' do
+      searchIn(chop(';',s));
+
+  if cmdLinePar.startUser > '' then
+   begin
+    found := false;
+    for n := 0 to length(availableUsers) - 1 do
+     begin
+      ss := cmdLinePar.startUser;
+      if availableUsers[n].proto._isProtoUid(ss)
+        and (availableUsers[n].uin = ss) then
+       found := true;
+     end;
+    if not found then
+     begin
+//      fantomWork := True;    // New фича 2007.10.09
+ {$IFDEF ICQ_ONLY}
+      addAvailableUser(TicqSession, cmdLinePar.startUser, myPath + cmdLinePar.startUser, 'CMD\');
+ {$ENDIF ICQ_ONLY}
+     end;
+   end;
+
+ n := length(availableUsers);
+ for i:=0 to n-2 do
+  for j:=i+1 to n-1 do
+    swap4(availableUsers[i], availableUsers[j], sizeOf(availableUsers[i]),
+      availableUsers[i].uin > availableUsers[j].uin );
+end; // refreshAvailableUsers
+
+function getUserAutoStart(var pass: String): TUID;
+var
+  i: Integer;
+begin
+  refreshAvailableUsers;
+  uin2Bstarted := '';
+//  AccPass := '';
+  pass := '';
+//  needCheckPass := True;
+  if cmdlinepar.startUser > '' then
+    begin
+     uin2Bstarted := extractFileName(cmdlinepar.startuser);
+    end
+  else
+   begin
+     i := findInAvailableUsers(autostartUIN);
+     if i >= 0 then
+       begin
+         uin2Bstarted := autostartUIN;
+         masterUseSSI := cmdLinePar.ssi or availableusers[i].SSI;
+       end
+     else
+      if length(availableusers)=1 then
+        begin
+          uin2Bstarted := availableusers[0].uin;
+          masterUseSSI := cmdLinePar.ssi or availableusers[0].SSI;
+        end
+   end;
+  if uin2Bstarted > '' then
+    begin
+      i := findInAvailableUsers(uin2Bstarted);
+      if i >=0 then
+       begin
+//       if needCheckPass then
+        with availableUsers[i] do
+        if encr and not CheckAccPas(uin, path+ SubPath + PathDelim + dbFilename + '5', pass)  then
+         begin
+//           halt(0);
+           uin2Bstarted := '';
+         end;
+       end
+      else
+       uin2Bstarted := '';
     end;
 end;
 

@@ -75,19 +75,19 @@ type
 
   function  loadFile(pt: TThemeSourcePath; fn: string): RawByteString; overload;
   function  loadFile(pt: TThemeSourcePath; fn: string; var ResStream: TStream): Boolean; overload;
-  function  GetStream(fn: String): TStream;
+  function  GetStream(const fn: String): TStream;
 //  function  loadFile(fn:string): RawByteString; overload;
   function  loadFileA(const fn: string): RawByteString; overload;
   function  loadFile(fs: TStream; const StreamName: String): AnsiString; overload;
   function  saveFile2(const fn: string; const data: RawByteString;
                needSafe: Boolean = false; MakeBakups: Boolean = false): boolean;
-  function  fileIsWritible(fn: String): boolean;
+  function  fileIsWritible(const fn: String): boolean;
   function  sizeOfFile(const fn: string):int64;
   function  partDeleteFile(fn: string; from, length: integer): boolean;
-  function  CreateDirRecursive(fpath: String): Boolean;
+  function  CreateDirRecursive(const fpath: String): Boolean;
 
   {$IFDEF USE_ZIP}
-  function  loadFromZipOrFile(zp : TZipFile; const uPath: String;
+  function  loadFromZipOrFile(zp: TZipFile; const uPath: String;
                               const fn: String): RawByteString;
   {$ENDIF}
   function NeedPassForFile(pt: TThemeSourcePath; fn: string): Boolean;
@@ -546,7 +546,7 @@ begin
 end;
 
 
-function  GetStream(fn : String) : TStream;
+function  GetStream(const fn : String) : TStream;
 //var
 // fs : TFileStream;
 begin
@@ -671,7 +671,7 @@ begin
   end;
 end; // saveFile
 
-function fileIsWritible(fn: String): boolean;
+function fileIsWritible(const fn: String): boolean;
 var
  fs : TFileStream;
 begin
@@ -748,9 +748,9 @@ begin
   if IOresult<>0 then result:=-1;
 end; // sizeOfFile
 
-function  CreateDirRecursive(fpath : String) : Boolean;
+function  CreateDirRecursive(const fpath: String): Boolean;
 var
-  s : String;
+  s: String;
 begin
   s := ExtractFileDir(fpath);
   Result := DirectoryExists(fpath);
@@ -763,10 +763,10 @@ begin
 end;
 
 {$IFDEF USE_ZIP}
-function  loadFromZipOrFile(zp : TZipFile; const uPath : String; const fn : String) : RawByteString;
+function  loadFromZipOrFile(zp: TZipFile; const uPath: String; const fn: String): RawByteString;
 var
-  i : Integer;
-  str : TMemoryStream;
+  i: Integer;
+  str: TMemoryStream;
 begin
   result := '';
   i := -1;

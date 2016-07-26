@@ -22,7 +22,7 @@ type
     loading   : boolean;
     cryptMode : byte;
     hashed    : RawByteString;
-    function  fromStream(str: Tstream; quite: Boolean = false): boolean;
+    function  fromStream(str: Tstream; quiet: Boolean = false): boolean;
    public
     loaded    : boolean;
     fToken    : Cardinal;
@@ -36,10 +36,10 @@ type
     function  getIdxBeforeTime(time: TDateTime; inclusive: Boolean = True): Integer;
     procedure reset;
 //    function Clear;
-    procedure deleteFromTo(const uid: TUID; st,en: integer);
-    procedure deleteFromToTime(const uid: TUID; st, en: TDateTime);
+    procedure deleteFromTo(const uid: TUID; st, en: integer);
+    procedure deleteFromToTime(const uid: TUID; const st, en: TDateTime);
 //    function  load(uid:AnsiString; quite : Boolean = false):boolean;
-    function  load(cnt: TRnQContact; const quite: Boolean = false):boolean;
+    function  load(cnt: TRnQContact; const quiet: Boolean = false):boolean;
 //    function  RepaireHistoryFile(fn: String; var rslt : String) : Boolean;
      property Token : Cardinal read fToken;
    protected
@@ -67,7 +67,7 @@ const
   Max_Event_ID = 1000000;
 
 //function Thistory.load(uid:AnsiString; quite : Boolean = false):boolean;
-function Thistory.load(cnt: TRnQContact; const quite : Boolean = false):boolean;
+function Thistory.load(cnt: TRnQContact; const quiet : Boolean = false):boolean;
  {$IFNDEF DB_ENABLED}
 var
   str : TStream;
@@ -84,11 +84,11 @@ begin
     memstream.CopyFrom(str, str.Size);
     memstream.Position := 0;
     FreeAndNil(str);
-    Result :=  fromStream(memstream, quite);
+    Result :=  fromStream(memstream, quiet);
     FreeAndNil(memstream);
    end
   else
-   Result :=  fromStream(nil, quite);
+   Result :=  fromStream(nil, quiet);
 end;
 
 procedure Thistory.Notify(Ptr: Pointer; Action: TListNotification);
@@ -106,7 +106,7 @@ begin
 end;
 }
 
-function Thistory.fromStream(str:Tstream; quite : Boolean = false):boolean;
+function Thistory.fromStream(str:Tstream; quiet : Boolean = false):boolean;
 var
   ev:Thevent;
   thisCnt, thisCnt2 : TRnQcontact;
@@ -316,7 +316,7 @@ begin
       end;
     else
       begin
-       if not quite then
+       if not quiet then
          msgDlg('The history is corrupted, some data is lost', True, mtError);
        result := FALSE;
        loaded := TRUE;
@@ -446,9 +446,9 @@ begin
     end;
 end;
 
-procedure Thistory.deleteFromTo(const uid: TUID; st,en: integer);
+procedure Thistory.deleteFromTo(const uid: TUID; st, en: integer);
 var
-  i:integer;
+  i: integer;
   hev: Thevent;
 begin
  {$IFDEF DB_ENABLED}
@@ -488,7 +488,7 @@ for i:=en downto st do
  {$ENDIF ~DB_ENABLED}
 end; // deleteFromTo
 
-procedure Thistory.deleteFromToTime(const uid: TUID; st, en: TDateTime);
+procedure Thistory.deleteFromToTime(const uid: TUID; const st, en: TDateTime);
 var
   hev: Thevent;
 begin

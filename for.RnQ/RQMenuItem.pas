@@ -22,7 +22,7 @@ const
    }
 
 type
-   TPopupListEx = class(TPopupList)
+  TPopupListEx = class(TPopupList)
    protected
      procedure WndProc(var Message: TMessage) ; override;
    private
@@ -77,15 +77,15 @@ type
     public
 //      FCaptionW: WideString;
       CanTranslate : Boolean;
-    {$ifdef MirandaSupport}
-      ServiceName : String;
-      procedure OnMenuClick(Sender: TObject);
-    {$endif}
       PluginProc : Pointer;
 //      ProtoLink  : Pointer;
       ProtoLink  : TObject;
 //      ProcIdx : Integer;
 //      procedure OnPluginMenuClick(Sender: TObject);
+    {$ifdef RNQ_SERVICES}
+      ServiceName : AnsiString;
+      procedure OnMenuClick(Sender: TObject);
+    {$endif}
       constructor Create(AOwner: TComponent); override;
       procedure onExitMenu(var Msg: TMessage); message WM_EXITMENULOOP;
       property  ImageName : TPicName read FImageName write SetImageName;
@@ -110,11 +110,11 @@ implementation
    m_globaldefs,
    m_api,
  {$endif}
-  {$IFNDEF NOT_USE_GDIPLUS}
+  {$IFDEF USE_GDIPLUS}
     GDIPAPI, GDIPOBJ,
   {$ELSE}
    RnQGraphics32,
-  {$ENDIF NOT_USE_GDIPLUS}
+  {$ENDIF USE_GDIPLUS}
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
@@ -1621,7 +1621,8 @@ begin
     k:=picSize.cy+2;
 //   else
 //    k:=0;
-  if result.y<k then result.y:=k;
+  if result.y<k then
+    result.y:=k;
   if onlysize then
    if item.Count > 0 then
      inc(result.x, 5);
@@ -1639,11 +1640,11 @@ begin
 end;
 
 
-{$ifdef MirandaSupport}
+{$ifdef RNQ_SERVICES}
 procedure TRQMenuItem.OnMenuClick (Sender: TObject);
 begin
   if ServiceName <> '' then
-    CallService(PChar(ServiceName), 0, 0);
+    CallService(PAnsiChar(ServiceName), 0, 0);
 end;
 {$endif}
 

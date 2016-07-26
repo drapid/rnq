@@ -983,6 +983,8 @@ procedure ThrowError(const vm: HVM; const Message: WideString); overload;
 function GetNativeObjectJson(const Value: PSciterValue): WideString;
 
 implementation
+uses
+  RnQGlobal;
 
 var
   FAPI: PSciterApi;
@@ -1293,9 +1295,9 @@ begin
   if FAPI = nil then
   begin
     {$IFDEF CPUX64}
-    HSCITER := LoadLibrary('sciter64.dll');
+    HSCITER := LoadLibrary(modulesPath + 'sciter64.dll');
     {$ELSE}
-    HSCITER := LoadLibrary('sciter32.dll');
+    HSCITER := LoadLibrary(modulesPath + 'sciter32.dll');
     {$ENDIF CPUX64}
     if HSCITER = 0 then
       raise ESciterException.Create('Failed to load Sciter DLL.');

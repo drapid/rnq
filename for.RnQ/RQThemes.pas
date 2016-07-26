@@ -2517,9 +2517,11 @@ begin
     exit;
   end;
   bmp := TRnQBitmap.Create;
-  if not loadPic(TStream(str), bmp, 0, PA_FORMAT_UNK, name) then
+  Result := loadPic(TStream(str), bmp, 0, PA_FORMAT_UNK, name, false);
+  if not Result then
     begin
-      str.Free;
+      if Assigned(str) then
+        str.Free;
       exit;
     end;
   addProp(name, TP_pic, bmp);

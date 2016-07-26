@@ -1516,6 +1516,7 @@ begin
   Application.ShowMainForm := False;
   application.HintHidePause:=60000;
   Application.Title := 'R&Q';
+  Application.DefaultFont.Size := 8;
 
   parseCmdLinePar;
 
@@ -1566,71 +1567,31 @@ begin
 
 
   AllProxies := NIL;
-  refreshAvailableUsers;
-  uin2Bstarted := '';
-  AccPass := '';
-//  needCheckPass := True;
-  if cmdlinepar.startUser > '' then
-    begin
-     uin2Bstarted := extractFileName(cmdlinepar.startuser);
-    end
-  else
-   begin
-     i := findInAvailableUsers(autostartUIN);
-     if i >= 0 then
-       begin
-         uin2Bstarted:=autostartUIN;
-         masterUseSSI := cmdLinePar.ssi or availableusers[i].SSI;
-       end
-     else
-      if length(availableusers)=1 then
-        begin
-          uin2Bstarted:=availableusers[0].uin;
-          masterUseSSI := cmdLinePar.ssi or availableusers[0].SSI;
-        end
-   end;
-  if uin2Bstarted > '' then
-    begin
-      i:=findInAvailableUsers(uin2Bstarted);
-      if i >=0 then
-       begin
-//       if needCheckPass then
-        with availableUsers[i] do
-        if encr and not CheckAccPas(uin, path+ SubPath + PathDelim + dbFilename + '5', AccPass)  then
-         begin
-//           halt(0);
-           uin2Bstarted := '';
-         end;
-       end
-      else
-       uin2Bstarted := '';
-    end;
-  if  uin2Bstarted = '' then
-    begin
-     uin2Bstarted:=showUsers(AccPass);
-//     needCheckPass := False;
-    end;
+  uin2Bstarted := getUserAutoStart(AccPass);
+
+  if uin2Bstarted='' then
+    uin2Bstarted := showUsers(AccPass);
 
   if uin2Bstarted='' then
     halt(0);
 
   repeat
     s := 'R&Q' + uin2Bstarted;
-    Mutex:=OpenMutex(MUTEX_MODIFY_STATE, false, PChar(s));
+    Mutex := OpenMutex(MUTEX_MODIFY_STATE, false, PChar(s));
     if Mutex<>0 then
     begin
       CloseHandle(Mutex);
 //      needCheckPass := false;
 //      mutex := 0;
       msgDlg(Str_already_run, True, mtWarning);
-      uin2Bstarted:=showUsers(AccPass);
+      uin2Bstarted := showUsers(AccPass);
       if uin2Bstarted='' then
         halt(0);
   //    Halt(0);
     end;
   until Mutex=0;
 
-   i:=findInAvailableUsers(uin2Bstarted);
+   i := findInAvailableUsers(uin2Bstarted);
    if i < 0 then
      begin
       msgDlg('StartUser: Bad UIN', True, mtError);
@@ -1744,7 +1705,7 @@ begin
    end;
   s := 'R&Q' + uin2Bstarted;
 //there is no previous Mutex so create new one
-  Mutex:=CreateMutex(nil,false, PChar(s));
+  Mutex := CreateMutex(nil,false, PChar(s));
 
 //take ownership of our mutex
   WaitForSingleObject(Mutex,INFINITE);

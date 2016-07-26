@@ -658,6 +658,8 @@ var
   onContactCreation, onContactDestroying:TcontactProc;
   onStatusDisable :array [0..15] of TOnStatusDisable;
 
+  masterUseSSI: Boolean; // ICQ - Use Server Side Information
+
 //  procedure RegisterProtocol(proto : IRnQProtocol);
 //  procedure RegisterProto(proto : TRnQProtoHelper);
   procedure RegisterProto(proto : TRnQProtoClass);

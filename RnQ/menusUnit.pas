@@ -26,6 +26,8 @@ var
   aMainMenuUpd, aMainMenuUpd2,
   aStatusMenuUpd, aVisMenuUpd : aTaMenuItemUpd;
 
+  aChatMenuUpd : aTaMenuItemUpd;
+
   aSendMenu     : aTaMenuItem; // Menu of button "Send" in chat
   aCloseMenu    : aTaMenuItem; // Menu of button "Close" in chat
  {$IFDEF USE_SECUREIM}

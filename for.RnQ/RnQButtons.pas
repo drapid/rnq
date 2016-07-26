@@ -4601,14 +4601,14 @@ begin
  {$IFDEF RNQ}
   if ImgElm.picName <> '' then
     begin
-      GlyphRect.size := tgpsize(theme.GetPicSize(ImgElm));
-      GlyphRect := DestRect(GlyphRect.size, tgpsize(ClientSize));
+      GlyphRect.size := tGPsize(theme.GetPicSize(ImgElm));
+      GlyphRect := DestRect(GlyphRect.size, tGPsize.create(ClientSize.X-4, ClientSize.Y-4));
     end
 //     GlyphSize := Point(cx, cy)
    else
  {$ENDIF RNQ}
 //    GlyphSize := Point(0, 0);
-    GlyphRect.size := tgpsize(Point(0, 0));
+    GlyphRect.size := tGPsize(Point(0, 0));
 //  if FOriginal <> nil then
 //    GlyphSize := Point(FOriginal.Width div FNumGlyphs, FOriginal.Height) else
 //    GlyphSize := Point(0, 0);

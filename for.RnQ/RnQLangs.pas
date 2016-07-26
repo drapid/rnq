@@ -228,7 +228,8 @@ begin
   begin
     k :=chopline(txt);
 //   par := trim(line);
-    if k = '' then continue;
+    if k = '' then
+      continue;
     if k[1] <> '[' then
      begin
  {$IFDEF UNICODE}

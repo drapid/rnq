@@ -46,14 +46,11 @@ function  unexistant(const uin: TUID): boolean;
 function  fileIncomePath(cnt: TRnQContact): String;
 
 function  isAbort(const pluginReply: AnsiString): boolean;
-function  findInAvailableUsers(const uin: TUID): integer;
 procedure setupChatButtons;
 procedure reloadCurrentLang();
 
 function  showUsers(var pass: String): TUID;
 function  CheckAccPas(const uid: TUID; const db: String; var pPass: String): Boolean;
-procedure clearAvailableUsers;
-procedure refreshAvailableUsers;
 function  getLeadingInMsg(const s: string; ofs: integer = 1): string;
 procedure applyCommonSettings(c: Tcomponent);
 procedure applyUserCharset(f: Tfont);
@@ -268,7 +265,8 @@ const
 implementation
 
 uses
-  ShlObj, shellapi,
+//  ShlObj,
+  shellapi,
   Themes, DwmApi, math, UITypes,
  {$IFDEF UNICODE}
    AnsiStrings,
@@ -3590,298 +3588,6 @@ begin
   end;}
 end; // applyCommonSettings
 
-procedure clearAvailableUsers;
-var
-  i: Integer;
-begin
-  for i := 0 to Length(availableUsers)-1 do
-   begin
-     SetLength(availableUsers[i].name, 0);
-//     SetLength(availableUsers[i].uinStr, 0);
-     SetLength(availableUsers[i].SubPath, 0);
-     SetLength(availableUsers[i].path, 0);
-     SetLength(availableUsers[i].uin, 0);
-     SetLength(availableUsers[i].Prefix, 0);
-   end;
-  setlength(availableUsers, 0);
-end;
-
-procedure refreshAvailableUsers;
-  function getNick_SSI(protoClass: TRnQProtoClass; path: string;
-                       var pSSI: Boolean; uid: TUID;
-                       var nick: String; var isEncripted: Boolean): Boolean;
-      function yesno(const l: String): boolean;
-      begin result := LowerCase(l)='yes' end;
-  var
-    db: TRnQCList;
-    ini: TStrings;
-    zf: TZipFile;
-    s: AnsiString;
-    cf: string;
-    i: Integer;
-//    cnt: TRnQcontact;
-    save: Boolean;
-  begin
-    result := False;
-    nick := '';
-    save := false;
-    isEncripted := False;
-    ini := TstringList.create;
-    db := nil;
-    pSSI := masterUseSSI;
-    cf := path+ PathDelim +dbFileName + '5';
-    if not FileExists(cf) then
-      cf := path+ PathDelim +dbFileName + '4';
-    if FileExists(cf) then
-      begin
-         zf := TZipFile.Create;
-         try
-           zf.LoadFromFile(cf);
-           i := zf.IndexOf('about.txt');
-           if i >=0 then
-            begin
-             isEncripted := zf.IsEncrypted(i);
-             Result := True;
-             if not isEncripted then
-              begin
-               ini.Text := zf.data[i];
-               s := ini.values['account-name'];
-               nick := unUTF( s );
-               pSSI := yesno(ini.Values['use-ssi']);
-              end;
-            end;
-           if not Result then
-            begin
-             i := zf.IndexOf(configFileName);
-             if i >=0 then
-              begin
-               isEncripted := zf.IsEncrypted(i);
-               Result := True;
-               if not isEncripted then
-                begin
-                 ini.Text := zf.data[i];
-                 s := ini.values['account-name'];
-                 nick := unUTF(s);
-                 pSSI := yesno(ini.Values['use-ssi']);
-                end;
-              end;
-            end;
-{
-           if not Result then
-            begin
-             i := zf.IndexOf(dbFileName);
-             if i >=0 then
-              begin
-               isEncripted := zf.IsEncrypted(i);
-               Result := True;
-               if not isEncripted then
-                begin
-                  s := zf.data[i];
-                  db := str2db(protoClass._getContactClass, s);
-                  cnt := db.get(protoClass._getContactClass, uid);
-                  if Assigned(cnt) then
-                    nick := cnt.nick;
-                  freeDB(db);
-                end;
-              end;
-            end;
-}
-          except
-           s := '';
-         end;
-         zf.Free;
-      end;
-    if not result then
-     begin
-      cf := path+ PathDelim + configFileName;
-      if fileExists(cf) then
-        begin
-          save := True;
-          result := True;
-          try
-            ini.LoadFromFile(cf);
-           except
-            ini.Clear;
-          end;
-          nick := UnUTF(ini.values['account-name']);
-          pSSI := yesno(ini.Values['use-ssi']);
-        end
-       else
-        begin
-          cf := path + PathDelim +OldconfigFileName;
-          if fileExists(cf) then
-            begin
-              Result := True;
-              save := True;
-              ini.LoadFromFile(cf);
-              nick := ini.values['account-name'];
-              pSSI := yesno(ini.Values['use-ssi']);
-            end
-        end;
-     end;
-    if not result then
-     begin
-  //     loadDB(path+ PathDelim, db)
-        begin
-         zf := TZipFile.Create;
-         try
-           if FileExists(path+ PathDelim +dbFileName + '3') then
-             zf.LoadFromFile(path+ PathDelim +dbFileName + '3');
-           i := zf.IndexOf(dbFileName);
-           if i >=0 then
-             s := zf.data[i];
-          except
-           s := '';
-         end;
-         zf.Free;
-        end;
-       if s = '' then
-         s := loadFileA(path+ PathDelim +dbFileName);
-{
-      if s > '' then
-       begin
-        Result := True;
-        db:=str2db(protoClass._getContactClass, s);
-        cnt := db.get(protoClass._getContactClass, uid);
-        if Assigned(cnt) then
-          nick := cnt.nick;
-       end;
-}
-//      if not result then
-//        nick := ' ';
-      if save then
-       begin
-        ini.values['account-name']:= StrToUTF8(nick);
-  //      ini.Values['use-ssi'] := yesno();
-        ini.saveToFile(cf);
-       end;
-      freeDB(db);
-     end;
-    ini.free;
-  end; // getNick
-
-  procedure addAvailableUser(protoClass: TRnQProtoClass; UID: TUID;
-          pPath, pPrefix: string);
-  var
-    n: integer;
-  begin
-    n := length(availableUsers);
-    setlength(availableUsers, n+1);
-//    with availableUsers[n] do
-    begin
-//      availableUsers[n].uinStr:=extractFileName(pPath);
-      with availableUsers[n] do
-       begin
-//        if copy(uinStr, 1, 4) = AIMprefix then
-//         uinStr := copy(uinStr, 5, length(uinStr));
-//        uinStr:=extractFileName(pPath);
-        SubPath := extractFileName(pPath);
- {$IFNDEF ICQ_ONLY}
-        proto := protoClass;
-//        if (protoClass <> TicqSession) then
-//          uinStr := protoClass._GetProtoName + '_' + uid
-//         else
- {$ELSE ICQ_ONLY}
-//        uinStr := UID;
-        proto := TICQSession;
- {$ENDIF ~ICQ_ONLY}
-        uin := UID;
-//         uid := uinStr;
-         getNick_SSI(protoClass, pPath, SSI, UID, name, encr);
-         Prefix := pPrefix;
-         path:= ExtractFilePath(pPath);
-       end;
-    end;
-  end; // addAvailableUser
-
-  procedure searchIn(path: string; Prefix : String = '');
-
-  var
-//  code:integer;
-    sr: TsearchRec;
-//   i:integer;
-    s: String;
-    s2: TUID;
-//   prCl : TRnQProtoHelper;
-    prCl: TRnQProtoClass;
-  begin
-  path := includeTrailingPathDelimiter(path);
-  ZeroMemory(@sr.FindData, SizeOf(TWin32FindData));
-  if FindFirst(path+'*', faDirectory, sr)=0 then
-    repeat
-    if (sr.Attr and faDirectory > 0) and (sr.name <> '.')and (sr.name <> '..') then
-      begin
-        s := ExtractFileName(sr.name);
-//      val(sr.Name, i, code);
-//      if TicqSession.isValidUID(s)
-//      if TRnQProtocol(icq).isValidUID(s)
-       for prCl in RnQProtos do
-        begin
-         s2 := s;
-//         if prCl._isValidUid(s2)
-         if prCl._isProtoUid(s2)
-//      if icq.isValidUID(s)
-//        or (copy(sr.Name, 1, 4) = 'AIM_')
-        then
-         begin
-          addAvailableUser(prCl, s2, path+sr.name, Prefix);
-          break;
-         end;
-        end;
-      end;
-    until FindNext(sr) > 0;
-  FindClose(sr);
-  end;
-
-var
-  s: string;
-  i, j, n: integer;
-  found: Boolean;
-  ss: TUID;
-//  uid : AnsiString;
-begin
-  clearAvailableUsers;
-  searchIn(myPath);
-  if RnQMainPath > '' then
-    searchIn(myPath+RnQMainPath);
-
-//  s := getSpecialFolder('AppData')+'R&Q\';
-  s := getSpecialFolder(CSIDL_APPDATA)+'R&Q\';
-  searchIn(s, 'App\');
-
-  if (cmdLinePar.userPath > '') and not AnsiSameText(cmdLinePar.userPath, usersPath) then
-   if LowerCase(s) <> LowerCase(cmdLinePar.userPath) then
-     searchIn(cmdLinePar.userPath, 'User\');
-
-  s := usersPath;
-  while s>'' do
-    searchIn(chop(';',s), 'Users path\');
-  if cmdLinePar.startUser > '' then
-   begin
-    found := false;
-    for n := 0 to length(availableUsers) - 1 do
-     begin
-      ss := cmdLinePar.startUser;
-      if availableUsers[n].proto._isProtoUid(ss)
-        and (availableUsers[n].uin = ss) then
-       found := true;
-     end;
-    if not found then
-     begin
-//      fantomWork := True;    // New фича 2007.10.09
- {$IFDEF ICQ_ONLY}
-      addAvailableUser(TicqSession, cmdLinePar.startUser, myPath + cmdLinePar.startUser, 'CMD\');
- {$ENDIF ICQ_ONLY}
-     end;
-   end;
-
- n := length(availableUsers);
- for i:=0 to n-2 do
-  for j:=i+1 to n-1 do
-    swap4(availableUsers[i], availableUsers[j], sizeOf(availableUsers[i]),
-      availableUsers[i].uin > availableUsers[j].uin );
-end; // refreshAvailableUsers
-
 
 procedure mainfrmHandleUpdate;
 var
@@ -3997,14 +3703,6 @@ result:=not (Account.AccProto.getMyInfo.equals(uin))
     and not Account.AccProto.readList(LT_ROSTER).exists(Account.AccProto, uin)
     and not notInlist.exists(Account.AccProto, uin)
 end; // unexistant
-
-function findInAvailableUsers(const uin: TUID): integer;
-begin
-for result:=0 to length(availableusers)-1 do
-  if availableusers[result].uin = uin then
-    exit;
-result:=-1;
-end; // findInAvailableUsers
 
 function isAbort(const pluginReply: AnsiString):boolean;
 begin

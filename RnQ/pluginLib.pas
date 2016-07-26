@@ -79,6 +79,8 @@ type
 
   TPlugButtons = class
    public
+    const minBtnWidth = 21;
+   public
     btns: Array of TRnQSpeedButton;
     btnCnt: Integer;
    public
@@ -974,10 +976,11 @@ begin
     btns[i].ImageName := sPic;
 //  btns[i].NumGlyphs := 1;
   Modify(i, iIcon, bHint, sPic);
-  btns[i].top:=(chatFrm.panel.clientheight-btns[i].height) div 2;
+  btns[i].top := (chatFrm.panel.clientheight-btns[i].height) div 2;
 //  theme.addProp(btns[i].ImageName, TP_pic,
 //  btns[i].width:=btns[i].Glyph.width+5;
-  if btns[i].width < 21 then btns[i].width := 21;
+  if btns[i].width < minBtnWidth then
+    btns[i].width := minBtnWidth;
 //  btns[i].Constraints.MaxHeight := 21;
 //  btns[i].Constraints.MinHeight := 21;
 {  if chatFrm.tbPlugins.ButtonCount = 0 then
@@ -1030,6 +1033,7 @@ procedure TPlugButtons.Modify(bAddr: Integer; iIcon: HICON; //THandle;
                               const bHint: String; const sPic: AnsiString);
 var
   i: Integer;
+  w: Integer;
 begin
  i := bAddr; // - 1;
   if (i < Low(btns)) or (i > High(btns)) then
@@ -1042,7 +1046,9 @@ begin
       theme.addHIco(sPic, iIcon, True)
      else
       theme.addHIco(btns[i].ImageName, iIcon, True);
-    btns[i].width:= theme.getPicSize(RQteButton, btns[i].ImageName, 16).cx+5;
+    w := theme.getPicSize(RQteButton, btns[i].ImageName, 16).cx + 5;
+    w := bound(w+5, 16+5, btns[i].height+2);
+    btns[i].width := w;
    end;
   if sPic <> '' then
      btns[i].ImageName := sPic;

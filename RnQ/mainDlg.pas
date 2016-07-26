@@ -4760,13 +4760,6 @@ begin
   for ev in aStatusMenuUpd do
     ev.amiuEv(ev.amiuMenu);
 end;
- { $IFDEF Use_Baloons
-procedure tRnQmain.offballoons;
-begin
-  hideballoon(handle,100);
-end;
- {$ENDIF Use_Baloons}
-
 
 procedure TRnQmain.CMMouseEnter(var Msg: TMessage);
 begin

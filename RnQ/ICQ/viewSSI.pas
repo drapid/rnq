@@ -61,7 +61,8 @@ uses
   dateUtils,
   RDUtils, RQUtil, RDGlobal, RnQBinUtils, RDFileUtil, RnQDialogs,
   RnQSysUtils,
-  RQ_ICQ, ICQConsts, utilLib, globalLib, mainDlg;
+  RnQProtocol, RQ_ICQ, ICQConsts,
+  utilLib, globalLib, mainDlg;
 
 {$R *.dfm}
 

@@ -4200,38 +4200,39 @@ begin
 end; // sendQueryInfo}
 
 procedure TicqSession.sendWPsearch(wp: TwpSearch; idx : Integer);
-  function TLVIfNotNull(t : word; s : RawByteString) : RawByteString;
+  function TLVIfNotNull(t: word; const s: RawByteString) : RawByteString;
   begin
     if s > '' then
      result := TLV_LE(t, WNTS(s));
   end;
-  function TLVIfbNotNull(t : word; b : byte) : RawByteString;
+  function TLVIfbNotNull(t: word; b: byte): RawByteString;
   begin
     if b > 0 then
      result := TLV_LE(t, AnsiChar(b));
   end;
-  function TLVIfWNotNull(t : word; w : word) : RawByteString;
+  function TLVIfWNotNull(t: word; w: word): RawByteString;
   begin
     if w > 0 then
      result := TLV_LE(t, word_LEasStr(w));
   end;
-  function TLVIfDWNotNull(t : word; d : dword) : RawByteString;
+  function TLVIfDWNotNull(t: word; d: dword): RawByteString;
   begin
     if d > 0 then
      result := TLV_LE(t, dword_BEasStr(d));
   end;
-  function TLVIfINotNull(t : word; w : word; s : RawByteString) : RawByteString;
+  function TLVIfINotNull(t: word; w: word; const s: RawByteString): RawByteString;
   begin
     if (w > 0) or (s > '') then
      result := TLV_LE(t, word_LEasStr(w) + WNTS(s));
   end;
 const
-  TAB:array [boolean] of AnsiChar=(#$B2,#$D0);
+  TAB: array [boolean] of AnsiChar=(#$B2,#$D0);
 var
-  s : RawByteString;
+  s: RawByteString;
 begin
-  if not isReady then exit;
-  wasUINwp:=wp.uin > '';
+  if not isReady then
+    exit;
+  wasUINwp := wp.uin > '';
   if wasUINwp then
    begin
 //    s := TAB[myinfo.uin=wp.uin]+#4+dword_LEasStr(wp.uin);
@@ -4272,13 +4273,13 @@ begin
     addRef(REF_wp, '');
 end; // sendWPsearch
 
-procedure TicqSession.sendWPsearch2(wp:TwpSearch; idx : Integer; IsWP : Boolean = True);
-  function TLVIfNotNull(t: word; const s: RawByteString) : RawByteString; inline;
+procedure TicqSession.sendWPsearch2(wp: TwpSearch; idx: Integer; IsWP: Boolean = True);
+  function TLVIfNotNull(t: word; const s: RawByteString): RawByteString; inline;
   begin
     if s > '' then
      result := TLV(t, WNTS(s));
   end;
-  function TLVIfbNotNull(t: word; b: byte) : RawByteString; inline;
+  function TLVIfbNotNull(t: word; b: byte): RawByteString; inline;
   begin
     if b > 0 then
      result := TLV(t, AnsiChar(b));
@@ -4304,7 +4305,7 @@ procedure TicqSession.sendWPsearch2(wp:TwpSearch; idx : Integer; IsWP : Boolean 
      result := TLV(t, word_LEasStr(w) + WNTS(s));
   end;
 {
-  function TLVIfSNotNull(t : word; s : RawByteString) : RawByteString;
+  function TLVIfSNotNull(t: word; const s: RawByteString): RawByteString;
   begin
     if (s > '') then
      result := TLV(t, Length_LE(s));

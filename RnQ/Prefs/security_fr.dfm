@@ -86,7 +86,7 @@ object securityFr: TsecurityFr
     Top = 125
     Width = 312
     Height = 17
-    Caption = 'Make bakup for files before write'
+    Caption = 'Make backup for files before write'
     TabOrder = 2
   end
   object AddTempVisMsgChk: TCheckBox

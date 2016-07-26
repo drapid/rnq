@@ -3,11 +3,11 @@
         <ProjectGuid>{94E0A466-1C1B-48B7-B4DC-61F2C1EBC94C}</ProjectGuid>
         <MainSource>RnQx64.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">R&amp;Q CEF</Config>
+        <Config Condition="'$(Config)'==''">R&amp;Q SCI Debug</Config>
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>
-        <ProjectVersion>18.0</ProjectVersion>
+        <ProjectVersion>18.1</ProjectVersion>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -53,6 +53,19 @@
         <Cfg_1>true</Cfg_1>
         <Base>true</Base>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI' or '$(Cfg_5)'!=''">
+        <Cfg_5>true</Cfg_5>
+        <CfgParent>Cfg_1</CfgParent>
+        <Cfg_1>true</Cfg_1>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_5)'=='true') or '$(Cfg_5_Win32)'!=''">
+        <Cfg_5_Win32>true</Cfg_5_Win32>
+        <CfgParent>Cfg_5</CfgParent>
+        <Cfg_5>true</Cfg_5>
+        <Cfg_1>true</Cfg_1>
+        <Base>true</Base>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
         <Cfg_2>true</Cfg_2>
         <CfgParent>Base</CfgParent>
@@ -70,12 +83,31 @@
         <Cfg_2>true</Cfg_2>
         <Base>true</Base>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='R&amp;Q CEF Debug' or '$(Cfg_4)'!=''">
+        <Cfg_4>true</Cfg_4>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI Debug' or '$(Cfg_6)'!=''">
+        <Cfg_6>true</Cfg_6>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_6)'=='true') or '$(Cfg_6_Win32)'!=''">
+        <Cfg_6_Win32>true</Cfg_6_Win32>
+        <CfgParent>Cfg_6</CfgParent>
+        <Cfg_6>true</Cfg_6>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <BRCC_OutputDir>Units</BRCC_OutputDir>
         <PreBuildEvent><![CDATA[BuiltTime.exe
 $(PreBuildEvent)]]></PreBuildEvent>
         <Icon_MainIcon>Res\MAINICON_Lite.ico</Icon_MainIcon>
-        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\AES;..\For.rnq\Flash;..\For.rnq\RTL;\ICQ;\MRA;\Prefs;\xmpp;..\For.rnq\XML;..\For.rnq\DCEF;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\AES;..\For.rnq\Flash;..\For.rnq\RTL;\ICQ;\MRA;\Prefs;\xmpp;..\For.rnq\XML;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <SanitizedProjectName>RnQx64</SanitizedProjectName>
         <DCC_UsePackage>rtl;$(DCC_UsePackage)</DCC_UsePackage>
         <Manifest_File>Res\rnq.manifest1</Manifest_File>
@@ -120,30 +152,44 @@ $(PreBuildEvent)]]></PreBuildEvent>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_AssertionsAtRuntime>false</DCC_AssertionsAtRuntime>
-        <VerInfo_Build>1121</VerInfo_Build>
+        <VerInfo_Build>1125</VerInfo_Build>
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1121;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q x64;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1125;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q x64;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
         <DCC_DebugInformation>0</DCC_DebugInformation>
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1123;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
-        <VerInfo_Build>1123</VerInfo_Build>
+        <DCC_DebugInformation>2</DCC_DebugInformation>
+        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1125;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_MapFile>3</DCC_MapFile>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_3_Win32)'!=''">
-        <VerInfo_Build>1123</VerInfo_Build>
-        <VerInfo_Release>0</VerInfo_Release>
+    <PropertyGroup Condition="'$(Cfg_3)'!=''">
         <DCC_Define>CHAT_CEF;$(DCC_Define)</DCC_Define>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_3_Win32)'!=''">
+        <DCC_DebugInformation>2</DCC_DebugInformation>
+        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+        <VerInfo_Release>0</VerInfo_Release>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.1123;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.1125;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
         <VerInfo_MinorVer>0</VerInfo_MinorVer>
         <VerInfo_MajorVer>1</VerInfo_MajorVer>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_5)'!=''">
+        <DCC_UnitSearchPath>..\for.RnQ\SciDe;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_Define>CHAT_SCI;$(DCC_Define)</DCC_Define>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_5_Win32)'!=''">
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+        <DCC_DebugInformation>2</DCC_DebugInformation>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1125;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -151,13 +197,11 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <VerInfo_Build>1122</VerInfo_Build>
-        <Manifest_File>Res\rnq.manifest1</Manifest_File>
         <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
         <DCC_UsePackage>EurekaLogCore;$(DCC_UsePackage)</DCC_UsePackage>
         <VerInfo_Debug>true</VerInfo_Debug>
         <DCC_MapFile>3</DCC_MapFile>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1122;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1125;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
@@ -166,7 +210,19 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
         <DCC_Optimize>true</DCC_Optimize>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1121;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1125;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11;Comments=</VerInfo_Keys>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_4)'!=''">
+        <DCC_Define>CHAT_CEF;$(DCC_Define)</DCC_Define>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_6)'!=''">
+        <DCC_UnitSearchPath>..\For.rnq\SciDe;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_Define>CHAT_SCI;$(DCC_Define)</DCC_Define>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_6_Win32)'!=''">
+        <VerInfo_Debug>true</VerInfo_Debug>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1125;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -331,39 +387,12 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCCReference Include="..\For.rnq\RnQLangFrm.pas">
             <Form>FrmLangs</Form>
         </DCCReference>
-        <DCCReference Include="ViewHEventDlg.pas">
-            <Form>HEventFrm</Form>
-        </DCCReference>
         <DCCReference Include="..\for.RnQ\RTL\RDUtils.pas"/>
         <DCCReference Include="ICQ\filetransferDlg.pas">
             <Form>filetransferFrm</Form>
         </DCCReference>
-        <DCCReference Include="ICQ\ICQ.Stickers.pas"/>
-        <DCCReference Include="ICQ\icq_fr.pas">
-            <Form>icqFr</Form>
-        </DCCReference>
-        <DCCReference Include="ICQ\ICQClients.pas"/>
-        <DCCReference Include="ICQ\ICQConsts.pas"/>
-        <DCCReference Include="ICQ\ICQContacts.pas"/>
-        <DCCReference Include="ICQ\ICQflap.pas"/>
-        <DCCReference Include="ICQ\ICQv9.pas"/>
-        <DCCReference Include="ICQ\MenuStickers.pas">
-            <Form>FStickers</Form>
-        </DCCReference>
-        <DCCReference Include="ICQ\Protocol_ICQ.pas"/>
-        <DCCReference Include="ICQ\RQ_ICQ.pas"/>
-        <DCCReference Include="ICQ\RQCodes.pas"/>
-        <DCCReference Include="ICQ\sendfileDlg.pas">
-            <Form>sendfileFrm</Form>
-        </DCCReference>
-        <DCCReference Include="ICQ\viewinfoDlg.pas">
-            <Form>viewinfoFrm</Form>
-        </DCCReference>
-        <DCCReference Include="ICQ\viewSSI.pas">
-            <Form>SSIForm</Form>
-        </DCCReference>
-        <DCCReference Include="ICQ\wpDlg.pas">
-            <Form>wpFrm</Form>
+        <DCCReference Include="ViewHEventDlg.pas">
+            <Form>HEventFrm</Form>
         </DCCReference>
         <None Include="..\For.rnq\RnQConfig.inc"/>
         <None Include="RnQConfig.inc"/>
@@ -374,12 +403,24 @@ $(PreBuildEvent)]]></PreBuildEvent>
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
         </BuildConfiguration>
+        <BuildConfiguration Include="R&amp;Q CEF">
+            <Key>Cfg_3</Key>
+            <CfgParent>Cfg_1</CfgParent>
+        </BuildConfiguration>
         <BuildConfiguration Include="Release">
             <Key>Cfg_1</Key>
             <CfgParent>Base</CfgParent>
         </BuildConfiguration>
-        <BuildConfiguration Include="R&amp;Q CEF">
-            <Key>Cfg_3</Key>
+        <BuildConfiguration Include="R&amp;Q SCI Debug">
+            <Key>Cfg_6</Key>
+            <CfgParent>Cfg_2</CfgParent>
+        </BuildConfiguration>
+        <BuildConfiguration Include="R&amp;Q CEF Debug">
+            <Key>Cfg_4</Key>
+            <CfgParent>Cfg_2</CfgParent>
+        </BuildConfiguration>
+        <BuildConfiguration Include="R&amp;Q SCI">
+            <Key>Cfg_5</Key>
             <CfgParent>Cfg_1</CfgParent>
         </BuildConfiguration>
     </ItemGroup>
@@ -419,15 +460,15 @@ $(PreBuildEvent)]]></PreBuildEvent>
                     <VersionInfoKeys Name="Comments"/>
                 </VersionInfoKeys>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k230.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp230.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k240.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp240.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>
-            <Deployment Version="2">
+            <Deployment Version="3">
                 <DeployFile LocalName="..\Distro\RnQx64.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>RnQx64.exe</RemoteName>
@@ -530,17 +571,20 @@ $(PreBuildEvent)]]></PreBuildEvent>
                     </Platform>
                 </DeployClass>
                 <DeployClass Required="true" Name="ProjectOutput">
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
                     <Platform Name="Win32">
                         <Operation>0</Operation>
                     </Platform>
-                    <Platform Name="iOSDevice64">
+                    <Platform Name="Linux64">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="OSX32">
                         <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="Android">
@@ -572,12 +616,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="AndroidLibnativeX86File">
-                    <Platform Name="Android">
-                        <RemoteDir>library\lib\x86</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
+                <DeployClass Name="AndroidLibnativeX86File"/>
                 <DeployClass Name="ProjectiOSDeviceDebug">
                     <Platform Name="iOSDevice64">
                         <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
@@ -681,11 +720,11 @@ $(PreBuildEvent)]]></PreBuildEvent>
                 </DeployClass>
                 <DeployClass Name="ProjectiOSEntitlements">
                     <Platform Name="iOSDevice64">
-                        <RemoteDir>../</RemoteDir>
+                        <RemoteDir>..\</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="iOSDevice32">
-                        <RemoteDir>../</RemoteDir>
+                        <RemoteDir>..\</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -709,7 +748,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
                 </DeployClass>
                 <DeployClass Name="ProjectOSXEntitlements">
                     <Platform Name="OSX32">
-                        <RemoteDir>../</RemoteDir>
+                        <RemoteDir>..\</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -844,6 +883,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="Linux64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
@@ -886,6 +926,22 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEvent/>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI' And '$(Platform)'=='Win32'">
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+        <PreLinkEvent/>
+        <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+        <PostBuildEvent/>
+        <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI' And '$(Platform)'=='Win64'">
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+        <PreLinkEvent/>
+        <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+        <PostBuildEvent/>
+        <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win32'">
         <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
@@ -895,6 +951,38 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win64'">
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+        <PreLinkEvent/>
+        <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+        <PostBuildEvent/>
+        <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='R&amp;Q CEF Debug' And '$(Platform)'=='Win32'">
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+        <PreLinkEvent/>
+        <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+        <PostBuildEvent/>
+        <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='R&amp;Q CEF Debug' And '$(Platform)'=='Win64'">
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+        <PreLinkEvent/>
+        <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+        <PostBuildEvent/>
+        <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI Debug' And '$(Platform)'=='Win32'">
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+        <PreLinkEvent/>
+        <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+        <PostBuildEvent/>
+        <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI Debug' And '$(Platform)'=='Win64'">
         <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>

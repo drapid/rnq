@@ -123,22 +123,8 @@ type
 }
   TchatFrm = class(TForm)
     pagectrl: TPageControl;
-    histmenu: TPopupMenu;
-    copylink2clpbd: TMenuItem;
-    copy2clpb: TMenuItem;
-    selectall1: TMenuItem;
-    viewmessageinwindow1: TMenuItem;
-    saveas1: TMenuItem;
-    html1: TMenuItem;
-    txt1: TMenuItem;
-    del1: TMenuItem;
-    addlink2fav: TMenuItem;
     panel: TPanel;
     sbar: TStatusBar;
-    chatshowlsb1: TMenuItem;
-    chatpopuplsb1: TMenuItem;
-    N1: TMenuItem;
-    add2rstr: TMenuItem;
     ActList1: TActionList;
     hAaddtoroaster: TAction;
     hAsaveas: TAction;
@@ -147,8 +133,6 @@ type
     hAchatpopuplsb: TAction;
     hACopy: TAction;
     hASelectAll: TAction;
-    N2: TMenuItem;
-    toantispam: TMenuItem;
     sendBtn: TRnQToolButton;
     closeBtn: TRnQToolButton;
     toolbar: TToolBar;
@@ -164,9 +148,6 @@ type
     RnQPicBtn: TRnQSpeedButton;
     RnQFileBtn: TRnQSpeedButton;
     tb0: TToolBar;
-    N3: TMenuItem;
-    Openchatwith1: TMenuItem;
-    savePicMnu: TMenuItem;
     fp: TBevel;
     caseChk: TCheckBox;
     reChk: TCheckBox;
@@ -176,14 +157,33 @@ type
     CLPanel: TPanel;
     CLSplitter: TSplitter;
     hAViewInfo: TAction;
-    ViewinfoM: TMenuItem;
     hAShowSmiles: TAction;
-    chtShowSmiles: TMenuItem;
     stickersBtn: TRnQSpeedButton;
     ShowStickers: TAction;
     BuzzBtn: TRnQSpeedButton;
-    chatShowDevTools: TMenuItem;
     hAShowDevTools: TAction;
+    histmenu: TPopupMenu;
+    add2rstr: TMenuItem;
+    copylink2clpbd: TMenuItem;
+    copy2clpb: TMenuItem;
+    savePicMnu: TMenuItem;
+    selectall1: TMenuItem;
+    viewmessageinwindow1: TMenuItem;
+    saveas1: TMenuItem;
+    txt1: TMenuItem;
+    html1: TMenuItem;
+    addlink2fav: TMenuItem;
+    del1: TMenuItem;
+    N1: TMenuItem;
+    toantispam: TMenuItem;
+    N2: TMenuItem;
+    Openchatwith1: TMenuItem;
+    ViewinfoM: TMenuItem;
+    N3: TMenuItem;
+    chtShowSmiles: TMenuItem;
+    chatshowlsb1: TMenuItem;
+    chatpopuplsb1: TMenuItem;
+    chatShowDevTools: TMenuItem;
     procedure closemenuPopup(Sender: TObject);
     procedure prefBtnMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -303,6 +303,7 @@ type
       Y: Integer);
     procedure OnUploadSendData(Sender: TObject; Buffer: Pointer; Len: Integer);
     procedure chatShowDevToolsClick(Sender: TObject);
+    procedure RnQSpeedButton1Click(Sender: TObject);
   {$IFDEF usesDC}
     procedure WMDROPFILES(var Message: TWMDROPFILES);  message WM_DROPFILES;
   {$ENDIF usesDC}
@@ -366,6 +367,7 @@ type
     poppedup     : TPoint;
     selectedUIN  : TUID;
     plugBtns     : TPlugButtons;
+    histPM       : TPopupMenu;
     sendMenuExt  : TPopupMenu;
     closeMenuExt : TPopupMenu;
  { $IFDEF USE_SECUREIM}
@@ -877,6 +879,7 @@ var
   cnt: TRnQContact;
   firstNILpage, NILcount: Integer;
 begin
+
   wasEmpty := pageCtrl.pageCount=0;
   i := chats.idxOf(otherHand);
   alreadyThere := i=pageIndex;
@@ -956,8 +959,12 @@ end; // applyFormXY
 
 procedure TchatFrm.FormCreate(Sender: TObject);
 begin
-  chats:=Tchats.create;
+  chats := Tchats.create;
   plugBtns := TPlugButtons.Create;
+
+  histPM := nil;
+//  THistoryBox.initMenu(histPM, Self);
+
   InitMenuChats;
   createMenuAs(aSendMenu, sendMenuExt, self);
   createMenuAs(aCloseMenu, closeMenuExt, self);
@@ -1065,7 +1072,8 @@ begin
   i := chats.idxOf(c);
   if i < 0 then
     i := newIMchannel(c);
-  setTab(i);
+  if i >= 0 then
+    setTab(i);
   pageCtrlChange(self);
   if wasEmpty then
    if docking.Docked2chat then
@@ -1098,6 +1106,12 @@ var
   pnl: Tpanel;
   i: Integer;
 begin
+ {$IFDEF CHAT_SCI} // Sciter
+  if not THistoryBox.PreLoadTemplate then
+    Exit(-1);
+ {$ENDIF CHAT_SCI} // Sciter
+
+
  {$IFDEF SMILES_ANI_ENGINE}
 //  rqSmiles.ClearAniParams;
   theme.ClearAniParams;
@@ -4838,6 +4852,13 @@ begin
     s2 := '';  
 
   end;
+end;
+
+procedure TchatFrm.RnQSpeedButton1Click(Sender: TObject);
+begin
+  if Assigned(histPM) then
+    histPM.popup(mousePos.X, mousePos.Y);
+//  ThistoryBox.popupmenu;
 end;
 
 {procedure TchatFrm.process_tZers(ASender: TObject; percentDone: Integer);

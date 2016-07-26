@@ -106,6 +106,7 @@ type
   TGPSize = packed record
     Width  : Integer;
     Height : Integer;
+    constructor create(Width, Height: Integer);
   end;
 
   function MakeSize(sz2: TSize): TGPSize; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
@@ -200,6 +201,12 @@ end;
   begin
     Result.cx := sz1.Width;
     Result.cy := sz1.Height;
+  end;
+
+  constructor TGPSize.create(Width, Height: Integer);
+  begin
+    Self.Width := Width;
+    Self.Height := Height;
   end;
 
   function MakeRect(x, y, width, height: Integer): TGPRect; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}

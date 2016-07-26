@@ -121,7 +121,7 @@ object aboutFrm: TaboutFrm
       Top = 53
       Width = 74
       Height = 13
-      Caption = #169'2005'#8212'2015'
+      Caption = #169'2005'#8212'2016'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -9

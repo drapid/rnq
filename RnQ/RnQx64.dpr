@@ -12,17 +12,6 @@ program RnQx64;
 {$R 'stickers.res' 'ICQ\stickers.rc'}
 
 uses
-  EMemLeaks,
-  EResLeaks,
-  ESendMailSMAPI,
-  EDialogWinAPIMSClassic,
-  EDialogWinAPIEurekaLogDetailed,
-  EDialogWinAPIStepsToReproduce,
-  EDebugExports,
-  EFixSafeCallException,
-  EMapWin32,
-  EAppVCL,
-  ExceptionLog7,
   Windows,
   Forms,
   sysutils,

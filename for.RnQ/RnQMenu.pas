@@ -26,6 +26,18 @@ type
   end;
   aTaMenuItem = array of TaMenuItem;
 
+  TbMenuItem = record
+   amiIdx     : Integer;
+   amiName    : String;
+   amiCaption : String;
+   amiHint    : String;
+   amiImage   : TPicName;
+   amiEvName  : ShortString;
+   amiTag     : Integer;
+   amiParent  : String;
+  end;
+  aTbMenuItem = array of TbMenuItem;
+
 type
   TaMenuItemUpd = record
    amiuMenu    : TRQMenuItem;
@@ -47,7 +59,8 @@ type
   procedure clearAMI(var pAMI: TaMenuItem);
 
 
-  procedure createMenuAs(ami: aTaMenuItem; var ppm: TPopupMenu; Own: TComponent);
+  procedure createMenuAs(ami: aTaMenuItem; var ppm: TPopupMenu; Own: TComponent); overload;
+  procedure createMenuAs(ami: array of TaMenuItem; var ppm: TPopupMenu; Own: TComponent); overload;
 
   procedure addToMenuMass(var mass: aTaMenuItem; idx: Integer; const name: String;
               const Cptn, Hint: String;
@@ -61,8 +74,8 @@ implementation  uses
 
 var
   aMainMenu : aTaMenuItem;
-  aStsMenu : aTaMenuItem;
-  aVisMenu : aTaMenuItem;
+//  aStsMenu : aTaMenuItem;
+//  aVisMenu : aTaMenuItem;
 
 //const
 //  aMainMenu: array[0..1] of TaMenuItem =
@@ -113,6 +126,8 @@ function AddToMenu(const namePrefix: String;
                    idx: Integer = -1): TRQMenuItem; overload;
 var
   k : Integer;
+  mi : TMenuItem;
+  inserted : Boolean;
 begin
   result := TRQMenuItem.Create(ppi);
   result.Name      := namePrefix + ami.amiName;
@@ -121,10 +136,22 @@ begin
   result.ImageName := ami.amiImage;
   result.OnClick   := ami.amiEv;
   result.Tag       := ami.amiTag;
-  if (idx <0) or (idx >= ppi.Count) then
-    ppi.Add(Result)
-   else
-    ppi.Insert(idx, Result);
+  inserted := False;
+  if (idx < 0) and (ami.amiParent > '') then
+    begin
+      for mi in ppi do
+        if mi.Name = namePrefix + ami.amiParent then
+         begin
+          mi.Add(Result);
+          inserted := True;
+         end;
+    end;
+
+  if not inserted then
+    if (idx <0) or (idx >= ppi.Count) then
+      ppi.Add(Result)
+     else
+      ppi.Insert(idx, Result);
 //  if Assigned(ami.amiUpd) and (Assigned(updArr)) then
   if Assigned(ami.amiUpd) then
      begin
@@ -150,6 +177,21 @@ begin
 end;
 
 procedure createMenuAs(ami: aTaMenuItem; var ppm: TPopupMenu; Own: TComponent);
+var
+  i: Integer;
+//  , k
+//  mi : TRQMenuItem;
+  updArr: aTaMenuItemUpd;
+begin
+  ppm := TPopupMenu.Create(Own);
+  for i := 0 to Length(ami) - 1 do
+    begin
+      AddToMenu('', ami[i], ppm.Items, updArr);
+    end;
+  SetLength(updArr, 0);
+end;
+
+procedure createMenuAs(ami: array of TaMenuItem; var ppm: TPopupMenu; Own: TComponent);
 var
   i: Integer;
 //  , k

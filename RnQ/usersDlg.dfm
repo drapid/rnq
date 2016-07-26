@@ -88,6 +88,12 @@ object usersFrm: TusersFrm
       Height = 25
       Hint = 'input your UIN and create a new user'
       Caption = 'New user'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
       TabOrder = 1
       OnClick = newuserBtnClick
       ImageName = 'new.user'

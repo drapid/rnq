@@ -14,8 +14,9 @@ uses
   {$ENDIF USE_GDIPLUS}
   windows, controls, classes,
   sysutils, graphics, forms, stdctrls, ExtCtrls,
-  messages, strutils,
-  RDGlobal, history, RnQProtocol, events;
+  messages, strutils, Menus,
+  RDGlobal, RnQMenu, RQMenuItem,
+  history, RnQProtocol, events;
 
 type
   TlinkKind = (LK_FTP, LK_EMAIL, LK_WWW, LK_UIN, LK_ED);
@@ -57,6 +58,7 @@ type
    end;
 
   ThistoryBox = class(TcustomControl)
+    popMenu: TRnQPopupMenu;
    private
    // For History at all
     items: array of ThistoryItem;
@@ -64,7 +66,8 @@ type
     startWithLastLine: boolean;
     P_topEventNrows, P_bottomEvent: integer;
     fAutoScrollState: TAutoScrollState;    // auto scrolls along messages
-    FOnScroll : TNotifyEvent;
+//    fAutoscroll: boolean;    // auto scrolls along messages
+//    not2go2end : Boolean;
    private
     // For Active History!
     lastTimeClick: TdateTime;
@@ -75,15 +78,14 @@ type
     linkToUnderline: ThistoryLink;
     FOnLinkClick: TLinkClickEvent;
     buffer: TBitmap;
-//    fAutoscroll: boolean;    // auto scrolls along messages
-//    not2go2end : Boolean;
-   private
-    // Same for all historys
-    firstCharactersForSmiles: set of AnsiChar; // for faster smile recognition
-//    firstCharactersForSmiles: set of Char; // for faster smile recognition
     lastWidth
 //    , lastHeight
        : Integer;
+   private
+    // Same for all historys
+//    firstCharactersForSmiles: set of AnsiChar; // for faster smile recognition
+    firstCharactersForSmilesW: String; // for faster smile recognition
+    FOnScroll : TNotifyEvent;
   //----------------------------------------------------------------------------
 //    hasDownArrow: Boolean;
 //    hDownArrow: Integer;
@@ -105,6 +107,9 @@ type
     function  itemAt(pt: Tpoint): ThistoryItem;
     function  spaceAt(pt: Tpoint): ThistoryItem;
     procedure updatePointedItem();
+    procedure PPM_copylink2clpbdClick(Sender: TObject);
+    procedure PPM_copy2clpbClick(Sender: TObject);
+
   public
     topVisible, topOfs: Integer;
     offset: integer; // can't show hevents before this
@@ -138,6 +143,7 @@ type
     destructor Destroy; override;
 
     procedure InitAll;
+    class procedure InitMenu(var pm : TPopupMenu; Own: TComponent);
 
     procedure Paint(); override;
     procedure paintOn(cnv: Tcanvas; vR: TRect; const JustCalc: Boolean = false);
@@ -183,13 +189,38 @@ const
 //    dStyle: TDrawStyle = dsGlobalBuffer2;
 //    dStyle: TDrawStyle = dsNone;
     hisBGColor, myBGColor: TColor;
-    MaxChatImgWidthVal : Integer = 100;
-    MaxChatImgHeightVal : Integer = 100;
+
+const
+  aHistMenu: array[0..19] of TbMenuItem =
+        ((amiName: 'add2rstr'; amiCaption: 'Add to contact list'; amiImage: 'addedyou'),
+         (amiName: 'copylink2clpbd'; amiCaption: 'Copy link'; amiEvName: 'HISTORY.PPM.copylink2clpbd'), //; amiEv: copylink2clpbdClick)
+         (amiName: 'copy2clpb'; amiCaption: 'Copy'; amiImage: 'copy'), //; amiEv: copy2clpbClick)
+         (amiName: 'savePicMnu'; amiCaption: 'Save pic'), //; amiEv: savePicMnuClick)
+         (amiName: 'selectall1'; amiCaption: 'Select all'; amiImage: 'select.all'), //; amiEv: selectall1Click)
+         (amiName: 'viewmessageinwindow1'; amiCaption: 'View message in window'), //; amiEv: viewmessageinwindow1Click)
+         (amiName: 'saveas1'; amiCaption: 'Save as'; amiImage: 'save'), //; amiEv: NIL)
+         (amiName: 'txt1'; amiCaption: 'txt'; amiImage: 'save'; amiParent: 'saveas1'), //; amiEv: txt1Click)
+         (amiName: 'html1'; amiCaption: 'html'; amiImage: 'save'; amiParent: 'saveas1'), //; amiEv: html1Click)
+         (amiName: 'addlink2fav'; amiCaption: 'Add link to favorites'), //; amiEv: addlink2favClick)
+         (amiName: 'del1'; amiCaption: 'Delete selected'; amiImage: 'delete'), //; amiEv: del1Click)
+         (amiName: 'N1'; amiCaption: '-'), //; amiEv: NIL)
+         (amiName: 'toantispam'; amiCaption: 'To antispam'), //; amiEv: toantispamClick)
+         (amiName: 'N2'; amiCaption: '-'), //; amiEv: NIL)
+         (amiName: 'Openchatwith1'; amiCaption: 'Open chat with...'; amiImage: 'msg'), //; amiEv: Openchatwith1Click)
+         (amiName: 'ViewinfoM'; amiCaption: 'View info'; amiImage: 'info'), //; amiEv: hAViewInfoExecute)
+         (amiName: 'N3'; amiCaption: '-'), //; amiEv: NIL)
+         (amiName: 'chtShowSmiles'; amiCaption: 'Show graphic smiles'; amiImage: 'smiles'), //; amiEv: hAShowSmilesExecute amiUpd: hAShowSmilesUpdate)
+         (amiName: 'chatshowlsb1'; amiCaption: 'Show left scrollbar'; amiImage: 'scroll'), //; amiEv: chatshowlsb1Click amiUpd: hAchatshowlsbUpdate)
+         (amiName: 'chatpopuplsb1'; amiCaption: 'Popup left scrollbar'; amiImage: 'scroll') //; amiEv: chatpopuplsb1Click amiUpd: hAchatpopuplsbUpdate)
+//         (amiName: 'chatShowDevTools'; amiCaption: 'Show Dev tools'; amiImage: 'develop'), //; amiEv: chatShowDevToolsClick)
+
+
+         );
 
 implementation
 
 uses
-  clipbrd, Types, math,
+  clipbrd, Types, math, UITypes,
  {$IFDEF UNICODE}
    AnsiStrings,
    Character,
@@ -249,7 +280,7 @@ begin
   result := (a.y < b.y) or (a.y = b.y) and (a.x < b.y)
 end;
 
-function isLink(const it: ThistoryItem): boolean;
+function isLink(const it: ThistoryItem): boolean; inline;
 begin
   result := it.kind = PK_LINK
 end;
@@ -310,6 +341,11 @@ begin
   ;
 end;
 
+class procedure ThistoryBox.InitMenu(var pm : TPopupMenu; Own: TComponent);
+begin
+//  createMenuAs(aHistMenu, pm, Own);
+end;
+
 procedure ThistoryBox.paintOn(cnv: Tcanvas; vR: TRect; const JustCalc: Boolean = false);
 var
 //  vCnvHandle : HDC;
@@ -332,6 +368,8 @@ var
     pleaseDontDrawUpwardArrows: boolean;
   oldMode: Integer;
   Nrows: integer;
+  MaxChatImgWidthVal : Integer;// = 100;
+  MaxChatImgHeightVal : Integer;// = 100;
 
   procedure newLine(var x, y: Integer);
   begin
@@ -478,7 +516,7 @@ var
 
         procedure setResult(lk: TlinkKind; end_: integer=0);
         const
-          allowedChars: array [TlinkKind] of set of char=( FTPURLCHARS, EMAILCHARS,
+          allowedChars: array [TlinkKind] of set of AnsiChar=( FTPURLCHARS, EMAILCHARS,
             WEBURLCHARS, ['0'..'9'], EDURLCHARS );
         begin
           if end_ = 0 then
@@ -486,8 +524,8 @@ var
             end_ := i;
             if lk = LK_WWW then
               begin
-                while (end_ < length(BodyText)) and not TCharacter.IsSeparator(BodyText[end_+1])
-                     and not TCharacter.IsControl(BodyText[end_+1]) do
+                while (end_ < length(BodyText)) and not BodyText[end_+1].IsSeparator
+                     and not BodyText[end_+1].IsControl do
                  inc(end_);
 //                if TCharacter.IsSeparator(BodyText[end_]) then
 //                  dec(end_);
@@ -571,8 +609,9 @@ var
       begin
          result := False;
  {$IFDEF UNICODE}
-        sA := BodyText[i];
-        if not (sA[1] in firstCharactersForSmiles) then
+//        sA := BodyText[i];
+        if Pos(BodyText[i], firstCharactersForSmilesW)<= 0 then
+//        if not (sA[1] in firstCharactersForSmiles) then
           exit;
  {$ELSE nonUNICODE}
         if not (BodyText[i] in  firstCharactersForSmiles) then
@@ -624,7 +663,7 @@ var
           exit;
 //        foundRnQPic := '';
         FreeAndNil(RnQPicStream);
-        if matches(BodyBin, i, RnQImageTag) then
+        if matchesA(BodyBin, i, RnQImageTag) then
           begin
             k := PosEx(RnQImageUnTag, BodyBin, i+10);
             if k <= 0 then
@@ -651,7 +690,7 @@ var
           exit;
 //        foundRnQPic:='';
         FreeAndNil(RnQPicStream);
-        if matches(BodyBin, i, RnQImageExTag) then
+        if matchesA(BodyBin, i, RnQImageExTag) then
           begin
             k := PosEx(RnQImageExUnTag, BodyBin, i + Length_RnQImageExTag);
             if k <= 0 then
@@ -1060,7 +1099,8 @@ var
           fndSmlT2 := fndSmileN;
           fndSmlIT := fndSmileI;
           fndAniSmlT := foundAniSmile;
-          bool := lastSmileChar in firstCharactersForSmiles;
+//          bool := lastSmileChar in firstCharactersForSmiles;
+          bool := Pos(lastSmileChar, firstCharactersForSmilesW)>0;
           while (i<=len) and (BodyText[i]=lastSmileChar) do
            begin
             if bool and findSmile() then
@@ -1552,29 +1592,40 @@ begin
    begin
     inc(history.fToken);
     history.themeToken := theme.Token;
-    smlRefresh := history.SmilesToken <> theme.Token;
     history.SmilesToken := theme.Token;
     lastWidth   := Self.Width;
 //    lastHeight  := Self.Height;
    end;
+  smlRefresh := history.SmilesToken <> theme.Token;
 // finds all first characters of all smiles
+ {$IFDEF UNICODE}
+  if smlRefresh or (firstCharactersForSmilesW='') then
+   begin
+    firstCharactersForSmilesW := '';
+    for i := 0 to theme.SmilesCount-1 do
+     with theme.GetSmileObj(i) do
+      for ii := 0 to SmlStr.Count-1 do
+       begin
+        if Pos(SmlStr.Strings[ii][1], firstCharactersForSmilesW)<=0 then
+          firstCharactersForSmilesW := firstCharactersForSmilesW + SmlStr.Strings[ii][1];
+       end;
+   end;
+
+ {$ELSE nonUNICODE}
+
   if smlRefresh or (firstCharactersForSmiles=[]) then
    begin
-    firstCharactersForSmiles:=[];
+    firstCharactersForSmiles := [];
     for i := 0 to theme.SmilesCount-1 do
   // if theme.GetSmile(i)<>NIL then //smiles.pics[i]<>NIL then
      with theme.GetSmileObj(i) do
       for ii := 0 to SmlStr.Count-1 do
        begin
- {$IFDEF UNICODE}
-        sA := SmlStr.Strings[ii][1];
-        ch := sA[1];
- {$ELSE nonUNICODE}
         ch := SmlStr.Strings[ii][1];
- {$ENDIF UNICODE}
         include(firstCharactersForSmiles, ch); //smiles.ascii[i][1]);
        end;
    end;
+ {$ENDIF UNICODE}
 //  vCnvHandle := cnv.Handle;
   vFullR := cnv.ClipRect;
   if (vR.Right - vR.Left = 0)or(vR.Bottom - vR.Top = 0) then
@@ -1669,10 +1720,15 @@ begin
   rightLimit := clientWidth-margin.Right;
   bottomLimit := clientHeight-margin.Bottom-2;
   if MainPrefs.getPrefBoolDef('chat-images-limit', True) then
-   begin
-    MaxChatImgWidthVal := MainPrefs.getPrefIntDef('chat-images-width-value', 300);
-    MaxChatImgHeightVal := MainPrefs.getPrefIntDef('chat-images-height-value', 300);
-   end;
+    begin
+     MaxChatImgWidthVal := MainPrefs.getPrefIntDef('chat-images-width-value', 300);
+     MaxChatImgHeightVal := MainPrefs.getPrefIntDef('chat-images-height-value', 300);
+    end
+   else
+    begin
+     MaxChatImgWidthVal := 30000;
+     MaxChatImgHeightVal := 30000;
+    end;
 
   tempS := theme.GetString('history.gap-between-messages');
   lGapBtwMsg := bound(StrToIntDef(tempS, 1), 0, 30);
@@ -2553,6 +2609,7 @@ var
         result := -1;
   end; // search
 begin
+  Result := False;
   h := history;
   i := search(offset);
   if NeedOpen and (i < 0) and not whole then
@@ -3420,32 +3477,32 @@ begin
   Result := True;
 end;
 
-function ThistoryBox.historyNowCount:integer;
+function ThistoryBox.historyNowCount: Integer;
 begin
   if Assigned(history) then
-    result:=history.count-historyNowOffset
+    result := history.count-historyNowOffset
    else
     Result := 0;
 end;
 
-function ThistoryBox.historyNowOffset:integer;
+function ThistoryBox.historyNowOffset: Integer;
 begin
   if whole then
-    result:=0
+    result := 0
    else
-    result:=newSession
+    result := newSession
 end;
 
 procedure ThistoryBox.DoOnScroll;
 begin
-    if Assigned(FOnScroll) then
-      FOnScroll(Self);
+  if Assigned(FOnScroll) then
+    FOnScroll(Self);
 end;
 
-function  ThistoryBox.getQuoteByIdx(var pQuoteIdx : Integer) : String;
+function  ThistoryBox.getQuoteByIdx(var pQuoteIdx: Integer): String;
 var
-  i : Integer;
-  he : Thevent;
+  i: Integer;
+  he: Thevent;
 begin
   Result := '';
   with history do
@@ -3633,6 +3690,23 @@ begin
 //  Msg.Result := 0;
 end;
 
+
+procedure ThistoryBox.PPM_copylink2clpbdClick(Sender: TObject);
+begin
+//with thisChat.historyBox do
+//  if pointedItem.kind=PK_LINK then
+//    clipboard.asText := pointedItem.link.str;
+//with thisChat.historyBox.pointedItem do
+  with ClickedItem do
+  if kind=PK_LINK then
+    clipboard.asText := link.str;
+end;
+
+procedure ThistoryBox.PPM_copy2clpbClick(Sender: TObject);
+begin
+  copySel2Clpb;
+end;
+
 initialization
 
   if dStyle = dsGlobalBuffer then
@@ -3650,6 +3724,7 @@ initialization
   vKeyPicElm.picName := PIC_KEY;
   vKeyPicElm.Element := RQteDefault;
   vKeyPicElm.pEnabled := True;
+
 
 finalization
 

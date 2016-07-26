@@ -462,6 +462,8 @@ begin
 //    Y := 0;
     Width := min(DestSize.Width, PicSize.Width);
     Height := min(DestSize.Height, PicSize.Height);
+    Width := max(Width, 0);
+    Height := max(Height, 0);
   end;
   if Stretch or (Proportional and ((PicSize.Width > DestSize.Width)
                                or (PicSize.Height > DestSize.Height))) then

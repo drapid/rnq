@@ -4,14 +4,7 @@ Under same license
 }
 unit globalLib;
 {$I RnQConfig.inc}
-
- {$IFDEF RNQ_FULL}
-// {$ELSE}
-//    {$UNDEF CHECK_INVIS}
- {$ENDIF}
- {$IFDEF COMPILER_14_UP}
-  {$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])}
- {$ENDIF COMPILER_14_UP}
+{$I NoRTTI.inc}
 
 interface
 
@@ -462,7 +455,6 @@ var
   CloseFTWndAuto : Boolean;
   outboxSbarRect : Trect;
   supportedBehactions : array [1..EK_last] of set of Tbehaction;
-  availableUsers : array of TRnQUser;
   // here i bookmark last selected node, cause it could change between clicks
   clickedContact : TRnQContact;
 //  focusedCnt : TRnQContact;
@@ -755,7 +747,6 @@ var
   showRQP,
   UseContactThemes,
   xxx,
-  masterUseSSI,
   usePlugPanel,
   useMainPlugPanel,
   useCtrlNumInstAlt,

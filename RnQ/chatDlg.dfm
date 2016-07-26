@@ -432,6 +432,78 @@ object chatFrm: TchatFrm
     OnDockOver = CLPanelDockOver
     OnUnDock = CLPanelUnDock
   end
+  object ActList1: TActionList
+    Left = 264
+    Top = 96
+    object hAaddtoroaster: TAction
+      Category = 'histMenu'
+      Caption = 'Add to contact list'
+      HelpKeyword = 'addedyou'
+      OnExecute = ANothingExecute
+    end
+    object hAsaveas: TAction
+      Category = 'histMenu'
+      Caption = 'Save as'
+      HelpKeyword = 'save'
+      OnExecute = ANothingExecute
+    end
+    object hAdelete: TAction
+      Category = 'histMenu'
+      Caption = 'Delete selected'
+      HelpKeyword = 'delete'
+      OnExecute = del1Click
+    end
+    object hACopy: TAction
+      Category = 'histMenu'
+      Caption = 'Copy'
+      HelpKeyword = 'copy'
+      OnExecute = copy2clpbClick
+    end
+    object hASelectAll: TAction
+      Category = 'histMenu'
+      Caption = 'Select all'
+      HelpKeyword = 'select.all'
+      OnExecute = selectall1Click
+    end
+    object hAchatshowlsb: TAction
+      Category = 'histMenu'
+      Caption = 'Show left scrollbar'
+      OnExecute = chatshowlsb1Click
+      OnUpdate = hAchatshowlsbUpdate
+    end
+    object hAchatpopuplsb: TAction
+      Category = 'histMenu'
+      Caption = 'Popup left scrollbar'
+      OnExecute = chatpopuplsb1Click
+      OnUpdate = hAchatpopuplsbUpdate
+    end
+    object hAViewInfo: TAction
+      Category = 'histMenu'
+      Caption = 'View info'
+      OnExecute = hAViewInfoExecute
+    end
+    object hAShowSmiles: TAction
+      Category = 'histMenu'
+      AutoCheck = True
+      Caption = 'Show graphic smiles'
+      Checked = True
+      HelpKeyword = 'smiles'
+      OnExecute = hAShowSmilesExecute
+      OnUpdate = hAShowSmilesUpdate
+    end
+    object ShowStickers: TAction
+      Category = 'chatActions'
+      SecondaryShortCuts.Strings = (
+        'Ctrl+Shift+S')
+      OnExecute = ShowStickersExecute
+    end
+    object hAShowDevTools: TAction
+      Category = 'histMenu'
+      Caption = 'hAShowDevTools'
+      HelpKeyword = 'debug'
+      OnExecute = chatShowDevToolsClick
+    end
+  end
   object histmenu: TPopupMenu
     OwnerDraw = True
     OnPopup = histmenuPopup
@@ -508,78 +580,6 @@ object chatFrm: TchatFrm
     object chatShowDevTools: TMenuItem
       Caption = 'Show Dev tools'
       OnClick = chatShowDevToolsClick
-    end
-  end
-  object ActList1: TActionList
-    Left = 264
-    Top = 96
-    object hAaddtoroaster: TAction
-      Category = 'histMenu'
-      Caption = 'Add to contact list'
-      HelpKeyword = 'addedyou'
-      OnExecute = ANothingExecute
-    end
-    object hAsaveas: TAction
-      Category = 'histMenu'
-      Caption = 'Save as'
-      HelpKeyword = 'save'
-      OnExecute = ANothingExecute
-    end
-    object hAdelete: TAction
-      Category = 'histMenu'
-      Caption = 'Delete selected'
-      HelpKeyword = 'delete'
-      OnExecute = del1Click
-    end
-    object hACopy: TAction
-      Category = 'histMenu'
-      Caption = 'Copy'
-      HelpKeyword = 'copy'
-      OnExecute = copy2clpbClick
-    end
-    object hASelectAll: TAction
-      Category = 'histMenu'
-      Caption = 'Select all'
-      HelpKeyword = 'select.all'
-      OnExecute = selectall1Click
-    end
-    object hAchatshowlsb: TAction
-      Category = 'histMenu'
-      Caption = 'Show left scrollbar'
-      OnExecute = chatshowlsb1Click
-      OnUpdate = hAchatshowlsbUpdate
-    end
-    object hAchatpopuplsb: TAction
-      Category = 'histMenu'
-      Caption = 'Popup left scrollbar'
-      OnExecute = chatpopuplsb1Click
-      OnUpdate = hAchatpopuplsbUpdate
-    end
-    object hAViewInfo: TAction
-      Category = 'histMenu'
-      Caption = 'View info'
-      OnExecute = hAViewInfoExecute
-    end
-    object hAShowSmiles: TAction
-      Category = 'histMenu'
-      AutoCheck = True
-      Caption = 'Show graphic smiles'
-      Checked = True
-      HelpKeyword = 'smiles'
-      OnExecute = hAShowSmilesExecute
-      OnUpdate = hAShowSmilesUpdate
-    end
-    object ShowStickers: TAction
-      Category = 'chatActions'
-      SecondaryShortCuts.Strings = (
-        'Ctrl+Shift+S')
-      OnExecute = ShowStickersExecute
-    end
-    object hAShowDevTools: TAction
-      Category = 'histMenu'
-      Caption = 'hAShowDevTools'
-      HelpKeyword = 'debug'
-      OnExecute = chatShowDevToolsClick
     end
   end
 end

@@ -24,8 +24,10 @@ const
   defaultThemePrefix='RQ.';
   defaultThemePostfix='theme.ini';
   // paths
-  themesPath='themes\';
-  pluginsPath='plugins\';
+  themesPath= 'themes\';
+  pluginsPath= 'plugins\';
+  accountsPath= 'Accounts\';
+  modulesPath= 'modules\';
 
   maxPICAVTW = 200;
   maxPICAVTH = 200;
