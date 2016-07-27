@@ -1,308 +1,353 @@
-﻿<html>
+﻿<!-- Template version: 1125.34 -->
+<html>
 <head>
 <style>
 	@import url(SyntaxHighlight/source-code.css);
-
-	::selection {
-		background-color: transparent;
-	}
-	@set v-scroll-indicator {
-		.slider {
-			background-color: #a6a6a6;
-			border-radius: 5px;
-			margin: 0;
-		}
-	}
-	body {
-		padding: 0;
-		margin: 0;
-		background-color: #f6f6f6;
-		line-height: normal;
-		overflow-x: hidden;
-		overflow-y: auto;
-		image-rendering: optimize-quality;
-		text-selection: #333 #dedede;
-		scroll-manner: scroll-manner(animation: true, step: 10%);
-	}
-	body.indicator {
-		overflow-y: scroll-indicator;
-		vertical-scrollbar: "v-scroll-indicator";
-	}
-	a, a:visited {
-		color: #283593;
-		text-decoration: none;
-	}
-	a.uinLink, a.uinLink:visited {
-		color: #06091E;
-	}
-	a:hover, a:focus {
-		color: #5c6bc0;
-	}
-	div {
-		padding: 0;
-		margin: 0;
-	}
-	div.codeDiv {
-		position: relative;
-		width: calc(100vw - 35px);
-	}
-	span.bold {
-		font-weight: 500;
-	}
-	span.underlined {
-		text-decoration: underline;
-	}
-	img.codeCopyAll {
-		position: absolute;
-		right: 5px;
-		top: 3px;
-		cursor: pointer;
-	}
-	.smileyDiv {
-		white-space: nowrap;
-		color: transparent;
-		overflow: hidden;
-		display: inline-block;
-		vertical-align: middle;
-		background-repeat: no-repeat;
-		background-position: 0 0;
-	}
-	.smileyDiv.hidden {
-		display: none;
-	}
-	.smileySpan.hidden {
-		display: none;
-	}
-	#history {
-		padding: 0;
-		margin: 0;
-	}
-	#history #ranges {
-		flow: horizontal;
-		horizontal-align: center;
-		border-spacing: 10px;
-		white-space: nowrap;
-	}
-	#history #curtime {
-		margin-top: 5px;
-		text-align: center;
-		display: none;
-	}
-	#chat {
-		height: auto;
-		white-space: normal;
-		word-wrap: normal;
-		transition: opacity(quint-out, 0.4s);
-		opacity: 1;
-	}
-	#chat.hidden {
-		opacity: 0;
-	}
-	b, strong {
-		font-weight: 500;
-	}
-	div.hr {
-		margin-top: 5px;
-		height: 1px;
-		background-color: #ddd;
-	}
-	.msgFull {
-		padding: 6px 8px;
-		margin: 0;
-		border-bottom: solid 3px #f6f6f6;
-		border-top: solid 3px #f6f6f6;
-		font-family: Segoe UI;
-		font-size: 14px;
-		color: #333;
-		box-sizing: border-box;
-		opacity: 1;
-		transition: opacity(quint-out, 0.4s);
-	}
-	.msgFull.hidden {
-		opacity: 0;
-	}
-	.msgFull.selected {
-		background-color: #e3e3e3;
-	}
-	.msgTitle {
-		cursor: pointer;
-		box-sizing: border-box;
-		white-space: nowrap;
-		overflow: hidden;
-		flow: horizontal;
-		width: max-content;
-		vertical-align: middle;
-	}
-	.msgTitle > div {
-	}
-	:not(.my) > .msgTitle > div {
-		color: #844103;
-	}
-	.msgTitle div.msgEventImg, .msgTitle div.msgCryptImg {
-		width: auto;
-		height: auto;
-		background-position: 0 0;
-		background-repeat: no-repeat;
-	}
-	.msgTitle .msgMulti {
-		margin-left: 10px;
-		font-size: 11px;
-	}
-	.msgTitle .msgWhat {
-		margin-left: 10px;
-		font-size: 15px;
-        margin-bottom: 3px;
-	}
-	.msgTitle .msgStatusImages > div {
-		display: inline-block;
-		padding: 0;
-		margin: 0;
-	}
-	.msgTitle .msgStatusImages .msgStatusImg {
-		margin-left: 10px;
-	}
-	.msgTitle .msgStatusImages .msgStatusExtImg {
-		margin-left: 5px;
-	}
-	.msgTitle .msgDate {
-		margin-left: 10px;
-		font-size: 11px;
-	}
-	.msgBody {
-		box-sizing: border-box;
-		margin-top: 0;
-		width: 100%;
-	}
-	.msgBody .msgInnerBody {
-        behavior: htmlarea;
-		width: auto;
-		max-width: 100%;
-		display: inline-block;
-		white-space: pre-wrap;
-		word-wrap: break-word;
-	}
-	.msgBody .msgInnerBody .linkedImgWrapper {
-		position: relative;
-		display: inline-block;
-		width: 100%;
-		margin: 0;
-		padding: 0;
-	}
-	.msgBody .msgInnerBody .linkedImgWrapper.hidden {
-		font-size: 0;
-		line-height: 0;
-		height: 0;
-		width: 0;
-		overflow: hidden;
-	}
-	.msgBody .msgInnerBody .linkedImgWrapper.preloading {
-		height: 50px;
-	}
-	.msgBody .msgInnerBody .linkedImgWrapper.preloading .spinner {
-		width: 40px !important;
-		height: 40px !important;
-		left: 10px !important;
-		top: 10px !important;
-	}
-	.msgBody .msgInnerBody .linkedImg {
-		foreground-repeat: stretch keep-ratio;
-		max-width: calc(100vw - 35px);
-		vertical-align: top;
-		cursor: pointer;
-		margin: 5px 0;
-		opacity: 0;
-		transition: opacity(cubic-in-out, 0.2s);
-	}
-	.msgBody .msgInnerBody .linkedImg.loaded {
-		opacity: 1;
-	}
-	.msgBody .msgInnerBody .msgEmbeddedImages {
-		width: auto;
-		margin: 0;
-		padding: 0;
-		margin-top: 5px;
-	}
-	.msgBody .msgInnerBody .embeddedImg {
-		foreground-repeat: stretch keep-ratio;
-		max-width: calc(100vw - 35px);
-		vertical-align: top;
-		cursor: pointer;
-		opacity: 0;
-		transition: opacity(cubic-in-out, 0.2s);
-	}
-	.msgBody .msgEmbeddedImages .embeddedImg.loaded {
-		opacity: 1;
-	}
-
-	.spinner {
-		width: 40px;
-		height: 40px;
-		position: absolute;
-		left: 10px;
-		top: 10px;
-		opacity: 1;
-	}
-	.spinner::after {
-		content: "";
-		width: 40px;
-		height: 40px;
-		display: block;
-		background-color: transparent;
-		background-position: center center;
-		background-repeat: no-repeat;
-		background-image: url(themepic:spinner);
-		opacity: 0.40;
-		top: 0;
-		left: 0;
-		bottom: 0;
-		right: 0;
-		position: absolute;
-		z-index: -1;
-	}
+	@import url(template.css);
 </style>
 <script type="text/tiscript">
-//	if (view.connectToInspector)
-//	view.connectToInspector();
+	if (view.connectToInspector)
+	view.connectToInspector();
 
 	var topTime = 0,
 		selStart = 0,
+		eventCount = 0,
+		eventLimit = 1000,
 		rightClickedTime = "0",
-		titles = new Array(),
+		messages = new Array(),
 		scrollPos,
 		topEventTime,
+		isLoading = false,
+		autoScroll = true,
 		autoCopy = false,
 		fontCodes = false,
 		showSmiles = true,
 		imgLinksIn = true,
 		imgLinksOut = true,
+		videoLinks = true,
 		wheelVelocity = 1,
 		maxImgWidth = 0,
 		maxImgHeight = 0,
-		embeddedCnt = 0;
+		embeddedCnt = 0,
+		preferredRes = 0,
+		cachePath = "",
+
+		body = $(body),
+		chat = $(#chat),
+		history = $(#history),
+		toggle = $(#toggle),
+		lastcnt = $(#lastcnt),
+		loading = $(#loading),
+		curtime = $(#curtime),
+
+		emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,
+		protocolRegex = /(?:[a-z][-.+a-z0-9]*:(?![a-z][-.+a-z0-9]*:\/\/)(?!\d+\/?)(?:\/\/)?)/,
+		wwwRegex = /(?:www\.)/,
+		domainNameRegex = /[а-яёa-z0-9\.\-]*[а-яёa-z0-9\-]/,
+		tldRegex = /\.(?:[а-яёa-z]{2,63})/,
+		urlSuffixRegex = /[\-а-яёa-z0-9+&@#\/%=~_()|'$*\[\]?!:,.;]*[\-а-яёa-z0-9+&@#\/%=~_()|'$*\[\]]/,
+		uinRegex = /(^|\s)(\d{5,9})($|\s)/,
+		srcCodeRegex = /\[code=?(.*?)\]([^\uFFFF]+?)\[\/code\]/,
+		boldRegex = /(^|\s)\*(\S[^\uFFFF]+?\S)\*($|\s)/,
+		underlineRegex = /(^|\s)_(\S[^\uFFFF]+?\S)_($|\s)/,
+		youtubeRegex = /(www\.)?(youtube\.com\/watch|youtu.be\/).+/,
+		vimeoRegex = /(www\.)?(vimeo\.com\/).+/,
+		re_urlmailuincode = new RegExp(([
+			"(?:(^|\\s)(", emailRegex.source, domainNameRegex.source, tldRegex.source, ")($|\\s))",
+			"|",
+			"(?:(^|\\s)(", "(?:", "(?:", protocolRegex.source, domainNameRegex.source, tldRegex.source, ")",
+						"|",
+						"(?:", "(?:.?//)?", wwwRegex.source, domainNameRegex.source, tldRegex.source, ")",
+				")",
+				"(?:" + urlSuffixRegex.source + ")?",
+			")($|\\s))",
+			"|",
+			"(?:", uinRegex.source, ")",
+			"|",
+			"(?:", srcCodeRegex.source, ")",
+			"|",
+			"(?:", boldRegex.source, ")",
+			"|",
+			"(?:", underlineRegex.source, ")"
+		]).join(""), "gi");
+
+	class VideoClass {
+		var videoinit = false,
+			video = $(#video),
+			videopos = $(#videopos),
+			videotime = $(#videotime),
+			videotimecode = "00s",
+			videovol = $(#videovol),
+			videoview = $(#videoview),
+			videoload = $(#videoload),
+            videoinfo = $(#videoinfo),
+			videoplay = $(#play),
+			videopause = $(#pause),
+			videoupload = $(#upload),
+			videoclose = $(#close),
+			videotitle,
+			videocodecs,
+			videoformat,
+			videolink,
+			videokind,
+			vollevel = 0.85,
+			animCnt = 0,
+			animTotal = 30.0,
+			animFunc = function() {
+				var opacityVal = easeOutCubic(animCnt, 0.6, -0.6, animTotal);
+				var scaleVal = easeOutCubic(animCnt, 1.0, 0.8, animTotal);
+				this.style#opacity = opacityVal;
+				this.style#transform = "scale(" + scaleVal + ") translate(-50px, -50px)";
+				animCnt++;
+				if (animCnt > animTotal) {
+					this.style#display = "none";
+					return false;
+				} else {
+					this.style#display = "block";
+					return true;
+				}
+			},
+			playpauseSwitch = function() {
+				if (!videoinit) return;
+				videoplay.style#display = "none";
+				videopause.style#display = "none";
+				if (video.videoIsPlaying()) {
+					videoplay.timer(0, animFunc);
+					animCnt = 0;
+					videopause.timer(10, animFunc);
+					video.videoStop();
+				} else {
+					videopause.timer(0, animFunc);
+					animCnt = 0;
+					videoplay.timer(10, animFunc);
+					if (video.videoIsEnded())
+						video.videoPlay(0);
+					else
+						video.videoPlay();
+				}
+			},
+			closeVideo = function() {
+				video.videoStop();
+				video.videoUnload();
+				videoview.attributes.removeClass("visible");
+				gc();
+			},
+			saveVolLevel = function() {
+				SaveVolumeLevel(vollevel);
+			};
+
+		function this() {
+			videoplay.on("click", playpauseSwitch);
+			videopause.on("click", playpauseSwitch);
+			video.on("click", playpauseSwitch);
+			videopos.on("click", function() {
+				video.videoPosition(this.value);
+				video.videoPlay();
+			});
+			videovol.on("change", function() {
+				vollevel = logslider(this.value);
+				video.audioVolume(vollevel);
+				self.timer(1000, saveVolLevel);
+			});
+			videotime.on("mousedown", function(e) {
+				var lnk;
+				if (kind == "youtube")
+					lnk = videolink + (videolink.indexOf("?") >= 0 ? "&t=" : "?t=") + videotimecode;
+				else if (kind == "vimeo")
+					lnk = videolink + "#t=" + videotimecode;
+				if (e.mainButton) {
+					closeVideo();
+					view.load("link:" + lnk);
+				} else {
+					SendInput(lnk);
+				}
+			});
+			video.onControlEvent = function(e) {
+				if (e.type == Event.VIDEO_STARTED) {
+					alignPlayerControls();
+				} else if (e.type == Event.VIDEO_STOPED) {
+				} else if (e.type == Event.VIDEO_INITIALIZED) {
+					videoinit = true;
+					var content = videotitle + "<br><br>" + GetTranslation("Resolution:") + " " + video.videoWidth() + "x" + video.videoHeight();
+					if (videoformat) content += "<br>" + GetTranslation("Format:") + " " + videoformat;
+					if (videocodecs) content += "<br>" + GetTranslation("Codecs:") + " " + videocodecs;
+
+					videoinfo.html = content;
+					alignPlayerControls();
+				}
+			}
+
+			videoclose.on("click", closeVideo);
+			videoupload.on("click", function() {
+				if (cachePath == "") return;
+				var (w,h) = video.box(#dimension);
+				var image = new Image(video.videoWidth(), video.videoHeight(), video);
+				var bytes = image.toBytes();
+				bytes.save(cachePath + "snapshot.png");
+				new Image(w, h, video);
+				UploadLastSnapshot();
+			});
+		}
+
+		function initTitles() {
+			videotime.attributes["title"] = GetTranslation("Get link with current time [LMB - open in browser, RMB - insert to chat input]");
+			videoupload.attributes["title"] = GetTranslation("Make snapshot and upload it to server");
+			videoclose.attributes["title"] = GetTranslation("Close video preview");
+		}
+
+		function show() {
+			$(#controls).attributes.removeClass("visible");
+			videoview.attributes.addClass("visible");
+		}
+
+		function isVisible() {
+			return videoview.attributes.hasClass("visible");
+		}
+
+		function load(link) {
+			return video.videoLoad(link);
+		}
+
+		function play(pos) {
+			video.videoPlay(pos);
+		}
+
+		function startPulse() {
+			video.timer(500, pulse);
+			pulse();
+		}
+
+        function startVideo(url, format, codecs) {
+			setLoadingText(GetTranslation("Loading video stream..."));
+			videoformat = format;
+			videocodecs = codecs;
+			if (load(url)) {
+				volume = GetVolumeLevel();
+				play(0);
+				startPulse();
+			} else {
+				error();
+			}
+			setLoadingText("");
+		}
+
+		function setLoadingText(html, showFormats = false) {
+			videoload.html = html;
+			videoload.on("click", "a[close]", closeVideo);
+			if (showFormats) videoload.on("click", "div[format]", function(e) {
+				startVideo(e.target.attributes["url"], e.target.attributes["format"], e.target.attributes["codecs"]);
+			});
+		}
+
+		property init(val) {
+			set videoinit = val;
+			get return videoinit;
+		}
+
+		property title(val) {
+			set videotitle = val;
+			get return videotitle;
+		}
+
+		property src(val) {
+			set videolink = val;
+			get return videolink;
+		}
+
+		property kind(val) {
+			set videokind = val;
+			get return videokind;
+		}
+
+		property volume(val) {
+			set {
+				vollevel = val;
+				videovol.value = expslider(vollevel);
+				video.audioVolume(vollevel);
+			}
+			get return vollevel;
+		}
+
+	    function error() {
+			videoinit = false;
+			videoview.attributes.removeClass("visible");
+			view.msgbox(#information, GetTranslation("Failed to load video"), GetTranslation("Error"), #ok);
+		}
+
+		function easeOutCubic(currentIteration, startValue, changeInValue, totalIterations) {
+    		return changeInValue * (Math.pow(currentIteration / totalIterations - 1.0, 3.0) + 1.0) + startValue;
+		}
+
+		function logslider(pos) {
+			return Math.log10(pos) / 2;
+		}
+
+		function expslider(val) {
+			return Math.pow(10, val * 2).toInteger();
+		}
+
+		function hms(seconds) {
+			var h, m, s;
+			s = seconds % 60; seconds /= 60;
+			m = seconds % 60; seconds /= 60;
+			h = seconds % 60; return (h, m, s);
+		}
+
+		function pulse() {
+			var m = video.videoDuration().toInteger();
+			var t = video.videoPosition().toInteger();
+			if (!videopos.state.hover) {
+				videopos.sliderRange(0, m);
+				videopos.value = t;
+			}
+			var (th, tm, ts) = hms(t);
+			var (mh, mm, ms) = hms(m);
+			if (th == 0 && mh == 0) {
+				videotime.value = String.printf("%02d:%02d / %02d:%02d", tm, ts, mm, ms);
+				videotimecode = String.printf("%02dm%02ds", tm, ts);
+			} else {
+				videotime.value = String.printf("%d:%02d:%02d / %d:%02d:%02d", th, tm, ts, mh, mm, ms);
+				videotimecode = String.printf("%dh%02dm%02ds", th, tm, ts);
+			}
+
+			return true;
+		}
+
+		function alignPlayerControls() {
+			self.timer(100, function(){
+				var videoWidth = video.videoBox()[2];
+				var controls = $(#controls);
+				controls.style#width = (videoWidth + 2) + "px";
+				controls.attributes.addClass("visible");
+			});
+		}
+	}
+	var vc = new VideoClass();
 
 	class SelectionInfo {
-		var textStr = "";
-		var startTime = 0;
-		var endTime = 0;
-		var wholeEvents = false;
+		var textStr = "",
+			startTime = "0",
+			endTime = "0",
+			wholeEvents = false;
+
 		property value(info) {
 			set {
 				this.textStr = (info[0] === undefined) ? "" : info[0];
-				this.startTime = (info[1] === undefined) ? 0 : info[1];
-				this.endTime = (info[2] === undefined) ? 0 : info[2];
+				this.startTime = (info[1] === undefined) ? "0" : info[1];
+				this.endTime = (info[2] === undefined) ? "0" : info[2];
 				this.wholeEvents = (info[3] === undefined) ? false : info[3];
 			}
 		};
 		function text() {
 			return this.textStr;
 		};
-		function start () {
+		function start() {
 			return this.startTime;
 		};
-		function end () {
+		function end() {
 			return this.endTime;
 		};
-		function isWholeEvents () {
+		function isWholeEvents() {
 			return this.wholeEvents;
 		};
 	}
@@ -318,6 +363,7 @@
 			};
 
 		function emotify(txt, callback = emoCallback) {
+			if (lookup.length == 0) return txt;
 			return txt.replace(EMOTICON_RE, function(a, b, text) {
 				var i = 0,
 				smiley = text,
@@ -367,10 +413,21 @@
 	}
 	var emo = new Emoticons();
 
-	const codeAllBase64 = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsSAAALEgHS3X78AAABu0lEQVR4nK3TT2sTURSH4bOJSD6DK+nCKogKBve6FL+JRes/UNBEa7uoIJjYpmmwtQou29JJpE1sii6s2m5diCujU3QymUwmk5kwybwuNNOMqRBof3CW9+Gec+4VQAARkWMiEhugTorIoeBcDxBjgJTLZTUSiZzqInsC7XabVquF4zg0Gg1M06RarQKgaRqqqlai0egZETm8J+D7foA0m00sy8I0TQBs2+5FTv+3Bd/38TwP13UD5N+ISCwATpw7f3H85QajqRwAV58ojD0voRkWruti2zb1ep1arYau62HgRvr1kZtTOTWT3+bB/DoA9+feML3ykfGFP4jjOAFiGMYucCWlHL09u/ZjJrfF5Ku3mA0HAMNqMrFQYmr5A2Nz6+xoZmioATCazMczuW3uPivy9Xsl1OOXbxp30qskFzdR3n0ObSYArqXyQ7fSqztpZYuJFxtUTBuASs3m4XyJp0ubJGYL/NTroc2EZjDyWBm6nlT06ZVPxLNFAO5lCqQW35PIFvlVtfo207eF42cvXEpkC4w8Wgbg8uQS8Zk19L836qbT6eB5Xj8w6FPuIvsCujlwYHjA79xbw78BD6vm7xFm7DkAAAAASUVORK5CYII=";
-	var codeAllBytes = Bytes.fromString(codeAllBase64);
-	var codeAllImg = Image.fromBytes(codeAllBytes);
-	if (codeAllImg) self.bindImage("source-code:selectall", codeAllImg);
+	class FinishImage: Behavior {
+		function detached() {
+			finishImage(this);
+		}
+	}
+
+	function prebindImage(uri, base64) {
+		var img = Image.fromBytes(Bytes.fromString(base64));
+		if (img) self.bindImage(uri, img);
+	}
+
+	prebindImage("source-code:selectall", "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsSAAALEgHS3X78AAABu0lEQVR4nK3TT2sTURSH4bOJSD6DK+nCKogKBve6FL+JRes/UNBEa7uoIJjYpmmwtQou29JJpE1sii6s2m5diCujU3QymUwmk5kwybwuNNOMqRBof3CW9+Gec+4VQAARkWMiEhugTorIoeBcDxBjgJTLZTUSiZzqInsC7XabVquF4zg0Gg1M06RarQKgaRqqqlai0egZETm8J+D7foA0m00sy8I0TQBs2+5FTv+3Bd/38TwP13UD5N+ISCwATpw7f3H85QajqRwAV58ojD0voRkWruti2zb1ep1arYau62HgRvr1kZtTOTWT3+bB/DoA9+feML3ykfGFP4jjOAFiGMYucCWlHL09u/ZjJrfF5Ku3mA0HAMNqMrFQYmr5A2Nz6+xoZmioATCazMczuW3uPivy9Xsl1OOXbxp30qskFzdR3n0ObSYArqXyQ7fSqztpZYuJFxtUTBuASs3m4XyJp0ubJGYL/NTroc2EZjDyWBm6nlT06ZVPxLNFAO5lCqQW35PIFvlVtfo207eF42cvXEpkC4w8Wgbg8uQS8Zk19L836qbT6eB5Xj8w6FPuIvsCujlwYHjA79xbw78BD6vm7xFm7DkAAAAASUVORK5CYII=");
+	prebindImage("history:toggle", "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAYRJREFUeNqkkz0sA2EYx+/qI21sGAwMUiQ+VpNIMDBc5BZD1woGJBWTzxhEYjAwWLrUIDbD4RIkEovF1khEhBIGYmAsg57fkzyXXJsTkr7JL//e+77PZ5/X9DzPKGeZYZuWZXUgMzAITfANd3AAW67rvoQ6wFC+12BOzz7hHiqgDSKQh0mc7Bi6EVwbMA8fMA61XOyCdn7XwwpUQoZgyaIM2BhAzuAVejGSlA3btj3HcYL3+pBTLaslmMGi6oRvHLY4O0dWIQqzEfVag4jnRzj6R/O3oQDDJsbHUit0wztcQYpIWdKXvUvohGuxpBy/lFukWTLIqrGhjmJwo99R1Qttaqw0FXGwoM2T9QYjRP8KGNpaWhqSGr0OicNDhMvSzYRmkuD7ORCgoMMjA7Xul8Ga0uCHZsgUViMNOHr6ZUr7kRP9G+Olk1iF7EOPTuMujvJ6Jv2ZhiWQe6OcZcJGWaZtWVOUUc7pKLcGRnkM472/HlMKhqBR081pPzaLHlO5z/lHgAEAAGOCaxpjc90AAAAASUVORK5CYII=");
+	prebindImage("logo:youtube", "iVBORw0KGgoAAAANSUhEUgAAAA4AAAAKCAYAAACE2W/HAAAACXBIWXMAAAsSAAALEgHS3X78AAAArklEQVR4nKWQzwoBcRzEf28yw5aSV+Bd9gW47gM5yoHkwiuMFHZb+XNzwRa1HKSvA6e1qHWY03w+NY0TWBE4FrgVmAhMBVom6avbChwJLDuB/RzwV7pO4K6AuHECr9kiDkMLg8Am1donMXF5xdXsmdvNlu22TeuNLHP/KsZRZItmy1T2csXL29T53Ga+b2Lp09TjX+f0CogdJ9ATOBC4EngQeM4BTwL3AtcChwJLD8pEJ99Nd3bdAAAAGnRFWHRBdXRob3IAVWxlYWQgU3lzdGVtcywgSW5jLskdPnYAAAAASUVORK5CYII=");
+	prebindImage("logo:vimeo", "iVBORw0KGgoAAAANSUhEUgAAAA4AAAAKCAYAAACE2W/HAAAACXBIWXMAAAsSAAALEgHS3X78AAAA+0lEQVR4nG3SoUoEYRiF4dHV4AaxGNbi62ISjIKCTYs3YDEYzdsMKqhFwSsQb0BMBpETDNvEsM0kuBdwUNSFFWHht3wjv8PU878PfANTpJQK5DHkGeQd5HvkI+Tp2OeRz5BfkfvIuymlogjYQj5BfkNOyF/Iy4EvkEexJ+ReDjvITwHKYDuuOIy3cn/O4QryJvJNFhzHqbPI59l++QcDN5D3kAcR3Ma+iHwX2wfy6j8Y0TpyL6JP5DbyQXzjN/I+crMOzlXOfUB+R/5BvkZeKNsqbCCfIg8zPELuIq8hj9fCwFvILxl6RN5Ansy7OjgVP0Af+Qp5CXmi2v0CqWBjfdCw5N4AAAAASUVORK5CYII=");
 
 	function updateSmiles() {
 		var smileySpans = $$(.smileySpan);
@@ -379,38 +436,35 @@
 		for (var smileyDiv in smileyDivs) smileyDiv.remove();
 
 		var smiles = $$(smile);
+		for (var smile in smiles)
 		if (showSmiles) {
-			for (var smile in smiles) {
-				var smileDiv = new Element("div");
-				smileDiv.attributes.addClass("smileyDiv");
-				smileDiv.attributes["style"] = smile.attributes["data-style"];
-				smile.insertNodeAfter(smileDiv);
-				smileDiv.html = smile.attributes["data-text"].htmlUnescape();
-			}
+			var smileDiv = new Element("div");
+			smileDiv.attributes.addClass("smileyDiv");
+			smileDiv.attributes["style"] = smile.attributes["data-style"];
+			smile.insertNodeAfter(smileDiv);
+			smileDiv.html = smile.attributes["data-text"].htmlUnescape();
 		} else {
-			for (var smile in smiles) {
-				var smileSpan = new Element("span");
-				smileSpan.attributes.addClass("smileySpan");
-				smile.insertNodeAfter(smileSpan);
-				smileSpan.html = smile.attributes["data-text"].htmlUnescape();
-			}
+			var smileSpan = new Element("span");
+			smileSpan.attributes.addClass("smileySpan");
+			smile.insertNodeAfter(smileSpan);
+			smileSpan.html = smile.attributes["data-text"].htmlUnescape();
 		}
 	}
 
 	function updateFontStyles() {
-		var boldSpans = $$(span.bold);
-		for (var boldSpan in boldSpans)
-		if (fontCodes)
-			boldSpan.style#font-weight = "500";
-		else
-			boldSpan.style#font-weight = "normal";
+		self.style.documentRules({
+			selector: "span.bold",
+			properties: function(rule) {
+				return { font-weight: fontCodes ? "500" : "normal"; }
+			}
+		});
 
-		var ulSpans = $$(span.underlined);
-		for (var ulSpan in ulSpans)
-		if (fontCodes)
-			ulSpan.style#text-decoration = "underline";
-		else
-			ulSpan.style#text-decoration = "none";
+		self.style.documentRules({
+			selector: "span.underlined",
+			properties: function(rule) {
+				return { text-decoration: fontCodes ? "underline" : "none"; }
+			}
+		});
 	}
 
 	function makeImg(cls, pic) {
@@ -418,7 +472,7 @@
 		"background-position: " + pic[1] + "px " + pic[2] + "px; width: " + pic[3] + "px; height: " + pic[4] + "px;\"></div>";
 	}
 
-	function appendImage(match, imgLink, cached) {
+	function appendImage(tagAsHtml, imgLink, cached) {
 		var dataLink = "data-link=\"" + imgLink[0].htmlEscape() + "\" ";
 		var action = "check";
 		var display = " hidden";
@@ -453,80 +507,58 @@
 		imgWidth = imgWidth.toInteger();
 		imgHeight = imgHeight.toInteger();
 
-		var loaderWidth = Integer.min(imgWidth, imgHeight);
-		var loaderHeight = loaderWidth;
-		var loaderLeft = imgWidth/2 - loaderWidth/2;
-		var loaderTop = imgHeight/2 - loaderHeight/2;
-
-		match = match + "<div class=\"linkedImgWrapper" + display + "\">" +
-		"<div class=\"spinner\" style=\"width: " + loaderWidth + "px; height: " + loaderHeight + "px; left: " +
-		loaderLeft + "px; top: " + loaderTop + "px;\"></div>" +
+		tagAsHtml.print("<div class=\"linkedImgWrapper" + display + "\">" +
 		"<img data-action=\"" + action + "\" " + dataLink +
 		"style=\"width: " + imgWidth + "px; height: " + imgHeight + "px;\" " +
-		"src=\"themepic:dummy\" class=\"linkedImg\" alt=\"\" /></div>";
-		return match;
+		"class=\"linkedImg\" alt=\"\" /></div>");
 	}
 
-	// Modified autolinker.js regexes
-	var emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,
-		protocolRegex = /(?:[a-z][-.+a-z0-9]*:(?![a-z][-.+a-z0-9]*:\/\/)(?!\d+\/?)(?:\/\/)?)/,
-		wwwRegex = /(?:www\.)/,
-		domainNameRegex = /[а-яёa-z0-9\.\-]*[а-яёa-z0-9\-]/,
-		tldRegex = /\.(?:[а-яёa-z]{2,63})/,
-		urlSuffixRegex = /[\-а-яёa-z0-9+&@#\/%=~_()|'$*\[\]?!:,.;]*[\-а-яёa-z0-9+&@#\/%=~_()|'$*\[\]]/,
-		uinRegex = /(^|\s)(\d{5,9})($|\s)/,
-		srcCodeRegex = /\[code=?(.*?)\]([^\uFFFF]+?)\[\/code\]/,
-		boldRegex = /(^|\s)\*([^\uFFFF]+?)\*($|\s)/,
-		underlineRegex = /(^|\s)_([^\uFFFF]+?)_($|\s)/,
-		re_urlmailuincode = new RegExp(([
-			"(", emailRegex.source, domainNameRegex.source, tldRegex.source, ")",
-			"|",
-			"(", "(?:", "(?:", protocolRegex.source, domainNameRegex.source, tldRegex.source, ")",
-						"|",
-						"(?:", "(?:.?//)?", wwwRegex.source, domainNameRegex.source, tldRegex.source, ")",
-				")",
-				"(?:" + urlSuffixRegex.source + ")?",
-			")",
-			"|",
-			"(?:", uinRegex.source, ")",
-			"|",
-			"(?:", srcCodeRegex.source, ")",
-			"|",
-			"(?:", boldRegex.source, ")",
-			"|",
-			"(?:", underlineRegex.source, ")"
-		]).join(""), "gi");
-
 	function createBody(isMyEvent, message, links) {
-		var msgOut = message.replace(/<|>/g, function(matched){ return matched.htmlEscape() });
-		msgOut = msgOut.replace(re_urlmailuincode, function(match, mail, url,
+		var msgOut = message.replace(/\u0000/g, "");
+		msgOut = msgOut.replace(/<|>|&/g, function(matched){ return matched.htmlEscape() });
+		msgOut = emo.emotify(msgOut);
+		msgOut = msgOut.replace(re_urlmailuincode, function(match,
+								mailBefore, mail, mailAfter,
+								urlBefore, url, urlAfter,
 								uinBefore, uin, uinAfter, srcLang, srcCode,
 								boldBefore, bold, boldAfter,
 								underlinedBefore, underlined, underlinedAfter) {
 			if (mail) {
-				return "<a href=\"mailto:" + mail + "\">" + mail + "</a>";
+				return mailBefore + "<a href=\"mailto:" + mail + "\">" + mail + "</a>" + mailAfter;
 			} else if (url) {
 				var cached = false;
-				var tagAsHtml = "<a href=\"link:" + url + "\">" + url + "</a>";
+				var tagAsHtml = Stream.openString();
+				tagAsHtml.print(urlBefore);
+				tagAsHtml.print("<a href=\"link:" + url + "\">" + url + "</a>");
+				var videoHref = "<a href=\"#\" src=\"" + url + "\" title=\"" + GetTranslation("Preview video") + "\"";
+				var isVideoLink = false;
+				if (youtubeRegex.test(url)) {
+					tagAsHtml.print(videoHref + " kind=\"youtube\"><div class=\"youtubeimg\"></div></a>");
+					isVideoLink = true;
+				} else if (vimeoRegex.test(url)) {
+					tagAsHtml.print(videoHref + " kind=\"vimeo\"><div class=\"vimeoimg\"></div></a>");
+					isVideoLink = true;
+				}
 
-				if (!isMyEvent && imgLinksIn || isMyEvent && imgLinksOut) {
+				if (!isMyEvent && imgLinksIn || isMyEvent && imgLinksOut)
+				if (!isVideoLink || (isVideoLink && videoLinks)) {
 					if (links !== false)
-					for (var i = 0; i < links.length; i++)
-					if (links[i][0] == url) {
+					for (var link in links)
+					if (link[0] == url) {
 						cached = true;
 						//stdout.println("appending img for url: " + links[i][0]);
-						tagAsHtml = appendImage(tagAsHtml, links[i], true);
+						appendImage(tagAsHtml, link, true);
 						break;
 					}
 					if (!cached)
-					tagAsHtml = appendImage(tagAsHtml, [ url, 50, 50 ], false);
+					appendImage(tagAsHtml, [ url, 50, 50 ], false);
 				}
-
-				return tagAsHtml;
+				tagAsHtml.print(urlAfter);
+				return tagAsHtml.close(true);
 			} else if (uin) {
 				return uinBefore + "<a href=\"uin:" + uin + "\" class=\"uinLink\">" + uin + "</a>" + uinAfter;
 			} else if (srcLang && srcCode) {
-				if ($(body).style#-syntax-highlight == "on")
+				if (body.style#-syntax-highlight == "on")
 					return "<div class=\"codeDiv\"><img src=\"source-code:selectall\" class=\"codeCopyAll\" /><source-code lang=\"" + srcLang + "\">" + srcCode + "</source-code></div>";
 				else
 					return match;
@@ -536,36 +568,48 @@
 				return underlinedBefore + "<span class=\"underlined\">" + underlined + "</span>" + underlinedAfter;
 			} else return match;
 		});
-		msgOut = emo.emotify(msgOut);
-
 		return msgOut;
 	}
 
-    function addEvents(events, prepend, hidehist) {
-		var start = Date.ticks();
-		if (prepend) {
-			chatRememberTopEvent();
-			for (var i = events.length - 1; i >= 0; i--) {
-				var event = events[i];
-				addEvent(event, prepend);
+	function addEvents(events, prepend) {
+//var start = System.ticks;
+		isLoading = true;
+		if (events && events.length > 0) {
+			var data = Stream.openString();
+			if (prepend && (eventCount + events.length) > eventLimit) {
+				events = events.slice(events.length - (eventLimit - eventCount));
+				showLimitWarning();
 			}
-		} else {
+
 			for (var event in events)
-			addEvent(event, prepend);
+			addEvent(data, event);
+
+			if (prepend)
+				chat.prepend(data.close(true));
+			else
+				chat.append(data.close(true));
 		}
+//stdout.println("Add to DOM: " + (System.ticks - start));
+//start = System.ticks;
+		var hiddenMsgs = $$(.msgFull.hidden);
+		for (var hiddenMsg in hiddenMsgs)
+		hiddenMsg.attributes.removeClass("hidden");
+
+		chat.attributes.removeClass("hidden");
+
+		changeRanges();
 		initTopTime();
 		updateCurTime();
-		updateTitles();
+		updateMessages();
 		updateSmiles();
 		updateFontStyles();
 		rescaleImages();
-		view.update();
-		if (hidehist) $(#history).style#display = "none";
-		if (prepend) chatRestoreTopEvent();
-		//stdout.println(Date.ticks() - start);
+
+		isLoading = false;
+//stdout.println("After DOM: " + (System.ticks - start));
 	}
 
-	function addEvent(event, prepend = false) {
+	function addEvent(msg, event) {
 		var isMyEvent	= event[0],
 			header		= event[1],
 			message		= event[2],
@@ -576,222 +620,125 @@
 			cryptPic	= event[7],
 			statusPic	= event[8],
 			statusPicEx = event[9],
-			animate		= event[10],
-			last		= event[11];
-		var chat = $(#chat);
+			animate		= event[10];
 
-		// Create event items
-		var msg = new Element("div");
-		if (isMyEvent)
-			msg.attributes["class"] = "msgFull my";
-		else
-			msg.attributes["class"] = "msgFull";
-		if (animate)
-		msg.attributes.addClass("hidden");
+		var msgCls = "msgFull";
+		if (animate) msgCls += " hidden";
+		if (isMyEvent) msgCls += " my";
 
-		msg.attributes["time"] = evTime;
-		msg.on("mousedown", function (e) {
-			if (e.propButton)
-			rightClickedTime = this.attributes["time"];
-		});
+		msg.print("<div class=\"" + msgCls + "\" time=\"" + evTime + "\">");
 
-		var title = new Element("div");
-		title.attributes["class"] = "msgTitle";
-
-		msg.append(title);
-
-		var body = new Element("div");
-		body.attributes["class"] = "msgBody";
-
-		var msgInnerBody = new Element("div");
-		msgInnerBody.attributes["class"] = "msgInnerBody";
-
-		// Add elements to DOM
-		body.append(msgInnerBody);
-		msg.append(body);
-		if (prepend)
-			chat.prepend(msg);
-		else
-			chat.append(msg);
-
-		// Bind event listeners
-		title.on("mousedown", function (e) {
-			if (e.mainButton) {
-				if ((!e.shiftKey && !e.ctrlKey) || selStart == 0) {
-					clearSelection();
-					updateTitles();
-					selStart = this.parent.attributes["time"].toFloat(0);
-					selectEvent(this.parent);
-				} else {
-					var selEnd = this.parent.attributes["time"].toFloat(0);
-					if (e.ctrlKey) {
-						if (isEventSelected(this.parent))
-							deselectEvent(this.parent);
-						else
-							selectEvent(this.parent);
-					} else if (e.shiftKey)
-					for (var title in titles) {
-						var el = title[1].parent;
-						var msgTime = el.attributes["time"].toFloat(0);
-						if ((selStart <= selEnd && msgTime >= selStart && msgTime <= selEnd) ||
-							(selStart > selEnd && msgTime <= selStart && msgTime >= selEnd))
-							selectEvent(el);
-						else
-							deselectEvent(el);
-					}
-				}
-				saveSelection();
-				e.stopPropagation();
-				return true;
-			}
-		});
-
-		msgInnerBody.on("mousedown", function(e) {
-    		if (e.mainButton) clearSelection(e.ctrlKey || e.shiftKey);
-		});
-
-		msgInnerBody.on("mouseup", function(e) {
-			if (e.mainButton) {
-				saveSelection();
-				if (this.selection.text == "") $(body).state.focus = true;
-			}
-		});
-
-		var titleStr = makeImg("msgEventImg", evPic);
+        msg.print("<div class=\"msgTitle\">");
+		msg.print(makeImg("msgEventImg", evPic));
 		if (cryptPic !== false)
-		titleStr += makeImg("msgCryptImg", cryptPic);
-		titleStr +=
-		"<div class=\"msgWhat\">" + header[0] + "</div>" +
-		"<div class=\"msgStatusImages\">";
+		msg.print(makeImg("msgCryptImg", cryptPic));
+		msg.print("<div class=\"msgWhat\">" + header[0] + "</div>" +
+				  "<div class=\"msgStatusImages\">");
 
 		if (statusPic !== false)
-		titleStr += makeImg("msgStatusImg", statusPic);
+		msg.print(makeImg("msgStatusImg", statusPic));
 		if (statusPicEx !== false)
-		titleStr += makeImg("msgStatusExtImg", statusPicEx);
+		msg.print(makeImg("msgStatusExtImg", statusPicEx));
 
-		titleStr += "</div>" +
-		"<div class=\"msgDate\">" + header[1] + "</div>";
+		msg.print("</div><div class=\"msgDate\">" + header[1] + "</div>");
 		if (header[2] != "")
-		titleStr += "<div class=\"msgMulti\">" + header[2] + "</div>";
+		msg.print("<div class=\"msgMulti\">" + header[2] + "</div>");
+		msg.print("</div>");
 
-		// Set texts
-		title.html = titleStr;
-		msgInnerBody.html = createBody(isMyEvent, message, links);
-
-		var codeBlocks = msgInnerBody.$$(source-code);
-		for (var codeBlock in codeBlocks) {
-			codeBlock.parent.$(img.codeCopyAll).on("mousedown", function(e) {
-				if (e.mainButton) {
-					clearSelection(e.ctrlKey || e.shiftKey);
-					var code = this.parent.$(source-code);
-					code.selection.select(
-						[bookmark: code.first, 0, false],
-						[bookmark: code.last, 0, false]
-					);
-					e.preventDefault();
-				}
-			});
-
-			codeBlock.parent.$(img.codeCopyAll).on("dblclick", function(e) {
-				e.preventDefault();
-				return true;
-			});
-
-			codeBlock.on("mousedown", function(e) {
-    			if (e.mainButton) clearSelection(e.ctrlKey || e.shiftKey);
-			});
-
-			codeBlock.on("mouseup", function(e) {
-				if (e.mainButton) saveSelection();
-			});
-		}
+		msg.print("<div class=\"msgBody\"><div class=\"msgInnerBody\">" + createBody(isMyEvent, message, links));
 
 		if (images !== false) {
-			var msgEmbeddedImages = new Element("div");
-			msgEmbeddedImages.attributes["class"] = "msgEmbeddedImages";
-			msgInnerBody.append(msgEmbeddedImages);
-			for (var image in images) {
-				var img = new Element("img");
-				img.attributes["class"] = "embeddedImg";
-				img.attributes["data-action"] = "download";
-				img.attributes["data-link"] = "embedded:" + image;
-				img.attributes["src"] = "themepic:dummy";
-				img.attributes["alt"] = "";
-				msgEmbeddedImages.append(img);
-			}
+			msg.print("<div class=\"msgEmbeddedImages\">");
+			for (var image in images)
+			msg.print("<img class=\"embeddedImg\" data-action=\"download\" data-link=\"embedded:" + image + "\" alt=\"\" />");
+			msg.print("</div>");
 		}
 
-		if (last)
-		chat.attributes.removeClass("hidden");
-
-		if (animate)
-		msg.attributes.removeClass("hidden");
+        msg.print("</div></div></div>");
+		eventCount++;
 	}
 
 	function clearEvents() {
-		var chat = $(#chat);
 		chat.clear();
 		chat.attributes.addClass("hidden");
-		updateTitles();
+		updateMessages();
 	}
 
-	function updateTitles() {
-		titles = new Array();
-		var titleNodes = $$(.msgTitle);
-		for (var titleNode in titleNodes)
-		titles.push([titleNode.parent.box(#top, #inner, #content), titleNode]);
+	function updateMessages() {
+		messages = $$(.msgFull);
 	}
 
-	function chatScrollToTop() {
-		var chat = $(#chat);
-		if (chat.length > 0 && chat.first) chat.first.scrollToView(true, true);
+	function correctScrollPos(scrollPos) {
+		var scrollHeight = chat.box(#height, #padding) + (history.attributes.hasClass("removed") ? 0 : history.box(#height, #padding));
+		var chatHeight = view.box(#height);
+		if (scrollPos > scrollHeight - chatHeight)
+		scrollPos = scrollHeight - chatHeight;
+		if (scrollPos < 0) scrollPos = 0;
+		return scrollPos;
 	}
 
-	function chatScrollToBottom(animate) {
-		var chat = $(#chat);
-		if (chat.length > 0 && chat.last) {
-			chat.last.scrollToView(true, animate);
-			if (!animate) scrollSinglePixel();
-		}
+	function scrollIntoView(el, smooth) {
+		view.update();
+		self.post(function() {
+			var scrollPos = el.box(#top, #margin, #parent) + (history.attributes.hasClass("removed") ? 0 : history.box(#height, #padding));
+			body.scrollTo(0, correctScrollPos(scrollPos), smooth);
+		});
 	}
 
-	function chatRememberScrollPos() {
-		scrollPos = $(body).scroll(#top);
+	function scrollToTop() {
+		if (chat.length > 0 && chat.first)
+		scrollIntoView(chat.first, true);
 	}
 
-	function chatRestoreScrollPos() {
-		$(body).scrollTo(0, scrollPos, false);
+	function scrollToBottom(animate) {
+		if (chat.length > 0 && chat.last)
+		scrollIntoView(chat.last, animate);
 	}
 
-	function chatRememberTopEvent() {
-		var topEvent = $(#chat).first;
+	function scrollToBottomIfLast(imgTag) {
+		if (autoScroll && messages.length > 0 && imgTag.$p(.msgFull) == messages.last)
+		scrollToBottom(false);
+	}
+
+	function setAutoscrollState(state) {
+		autoScroll = state;
+	}
+
+	function rememberScrollPos() {
+		scrollPos = body.scroll(#top);
+	}
+
+	function restoreScrollPos() {
+		self.post(function() {
+			body.scrollTo(0, scrollPos, false);
+		});
+	}
+
+	function rememberTopEvent() {
+		var topEvent = chat.first;
 		if (topEvent) topEventTime = topEvent.attributes["time"];
 	}
 
-	function chatRestoreTopEvent() {
+	function restoreTopEvent() {
+		view.update();
 	    var msg;
 		if (topEventTime)
 			msg = self.select(".msgFull[time=\"" + topEventTime + "\"]");
 		else
-			msg = $(#chat).last;
-		if (msg) {
-			msg.scrollToView(true, false);
-			scrollSinglePixel();
-		}
+			msg = chat.last;
+		if (msg) scrollIntoView(msg, false);
 	}
 
-	function moveToTime(time) {
-		var events = $$(.msgFull);
-		for (var ev in events)
-		if (ev.attributes["time"] == time) {
-			ev.scrollToView(false, true);
+	function moveToTime(time, fast) {
+		for (var msg in messages)
+		if (msg.attributes["time"] == time) {
+			scrollIntoView(msg, !fast);
 			break;
 		}
 	}
 
 	function scrollEvent(cnt) {
-		var msgs = $$(.msgFull);
-		for (var msg in msgs)
+		for (var msg in messages)
 		if (isInView(msg)) {
 			if (cnt > 0) {
 				for (var i = 1; i <= cnt; i++)
@@ -800,24 +747,25 @@
 				for (var i = cnt; i <= -1; i++)
 				if (msg.prior) msg = msg.prior;
 			}
-			if (msg) msg.scrollToView(true, true);
+			if (msg) scrollIntoView(msg, true);
 			break;
 		}
 	}
 
 	function scrollLine(cnt) {
 		// 1 step = 10% of chat height
-		$(body).scrollTo(0, $(body).scroll(#top) + cnt * view.box(#height) / 10, true);
+		self.post(function() {
+			var scrollPos = correctScrollPos(body.scroll(#top) + cnt * view.box(#height) / 10);
+			body.scrollTo(0, scrollPos, true);
+		});
 	}
 
 	function scrollWheel(direction) {
 		// 1 step = 10% of chat height
-		$(body).scrollTo(0, $(body).scroll(#top) + direction * wheelVelocity * view.box(#height) / 10, true);
-	}
-
-	// temp (and incomplete) fix for 1px scroll bug
-	function scrollSinglePixel() {
-		$(body).scrollTo(0, $(body).scroll(#top) + 1, false);
+		self.post(function() {
+			var scrollPos = correctScrollPos(body.scroll(#top) + direction * wheelVelocity * view.box(#height) / 10);
+			body.scrollTo(0, scrollPos, true);
+		});
 	}
 
 	function updateMsgStatus(evPic) {
@@ -851,15 +799,15 @@
 
 	function getSelectedTextInfo() {
 		var str = "";
-		var startHistNode = 0;
-		var endHistNode = 0;
+		var startHistNode = "0";
+		var endHistNode = "0";
 		var wholeEvents = false;
 		if (selStart > 0) {
 			wholeEvents = true;
 			var nodes = $$(.msgFull.selected);
 			if (nodes.length > 0) {
 				startHistNode = nodes[0].attributes["time"];
-				endHistNode = nodes[nodes.length - 1].attributes["time"];
+				endHistNode = nodes.last.attributes["time"];
 			}
 			for (var node in nodes) {
 				if (str.length > 0) str += "\r\n";
@@ -890,7 +838,7 @@
 				}
 			}
 		}
-		return [str.replace(/\r?\n/g, "\r\n"), startHistNode.toFloat(0), endHistNode.toFloat(0), wholeEvents];
+		return [str.replace(/\r?\n/g, "\r\n"), startHistNode, endHistNode, wholeEvents];
 	}
 
 	function getQuote() {
@@ -915,8 +863,8 @@
 		}
 
 		selStart = 0;
-		for (var title in titles)
-		deselectEvent(title[1].parent);
+		for (var el in messages)
+		deselectEvent(el);
 
 		view.update();
 	}
@@ -924,8 +872,7 @@
 	function setSelection(start, end) {
 		clearSelection();
 
-		for (var title in titles) {
-			var el = title[1].parent;
+		for (var el in messages) {
 			var msgTime = el.attributes["time"].toFloat(0);
 			if (msgTime >= start.toFloat(0) && msgTime <= end.toFloat(0))
 				selectEvent(el);
@@ -937,25 +884,412 @@
 		saveSelection();
 	}
 
+	function selectAll() {
+		if (eventCount > 0)
+		setSelection(chat.first.attributes["time"], chat.last.attributes["time"]);
+	}
+
 	function copySelected() {
 		var str = selInfo.text();
-		if (str !== "")
-		view.clipboard(#put, str);
+		if (str !== "") view.clipboard(#put, str);
 	}
+
+	function isEventSelected(el) {
+		return el.attributes.hasClass("selected");
+	}
+
+	function selectEvent(el) {
+		if (!el.attributes.hasClass("selected"))
+		el.attributes.addClass("selected");
+	}
+
+	function deselectEvent(el) {
+		if (el.attributes.hasClass("selected"))
+		el.attributes.removeClass("selected");
+	}
+
+	function showImage(imgTag, link) {
+		if (link.indexOf("embedded:") == 0) {
+			imgTag.attributes["src"] = link;
+			finishImage(imgTag);
+		} else {
+			var cached = self.bindImage("download:" + link) !== null;
+			imgTag.attributes["src"] = "download:" + link;
+			if (cached) finishImage(imgTag);
+		}
+	}
+
+	function finishImage(imgTag) {
+		imgTag.style#width = "auto";
+		imgTag.style#height = "auto";
+		imgTag.style#opacity = 0;
+		imgTag.attributes.addClass("loaded");
+		scrollToBottomIfLast(imgTag);
+	}
+
+	function imgCheck(data, status) {
+		var responseStr = data.toString("UTF-8");
+		if (responseStr == "") {
+	        if (this.parent) this.parent.remove();
+			return;
+		}
+
+		var response = parseData(responseStr);
+		if (response.isImg === 1) { // Image link confirmed, show preloader and start download
+			if (this.parent) this.parent.attributes.removeClass("hidden");
+			this.post(function(){
+				showImage(this, response.link);
+			});
+		} else { // Not an image link, remove loader
+			if (this.parent) this.parent.remove();
+		}
+	}
+
+	function getImg(imgTag) {
+		var action = imgTag.attributes["data-action"];
+		var link = imgTag.attributes["data-link"];
+		imgTag.attributes.remove("data-action");
+		imgTag.attributes.remove("data-link");
+		if (action == "check") // not in cache, check first
+			imgTag.request(imgCheck, #get, "check:" + link);
+		else // image was already cached or embedded
+			showImage(imgTag, link);
+	}
+
+    function isInView(el) {
+		var (elLeft, elTop, elRight, elBottom) = el.box(#rect, #inner, #view);
+		return !(elBottom < 0 || elTop > view.box(#height));
+	}
+
+    var winx = 0,
+		winy = 0,
+		winstep = 40;
+
+	function viewInWindow(title, body, images, formicon) {
+		var (dw, dh) = view.screenBox(view.screen, #frame, #dimension);
+		var (px, py) = view.screenBox(view.screen, #frame, #position);
+		if (winx == 0 || winy == 0) {
+			winx = dw/5;
+			winy = dh/5;
+		}
+		View.window({
+			type: View.FRAME_WINDOW,
+			url: self.url("window.htm"),
+			width: dw/2.5,
+			height: dh/2.5,
+			x: px + winx,
+			y: py + winy,
+			state: View.WINDOW_SHOWN,
+			alignment: 5,
+			caption: title,
+			parameters: {
+            	body: body,
+                images: images,
+				formicon: formicon;
+			}
+		});
+		winx += winstep;
+		winy += winstep;
+		if (winx > dw/3 || winy > dh/3) {
+			winx = winstep;
+			winy = winstep;
+		}
+	}
+
+	self.timer(250, function() {
+		if (isLoading) return true;
+		var imgs = $$(img[data-action]);
+		for (var img in imgs)
+		if (isInView(img)) getImg(img);
+		return true;
+	}, true);
+
+	function deleteEvents(start, end) {
+		var startTime = start.toFloat(0);
+		var endTime = end.toFloat(0);
+		for (var msg in messages) {
+			var when = msg.attributes["time"].toFloat(0);
+			if (when >= startTime && when <= endTime) msg.remove();
+		}
+		updateMessages();
+	}
+
+	function initSettings(settings) {
+		autoCopy = settings[0];
+		showSmiles = settings[1];
+		wheelVelocity = settings[2];
+
+		imgLinksIn = settings[7];
+		imgLinksOut = settings[8];
+		cachePath = settings[12];
+		videoLinks = settings[13];
+		preferredRes = settings[14];
+
+		switch(settings[3]) {
+			case 0:
+				body.style#image-rendering = "optimize-quality";
+				break;
+			case 1:
+				body.style#image-rendering = "optimize-speed";
+				break;
+			case 2:
+				body.style#image-rendering = "crisp-edges";
+				break;
+		}
+
+		if (settings[4])
+			body.style#font-rendering-mode = "sub-pixel";
+		else
+			body.style#font-rendering-mode = "snap-pixel";
+
+		maxImgWidth = settings[5];
+		maxImgHeight = settings[6];
+
+		fontCodes = settings[9];
+		updateFontStyles();
+
+		var tiledBgPic = settings[10];
+		if (tiledBgPic.length > 0) {
+			self.style#background-image="url(" + tiledBgPic + ")";
+			self.style#background-repeat = "repeat";
+			self.style#background-position = "center center";
+		} else {
+			self.style#background-image="none";
+			self.style#background-repeat = "no-repeat";
+		}
+
+        var positionedBgPic = settings[11];
+		if (positionedBgPic.length > 0) {
+			body.style#background-image="url(" + positionedBgPic + ")";
+			switch(positionedBgPic.charAt(positionedBgPic.length - 1)) {
+				case "1":
+					body.style#background-position = "left top";
+					break;
+				case "2":
+					body.style#background-position = "right top";
+					break;
+				case "3":
+					body.style#background-position = "left bottom";
+					break;
+				case "4":
+					body.style#background-position = "right bottom";
+					break;
+			}
+		} else body.style#background-image="none";
+
+		rescaleImages();
+	}
+
+	function initSettingsOnce(ShowHistRanges) {
+		if (ShowHistRanges) {
+			toggle.attributes.removeClass("inactive");
+			history.attributes.removeClass("hidden");
+		}
+		history.attributes.addClass("animate");
+
+		var lastitems = $$(#lastcnt > div);
+		for (var lastitem in lastitems) {
+	       	lastitem.text += " " + GetTranslation("messages");
+			lastitem.on("mousedown", function (e) {
+				loadHistory(-this.attributes["data-count"].toInteger(10));
+			});
+		}
+
+		$(#h_last).text = GetTranslation($(#h_last).text);
+		$(#h_today).text = GetTranslation($(#h_today).text);
+		$(#h_yesterday).text = GetTranslation($(#h_yesterday).text);
+		$(#h_oneday).text = GetTranslation($(#h_oneday).text);
+		$(#h_twodays).text = GetTranslation($(#h_twodays).text);
+		$(#h_threedays).text = GetTranslation($(#h_threedays).text);
+		$(#h_lastweek).text = GetTranslation($(#h_lastweek).text);
+		$(#h_lastmonth).text = GetTranslation($(#h_lastmonth).text);
+		$(#h_lastyear).text = GetTranslation($(#h_lastyear).text);
+		$(#h_all).text = GetTranslation($(#h_all).text);
+
+		vc.initTitles();
+	}
+
+	function initSettingsMsgPreview(searchText) {
+		body.attributes.addClass("msgPreview");
+		history.attributes.addClass("removed");
+		toggle.attributes.addClass("removed");
+		chat.append("<div class=\"searchHere\">" + searchText + "</div>")
+		chat.attributes.removeClass("hidden");
+	}
+
+	function initSmiles(smiles) {
+		emo.init("smile:", true, parseData(smiles));
+	}
+
+	function rescaleImages() {
+		function cssStyle(rule) {
+			return {
+				max-width: (maxImgWidth > 0 ? maxImgWidth + "px" : "calc(100vw - 41px)");
+				max-height: (maxImgHeight > 0 ? maxImgHeight + "px" : "none");
+			}
+		}
+
+		self.style.documentRules({
+			selector: ".msgBody .msgInnerBody .linkedImg",
+			properties: cssStyle
+		});
+
+		self.style.documentRules({
+			selector: ".msgBody .msgInnerBody .embeddedImg",
+			properties: cssStyle
+		});
+	}
+
+	function num2weekday(num) {
+		var month = ["Понедельник","Вторник","Среда","Четверг","Пятница","Суббота","Воскресенье"];
+		return month[num];
+	}
+
+	function num2month(num) {
+		var month = ["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"];
+		return month[num - 1];
+	}
+
+	function delphi2unix(time) {
+		return (time - 25569.0) * 86400000.0;
+	}
+
+	function unix2delphi(time) {
+		return time / 86400000.0 + 25569.0;
+	}
+
+	function showLimitWarning() {
+		$(#ranges).html = GetTranslation("Message count limit reached, full history is available in") + " <a href=\"open:search\">" + GetTranslation("search window") + "</a>";
+		$(#ranges).style#border-spacing = 0;
+	}
+
+	function initTopTime() {
+		if (topTime == 0 && chat.first)
+		topTime = chat.first.attributes["time"].toFloat(0);
+		if (topTime == 0){
+			var now = new Date();
+			topTime = unix2delphi(now.valueOf() + now.timeZoneOffset());
+		}
+	}
+
+	function updateCurTime() {
+		var date = new Date(delphi2unix(topTime));
+		curtime.html = num2weekday(date.UTCdayOfWeek) + ", " + date.UTCday + " " + num2month(date.UTCmonth) + " " + date.UTCyear/* + ", " + date.UTChour + ":" + date.UTCminute*/;
+		curtime.style#display = "block";
+	}
+
+	function changeRanges() {
+		if ($(#h_last)) $(#h_last).style#display = "none";
+		if ($(#h_today)) $(#h_today).style#display = "none";
+		if ($(#h_yesterday)) $(#h_yesterday).style#display = "none";
+		if ($(#h_oneday)) $(#h_oneday).style#display = "inline";
+		if ($(#h_twodays)) $(#h_twodays).style#display = "inline";
+	}
+
+	function showHistoryLoading() {
+		loading.attributes.addClass("visible");
+		curtime.html = GetTranslation("Loading history...");
+		curtime.style#display = "block";
+	}
+
+	function hideHistoryLoading() {
+		loading.attributes.removeClass("visible");
+	}
+
+	function hideHistory() {
+    	if (eventCount >= eventLimit) {
+			showLimitWarning();
+		} else {
+			history.attributes.addClass("removed");
+			toggle.attributes.addClass("removed");
+		}
+	}
+
+	function loadHistory(numOfDays) {
+		showHistoryLoading();
+		changeRanges();
+		self.timer(400, function() {
+			if (numOfDays >= 0) {
+				initTopTime();
+				LoadHistory(numOfDays, topTime);
+				topTime = Math.floor(topTime - numOfDays);
+				updateCurTime();
+			} else {
+				LoadHistory(numOfDays, topTime);
+			}
+		});
+	}
+
+	$(#h_last).on("click", function (e) {
+		lastcnt.style.set({
+			left: this.box(#left, #inner, #root) + "px",
+			top: this.box(#top, #inner, #root) + this.box(#height, #margin) + 5 + "px",
+			display: "block",
+			opacity: 1
+		});
+	});
+
+	$(#h_today).on("click", function (e) {
+		loadHistory(0);
+	});
+	$(#h_yesterday).on("click", function (e) {
+		loadHistory(1);
+	});
+	$(#h_oneday).on("click", function (e) {
+		loadHistory(1);
+	});
+	$(#h_twodays).on("click", function (e) {
+		loadHistory(2);
+	});
+	$(#h_threedays).on("click", function (e) {
+		loadHistory(3);
+	});
+	$(#h_lastweek).on("click", function (e) {
+		loadHistory(7);
+	});
+	$(#h_lastmonth).on("click", function (e) {
+		loadHistory(30);
+	});
+	$(#h_lastyear).on("click", function (e) {
+		loadHistory(365);
+	});
+	$(#h_all).on("click", function (e) {
+		loadAll()
+	});
+
+	function loadAll() {
+		if (!history.attributes.hasClass("removed"))
+		loadHistory(-1);
+	}
+
+	toggle.on("click", function (e) {
+		if (history.box(#width) < history.intrinsicWidthMax() + 50) {
+			view.msgbox(#information, GetTranslation("Not enough space to display"), GetTranslation("Information"), #ok);
+			return;
+		}
+		if (history.attributes.hasClass("hidden")) {
+			history.attributes.removeClass("hidden");
+			toggle.attributes.removeClass("inactive");
+		} else {
+			history.attributes.addClass("hidden");
+			toggle.attributes.addClass("inactive");
+		}
+	});
 
 	self.on("mousedown", function(e) {
 		if (e.mainButton) {
 			clearSelection();
 			saveSelection();
+			if (lastcnt.style#display !== "none") {
+				lastcnt.style#opacity = 0;
+                self.timer(300, function() {
+					lastcnt.style#display = "none";
+				});
+			}
 		}
 	});
 
-	function isInRange(offset, start, end) {
-		//stdout.println(offset + " between " + start + " and " + end);
-		return (offset >= start && offset <= end) || (offset >= end && offset <= start);
-	}
-
-	$(body).subscribe(function(e) {
+	body.subscribe(function(e) {
 		if (e.altKey) {
 			if (e.wheelDelta > 0)
 				scrollEvent(-1);
@@ -967,7 +1301,7 @@
 		return true;
 	}, Event.MOUSE, Event.MOUSE_WHEEL);
 
-	$(body).subscribe(function(e) {
+	body.subscribe(function(e) {
 		if (e.altKey && e.keyCode in [Event.VK_UP, Event.VK_DOWN, Event.VK_PRIOR, Event.VK_NEXT])
 		switch(e.keyCode) {
 			case Event.VK_UP:
@@ -989,290 +1323,217 @@
 		}
 	}, Event.KEY, Event.KEY_DOWN);
 
-	self.subscribe(function(e) {
-		if (e.type == Event.MOUSE_DOWN && e.propButton) {
-			var isLink = false;
-			var isImage = false;
-			var data = "";
-			if (e.target.tag == "a") {
-				isLink = true;
-				data = e.target.attributes["href"];
-			} else if (e.target.tag == "img") {
-				isImage = true;
-				data = e.target.attributes["src"];
-			}
-			OpenChatMenu(data, rightClickedTime, isLink, isImage);
+	body.subscribe(function(e) {
+		if (!e.propButton || vc.isVisible()) return;
+		var isLink = false;
+		var isImage = false;
+		var data = "";
+		if (e.target.tag == "a") {
+			isLink = true;
+			data = e.target.attributes["href"];
+		} else if (e.target.tag == "img") {
+			isImage = true;
+			data = e.target.attributes["src"];
 		}
-	}, Event.MOUSE);
+		var isMsgPreview = body.attributes.hasClass("msgPreview");
+		OpenChatMenu(data, rightClickedTime, isMsgPreview, isLink, isImage);
+	}, Event.MOUSE, Event.MOUSE_DOWN);
 
-	function isEventSelected(el) {
-		return el.attributes.hasClass("selected");
-	}
+	body.on("mousedown", ".msgFull", function (e) {
+		if (e.propButton)
+		rightClickedTime = this.attributes["time"];
+	});
 
-	function selectEvent(el) {
-		if (!el.attributes.hasClass("selected"))
-		el.attributes.addClass("selected");
-	}
-
-	function deselectEvent(el) {
-		if (el.attributes.hasClass("selected"))
-		el.attributes.removeClass("selected");
-	}
-
-	function bindImgPreview(imgTag) {
-		imgTag.on("mousedown", function(e) {
-			if (!e.mainButton) return;
-
-			var msg = this.$p(.msgFull);
-			//var time = msg.attributes["time"].toFloat(0);
-			var cnt = 0, selImg = 0;
-			var imgLinks = new Array();
-
-			var linkedImgs = msg.$$(img[src^="download:"]);
-			for (var linkedImg in linkedImgs) {
-				imgLinks.push(linkedImg.attributes["src"].substr(9));
-				if (linkedImg === this) selImg = cnt;
-				cnt++;
-			}
-
-			var embeddedImgs = msg.$$(img[src^="embedded:"]);
-			for (var embeddedImg in embeddedImgs) {
-				imgLinks.push(embeddedImg.attributes["src"]);
-				if (embeddedImg === this) selImg = cnt;
-				cnt++;
-			}
-			ShowPreview(imgLinks, selImg);
-		});
-	}
-
-	function showImage(imgTag, link) {
-		if (link.indexOf("embedded:") == 0) {
-			imgTag.attributes["src"] = link;
+	body.on("mousedown", ".msgTitle", function (e) {
+		if (!e.mainButton) return false;
+		if ((!e.shiftKey && !e.ctrlKey) || selStart == 0) {
+			clearSelection();
+			selStart = this.parent.attributes["time"].toFloat(0);
+			selectEvent(this.parent);
 		} else {
-			imgTag.attributes["src"] = "download:" + link;
-			imgTag.parent.attributes.removeClass("preloading");
-			imgTag.parent.$(.spinner).style#display = "none";
+			var selEnd = this.parent.attributes["time"].toFloat(0);
+			if (e.ctrlKey) {
+				if (isEventSelected(this.parent))
+					deselectEvent(this.parent);
+				else
+					selectEvent(this.parent);
+			} else if (e.shiftKey)
+			for (var msg in messages) {
+				var msgTime = msg.attributes["time"].toFloat(0);
+				if ((selStart <= selEnd && msgTime >= selStart && msgTime <= selEnd) ||
+					(selStart > selEnd && msgTime <= selStart && msgTime >= selEnd))
+					selectEvent(msg);
+				else
+					deselectEvent(msg);
+			}
 		}
-		imgTag.attributes.addClass("loaded");
-		imgTag.style#width = "auto";
-		imgTag.style#height = "auto";
-		bindImgPreview(imgTag);
-	}
-
-	function imgCheck(data, status) {
-		//stdout.println("checking...");
-		var responseStr = data.toString("UTF-8");
-		if (responseStr == "") {
-	        this.parent.remove();
-			return;
-		}
-
-		var response = parseData(responseStr);
-		if (response.isImg === 1) { // Image link confirmed, show preloader and start download
-			this.parent.attributes.removeClass("hidden");
-			this.parent.attributes.addClass("preloading");
-			showImage(this, response.link);
-		} else { // Not an image link, remove loader
-			this.parent.remove();
-		}
-	}
-
-	function getImg(imgTag) {
-		var action = imgTag.attributes["data-action"];
-		var link = imgTag.attributes["data-link"];
-		imgTag.attributes.remove("data-action");
-		imgTag.attributes.remove("data-link");
-		if (action == "check") // not in cache, check first
-			imgTag.request(imgCheck, #get, "check:" + link);
-		else // image was already cached or embedded
-			showImage(imgTag, link);
-	}
-
-    function isInView(el) {
-		var elTop = el.box(#top, #inner, #root);
-		var elBottom = el.box(#bottom, #inner, #root);
-		var viewHeight = view.box(#height);
-		//stdout.println(elTop + " - " + elBottom + ", " + viewHeight);
-		if (elTop <= 0 && elBottom >= 0 ||
-			elTop > 0 && elBottom < viewHeight ||
-			elTop <= viewHeight && elBottom >= viewHeight)
-			return true;
-		else
-			return false;
-	}
-
-	self.timer(250, function() {
-		var imgs = $$(img[data-action]);
-		for (var img in imgs)
-		if (isInView(img)) getImg(img);
+		saveSelection();
+		e.stopPropagation();
 		return true;
-	}, true);
+	});
 
-	function deleteEvents(start, end) {
-		var startTime = start.toFloat(0);
-		var endTime = end.toFloat(0);
-		var msgs = $$(.msgFull);
-		for (var msg in msgs) {
-			var when = msg.attributes["time"].toFloat(0);
-			if (when >= startTime && when <= endTime) msg.remove();
+	body.on("~mousedown", ".msgInnerBody", function(e) {
+		if (e.mainButton) clearSelection(e.ctrlKey || e.shiftKey);
+	});
+
+	body.on("~mouseup", ".msgInnerBody", function(e) {
+		if (e.mainButton) {
+			saveSelection();
+			if (this.selection.text == "") body.state.focus = true;
 		}
-	}
+	});
 
-	function initSettings(autoCopyHist, showSmilesAsImg, wheelVelocityVal, ChatImageQuality,
-						  MaxChatImgWidthVal, MaxChatImgHeightVal, EnableImgLinksIn, EnableImgLinksOut,
-						  FontStyleCodes) {
-		autoCopy = autoCopyHist;
-		showSmiles = showSmilesAsImg;
-		wheelVelocity = wheelVelocityVal;
-
-		imgLinksIn = EnableImgLinksIn;
-		imgLinksOut = EnableImgLinksOut;
-
-		switch(ChatImageQuality) {
-			case 0:
-				$(body).style#image-rendering = "optimize-quality";
-				break;
-			case 1:
-				$(body).style#image-rendering = "optimize-speed";
-				break;
-			case 2:
-				$(body).style#image-rendering = "crisp-edges";
-				break;
+	body.on("~mousedown", "img.codeCopyAll", function(e) {
+		if (e.mainButton) {
+			clearSelection(e.ctrlKey || e.shiftKey);
+			var code = this.parent.$(source-code);
+			code.selection.select(
+				[bookmark: code.first, 0, false],
+				[bookmark: code.last, 0, false]
+			);
+			e.preventDefault();
 		}
-		maxImgWidth = MaxChatImgWidthVal;
-		maxImgHeight = MaxChatImgHeightVal;
+	});
 
-		fontCodes = FontStyleCodes;
+	body.on("~dblclick", "img.codeCopyAll", function(e) {
+		e.preventDefault();
+		return true;
+	});
 
-		updateFontStyles();
-		rescaleImages();
-		view.update();
-	}
+	body.on("~mousedown", "img.loaded", function(e) {
+		if (!e.mainButton) return;
 
-	function rescaleImages() {
-		var linkedImgs = $$(.msgBody .msgInnerBody .linkedImg);
+		var msg = this.$p(.msgFull);
+		//var time = msg.attributes["time"].toFloat(0);
+		var cnt = 0, selImg = 0;
+		var imgLinks = new Array();
+
+		var linkedImgs = msg.$$(img[src^="download:"]);
 		for (var linkedImg in linkedImgs) {
-			if (maxImgWidth > 0)
-				linkedImg.style#max-width = maxImgWidth + "px";
-			else
-				linkedImg.style#max-width = "calc(100vw - 35px)";
-
-			if (maxImgHeight > 0)
-				linkedImg.style#max-height = maxImgHeight + "px";
-			else
-				linkedImg.style#max-height = "none";
+			var src = linkedImg.attributes["src"];
+			imgLinks.push(src.substr(9));
+			if (linkedImg === this) selImg = cnt;
+			cnt++;
 		}
 
-		var embeddedImgs = $$(.msgBody .msgEmbeddedImages .embeddedImg);
+		var embeddedImgs = msg.$$(img[src^="embedded:"]);
 		for (var embeddedImg in embeddedImgs) {
-			if (maxImgWidth > 0)
-				embeddedImg.style#max-width = maxImgWidth + "px";
-			else
-				embeddedImg.style#max-width = "calc(100vw - 35px)";
-
-			if (maxImgHeight > 0)
-				embeddedImg.style#max-height = maxImgHeight + "px";
-			else
-				embeddedImg.style#max-height = "none";
+			imgLinks.push(embeddedImg.attributes["src"]);
+			if (embeddedImg === this) selImg = cnt;
+			cnt++;
 		}
-	}
+		ShowPreview(imgLinks, selImg);
+	});
 
-	function initSmiles(smiles) {
-		emo.init("smile:", true, parseData(smiles));
-	}
+	body.on("click", "a[kind]", function(e) {
+		vc.setLoadingText(GetTranslation("Retrieving list of available video formats..."));
+		vc.show();
+		vc.src = this.attributes["src"];
+		vc.kind = this.attributes["kind"];
+		vc.init = false;
+		self.timer(500, function() {
+			var links;
+			if (vc.kind == "youtube")
+				links = GetYoutubeLinks(vc.src);
+			else if (vc.kind == "vimeo")
+				links = GetVimeoLinks(vc.src);
 
-	function num2weekday(num) {
-		var month = ["Понедельник","Вторник","Среда","Четверг","Пятница","Суббота","Воскресенье"];
-		return month[num];
-	}
+			if (!links || links.length == 0) {
+				vc.error();
+				return;
+			}
 
-	function num2month(num) {
-		var month = ["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"];
-		return month[num - 1];
-	}
+			if (links.length == 1) {
+				var linkdata = parseData(links[0]);
+				vc.title = linkdata.title;
+               	vc.startVideo(linkdata.url, linkdata.format, linkdata.codecs);
+				return;
+			}
 
-	function delphi2unix(time) {
-		return (time - 25569.0) * 86400000.0;
-	}
+			var htmldata = "";
+			for (var link in links) {
+				var linkdata = parseData(link);
+				vc.title = linkdata.title;
+				htmldata += "<div format=\"" + linkdata.format + "\" codecs=\"" + linkdata.codecs + "\" url=\"" + linkdata.url + "\">" + linkdata.format + "</div>";
+			}
+			vc.setLoadingText(GetTranslation("Choose video format") +
+							  "<div id=\"videoformats\">" + htmldata + "</div>" +
+							  "<a href=\"#\" close>" + GetTranslation("Close") + "</a>", true);
+		});
+	});
 
-	function unix2delphi(time) {
-		return time / 86400000.0 + 25569.0;
-	}
-
-	function initTopTime() {
-		if (topTime == 0 && $(#chat).first)
-		topTime = $(#chat).first.attributes["time"].toFloat(0);
-		if (topTime == 0){
-			var now = new Date();
-			topTime = unix2delphi(now.valueOf() + now.timeZoneOffset());
+	view.on("size", function() {
+		var w = history.box(#width);
+		if (w > 0 && w < history.intrinsicWidthMax() + 50 &&
+			!toggle.attributes.hasClass("inactive")) {
+			toggle.attributes.addClass("inactive");
+			history.attributes.addClass("hidden");
 		}
-	}
-
-	function updateCurTime() {
-		var date = new Date(delphi2unix(topTime));
-		$(#curtime).html = num2weekday(date.UTCdayOfWeek) + ", " + date.UTCday + " " + num2month(date.UTCmonth) + " " + date.UTCyear/* + ", " + date.UTChour + ":" + date.UTCminute*/;
-		$(#curtime).style#display = "block";
-	}
-
-	function LoadChatHistory(numOfDays) {
-		$(#h_today).style#display = "none";
-		$(#h_yesterday).style#display = "none";
-		$(#h_oneday).style#display = "inline";
-		$(#h_twodays).style#display = "inline";
-		initTopTime();
-		LoadHistory(numOfDays, topTime);
-		if (numOfDays >= 0) {
-			topTime = Math.floor(topTime - numOfDays);
-			updateCurTime();
-		}
-	}
-
-	$(#h_today).on("click", function (e) {
-		LoadChatHistory(0);
-	});
-	$(#h_yesterday).on("click", function (e) {
-		LoadChatHistory(1);
-	});
-	$(#h_oneday).on("click", function (e) {
-		LoadChatHistory(1);
-	});
-	$(#h_twodays).on("click", function (e) {
-		LoadChatHistory(2);
-	});
-	$(#h_threedays).on("click", function (e) {
-		LoadChatHistory(3);
-	});
-	$(#h_lastweek).on("click", function (e) {
-		LoadChatHistory(7);
-	});
-	$(#h_lastmonth).on("click", function (e) {
-		LoadChatHistory(30);
-	});
-	$(#h_lastyear).on("click", function (e) {
-		LoadChatHistory(365);
-	});
-	$(#h_all).on("click", function (e) {
-		$(#history).style#display = "none";
-		LoadChatHistory(-1);
-	});
+		if (vc.init) vc.alignPlayerControls();
+    });
 </script>
+<popup id="videoinfo"></popup>
 </head>
 <body>
-	<div id="history">
+	<div id="history" class="hidden">
 		<div id="ranges">
-			<a href="" id="h_today">Сегодня</a>
-			<a href="" id="h_yesterday">Вчера</a>
-			<a href="" id="h_oneday" style="display: none">1 день</a>
-			<a href="" id="h_twodays" style="display: none">2 дня</a>
-			<a href="" id="h_threedays">3 дня</a>
-			<a href="" id="h_lastweek">Неделя</a>
-			<a href="" id="h_lastmonth">Месяц</a>
-			<a href="" id="h_lastyear">Год</a>
-			<a href="" id="h_all">Всё</a>
+			<a href="" id="h_last">Last</a>
+			<a href="" id="h_today">Today</a>
+			<a href="" id="h_yesterday">Yesterday</a>
+			<a href="" id="h_oneday" style="display: none">1 day</a>
+			<a href="" id="h_twodays" style="display: none">2 days</a>
+			<a href="" id="h_threedays">3 days</a>
+			<a href="" id="h_lastweek">Week</a>
+			<a href="" id="h_lastmonth">Month</a>
+			<a href="" id="h_lastyear">Year</a>
+			<a href="" id="h_all">All</a>
 		</div>
 		<div id="curtime"></div>
 		<div class="hr"></div>
 	</div>
+	<div id="toggle" class="inactive"></div>
 	<div id="chat" class="hidden"></div>
+	<div id="loading"></div>
+    <div id="videoview">
+		<div id="videoplayer">
+			<div id="playerdisplay">
+				<video id="video" />
+				<div id="videoload"></div>
+				<svg id="play" viewbox="1 1 28 28">
+					<path d="M 11,8 21,15 11,22 z"/>
+				</svg>
+				<svg id="pause" viewbox="1 1 28 28">
+					<path d="M 8,8 13,8 13,22 8,22 z M 17,8 22,8 22,22 17,22 z"/>
+				</svg>
+			</div>
+			<div id="playercontrols">
+				<div id="controls">
+					<input type="hslider" id="videopos" />
+					<output value="00:00 / 00:00" id="videotime" />
+					<input type="hslider" id="videovol" value="50" min="1" max="100" />
+					<div id="info" titleid="videoinfo">
+						<svg viewBox="0 0 12.581 25.837">
+							<path d="M5.109,25.456c-3.041,1.068-5.547-0.157-5.044-3.077c0.503-2.92,3.388-9.172,3.799-10.354  c0.412-1.183-0.377-1.506-1.223-1.025c-0.487,0.281-1.212,0.845-1.834,1.393c-0.172-0.348-0.415-0.744-0.598-1.125  c1.015-1.017,2.712-2.381,4.721-2.875c2.4-0.592,6.411,0.354,4.688,4.942c-1.232,3.269-2.103,5.526-2.65,7.206  C6.419,22.222,7.07,22.574,8.03,21.92c0.75-0.512,1.549-1.208,2.135-1.749c0.271,0.441,0.358,0.581,0.626,1.087  C9.774,22.299,7.115,24.738,5.109,25.456z M11.408,5.229c-1.38,1.174-3.424,1.148-4.566-0.057C5.698,3.966,5.889,2.038,7.267,0.864  c1.379-1.174,3.423-1.148,4.566,0.057C12.977,2.126,12.787,4.054,11.408,5.229z"/>
+						</svg>
+					</div>
+					<div id="upload">
+						<svg height="1000" width="928.571" xmlns="http://www.w3.org/2000/svg">
+							<path d="M714.24 821.44q0 -14.508 -10.602 -25.11t-25.11 -10.602 -25.11 10.602 -10.602 25.11 10.602 25.11 25.11 10.602 25.11 -10.602 10.602 -25.11zm142.848 0q0 -14.508 -10.602 -25.11t-25.11 -10.602 -25.11 10.602 -10.602 25.11 10.602 25.11 25.11 10.602 25.11 -10.602 10.602 -25.11zm71.424 -124.992v178.56q0 22.32 -15.624 37.944t-37.944 15.624h-821.376q-22.32 0 -37.944 -15.624t-15.624 -37.944v-178.56q0 -22.32 15.624 -37.944t37.944 -15.624h238.266q11.718 31.248 39.339 51.336t61.659 20.088h142.848q34.038 0 61.659 -20.088t39.339 -51.336h238.266q22.32 0 37.944 15.624t15.624 37.944zm-181.35 -361.584q-9.486 22.32 -32.922 22.32h-142.848v249.984q0 14.508 -10.602 25.11t-25.11 10.602h-142.848q-14.508 0 -25.11 -10.602t-10.602 -25.11v-249.984h-142.848q-23.436 0 -32.922 -22.32 -9.486 -21.762 7.812 -38.502l249.984 -249.984q10.044 -10.602 25.11 -10.602t25.11 10.602l249.984 249.984q17.298 16.74 7.812 38.502z"/>
+						</svg>
+					</div>
+					<div id="close">
+						<svg viewBox="0 0 480 480">
+							<path d="M310.182,235.995l103.285-103.259c5.006-5.018,5.006-13.237,0-18.251l-54.721-54.733c-5.014-5-13.229-5-18.24,0   l-103.281,103.28L133.944,59.752c-5.018-5-13.229-5-18.246,0l-54.717,54.733c-5.008,5.014-5.008,13.233,0,18.251l103.281,103.259   L60.999,339.263c-5.018,5.014-5.018,13.232,0,18.25l54.717,54.738c5.018,5.001,13.229,5.001,18.242,0l103.268-103.285   l103.264,103.285c5.018,5.001,13.229,5.001,18.24,0l54.721-54.738c5.014-5.018,5.014-13.236,0-18.25L310.182,235.995z"/>
+		  				</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="lastcnt" class="popupmenu">
+    	<div data-count="5">5</div>
+		<div data-count="15">15</div>
+		<div data-count="30">30</div>
+	</div>
 </body>
 </html>

@@ -1,0 +1,112 @@
+body {
+	-syntax-highlight: on;
+}
+
+source-code {
+	style-set: "source-code";
+	behavior: htmlarea;
+}
+
+@set syntax {
+	:root > text {
+		margin-left: 2.5em;
+		hit-margin: 0 0 0 3em;
+		white-space: pre;
+		display: list-item;
+		list-style-type: decimal;
+		background: transparent;
+		border-left: 4dip solid transparent;
+	}
+
+	:root > eof { /* eof mark */
+		display: block;
+		background: transparent;
+		padding-bottom: *;
+		text-align: center;
+	}
+
+	.html.tag { background:none; color: #795548; }
+	.css .url { text-decoration:underline; }
+	.css .at-rule { color: #546e7a; }
+
+	.comment {
+		color: #7E7E7E;
+		font-style: italic;
+	}
+
+	.constant, .constant.unit {
+		color: #9e9d24;
+	}
+
+	.storage {
+		color: #0277bd;
+	}
+
+	.string {
+		color: #607d8b;
+	}
+
+	.keyword {
+		color: #303f9f;
+	}
+
+	.selector {
+		color: #2e7d32;
+	}
+
+	.inherited-class {
+		font-style: italic;
+	}
+
+	.entity {
+		color: #2e7d32;
+	}
+	.entity.name.id {
+		color: #795548;
+	}
+
+	.support {
+		color: #303f9f;
+	}
+
+	.variable.global, .variable.class, .variable.instance {
+		color: #2e7d32;
+	}
+
+	:root > text > .css > span.start,
+	:root > text > .css > span.end,
+	:root > text.css.embedded { background-color: #F5FFFB; }
+
+	:root > text > .tis > span.start,
+	:root > text > .tis > span.end,
+	:root > text.tis.embedded { background-color: #F5FBFF; }
+
+	:root > text > .php > span.start,
+	:root > text > .php > span.end,
+	:root > text.php.embedded { background-color: #F5FBFF; }
+
+	:root > text.opens { border-bottom: 1px dashed gray; }
+	:root > text.closes { border-top: 1px dashed gray; }
+}
+
+@set source-code < syntax {
+	:root {
+		prototype: SourceCode url(source-code.tis);
+		display: block;
+		color: inherit;
+		font-size: inherit;
+		line-height: inherit;
+		font-family: "Segoe UI", system;
+		font-rendering-mode: snap-pixel;
+		overflow: scroll-indicator;
+		background: transparent;
+		width: 100%;
+		height: auto;
+	}
+
+	:root > text.css.embedded:current,
+	:root > text.tis.embedded:current,
+	:root > text.php.embedded:current,
+	:root > text:current { background-color: rgb(255,200,126); }
+	:root > text[breakpoint] { border-color: red; }
+}
