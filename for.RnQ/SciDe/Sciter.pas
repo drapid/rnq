@@ -282,10 +282,10 @@ type
   TSciterOnMessage = procedure(ASender: TObject; const Args: TSciterOnMessageEventArgs) of object;
 
   TSciterOnLoadData = procedure(ASender: TObject; const url: WideString; resType: SciterResourceType;
-                                                  requestId: Integer; out discard: Boolean) of object;
+                                                  requestId: Pointer; out discard: Boolean; out delay: Boolean) of object;
   TSciterOnDataLoaded = procedure(ASender: TObject; const url: WideString; resType: SciterResourceType;
                                                     data: PByte; dataLength: Integer; status: Integer;
-                                                    requestId: Integer) of object;
+                                                    requestId: Cardinal) of object;
   TSciterOnFocus = procedure(ASender: TObject) of object;
 
   TSciterOnDocumentCompleteEventArgs = class
@@ -824,7 +824,11 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function Call(const FunctionName: WideString; const Args: array of OleVariant): OleVariant;
+    procedure Fire(he: HELEMENT; cmd: UINT; data: OleVariant; async: Boolean = True);
+    procedure FireRoot(cmd: UINT; data: OleVariant; async: Boolean = True); overload;
+    procedure FireRoot(cmd: UINT; async: Boolean = True); overload;
     procedure DataReady(const uri: WideString; data: PByte; dataLength: UINT);
+    procedure DataReadyAsync(const uri: WideString; data: PByte; dataLength: UINT; requestId: LPVOID);
     function Eval(const Script: WideString): OleVariant;
     function FilePathToURL(const FileName: String): String;
     function FindElement(Point: TPoint): IElement;
@@ -844,7 +848,7 @@ type
     function RegisterNativeClass(const ClassInfo: ISciterClassInfo; ThrowIfExists: Boolean; ReplaceClassDef: Boolean = False): tiscript_class; overload;
     function RegisterNativeClass(const ClassDef: ptiscript_class_def; ThrowIfExists: Boolean; ReplaceClassDef: Boolean { reserved } = False): tiscript_class; overload;
     procedure RegisterNativeFunction(const Name: WideString; Handler: ptiscript_method);
-    procedure RegisterNativeFunctionTag(const Name: WideString; Handler: ptiscript_tagged_method; Tag: Pointer);
+    procedure RegisterNativeFunctionTag(const Name: WideString; Handler: ptiscript_tagged_method; ns: tiscript_value; Tag: Pointer);
     procedure SaveToFile(const FileName: WideString; const Encoding: WideString = 'UTF-8' { reserved, TODO:} );
     function SciterValueToJson(Obj: TSciterValue): WideString;
     function Select(const Selector: WideString): IElement;
@@ -904,7 +908,7 @@ type
     property PopupMenu;
     property ShowHint;
     property TabOrder;
-    property TabStop default True;
+    property TabStop default False;
     property Visible;
     property OnFocus: TSciterOnFocus read FOnFocus write FOnFocus;
     property OnDataLoaded: TSciterOnDataLoaded read FOnDataLoaded write FOnDataLoaded;
@@ -936,7 +940,7 @@ procedure Register;
 implementation
 
 uses
-  SciterOle, MLang;
+  SciterOle, Winapi.MLang;
 
 var
   Behaviors: TList;
@@ -1336,7 +1340,6 @@ begin
   FManagedElements := TElementList.Create(False);
   Width := 300;
   Height := 300;
-  TabStop := True;
 end;
 
 destructor TSciter.Destroy;
@@ -1370,17 +1373,42 @@ begin
     raise ESciterCallException.Create(FunctionName);
 end;
 
+procedure TSciter.FireRoot(cmd: UINT; data: OleVariant; async: Boolean = True);
+begin
+  Fire(Self.Root.Handle, cmd, data, async);
+end;
+
+procedure TSciter.FireRoot(cmd: UINT; async: Boolean = True);
+begin
+  Fire(Self.Root.Handle, cmd, Variants.Null, async);
+end;
+
+procedure TSciter.Fire(he: HELEMENT; cmd: UINT; data: OleVariant; async: Boolean = True);
+var
+  evt: BEHAVIOR_EVENT_PARAMS;
+  bHandled: BOOL;
+  pVal: TSciterValue;
+begin
+  evt.cmd := BEHAVIOR_EVENTS(cmd);
+  V2S(data, @pVal);
+  evt.data := pVal;
+  evt.he := he;
+  evt.heTarget := he;
+  API.SciterFireEvent(evt, async, bHandled);
+end;
+
 procedure TSciter.CreateParams(var Params: TCreateParams);
 begin
   inherited CreateParams(Params);
-  Params.Style := Params.Style or WS_CHILD or WS_TABSTOP or WS_VISIBLE;
+  Params.Style := Params.Style or WS_CHILD or WS_VISIBLE;
+  if TabStop then
+    Params.Style := Params.Style or WS_TABSTOP;
   Params.ExStyle := Params.ExStyle or WS_EX_CONTROLPARENT;
 end;
 
 procedure TSciter.CreateWindowHandle(const Params: TCreateParams);
 begin
   inherited;
-  Application.ProcessMessages;
 end;
 
 procedure TSciter.CreateWnd;
@@ -1388,41 +1416,42 @@ var
   SR: SCDOM_RESULT;
 begin
   inherited CreateWnd;
-
   if DesignMode then
     Exit;
 
-  if HandleAllocated then
+  API.SciterSetCallback(Handle, LPSciterHostCallback(@HostCallback), Self);
+
+  SR := API.SciterWindowAttachEventHandler(Handle, LPELEMENT_EVENT_PROC(@_SciterViewEventProc), Self, UINT(HANDLE_ALL));
+  if SR <> SCDOM_OK then
+    raise ESciterException.Create('Failed to setup Sciter window element callback function.');
+
+  API.SciterSetupDebugOutput(Handle, Self, PDEBUG_OUTPUT_PROC(@SciterDebug));
+
+  API.SciterSetHomeURL(Handle, PWideChar(FHomeURL));
+
+  if FHtml <> '' then
   begin
-    API.SciterSetCallback(Handle, LPSciterHostCallback(@HostCallback), Self);
-
-    SR := API.SciterWindowAttachEventHandler(Handle, LPELEMENT_EVENT_PROC(@_SciterViewEventProc), Self, UINT(HANDLE_ALL));
-    if SR <> SCDOM_OK then
-      raise ESciterException.Create('Failed to setup Sciter window element callback function.');
-
-    API.SciterSetupDebugOutput(Handle, Self, PDEBUG_OUTPUT_PROC(@SciterDebug));
-
-    API.SciterSetHomeURL(Handle, PWideChar(FHomeURL));
-
-    if FHtml <> '' then
-    begin
-      LoadHtml(FHtml, FBaseUrl);
-    end
-      else
-    if FUrl <> '' then
-    begin
-      LoadURL(FUrl);
-    end;
-    if Assigned(FOnHandleCreated) then
-      FOnHandleCreated(Self);
-    Application.ProcessMessages;
+    LoadHtml(FHtml, FBaseUrl);
+  end
+    else
+  if FUrl <> '' then
+  begin
+    LoadURL(FUrl);
   end;
+  if Assigned(FOnHandleCreated) then
+    FOnHandleCreated(Self);
+//  Application.ProcessMessages;
 end;
 
-procedure TSciter.DataReady(const uri: WideString; data: PByte;
-  dataLength: UINT);
+procedure TSciter.DataReady(const uri: WideString; data: PByte; dataLength: UINT);
 begin
   if not API.SciterDataReady(Handle, PWideChar(uri), data, dataLength) then
+    raise ESciterException.CreateFmt('Failed to handle resource "%s".', [AnsiString(uri)]);
+end;
+
+procedure TSciter.DataReadyAsync(const uri: WideString; data: PByte; dataLength: UINT; requestId: LPVOID);
+begin
+  if not API.SciterDataReadyAsync(Handle, PWideChar(uri), data, dataLength, requestId) then
     raise ESciterException.CreateFmt('Failed to handle resource "%s".', [AnsiString(uri)]);
 end;
 
@@ -1433,7 +1462,7 @@ end;
 
 procedure TSciter.DestroyWnd;
 var
-  pbHandled: Integer;
+  pbHandled: BOOL;
 begin
   API.SciterSetCallback(Handle, nil, nil);
   API.SciterWindowAttachEventHandler(Handle, nil, nil, UINT(HANDLE_ALL));
@@ -1507,7 +1536,7 @@ end;
 
 function TSciter.FilePathToURL(const FileName: String): String;
 begin
-  Result := 'file:///' + StringReplace(FileName, '\', '/', [rfReplaceAll]);
+  Result := 'file://' + StringReplace(FileName, '\', '/', [rfReplaceAll]);
 end;
 
 function TSciter.FindElement(Point: TPoint): IElement;
@@ -1587,12 +1616,6 @@ function TSciter.GetRoot: IElement;
 var
   he: HELEMENT;
 begin
-  if not HandleAllocated then
-  begin
-    Result := nil;
-    Exit;
-  end;
-
   he := nil;
   if API.SciterGetRootElement(Handle, he) = SCDOM_OK then
     Result := ElementFactory(Self, he)
@@ -1674,13 +1697,13 @@ end;
 function TSciter.HandleDataLoaded(var data: SCN_DATA_LOADED): UINT;
 begin
   if Assigned(FOnDataLoaded) then
-    FOnDataLoaded(Self, WideString(data.uri), data.dataType, data.data, data.dataSize, 0, Integer(data.status));
+    FOnDataLoaded(Self, WideString(data.uri), data.dataType, data.data, data.dataSize, 0, data.status);
   Result := 0;
 end;
 
 function TSciter.HandleDocumentComplete(const Url: WideString): BOOL;
 var
-  bHandled: Integer;
+  bHandled: BOOL;
   pArgs: TSciterOnDocumentCompleteEventArgs;
 begin
   Result := False;
@@ -1700,7 +1723,7 @@ begin
   end;
 
   // Temporary fix: sometimes bottom part of document stays invisible until parent form gets resized
-  API.SciterProcND(Handle, WM_SIZE, 0, MAKELPARAM(ClientRect.Right - ClientRect.Left + 1, ClientRect.Bottom - ClientRect.Top), bHandled);
+  API.SciterProcND(Handle, WM_SIZE, 0, MAKELPARAM(ClientRect.Right - ClientRect.Left, ClientRect.Bottom - ClientRect.Top), bHandled);
 end;
 
 function TSciter.HandleEngineDestroyed(var data: SCN_ENGINE_DESTROYED): UINT;
@@ -1769,7 +1792,7 @@ end;
 
 function TSciter.HandleLoadData(var data: SCN_LOAD_DATA): UINT;
 var
-  discard: Boolean;
+  discard, delay: Boolean;
   wUrl: WideString;
   wResName: WideString;
   pStream: TCustomMemoryStream;
@@ -1802,9 +1825,11 @@ begin
     if Assigned(FOnLoadData) then
     begin
       wUrl := WideString(data.uri);
-      FOnLoadData(Self, wUrl, data.dataType, Integer(data.requestId), discard);
+      FOnLoadData(Self, wUrl, data.dataType, data.requestId, discard, delay);
       if discard then
-        Result := LOAD_DISCARD;
+        Result := LOAD_DISCARD
+      else if delay then
+        Result := LOAD_DELAYED;
     end;
   end;
 end;
@@ -1931,12 +1956,8 @@ begin
 
   FUrl := '';
 
-  if HandleAllocated then
-  begin
-    if not API.SciterLoadHtml(Handle, PByte(pHtml), iLen, PWideChar(BaseURL)) then
-      raise ESciterException.CreateFmt('Failed to load HTML.', []);
-  end
-    // else HTML will be loaded in CreateWnd
+  if not API.SciterLoadHtml(Handle, PByte(pHtml), iLen, PWideChar(BaseURL)) then
+    raise ESciterException.CreateFmt('Failed to load HTML.', []);
 end;
 
 function TSciter.LoadURL(const URL: WideString; Async: Boolean = True): Boolean;
@@ -1950,11 +1971,7 @@ begin
   FHtml := '';
   FBaseUrl := '';
 
-  if HandleAllocated then
-  begin
-    Result := API.SciterLoadFile(Handle, PWideChar(URL));
-  end
-  // else URL will be loaded in CreateWnd
+  Result := API.SciterLoadFile(Handle, PWideChar(URL));
 end;
 
 function TSciter.MainWindowHook(var Message: TMessage): Boolean;
@@ -2100,24 +2117,15 @@ begin
   Result := SciterAPI.RegisterNativeClass(vm, ClassDef, ThrowIfExists, ReplaceClassDef);
 end;
 
-procedure TSciter.RegisterNativeFunction(const Name: WideString;
-  Handler: ptiscript_method);
+procedure TSciter.RegisterNativeFunction(const Name: WideString; Handler: ptiscript_method);
 begin
-  SciterAPI.RegisterNativeFunction(VM, Name, Handler);
+  SciterAPI.RegisterNativeFunction(VM, 0, Name, Handler);
 end;
 
-//>>> Added by Rapid D 26.12.2015
-procedure TSciter.RegisterNativeFunctionTag(const Name: WideString; Handler: ptiscript_tagged_method; Tag: Pointer);
-var
-  e: HELEMENT;
+procedure TSciter.RegisterNativeFunctionTag(const Name: WideString; Handler: ptiscript_tagged_method; ns: tiscript_value; Tag: Pointer);
 begin
-  if Assigned(Self.Root) then
-    e := Self.Root.Handle
-   else
-    e := NIL;
-  SciterAPI.RegisterNativeFunctionCurr(VM, e, Name, ptiscript_method(Handler), True, Tag);
+  SciterAPI.RegisterNativeFunction(VM, ns, Name, Handler, True, Tag);
 end;
-// <<<
 
 { Exprerimental }
 procedure TSciter.SaveToFile(const FileName, Encoding: WideString);
@@ -2126,15 +2134,16 @@ var
   pInfo: tagMIMECSETINFO;
   pInfo1: tagMIMECPINFO;
   pdwMode: Cardinal;
-  pcSrcSize: ActiveX.SYSUINT;
-  pcDstSize: ActiveX.SYSUINT;
+  pcSrcSize: UINT;
+  pcDstSize: UINT;
   pRet: PAnsiChar;
   sHtml: WideString;
   enc: Cardinal;
   pStm: TFileStream;
+  flags: Word;
 begin
   sHtml := Self.Html;
-  
+
   pdwMode := 0;
   pLang := CoCMultiLanguage.Create;
   pRet := nil;
@@ -2149,14 +2158,18 @@ begin
       enc := pInfo.uiInternetEncoding;
       
     // input string is null-terminated
-    pcsrcSize := SYSUINT(-1);
+    pcsrcSize := UINT(-1);
     // Get buffer size
-    OleCheck(pLang.ConvertStringFromUnicode(pdwMode, enc, PWideChar(sHtml), pcSrcSize, nil, pcDstSize));
+    OleCheck(pLang.ConvertStringFromUnicode(pdwMode, enc, PWideChar(sHtml), @pcSrcSize, nil, pcDstSize));
     // Performing conversion
     GetMem(pRet, pcDstSize + 2);
-    OleCheck(pLang.ConvertStringFromUnicode(pdwMode, enc, PWideChar(sHtml), pcSrcSize, pRet, pcDstSize));
+    OleCheck(pLang.ConvertStringFromUnicode(pdwMode, enc, PWideChar(sHtml), @pcSrcSize, pRet, pcDstSize));
 
-    pStm := TFileStream.Create(FileName, fmOpenWrite, fmShareDenyNone);
+    flags := fmOpenWrite;
+    if not FileExists(FileName) then
+      Flags := Flags or fmCreate;
+
+    pStm := TFileStream.Create(FileName, flags, fmShareDenyNone);
     try
       pStm.Write(pRet^, pcDstSize);
     finally
@@ -2206,13 +2219,10 @@ end;
 procedure TSciter.SetHomeURL(const URL: WideString);
 begin
   FHomeURL := URL;
-  if HandleAllocated then
-  begin
-    if FHomeURL = '' then Exit;
-    
-    if not API.SciterSetHomeURL(Handle, PWideChar(URL)) then
-      raise ESciterException.Create('Failed to set Sciter home URL');
-  end;
+  if FHomeURL = '' then Exit;
+
+  if not API.SciterSetHomeURL(Handle, PWideChar(URL)) then
+    raise ESciterException.Create('Failed to set Sciter home URL');
 end;
 
 function TSciter.SetMediaType(const MediaType: WideString): Boolean;
@@ -2336,7 +2346,7 @@ function TSciter.TryCall(const FunctionName: WideString;
 var
   pVal: TSciterValue;
   sFunctionName: AnsiString;
-  pArgs: array[0..255] of TSciterValue;
+  pArgs: array of TSciterValue;
   cArgs: Integer;
   i: Integer;
   SR: BOOL;
@@ -2348,18 +2358,18 @@ begin
   if cArgs > 256 then
     raise ESciterException.Create('Too many arguments.');
 
-  for i := Low(pArgs) to High(pArgs) do
-    API.ValueInit(@pArgs[i]);
-
-  for i := Low(Args) to High(Args) do
-  begin
-    V2S(Args[i], @pArgs[i]);
-  end;
-
   if cArgs = 0 then
     SR := API.SciterCall(Handle, PAnsiChar(sFunctionName), 0, nil, pVal)
   else
+  begin
+    SetLength(pArgs, cArgs);
+
+    for i := Low(Args) to High(Args) do
+      V2S(Args[i], @pArgs[i]);
+
     SR := API.SciterCall(Handle, PAnsiChar(sFunctionName), cArgs, @pArgs[0], pVal);
+  end;
+
   if SR then
   begin
     S2V(@pVal, RetVal);
@@ -2385,63 +2395,47 @@ end;
 procedure TSciter.WndProc(var Message: TMessage);
 var
   llResult: LRESULT;
-  bHandled: Integer;
+  bHandled: BOOL;
   M: PMsg;
 begin
   if not DesignMode then
   begin
-    if HandleAllocated then
-    begin
-      case Message.Msg of
-        WM_SETFOCUS:
+    case Message.Msg of
+      WM_SETFOCUS:
+        begin
+          if Assigned(FOnFocus) then
+            FOnFocus(Self);
+        end;
+
+      WM_GETDLGCODE:
+        // Tweaking arrow keys and TAB handling (VCL-specific)
+        begin
+          Message.Result := DLGC_WANTALLKEYS or DLGC_WANTARROWS or DLGC_WANTCHARS or DLGC_HASSETSEL;
+          if TabStop then
+            Message.Result := Message.Result or DLGC_WANTTAB;
+          if Message.lParam <> 0 then
           begin
-            if Assigned(FOnFocus) then
-              FOnFocus(Self);
-          end;
-        WM_GETDLGCODE:
-          // Tweaking arrow keys and TAB handling (VCL-specific)
-          begin
-            Message.Result := DLGC_WANTALLKEYS {or DLGC_WANTTAB} or DLGC_WANTARROWS or DLGC_WANTCHARS or DLGC_HASSETSEL;
-            if Message.lParam <> 0 then
-            begin
-              M := PMsg(Message.lParam);
-              case M.Message of
-                WM_SYSKEYDOWN, WM_SYSKEYUP, WM_SYSCHAR,
-                WM_KEYDOWN, WM_KEYUP, WM_CHAR:
-                begin
-                  Perform(M.message, M.wParam, M.lParam);
-                  // Message.Result := Message.Result or DLGC_WANTMESSAGE or DLGC_WANTTAB;
-                end;
+            M := PMsg(Message.lParam);
+            case M.Message of
+              WM_SYSKEYDOWN, WM_SYSKEYUP, WM_SYSCHAR,
+              WM_KEYDOWN, WM_KEYUP, WM_CHAR:
+              begin
+                Perform(M.message, M.wParam, M.lParam);
+                // Message.Result := Message.Result or DLGC_WANTMESSAGE or DLGC_WANTTAB;
               end;
             end;
-            Exit;
           end;
-
-        WM_VSCROLL:
-          begin
-
-          end;
-      end;
-
-      llResult := API.SciterProcND(Handle, Message.Msg, Message.WParam, Message.LParam, bHandled);
-      if bHandled <> 0 then
-      begin
-        Message.Result := llResult;
-      end
-        else
-      begin
-        inherited WndProc(Message);
-      end;
-    end
-      else
-    begin
-      inherited WndProc(Message);
+          Exit;
+        end;
     end;
-  end
+
+    llResult := API.SciterProcND(Handle, Message.Msg, Message.WParam, Message.LParam, bHandled);
+    if bHandled then
+      Message.Result := llResult
     else
-  begin
+      inherited WndProc(Message);
+  end else
     inherited WndProc(Message);
-  end
 end;
 
 constructor TElement.Create(ASciter: TSciter; h: HELEMENT);

@@ -415,7 +415,7 @@ begin
 //    BASS_ChannelStop(Soundhndl);
 end;
 
-function sendMCIcommand(cmd:PChar):string;
+function sendMCIcommand(cmd: PChar): string;
 var
   res: array [0..100] of char;
   trash: Thandle;
@@ -521,7 +521,7 @@ var
 begin
   dw := ColorToRGB(cl);
   cf := alpha / $FF;
-  result := round((dw shr 16 and $FF) * cf)shl 16 + round((dw shr 8 and $FF) * cf) shl 8 + round((dw and $FF) * cf);
+  result := round((dw shr 16 and $FF) * cf) shl 16 + round((dw shr 8 and $FF) * cf) shl 8 + round((dw and $FF) * cf);
 end;
 
 {

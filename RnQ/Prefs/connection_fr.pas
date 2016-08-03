@@ -192,7 +192,7 @@ end;
 
 procedure TconnectionFr.initPage;
 var
-  pp:Tproxyproto;
+  pp: Tproxyproto;
 begin
   if Assigned(Account.AccProto) then
     begin
@@ -200,15 +200,18 @@ begin
     end
    else
     ServerCBox.Items.Text := 'login.icq.com';
-  proxypwdBox.onKeyDown:=RnQmain.pwdboxKeyDown;
+  proxypwdBox.onKeyDown := RnQmain.pwdboxKeyDown;
   proxyproto.Items.Clear();
   for pp:=low(pp) to high(pp) do
     proxyproto.Items.add(proxyproto2str[pp]);
 
-  proxyGroup.Width:= ClientWidth - GAP_SIZE2;
-  ServerCBox.Width:= 216;
-  portBox.left:= 320 + GAP_SIZE;
-  portBox.Width:= proxyGroup.Width - 320 - GAP_SIZE2 - GAP_SIZE2;
+  proxyGroup.Width := ClientWidth - GAP_SIZE2;
+//  portBox.Width := 50; //proxyGroup.Width - portBox.left - GAP_SIZE2;
+  ServerCBox.Width := SSLChk.Left - ServerCBox.Left - GAP_SIZE2;
+
+//  portBox.left := 320 + GAP_SIZE;
+  portBox.left := ServerCBox.Left + ServerCBox.Width + portBox.EditLabel.Width
+                  + GAP_SIZE + GAP_SIZE2 + GAP_SIZE2;
 
   LEProxyName.left := ServerCBox.left;
   LEProxyName.Width:= ServerCBox.Width;// - GAP_SIZE;

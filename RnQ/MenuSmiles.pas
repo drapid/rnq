@@ -342,24 +342,39 @@ begin
         else
          dec(row)
         end;
-        if (col*DrawLines + row)> DrawSmiles-1 then row := (DrawSmiles mod Drawlines)-1;
+        if (col*DrawLines + row)> DrawSmiles-1 then
+          row := (DrawSmiles mod Drawlines)-1;
       end;
     VK_DOWN :
       begin
-       if (row = DrawLines-1)or(row = -1) then row := 0 else inc(row);
-       if (col*DrawLines + row)>DrawSmiles-1 then row := 0;
+       if (row = DrawLines-1)or(row = -1) then
+         row := 0
+        else
+         inc(row);
+       if (col*DrawLines + row)>DrawSmiles-1 then
+         row := 0;
       end;
     VK_RIGHT :
      begin
-      if row = -1 then row := 0;
-      if col = ceil(DrawSmiles/DrawLines)-1 then col := 0 else inc(col);
-      if (col*DrawLines + row)>DrawSmiles-1 then col := 0;
+      if row = -1 then
+        row := 0;
+      if col = ceil(DrawSmiles/DrawLines)-1 then
+        col := 0
+       else
+        inc(col);
+      if (col*DrawLines + row)>DrawSmiles-1 then
+        col := 0;
      end;
     VK_LEFT :
      begin
-      if row = -1 then row := 0;
-      if col = 0 then col := ceil(DrawSmiles/DrawLines)-1 else dec(col);
-      if (col*DrawLines + row)>DrawSmiles-1 then dec(col);
+      if row = -1 then
+        row := 0;
+      if col = 0 then
+        col := ceil(DrawSmiles/DrawLines)-1
+       else
+        dec(col);
+      if (col*DrawLines + row)>DrawSmiles-1 then
+        dec(col);
      end;
     VK_RETURN,VK_SPACE :
      begin
@@ -406,7 +421,7 @@ begin
    col := i div DrawLines;
    row := i mod DrawLines;
      begin
-      if PtInRect(getmenuselrect(col,row),p) and self.Visible then
+      if PtInRect(getmenuselrect(col,row), p) and self.Visible then
        menusel := i;
      end
   end;
@@ -661,7 +676,8 @@ end;
 procedure TFSmiles.MenuSmilesBoxMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-if (Button<>mbRight) or (menusel=0) then exit;
+  if (Button<>mbRight) or (menusel=0) then
+    exit;
 {if smiles.pics[menusel].SmileStop<>-1 then
 begin
  smiles.pics[menusel].SmileStop:= -1;

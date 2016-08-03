@@ -142,10 +142,13 @@ procedure TdesignFr.resetAutosize();
 begin
 // if prefPages[thisPrefIdx].frame <> NIL then
 //  with TdesignFr(prefPages[thisPrefIdx].frame) do
-  if not autosizeRoster then autosizeGrp.ItemIndex:=0
-  else
-    if not autosizeFullRoster then autosizeGrp.ItemIndex:=1
-    else autosizeGrp.ItemIndex:=2;
+  if not autosizeRoster then
+    autosizeGrp.ItemIndex:=0
+   else
+    if not autosizeFullRoster then
+      autosizeGrp.ItemIndex:=1
+     else
+      autosizeGrp.ItemIndex:=2;
 end; // resetAutosize
 
 procedure TdesignFr.prefToggleShowGroups;
@@ -265,10 +268,10 @@ begin
   GrBox2.width:= CommonTab.Clientwidth - GAP_SIZE2;
   sortbyGrp.width:= GrBox2.width;
   IconsGrp.Width := GrBox2.width;
-  autosizeGrp.left:= GAP_SIZE;
-  autosizeGrp.width:= 190;
+  autosizeGrp.left := GAP_SIZE;
+  autosizeGrp.width := (CommonTab.Clientwidth - autosizeGrp.left) div 2 - GAP_SIZE;
   //dockGrp.left:= autosizeGrp.left + autosizeGrp.width + GAP_SIZE;
-  dockGrp.width:= 190;
+  dockGrp.width:= autosizeGrp.width;
   dockGrp.left:= GrBox2.width - dockGrp.width + GAP_SIZE;
 
   italicGrp.top:=  autosizeGrp.top + autosizeGrp.height + GAP_SIZE;
@@ -447,7 +450,7 @@ end;
 
 procedure TdesignFr.BlinkPBoxPaint(Sender: TObject);
 begin
-  theme.drawPic(TPaintBox(Sender).Canvas.Handle, 0,0, PIC_MSG);
+  theme.drawPic(TPaintBox(Sender).Canvas.Handle, 0,0, PIC_MSG, True, getParentCurrentDPI);
 //  theme.drawPic(blinkImg.picture.Bitmap.Canvas.Handle, 0,0,PIC_MSG);
 end;
 

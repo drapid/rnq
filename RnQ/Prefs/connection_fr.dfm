@@ -103,7 +103,7 @@ object connectionFr: TconnectionFr
     object portBox: TLabeledEdit
       Left = 358
       Top = 75
-      Width = 60
+      Width = 50
       Height = 21
       Anchors = [akTop, akRight]
       EditLabel.Width = 20
@@ -139,7 +139,7 @@ object connectionFr: TconnectionFr
       object proxyportBox: TLabeledEdit
         Left = 353
         Top = 12
-        Width = 60
+        Width = 50
         Height = 21
         Anchors = [akTop, akRight]
         EditLabel.Width = 20
@@ -242,7 +242,7 @@ object connectionFr: TconnectionFr
     object RslvIPChk: TCheckBox
       Left = 310
       Top = 12
-      Width = 74
+      Width = 95
       Height = 17
       Caption = 'Resolve IP'
       TabOrder = 7

@@ -153,17 +153,21 @@ begin
 end;
 
 procedure TaboutFrm.FormCreate(Sender: TObject);
-//var
+const
+  sizeM: Integer = 64;
+var
+  SizeMScaled: Integer;
 //  formrgn:hrgn;
 begin
 // destroyHandle
+  SizeMScaled := MulDiv(sizeM, self.Monitor.PixelsPerInch, PixelsPerInch);
   AboutPBox := TRnQPntBox.Create(self);
   Self.InsertComponent(AboutPBox);
   AboutPBox.Parent  := Self;
   AboutPBox.Top     := 6;
-  AboutPBox.Width   := 64;
+  AboutPBox.Width   := SizeMScaled;
   AboutPBox.Left    := Self.ClientWidth - 10 - AboutPBox.Width;
-  AboutPBox.Height  := 64;
+  AboutPBox.Height  := SizeMScaled;
 //  AboutPBox.Height  := 85;
   AboutPBox.OnPaint := AboutPBoxPaint;
   AboutPBox.ControlStyle :=AboutPBox.ControlStyle + [ csOpaque ] ;
@@ -221,6 +225,8 @@ begin
   curNapr := -1;
   if DwmCompositionEnabled then
    BtnPnl.BevelOuter := bvNone;
+
+  Self.GlassFrame.Bottom := BtnPnl.Height;
 //  theme.GetIco2(PIC_RNQ, Im.Picture.Icon);
 //  assignImgIco(Im, Application.Icon);
 //  Im.Picture.Icon := Application.Icon;
@@ -230,10 +236,16 @@ begin
 end;
 
 procedure TaboutFrm.lblMouseEnter(Sender: TObject);
-begin with (sender as Tlabel).font do Style:=Style+[fsUnderline] end;
+begin
+  with (sender as Tlabel).font do
+    Style := Style + [fsUnderline]
+end;
 
 procedure TaboutFrm.lblMouseLeave(Sender: TObject);
-begin with (sender as Tlabel).font do Style:=Style-[fsUnderline] end;
+begin
+  with (sender as Tlabel).font do
+    Style := Style - [fsUnderline]
+end;
 
 procedure TaboutFrm.OkBtnClick(Sender: TObject);
 begin
@@ -385,9 +397,7 @@ begin
   {$ELSE NOT USE_GDIPLUS}
 const
   sizeM = 48;
-  cntr = sizeM div 2;
   addict = 5;
-  cntr1 = cntr + addict;
 //  Pidiv =
 var
   ico : HICON;
@@ -399,7 +409,13 @@ var
   bmp : TBitmap;
   bmp2 : TBitmap;
   DC : HDC;
+  cntr, cntr1: Integer;
+
+  SizeMScaled: Integer;
 begin
+  SizeMScaled := MulDiv(sizeM, self.Monitor.PixelsPerInch, PixelsPerInch);
+  cntr := SizeMScaled div 2;
+  cntr1 := cntr + addict;
 //  ico := 0;
 //  AboutPBox.Canvas.FillRect(AboutPBox.Canvas.ClipRect);
 //  DC := AboutPBox.Canvas.Handle;
@@ -466,10 +482,10 @@ begin
 //         msgDlg(intToStr(err), mt_Error);
 //         ico := LoadImage(Application.Handle, MAKEINTRESOURCE(0), IMAGE_ICON, sizeM, sizeM, LR_LOADFROMFILE);
 }
-     ico := CopyImage(Application.Icon.Handle, IMAGE_ICON, sizeM, sizeM, LR_COPYFROMRESOURCE);
+     ico := CopyImage(Application.Icon.Handle, IMAGE_ICON, SizeMScaled, SizeMScaled, LR_COPYFROMRESOURCE);
 //     DrawIcon(AboutPBox.Canvas.Handle, 0, 0, ico);
 //     DrawIconEx(DC, 0, 0, ico, sizeM, sizeM, 0, 0, DI_NORMAL);
-     DrawIconEx(DC, addict, addict, ico, sizeM, sizeM, 0, 0, DI_NORMAL);
+     DrawIconEx(DC, addict, addict, ico, SizeMScaled, SizeMScaled, 0, 0, DI_NORMAL);
 //     DrawIconEx(DC, -cntr, -cntr, ico, sizeM, sizeM, 0, 0, DI_NORMAL);
 //     PlgBlt() ????????????????????????????????????????
 //     DrawIconEx(AboutPBox.Canvas.Handle, 0, 0, ico, 48, 48, 0, 0, DI_NORMAL);

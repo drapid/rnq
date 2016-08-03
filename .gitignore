@@ -6,6 +6,8 @@ Distro/Cache/
 Distro/Accounts/
 Distro/*/Cache/
 Distro/*.map
+Distro/*.rsm
+Distro/*.drc
 Distro/*.exe
 Distro/*/Devils/
 Distro/*/History/

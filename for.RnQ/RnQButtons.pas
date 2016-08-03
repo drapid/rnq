@@ -151,6 +151,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure Click; override;
+    property parentDPI: Integer read GetParentCurrentDpi;
   published
     property Action;
     property Align;
@@ -557,19 +558,19 @@ function RnQButtonDrawFull(Canvas: TCanvas; const Client: TRect; //const Offset:
       var ImgElm : TRnQThemedElementDtls;
  {$ENDIF RNQ}
 //      ImageName : String;
-      const DropDownWidth: Integer=0): TRect;
+      const DropDownWidth: Integer=0; const pDPI: Integer = 0): TRect;
 
 function RnQButtonDraw(//Canvas: TCanvas;
-      CanvasHnd : HDC; pFontColor : TColor;
+      CanvasHnd: HDC; pFontColor : TColor;
       const Client: TRect; const Offset: TPoint;
       const Caption: string; Layout: TButtonLayout; Margin, Spacing: Integer;
-      thmBtn : TThemedButton; State: TButtonState;
+      thmBtn: TThemedButton; State: TButtonState;
       Transparent: Boolean; BiDiFlags: Longint;
  {$IFDEF RNQ}
-      var ImgElm : TRnQThemedElementDtls;
+      var ImgElm: TRnQThemedElementDtls;
  {$ENDIF RNQ}
 //      ImageName : String;
-      const DropDownWidth: Integer=0; PaintOnGlass : Boolean = False): TRect;
+      const DropDownWidth: Integer=0; PaintOnGlass: Boolean = False; pDPI: Integer = 0): TRect;
 
 procedure RnQDrawButtonGlyph(DC: HDC; //const GlyphPos: TPoint;
       const PicRect : TGPRect;
@@ -578,23 +579,23 @@ procedure RnQDrawButtonGlyph(DC: HDC; //const GlyphPos: TPoint;
       var ImgElm : TRnQThemedElementDtls;
  {$ENDIF RNQ}
 //      ImageName : String;
-      const PaintOnGlass : Boolean = false);
+      const PaintOnGlass : Boolean = false; pDPI : Integer = 0);
 procedure RnQDrawButtonText(//Canvas: TCanvas;
             CanvasHnd : HDC; pColor : TColor;
             const Caption: string; thmBtn : TThemedButton;
             TextBounds: TRect; State: TButtonState; BiDiFlags: Longint;
             PaintOnGlass: Boolean = false);
-procedure RnQCalcButtonLayout(DC : HDC; const Client: TRect;
+procedure RnQCalcButtonLayout(DC: HDC; const Client: TRect;
   const Offset: TPoint; const Caption: string; Layout: TButtonLayout; Margin,
   Spacing: Integer; // var GlyphPos: TPoint;
   var GlyphRect: TGPRect;
   var TextBounds: TRect;
   BiDiFlags: LongInt;
  {$IFDEF RNQ}
-  var ImgElm : TRnQThemedElementDtls;
+  var ImgElm: TRnQThemedElementDtls;
  {$ENDIF RNQ}
 //  ImageName : String;
-  const DropDownWidth: Integer = 0);
+  const DropDownWidth: Integer = 0; pDPI: Integer = 0);
 
 {function DrawButtonFace(Canvas: TCanvas; const Client: TRect;
   BevelWidth: Integer; //Style: TButtonStyle;
@@ -1006,7 +1007,7 @@ begin
  {$IFDEF RNQ}
       fImgElm,
  {$ENDIF RNQ}
-      0, PaintOnGlass);
+      0, PaintOnGlass, GetParentCurrentDpi);
 
   finally
  {$IFDEF DELPHI9_UP}
@@ -2305,8 +2306,10 @@ begin
     if FShowSysColors then
     begin
       SeparatorTop := FRowCount * FBoxSize + FMargin;
-      if Length(FDefaultText) > 0 then Inc(SeparatorTop, FDefaultTextRect.Bottom);
-      with FCustomTextRect do DrawSeparator(FMargin + FSpacing, SeparatorTop, Width - FMargin - FSpacing);
+      if Length(FDefaultText) > 0 then
+        Inc(SeparatorTop, FDefaultTextRect.Bottom);
+      with FCustomTextRect do
+        DrawSeparator(FMargin + FSpacing, SeparatorTop, Width - FMargin - FSpacing);
 
       for I := 0 to SysColorCount - 1 do DrawCell(I + DefaultColorCount);
     end;
@@ -3660,7 +3663,7 @@ begin
  {$IFDEF RNQ}
                                          vImgElm,
  {$ENDIF RNQ}
-                                         FDropDownWidth);
+                                         FDropDownWidth, false, GetParentCurrentDpi);
 
   // draw color indicator
   Canvas.Brush.Color := FSelectionColor;
@@ -4397,7 +4400,7 @@ procedure RnQDrawButtonGlyph(DC: HDC; //const GlyphPos: TPoint;
     var ImgElm : TRnQThemedElementDtls;
  {$ENDIF RNQ}
 //  ImageName : String;
-  const PaintOnGlass : Boolean = false);
+  const PaintOnGlass : Boolean = false; pDPI : Integer = 0);
 var
 //  gR : TGPRect;
   PicSize : TSize;
@@ -4413,7 +4416,7 @@ begin
  {$IFDEF RNQ}
   if ImgElm.picName = '' then
     Exit;
-  PicSize := Theme.GetPicSize(ImgElm);
+  PicSize := Theme.GetPicSize(ImgElm, 0, pDPI);
   with PicSize do
    begin
      if (cx = 0) or (cy = 0) then Exit;
@@ -4428,7 +4431,7 @@ begin
 //   gR.Height  := PicRect.Bottom-PicRect.Top - 2;
 //   gR.Width   := gR.Height;
 //  theme.drawPic(DC, gR, ImgElm);
-  theme.drawPic(DC, PicRect, ImgElm);
+  theme.drawPic(DC, PicRect, ImgElm, pDPI);
  {$ENDIF RNQ}
 (*
 //  with GlyphPos do
@@ -4572,17 +4575,17 @@ begin
   end;
 end;
     
-procedure RnQCalcButtonLayout(DC : HDC; const Client: TRect;
+procedure RnQCalcButtonLayout(DC: HDC; const Client: TRect;
   const Offset: TPoint; const Caption: string; Layout: TButtonLayout; Margin,
   Spacing: Integer; //var GlyphPos: TPoint;
   var GlyphRect: TGPRect;
   var TextBounds: TRect;
   BiDiFlags: LongInt;
  {$IFDEF RNQ}
-  var ImgElm : TRnQThemedElementDtls;
+  var ImgElm: TRnQThemedElementDtls;
  {$ENDIF RNQ}
 //  ImageName : String;
-  const DropDownWidth: Integer = 0);
+  const DropDownWidth: Integer = 0; pDPI: Integer = 0);
 var
   TextPos: TPoint;
   ClientSize, //GlyphSize,
@@ -4591,9 +4594,11 @@ var
   TotalSize: TPoint;
 begin
   if (BiDiFlags and DT_RIGHT) = DT_RIGHT then
-    if Layout = blGlyphLeft then Layout := blGlyphRight
-    else 
-      if Layout = blGlyphRight then Layout := blGlyphLeft;
+    if Layout = blGlyphLeft then
+      Layout := blGlyphRight
+    else
+      if Layout = blGlyphRight then
+        Layout := blGlyphLeft;
   { calculate the item sizes }
   ClientSize := Point(Client.Right - Client.Left - DropDownWidth, Client.Bottom -
     Client.Top);
@@ -4601,7 +4606,7 @@ begin
  {$IFDEF RNQ}
   if ImgElm.picName <> '' then
     begin
-      GlyphRect.size := tGPsize(theme.GetPicSize(ImgElm));
+      GlyphRect.size := tGPsize(theme.GetPicSize(ImgElm, 0, pDPI));
       GlyphRect := DestRect(GlyphRect.size, tGPsize.create(ClientSize.X-4, ClientSize.Y-4));
     end
 //     GlyphSize := Point(cx, cy)
@@ -4732,7 +4737,7 @@ function RnQButtonDrawFull(Canvas: TCanvas; const Client: TRect; //const Offset:
       var ImgElm : TRnQThemedElementDtls;
  {$ENDIF RNQ}
 //      ImageName : String;
-      const DropDownWidth: Integer=0): TRect;
+      const DropDownWidth: Integer=0; const pDPI: Integer = 0): TRect;
 const
   Enabled = True;
   FFlat   = False;
@@ -4873,7 +4878,7 @@ begin
  {$IFDEF RNQ}
                 ImgElm,
  {$ENDIF RNQ}
-                DropDownWidth);
+                DropDownWidth, False, pDPI);
 end;
 
 function RnQButtonDraw(//Canvas: TCanvas;
@@ -4886,7 +4891,7 @@ function RnQButtonDraw(//Canvas: TCanvas;
   var ImgElm : TRnQThemedElementDtls;
  {$ENDIF RNQ}
 //  ImageName : String;
-  const DropDownWidth: Integer = 0; PaintOnGlass : Boolean = false): TRect;
+  const DropDownWidth: Integer = 0; PaintOnGlass: Boolean = false; pDPI: Integer = 0): TRect;
 var
 //  GlyphPos: TPoint;
   GlyphRect : TGPRect;
@@ -4896,12 +4901,12 @@ begin
  {$IFDEF RNQ}
     ImgElm,
  {$ENDIF RNQ}
-    DropDownWidth);
+    DropDownWidth, pDPI);
   RnQDrawButtonGlyph(CanvasHnd, GlyphRect, State, Transparent,
  {$IFDEF RNQ}
     ImgElm,
  {$ENDIF RNQ}
-    PaintOnGlass);
+    PaintOnGlass, pDPI);
   if Length(Caption) > 0 then
     RnQDrawButtonText(CanvasHnd, pFontColor, Caption, thmBtn, Result, State, BiDiFlags, PaintOnGlass);
 // return a rectangle wherein the color indicator can be drawn
@@ -4915,7 +4920,7 @@ begin
 //    if Assigned(FOriginal) and (FOriginal.Width > 0) and (FOriginal.Height > 0) then
  {$IFDEF RNQ}
     if ImgElm.picName <> '' then
-     with theme.GetPicSize(ImgElm) do
+     with theme.GetPicSize(ImgElm, 0, pDPI) do
       if (cx > 0) and (cy > 0) then
       case Layout of
         blGlyphLeft:
@@ -5251,7 +5256,7 @@ begin
  {$IFDEF RNQ}
       fImgElm,
  {$ENDIF RNQ}
-      FDropDownWidth);
+      FDropDownWidth, False, GetParentCurrentDpi);
  end
  else
  begin
@@ -5361,7 +5366,7 @@ begin
  {$IFDEF RNQ}
       fImgElm,
  {$ENDIF RNQ}
-      FDropDownWidth);
+      FDropDownWidth, False, GetParentCurrentDpi);
 
   // Draws the arrow for the correct state
   if FState = bsDisabled then
@@ -6143,7 +6148,7 @@ begin
  {$IFDEF RNQ}
       fImgElm,
  {$ENDIF RNQ}
-      0, PaintOnGlass);
+      0, PaintOnGlass, GetParentCurrentDpi);
 
     if IsFocused and IsDefault then
     begin
@@ -6214,7 +6219,7 @@ begin
  {$IFDEF RNQ}
       fImgElm,
  {$ENDIF RNQ}
-      0);
+      0, false, GetParentCurrentDpi);
 //    TButtonGlyph(FGlyph).Draw(FCanvas, R, Point(0,0), Caption, FLayout, FMargin,
 //      FSpacing, State, False, DrawTextBiDiModeFlags(0) or WordBreakFlag[WordWrap]);
 

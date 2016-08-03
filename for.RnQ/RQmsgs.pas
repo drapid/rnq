@@ -116,7 +116,7 @@ begin
     // additional spaces for icon
   with Pmsg(sender.getnodedata(PaintInfo.Node))^ do
   begin
-    with theme.drawPic(PaintInfo.Canvas.Handle, r.left, r.top-GAP_Y,
+    with theme.drawPic(PaintInfo.Canvas.Handle, r.left, r.top - GAP_Y,
            IconNames[ kind ], isFirst) do
 //    with theme.getPicSize(RQteDefault, IconNames[kind], 16) do
      begin
@@ -184,7 +184,7 @@ begin
   inc(r.Top, GAP_Y shl 1);
   with theme.getPicSize(RQteDefault, IconNames[m.kind]) do
    begin
-    NodeHeight := cy;
+    NodeHeight := cy + 5;
     inc(r.Left, cx);
     if cy > 16 then
      dec(r.right, cx);
@@ -300,8 +300,17 @@ begin
 end;
 
 procedure TmsgsFrm.FormResize(Sender: TObject);
+var
+  Node: PVirtualNode;
 begin
   OkBtn.Left := Round((ClientWidth - OkBtn.Width) / 2);
+
+  Node := msgList.GetFirst;
+  while Assigned(Node) do
+  begin
+    Exclude(Node.States, vsHeightMeasured);
+    Node := msgList.GetNextSibling(Node)
+  end;
 end;
 
 procedure TmsgsFrm.FormShow(Sender: TObject);

@@ -330,6 +330,9 @@ case getSnacService(s) of
   $0107:result:='rates';
   $0108:result:='rates ack';
   $010A: result := 'rate update or warning';
+  $010B: result := 'server pause';
+  $010C: result := 'client pause ack';
+  $010D: result := 'server resume';
   $010E: result := 'my info request';
   $010F:result:='my info';
   $0113:result:='motd';
@@ -370,6 +373,7 @@ case getSnacService(s) of
   $0B02: result := 'min stats report interval';
   $1006: result := 'avatar request';
   $1007:result:='avatar';
+  $1301: result := 'client or server error';
   $1302: result := 'SSI limits request';
   $1303: result := 'SSI limits response';
   $1304: result := 'contact list request';
@@ -383,7 +387,14 @@ case getSnacService(s) of
   $130F:result:='client local SSI is up-to-date';
   $1311:result:='SSI edit: Start transaction';
   $1312:result:='SSI edit: End transaction';
+  $1314: result := 'grant future auth';
+  $1315: result := 'future auth granted';
+  $1316: result := 'delete yoursef from another CL';
+  $1318: result := 'request auth';
   $1319:result:='auth request';
+  $131a: result := 'reply to auth';
+  $131b: result := 'auth reply';
+  $131c: result := 'you were added';
   $1502:
     case getMPservice(s) of
       $3C: result := 'offline msgs request';

@@ -27,10 +27,6 @@ object chatFr: TchatFr
     TabOrder = 0
     object CommonSheet: TTabSheet
       Caption = 'Common'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         407
         357)
@@ -289,10 +285,6 @@ object chatFr: TchatFr
       Caption = 'Buttons'
       ImageIndex = 2
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         407
         357)

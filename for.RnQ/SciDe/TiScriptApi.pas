@@ -59,6 +59,7 @@ type
     name: PAnsiChar;
     handler: Pointer; // can be either tiscript_method or tiscript_tagged_method
     tag: Pointer;
+    payload: tiscript_value;
   end;
   ptiscript_method_def = ^tiscript_method_def;
 
@@ -170,10 +171,10 @@ type
     get_instance_data : function(obj: tiscript_object): Pointer; cdecl;    // 50
     set_instance_data : procedure(obj: tiscript_object; data: Pointer); cdecl;
 
-    create_array : procedure; cdecl;
-    set_elem : procedure; cdecl;
+    create_array : function(vm: HVM; of_size: UINT): tiscript_value; cdecl;
+    set_elem : function(vm: HVM; arr: tiscript_value; idx: UINT; value: tiscript_value): BOOL; cdecl;
     get_elem : function(vm: HVM; arr: tiscript_value; idx: UINT): tiscript_value; cdecl;
-    set_array_size : procedure; cdecl;  // 55
+    set_array_size : function(vm: HVM; arr: tiscript_value; of_size: UINT): tiscript_value; cdecl;  // 55
     get_array_size : function(vm: HVM; arr: tiscript_value): UINT; cdecl;
 
     // eval

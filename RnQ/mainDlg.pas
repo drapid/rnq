@@ -1181,28 +1181,31 @@ end;
 
 procedure TRnQmain.Changeoradduser1Click(Sender: TObject);
 var
-  s : String;
-  usePass : String;
-  vMutex:Cardinal;
+  s: String;
+  usePass: String;
+  vMutex: Cardinal;
+  uin2Start: TUID;
 begin
-  uin2Bstarted:=showUsers(usePass);
-  if (uin2Bstarted = '')or
-    (Assigned(Account.AccProto) and Account.AccProto.getMyInfo.equals(uin2Bstarted)) then exit;
+  uin2Start := showUsers(usePass);
+  if (uin2Start = '')or
+    (Assigned(Account.AccProto) and Account.AccProto.getMyInfo.equals(uin2Start)) then
+    exit;
   repeat
-    s := 'R&Q' + uin2Bstarted;
+    s := 'R&Q' + uin2Start;
     vMutex:=OpenMutex(MUTEX_MODIFY_STATE, false, PChar(s));
     if vMutex<>0 then
     begin
       CloseHandle(vMutex);
 //      mutex := 0;
       msgDlg(Str_already_run, True, mtWarning);
-      uin2Bstarted:=showUsers(usePass);
-      if uin2Bstarted='' then
+      uin2Start:=showUsers(usePass);
+      if (uin2Start = '')or
+        (Assigned(Account.AccProto) and Account.AccProto.getMyInfo.equals(uin2Start)) then
         Exit;
   //    Halt(0);
     end;
   until vMutex=0;
- if uin2Bstarted = '' then
+ if uin2Start = '' then
    exit;
  if Assigned(Account.AccProto) then
   if not Account.AccProto.isOffline then
@@ -1217,7 +1220,7 @@ begin
   if Assigned(Account.AccProto) then
     quitUser;
   AccPass := usePass;
-  startUser;
+  startUser(uin2Start);
   // during resetCFG the form enters a weird state, this should fix
 //  ShowWindow(handle,SW_HIDE);
  finally
@@ -2792,10 +2795,10 @@ if blinkCount = 0 then
   blinking:=not blinking;
   if Assigned(statusIcon) then
    begin
-    if statusIcon.trayIcon.hided and not BossMode.isBossKeyOn then
+    if statusIcon.trayIcon.hidden and not BossMode.isBossKeyOn then
        statusIcon.trayIcon.show
      else
-    if not statusIcon.trayIcon.hided and BossMode.isBossKeyOn then
+    if not statusIcon.trayIcon.hidden and BossMode.isBossKeyOn then
          statusIcon.trayIcon.hide;
     statusIcon.update;
    end;

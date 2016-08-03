@@ -429,6 +429,7 @@ begin
     pclass_methods.handler := @FMethodHandler;
     pclass_methods.dispatch := nil;
     pclass_methods.tag := Pointer(pInfo);
+    pclass_methods.payload := 0;
     Inc(pclass_methods);
   end;
   // null-terminating record

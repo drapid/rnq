@@ -49,7 +49,8 @@ function  str2db(pProto: TRnQProtocol; const s: RawByteString): TRnQCList; overl
 //function  getClientFor(c:TRnQcontact; pInInfo : Boolean = False):string;
 function  getProtosPref(): TPrefPagesArr;
 function  getProtoClass(ProtoID: Byte): TRnQProtoClass;
-function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer=0; const info:string=''):Toevent;overload;function  Proto_Outbox_add(kind: Integer; dest:TRnQContact; flags:integer; cl:TRnQCList):Toevent; overload;
+function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer=0; const info: string=''): Toevent; overload;
+function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer; cl: TRnQCList): Toevent; overload;
 procedure getTrayIconTip(var vPic: TPicName; var vTip: String);
 
 

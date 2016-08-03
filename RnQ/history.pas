@@ -490,12 +490,16 @@ end; // deleteFromTo
 
 procedure Thistory.deleteFromToTime(const uid: TUID; const st, en: TDateTime);
 var
-  hev: Thevent;
+  hevst, heven: Thevent;
 begin
 {$IFDEF DB_ENABLED}
 {$ELSE ~DB_ENABLED}
-  hev := getByTime(en);
-  utilLib.deleteFromTo(Account.ProtoPath + historyPath + uid, getByTime(st).fpos, hev.fpos + Length(hev.toString));
+  hevst := getByTime(st);
+  heven := getByTime(en);
+  if (hevst = nil) or (heven = nil) then
+    Exit;
+
+  utilLib.deleteFromTo(Account.ProtoPath + historyPath + uid, hevst.fpos, heven.fpos + Length(heven.toString));
 
   Reset;
   Load(Account.AccProto.getContact(uid))

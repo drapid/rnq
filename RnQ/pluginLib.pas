@@ -61,7 +61,7 @@ type
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; cl: TRnQCList): RawByteString;  overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime): RawByteString; overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; const s1: AnsiString): RawByteString; overload;
-    function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; const s1,s2: AnsiString): RawByteString; overload;
+    function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; const s1, s2: AnsiString): RawByteString; overload;
     function castEv(ev_id: byte; when: Tdatetime; const name, addr, text: AnsiString): RawByteString; overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; const s1: AnsiString): RawByteString; overload;
     function castEv(ev_id: byte; const uin: TUID; const s1: AnsiString): RawByteString; overload;
@@ -195,7 +195,7 @@ begin
  end;
 end;
 
-function _contactinfo(c:TRnQcontact): RawByteString;
+function _contactinfo(c: TRnQcontact): RawByteString;
 begin
 if c=NIL then
   begin
@@ -220,23 +220,29 @@ if c=NIL then
       +_istring(c.last);
 end; // _contactinfo
 
-function _icontactinfo(c:TRnQcontact):RawByteString;
-begin result:=_istring(_contactinfo(c)) end;
+function _icontactinfo(c: TRnQcontact): RawByteString;
+begin
+  result := _istring(_contactinfo(c))
+end;
 
-function _get(what:byte):RawByteString;
-begin result:=AnsiChar(PM_GET)+AnsiChar(what) end;
+function _get(what: byte): RawByteString;
+begin
+  result := AnsiChar(PM_GET)+AnsiChar(what)
+end;
 
-function _event(what:byte):RawByteString;
-begin result:=AnsiChar(PM_EVENT)+AnsiChar(what) end;
+function _event(what: byte): RawByteString;
+begin
+  result := AnsiChar(PM_EVENT)+AnsiChar(what)
+end;
 
-//function callbackStr(const data:RawByteString):RawByteString; stdcall;
-procedure callbackStr3(const data:RawByteString; var res:RawByteString);
+//function callbackStr(const data: RawByteString): RawByteString; stdcall;
+procedure callbackStr3(const data: RawByteString; var res: RawByteString);
 var
-  resStr : RawByteString;
+  resStr: RawByteString;
 
-  function minimum(min:integer):boolean;
+  function minimum(min: integer): boolean;
   begin
-    result:=length(data) >= min;
+    result := length(data) >= min;
     if not result then
       resStr := AnsiChar(PM_ERROR)+ AnsiCHAR(PERR_BAD_REQ);
   end; // minimum
@@ -525,7 +531,7 @@ case _byte_at(data,1) of
           end;
         end;
 
-      PG_NOF_UINLISTS: resStr:=AnsiChar(PM_DATA)+_int( uinlists.count );
+      PG_NOF_UINLISTS: resStr := AnsiChar(PM_DATA)+_int( uinlists.count );
       PG_UINLIST: if minimum(2+4) then
         begin
         i:=_int_at(data,3);
@@ -661,7 +667,8 @@ var
   ppp: TThreadProcedure;
 begin
   result := NIL;
-  if data=NIL then exit;
+  if data=NIL then
+    exit;
 //  FoutBufferCS.Acquire;
 //  try
     setlength(s, data^);
@@ -698,11 +705,13 @@ var
   s: RawByteString;
 begin
   result := FALSE;
-  if active then exit;
+  if active then
+    exit;
   loggaEvtS(filename+': loading');
   hnd := LoadLibrary(PChar(myPath+pluginsPath+filename));
 //  hnd := LoadLibraryEx(PChar(myPath+pluginsPath+filename));
-  if hnd=0 then exit;
+  if hnd=0 then
+    exit;
   fun := GetProcAddress(hnd, PAnsiChar('pluginFun'));
   if not assigned(fun) then
     fun := GetProcAddress(hnd, '_pluginFun');
@@ -749,7 +758,8 @@ end; // activate
 
 procedure Tplugin.disactivate;
 begin
-  if not active then exit;
+  if not active then
+    exit;
   try
    loggaEvtS(filename+': disactivating');
    cast(_event(PE_FINALIZE));
@@ -771,10 +781,11 @@ function Tplugin.cast(data: RawByteString): RawByteString;
 var
   p: Pinteger;
 begin
-result := '';
-if not active or not (assigned(fun) or assigned(funC)) then exit;
-data := _int(length(data))+data;
-p := nil;
+  result := '';
+  if not active or not (assigned(fun) or assigned(funC)) then
+    exit;
+  data := _int(length(data))+data;
+  p := nil;
 //loggaEvt(format('%s: sending %d bytes',[filename,length(data)]));
  try
   if assigned(fun) then

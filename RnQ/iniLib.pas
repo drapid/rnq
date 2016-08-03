@@ -11,12 +11,12 @@ unit iniLib;
 interface
 
 uses
-  RnQZip;
+  RnQZip, RnQProtocol;
 
 procedure beforeWindowsCreation;
 procedure afterWindowsCreation;
 procedure quit;
-procedure startUser;
+procedure startUser(const uid: TUID = '');
 procedure quitUser;
 procedure resetCFG;
 
@@ -55,7 +55,6 @@ uses
   RnQ_Avatars,
  {$ENDIF}
   groupsLib, langLib, StatusForm,
-  RnQProtocol,
   hook,
  {$IFDEF UNICODE}
    AnsiStrings,
@@ -76,15 +75,17 @@ uses
   MenuSmiles, menusUnit,
    histUtilsDlg,
    Protocols_all;
+
 var
   initOnce: boolean;
+  uin2Bstarted : TUID;
 
 procedure resetCFG;
 var
   i: integer;
 //  pp:Tproxyproto;
 begin
-  rosterTitle:='%uin% %nick%';
+  rosterTitle := '%uin% %nick%';
   showMainBorder := True;
   ShowUINDelimiter := True;
   ResetThemePaths;
@@ -1310,133 +1311,133 @@ end; // readOnlyFiles
 procedure beforeWindowsCreation;
 
   procedure parseCmdLinePar;
-  var
+   var
     i: integer;
     s: string;
     UIN : TUID;
-   prCl : TRnQProtoClass;
+    prCl : TRnQProtoClass;
   begin
-  myPath:=ExtractFilePath(paramStr(0));
-  cmdlinepar.extraini := '';
-  cmdlinepar.startUser:= '';
-  cmdLinePar.mainPath := '';
-  cmdLinePar.userPath := '';
-  cmdLinePar.logpath  := '';
-  logPath := myPath;
-  cmdLinePar.useproxy := '';
-  cmdLinePar.ssi := False;
-//  masterUseSSI := False;
-//  cmdLinePar.ssi := True;
-  masterUseSSI := True;
-//  icqdebug := False;
- {$IFDEF LANGDEBUG}
-  lang_debug := False;
-  xxx := false;
- {$ENDIF LANGDEBUG}
-  i:=0;
-  while i < paramCount() do
-    begin
-      inc(i);
-      s:=paramStr(i);
-      if s='--add-ini' then
-        begin
+    myPath:=ExtractFilePath(paramStr(0));
+    cmdlinepar.extraini := '';
+    cmdlinepar.startUser:= '';
+    cmdLinePar.mainPath := '';
+    cmdLinePar.userPath := '';
+    cmdLinePar.logpath  := '';
+    logPath := myPath;
+    cmdLinePar.useproxy := '';
+    cmdLinePar.ssi := False;
+  //  masterUseSSI := False;
+  //  cmdLinePar.ssi := True;
+    masterUseSSI := True;
+  //  icqdebug := False;
+   {$IFDEF LANGDEBUG}
+    lang_debug := False;
+    xxx := false;
+   {$ENDIF LANGDEBUG}
+    i:=0;
+    while i < paramCount() do
+      begin
         inc(i);
-        cmdlinepar.extraini:=paramstr(i);
-        end
-    {$IFDEF RNQ_PLAYER}
-      else
-       if s='--rqp' then
-        showRQP := True
-    {$ENDIF RNQ_PLAYER}
-      else
-       if s='--ssi' then
-        begin
-          masterUseSSI := True;
-          cmdLinePar.ssi := True;
-        end
-      else
-       if s='--nossi' then
-        begin
-          masterUseSSI := False;
-          cmdLinePar.ssi := False;
-        end
-      else
-       if s='--nosound' then
-        begin
-          masterMute := True;
-        end
-      else
-    {$IFDEF LANGDEBUG}
-       if s='--lang' then
-        lang_debug := True
-      else
-    {$ENDIF}
-       if s='--xxx' then
-         xxx := True
-//      else
-//       if s='--icqdebug' then
-//         icqdebug := True
-      else
-       if s='--mainpath' then
-        begin
-         inc(i);
-         cmdLinePar.mainPath := paramstr(i);
-         cmdLinePar.mainPath := includeTrailingPathDelimiter(cmdLinePar.mainPath);
-         if not DirectoryExists(cmdLinePar.mainPath) then
+        s:=paramStr(i);
+        if s='--add-ini' then
+          begin
+          inc(i);
+          cmdlinepar.extraini:=paramstr(i);
+          end
+      {$IFDEF RNQ_PLAYER}
+        else
+         if s='--rqp' then
+          showRQP := True
+      {$ENDIF RNQ_PLAYER}
+        else
+         if s='--ssi' then
+          begin
+            masterUseSSI := True;
+            cmdLinePar.ssi := True;
+          end
+        else
+         if s='--nossi' then
+          begin
+            masterUseSSI := False;
+            cmdLinePar.ssi := False;
+          end
+        else
+         if s='--nosound' then
+          begin
+            masterMute := True;
+          end
+        else
+      {$IFDEF LANGDEBUG}
+         if s='--lang' then
+          lang_debug := True
+        else
+      {$ENDIF}
+         if s='--xxx' then
+           xxx := True
+  //      else
+  //       if s='--icqdebug' then
+  //         icqdebug := True
+        else
+         if s='--mainpath' then
+          begin
+           inc(i);
+           cmdLinePar.mainPath := paramstr(i);
+           cmdLinePar.mainPath := includeTrailingPathDelimiter(cmdLinePar.mainPath);
+           if not DirectoryExists(cmdLinePar.mainPath) then
+             begin
+              if messageDlg(getTranslation('Directory "%s" does not exist. Do you want to create it?', [cmdLinePar.mainPath]), mtConfirmation, [mbYes,mbNo],0) = mrYes then
+                CreateDir(cmdLinePar.mainPath)
+               else
+                cmdLinePar.mainPath := '';
+             end;
+          end
+        else
+         if s='--userpath' then
+          begin
+           inc(i);
+           cmdLinePar.userPath := paramstr(i);
+           cmdLinePar.userPath := includeTrailingPathDelimiter(cmdLinePar.userPath);
+           if not DirectoryExists(cmdLinePar.userPath) then
+             begin
+              if messageDlg(getTranslation('Directory "%s" does not exist. Do you want to create it?', [cmdLinePar.userPath]), mtConfirmation, [mbYes,mbNo],0) = mrYes then
+                CreateDir(cmdLinePar.userPath)
+               else
+                cmdLinePar.userPath := '';
+             end;
+          end
+        else
+         if s='--logpath' then
+          begin
+           inc(i);
+           cmdLinePar.logpath := paramstr(i);
+           cmdLinePar.logpath := includeTrailingPathDelimiter(cmdLinePar.logpath);
+           if not DirectoryExists(cmdLinePar.logpath) then
+             cmdLinePar.logpath := '';
+          end
+        else
+         if s='--proxy' then
+          begin
+           inc(i);
+           cmdLinePar.useproxy := paramstr(i);
+  //         cmdLinePar.useproxy := includeTrailingPathDelimiter(cmdLinePar.useproxy);
+  //         if not DirectoryExists(cmdLinePar.logpath) then
+  //           cmdLinePar.logpath := '';
+          end
+        else
+        // is it an UIN ?
+        try
+  //        if TryStrToInt64(ExtractFileName(s), uin) and validUIN(uin) then
+          for prCl in RnQProtos do
            begin
-            if messageDlg(getTranslation('Directory "%s" does not exist. Do you want to create it?', [cmdLinePar.mainPath]), mtConfirmation, [mbYes,mbNo],0) = mrYes then
-              CreateDir(cmdLinePar.mainPath)
-             else
-              cmdLinePar.mainPath := '';
+           uin := s;
+  //         if prCl._isValidUid(uin) then
+           if prCl._isProtoUid(uin) then
+            cmdlinepar.startUser:=uin;
            end;
-        end
-      else
-       if s='--userpath' then
-        begin
-         inc(i);
-         cmdLinePar.userPath := paramstr(i);
-         cmdLinePar.userPath := includeTrailingPathDelimiter(cmdLinePar.userPath);
-         if not DirectoryExists(cmdLinePar.userPath) then
-           begin
-            if messageDlg(getTranslation('Directory "%s" does not exist. Do you want to create it?', [cmdLinePar.userPath]), mtConfirmation, [mbYes,mbNo],0) = mrYes then
-              CreateDir(cmdLinePar.userPath)
-             else
-              cmdLinePar.userPath := '';
-           end;
-        end
-      else
-       if s='--logpath' then
-        begin
-         inc(i);
-         cmdLinePar.logpath := paramstr(i);
-         cmdLinePar.logpath := includeTrailingPathDelimiter(cmdLinePar.logpath);
-         if not DirectoryExists(cmdLinePar.logpath) then
-           cmdLinePar.logpath := '';
-        end
-      else
-       if s='--proxy' then
-        begin
-         inc(i);
-         cmdLinePar.useproxy := paramstr(i);
-//         cmdLinePar.useproxy := includeTrailingPathDelimiter(cmdLinePar.useproxy);
-//         if not DirectoryExists(cmdLinePar.logpath) then
-//           cmdLinePar.logpath := '';
-        end
-      else
-      // is it an UIN ?
-      try
-//        if TryStrToInt64(ExtractFileName(s), uin) and validUIN(uin) then
-        for prCl in RnQProtos do
-         begin
-         uin := s;
-//         if prCl._isValidUid(uin) then
-         if prCl._isProtoUid(uin) then
-          cmdlinepar.startUser:=uin;
-         end;
-       except
-      end;
+         except
+        end;
 
-    end
+      end
   end; // parseCmdLinePar
 
 var
@@ -1650,7 +1651,7 @@ begin
 
 end; // beforeWindowsCreation
 
-procedure startUser;
+procedure startUser(const UID: TUID = '');
   procedure ParseAbout(zp : TZipFile; var UID : TUID);
   var
     i : Integer;
@@ -1697,6 +1698,8 @@ var
   MyInf : TRnQContact;
   AccUID : TUID;
 begin
+  if UID > '' then
+    uin2Bstarted := UID;
   i := findInAvailableUsers(uin2Bstarted);
   if i < 0 then
    begin

@@ -569,7 +569,10 @@ var
     uingt        :integer;
     badwords     :string;
 //    quests : array of record q : String; ans : String; end;
-    quests : array of record q : String; ans : array of String; end;
+    quests : array of record
+        q : String;
+        ans : array of String;
+     end;
    end;
   histCrypt :record
     enabled : boolean;
@@ -614,7 +617,6 @@ var
   minOnOff :boolean;
   minOnOffTime :integer; // in seconds
   autostartUIN : TUID;
-  uin2Bstarted : TUID;
   RnQStartingStatus, RnQStartingVisibility : Int8;
   lastStatus, lastStatusUserSet : Int8;
   rosterTitle :string;

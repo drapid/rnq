@@ -299,10 +299,11 @@ type
     function  GetBigPic(const picName: TPicName; var mem: TMemoryStream): Boolean;
     function  GetBigSmile(const picName: TPicName; var mem: TMemoryStream): Boolean;
     function  GetPicSize(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0;
-                             DPI: Integer = cDefaultDPI): Tsize; overload;
+                             const DPI: Integer = cDefaultDPI): Tsize; overload;
 //    function  GetPicSize(name: String; var ThemeToken: Integer;
 //        var picLoc: TPicLocation; var picIdx: Integer; minSize: Integer = 0): Tsize; overload;
-    function  GetPicSize(var PicElm: TRnQThemedElementDtls; minSize: Integer = 0): Tsize; overload;
+    function  GetPicSize(var PicElm: TRnQThemedElementDtls; minSize: Integer = 0;
+                             const DPI: Integer = cDefaultDPI): Tsize; overload;
     function  GetPicOld(const PicName: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
     procedure GetPicOrigin(const name: TPicName; var OrigPic: TPicName; var rr: TGPRect);
 //    function  GetIcoBad(name : String) : TIcon;
@@ -322,13 +323,14 @@ type
     function  pic2ico(pTE: TRnQThemedElement; const picName: TPicName; ico: Ticon): Boolean;
     function  pic2hIcon(const picName: TPicName; var ico: HICON): Boolean;
 //    function  drawPic(cnv: Tcanvas; x,y: integer; pic: TRnQBitmap): Tsize; overload;
-    function  drawPic(DC: HDC; pX, pY: integer; const picName: TPicName; pEnabled: Boolean = true):Tsize; overload;
+    function  drawPic(DC: HDC; pX, pY: integer; const picName: TPicName;
+                      pEnabled: Boolean = true; pDPI: Integer = 0):Tsize; overload;
 //    function  drawPic(DC: HDC; x,y: integer; picName: string; var ThemeToken: Integer;
 //        var picLoc: TPicLocation; var picIdx: Integer; pEnabled: Boolean = true): Tsize; overload;
 //    function  drawPic(DC: HDC; x,y:integer; var picElm : TRnQThemedElementDtls): Tsize; overload;
     function  drawPic(DC: HDC; pR: TGPRect; const picName: TPicName; pEnabled: Boolean = true):Tsize; overload;
     function  drawPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls): Tsize; overload;
-    function  drawPic(DC: HDC; pR: TGPRect; var picElm: TRnQThemedElementDtls): Tsize; overload;
+    function  drawPic(DC: HDC; pR: TGPRect; var picElm: TRnQThemedElementDtls; const DPI: Integer = cDefaultDPI): Tsize; overload;
     function  getPic(DC: HDC; p : TPoint; var picElm: TRnQThemedElementDtls; var is32Alpha : Boolean):Tsize; overload;
   {$IFDEF USE_GDIPLUS}
     function  drawPic(gr: TGPGraphics; x, y: integer; picName: string; pEnabled: Boolean = true): Tsize; overload;
@@ -1568,7 +1570,7 @@ begin
 end;
 
 function TRQtheme.GetPicSize(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0;
-                             DPI: Integer = cDefaultDPI): Tsize;
+                             const DPI: Integer = cDefaultDPI): Tsize;
 var
   i: Integer;
   s, s1: TPicName;
@@ -1740,7 +1742,8 @@ begin
   end;
 end;
 
-function TRQtheme.GetPicSize(var PicElm : TRnQThemedElementDtls; minSize : Integer = 0):Tsize;
+function TRQtheme.GetPicSize(var PicElm : TRnQThemedElementDtls; minSize : Integer = 0;
+                             const DPI: Integer = cDefaultDPI):Tsize;
 //var
 //  i : Integer;
 begin
@@ -1783,7 +1786,13 @@ begin
             Result.cx := minSize;
             Result.cy := minSize;
           end;
-  end
+  end;
+
+  if (dpi <> fDPI) and (DPI > 36) then
+   begin
+     result.cx := MulDiv(result.cx, dpi, fDPI);
+     result.cy := MulDiv(result.cy, dpi, fDPI);
+   end;
 end;
 
 procedure TRQtheme.initPic(var picElm : TRnQThemedElementDtls);
@@ -3483,7 +3492,8 @@ begin
 //  FreeAndNil(LastLoadedPic);
 end; // loadThemeScript
 
-function TRQtheme.drawPic(DC: HDC; pX, pY:integer; const picName:TPicName; pEnabled : Boolean = true):Tsize;
+function TRQtheme.drawPic(DC: HDC; pX, pY: integer; const picName:TPicName;
+                          pEnabled : Boolean = true; pDPI: Integer = 0): Tsize;
 var
   i : Integer;
 //  gr : TGPGraphics;
@@ -3503,6 +3513,11 @@ begin
      begin
        result.cx := r.Width;
        result.cy := r.Height;
+       if (pDPI <> cDefaultDPI)and (pDPI > 36) then
+         begin
+           result.cx := MulDiv(result.cx, pDPI, cDefaultDPI);
+           result.cy := MulDiv(result.cy, pDPI, cDefaultDPI);
+         end;
        DrawRbmp(DC, FBigPics[PicIDX].bmp,
          makeRectI(pX, pY, result.cx, result.cy), r, pEnabled);
      end
@@ -3770,10 +3785,11 @@ begin
   end
 end;
 
-function TRQtheme.drawPic(DC: HDC; pR: TGPRect; var picElm : TRnQThemedElementDtls):Tsize;
+function TRQtheme.drawPic(DC: HDC; pR: TGPRect; var picElm : TRnQThemedElementDtls; const DPI: Integer = cDefaultDPI):Tsize;
 var
 //  i : Integer;
   r1  : TGPRect;
+  rS  : TGPSize; // Scaled Image Size
   po  : TPicObj;
   crd : Cardinal;
 begin
@@ -3788,11 +3804,19 @@ begin
   case picElm.Loc of
    PL_pic:
      with TThemePic(FThemePics.Objects[picElm.PicIDX]) do
+     if Assigned(FBigPics[PicIDX]) then
      if FBigPics[PicIDX].bmp <> nil then
      begin
   //     result.cx := r.Width;
   //     result.cy := r.Height;
-       r1 := DestRect( r.size, pR.size);
+       if (fDPI <> DPI) and (DPI > 36) then
+         begin
+          rS.Width  := MulDiv(r.Width, DPI, fDPI);
+          rS.Height := MulDiv(r.Height, DPI, fDPI);
+         end
+        else
+         rS := r.size;
+       r1 := DestRect( rS, pR.size);
 
        result.cx := r1.X + r1.Width;
        result.cy := r1.Y + r1.Height;
@@ -3801,11 +3825,12 @@ begin
 //       inc(r1.Y, pR.Y);
        R1.TopLeft := pR.TopLeft;
 //       result := tsize(r1.size);
-       po := FBigPics[PicIDX];
+//       po := FBigPics[PicIDX];
 //       if po is TPicObj then
-       if Assigned(po) then
+//       if Assigned(po) then
         begin
-         DrawRbmp(DC, po.bmp,
+         DrawRbmp(DC, //po.bmp,
+                  FBigPics[PicIDX].bmp,
 //                 MakeRect(p.X, p.Y, result.cx, result.cy),
                  R1, R, picElm.pEnabled);
         end;

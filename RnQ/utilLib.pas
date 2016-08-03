@@ -1980,7 +1980,11 @@ begin
   frm:=pwdDlg.TmsgFrm.create(Application);
   frm.txtBox.MaxLength:=maxLength;
   translateWindow(frm);
+  {$ifdef CPUX64}
+  SetWindowLongPtr(frm.handle, GWLP_HWNDPARENT, 0);
+  {$else}
   setwindowlong(frm.handle, GWL_HWNDPARENT, 0);
+  {$endif CPUX64}
 //  You must not call SetWindowLong with the GWL_HWNDPARENT index to change the parent of a child window.
 //  Instead, use the SetParent function.
 //  SetParent(frm.handle, 0);
@@ -1992,8 +1996,9 @@ begin
   frm.txtBox.text:='';
   frm.AllowNull := AllowNull;
   bringForeground:=frm.handle;
-  setTopMost(frm, True);
+  // setTopMost(frm, True);
   frm.showModal;
+  frm.BringToFront;
   result:= frm.exitCode=pwdDlg.EC_enter;
   if result then
     pwd:=trim(frm.txtBox.text);

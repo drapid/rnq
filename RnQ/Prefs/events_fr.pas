@@ -329,13 +329,13 @@ begin
   picElm.picName := event2imgName(i);
   picElm.Element := RQteDefault;
   picElm.pEnabled := True;
-    with theme.GetPicSize(picElm, 20) do
+    with theme.GetPicSize(picElm, 20, GetParentCurrentDpi) do
      begin
       gr.Height := min(Rect.Bottom - Rect.Top, cy);
       gr.Width  := min(Rect.Right - Rect.Left, cx);
      end;
 //  inc(gr.x, 2 + theme.drawPic(cnv.Handle, gR, event2imgName(i)).cx);
-   inc(gr.x, 2 + theme.drawPic(cnv.Handle, gR, picElm).cx);
+   inc(gr.x, 2 + theme.drawPic(cnv.Handle, gR, picElm, GetParentCurrentDpi).cx);
 //  cnv.textout(x, y, s);
   Rect.Left := gR.X;
   DrawText(cnv.Handle, PChar(s), Length(s), Rect, DT_SINGLELINE or DT_VCENTER);

@@ -79,6 +79,8 @@ var
 var
   CLPktNUM : Byte;
 
+
+
 implementation
 uses
   DateUtils, ansistrings, AnsiClasses, JSON,

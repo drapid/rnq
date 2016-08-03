@@ -10,11 +10,14 @@ interface
 
 uses
   Messages, windows, RDGlobal,
-  graphics;
+  graphics, ShellApi;
 
 const
   WM_TRAY = WM_USER+1;
   cTRAY_uID = 100;
+  flags_v2 = NIF_MESSAGE or NIF_ICON or NIF_TIP;
+  flags_v4 = NIF_MESSAGE or NIF_ICON or NIF_TIP or NIF_SHOWTIP or NIF_GUID;
+  flags_info = NIF_INFO or NIF_SHOWTIP or NIF_GUID;
 
 type
    TNotifyIconDataW_V2 = record
@@ -39,8 +42,32 @@ type
 //     dwInfoFlags: DWORD;
    end;
 
+  TNotifyIconDataW_V4 = record
+    cbSize: DWORD;
+    Wnd: HWND;
+    uID: UINT;
+    uFlags: UINT;
+    uCallbackMessage: UINT;
+    hIcon: HICON;
+    szTip: array [0 .. 127] of WideChar;
+    dwState: DWORD;
+    dwStateMask: DWORD;
+    szInfo: array [0 .. 255] of WideChar;
+    case Integer of
+      0: (uTimeout: UINT);
+      1: (uVersion: UINT;
+        szInfoTitle: array [0..63] of WideChar;
+        dwInfoFlags: DWORD;
+        guidItem: TGUID;        // Requires Windows Vista or later
+        hBalloonIcon: HICON);   // Requires Windows Vista or later
+  end;
+
+  PNotifyIconDataW_V2 = ^TNotifyIconDataW_V2;
+  PNotifyIconDataW_V4 = ^TNotifyIconDataW_V4;
+
 const
-   NOTIFYIconDataW_V2_SIZE = SizeOf(TNotifyIconDataW_V2);
+  NOTIFYIconDataW_V2_SIZE = SizeOf(TNotifyIconDataW_V2);
+  NOTIFYIconDataW_V4_SIZE = SizeOf(TNotifyIconDataW_V4);
 
 type
  {$IFDEF Use_Baloons}
@@ -54,8 +81,8 @@ type
   TtrayIcon=class
     private
 //      data:TNotifyIconData;
-      data: TNotifyIconDataW_V2;
-      shown, fHided: Boolean;
+      data: TNotifyIconDataW_V4;
+      shown, fHidden: Boolean;
       Ico: TIcon;
     public
       constructor Create(hndl: HWND);
@@ -69,7 +96,7 @@ type
       procedure setTip(const s: String);
 //      procedure setIconFile(fn: String);
       procedure updateHandle(hndl: HWND);
-      property hided: Boolean read fHided;
+      property Hidden: boolean read fHidden;
     end; // TtrayIcon
 
 type
@@ -101,13 +128,14 @@ type
    end; // TstatusIcon
 
 var
-    ShowBalloonTime: Int64;
-    EnabledBaloons: Boolean;
+  ShowBalloonTime: Int64;
+  EnabledBaloons: Boolean;
+  TrayIconDataVersion: Integer = 2;
 
 implementation
 
 uses
-  forms, sysutils, ShellAPI,
+  forms, sysutils,
   RDUtils, RnQStrings, RnQLangs, //themesLib,
   RQUtil, RQThemes, RnQGlobal
 //  dwTaskbarComponents, dwTaskbarList,
@@ -131,6 +159,8 @@ var
 
 constructor TstatusIcon.create;
 begin
+  if CheckWin32Version(6, 1) then
+    TrayIconDataVersion := 4;
   trayIcon := TtrayIcon.create(0);
   trayIcon.setTip(Application.Title);
   IcoName := '';
@@ -205,7 +235,7 @@ const
 var
 //  NID_50: NotifyIconData_50;
 //  NID_50: TNotifyIconData;
-  NID_50: TNotifyIconDataW_V2;
+  NID_50: TNotifyIconDataW_V4;
   t: String;
 begin
   if (not EnabledBaloons) or (not ShowBalloons) then
@@ -218,15 +248,13 @@ begin
 //  tmStopTimer(hTimer);
 //  DZBalloonTrayIcon(window, IconID, t, balloontitle, balloonicontype);
   ShowBalloonTime := bldelay;
-//  FillChar(NID_50, SizeOf(NotifyIconData_50), 0);
-//  FillMemory(@NID_50, SizeOf(NID_50), 0);
-//  ZeroMemory(@NID_50, SizeOf(NID_50));
-  ZeroMemory(@NID_50, NOTIFYIconDataW_V2_SIZE);
+  ZeroMemory(@NID_50, NOTIFYIconDataW_V4_SIZE);
   with NID_50 do
   begin
-//    cbSize := SizeOf(NID_50);
-//    cbSize := sizeof; // For Delphi XE
-    cbSize := NOTIFYIconDataW_V2_SIZE;
+    if TrayIconDataVersion = 4 then
+      cbSize := NOTIFYIconDataW_V4_SIZE
+     else
+      cbSize := NOTIFYIconDataW_V2_SIZE;
     Wnd := trayIcon.data.Wnd;
     uID := trayIcon.data.uID;
     uFlags := NIF_INFO;
@@ -235,6 +263,7 @@ begin
     uTimeout := 30000;
     StrLCopy(PWideChar(@szInfoTitle[0]), PChar(BalloonTitle), 63);
     dwInfoFlags := aBalloonIconTypes[BalloonIconType];
+    guidItem := TrayIcon.data.guidItem;
   end;
   Shell_NotifyIcon(NIM_MODIFY, @NID_50);
 end;
@@ -249,11 +278,9 @@ begin
   if (not EnabledBaloons) or (not ShowBalloons) then
     exit;
 //  ZeroMemory(@NID_50, SizeOf(NID_50));
-  ZeroMemory(@NID_50, NOTIFYIconDataW_V2_SIZE);
+  ZeroMemory(@NID_50, NOTIFYIconDataW_V4_SIZE);
   with NID_50 do
   begin
-//    cbSize := SizeOf(NID_50);
-//    cbSize := sizeof; // For Delphi XE
     cbSize := NOTIFYIconDataW_V2_SIZE;
     Wnd := trayIcon.data.Wnd;
     uID := trayIcon.data.uID;
@@ -265,18 +292,30 @@ begin
 end;
 
 constructor TtrayIcon.create(hndl: HWND);
+var
+  FGUID: TGUID;
 begin
-  ZeroMemory(@data, NOTIFYIconDataW_V2_SIZE);
+  ZeroMemory(@data, NOTIFYIconDataW_V4_SIZE);
+  if TrayIconDataVersion = 4 then
+      CreateGUID(FGUID);
+
  with data do
   begin
-   uCallbackMessage := WM_TRAY;
-//  cbSize := sizeof(data);
-//  cbSize := sizeof; // For Delphi XE
-   cbSize := NOTIFYIconDataW_V2_SIZE;
+    uCallbackMessage := WM_TRAY;
+    if TrayIconDataVersion = 4 then
+      cbSize := NOTIFYIconDataW_V4_SIZE
+     else
+      cbSize := NOTIFYIconDataW_V2_SIZE;
+
    Wnd := hndl;
    uID := cTRAY_uID;
    hIcon := 0;
+    if TrayIconDataVersion = 4 then
+      uFlags := flags_v4
+     else
+      uFlags := flags_v2;
    uFlags := NIF_MESSAGE + NIF_ICON + NIF_TIP;
+   guidItem := FGUID;
   end;
 // tbcmp := TRnQTaskbarComponent.Create(Application);
 
@@ -335,7 +374,7 @@ begin
    tbcmp.TaskbarList3.SetOverlayIcon(tbcmp.TaskBarEntryHandle, 0, nil);
  tbcmp.SendUpdateMessage;}
 
- if shown and not hided then
+ if shown and not hidden then
   if not Shell_NotifyIcon(NIM_MODIFY, @data) then
     Shell_NotifyIcon(NIM_ADD, @data);
 
@@ -354,6 +393,8 @@ begin
   ico.Assign(icon);
 //if data.hIcon <> 0 then
   data.hIcon:=ico.Handle;
+  if TrayIconDataVersion = 4 then
+    data.hBalloonIcon := Ico.Handle;
   update;
 end; { setIcon }
 
@@ -366,11 +407,14 @@ begin
 //  if ico <> nil then
    begin
      data.hIcon:=ico.Handle;
+     if TrayIconDataVersion = 4 then
+       data.hBalloonIcon := Ico.Handle;
    end
   else
    begin
      ico.Handle := 0; // Application.Icon.Handle;
      data.hIcon := 0;
+     data.hBalloonIcon := 0;
    end;
   update;
 end;
@@ -402,13 +446,13 @@ end; // minimizeToTray
 procedure TtrayIcon.show;
 begin
   shown := true;
-  fHided := False;
+  fHidden := False;
   Shell_NotifyIcon(NIM_ADD, @data)
 end; { show }
 
 procedure TtrayIcon.hide;
 begin
- fHided := True;
+ fHidden := True;
  Shell_NotifyIcon(NIM_DELETE, @data)
 end;
 

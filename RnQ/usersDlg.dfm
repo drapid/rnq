@@ -4,8 +4,8 @@ object usersFrm: TusersFrm
   ActiveControl = UsersBox
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Users'
-  ClientHeight = 258
-  ClientWidth = 321
+  ClientHeight = 257
+  ClientWidth = 306
   Color = clBtnFace
   Constraints.MaxHeight = 500
   Constraints.MaxWidth = 450
@@ -24,14 +24,19 @@ object usersFrm: TusersFrm
   PixelsPerInch = 96
   TextHeight = 13
   object P1: TPanel
-    Left = 191
+    Left = 176
     Top = 0
     Width = 130
-    Height = 258
+    Height = 257
     Align = alRight
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 1
+    ExplicitLeft = 191
+    ExplicitHeight = 258
+    DesignSize = (
+      130
+      257)
     object importBtn: TRnQSpeedButton
       Left = 6
       Top = 163
@@ -62,7 +67,8 @@ object usersFrm: TusersFrm
       Left = 6
       Top = 127
       Width = 115
-      Height = 100
+      Height = 90
+      Anchors = [akLeft, akTop, akRight]
       OnClick = L1Click
       OnMouseEnter = L1MouseEnter
       OnMouseLeave = L1MouseLeave
@@ -124,8 +130,8 @@ object usersFrm: TusersFrm
   object UsersBox: TVirtualDrawTree
     Left = 0
     Top = 0
-    Width = 191
-    Height = 258
+    Width = 176
+    Height = 257
     Align = alClient
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
@@ -151,6 +157,8 @@ object usersFrm: TusersFrm
     OnFreeNode = UsersBoxFreeNode
     OnKeyDown = FormKeyDown
     OnKeyPress = usersBoxKeyPress
+    ExplicitWidth = 191
+    ExplicitHeight = 258
     Columns = <>
   end
 end

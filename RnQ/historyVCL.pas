@@ -148,6 +148,8 @@ type
     procedure Paint(); override;
     procedure paintOn(cnv: Tcanvas; vR: TRect; const JustCalc: Boolean = false);
     procedure go2end(const calcOnly: Boolean = False; const precalc: Boolean = False);
+    procedure move2start();
+    procedure move2end(animate: Boolean = False);
     function  moveToTime(time: TDateTime; NeedOpen: Boolean): Boolean;
     function  getSelText(): string;
     function  copySel2Clpb(): Boolean;
@@ -2588,6 +2590,20 @@ begin
 //  appendFile(myPath+'Paint.txt', s);
 end; // go2end
 
+procedure ThistoryBox.move2start();
+begin
+  histScrollEvent(-rsb_position);
+end;
+
+procedure ThistoryBox.move2end(animate: Boolean = False);
+begin
+//  chatFrm.autoscrollBtn.down := v;
+//  autoscroll := True;
+  autoScrollVal := True;
+  setAutoScrollForce(True);
+end;
+
+
 function ThistoryBox.moveToTime(time: TDateTime; NeedOpen: Boolean): Boolean;
 var
   h: Thistory;
@@ -3690,6 +3706,24 @@ begin
 //  Msg.Result := 0;
 end;
 
+procedure THistoryBox.DrawEmoji(Sender: TObject);
+ var
+   LCanvas: TDirect2DCanvas;
+ begin
+   LCanvas := TDirect2DCanvas.Create(Canvas, ClientRect);
+   LCanvas.BeginDraw;
+ 
+   try
+     { Drawing goes here }
+     LCanvas.Brush.Color := clRed;
+     LCanvas.Pen.Color := clBlue;
+     LCanvas.Rectangle(100, 100, 200, 200);
+ 
+   finally
+     LCanvas.EndDraw;
+     LCanvas.Free;
+   end;
+ end;
 
 procedure ThistoryBox.PPM_copylink2clpbdClick(Sender: TObject);
 begin

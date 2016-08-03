@@ -13,7 +13,6 @@ object prefFrm: TprefFrm
   KeyPreview = True
   OldCreateOrder = True
   Position = poScreenCenter
-  Scaled = False
   ShowHint = True
   OnClose = FormClose
   OnCreate = FormCreate

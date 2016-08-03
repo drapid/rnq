@@ -27,7 +27,11 @@ const
   themesPath= 'themes\';
   pluginsPath= 'plugins\';
   accountsPath= 'Accounts\';
+ {$IFDEF CPUX64}
+  modulesPath= 'modules.x64\';
+ {$ELSE}
   modulesPath= 'modules\';
+ {$ENDIF CPUX64}
 
   maxPICAVTW = 200;
   maxPICAVTH = 200;

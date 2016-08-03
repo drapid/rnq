@@ -433,8 +433,11 @@ var
 //var
   pg: PPrefPage;
   protoPages: TPrefPagesArr;
+  FRM_H_Scaled, FRM_W_Scaled : Integer;
 //  FrameClass: TClass;
 begin
+  FRM_H_Scaled := MulDiv(FRM_HEIGHT, self.Monitor.PixelsPerInch, PixelsPerInch);
+  FRM_W_Scaled := MulDiv(FRM_WIDTH, self.Monitor.PixelsPerInch, PixelsPerInch);
   if Length(pages) = 0 then
     begin
 {      SetLength(arrPages, Length(prefPages));
@@ -465,8 +468,8 @@ begin
          SetLength(protoPages, 0);
        end;
 
-      clientWidth :=  GAP_SIZE + PrefList.Width + GAP_SIZE + FRM_WIDTH + GAP_SIZE;
-      clientHeight :=  GAP_SIZE + FRM_HEIGHT + GAP_SIZE + Bevel.Height + GAP_SIZE + okBtn.Height + GAP_SIZE;
+      clientWidth :=  GAP_SIZE + PrefList.Width + GAP_SIZE + FRM_W_Scaled + GAP_SIZE;
+      clientHeight :=  GAP_SIZE + FRM_H_Scaled + GAP_SIZE + Bevel.Height + GAP_SIZE + okBtn.Height + GAP_SIZE;
       PrefList.Visible := true;
       resetBtn.Visible := true;
 
@@ -506,8 +509,8 @@ begin
         begin
          arrPages[i] := pages[i].Clone;
         end;
-      clientWidth :=  GAP_SIZE + FRM_WIDTH + GAP_SIZE;
-      clientHeight :=  GAP_SIZE + FRM_HEIGHT + GAP_SIZE + Bevel.Height + GAP_SIZE + okBtn.Height + GAP_SIZE;
+      clientWidth :=  GAP_SIZE + FRM_W_Scaled + GAP_SIZE;
+      clientHeight :=  GAP_SIZE + FRM_H_Scaled + GAP_SIZE + Bevel.Height + GAP_SIZE + okBtn.Height + GAP_SIZE;
       PrefList.Visible := false;
       resetBtn.Visible := false;
 

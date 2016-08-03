@@ -35,10 +35,6 @@ object eventsFr: TeventsFr
     TabOrder = 0
     object MainTS: TTabSheet
       Caption = 'Common'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         450
         407)
@@ -319,10 +315,6 @@ object eventsFr: TeventsFr
     object DisEvTS: TTabSheet
       Caption = 'Extra disabling'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         450
         407)
@@ -416,10 +408,6 @@ object eventsFr: TeventsFr
     object LogTS: TTabSheet
       Caption = 'Log'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         450
         407)
@@ -493,10 +481,6 @@ object eventsFr: TeventsFr
     object BDTS: TTabSheet
       Caption = 'Birthday'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LDays1: TLabel
         Left = 349
         Top = 24

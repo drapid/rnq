@@ -262,7 +262,8 @@ begin
   newaccountFrm.showModal;
   ForceForegroundWindow(handle);
 {$ELSE}
-  openURL('http://icq.com/register/');
+//  openURL('http://icq.com/register/');
+  openURL('http://www.icq.com/join/');
 {$ENDIF USE_REGUIN}
 end;
 
@@ -431,7 +432,8 @@ else
     begin
     continue:=messageDlg(getTranslation('The user you are trying to delete is the one in use right now.\nIt will be closed to be deleted. Continue?',[UINtoDelete]), mtConfirmation, [mbYes,mbNo], 0) = mrYes;
     deletedMe:=continue;
-    if continue then quitUser;
+    if continue then
+      quitUser;
     end
   else
     continue := messageDlg(getTranslation('Are you sure you want to delete %s ?',[UINtoDelete]), mtConfirmation, [mbYes,mbNo], 0) = mrYes;
@@ -457,7 +459,8 @@ end;
 procedure TusersFrm.okBtnClick(Sender: TObject);
 begin
 //if usersBox.itemIndex < 0 then exit;
-  if usersBox.FocusedNode = NIL then exit;
+  if usersBox.FocusedNode = NIL then
+    exit;
   if not CheckPass then
    begin
     ModalResult := mrNone;
@@ -489,6 +492,7 @@ var
   oldF : HFONT;
   ico : HICON;
   sz : TSize;
+  SizeMScaled: Integer;
 begin
   cnv := (Sender as TPaintBox).Canvas;
   R := (Sender as TPaintBox).ClientRect;
@@ -507,12 +511,14 @@ begin
       if MouseOnLabel then
         begin
          cnv.font.color:= clBlue;
-         with cnv.font do Style:=Style+[fsUnderline];
+         with cnv.font do
+           Style:=Style+[fsUnderline];
         end
        else
         begin
          cnv.font.color:= clInfoText;
-         with cnv.font do Style:=Style-[fsUnderline];
+         with cnv.font do
+           Style:=Style-[fsUnderline];
         end;
       if PaintOnGlass then
         begin
@@ -574,12 +580,14 @@ begin
 //      br := 0;
 //      DeleteObject(br);
 //      s := intToStr(round(progLogon*100))+'%';
+     SizeMScaled := MulDiv(sizeM, self.Monitor.PixelsPerInch, PixelsPerInch);
 
-     ico := CopyImage(Application.Icon.Handle, IMAGE_ICON, sizeM, sizeM, LR_COPYFROMRESOURCE);
+     ico := CopyImage(Application.Icon.Handle, IMAGE_ICON, SizeMScaled, SizeMScaled, LR_COPYFROMRESOURCE);
 //     DrawIcon(AboutPBox.Canvas.Handle, 0, 0, ico);
 //     DrawIconEx(AboutPBox.Canvas.Handle, 0, 0, ico, sizeM, sizeM, 0, 0, DI_NORMAL);
 
-     DrawIconEx(MemDC, (r.Left + r.Right-sizeM)shr 1, r.Bottom - sizeM -5, ico, sizeM, sizeM, 0, 0, DI_NORMAL);
+     DrawIconEx(MemDC, (r.Left + r.Right- SizeMScaled) shr 1, r.Bottom - SizeMScaled - 5, ico,
+                SizeMScaled, SizeMScaled, 0, 0, DI_NORMAL);
 //     DeleteObject(ico);
      DestroyIcon(ico);
 
@@ -624,6 +632,7 @@ procedure TusersFrm.newuser(cls: TRnQProtoClass; const uin: TUID);
 var
 //  s:string;
 //  i, k:integer;
+  tBasePath: String;
   tUserPath : String;
   b : Boolean;
   u : PRnQUser;
@@ -633,9 +642,9 @@ var
 begin
 //  s:= uin;
     if cmdLinePar.userPath > '' then
-      tUserPath := cmdLinePar.userPath
+      tBasePath := cmdLinePar.userPath
      else
-      tUserPath := myPath + accountsPath;
+      tBasePath := myPath + accountsPath;
 //   prCl := NIL;
    prCl := cls;
 //   if cls = NIL then
@@ -673,17 +682,19 @@ begin
          exit;
        end;
     if isOnlyDigits(onlyUID) then
-      tUserPath := tUserPath +  onlyUID + PathDelim
+      tUserPath := tBasePath +  onlyUID + PathDelim
      else
 //      if prCl = TicqSession then
       if prCl._getProtoID = ICQProtoID then
-        tUserPath := tUserPath +  'AIM_'+ onlyUID + PathDelim
+        tUserPath := tBasePath +  'AIM_'+ onlyUID + PathDelim
        else
-        tUserPath := tUserPath +  prCl._GetProtoName +'_'+ onlyUID + PathDelim;
+        tUserPath := tBasePath +  prCl._GetProtoName +'_'+ onlyUID + PathDelim;
 //    if i <> 0 then
 //     tUserPath := tUserPath + AIMprefix;
 //    tUserPath := tUserPath + String(uin) + PathDelim;
     IOresult;
+    if not directoryExists(tBasePath) then
+      mkdir(tBasePath);
     mkdir(tUserPath);
  {$IFNDEF DB_ENABLED}
     mkdir(tUserPath+historyPath);
@@ -800,7 +811,8 @@ begin
    with TRnQUser(PRnQUser(usersBox.getnodedata(usersBox.FocusedNode))^) do
     begin
       Result := not encr;
-      if Result then Exit;
+      if Result then
+        Exit;
 //      pt := path+ uinStr+ PathDelim + dbFilename + '5';
       pt := path+ SubPath + PathDelim + dbFilename + '5';
 
@@ -1134,32 +1146,32 @@ var
   i: Integer;
 begin
   refreshAvailableUsers;
-  uin2Bstarted := '';
+  Result := '';
 //  AccPass := '';
   pass := '';
 //  needCheckPass := True;
   if cmdlinepar.startUser > '' then
     begin
-     uin2Bstarted := extractFileName(cmdlinepar.startuser);
+     Result := extractFileName(cmdlinepar.startuser);
     end
   else
    begin
      i := findInAvailableUsers(autostartUIN);
      if i >= 0 then
        begin
-         uin2Bstarted := autostartUIN;
+         Result := autostartUIN;
          masterUseSSI := cmdLinePar.ssi or availableusers[i].SSI;
        end
      else
       if length(availableusers)=1 then
         begin
-          uin2Bstarted := availableusers[0].uin;
+          Result := availableusers[0].uin;
           masterUseSSI := cmdLinePar.ssi or availableusers[0].SSI;
         end
    end;
-  if uin2Bstarted > '' then
+  if Result > '' then
     begin
-      i := findInAvailableUsers(uin2Bstarted);
+      i := findInAvailableUsers(Result);
       if i >=0 then
        begin
 //       if needCheckPass then
@@ -1167,11 +1179,11 @@ begin
         if encr and not CheckAccPas(uin, path+ SubPath + PathDelim + dbFilename + '5', pass)  then
          begin
 //           halt(0);
-           uin2Bstarted := '';
+           Result := '';
          end;
        end
       else
-       uin2Bstarted := '';
+       Result := '';
     end;
 end;
 

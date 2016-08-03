@@ -360,7 +360,7 @@ type
     procedure onHistoryRepaint(Sender: TObject);
 {$ENDIF CHAT_CEF}
 {$IFDEF CHAT_SCI}
-    procedure showHistMenu(Sender: TObject; const Data: String; clickedTime: TDateTime; linkClicked, imgClicked: Boolean);
+    procedure showHistMenu(Sender: TObject; const Data: String; clickedTime: TDateTime; msgPreview, linkClicked, imgClicked: Boolean);
 {$ENDIF CHAT_SCI}
   public
     chats        : Tchats;
@@ -2091,13 +2091,12 @@ if (shift = [ssAlt]) or (shift = [ssAlt,ssCtrl]) then
         end;
     VK_HOME:
       if ch.chatType = CT_IM then
-        ch.historyBox.histScrollEvent(-ch.historyBox.rsb_position);
+        ch.historyBox.move2start();
     VK_END:
       if ch.chatType = CT_IM then
       begin
-//       ch.historyBox.setautoscrollForce(TRUE);
-//       autoscrollBtn.down := True;
-        ch.setAutoscroll(True);
+//        ch.setAutoscroll(True);
+          ch.historyBox.move2end(true);
       end;
     end
 else
@@ -2402,7 +2401,7 @@ begin
   fn := openSavedlg(self, '', false, 'html');
   if fn = '' then
     exit;
-  savefile2(fn, thisChat.historyBox.getSelHtml2(FALSE));
+  savefile2(fn, thisChat.historyBox.getSelHtml(FALSE));
 end; // html
 
 procedure TchatFrm.infoBtnClick(Sender: TObject);
@@ -3201,7 +3200,7 @@ begin
       Result := CompareDateTime(ev.when, time) >= 0;
 
     if Result then
-      ch.historyBox.go2end(true)
+      ch.historyBox.move2end(true)
      else
       ch.historyBox.moveToTime(time);
 
@@ -3899,7 +3898,7 @@ end;
 {$ELSE ~CHAT_CEF}
 
 {$IFDEF CHAT_SCI}
-procedure TchatFrm.showHistMenu(Sender: TObject; const Data: String; clickedTime: TDateTime; linkClicked, imgClicked: Boolean);
+procedure TchatFrm.showHistMenu(Sender: TObject; const Data: String; clickedTime: TDateTime; msgPreview, linkClicked, imgClicked: Boolean);
 var
   hb: THistoryBox;
 begin

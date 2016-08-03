@@ -42,6 +42,7 @@ const
   LOAD_OK     : UINT       = 0;
   LOAD_DISCARD: UINT       = 1;
   LOAD_DELAYED: UINT       = 2;
+  LOAD_MYSELF : UINT       = 3;
 
 type
 
@@ -75,7 +76,7 @@ type
   LPCBYTE_RECEIVER = procedure(bytes: PByte; num_bytes: UINT; param: Pointer); stdcall;
   PLPCBYTE_RECEIVER = ^LPCBYTE_RECEIVER;
 
-  SCITER_CALLBACK_NOTIFICATION = packed record
+  SCITER_CALLBACK_NOTIFICATION = record
     code: UINT;
     hwnd: HWINDOW;
   end;
@@ -100,6 +101,14 @@ type
     SciterResourceTypeDummy = MaxInt
   );
 
+  SciterGFXLayer =
+  (
+    GFX_LAYER_GDI      = 1,
+    GFX_LAYER_WARP     = 2,
+    GFX_LAYER_D2D      = 3,
+    GFX_LAYER_AUTO     = 65535
+  );
+
   SCITER_RT_OPTIONS { NB: UINT_PTR } = (
    SCITER_SMOOTH_SCROLL = 1,      // value:TRUE - enable, value:FALSE - disable, enabled by default
    SCITER_CONNECTION_TIMEOUT = 2, // value: milliseconds, connection timeout of http client
@@ -116,10 +125,11 @@ type
    SCITER_SET_UX_THEMING = 11,    // hWnd = NULL, value - BOOL, TRUE - the engine will use "unisex" theme that is common for all platforms.
                                   // That UX theme is not using OS primitives for rendering input elements. Use it if you want exactly
                                   // the same (modulo fonts) look-n-feel on all platforms.
+   SCITER_ALPHA_WINDOW  = 12,     // hWnd, value - TRUE/FALSE - window uses per pixel alpha (e.g. WS_EX_LAYERED/UpdateLayeredWindow() window)
    SCITER_RT_OPTIONS_DUMMY = MAXINT
   );
 
-  SCN_LOAD_DATA = packed record
+  SCN_LOAD_DATA = record
              code: UINT;
              hwnd: HWINDOW;
               uri: LPCWSTR;
@@ -133,7 +143,7 @@ type
   LPSCN_LOAD_DATA = ^SCN_LOAD_DATA;
 
 
-  SCN_DATA_LOADED = packed record
+  SCN_DATA_LOADED = record
             code: UINT;
             hwnd: HWINDOW;
              uri: LPCWSTR;
@@ -145,7 +155,7 @@ type
   LPSCN_DATA_LOADED = ^SCN_DATA_LOADED;
 
 
-  SCN_ATTACH_BEHAVIOR = packed record
+  SCN_ATTACH_BEHAVIOR = record
             code: UINT;
             hwnd: HWINDOW;
          element: HELEMENT;
@@ -156,14 +166,14 @@ type
   LPSCN_ATTACH_BEHAVIOR = ^SCN_ATTACH_BEHAVIOR;
 
 
-  SCN_ENGINE_DESTROYED = packed record
+  SCN_ENGINE_DESTROYED = record
     code: UINT;
     hwnd: HWINDOW
   end;
   LPSCN_ENGINE_DESTROYED = ^SCN_ENGINE_DESTROYED;
 
 
-  SCN_POSTED_NOTIFICATION = packed record
+  SCN_POSTED_NOTIFICATION = record
        code: UINT;
        hwnd: HWINDOW;
      wparam: UINT_PTR;
@@ -212,6 +222,16 @@ type
     T_DUMMY = MAXINT
   );
 
+  TSciterValueUnitTypeObject =
+  (
+    UT_OBJECT_ARRAY,
+    UT_OBJECT_OBJECT,
+    UT_OBJECT_CLASS,
+    UT_OBJECT_NATIVE,
+    UT_OBJECT_FUNCTION,
+    UT_OBJECT_ERROR,
+    UT_DUMMY = MAXINT
+  );
 
   EVENT_GROUPS =
   (
@@ -454,7 +474,7 @@ type
     EDIT_CHANGED_REASON_DUMMY = MAXINT
   );
 
-  BEHAVIOR_EVENT_PARAMS = packed record
+  BEHAVIOR_EVENT_PARAMS = record
          cmd: BEHAVIOR_EVENTS;
     heTarget: HELEMENT;
           he: HELEMENT;
@@ -532,14 +552,14 @@ type
   SciterWindowDelegate = function(hwnd: HWINDOW; msg: UINT; w: WParam; l: LPARAM; pParam: LPVOID; var pResult: LRESULT): BOOL; stdcall;
   PSciterWindowDelegate = ^SciterWindowDelegate;
 
-  ISciterAPI = packed record
+  ISciterAPI = record
     Version: UINT;
     SciterClassName: function: LPCWSTR; stdcall;
     SciterVersion: function(major: BOOL): UINT; stdcall;
     SciterDataReady: function(hwnd: HWINDOW; uri: PWideChar; data: PByte; dataLength: UINT): BOOL; stdcall;
     SciterDataReadyAsync: function(hwnd: HWINDOW; uri: PWideChar; data: PByte; dataLength: UINT; requestId: LPVOID): BOOL; stdcall;
-    SciterProc: function(hwnd: HWINDOW; msg: Cardinal; wParam: Integer; lParam: Integer): LRESULT; stdcall;
-    SciterProcND: function(hwnd: HWINDOW; msg: Cardinal; wParam: Integer; lParam: Integer; var pbHANDLED: Integer): LRESULT; stdcall;
+    SciterProc: function(hwnd: HWINDOW; msg: UINT; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+    SciterProcND: function(hwnd: HWINDOW; msg: UINT; wParam: WPARAM; lParam: LPARAM; var pbHANDLED: BOOL): LRESULT; stdcall;
     SciterLoadFile: function(hWndSciter: HWINDOW; filename:LPCWSTR): BOOL; stdcall;
     SciterLoadHtml: function(hWndSciter: HWINDOW; html: PByte; htmlSize: UINT; baseUrl: PWideChar): BOOL; stdcall;
     SciterSetCallback: procedure(hWndSciter: HWINDOW; cb: LPSciterHostCallback; cbParam: Pointer); stdcall;
@@ -557,7 +577,6 @@ type
     SciterSetOption: function(hwnd: HWINDOW; option: SCITER_RT_OPTIONS; value: UINT_PTR): BOOL; stdcall;
     SciterGetPPI: procedure(hWndSciter: HWINDOW; var px: UINT; var py: UINT); stdcall;
     SciterGetViewExpando: function( hwnd: HWINDOW; pval: PSciterValue ): BOOL; stdcall;
-    //SciterEnumUrlData: Pointer;  // TODO:
     SciterRenderD2D: TProcPointer;
     SciterD2DFactory: TProcPointer;
     SciterDWFactory: TProcPointer;
@@ -565,10 +584,6 @@ type
     SciterSetHomeURL: function(hWndSciter: HWINDOW; baseUrl: PWideChar): BOOL; stdcall;
     SciterCreateWindow: function( creationFlags: UINT; var frame: TRect; delegate: PSciterWindowDelegate; delegateParam: LPVOID; parent: HWINDOW): HWINDOW; stdcall;
     SciterSetupDebugOutput: procedure(hwndOrNull: HWINDOW; param: Pointer; pfOutput: PDEBUG_OUTPUT_PROC); stdcall;
-    //SciterDebugSetupClient: TProcPointer;
-    //SciterDebugAddBreakpoint: TProcPointer;
-    //SciterDebugRemoveBreakpoint: TProcPointer;
-    //SciterDebugEnumBreakpoints: TProcPointer;
 
 //|
 //| DOM Element API
@@ -678,7 +693,7 @@ type
     ValueClear: function(Value: PSciterValue): UINT; stdcall;
     ValueCompare: function(Value1: PSciterValue; Value2: PSciterValue): UINT; stdcall;
     ValueCopy: function(dst: PSciterValue; src: PSciterValue): UINT; stdcall;
-    ValueIsolate: TProcPointer;
+    ValueIsolate: function(Value: PSciterValue): UINT; stdcall;
     ValueType: function(Value: PSciterValue; var pType: TSciterValueType; var pUnits: UINT): UINT; stdcall;
     ValueStringData: function(Value: PSciterValue; var Chars: PWideChar; var NumChars: UINT): UINT; stdcall;
     ValueStringDataSet: function(Value: PSciterValue; Chars: PWideChar; NumChars: UINT; Units: UINT): UINT; stdcall;
@@ -720,6 +735,13 @@ type
 
     SciterGetCallbackParam: TProcPointer;
     SciterPostCallback: TProcPointer;
+
+//    GetSciterGraphicsAPI: TProcPointer;
+//    GetSciterRequestAPI: TProcPointer;
+
+//    SciterCreateOnDirectXWindow: function(hwnd: HWINDOW; var pSwapChain: IDXGISwapChain): BOOL; stdcall;
+//    SciterRenderOnDirectXWindow: function(hwnd: HWINDOW; elementToRenderOrNull: HELEMENT; frontLayer: BOOL): BOOL; stdcall;
+//    SciterRenderOnDirectXTexture: function(hwnd: HWINDOW; elementToRenderOrNull: HELEMENT; var surface: IDXGISurface): BOOL; stdcall;
   end;
 
   PSciterApi = ^ISciterAPI;
@@ -737,7 +759,7 @@ type
   );
 
 
-  INITIALIZATION_PARAMS = packed record
+  INITIALIZATION_PARAMS = record
     cmd: INITIALIZATION_EVENTS;
   end;
   PINITIALIZATION_PARAMS = ^INITIALIZATION_PARAMS;
@@ -806,7 +828,7 @@ type
   );
 
 
-  MOUSE_PARAMS = packed record
+  MOUSE_PARAMS = record
              cmd: MOUSE_EVENTS;
           target: HELEMENT;
              pos: TPoint;
@@ -830,7 +852,7 @@ type
     KEY_EVENTS_DUMMY = MAXINT // doesn't exist in sciter api, used for sizeof(uint) alignment
   );
 
-  KEY_PARAMS = packed record
+  KEY_PARAMS = record
           cmd: KEY_EVENTS;
        target: HELEMENT;
      key_code: UINT;
@@ -847,7 +869,7 @@ type
   );
 
 
-  FOCUS_PARAMS = packed record
+  FOCUS_PARAMS = record
                cmd: FOCUS_EVENTS;
             target: HELEMENT;
     by_mouse_click: BOOL;
@@ -856,7 +878,7 @@ type
   PFOCUS_PARAMS = ^FOCUS_PARAMS;
 
 
-  DATA_ARRIVED_PARAMS = packed record
+  DATA_ARRIVED_PARAMS = record
     initiator: HELEMENT;
          data: PByte;
      dataSize: UINT;
@@ -874,7 +896,7 @@ type
       DRAW_EVENTS_DUMMY = MAXINT
   );
 
-  DRAW_PARAMS = packed record
+  DRAW_PARAMS = record
     cmd: DRAW_EVENTS;
     hdc: HDC;
     area: TRect;
@@ -883,7 +905,7 @@ type
   PDRAW_PARAMS=^DRAW_PARAMS;
 
 
-  TIMER_PARAMS = packed record
+  TIMER_PARAMS = record
     timerId: UINT_PTR;
   end;
   PTIMER_PARAMS = ^TIMER_PARAMS;
@@ -921,7 +943,7 @@ type
     SCROLL_EVENTS_DUMMY = MAXINT
   );
 
-  SCROLL_PARAMS = packed record
+  SCROLL_PARAMS = record
     cmd: SCROLL_EVENTS;
     target: HELEMENT;
     pos: integer;
@@ -952,8 +974,6 @@ type
   ESciterNotImplementedException = class(ESciterException)
   end;
 
-function _SciterAPI: PSciterApi; stdcall;
-
 { Conversion functions. Mnemonics are: T - tiscript_value, S - TSciterValue, V - VARIANT }
 function  S2V(Value: PSciterValue; var OleValue: OleVariant): UINT;
 function  V2S(const Value: OleVariant; SciterValue: PSciterValue): UINT;
@@ -967,10 +987,7 @@ function IsNameExistsCurr(const vm: HVM; const Name: WideString): boolean;
 function IsNativeClassExists(const vm: HVM; const Name: WideString): boolean;
 function GetNativeObject(const vm: HVM; const Name: WideString): tiscript_value;
 function GetNativeClass(const vm: HVM; const ClassName: WideString): tiscript_class;
-function RegisterNativeFunction(const vm: HVM; const Name: WideString; Handler: ptiscript_method;
-                                ThrowIfExists: Boolean = False; Tag: Pointer = NIL): Boolean;
-function RegisterNativeFunctionCurr(const vm: HVM; Root: HELEMENT; const Name: WideString; Handler: ptiscript_method;
-              ThrowIfExists: Boolean = False; Tag: Pointer = NIL): Boolean;
+function RegisterNativeFunction(const vm: HVM; ns: tiscript_value; const Name: WideString; Handler: Pointer; ThrowIfExists: Boolean = False; tag: Pointer = nil): Boolean;
 function RegisterNativeClass(const vm: HVM; ClassDef: ptiscript_class_def; ThrowIfExists: Boolean; ReplaceClassDef: Boolean): tiscript_class;
 function CreateObjectInstance(const vm: HVM; Obj: Pointer; OfClass: tiscript_class): tiscript_object; overload;
 function CreateObjectInstance(const vm: HVM; Obj: Pointer; OfClass: WideString): tiscript_object; overload;
@@ -1105,8 +1122,7 @@ end;
 { Returns true if a function registration was successfull,
   false if a function with same name was already registered,
   throws an exception otherwise }
-function RegisterNativeFunction(const vm: HVM; const Name: WideString; Handler: ptiscript_method;
-              ThrowIfExists: Boolean = False; Tag: Pointer = NIL): Boolean;
+function RegisterNativeFunction(const vm: HVM; ns: tiscript_value; const Name: WideString; Handler: Pointer; ThrowIfExists: Boolean = False; tag: Pointer = nil): Boolean;
 var
   method_def: ptiscript_method_def;
   smethod_name: AnsiString;
@@ -1117,7 +1133,10 @@ begin
   if IsNameExists(vm, Name) and ThrowIfExists then
     raise ESciterException.CreateFmt('Failed to register native function %s. Object with same name already exists.', [Name]);
     
-  zns := NI.get_global_ns(vm);
+  if ns = 0 then
+    zns := NI.get_global_ns(vm)
+    else
+    zns := ns;
 
   smethod_name := AnsiString(Name);
   func_name := NI.string_value(vm, PWideChar(Name), Length(Name));
@@ -1130,53 +1149,7 @@ begin
     method_def.name := StrNew(PAnsiChar(smethod_name));
     method_def.handler := Handler;
     method_def.tag := Tag;
-    func_def := NI.native_function_value(vm, method_def);
-    if not NI.is_native_function(func_def) then
-    begin
-      raise Exception.CreateFmt('Failed to register native function "%s".', [Name]);
-    end;
-    NI.set_prop(vm, zns, func_name, func_def);
-    Result := True;
-  end
-    else
-  if NI.is_native_function(func_def) then
-  begin
-    Result := False;
-  end
-    else
-  begin
-    raise ESciterException.CreateFmt('Cannot register native function "%s" (unexpected error). Seems that object with same name already exists.', [Name]);
-  end;
-end;
-
-function RegisterNativeFunctionCurr(const vm: HVM; Root: HELEMENT; const Name: WideString; Handler: ptiscript_method;
-              ThrowIfExists: Boolean = False; Tag: Pointer = NIL): Boolean;
-var
-  method_def: ptiscript_method_def;
-  smethod_name: AnsiString;
-  func_def: tiscript_value;
-  func_name: tiscript_value;
-  zns: tiscript_value;
-begin
-  if IsNameExistsCurr(vm, Name) and ThrowIfExists then
-    raise ESciterException.CreateFmt('Failed to register native function %s. Object with same name already exists.', [Name]);
-
-  if (Root <> NIL) then
-    API.SciterGetElementNamespace(Root, zns)
-   else
-    zns := NI.get_current_ns(vm);
-
-  smethod_name := AnsiString(Name);
-  func_name := NI.string_value(vm, PWideChar(Name), Length(Name));
-  func_def := NI.get_prop(vm, zns, func_name);
-
-  if NI.is_undefined(func_def) then
-  begin
-    New(method_def);
-    method_def.dispatch := nil;
-    method_def.name := StrNew(PAnsiChar(smethod_name));
-    method_def.handler := Handler;
-    method_def.tag := Tag;
+    method_def.payload := 0;
     func_def := NI.native_function_value(vm, method_def);
     if not NI.is_native_function(func_def) then
     begin
@@ -1311,9 +1284,6 @@ begin
   Result := FAPI;
 end;
 
-
-function _SciterAPI: PSciterApi; external 'sciter32.dll' name 'SciterAPI'; stdcall;
-
 { SciterValue to Variant conversion }
 function S2V(Value: PSciterValue; var OleValue: OleVariant): UINT;
 var
@@ -1333,7 +1303,6 @@ var
   arrSize: UINT;
   sArrItem: TSciterValue;
   oArrItem: OleVariant;
-  oleArrayResult: Variant;
   j: Integer;
 begin
   API.ValueInit(@sArrItem);
@@ -1355,7 +1324,7 @@ begin
       end;
     T_BOOL:
       begin
-        Result := FAPI.ValueIntData(Value, iResult);
+        Result := API.ValueIntData(Value, iResult);
         if Result = HV_OK then
         begin
           OleValue := iResult <> 0;
@@ -1372,13 +1341,13 @@ begin
     T_CURRENCY:
       begin
         // TODO: ?
-        Result := FAPI.ValueInt64Data(Value, i64Result);
+        Result := API.ValueInt64Data(Value, i64Result);
         cResult := PCurrency(@i64Result)^;
         OleValue := cResult;
       end;
     T_DATE:
       begin
-        Result := FAPI.ValueInt64Data(Value, i64Result);
+        Result := API.ValueInt64Data(Value, i64Result);
         ft := TFileTime(i64Result);
         FileTimeToSystemTime(ft, st);
         SystemTimeToVariantTime(st, dResult);
@@ -1410,7 +1379,7 @@ begin
       end;
     T_INT:
       begin
-        Result := FAPI.ValueIntData(Value, iResult);
+        Result := API.ValueIntData(Value, iResult);
         OleValue := iResult;
       end;
     T_LENGTH:
@@ -1450,6 +1419,16 @@ begin
         end
           else
         begin
+          // TODO: isolate all unit types
+          case TSciterValueUnitTypeObject(pUnits) of
+            UT_OBJECT_ARRAY, UT_OBJECT_OBJECT, UT_OBJECT_ERROR:
+              begin
+                Result := API.ValueIsolate(Value);
+                Result := S2V(Value, OleValue);
+                Exit;
+              end;
+          end;
+
           OleValue := GetNativeObjectJson(Value);
           Result := HV_OK;
         end;
@@ -1482,7 +1461,7 @@ var
   oArrItem: Variant;
   sArrItem: TSciterValue;
 begin
-  FAPI.ValueInit(SciterValue);
+  API.ValueInit(SciterValue);
   vt := VarType(Value);
 
   if (vt and varArray) = varArray then
@@ -1511,12 +1490,12 @@ begin
     varString:
       begin
         sWStr := Value;
-        Result:= FAPI.ValueStringDataSet(SciterValue, PWideChar(sWStr), Length(sWStr), 0);
+        Result:= API.ValueStringDataSet(SciterValue, PWideChar(sWStr), Length(sWStr), 0);
       end;
     varOleStr:
       begin
         sWStr := Value;
-        Result:= FAPI.ValueStringDataSet(SciterValue, PWideChar(sWStr), Length(sWStr), 0);
+        Result:= API.ValueStringDataSet(SciterValue, PWideChar(sWStr), Length(sWStr), 0);
       end;
     varBoolean:
       begin
@@ -1531,23 +1510,23 @@ begin
     varWord,
     varLongWord:
       begin
-        Result := FAPI.ValueIntDataSet(SciterValue, Integer(Value), T_INT, 0);
+        Result := API.ValueIntDataSet(SciterValue, Integer(Value), T_INT, 0);
       end;
     varInt64:
       begin
         i64 := Value;
-        Result := FAPI.ValueInt64DataSet(SciterValue, i64, T_INT, 0);
+        Result := API.ValueInt64DataSet(SciterValue, i64, T_INT, 0);
       end;
     varSingle,
     varDouble:
       begin
-        Result := FAPI.ValueFloatDataSet(SciterValue, Double(Value), T_FLOAT, 0);
+        Result := API.ValueFloatDataSet(SciterValue, Double(Value), T_FLOAT, 0);
       end;
     varCurrency:
       begin
         cCur := Value;
         i64 := PInt64(@cCur)^;
-        Result := FAPI.ValueInt64DataSet(SciterValue, i64, T_CURRENCY, 0);
+        Result := API.ValueInt64DataSet(SciterValue, i64, T_CURRENCY, 0);
       end;
     varDate:
       begin
@@ -1556,13 +1535,13 @@ begin
         VariantTimeToSystemTime(d, st);
         SystemTimeToFileTime(st, ft);
         i64 := Int64(ft);
-        Result := FAPI.ValueInt64DataSet(SciterValue, i64, T_DATE, 0);
+        Result := API.ValueInt64DataSet(SciterValue, i64, T_DATE, 0);
       end;
     varDispatch:
       begin
         pDisp := IDispatch(Value);
         //pDisp._AddRef;
-        Result := FAPI.ValueBinaryDataSet(SciterValue, PByte(pDisp), 1, T_OBJECT, 0);
+        Result := API.ValueBinaryDataSet(SciterValue, PByte(pDisp), 1, T_OBJECT, 0);
       end;
     else
       begin

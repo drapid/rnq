@@ -29,7 +29,7 @@ procedure SetContactsThemeUse(b : Boolean);
 
 procedure reloadCurrentTheme();
 
-procedure applySizes(OldDPI, NewDPI: Integer);
+procedure applySizes(const OldDPI, NewDPI: Integer);
 
 var
   statusPics : array[0..15] of array[boolean] of TRnQThemedElementDtls;
@@ -38,7 +38,7 @@ var
 implementation
 
 uses
-  Forms, virtualtrees, SysUtils, Math, StrUtils,
+  Windows, Forms, virtualtrees, SysUtils, Math, StrUtils,
   RQUtil, RnQMenu, RnQbuttons, RnQGlobal, RnQGraphics32, RnQPics,
   utilLib, globalLib, chatDlg,
  {$IFDEF CHAT_CEF} // Chromium
@@ -128,7 +128,7 @@ mainFrm.roaster.background.bitmap.ReleaseHandle;}
     statusBtn.Top := 0;
     visibilityBtn.Top := 0;
     menuBtn.ImageName := PIC_CLIENT_LOGO;
-    applySizes(Application.MainForm.PixelsPerInch, Application.MainForm.PixelsPerInch);
+    applySizes(Application.MainForm.PixelsPerInch, Application.MainForm.Monitor.PixelsPerInch);
     //mainfrm.menuBtn.glyph.FreeImage;
 //    ApplyThemeComponent(menuBtn);
 //    ApplyThemeComponent(statusBtn);
@@ -146,7 +146,9 @@ statusIcon.ReDraw;
 repaintAllWindows;
 end; // applyTheme
 
-procedure applySizes(OldDPI, NewDPI: Integer);
+procedure applySizes(const OldDPI, NewDPI: Integer);
+var
+  szScaled: Integer;
 begin
   with RnQmain, roster.treeoptions do
   begin
@@ -157,14 +159,15 @@ begin
         menuBtn.width := cx+6;
       end;
 //     with theme.getPicSize(PIC_STATUS_ONLINE, 16) do
+     szScaled := MulDiv(icon_size, NewDPI, oldDPI);
      with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size, NewDPI) do
       begin
-        statusBtn.height := max(cy+5, icon_size);
+        statusBtn.height := max(cy+5, szScaled);
         statusBtn.width  := cx+6;
     //  end;
     // with theme.getPicSize(PIC_STATUS_ONLINE) do
     //  begin
-        visibilityBtn.height := max(cy+5, icon_size);
+        visibilityBtn.height := max(cy+5, szScaled);
         visibilityBtn.width  := cx+6;
         roster.DefaultNodeHeight := cy+2;
     //    for i in mainfrm.roster.
@@ -197,7 +200,8 @@ end;
 
 
 procedure ApplyThemeComponent(c : Tcontrol);
-//var
+var
+  btnDPI, szScaled: Integer;
 // pe : TRnQThemedElementDtls;
 begin
 {if c is TSpeedButton then
@@ -217,12 +221,15 @@ if c is TRnQSpeedButton then
       begin
        if Caption = '' then
         begin
-         with theme.getPicSize(RQteButton, ImageName, icon_size) do
+         btnDPI := TRnQSpeedButton(c).parentDPI;
+         szScaled := MulDiv(icon_size, btnDPI, cDefaultDPI);
+
+         with theme.getPicSize(RQteButton, ImageName, szScaled, btnDPI) do
 //         pe := ImageElm;
 //         with theme.getPicSize(pe, 16) do
           begin
-           TRnQSpeedButton(c).Height := max(cy, icon_size)+5;
-           TRnQSpeedButton(c).width  := max(cx, icon_size)+6;
+           TRnQSpeedButton(c).Height := max(cy, szScaled)+5;
+           TRnQSpeedButton(c).width  := max(cx, szScaled)+6;
           end;
         end;
       end;
