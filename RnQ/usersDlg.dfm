@@ -5,7 +5,7 @@ object usersFrm: TusersFrm
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Users'
   ClientHeight = 257
-  ClientWidth = 306
+  ClientWidth = 314
   Color = clBtnFace
   Constraints.MaxHeight = 500
   Constraints.MaxWidth = 450
@@ -24,7 +24,7 @@ object usersFrm: TusersFrm
   PixelsPerInch = 96
   TextHeight = 13
   object P1: TPanel
-    Left = 176
+    Left = 184
     Top = 0
     Width = 130
     Height = 257
@@ -32,8 +32,7 @@ object usersFrm: TusersFrm
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 1
-    ExplicitLeft = 191
-    ExplicitHeight = 258
+    ExplicitLeft = 176
     DesignSize = (
       130
       257)
@@ -130,7 +129,7 @@ object usersFrm: TusersFrm
   object UsersBox: TVirtualDrawTree
     Left = 0
     Top = 0
-    Width = 176
+    Width = 184
     Height = 257
     Align = alClient
     Header.AutoSizeIndex = 0
@@ -157,8 +156,7 @@ object usersFrm: TusersFrm
     OnFreeNode = UsersBoxFreeNode
     OnKeyDown = FormKeyDown
     OnKeyPress = usersBoxKeyPress
-    ExplicitWidth = 191
-    ExplicitHeight = 258
+    ExplicitWidth = 176
     Columns = <>
   end
 end

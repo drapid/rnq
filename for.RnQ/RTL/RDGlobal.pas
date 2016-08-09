@@ -138,7 +138,7 @@ const
   CrLf           = AnsiString(#13#10);
   CrLfS          = #13#10;
 //  CRLFA : AnsiString = AnsiString(#13#10);
-  CRLFCRLF  =AnsiString(CRLF+CRLF);
+  CRLFCRLF  = AnsiString(CRLF+CRLF);
 //  CRLFCRLF : AnsiString =AnsiString(CRLF+CRLF);
 //  CRLFCRLF : AnsiString = AnsiString(#13#10#13#10);
   NL=#10;

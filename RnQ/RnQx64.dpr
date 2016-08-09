@@ -110,6 +110,7 @@ uses
   viewSSI in 'ICQ\viewSSI.pas' {SSIForm},
   wpDlg in 'ICQ\wpDlg.pas' {wpFrm},
  {$ENDIF PROTOCOL_ICQ}
+  MenuEmoji in 'MenuEmoji.pas' {FEmoji},
   ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm};
 
 { $R RnQ.RES}

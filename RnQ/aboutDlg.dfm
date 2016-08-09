@@ -5,8 +5,8 @@ object aboutFrm: TaboutFrm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsToolWindow
   Caption = 'About'
-  ClientHeight = 231
-  ClientWidth = 299
+  ClientHeight = 222
+  ClientWidth = 300
   Color = clBtnFace
   ParentFont = True
   GlassFrame.Enabled = True
@@ -52,8 +52,8 @@ object aboutFrm: TaboutFrm
   object MThanks: TMemo
     AlignWithMargins = True
     Left = 10
-    Top = 31
-    Width = 286
+    Top = 25
+    Width = 287
     Height = 36
     Margins.Left = 10
     TabStop = False
@@ -87,15 +87,19 @@ object aboutFrm: TaboutFrm
     ScrollBars = ssVertical
     TabOrder = 0
     Visible = False
+    ExplicitTop = 31
+    ExplicitWidth = 286
   end
   object AbPnl: TPanel
     Left = 0
-    Top = 70
-    Width = 299
+    Top = 64
+    Width = 300
     Height = 120
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitTop = 70
+    ExplicitWidth = 299
     object forumLbl: TLabel
       Left = 12
       Top = 79
@@ -228,15 +232,15 @@ object aboutFrm: TaboutFrm
   end
   object BtnPnl: TPanel
     Left = 0
-    Top = 190
-    Width = 299
-    Height = 41
+    Top = 184
+    Width = 300
+    Height = 38
     Align = alBottom
     BevelEdges = [beTop]
     TabOrder = 2
     object CrdBtn: TRnQButton
       Left = 16
-      Top = 10
+      Top = 7
       Width = 100
       Height = 25
       Caption = 'Credits >'
@@ -244,8 +248,8 @@ object aboutFrm: TaboutFrm
       OnClick = CrdBtnClick
     end
     object OkBtn: TRnQButton
-      Left = 200
-      Top = 10
+      Left = 201
+      Top = 7
       Width = 83
       Height = 25
       Align = alCustom

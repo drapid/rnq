@@ -139,7 +139,7 @@ function  getNode(tn: Pvirtualnode): Tnode;
 procedure setNewGroupFor(c: TRnQContact; grp: integer);
 function  isUnderDiv(n: Tnode): Tdivisor;
 //procedure filter(s : string);
-  procedure RstrDrawNode(Sender: TBaseVirtualTree; const PaintInfo: TVTPaintInfo);
+  procedure RstrDrawNode(Sender: TBaseVirtualTree; const PaintInfo: TVTPaintInfo; const PPI: Integer);
   function  ICON_ORDER_PREF: RawByteString;
   procedure ICON_ORDER_PREF_parse(const str: RawByteString);
 
@@ -152,7 +152,7 @@ var
     contact :TRnQContact;
     groupId :integer;
     node    :Tnode;
-    end;
+   end;
   contactsPool : Tlist;
   expandedByTempFocus : Tnode;
   FilterTextBy : string;
@@ -1311,7 +1311,7 @@ begin
 end; // contactsUnder
 
 
-procedure RstrDrawNode(Sender: TBaseVirtualTree; const PaintInfo: TVTPaintInfo);
+procedure RstrDrawNode(Sender: TBaseVirtualTree; const PaintInfo: TVTPaintInfo; const PPI: Integer);
 var
   n:Tnode;
 //  function DrawContactIcon(DC : THandle; pIcon : Byte; x, y : Integer; Cnt : TContact; pIsRight : boolean = false) : TSize;
@@ -1319,12 +1319,12 @@ var
   function DrawContactIcon(DC: THandle; pIcon: TRnQCLIconsSet; p: TPoint;
                            Cnt: TRnQContact; pIsRight: boolean = false): TSize;
   var
-//    newX : Integer;
-    po : TRnQThemedElementDtls;
+//    newX Integer;
+    po: TRnQThemedElementDtls;
 //    s : String;
 //    rB:Trect;
     rB: TGPRect;
-    ev:Thevent;
+    ev: Thevent;
   begin
     Result.cx := 0; Result.cy := 0;
     po.ThemeToken := -1;
@@ -1334,17 +1334,17 @@ var
      begin
       po.picName := RnQCLIcons[pIcon].IconName;
       if pIsRight then
-        with theme.GetPicSize(po) do
+        with theme.GetPicSize(po, 0, PPI) do
           dec(p.X, cx);
      end;
     case pIcon of
       CNT_ICON_VIS:
 //         if imVisibleTo(cnt) then
          if (cnt.imVisibleTo) then
-           result := theme.drawPic(DC, p, po)
+           result := theme.drawPic(DC, p, po, PPI)
           else
            if showVisAndLevelling and cnt.fProto.isOnline then
-            result := theme.GetPicSize(po);
+            result := theme.GetPicSize(po, 0, PPI);
       CNT_ICON_STS:
         begin
           ev := eventQ.firstEventFor(cnt);
@@ -1357,7 +1357,7 @@ var
           {$ENDIF}
              if notinlist.exists(cnt) then
               begin
-                Result := statusDrawExt(0, 0, 0, byte(SC_UNK), FALSE, 0);
+                Result := statusDrawExt(0, 0, 0, byte(SC_UNK), FALSE, 0, PPI);
                 if pIsRight then
                   dec(p.X, Result.cx);
                 statusDrawExt(DC, p.X, p.Y, byte(SC_UNK), FALSE, 0)
@@ -1370,11 +1370,11 @@ var
                   if pIsRight then
                    begin
                     Result := statusDrawExt(0, 0, 0, byte(TICQcontact(cnt).status),
-                                 TICQcontact(cnt).invisible, TICQcontact(cnt).xStatus);
+                                 TICQcontact(cnt).invisible, TICQcontact(cnt).xStatus, PPI);
                     dec(p.X, Result.cx);
                    end;
                   Result := statusDrawExt(DC, p.X, p.Y, byte(TICQcontact(cnt).status),
-                                 TICQcontact(cnt).invisible, TICQcontact(cnt).xStatus);
+                                 TICQcontact(cnt).invisible, TICQcontact(cnt).xStatus, PPI);
                 end
       //         size:=theme.drawPic(cnv, x,y+1, rosterImgNameFor(c))
                else
@@ -1382,10 +1382,10 @@ var
                 begin
                   if pIsRight then
                    begin
-                    Result := theme.GetPicSize(RQteDefault, cnt.statusImg);
+                    Result := theme.GetPicSize(RQteDefault, cnt.statusImg, PPI);
                     dec(p.X, Result.cx);
                    end;
-                  Result := theme.drawPic(DC, p.X, p.Y, cnt.statusImg)
+                  Result := theme.drawPic(DC, p.X, p.Y, cnt.statusImg, True, PPI)
                 end;
           {$IFDEF CHECK_INVIS}
       //      else
@@ -1394,11 +1394,11 @@ var
             end
           else
            begin
-            Result := ev.PicSize;
+            Result := ev.PicSize(PPI);
             if pIsRight then
               dec(p.X, Result.cx);
             if blinking or cnt.fProto.getStatusDisable.blinking then
-              ev.Draw(DC, p.X, p.Y)
+              ev.Draw(DC, p.X, p.Y, PPI)
            end;
         end;
  {$IFDEF PROTOCOL_ICQ}
@@ -1409,9 +1409,9 @@ var
            begin
             po.picName := XStatusArray[TICQcontact(cnt).xStatus].PicName;
               if pIsRight then
-                with theme.GetPicSize(po) do
+                with theme.GetPicSize(po, 0, PPI) do
                   dec(p.X, cx);
-            Result:= theme.drawPic(DC, p, po);
+            Result:= theme.drawPic(DC, p, po, PPI);
            end;
          end;
  {$ENDIF PROTOCOL_ICQ}
@@ -1426,12 +1426,12 @@ var
    {$ENDIF UseNotSSI}
             not cnt.Authorized and not cnt.CntIsLocal
             and (TICQcontact(cnt).SSIID <> 0) then
-           result := theme.drawPic(DC, p, po);
+           result := theme.drawPic(DC, p, po, PPI);
         end
        else
  {$ENDIF PROTOCOL_ICQ}
         if not cnt.Authorized then
-           result := theme.drawPic(DC, p, po);
+           result := theme.drawPic(DC, p, po, PPI);
 
  {$IFDEF PROTOCOL_ICQ}
       CNT_ICON_LCL:
@@ -1441,7 +1441,7 @@ var
            (TicqSession(cnt.iProto.ProtoElem).UseSSI) and
    {$ENDIF UseNotSSI}
          (cnt.CntIsLocal) then
-         result := theme.drawPic(DC, p, po);
+         result := theme.drawPic(DC, p, po, PPI);
  {$ENDIF PROTOCOL_ICQ}
       CNT_ICON_VER:
          begin
@@ -1450,12 +1450,12 @@ var
           if po.picName >'' then
              begin
               if pIsRight then
-                with theme.GetPicSize(po) do
+                with theme.GetPicSize(po, 0, PPI) do
 //                  newX := x - cx
                   dec(p.X, cx);
 //               else
 //                 newX := x;
-              Result := theme.drawPic(DC, p, po);
+              Result := theme.drawPic(DC, p, po, PPI);
              end;
          end;
       CNT_ICON_BIRTH:
@@ -1469,12 +1469,12 @@ var
            if po.picName > '' then
              begin
               if pIsRight then
-                with theme.GetPicSize(po) do
+                with theme.GetPicSize(po, 0, PPI) do
 //                  newX := x - cx
 //               else
 //                 newX := x;
                   dec(p.X, cx);
-               Result := theme.drawPic(DC, p, po);
+               Result := theme.drawPic(DC, p, po, PPI);
              end;
          end;
       CNT_TEXT:
@@ -1489,12 +1489,12 @@ var
       }
          {$ENDIF}
           if cnt.typing.bIsTyping then
-            Result := theme.drawPic(DC, p.x, p.y, PIC_TYPING);
+            Result := theme.drawPic(DC, p.x, p.y, PIC_TYPING, True, PPI);
           if Account.outbox.stFor(cnt) then
             begin
-             with theme.GetPicSize(RQteDefault, PIC_OUTBOX) do
+             with theme.GetPicSize(RQteDefault, PIC_OUTBOX, PPI) do
                n.outboxRect := rect(p.x, p.y, p.x+cx, p.y+cy);
-             Result := theme.drawPic(DC, p.x, p.y, PIC_OUTBOX);
+             Result := theme.drawPic(DC, p.x, p.y, PIC_OUTBOX, True, PPI);
             end
           else
             n.outboxRect:=rect(-1,-1,-1,-1);
@@ -1537,26 +1537,26 @@ const
   f1n = 'roaster.group'; //roaster.groupfont);
   f2n = 'roaster.group.num'; //roaster.groupfont);
 var
-  bakmode:integer;
-  cnv:Tcanvas;
-  R, rB:Trect;
-  cntTxt:TRect;
+  bakmode: integer;
+  cnv: Tcanvas;
+  R, rB: Trect;
+  cntTxt: TRect;
  {$IFDEF PROTOCOL_ICQ}
-  c:TICQcontact;
+  c: TICQcontact;
  {$ENDIF PROTOCOL_ICQ}
-  s:string;
-  b,isNIL:boolean;
-  isOnRight : Boolean;
-  ico : TRnQCLIconsSet;
-  p : TPoint;
-  i : Integer;
-  w : Smallint;
-  size:Tsize;
+  s: string;
+  b, isNIL: boolean;
+  isOnRight: Boolean;
+  ico: TRnQCLIconsSet;
+  p: TPoint;
+  i: Integer;
+  w: Smallint;
+  size: Tsize;
   res : Tsize;
   vPicName : TPicName;
-  dx : Integer;
-  x,y:integer;
-  oldCol : TColor;
+  dx: Integer;
+  x, y: integer;
+  oldCol: TColor;
   FadeColor1, FadeColor2: Cardinal;
   dd : TDateTime;
 //  gr  : TGPGraphics;
@@ -1621,7 +1621,7 @@ case n.kind of
       Exit;
     isNIL:=notinlist.exists(n.contact);
     if indentRoster and showgroups and (n.contact.group>0) and not isNIL then
-      inc(x, theme.getPicSize(RQteDefault, PIC_CLOSE_GROUP).cx);
+      inc(x, theme.getPicSize(RQteDefault, PIC_CLOSE_GROUP, 0, PPI).cx);
 
 {
     if TO_SHOW_ICON[CNT_ICON_VIS] then

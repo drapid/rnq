@@ -124,7 +124,7 @@ begin
    t:=integer((@s[5])^);
    case t of
     FK_NAME: put(UnUTF(copy(s,9,l)));
-    FK_DESC: PuinList(last)^.desc:= UnUTF(copy(s,9,l));
+    FK_DESC: PuinList(last)^.desc := UnUTF(copy(s,9,l));
 //    FK_UIN: PuinList(last)^.cl.add(contactsDB.get(IntToStr(integer((@s[9])^))));
     FK_UIN: PuinList(last)^.cl.add(contactsDB.add(pr, IntToStrA(integer((@s[9])^))));
    end;

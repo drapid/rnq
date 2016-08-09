@@ -394,6 +394,10 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCCReference Include="ViewHEventDlg.pas">
             <Form>HEventFrm</Form>
         </DCCReference>
+        <DCCReference Include="MenuEmoji.pas">
+            <Form>FEmoji</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="..\For.rnq\RnQConfig.inc"/>
         <None Include="RnQConfig.inc"/>
         <BuildConfiguration Include="Base">
@@ -895,7 +899,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
     <Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
     <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
     <PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe
+</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -903,7 +908,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe
+</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -911,7 +917,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q CEF' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe
+</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -919,7 +926,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q CEF' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe
+</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -927,7 +935,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe
+</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -935,7 +944,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe
+</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -943,7 +953,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe
+</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -951,7 +962,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe
+</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -959,7 +971,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q CEF Debug' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe
+</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -967,7 +980,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q CEF Debug' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe
+</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -975,7 +989,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI Debug' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe
+</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -983,7 +998,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI Debug' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe
+</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>

@@ -116,7 +116,7 @@ begin
     // additional spaces for icon
   with Pmsg(sender.getnodedata(PaintInfo.Node))^ do
   begin
-    with theme.drawPic(PaintInfo.Canvas.Handle, r.left, r.top - GAP_Y,
+    with theme.drawPic(PaintInfo.Canvas.Handle, r.left, r.top-GAP_Y,
            IconNames[ kind ], isFirst) do
 //    with theme.getPicSize(RQteDefault, IconNames[kind], 16) do
      begin

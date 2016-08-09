@@ -74,6 +74,8 @@ type
 //        r:Trect; onlysize:boolean=FALSE):Tpoint;
       procedure MeasureItem(ACanvas: TCanvas; var Width, Height: Integer); override;
       procedure SetImageName(const Value: TPicName);
+      function  GetDevicePPI2: Integer;
+
     public
 //      FCaptionW: WideString;
       CanTranslate : Boolean;
@@ -89,6 +91,7 @@ type
       constructor Create(AOwner: TComponent); override;
       procedure onExitMenu(var Msg: TMessage); message WM_EXITMENULOOP;
       property  ImageName : TPicName read FImageName write SetImageName;
+      property  DevicePPI: Integer read GetDevicePPI2;
   end;
 //  function drawMenuItemR(ACanvas : TCanvas; Amenu:Tmenu; item:Tmenuitem;
 //                    r:Trect; onlysize:boolean=FALSE;
@@ -105,7 +108,8 @@ type
 
 implementation
  uses
-   RnQGlobal, RQUtil, RnQStrings, SysUtils, Forms,
+   SysUtils, Forms, StrUtils, math, ActnList, VCL.Controls,
+   RnQGlobal, RQUtil,
  {$ifdef MirandaSupport}
    m_globaldefs,
    m_api,
@@ -118,7 +122,7 @@ implementation
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
-   StrUtils, math, ActnList;
+   RnQStrings;
 
 
 
@@ -229,6 +233,37 @@ begin
   inc(p.y, 2);
   if (not MenuHeightPerm) or (height<p.y) then
     height := p.y;
+end;
+
+function TRQMenuItem.GetDevicePPI2: Integer;
+//begin
+//  result := TMenuItem(self).GetDevicePPI;  :(
+var
+  DC: HDC;
+  LParent: TMenu;
+  LPlacement: TWindowPlacement;
+  LMonitor: TMonitor;
+begin
+  LParent := GetParentMenu;
+  if (LParent <> nil) and (LParent.Owner is TWinControl) and CheckWin32Version(6,3) then
+  begin
+    LPlacement.length := SizeOf(TWindowPlacement);
+    if (TWinControl(LParent.Owner).Handle > 0) and GetWindowPlacement(TWinControl(LParent.Owner).Handle, LPlacement) then
+      LMonitor := Screen.MonitorFromPoint(LPlacement.rcNormalPosition.TopLeft)
+    else
+      LMonitor := Screen.MonitorFromWindow(Application.Handle);
+    if LMonitor <> nil then
+      Result := LMonitor.PixelsPerInch
+    else
+      Result := Screen.PixelsPerInch;
+  end
+  else
+  begin
+    DC := GetDC(0);
+    Result := GetDeviceCaps(DC, LOGPIXELSY);
+    ReleaseDC(0, DC);
+  end;
+
 end;
 
 (*
@@ -999,12 +1034,12 @@ end;
 *)
 
 
-function GPdrawmenuitemR7(ACanvas : TCanvas; Amenu:Tmenu; item:Tmenuitem; r:Trect;
-           onlysize:boolean=FALSE; drawbar : Boolean = True; Selected : Boolean = false):Tpoint;
+function GPdrawmenuitemR7(ACanvas: TCanvas; Amenu: Tmenu; item: Tmenuitem; r: Trect;
+           onlysize: boolean=FALSE; drawbar: Boolean = True; Selected: Boolean = false): Tpoint;
 const
   cBarWidth1 = 20;
 var
-  x,k:integer;
+  x,k: integer;
   picSize : TSize;
   s   : string;
   fullR : TRect;
@@ -1034,10 +1069,10 @@ var
     pen.Free;
   end; // embossedCenteredLine
 }
-  procedure embossedCenteredLine(x1,x2:integer);
+  procedure embossedCenteredLine(x1, x2: integer);
   var
-    y:integer;
-    oldP, hp : HPEN;
+    y: integer;
+    oldP, hp: HPEN;
   begin
     y:=(R.Top+R.bottom) div 2;
 {    pen := TGPPen.Create(gpColorFromAlphaColor($FF, clBtnShadow));
@@ -1085,6 +1120,7 @@ var
   brLog: LOGBRUSH;
   fontTransp : Byte;
   hls : Thls;
+  ppi: Integer;
 //  Hbr : HBrush;
 begin
   fullR := r;
@@ -1231,8 +1267,8 @@ begin
   if s='-' then
    begin
     res.cy := 3;
-    result.y:=res.cy;
-    s:=item.hint;
+    result.y := res.cy;
+    s := item.hint;
     if s='' then
       begin
         if not onlysize then
@@ -1290,6 +1326,8 @@ begin
 //  x:=cBarWidth
    else
     x:=R.Left;
+
+  ppi := TRQMenuItem(item).DevicePPI;
 
   if Selected and not onlysize then
   begin
@@ -1492,12 +1530,12 @@ begin
 //             if ((item.Tag>=4000)and(item.Tag<4999)) then
 //               picSize := rqSmiles.GetPicSize(TRQMenuItem(item).fImgElm)
 //              else
-               picSize := theme.GetPicSize(TRQMenuItem(item).fImgElm)
+               picSize := theme.GetPicSize(TRQMenuItem(item).fImgElm, 0, ppi)
             else
 //             if ((item.Tag>=4000)and(item.Tag<4999)) then
 //               picSize := rqSmiles.GetPicSize(vImgElm)
 //              else
-               picSize := theme.GetPicSize(vImgElm);
+               picSize := theme.GetPicSize(vImgElm, 0, ppi);
           inc(x,2);
           if not onlysize then
            begin
@@ -1506,12 +1544,12 @@ begin
 //              if ((item.Tag>=4000)and(item.Tag<4999)) then
 //                rqSmiles.drawPic(DC, Point(x,k), TRQMenuItem(item).fImgElm)
 //               else
-                theme.drawPic(DC, Point(x,k), TRQMenuItem(item).fImgElm)
+                theme.drawPic(DC, Point(x,k), TRQMenuItem(item).fImgElm, ppi)
              else
 //              if ((item.Tag>=4000)and(item.Tag<4999)) then
 //                rqSmiles.drawPic(DC, Point(x,k), vImgElm)
 //               else
-                theme.drawPic(DC, Point(x,k), vImgElm);
+                theme.drawPic(DC, Point(x,k), vImgElm, ppi);
            end;
           inc(x, MAX(picSize.cx+2, vBarWidth-2) );
       //    inc(x,2);
@@ -1605,11 +1643,11 @@ begin
      vImgElm.ThemeToken := -1;
      vImgElm.picName := PIC_CURRENT;
      vImgElm.pEnabled := item.Enabled;
-     with theme.GetPicSize(vImgElm) do
+     with theme.GetPicSize(vImgElm, 0, ppi) do
       begin
        if not onlysize then
          theme.drawPic(DC, Point(fullR.Right-cx-5, fullR.Top + (fullR.Bottom-fullR.Top - cy)div 2),
-           vImgElm);
+           vImgElm, ppi);
         inc(x, cx+2);
       end;
    end;

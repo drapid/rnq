@@ -638,9 +638,9 @@ begin
 end; // str2visibility
 
 
-function findICQViewInfo(c:TRnQcontact):TviewInfoFrm;
+function findICQViewInfo(c: TRnQcontact): TviewInfoFrm;
 var
-  i:integer;
+  i: integer;
 begin
 with childWindows do
   begin
@@ -649,7 +649,7 @@ with childWindows do
     begin
     if Tobject(items[i]) is TviewInfoFrm then
       begin
-      result:=TviewInfoFrm(items[i]);
+      result := TviewInfoFrm(items[i]);
       if result.contact.equals(c) then
         exit;
       end;
@@ -680,9 +680,9 @@ with childWindows do
   end;
 result:=NIL;
 end; // findSendfile
-function findRcvfile(id: Int64):TfiletransferFrm;
+function findRcvfile(id: Int64): TfiletransferFrm;
 var
-  i:integer;
+  i: integer;
 begin
 with childWindows do
   begin
@@ -691,19 +691,19 @@ with childWindows do
     begin
     if Tobject(items[i]) is TfiletransferFrm then
       begin
-      result:=TfiletransferFrm(items[i]);
+      result := TfiletransferFrm(items[i]);
       if result.id = id then
         exit;
       end;
     inc(i);
     end;
   end;
-result:=NIL;
+result := NIL;
 end; // findRcvfile
   {$ENDIF usesDC}
 
 
-procedure ProcessICQEvents(var thisICQ:TICQSession; ev:TicqEvent);
+procedure ProcessICQEvents(var thisICQ: TICQSession; ev: TicqEvent);
 var
   c: TICQcontact;
   b: boolean;
@@ -716,7 +716,7 @@ var
   SA : RawByteString;
  {$IFDEF usesDC}
 
-  vSendFileForm : TsendfileFrm;
+  vSendFileForm: TsendfileFrm;
  {$ENDIF usesDC}
 begin
   c := thisICQ.eventContact;

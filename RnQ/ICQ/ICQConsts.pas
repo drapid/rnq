@@ -31,30 +31,30 @@ const
   LOGOUT_CHANNEL    = 4;
   KEEPALIVE_CHANNEL = 5;
 
-  visibility2ShowStr : array [Tvisibility] of String =
+  visibility2ShowStr: array [Tvisibility] of String =
        ('Normal (all but invisible-list)', 'Invisible', 'Privacy (only visible-list)',
         'Visible to all', 'Visible to contact-list');
-  visibility2imgName : array [Tvisibility] of TPicName =
+  visibility2imgName: array [Tvisibility] of TPicName =
        (PIC_VISIBILITY_NORMAL, PIC_VISIBILITY_NONE, PIC_VISIBILITY_PRIVACY,
         PIC_VISIBILITY_ALL, PIC_VISIBILITY_CL);
-  visib2str:array [Tvisibility] of TPicName =('normal','invisible','privacy',
+  visib2str: array [Tvisibility] of TPicName =('normal','invisible','privacy',
     'all', 'cl');
-  visibility2SSIcode : array[Tvisibility] of byte = (04, 02, 03, 01, 05);
-  visibilitySSI2vis : array[1..5] of Tvisibility =
+  visibility2SSIcode: array[Tvisibility] of byte = (04, 02, 03, 01, 05);
+  visibilitySSI2vis: array[1..5] of Tvisibility =
           (VI_all, VI_invisible, VI_privacy, VI_normal, VI_CL);
-//  visibility2str:array [Tvisibility] of string=
+//  visibility2str: array [Tvisibility] of string=
 //     ('Invisible', 'Privacy (only visible-list)',
 //      'Normal (all but invisible-list)', 'All', 'Only contact-list');
-//  status2str:array [TICQStatus] of AnsiString=('online','offline','unk',
+//  status2str: array [TICQStatus] of AnsiString=('online','offline','unk',
 //    'occupied','dnd','na','away', 'f4c', 'evil', 'depression');
-  status2ShowStr:array [TICQStatus] of string=('Online','Offline','Unknown',
+  status2ShowStr: array [TICQStatus] of string=('Online','Offline','Unknown',
     'Occupied','Don''t disturb', 'N/A', 'Away', 'Free for chat', 'Evil', 'Depression', 'At home', 'At work', 'Lunch');
 //  status2Img:array [TICQStatus] of TPicName=('online','offline','unk',
-  status2Img:array [0..byte(SC_Last)] of TPicName=('online','offline','unk',
+  status2Img: array [0..byte(SC_Last)] of TPicName=('online','offline','unk',
       'occupied','dnd','na','away', 'f4c',
       'evil', 'depression', 'home', 'work', 'lunch');
-//  status2code:array [Tstatus] of dword=(0,$11,$13,5,1,$20,0,0, $3000, $4000);
-  status2code:array [TICQStatus] of dword=(0,0,0, $11,$13,5,1,$20,
+//  status2code: array [Tstatus] of dword=(0,$11,$13,5,1,$20,0,0, $3000, $4000);
+  status2code: array [TICQStatus] of dword=(0,0,0, $11,$13,5,1,$20,
     $3000, $4000,
     $5000, //Home [qip]
     $6000, //Work [qip]

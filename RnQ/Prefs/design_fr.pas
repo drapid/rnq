@@ -254,13 +254,14 @@ end; // ResetIconsGrid
 
 procedure TdesignFr.initPage;
 begin
-  with theme.GetPicSize(RQteDefault, PIC_MSG, 10) do
+{  with theme.GetPicSize(RQteDefault, PIC_MSG, 10) do
    begin
 //    blinkImg.Picture.Bitmap.SetSize(cy, cx);
 //    theme.drawPic(blinkImg.picture.Bitmap.Canvas.Handle, 0,0,PIC_MSG);
      BlinkPBox.Width  := cx;
      BlinkPBox.Height := cy;
    end;
+}
  {$IFDEF RNQ_FULL}
  {$ELSE}
    ShXstChk.visible := False;

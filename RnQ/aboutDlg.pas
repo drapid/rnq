@@ -420,7 +420,7 @@ begin
 //  AboutPBox.Canvas.FillRect(AboutPBox.Canvas.ClipRect);
 //  DC := AboutPBox.Canvas.Handle;
 //  bmp := createBitmap(AboutPBox.Canvas);
-  bmp:=Tbitmap.create;
+  bmp := Tbitmap.create;
   bmp.PixelFormat := pf32bit;
   with AboutPBox.Canvas.ClipRect do
     bmp.SetSize(right-left+1, bottom-top+1);
@@ -428,7 +428,7 @@ begin
   bmp.Canvas.FillRect(bmp.Canvas.ClipRect);
 //  DC := bmp.Canvas.Handle;
 
-  bmp2:=Tbitmap.create;
+  bmp2 := Tbitmap.create;
   bmp2.PixelFormat := pf32bit;
   with AboutPBox.Canvas.ClipRect do
     bmp2.SetSize(right-left+1, bottom-top+1);

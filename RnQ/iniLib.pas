@@ -71,6 +71,7 @@ uses
  {$ENDIF PROTOCOL_ICQ}
 
   OverbyteIcsWinSock,
+  OverbyteIcsSSLEAY,
   tipDlg, history,
   MenuSmiles, menusUnit,
    histUtilsDlg,
@@ -1629,7 +1630,7 @@ begin
   locked:=FALSE;
   autoaway.time:=0;
   userTime:=-1;
-  eventQ:=TeventQ.create;
+  eventQ := TeventQ.create;
   statusIcon:=TstatusIcon.create;
   statusIcon.OnGetPicTip := Protocols_All.getTrayIconTip;
   eventQ.onNewTop:=statusIcon.update;
@@ -1640,6 +1641,7 @@ begin
   if not DirectoryExists(cache) then
     ForceDirectories(cache);
   imgCacheInfo := TMemIniFile.Create(cache + 'Images.ini');
+  GSSL_DLL_DIR := modulesPath;
 
 {$IFDEF CHAT_CEF}
    if not InitRnQCEFLibrary then

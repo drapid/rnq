@@ -317,27 +317,27 @@ end;
 
 procedure SoundInit;
 const
-{$IFDEF CPUX64}
-  bass_dll_x64_FN = 'bassx64.dll';
-{$ELSE ~CPUX64}
-{$ENDIF CPUX64}
+//{$IFDEF CPUX64}
+//  bass_dll_x64_FN = 'bassx64.dll';
+//{$ELSE ~CPUX64}
+//{$ENDIF CPUX64}
   bass_dll_FN = 'bass.dll';
 var
   b: Boolean;
 begin
-  audioPresent:=FALSE;
+  audioPresent := FALSE;
  {$IFDEF RNQ_PLAYER}
   if not Assigned(RnQbPlayer) then
-    RnQbPlayer:= TBASSplayer.Create(nil);
-  audioPresent:= RnQbPlayer.PlayerReady;
+    RnQbPlayer := TBASSplayer.Create(nil);
+  audioPresent := RnQbPlayer.PlayerReady;
 
  {$ELSE RNQ_PLAYER}
 
-{$IFDEF CPUX64}
- b := Load_BASSDLL(bass_dll_x64_FN);
- if not b then
-{$ENDIF CPUX64}
-   b := Load_BASSDLL(bass_dll_FN);
+//{$IFDEF CPUX64}
+// b := Load_BASSDLL(modulesPath + bass_dll_x64_FN);
+// if not b then
+//{$ENDIF CPUX64}
+   b := Load_BASSDLL(modulesPath + bass_dll_FN);
  if b then
  begin
 	// Ensure BASS 2.4 was loaded
@@ -415,7 +415,7 @@ begin
 //    BASS_ChannelStop(Soundhndl);
 end;
 
-function sendMCIcommand(cmd: PChar): string;
+function sendMCIcommand(cmd:PChar):string;
 var
   res: array [0..100] of char;
   trash: Thandle;
@@ -521,7 +521,7 @@ var
 begin
   dw := ColorToRGB(cl);
   cf := alpha / $FF;
-  result := round((dw shr 16 and $FF) * cf) shl 16 + round((dw shr 8 and $FF) * cf) shl 8 + round((dw and $FF) * cf);
+  result := round((dw shr 16 and $FF) * cf)shl 16 + round((dw shr 8 and $FF) * cf) shl 8 + round((dw and $FF) * cf);
 end;
 
 {

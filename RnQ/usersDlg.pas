@@ -285,7 +285,7 @@ var
   uin: TUID;
   NewAccDlg: TNewAccFrm;
 begin
-  uin:='';
+  uin := '';
   NewAccDlg := TNewAccFrm.Create(Application);
   translateWindow(NewAccDlg);
   if NewAccDlg.ShowModal = mrOk then
@@ -430,7 +430,7 @@ else
   itsme := Assigned(Account.AccProto) and (Account.AccProto.getMyInfo<>NIL) and (Account.AccProto.getMyInfo.equals(UINtoDelete));
   if itsme then
     begin
-    continue:=messageDlg(getTranslation('The user you are trying to delete is the one in use right now.\nIt will be closed to be deleted. Continue?',[UINtoDelete]), mtConfirmation, [mbYes,mbNo], 0) = mrYes;
+    continue := messageDlg(getTranslation('The user you are trying to delete is the one in use right now.\nIt will be closed to be deleted. Continue?',[UINtoDelete]), mtConfirmation, [mbYes,mbNo], 0) = mrYes;
     deletedMe:=continue;
     if continue then
       quitUser;
@@ -633,12 +633,12 @@ var
 //  s:string;
 //  i, k:integer;
   tBasePath: String;
-  tUserPath : String;
-  b : Boolean;
-  u : PRnQUser;
-  n : PVirtualNode;
-  onlyUID : TUID;
-  prCl : TRnQProtoClass;
+  tUserPath: String;
+  b: Boolean;
+  u: PRnQUser;
+  n: PVirtualNode;
+  onlyUID: TUID;
+  prCl: TRnQProtoClass;
 begin
 //  s:= uin;
     if cmdLinePar.userPath > '' then

@@ -534,9 +534,4 @@ begin
   FStickers.Show;
 end;
 
-procedure Add2input(const s: String);
-begin
-  chatFrm.thisChat.input.SelText := s;
-end;
-
 end.

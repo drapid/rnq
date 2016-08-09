@@ -126,7 +126,7 @@ type
   TRnQCntClass = class of TRnQContact;
 
   TRnQProtocol = class;
-  TProtoNotify = procedure (Sender:TRnQProtocol; event:Integer) of object;
+  TProtoNotify = procedure (Sender: TRnQProtocol; event: Integer) of object;
   TRnQProtoClass = class of TRnQProtocol;
 
   TProtoEvent=(
@@ -604,29 +604,29 @@ type
 {$ELSE DELPHI_9_DOWN}
   TRnQContactType = class of TRnQContact;
 {$ENDIF DELPHI9_UP}
-  TRnQCList=class(Tlist)
+  TRnQCList = class(Tlist)
    protected
-    enumIdx:integer;
+    enumIdx: integer;
    public
     procedure resetEnumeration;
     function  hasMore: boolean;
-    function  getNext:TRnQContact;
+    function  getNext: TRnQContact;
     function  get(cls : TRnQContactType; const UID:TUID):TRnQContact; OverLoad;
     function  get(cls : TRnQContactType; const uin:integer):TRnQcontact; overload; //OverRide;
     function  getAt(const idx: integer): TRnQContact;
     function  putAt(const idx: integer; c: TRnQContact): Boolean;
     function  exists(const c: TRnQContact): Boolean; overload;
     function  exists(const pProto : TRnQProtocol; const uin:TUID):boolean; overload;
-    function  empty:boolean;
+    function  empty: boolean;
     function  add(const pProto : TRnQProtocol; const UID:TUID):TRnQcontact; overload; //OverRide;
-    function  add(c:TRnQContact):boolean; overload;
-    function  add(p:pointer):boolean; overload;
-    function  add(cl:TRnQCList):TRnQCList; overload;
+    function  add(c: TRnQContact):boolean; overload;
+    function  add(p: pointer):boolean; overload;
+    function  add(cl: TRnQCList):TRnQCList; overload;
     function  remove(const c: TRnQContact): Boolean; overload;
-    function  remove(p:pointer):boolean; overload;
-    function  remove(cl:TRnQCList):TRnQCList; overload;
-    function  intersect(cl:TRnQCList):TRnQCList;
-    function  toString:RawByteString; reintroduce;
+    function  remove(p: pointer):boolean; overload;
+    function  remove(cl: TRnQCList):TRnQCList; overload;
+    function  intersect(cl: TRnQCList):TRnQCList;
+    function  toString: RawByteString; reintroduce;
 //    function  fromString(cls : TRnQContactType; const s: RawByteString; db:TRnQCList):boolean;
     function  fromString(pr : TRnQProtocol; const s: RawByteString; db:TRnQCList):boolean;
     function  clone:TRnQCList;

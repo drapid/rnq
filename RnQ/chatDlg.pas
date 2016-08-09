@@ -1283,7 +1283,7 @@ begin
   //  chat.btnPnl.minsize:=1;
     chat.btnPnl.parent := pnl;
     chat.btnPnl.align  := alBottom;
-    chat.btnPnl.Height := 24;
+    chat.btnPnl.Height := Max(24, MulDiv(24, GetParentCurrentDpi, cDefaultDPI));
     chat.btnPnl.BorderWidth := 0;
     chat.btnPnl.FullRepaint := False;
 //  chat.inputPnl.BorderStyle := bsNone;
@@ -1592,12 +1592,14 @@ procedure TchatFrm.updateGraphics;
 var
   ch: Tchatinfo;
   i: integer;
+  PPI: Integer;
 begin
   ch := thisChat;
   if ch=NIL then
     exit;
   if ch.chatType = CT_PLUGING then
     Exit;
+  PPI := GetParentCurrentDpi;
   theme.applyFont('history.my', ch.input.Font);
   smilesBtn.down := useSmiles;
   historyBtn.down := ch.historyBox.whole;
@@ -1612,17 +1614,17 @@ begin
     else
      ch.btnPnl.Visible := false;
   //sbar.panels[0].Width:=80;
-  with theme.getPicSize(RQteDefault, PIC_OUTBOX, 16) do
+  with theme.getPicSize(RQteDefault, PIC_OUTBOX, 16, PPI) do
    begin
     sbar.panels[1].Width := cx+8;
     i := cy+6;
    end;
-  with theme.getPicSize(RQteDefault, PIC_KEY, 16) do
+  with theme.getPicSize(RQteDefault, PIC_KEY, 16, PPI) do
    begin
     sbar.panels[3].Width := cx+8;
     i := max(i, cy+6);
    end;
-  with theme.getPicSize(RQteDefault, PIC_CLI_QIP, 16) do
+  with theme.getPicSize(RQteDefault, PIC_CLI_QIP, 16, PPI) do
    begin
     sbar.panels[3].Width := sbar.panels[3].Width + cx+3;
     i := max(i, cy+6);
@@ -1645,11 +1647,11 @@ begin
   panel.repaint;
 
   i := 21;
-  with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size) do
+  with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size, PPI) do
   begin
     i := max(i, cy+6);
   end;
-  with theme.GetPicSize(RQteButton, PIC_CLOSE, icon_size) do
+  with theme.GetPicSize(RQteButton, PIC_CLOSE, icon_size, PPI) do
   begin
     i := max(i, cy+6);
   end;
@@ -2553,7 +2555,7 @@ begin
   if plugBtns.PluginsTB <> toolbar then
    begin
      if Assigned(plugBtns.PluginsTB) then
-      plugBtns.PluginsTB.buttonheight := 21;
+      plugBtns.PluginsTB.buttonheight := max(21, MulDiv(21, GetParentCurrentDpi, cDefaultDPI));
    end;
 
 //  i:=getWindowLong(pagectrl.handle, GWL_EXSTYLE);
@@ -3011,6 +3013,7 @@ var
 // s: String;
  Arect: TRect;
  agR, r2: TGPRect;
+ PPI: Integer;
 begin
 //  statusbar.canvas.Brush.Color := clBtnFace
  StatusBar.Canvas.Font.Assign(Screen.MenuFont);
@@ -3022,6 +3025,7 @@ begin
  inc(Arect.Right);
  dec(Arect.Left);
  inc(Arect.Bottom);
+ PPI := GetParentCurrentDpi;
  case panel.index of
   1, 2, 3:
       if StyleServices.Enabled then
@@ -3047,9 +3051,9 @@ begin
  case panel.index of
   1: begin
        if Account.outbox.stFor(thisContact) then
-         theme.drawPic(statusbar.canvas.Handle, agR, PIC_OUTBOX)
+         theme.drawPic(statusbar.canvas.Handle, agR, PIC_OUTBOX, True, PPI)
         else
-         theme.drawPic(statusbar.canvas.Handle, agR, PIC_OUTBOX_EMPTY, false)
+         theme.drawPic(statusbar.canvas.Handle, agR, PIC_OUTBOX_EMPTY, false, PPI)
        ;
      end;
   2: if Assigned(ch) then
@@ -3088,21 +3092,21 @@ begin
          begin
           if TICQContact(ch.who).crypt.supportCryptMsg then
 //           theme.drawPic(statusbar.canvas.Handle, rect.left,rect.top+1, PIC_KEY);
-            theme.drawPic(statusbar.canvas.Handle, agR, PIC_KEY)
+            theme.drawPic(statusbar.canvas.Handle, agR, PIC_KEY, True, PPI)
            else
             if CAPS_big_QIP_Secure in TICQContact(ch.who).capabilitiesBig then
              begin
               if TICQContact(ch.who).crypt.qippwd > 0 then
-               with theme.GetPicSize(RQteDefault, PIC_CLI_QIP, 16) do
+               with theme.GetPicSize(RQteDefault, PIC_CLI_QIP, 16, PPI) do
                 begin
                   r2 := agR;
                   inc(R2.X, cx+2);
                   dec(R2.Width, cx+3);
                   agR.Width := cx+3;
-                  theme.drawPic(statusbar.canvas.Handle, R2, PIC_KEY);
+                  theme.drawPic(statusbar.canvas.Handle, R2, PIC_KEY, True, PPI);
 //                    dec(agR.Width, cx+2);
                 end;
-              theme.drawPic(statusbar.canvas.Handle, agR, PIC_CLI_QIP)
+              theme.drawPic(statusbar.canvas.Handle, agR, PIC_CLI_QIP, True, PPI)
              end;
 
          end;
@@ -4257,9 +4261,9 @@ begin
       and ((blinking or c.fProto.getStatusDisable.blinking) or not blinkWithStatus) then
        begin
         if (blinking or c.fProto.getStatusDisable.blinking) then
-          inc(R.left, 1 + ev.Draw(hnd, R.left,R.top).cx)
+          inc(R.left, 1 + ev.Draw(hnd, R.left,R.top, GetParentCurrentDpi).cx)
         else
-          inc(R.left, 1 + ev.PicSize.cx);
+          inc(R.left, 1 + ev.PicSize(GetParentCurrentDpi).cx);
        end
     else
      begin

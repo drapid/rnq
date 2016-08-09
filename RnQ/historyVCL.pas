@@ -90,7 +90,8 @@ type
 //    hasDownArrow: Boolean;
 //    hDownArrow: Integer;
   protected
-    procedure DoBackground(cnv0: Tcanvas; vR: TRect; var SmlBG: TBitmap);
+    procedure DoBackground(cnv0: Tcanvas; vR: TRect; var SmlBG: TBitmap; const PPI: Integer);
+    procedure DrawEmoji(Sender: TObject);
 //    procedure DoBackground(DC: HDC);
     procedure WMEraseBkgnd(var Msg: TWmEraseBkgnd); message WM_ERASEBKGND;
     procedure WMVScroll(var Msg: TWMVScroll); message WM_VSCROLL;
@@ -146,7 +147,7 @@ type
     class procedure InitMenu(var pm : TPopupMenu; Own: TComponent);
 
     procedure Paint(); override;
-    procedure paintOn(cnv: Tcanvas; vR: TRect; const JustCalc: Boolean = false);
+    procedure paintOn(cnv: Tcanvas; vR: TRect; const PPI: Integer; const JustCalc: Boolean = false);
     procedure go2end(const calcOnly: Boolean = False; const precalc: Boolean = False);
     procedure move2start();
     procedure move2end(animate: Boolean = False);
@@ -348,7 +349,7 @@ begin
 //  createMenuAs(aHistMenu, pm, Own);
 end;
 
-procedure ThistoryBox.paintOn(cnv: Tcanvas; vR: TRect; const JustCalc: Boolean = false);
+procedure ThistoryBox.paintOn(cnv: Tcanvas; vR: TRect; const PPI: Integer; const JustCalc: Boolean = false);
 var
 //  vCnvHandle : HDC;
   lineHeight, bodySkipCounter, skippedLines,
@@ -853,7 +854,7 @@ var
         vPicElm.ThemeToken := -1;
         vPicElm.Element := RQteDefault; 
         x := margin.left;
-        with theme.GetPicSize(vPicElm) do
+        with theme.GetPicSize(vPicElm, 0, PPI) do
          begin
 //        i := vDBPic.Width;
            if not JustCalc then
@@ -865,7 +866,7 @@ var
              pt.X := x;
              while pt.X < rightLimit do
               begin
-                theme.drawPic(hnd, pt, vPicElm);
+                theme.drawPic(hnd, pt, vPicElm, PPI);
                 inc(pt.X, cx);
               end;
             end;
@@ -1118,7 +1119,7 @@ var
 //        theme.GetPic(theme.GetSmileName(foundSmileIdx), vDBPic);
 //        vPicName := ;
 //        pic:=theme.GetSmile(foundSmileIdx); //smiles.pics[foundSmileIdx];
-            tempSize := theme.GetPicSize(RQteDefault, fndSmileN);
+            tempSize := theme.GetPicSize(RQteDefault, fndSmileN, 0, PPI);
             newLineHeight(tempSize.cy+2);
 
          // paint
@@ -1427,7 +1428,7 @@ var
   vPicElm.ThemeToken := -1;
   vPicElm.PicName := PIC_SCROLL_DOWN;
   vPicElm.Element := RQteDefault;
-  with theme.GetPicSize(vPicElm) do
+  with theme.GetPicSize(vPicElm, 0, PPI) do
    begin
     x := margin.left;
     y := bottomLimit - cy;
@@ -1442,7 +1443,7 @@ var
       hnd := cnv.Handle;
       while pt.x < rightLimit do
        begin
-        theme.drawPic(hnd, pt, vPicElm);
+        theme.drawPic(hnd, pt, vPicElm, PPI);
         inc(pt.x, cx);
        end;
      end;
@@ -1474,19 +1475,19 @@ var
         SetBKMode(Cnv.Handle, TRANSPARENT);
   /// draw header
 
-    with ev.PicSize do
+    with ev.PicSize(PPI) do
     begin
      if not JustCalc then
-       ev.Draw(Cnv.Handle, curX, curY);
+       ev.Draw(Cnv.Handle, curX, curY, PPI);
      inc(curX, cx + 3);
      newLineHeight(cy);
     end;
 
     if IF_Encrypt and ev.flags > 0 then // Сообщение было шифрованным
-     with theme.GetPicSize(vKeyPicElm) do
+     with theme.GetPicSize(vKeyPicElm, 0, PPI) do
      begin
       if not JustCalc then
-        theme.drawPic(Cnv.Handle, Point(curX, curY), vKeyPicElm);
+        theme.drawPic(Cnv.Handle, Point(curX, curY), vKeyPicElm, PPI);
       inc(curX, cx + 3);
       newLineHeight(cy);
      end;
@@ -1666,7 +1667,7 @@ begin
 //           rqSmiles.AnibgPic := createBitmap(vR.Right, vR.Bottom);
 //          end;
      {$ENDIF RNQ_FULL}
-          DoBackground(cnv, vR, theme.AnibgPic);
+          DoBackground(cnv, vR, theme.AnibgPic, PPI);
      {$IFDEF RNQ_FULL}
         end;
       {$ENDIF RNQ_FULL}
@@ -1817,7 +1818,7 @@ begin
     go2end(True);
   case  dStyle of
    dsNone:
-    paintOn(Canvas, Canvas.ClipRect);
+    paintOn(Canvas, Canvas.ClipRect, GetParentCurrentDpi);
 
    dsBuffer:
     begin
@@ -1834,7 +1835,7 @@ begin
         buffer.SetSize(a, b);
        end;
       buffer.Canvas.Lock;
-      paintOn(buffer.Canvas, Canvas.ClipRect);
+      paintOn(buffer.Canvas, Canvas.ClipRect, GetParentCurrentDpi);
       buffer.Canvas.UnLock;
 
       Canvas.Draw(0, 0, buffer);
@@ -1842,7 +1843,7 @@ begin
 
    dsGlobalBuffer:
     begin
-      paintOn(globalBuffer.Canvas, Canvas.ClipRect);
+      paintOn(globalBuffer.Canvas, Canvas.ClipRect, GetParentCurrentDpi);
       Canvas.Draw(0,0, globalBuffer);
     end;
 
@@ -1861,7 +1862,7 @@ begin
 //      globalBuffer.Canvas.MoveTo(0, 0);
 //      Canvas.MoveTo(0, 0);
       globalBuffer.Canvas.Lock;
-      paintOn(globalBuffer.Canvas, ARect);
+      paintOn(globalBuffer.Canvas, ARect, GetParentCurrentDpi);
       BitBlt(Canvas.Handle, ARect.Left, ARect.Top,
               ARect.Right  - ARect.Left,
               ARect.Bottom - ARect.Top,
@@ -1891,7 +1892,7 @@ begin
               SetWindowOrgEx(memDC, Left, Top, Nil);
               tmpCanvas.Handle := MemDC;
 
-              paintOn(tmpCanvas, Canvas.ClipRect);
+              paintOn(tmpCanvas, Canvas.ClipRect, GetParentCurrentDpi);
 
               BitBlt(Canvas.Handle, Left, Top, Right-Left, Bottom-Top,
                 MemDC, Left, Top, SrcCopy);
@@ -2566,7 +2567,7 @@ begin
 //  secs :=  GetTickCount;
   repeat
     dec(topVisible);
-    paintOn(bmp.canvas, bmp.Canvas.ClipRect, True);
+    paintOn(bmp.canvas, bmp.Canvas.ClipRect, GetParentCurrentDpi, True);
 //    s := s + CRLF + '--' + intToStr(topVisible) + '---' + intToStr(GetTickCount - secs);
 //    secs :=  GetTickCount;
   until (topVisible < offset) or not lastEventIsFullyVisible;
@@ -2883,7 +2884,7 @@ begin
  end;
 end;
 
-procedure ThistoryBox.DoBackground(cnv0: Tcanvas; vR: TRect; var SmlBG: TBitmap);
+procedure ThistoryBox.DoBackground(cnv0: Tcanvas; vR: TRect; var SmlBG: TBitmap; const PPI: Integer);
 //procedure ThistoryBox.DoBackground(dc: HDC);
 var
   {$IFDEF USE_GDIPLUS}
@@ -2965,20 +2966,20 @@ begin
    end
   else*)
   if isUseCntThemes and
-      (ContactsTheme.GetPicSize(RQteDefault, uidBG+'5').cx > 0) then
+      (ContactsTheme.GetPicSize(RQteDefault, uidBG+'5', 0, PPI).cx > 0) then
      begin
       hasBG0 := True;
       ContactsTheme.drawTiled(SmlBG.Canvas, uidBG+'5');
      end
    else
   if isUseCntThemes and
-      (ContactsTheme.GetPicSize(RQteDefault, grpBG+'5').cx > 0) then
+      (ContactsTheme.GetPicSize(RQteDefault, grpBG+'5', 0, PPI).cx > 0) then
      begin
       hasBG0 := True;
       ContactsTheme.drawTiled(SmlBG.Canvas, grpBG+'5');
      end
    else
-  if theme.GetPicSize(RQteDefault, PIC_CHAT_BG+'5').cx > 0 then
+  if theme.GetPicSize(RQteDefault, PIC_CHAT_BG+'5', 0, PPI).cx > 0 then
   begin
 //    theme.drawTiled(gr, r, PIC_CHAT_BG+'5');
     theme.drawTiled(SmlBG.Canvas, PIC_CHAT_BG+'5');
@@ -3005,15 +3006,15 @@ begin
   picElm.ThemeToken := -1;
   picElm.picName := uidBG+'1';
   if isUseCntThemes and
-      (ContactsTheme.GetPicSize(picElm).cx > 0) then
-     ContactsTheme.drawPic(hnd, pt, picElm)
+      (ContactsTheme.GetPicSize(picElm, 0, PPI).cx > 0) then
+     ContactsTheme.drawPic(hnd, pt, picElm, PPI)
    else
     begin
       picElm.ThemeToken := -1;
       picElm.picName := grpBG+'1';
       if isUseCntThemes and
-          (ContactsTheme.GetPicSize(picElm).cx > 0) then
-         ContactsTheme.drawPic(hnd, pt, picElm)
+          (ContactsTheme.GetPicSize(picElm, 0, PPI).cx > 0) then
+         ContactsTheme.drawPic(hnd, pt, picElm, PPI)
        else
 //      with theme.GetPicSize(RQteDefault, PIC_CHAT_BG+'1') do
 //       if cx > 0 then
@@ -3029,23 +3030,23 @@ begin
   picElm.picName := uidBG+'2';
   if isUseCntThemes then
    begin
-    with ContactsTheme.GetPicSize(picElm) do
+    with ContactsTheme.GetPicSize(picElm, 0, PPI) do
       if cx > 0 then
        begin
         hasUTP := True;
         Dec(pt.x, cx);
-        ContactsTheme.drawPic(hnd, pt, picElm)
+        ContactsTheme.drawPic(hnd, pt, picElm, PPI)
        end;
     if not hasUTP then
     begin
      picElm.ThemeToken := -1;
      picElm.picName := grpBG+'2';
-      with ContactsTheme.GetPicSize(picElm) do
+      with ContactsTheme.GetPicSize(picElm, 0, PPI) do
         if cx > 0 then
          begin
           hasUTP := True;
           Dec(pt.x, cx);
-          ContactsTheme.drawPic(hnd, pt, picElm)
+          ContactsTheme.drawPic(hnd, pt, picElm, PPI)
          end;
     end;
    end;
@@ -3053,11 +3054,11 @@ begin
   begin
    picElm.ThemeToken := -1;
    picElm.picName := PIC_CHAT_BG+'2';
-   with theme.GetPicSize(picElm) do
+   with theme.GetPicSize(picElm, 0, PPI) do
     if cx > 0 then
      begin
       Dec(pt.x, cx);
-      theme.drawPic(hnd, pt, picElm);
+      theme.drawPic(hnd, pt, picElm, PPI);
      end;
   end;
 
@@ -3091,23 +3092,23 @@ begin
   if isUseCntThemes then
    begin
     picElm.picName := uidBG+'3';
-    with ContactsTheme.GetPicSize(picElm) do
+    with ContactsTheme.GetPicSize(picElm, 0, PPI) do
       if cx > 0 then
        begin
         hasUTP := True;
           Dec(pt.Y, cy);
-        ContactsTheme.drawPic(hnd, pt, picElm)
+        ContactsTheme.drawPic(hnd, pt, picElm, PPI)
        end;
     if not hasUTP then
     begin
      picElm.ThemeToken := -1;
      picElm.picName := grpBG+'3';
-      with ContactsTheme.GetPicSize(picElm) do
+      with ContactsTheme.GetPicSize(picElm, 0, PPI) do
         if cx > 0 then
          begin
           hasUTP := True;
             Dec(pt.Y, cy);
-          ContactsTheme.drawPic(hnd, pt, picElm)
+          ContactsTheme.drawPic(hnd, pt, picElm, PPI)
          end;
     end;
    end;
@@ -3115,11 +3116,11 @@ begin
   begin
    picElm.ThemeToken := -1;
    picElm.picName := PIC_CHAT_BG+'3';
-   with theme.GetPicSize(picElm) do
+   with theme.GetPicSize(picElm, 0, PPI) do
     if cx > 0 then
      begin
           Dec(pt.Y, cy);
-      theme.drawPic(hnd, pt, picElm);
+      theme.drawPic(hnd, pt, picElm, PPI);
      end;
   end;
 
@@ -3131,25 +3132,25 @@ begin
   if isUseCntThemes then
    begin
     picElm.picName := uidBG+'4';
-    with ContactsTheme.GetPicSize(picElm) do
+    with ContactsTheme.GetPicSize(picElm, 0, PPI) do
       if cx > 0 then
        begin
         hasUTP := True;
         Dec(pt.X, cx);
         Dec(pt.Y, cy);
-        ContactsTheme.drawPic(hnd, pt, picElm)
+        ContactsTheme.drawPic(hnd, pt, picElm, PPI)
        end;
     if not hasUTP then
     begin
      picElm.ThemeToken := -1;
      picElm.picName := grpBG+'4';
-      with ContactsTheme.GetPicSize(picElm) do
+      with ContactsTheme.GetPicSize(picElm, 0, PPI) do
         if cx > 0 then
          begin
           hasUTP := True;
           Dec(pt.X, cx);
           Dec(pt.Y, cy);
-          ContactsTheme.drawPic(hnd, pt, picElm)
+          ContactsTheme.drawPic(hnd, pt, picElm, PPI)
          end;
     end;
    end;
@@ -3157,12 +3158,12 @@ begin
   begin
    picElm.ThemeToken := -1;
    picElm.picName := PIC_CHAT_BG+'4';
-   with theme.GetPicSize(picElm) do
+   with theme.GetPicSize(picElm, 0, PPI) do
     if cx > 0 then
      begin
         Dec(pt.X, cx);
         Dec(pt.Y, cy);
-      theme.drawPic(hnd, pt, picElm);
+      theme.drawPic(hnd, pt, picElm, PPI);
      end;
   end;
 
@@ -3707,23 +3708,24 @@ begin
 end;
 
 procedure THistoryBox.DrawEmoji(Sender: TObject);
- var
+(*var
    LCanvas: TDirect2DCanvas;
- begin
+begin
    LCanvas := TDirect2DCanvas.Create(Canvas, ClientRect);
    LCanvas.BeginDraw;
- 
+
    try
      { Drawing goes here }
      LCanvas.Brush.Color := clRed;
      LCanvas.Pen.Color := clBlue;
      LCanvas.Rectangle(100, 100, 200, 200);
- 
+
    finally
      LCanvas.EndDraw;
      LCanvas.Free;
    end;
- end;
+*)begin
+end;
 
 procedure ThistoryBox.PPM_copylink2clpbdClick(Sender: TObject);
 begin

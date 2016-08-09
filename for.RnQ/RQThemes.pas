@@ -328,10 +328,10 @@ type
 //    function  drawPic(DC: HDC; x,y: integer; picName: string; var ThemeToken: Integer;
 //        var picLoc: TPicLocation; var picIdx: Integer; pEnabled: Boolean = true): Tsize; overload;
 //    function  drawPic(DC: HDC; x,y:integer; var picElm : TRnQThemedElementDtls): Tsize; overload;
-    function  drawPic(DC: HDC; pR: TGPRect; const picName: TPicName; pEnabled: Boolean = true):Tsize; overload;
-    function  drawPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls): Tsize; overload;
-    function  drawPic(DC: HDC; pR: TGPRect; var picElm: TRnQThemedElementDtls; const DPI: Integer = cDefaultDPI): Tsize; overload;
-    function  getPic(DC: HDC; p : TPoint; var picElm: TRnQThemedElementDtls; var is32Alpha : Boolean):Tsize; overload;
+    function  drawPic(DC: HDC; pR: TGPRect; const picName: TPicName; pEnabled: Boolean = true; const DPI: Integer = 0): Tsize; overload;
+    function  drawPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls; const DPI: Integer): Tsize; overload;
+    function  drawPic(DC: HDC; pR: TGPRect; var picElm: TRnQThemedElementDtls; const DPI: Integer): Tsize; overload;
+    function  getPic(DC: HDC; p : TPoint; var picElm: TRnQThemedElementDtls; var is32Alpha : Boolean): Tsize; overload;
   {$IFDEF USE_GDIPLUS}
     function  drawPic(gr: TGPGraphics; x, y: integer; picName: string; pEnabled: Boolean = true): Tsize; overload;
     function  drawPic(gr: TGPGraphics; x, y: integer; picName: string; var ThemeToken: Integer;
@@ -1742,7 +1742,7 @@ begin
   end;
 end;
 
-function TRQtheme.GetPicSize(var PicElm : TRnQThemedElementDtls; minSize : Integer = 0;
+function TRQtheme.GetPicSize(var PicElm: TRnQThemedElementDtls; minSize: Integer = 0;
                              const DPI: Integer = cDefaultDPI):Tsize;
 //var
 //  i : Integer;
@@ -3565,7 +3565,8 @@ begin
     end;
 end;
 
-function TRQtheme.drawPic(DC: HDC; pR: TGPRect; const picName:TPicName; pEnabled : Boolean = true):Tsize;
+function TRQtheme.drawPic(DC: HDC; pR: TGPRect; const picName: TPicName;
+                          pEnabled: Boolean = true; const DPI: Integer = 0): Tsize;
 var
   i : Integer;
   r1 : TGPRect;
@@ -3697,10 +3698,11 @@ end;
   {$ENDIF USE_GDIPLUS}
 
 //function TRQtheme.drawPic(DC: HDC; x,y:integer; var picElm : TRnQThemedElementDtls):Tsize;
-function TRQtheme.drawPic(DC: HDC; p :TPoint; var picElm : TRnQThemedElementDtls):Tsize;
+function TRQtheme.drawPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls; const DPI: Integer): Tsize;
 var
   po : TPicObj;
   crd : Cardinal;
+  rS  : TGPSize; // Scaled Image Size
 begin
    initPic(picElm);
 
@@ -3716,15 +3718,23 @@ begin
 //     TRnQBitmap(FGPpics.Objects[picIdx]).SetResolution(
      with TThemePic(FThemePics.Objects[picElm.picIdx]) do
       begin
-       result.cx := r.Width;
-       result.cy := r.Height;
+       if (fDPI <> DPI) and (DPI > 36) then
+         begin
+          rS.Width  := MulDiv(r.Width, DPI, fDPI);
+          rS.Height := MulDiv(r.Height, DPI, fDPI);
+         end
+        else
+         rS := r.size;
+
+       result.cx := rS.Width;
+       result.cy := rS.Height;
        po := FBigPics[PicIDX];
 //       if po is TPicObj then
        if Assigned(po) then
         begin
          DrawRbmp(DC, po.bmp,
 //                 MakeRect(p.X, p.Y, result.cx, result.cy),
-                 MakeRect(MakePoint(p), r.size),
+                 MakeRect(MakePoint(p), rS),
                  R,
                  picElm.pEnabled);
         end;
@@ -3785,7 +3795,7 @@ begin
   end
 end;
 
-function TRQtheme.drawPic(DC: HDC; pR: TGPRect; var picElm : TRnQThemedElementDtls; const DPI: Integer = cDefaultDPI):Tsize;
+function TRQtheme.drawPic(DC: HDC; pR: TGPRect; var picElm : TRnQThemedElementDtls; const DPI: Integer):Tsize;
 var
 //  i : Integer;
   r1  : TGPRect;
@@ -3796,11 +3806,11 @@ begin
   initPic(picElm);
 
   if picElm.picIdx = -1 then
-          begin
-            Result.cx := 0;
-            Result.cy := 0;
-            exit;
-          end;
+    begin
+      Result.cx := 0;
+      Result.cy := 0;
+      exit;
+    end;
   case picElm.Loc of
    PL_pic:
      with TThemePic(FThemePics.Objects[picElm.PicIDX]) do

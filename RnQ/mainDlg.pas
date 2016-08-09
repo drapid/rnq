@@ -1107,7 +1107,7 @@ else
         with theme.getPicSize(vImgElm) do
 //         outboxSbarRect:=rect(r.left+3,r.top+1 + (r.Bottom-r.Top - cy)div 2,r.Left+cx, r.Top+cy);
          outboxSbarRect:=rect(r.left+3, 1 + (r.top+r.Bottom - cy)div 2, r.Left+cx, r.Top+cy);
-        theme.drawPic(cnv.Handle, outboxSbarRect.TopLeft, vImgElm);
+        theme.drawPic(cnv.Handle, outboxSbarRect.TopLeft, vImgElm, GetParentCurrentDpi);
       end
     else
 //     if Assigned(MainProto) then
@@ -1121,7 +1121,7 @@ else
           vImgElm.pEnabled := True;
           with theme.getPicSize(vImgElm) do
   //         theme.drawPic(cnv.Handle, Point(r.left+3,r.top+1 + (r.Bottom-r.Top - cy)div 2), vImgElm);
-           theme.drawPic(cnv.Handle, Point(r.left+3, 1 + (r.top+r.Bottom - cy)div 2), vImgElm);
+           theme.drawPic(cnv.Handle, Point(r.left+3, 1 + (r.top+r.Bottom - cy)div 2), vImgElm, GetParentCurrentDpi);
         end
      end;
 //    TextOut(cnv.Handle, r.Right-cnv.textWidth(contactsPnlStr)-4,y, pansiChar(contactsPnlStr), Length(contactsPnlStr));
@@ -2066,7 +2066,7 @@ begin
     begin
       splashFrm.Canvas.Brush.Color := clWhite;
       splashFrm.Canvas.FillRect(r);
-      theme.drawPic(splashFrm.Canvas.Handle, p, splashImgElm);
+      theme.drawPic(splashFrm.Canvas.Handle, p, splashImgElm, GetParentCurrentDpi);
     end;
 
 //   UpdateLayeredWindow(splashFrm.Handle, 0, 0, 0, MemDC, @p, 0, @blend_function, ULW_ALPHA);
@@ -3591,7 +3591,7 @@ end;
 
 procedure TRnQmain.rosterDrawNode(Sender: TBaseVirtualTree; const PaintInfo: TVTPaintInfo);
 begin
-  RstrDrawNode(Sender, PaintInfo);
+  RstrDrawNode(Sender, PaintInfo, GetParentCurrentDpi);
 end;
 
 procedure TRnQmain.rosterFocusChanging(Sender: TBaseVirtualTree; OldNode,

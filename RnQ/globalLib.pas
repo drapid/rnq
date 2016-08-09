@@ -13,7 +13,7 @@ uses
   iniFiles,
   events,
  {$IFDEF ICQ_ONLY}
-    icqv9,
+    ICQv9,
   ICQConsts,
  {$ENDIF ICQ_ONLY}
 //  contacts,
@@ -589,7 +589,7 @@ var
 //  {$ENDIF WIN98_SUP}
 
     away, na, ss, boss, autoexit,
-    clearXSts, setVol :boolean;
+    clearXSts, setVol : boolean;
     awayTime, naTime : Integer;
     msg :string;
     triggered:(TR_none, TR_away, TR_na);
@@ -619,27 +619,27 @@ var
   autostartUIN : TUID;
   RnQStartingStatus, RnQStartingVisibility : Int8;
   lastStatus, lastStatusUserSet : Int8;
-  rosterTitle :string;
-  automessages:Tstrings;
-  keepalive:record
-    enabled:boolean;
-    freq:integer;
-    timer:integer;
+  rosterTitle : string;
+  automessages: Tstrings;
+  keepalive: record
+    enabled: boolean;
+    freq: integer;
+    timer: integer;
    end;
   fixingWindows:record
-    lastWidth, lastRightSpace:integer;
+    lastWidth, lastRightSpace: integer;
     onTheRight: boolean;
    end;
   sendOnEnter,
   tempBlinkTime,
-  wheelVelocity:integer;
-  disabledPlugins:string;
-  sortBy:TsortBy;
-  transparency:record
-    forRoster, forChat, forTray :boolean;
-    chgOnMouse : Boolean;
-    active,inactive:integer;
-    tray : Integer;
+  wheelVelocity: integer;
+  disabledPlugins: string;
+  sortBy: TsortBy;
+  transparency: record
+    forRoster, forChat, forTray: boolean;
+    chgOnMouse: Boolean;
+    active, inactive: integer;
+    tray: Integer;
    end;
   macros : Tmacros;
   splashFrm : Tform;
@@ -651,13 +651,13 @@ var
     autochecking,
     checking,
     enabled,
-    betas :boolean;
-    every :integer;
-    lastSerial :integer;
-    last :Tdatetime;
-//    info :string;
+    betas : boolean;
+    every : integer;
+    lastSerial : integer;
+    last : Tdatetime;
+//    info : string;
     end;
-  fontstylecodes :record
+  fontstylecodes: record
     enabled: boolean;
     end;
    {$IFDEF CHECK_INVIS}

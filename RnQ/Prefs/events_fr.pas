@@ -395,7 +395,7 @@ begin
       gr.Height := min(Rect.Bottom - Rect.Top, cy);
       gr.Width  := min(Rect.Right - Rect.Left, cx);
      end;
-    inc(gr.x, 2 + theme.drawPic(cnv.Handle, gR, picElm).cx);
+    inc(gr.x, 2 + theme.drawPic(cnv.Handle, gR, picElm, GetParentCurrentDpi).cx);
     s := getTranslation(Cptn);
 //  cnv.textout(x, y, s);
     Rect.Left := gR.X;

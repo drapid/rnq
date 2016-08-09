@@ -139,8 +139,8 @@ Type
              flags_: integer; pID: integer = 0): Thevent;
     destructor Destroy; override;
     function  pic: TPicName;
-    function  PicSize: TSize;
-    function  Draw(DC: HDC; x, y: Integer): TSize;
+    function  PicSize(const PPI: Integer): TSize;
+    function  Draw(DC: HDC; x, y: Integer; const PPI: Integer): TSize;
 //    function  GetImgElm : TRnQThemedElementDtls;
 //    function  font:Tfont;
     procedure applyFont(font: Tfont);
@@ -342,22 +342,22 @@ begin
     result:=event2imgName(kind)
 end;
 
-function Thevent.PicSize : TSize;
+function Thevent.PicSize(const PPI: Integer): TSize;
 begin
   if fImgElm.ThemeToken <> theme.token then
    begin
     fImgElm.picName := pic;
    end;
-  PicSize := theme.GetPicSize(fImgElm);
+  PicSize := theme.GetPicSize(fImgElm, 0, PPI);
 end;
 
-function Thevent.Draw(DC : HDC; x, y : Integer) : TSize;
+function Thevent.Draw(DC: HDC; x, y: Integer; const PPI: Integer): TSize;
 begin
   if fImgElm.ThemeToken <> theme.token then
    begin
     fImgElm.picName := pic;
    end;
-  Draw := theme.drawPic(dc, Point(x, y), fImgElm);
+  Draw := theme.drawPic(dc, Point(x, y), fImgElm, PPI);
 end;
 {
 function Thevent.GetImgElm : TRnQThemedElementDtls;

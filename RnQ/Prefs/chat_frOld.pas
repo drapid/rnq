@@ -72,7 +72,7 @@ procedure TchatFr.sendonenterSpinTopClick(Sender: TObject);
 begin
   if sendOnEnterTMP<3 then
     inc(sendOnEnterTMP);
-  sendonenterLbl.Caption:=getTranslation(s,[sendonenterTMP]);
+  sendonenterLbl.Caption := getTranslation(s,[sendonenterTMP]);
 end;
 
 procedure TchatFr.SmlUseSizeChkClick(Sender: TObject);
@@ -84,12 +84,12 @@ procedure TchatFr.sendonenterSpinBottomClick(Sender: TObject);
 begin
   if sendOnEnterTMP>0 then
     dec(sendOnEnterTMP);
-  sendonenterLbl.Caption:=getTranslation(s,[sendonenterTMP]);
+  sendonenterLbl.Caption := getTranslation(s, [sendonenterTMP]);
 end;
 
 procedure TchatFr.initPage;
 begin
-  sendonenterLbl.Caption:=getTranslation(s,[sendonenter]);
+  sendonenterLbl.Caption := getTranslation(s, [sendonenter]);
 end;
 
 procedure TchatFr.applyPage;

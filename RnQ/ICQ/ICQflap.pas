@@ -119,8 +119,8 @@ end;
 
 function SNAC_ver(fam, sub, flags: word; ref: integer; ver: word): RawByteString; overload;
 begin
-  result := word_BEasStr(fam)+word_BEasStr(sub)+word_BEasStr(flags or $8000)
-           +dword_BEasStr(ref) + Length_BE(TLV(1, Word(ver)));
+  result := word_BEasStr(fam) + word_BEasStr(sub) + word_BEasStr(flags or $8000)
+           + dword_BEasStr(ref) + Length_BE(TLV(1, Word(ver)));
 end;
 
 function SNAC_shortver(fam, sub, flags: word; ref: integer; ver: word): RawByteString; overload;

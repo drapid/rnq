@@ -127,7 +127,8 @@ procedure connect_after_dns(const proto: TRnQProtocol);
 function  ints2cl(a: TintegerDynArray): TRnQCList;
 function  event2imgName(e: integer): TPicName;
 function  statusDrawExt(const DC: HDC; const x, y: Integer; const s: byte;
-                        const inv: Boolean = False; const ExtSts: Byte = 0) : TSize;
+                        const inv: Boolean = False; const ExtSts: Byte = 0;
+                        const PPI: Integer = 0) : TSize;
 //function  statusDraw(cnv:Tcanvas; x,y:integer; s:Tstatus; inv:boolean=FALSE) : TSize;
 function  beh2str(kind: integer): RawByteString;
 procedure str2beh(const b, s: RawByteString); overload;
@@ -1972,7 +1973,7 @@ begin
   until not result;
 end; // enterUinDlg
 
-function enterPwdDlg(var pwd: String; const title: string=''; maxLength: integer=0;
+function enterPwdDlg(var pwd: String; const title: string = ''; maxLength: integer = 0;
                       AllowNull: Boolean = False): Boolean;
 var
   frm: pwdDlg.TmsgFrm;
@@ -1999,7 +2000,7 @@ begin
   // setTopMost(frm, True);
   frm.showModal;
   frm.BringToFront;
-  result:= frm.exitCode=pwdDlg.EC_enter;
+  result := frm.exitCode=pwdDlg.EC_enter;
   if result then
     pwd:=trim(frm.txtBox.text);
   FreeAndNil(frm);
@@ -2128,7 +2129,8 @@ begin
 end;}
 
 function statusDrawExt(const DC: HDC; const x, y: integer; const s: byte;
-                       const inv: boolean=FALSE; const ExtSts: Byte = 0): TSize;
+                       const inv: boolean = FALSE; const ExtSts: Byte = 0;
+                       const PPI: Integer = 0): TSize;
 begin
  {$IFDEF PROTOCOL_ICQ}
   if XStatusAsMain and (ExtSts > 0) then
@@ -2147,37 +2149,40 @@ begin
        statusPics[s, inv].Element  := RQteDefault;
       end;
      if DC = 0 then
-       Result := theme.GetPicSize(statusPics[s, inv])
+       Result := theme.GetPicSize(statusPics[s, inv], 0, PPI)
       else
-       result := theme.drawPic(DC, Point(x, y), statusPics[s, inv])
+       result := theme.drawPic(DC, Point(x, y), statusPics[s, inv], PPI)
     end;
 end;
 
-procedure showAuthreq(c:TRnQcontact; msg:string);
+procedure showAuthreq(c: TRnQcontact; msg: string);
 var
-  ar:TauthreqFrm;
+  ar: TauthreqFrm;
 begin
-msg:=dupString(msg);
-ar:=findAuthreq(c);
-if ar = NIL then
-  TauthreqFrm.doAll(RnQmain, c, msg)
-else
-  begin
-  ar.msgBox.text:=msg;
-  ar.bringToFront;
-  end;
+  msg:=dupString(msg);
+  ar:=findAuthreq(c);
+  if ar = NIL then
+    TauthreqFrm.doAll(RnQmain, c, msg)
+   else
+    begin
+      ar.msgBox.text:=msg;
+      ar.bringToFront;
+    end;
 end; // showAuthreq
 
-function countContactsIn(proto : TRnQProtocol; const st: byte):integer;
+function countContactsIn(proto: TRnQProtocol; const st: byte): integer;
 var
-  cl:TRnQCList;
-  i:integer;
+  cl: TRnQCList;
+  i: integer;
+//  c: TRnQContact;
 begin
   result := 0;
   cl := TRnQCList(proto.readList(LT_ROSTER));
+//  for c in cl do
+//    if byte(c.status) = st then
   for i:=0 to TList(cl).count-1 do
-  if byte(TRnQContact(cl[i]).status) = st then
-    inc(result); 
+    if byte(TRnQContact(cl[i]).status) = st then
+      inc(result);
 end; // countContactsIn
 
 procedure toggleOnlyOnline;
@@ -2638,9 +2643,9 @@ begin
   setLength(result, dim);
 end; // db2str
 
-procedure clearDB(db:TRnQCList);
+procedure clearDB(db: TRnQCList);
 var
-  i:integer;
+  i: integer;
 begin
 for i:=0 to TList(db).count-1 do
   with db.getAt(i) do
@@ -3381,9 +3386,9 @@ begin
 //           end;
         end;
     EK_CONTACTS:
-      TselectCntsFrm.doAll2( RnQmain,getTranslation('from %s',[ev.who.displayed]),
+      TselectCntsFrm.doAll2(RnQmain, getTranslation('from %s', [ev.who.displayed]),
             getTranslation('Add selected contacts'), ev.who.fProto,
-            ev.cl.clone, RnQmain.addContactsAction, [sco_multi,sco_selected], @wnd)
+            ev.cl.clone, RnQmain.addContactsAction, [sco_multi, sco_selected], @wnd)
   end;
   try
 //    FreeAndNil(ev);
@@ -3567,15 +3572,15 @@ begin
      if not (Tpopupmenu(c).Items.Items[i] is TRQMenuItem) then
       with Tpopupmenu(c).Items.Items[i] do
       begin
-        OnAdvancedDrawItem:=RnQmain.menuDrawitem;
-        onMeasureItem:=RnQmain.menuMeasureItem;
+        OnAdvancedDrawItem := RnQmain.menuDrawitem;
+        onMeasureItem := RnQmain.menuMeasureItem;
   //      onMeasureItem := TRQMenuItem.MeasureItem;
         for i1 := 0 to Tpopupmenu(c).Items.Items[i].Count-1 do
         if not (Tpopupmenu(c).Items.Items[i].Items[i1] is TRQMenuItem) then
          with Tpopupmenu(c).Items.Items[i].Items[i1] do
           begin
-           OnAdvancedDrawItem:=RnQmain.menuDrawitem;
-           onMeasureItem:=RnQmain.menuMeasureItem;
+           OnAdvancedDrawItem := RnQmain.menuDrawitem;
+           onMeasureItem := RnQmain.menuMeasureItem;
           end;
       end;
    end;
