@@ -39,8 +39,8 @@ procedure addTempVisibleFor(time: integer; c: TRnQContact);
 function  infoToStatus(const info: RawByteString): byte;
 function  infoToXStatus(const info: RawByteString): Byte;
 procedure drawHint(cnv: Tcanvas; kind: Integer;
-                   groupid : integer; c : TRnQcontact;
-                   var r: Trect; calcOnly: Boolean = False);
+                   groupid: integer; c: TRnQcontact;
+                   var r: Trect; calcOnly: Boolean = False; PPI: Integer = 0);
 //procedure drawNodeHint(cnv:Tcanvas; node:Pvirtualnode; var r:Trect);
 function  unexistant(const uin: TUID): boolean;
 function  fileIncomePath(cnt: TRnQContact): String;
@@ -3721,16 +3721,16 @@ end;
 
 procedure drawHint(cnv: Tcanvas; kind: Integer;
                    groupid: integer; c: TRnQcontact;
-                   var r: Trect; calcOnly: Boolean = False);
+                   var r: Trect; calcOnly: Boolean = False; PPI: Integer = 0);
 const
-  border=5;
-  roundsize=16;
+  border= 5;
+  roundsize= 16;
   maxWidth = 300;
 var
 //  n:Tnode;
   maxX,x,y,dy, xdy:integer;
 
-  procedure textout(s:string); overload;
+  procedure textout(s: string); overload;
    var
      rr: TRect;
   begin
@@ -3786,7 +3786,7 @@ var
    textout(s);
   end; // textout
 
-  procedure fieldOut(const fn, fc: string; needTranslateFC : Boolean = false);
+  procedure fieldOut(const fn, fc: string; needTranslateFC: Boolean = false);
   begin
     textout(fn, []);
     if fc='' then
@@ -3800,7 +3800,7 @@ var
   //  inc(y, dy+2);
     inc(y, xdy+2);
   end; // fieldout
-  procedure fieldOutDP(const fn, fc: string; needTranslateFC : Boolean = false);
+  procedure fieldOutDP(const fn, fc: string; needTranslateFC: Boolean = false);
   begin
     textout(getTranslation(fn) + ': ', []);
     if fc='' then
@@ -3815,7 +3815,7 @@ var
     inc(y, xdy+2);
   end; // fieldout
 
-  procedure lineOut(clr:Tcolor);
+  procedure lineOut(clr: Tcolor);
   begin
     cnv.Pen.color:=clr;
     cnv.moveTo(r.left+15, y);
@@ -3837,7 +3837,7 @@ var
 //  begin
 //  end; // picOut
 //
-  function timeToStr(t:Tdatetime):string;
+  function timeToStr(t: Tdatetime): string;
   begin
     if t<1 then
       result:=''
@@ -3889,26 +3889,26 @@ begin
   theme.ApplyFont('roaster.hint', cnv.Font);
   dy := cnv.TextHeight('I');
 
-maxX:=0;
-x:=border;
-y:=roundsize div 2;
+  maxX := 0;
+  x := border;
+  y := roundsize div 2;
 case kind of
   NODE_CONTACT:
     begin
      if calcOnly then
-       with theme.GetPicSize(RQteDefault, rosterImgNameFor(c)) do
+       with theme.GetPicSize(RQteDefault, rosterImgNameFor(c), 0, PPI) do
        begin
         inc(x, cx+3);
         ty := cy;
         pic := Protocols_all.Protos_getXstsPic(c, false);
-        with theme.GetPicSize(RQteDefault, pic) do
+        with theme.GetPicSize(RQteDefault, pic, 0, PPI) do
          begin
           inc(x, cx+3);
           ty := max(cy,ty);
          end;
  {$IFDEF PROTOCOL_ICQ}
         if (c is TICQcontact) and (TICQcontact(c).birthFlag) then
-          with theme.GetPicSize(RQteDefault, PIC_BIRTH) do
+          with theme.GetPicSize(RQteDefault, PIC_BIRTH, 0, PPI) do
            begin
             inc(x, cx+3);
             ty := max(cy,ty);
@@ -3916,19 +3916,19 @@ case kind of
  {$ENDIF PROTOCOL_ICQ}
        end
       else
-       with theme.drawpic(cnv.Handle,x,y, rosterImgNameFor(c)) do
+       with theme.drawpic(cnv.Handle,x,y, rosterImgNameFor(c), True, PPI) do
        begin
         inc(x, cx+3);
         ty := cy;
         pic := Protocols_all.Protos_getXstsPic(c, false);
-        with theme.drawpic(cnv.Handle,x,y, pic) do
+        with theme.drawpic(cnv.Handle,x,y, pic, True, PPI) do
          begin
           inc(x, cx+3);
           ty := max(cy,ty);
          end;
  {$IFDEF PROTOCOL_ICQ}
         if (c is TICQcontact) and (TICQcontact(c).birthFlag) then
-          with theme.drawpic(cnv.Handle,x,y, PIC_BIRTH) do
+          with theme.drawpic(cnv.Handle,x,y, PIC_BIRTH, True, PPI) do
            begin
             inc(x, cx+3);
             ty := max(cy,ty);
@@ -4090,13 +4090,13 @@ case kind of
   NODE_GROUP:
     begin
      if calcOnly then
-       with theme.GetPicSize(RQteDefault, PIC_CLOSE_GROUP) do
+       with theme.GetPicSize(RQteDefault, PIC_CLOSE_GROUP, 0, PPI) do
        begin
         inc(x, cx+3);
         inc(y, cy-dy);
        end
      else
-       with theme.drawpic(cnv.Handle,x,y, PIC_CLOSE_GROUP) do
+       with theme.drawpic(cnv.Handle,x,y, PIC_CLOSE_GROUP, True, PPI) do
        begin
         inc(x, cx+3);
         inc(y, cy-dy);

@@ -11,6 +11,7 @@ object chatFrm: TchatFrm
   OldCreateOrder = True
   ScreenSnap = True
   OnActivate = FormActivate
+  OnAfterMonitorDpiChanged = FormAfterMonitorDpiChanged
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy

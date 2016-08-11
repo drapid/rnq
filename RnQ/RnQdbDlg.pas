@@ -94,10 +94,10 @@ begin
   resizeBtn.ImageName := PIC_DOWN;
   if not panelExpanded then
     exit;
-  resizeBtn.width:= theme.getPicSize(RQteButton, PIC_DOWN).cx+4;
+  resizeBtn.width := theme.getPicSize(RQteButton, PIC_DOWN, 0, getParentCurrentDPI).cx+4;
   resizeBtn.Repaint;
   panel.visible:=FALSE;
-  height:=height-panel.height;
+  height := height-panel.height;
   panelExpanded:=FALSE;
 end; // minimizePanel
 
@@ -106,9 +106,9 @@ begin
   resizeBtn.ImageName := PIC_UP;
   if panelExpanded then
     exit;
-  resizeBtn.width:= theme.getPicSize(RQteButton, PIC_UP).cx+4;
+  resizeBtn.width:= theme.getPicSize(RQteButton, PIC_UP, 0, getParentCurrentDPI).cx+4;
   resizeBtn.Repaint;
-  height:=height+panel.height;
+  height := height+panel.height;
   barPnl.visible:=FALSE;
   panel.visible:=TRUE;
   barPnl.visible:=TRUE;
@@ -134,7 +134,7 @@ begin
        c := TRnQContact(getNext);
        dbTree.AddChild(nil, c);
       end;
-    sbar.simpleText:=getTranslation('contacts in db: %d',[count]);
+    sbar.simpleText := getTranslation('contacts in db: %d', [count]);
    end;
   dbTree.EndUpdate;
 

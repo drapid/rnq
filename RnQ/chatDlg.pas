@@ -304,6 +304,9 @@ type
     procedure OnUploadSendData(Sender: TObject; Buffer: Pointer; Len: Integer);
     procedure chatShowDevToolsClick(Sender: TObject);
     procedure RnQSpeedButton1Click(Sender: TObject);
+    procedure InitScale(Sender: TObject; NewDPI: Integer);
+    procedure FormAfterMonitorDpiChanged(Sender: TObject; OldDPI,
+      NewDPI: Integer);
   {$IFDEF usesDC}
     procedure WMDROPFILES(var Message: TWMDROPFILES);  message WM_DROPFILES;
   {$ENDIF usesDC}
@@ -1008,6 +1011,8 @@ begin
   applyFormXY;
   applyTaskButton(self);
 
+  InitScale(Sender, getParentCurrentDPI);
+
   lastClickIdx := -1;
 end;
 
@@ -1662,6 +1667,7 @@ begin
   closeBtn.Height := i;
   SendBtn.Top := (panel.ClientHeight - SendBtn.Height) div 2;
   closeBtn.Top := (panel.ClientHeight - closeBtn.Height) div 2;
+  InitScale(Self, PPI);
 end; // updateGraphics
 
 procedure TchatFrm.pagectrlChanging(Sender: TObject; var AllowChange: Boolean);
@@ -2349,6 +2355,23 @@ begin
  {$ENDIF RNQ_FULL}
 end;
 
+procedure TchatFrm.InitScale(Sender: TObject; NewDPI: Integer);
+var
+  y: Integer;
+begin
+  y := statusDrawExt(0, 0, 0, byte(SC_ONLINE), False, 0, NewDPI).cy;
+  if y > 0 then
+    pagectrl.tabHeight := y + 4
+   else
+    pagectrl.tabHeight := 0;
+end;
+
+procedure TchatFrm.FormAfterMonitorDpiChanged(Sender: TObject; OldDPI,
+  NewDPI: Integer);
+begin
+  InitScale(Sender, NewDPI);
+end;
+
 procedure TchatFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   updatechatfrmXY;
@@ -2698,7 +2721,7 @@ begin
      pageCtrl.pages[i].caption :=
      // additional spaces for icon
 //    StringOfChar('_',2+theme.getPicSize(RQteDefault, status2imgName(byte(SC_ONLINE)), 16).cx div w);
-       StringOfChar('_',2+ statusDrawExt(0, 0, 0, byte(SC_ONLINE)).cx div w)
+       StringOfChar('_',2+ statusDrawExt(0, 0, 0, byte(SC_ONLINE), False, 0, getParentCurrentDPI).cx div w)
        +dupAmperstand(c.displayed);
 
  {$IFDEF RNQ_FULL}
@@ -2732,7 +2755,7 @@ begin
     pageCtrl.pages[idx].caption :=
        // additional spaces for icon
 //      StringOfChar('_',2+theme.getPicSize(RQteDefault, status2imgName(byte(SC_ONLINE)), 16).cx div w);
-      StringOfChar('_', 2 + statusDrawExt(0, 0, 0, byte(SC_ONLINE)).cx div w)
+      StringOfChar('_', 2 + statusDrawExt(0, 0, 0, byte(SC_ONLINE), False, 0, getParentCurrentDPI).cx div w)
       +dupAmperstand(c.displayed);
    {$IFDEF RNQ_FULL}
    {$IFDEF CHECK_INVIS}
@@ -2749,7 +2772,7 @@ begin
   else
     begin
      pageCtrl.pages[idx].caption := chats.byIdx(idx).lastInputText +    // additional spaces for icon
-       StringOfChar('_', 2 + theme.getPicSize(RQteDefault, 'plugintab' + IntToStrA(chats.byIdx(idx).ID), 16).cx div w);
+       StringOfChar('_', 2 + theme.getPicSize(RQteDefault, 'plugintab' + IntToStrA(chats.byIdx(idx).ID), 16, getParentCurrentDPI).cx div w);
      SendMessage(pagectrl.Handle, TCM_GETITEMRECT, idx, Longint(@R));
      //R.right := R.left+20;
      invalidateRect(pagectrl.handle, @R, TRUE);
@@ -4170,6 +4193,7 @@ var
   hnd : HDC;
 //  ImElm  : TRnQThemedElementDtls;
   Pic : TPicName;
+  PPI: Integer;
 //  i  : Integer;
 begin
 // Exit;
@@ -4249,7 +4273,7 @@ begin
   inc(r.left,4);
   inc(r.top, 4);
   dec(r.right); //dec(r.bottom);
-
+  PPI := GetParentCurrentDpi;
 //  oldMode:=
  SetBKMode(hnd, TRANSPARENT);
   if ci.chatType = CT_IM then
@@ -4261,9 +4285,9 @@ begin
       and ((blinking or c.fProto.getStatusDisable.blinking) or not blinkWithStatus) then
        begin
         if (blinking or c.fProto.getStatusDisable.blinking) then
-          inc(R.left, 1 + ev.Draw(hnd, R.left,R.top, GetParentCurrentDpi).cx)
+          inc(R.left, 1 + ev.Draw(hnd, R.left,R.top, PPI).cx)
         else
-          inc(R.left, 1 + ev.PicSize(GetParentCurrentDpi).cx);
+          inc(R.left, 1 + ev.PicSize(PPI).cx);
        end
     else
      begin
@@ -4287,7 +4311,7 @@ begin
           {$ENDIF}
              pic := c.statusImg;
          end;
-       inc(R.left, 1 + theme.drawPic(hnd, R.left,R.top, Pic).cx)
+       inc(R.left, 1 + theme.drawPic(hnd, R.left,R.top, Pic, True, PPI).cx)
      end;
     if active then
       p := 'chat.tab.active'
@@ -4334,7 +4358,7 @@ begin
   end
   else
     begin
-      inc(R.left, 1+theme.drawPic(hnd, R.left,R.top, 'plugintab' + IntToStrA(chats.byIdx(tabindex).id)).cx);
+      inc(R.left, 1+theme.drawPic(hnd, R.left,R.top, 'plugintab' + IntToStrA(chats.byIdx(tabindex).id), True, PPI).cx);
 //      oldMode:= SetBKMode(Handle, TRANSPARENT);
       inc(r.top, 2);
       TextOut(r.Left, r.Top, ci.lastInputText);
@@ -4419,7 +4443,7 @@ begin
   //вычислим размеры хинта - результат вернется в r
   bmp := createBitmap(1,1);
   bmp.Canvas.Font := Screen.HintFont;
-  drawHint(bmp.canvas, NODE_CONTACT, 0, ch.who, r, True);
+  drawHint(bmp.canvas, NODE_CONTACT, 0, ch.who, r, True, GetParentCurrentDpi);
   bmp.free;
 
 	//подготовим данные для отрисовки хинта

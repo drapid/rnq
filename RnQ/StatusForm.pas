@@ -191,7 +191,7 @@ var
  {$ENDIF ICQ_OLD_STATUS}
 begin
 //  childWindows.Add(self);
-  with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size) do
+  with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size, GetParentCurrentDpi) do
    begin
      BtnHeight := bound(cy, icon_size, 32)+8;
      BtnWidth  := bound(cx, icon_size, 32)+8;
@@ -232,8 +232,8 @@ begin
    ;
 //  bevel1.height := 8+(((High(aXStatus)-1) div BtnsInRow)+1)*21+((High(aXStatus)-1) div BtnsInRow)*3;
   bevel1.height := 8+(round((High(xStatusButtons)+1) / BtnsInRow + 0.5))*(BtnHeight+3);
-  clientwidth := 22 + 4+BtnsInRow*(BtnWidth+4);
-  Bevel1.Width := clientwidth - 16;
+  clientwidth := Bevel1.Left * 2 + 6 + 4+BtnsInRow*(BtnWidth+4);
+  Bevel1.Width := clientwidth - Bevel1.Left * 2;
 //  bevel1.Width+22;
 //  bevel1.Width := 4+BtnsInRow*(BtnWidth+4) - 4;
   XStatusStrMemo.Top := bevel1.Top + bevel1.height + 5;

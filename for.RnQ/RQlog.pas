@@ -76,8 +76,8 @@ uses
 var
   logEvFileData : String;
 
-procedure TlogFrm.addToLog(pkt : Boolean; const s,Text : String;
-                     const data : rawByteString; const Img : TPicName);
+procedure TlogFrm.addToLog(pkt: Boolean; const s, Text: String;
+                     const data: rawByteString; const Img: TPicName);
 var
   it : PLogItem;
 //  i:integer;
@@ -197,14 +197,14 @@ begin
   r.Y := 0;
   r.Height := PaintInfo.ContentRect.Bottom;
   r.Width  := r.Height;
-  theme.drawPic(PaintInfo.Canvas.Handle, r, Img);
+  theme.drawPic(PaintInfo.Canvas.Handle, r, Img, True, GetParentCurrentDpi);
   x := r.X + r.Width;
 //       theme.drawPic(PaintInfo.Canvas.Handle, PaintInfo.ContentRect.Left +3, 0,
 //         Img).cx+6;
 //       .cx+2;
 
     SetBkMode(PaintInfo.Canvas.Handle, TRANSPARENT);
-    PaintInfo.Canvas.textout(PaintInfo.ContentRect.Left +x,2, s);
+    PaintInfo.Canvas.textout(PaintInfo.ContentRect.Left + x, 2, s);
  end;
 end;
 

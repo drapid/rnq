@@ -3740,7 +3740,7 @@ begin
 
   bmp := createBitmap(1,1);
   bmp.Canvas.Font := Screen.HintFont;
-  drawHint(bmp.canvas, n.kind, n.groupId, n.contact, r, True);
+  drawHint(bmp.canvas, n.kind, n.groupId, n.contact, r, True, GetParentCurrentDpi);
 //  drawNodeHint(bmp.canvas, node, r);
   bmp.free;
 end;
@@ -3759,7 +3759,7 @@ begin
   if n = nil then
     Exit;
 //  drawNodeHint(hintcanvas, node, r);
-  drawHint(hintcanvas, n.kind, n.groupId, n.contact, r);
+  drawHint(hintcanvas, n.kind, n.groupId, n.contact, r, false, GetParentCurrentDpi);
 end;
 
 procedure TRnQmain.minBtnClick(Sender: TObject);

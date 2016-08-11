@@ -25,7 +25,6 @@ object RnQdbFrm: TRnQdbFrm
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitWidth = 289
     DesignSize = (
       290
       127)
@@ -37,7 +36,6 @@ object RnQdbFrm: TRnQdbFrm
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Purge contacts'
       TabOrder = 1
-      ExplicitWidth = 275
       object nilChk: TRadioButton
         Left = 8
         Top = 24
@@ -86,31 +84,28 @@ object RnQdbFrm: TRnQdbFrm
     Align = alBottom
     AutoSize = True
     BevelOuter = bvNone
-    Caption = 'barPnl'
     TabOrder = 1
-    ExplicitWidth = 289
-    DesignSize = (
-      290
-      22)
     object resizeBtn: TRnQSpeedButton
       Left = 0
       Top = 0
       Width = 22
       Height = 22
+      Align = alLeft
       Flat = True
       ImageName = 'down'
       OnClick = resizeBtnClick
     end
     object sbar: TStatusBar
-      Left = 24
+      Left = 22
       Top = 0
-      Width = 263
-      Height = 21
-      Align = alNone
-      Anchors = [akLeft, akTop, akRight]
+      Width = 268
+      Height = 22
+      Align = alClient
       Panels = <>
       SimplePanel = True
-      ExplicitWidth = 262
+      ExplicitLeft = 24
+      ExplicitWidth = 259
+      ExplicitHeight = 21
     end
   end
   object dbTree: TVirtualDrawTree
@@ -132,7 +127,6 @@ object RnQdbFrm: TRnQdbFrm
     Header.PopupMenu = VTHPMenu
     Header.SortColumn = 0
     TabOrder = 2
-    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoSort, toAutoTristateTracking, toAutoDeleteMovedNodes]
     TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toThemeAware, toUseBlendedImages]
     TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect, toRightClickSelect]
     OnCompareNodes = dbTreeCompareNodes

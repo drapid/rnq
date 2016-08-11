@@ -3,7 +3,7 @@ object xStatusForm: TxStatusForm
   Top = 307
   BorderStyle = bsSizeToolWin
   Caption = 'Choose the xStatus...'
-  ClientHeight = 317
+  ClientHeight = 267
   ClientWidth = 255
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -21,7 +21,7 @@ object xStatusForm: TxStatusForm
   OnShow = FormShow
   DesignSize = (
     255
-    317)
+    267)
   PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
@@ -45,11 +45,12 @@ object xStatusForm: TxStatusForm
     Left = 8
     Top = 159
     Width = 239
-    Height = 114
+    Height = 64
     Anchors = [akLeft, akTop, akRight, akBottom]
     MaxLength = 255
     TabOrder = 2
     OnChange = XStatusStrMemoChange
+    ExplicitHeight = 114
   end
   object xSetButton: TRnQButton
     Left = 169
@@ -64,7 +65,7 @@ object xStatusForm: TxStatusForm
   end
   object SBar: TStatusBar
     Left = 0
-    Top = 298
+    Top = 248
     Width = 255
     Height = 19
     Panels = <
@@ -74,16 +75,18 @@ object xStatusForm: TxStatusForm
       item
         Width = 50
       end>
+    ExplicitTop = 298
   end
   object OldxStChk: TCheckBox
     AlignWithMargins = True
     Left = 3
-    Top = 278
+    Top = 228
     Width = 249
     Height = 17
     Align = alBottom
     Caption = 'Use old XStatus'
     TabOrder = 4
     OnClick = OldxStChkClick
+    ExplicitTop = 278
   end
 end
