@@ -667,7 +667,7 @@ begin
   chatFrm.Caption := RnQmain.Caption+' - '+getTranslation('Chat window');
 end; // updateCaption
 
-procedure TRnQmain.ProtoEvent(Sender:TRnQProtocol; event:Integer);
+procedure TRnQmain.ProtoEvent(Sender: TRnQProtocol; event: Integer);
 begin
   Protocols_all.Protos_Events(Sender, event);
 end;

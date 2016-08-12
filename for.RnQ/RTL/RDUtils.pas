@@ -1400,6 +1400,8 @@ var
   pc: PChar;
   c: byte;
   tmp: word;
+//  tmp4: DWORD;
+  tmp4: ShortString;
 begin
   if Value='' then
   begin
@@ -1422,12 +1424,51 @@ begin
       inc(pc);
       continue;
     end;
-    if ((c shr 1)=$7E) or ((c shr 2)=$3E) or ((c shr 3)=$1E) then begin
+//    if ((c shr 1)=$7E) or ((c shr 2)=$3E) or ((c shr 3)=$1E) then begin
     //  1111110x            111110xx            11110xxx
+
+    if ((c shr 1)=$7E) or ((c shr 2)=$3E) then begin // Upd 2016
+    //  1111110x            111110xx
 
       error;
       exit;
     end;
+//>>> Added 2016 for Emoji
+    if (c shr 3)=$1E {11110xxx} then begin    //Символ занимает 4 байта
+      if Integer(Len-i)<1 then               //Строка кончилась?
+        if i=2 then begin
+          error;
+          exit;
+        end
+        else break;
+//      tmp4:= c and $7;                         // 3 младших бита
+      SetLength(tmp4, 4);
+      tmp4[1]:= Value[i-1];
+      for k := 1 to 3 do begin
+        c := byte(Value[i]);
+        inc(i);
+        if (c shr 6)<>2 then begin           //10xxxxxx
+          error;
+          exit;
+        end;
+//        tmp4 := (tmp4 shl 6) or (c and $3F);     //Добавляем 6 бит в конец
+        tmp4[k+1] := Value[i-1];
+      end;
+      k := Cardinal(UnicodeFromLocaleChars(CP_UTF8, 0, @tmp4[1], 4, pc, len - j));
+      if k > 0 then
+         begin
+          inc(j, k);
+          inc(pc, k);
+         end
+       else
+        begin
+          error;
+          exit;
+        end;
+
+      continue;
+    end;
+//<<< Added 2016 for Emoji
     if (c shr 4)=$E {1110xxxx} then begin    //Символ занимает 3 байта
       if Integer(Len-i)<1 then               //Строка кончилась?
         if i=2 then begin
@@ -1480,7 +1521,7 @@ begin
   if j<Len then SetLength(Result,j);
 end;
 
-function UnUTF(const s : RawByteString) : String;
+function UnUTF(const s: RawByteString): String;
 {$IFNDEF UNICODE}
 var
 //  ss: RawString;

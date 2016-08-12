@@ -3950,7 +3950,7 @@ begin
  else
   begin // Simple MSG
 //  requiredACK:=FALSE;
-  requiredACK:=True;
+    requiredACK:=True;
    if SendingUTF
 //     or (c.status = SC_OFFLINE)
 //      and ((CAPS_sm_UTF8 in c.capabilitiesSm)or c.isAIM) and (c.isOnline)
@@ -5737,27 +5737,27 @@ end; // parseoffgoingUser
 
 procedure TicqSession.parseContactsString(s: RawByteString);
 var
-  c:TICQcontact;
-  vUID : TUID;
+  c: TICQcontact;
+  vUID: TUID;
 begin
-eventContacts:=TRnQCList.create;
-chop(#$FE,s);      // skippo il numero dei contatti
-while s > '' do
-  try
-    vUID := chop(#$FE,s);
-    c:=getICQContact(vUID);
-    if c.equals(MyAccount) then
-      chop(#$FE,s)
-    else
-     begin
-          if not fRoster.exists(c) then
-            c.nick:= UnUTF(chop(#$FE,s))
-           else
-            chop(#$FE,s);
-      eventContacts.add(c);
-     end;
-  except
-  end;
+  eventContacts:=TRnQCList.create;
+  chop(#$FE,s);      // skippo il numero dei contatti
+  while s > '' do
+    try
+      vUID := chop(#$FE,s);
+      c := getICQContact(vUID);
+      if c.equals(MyAccount) then
+        chop(#$FE,s)
+      else
+       begin
+            if not fRoster.exists(c) then
+              c.nick := UnUTF(chop(#$FE,s))
+             else
+              chop(#$FE,s);
+        eventContacts.add(c);
+       end;
+    except
+    end;
 end; // parseContactsString
 
 procedure TicqSession.parseAuthString(s: RawByteString);
@@ -6214,7 +6214,8 @@ case Byte(snac[10]) of // msg format
       msgEnc := getTLVSafe($2711, snac, ofs);
 
       if sA = 'utf-8' then
-        msg := unUTF(msgEnc)
+//        msg := unUTF(msgEnc)
+        msg := UTF8ToStr(msgEnc)
       else if sA = 'us-ascii' then
         msg := msgEnc
       else // unknown codepage
@@ -6267,7 +6268,8 @@ case Byte(snac[10]) of // msg format
               else
                CrptMsg := '';
              if sA = 'utf-8' then
-               eventDirect.fileName := unUTF(CrptMsg)
+//               eventDirect.fileName := unUTF(CrptMsg)
+               eventDirect.fileName := UTF8ToStr(CrptMsg)
               else
              if sA = 'us-ascii' then
                eventDirect.fileName := CrptMsg
@@ -7426,7 +7428,7 @@ end; // parseNewUIN
 
 procedure TicqSession.onDataAvailable(Sender: TObject; Error: Word);
 var
-  pkt : RawByteString;
+  pkt: RawByteString;
 begin
  {$IFDEF UNICODE}
   pkt := sock.ReceiveStrA;
@@ -7436,7 +7438,7 @@ begin
   received(sender, Error, pkt);
 end;
 
-procedure TicqSession.OnProxyError(Sender : TObject; Error : Integer; Msg : String);
+procedure TicqSession.OnProxyError(Sender: TObject; Error: Integer; Msg: String);
 begin
 // if not isAva then
 
@@ -7464,14 +7466,14 @@ begin
 end;
 
 
-procedure TicqSession.received(Sender: TObject; Error: Word; pkt : RawByteString);
+procedure TicqSession.received(Sender: TObject; Error: Word; pkt: RawByteString);
 var
 //  pkt, s:string;
-  channel,ref:integer;
-  flags : Word;
-  oldVis : Tvisibility;
-  service:TsnacService;
-  i : Integer;
+  channel, ref: integer;
+  flags: Word;
+  oldVis: Tvisibility;
+  service: TsnacService;
+  i: Integer;
 //  i, j: Integer;
 begin
  try

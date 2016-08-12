@@ -278,7 +278,7 @@ begin
   if (not EnabledBaloons) or (not ShowBalloons) then
     exit;
 //  ZeroMemory(@NID_50, SizeOf(NID_50));
-  ZeroMemory(@NID_50, NOTIFYIconDataW_V4_SIZE);
+  ZeroMemory(@NID_50, NOTIFYIconDataW_V2_SIZE);
   with NID_50 do
   begin
     cbSize := NOTIFYIconDataW_V2_SIZE;
@@ -287,6 +287,7 @@ begin
     uFlags := NIF_INFO;
 //    StrPCopy(PWideChar(@szInfo[0]), '');
 //    StrPCopy(PWideChar(@szInfoTitle[0]), '');
+//     := trayIcon.data.;
   end;
   Shell_NotifyIcon(NIM_MODIFY, @NID_50);
 end;

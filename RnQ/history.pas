@@ -716,10 +716,10 @@ end;
 
 INITIALIZATION
 
-writingQ:=Tlist.create;
+  writingQ:=Tlist.create;
 
 FINALIZATION
-writingQ.free;
-writingQ := NIL;
+  writingQ.free;
+  writingQ := NIL;
 
 end.

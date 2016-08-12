@@ -69,7 +69,7 @@ implementation
    Forms, SysUtils, DateUtils,
    Types, OverbyteIcsWSocket,
  {$IFDEF UNICODE}
-   AnsiStrings, AnsiClasses,
+   AnsiStrings, AnsiClasses, WideStrUtils,
  {$ENDIF}
    RnQBinUtils, RnQNet, RQUtil, RnQDialogs, RQlog,
 //   RnQProtocol,
@@ -1727,6 +1727,9 @@ case ev of
            thisICQ.eventMsgA := _istring_at(vS, 2);
            e.flags := e.flags and not IF_CODEPAGE_MASK;
          end;
+        if e.flags and IF_CODEPAGE_MASK = 0 then
+         if IsUTF8String(thisICQ.eventMsgA) then
+          e.flags := e.flags or IF_UTF8_TEXT;
         e.ParseMsgStr(thisICQ.eventMsgA);
         if behave(e, EK_msg) then
           NILifNIL(c);
@@ -1815,19 +1818,21 @@ case ev of
    statusIcon.update;
 end; // icqEvent
 
-function getRnQVerFor(c:TRnQContact):Integer;
+function getRnQVerFor(c: TRnQContact): Integer;
 var
-  s : RawByteString;
+  s: RawByteString;
   capa: RawByteString;
-  i:integer;
+  i: integer;
 begin
-  result:=0;
-  if c=NIL then exit;
+  result := 0;
+  if c=NIL then
+    exit;
   case TICQcontact(c).lastupdate_dw of
     RnQclientID:
       result    := TICQcontact(c).lastinfoupdate_dw and ($FFFFFF); // Rapid D
   end;
-  if result > 0 then exit;
+  if result > 0 then
+    exit;
 
   s:= TICQcontact(c).extracapabilities;
  while s > '' do
