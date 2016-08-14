@@ -2135,9 +2135,9 @@ begin
  {$IFDEF PROTOCOL_ICQ}
   if XStatusAsMain and (ExtSts > 0) then
     if DC = 0 then
-      Result := theme.GetPicSize(RQteDefault, XStatusArray[ExtSts].PicName)
+      Result := theme.GetPicSize(RQteDefault, XStatusArray[ExtSts].PicName, 0, PPI)
      else
-      Result := theme.drawPic(DC, x, y, XStatusArray[ExtSts].PicName)
+      Result := theme.drawPic(DC, x, y, XStatusArray[ExtSts].PicName, True, PPI)
    else
  {$ENDIF PROTOCOL_ICQ}
     begin
@@ -2159,13 +2159,13 @@ procedure showAuthreq(c: TRnQcontact; msg: string);
 var
   ar: TauthreqFrm;
 begin
-  msg:=dupString(msg);
-  ar:=findAuthreq(c);
+  msg := dupString(msg);
+  ar := findAuthreq(c);
   if ar = NIL then
     TauthreqFrm.doAll(RnQmain, c, msg)
    else
     begin
-      ar.msgBox.text:=msg;
+      ar.msgBox.text := msg;
       ar.bringToFront;
     end;
 end; // showAuthreq
@@ -3722,13 +3722,15 @@ end;
 procedure drawHint(cnv: Tcanvas; kind: Integer;
                    groupid: integer; c: TRnQcontact;
                    var r: Trect; calcOnly: Boolean = False; PPI: Integer = 0);
-const
-  border= 5;
-  roundsize= 16;
-  maxWidth = 300;
+{const
+  border: WORD = 5;
+  roundsize: WORD = 16;
+  maxWidth: WORD = 300;
+}
 var
 //  n:Tnode;
-  maxX,x,y,dy, xdy:integer;
+  maxX,x,y,dy, xdy: integer;
+  border, roundsize, maxWidth: WORD;
 
   procedure textout(s: string); overload;
    var
@@ -3848,7 +3850,7 @@ var
 var
   i,
   a, a2, a3: integer;
-  cl:TRnQCList;
+  cl: TRnQCList;
   ty : Integer;
   pic : TPicName;
  {$IFDEF PROTOCOL_ICQ}
@@ -3867,6 +3869,13 @@ begin
     exit;
   if cnv=NIL then
     exit;
+
+  if PPI > cDefaultDPI then
+    begin
+      border := MulDiv(5, PPI, cDefaultDPI);
+      roundsize := MulDiv(16, PPI, cDefaultDPI);
+      maxWidth  := MulDiv(300, PPI, cDefaultDPI);
+    end;
 
 //  n:=getNode(node);
  {$IFDEF PROTOCOL_ICQ}

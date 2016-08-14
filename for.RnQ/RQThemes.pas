@@ -85,24 +85,25 @@ type
 type
   TSmlObj = class(TObject)
    public
-    SmlStr : TStringList;
-    Animated : Boolean;
-    AniIdx : Integer;
+    SmlStr: TStringList;
+    Animated: Boolean;
+    AniIdx: Integer;
   end;
   TSndObj = class(TObject)
    public
-    str : String;
-    s3m : TMemoryStream;
+    str: String;
+    s3m: TMemoryStream;
   end;
   TPicObj = class(TObject)
    public
 //  TPicObj = record
-    bmp : TRnQBitmap;
+    bmp: TRnQBitmap;
   {$IFDEF PRESERVE_BIG_FILE}
     pic: TMemoryStream;
   {$ENDIF PRESERVE_BIG_FILE}
 //    bmp : TGPImage;
-    ref : integer;
+    ref: integer;
+    PPI: WORD;
 //    AniIdx : Integer;
   end;
  const
@@ -284,7 +285,7 @@ type
     procedure addProp(const name: TPicName; kind: TthemePropertyKind; var pic: TThemePic); overload;
 //    procedure delProp(name:String;kind:TthemePropertyKind);
  {$IFDEF RNQ_FULL}
-    function addProp(name: AnsiString; pic: TRnQAni): Integer; overload;
+    function addProp(name: AnsiString; pic: TRnQAni; const PPI: Word): Integer; overload;
 //    function addProp(name:string; pic: TRnQBitmap) : Integer; overload;
  {$ENDIF RNQ_FULL}
    public
@@ -1283,7 +1284,7 @@ end; // loadTheme
 
 
   {$IFDEF USE_GDIPLUS}
-function TRQtheme.GetPic13(const name : TPicName; var pic: TGPImage; AddPic : Boolean = True) : Boolean;
+function TRQtheme.GetPic13(const name: TPicName; var pic: TGPImage; AddPic: Boolean = True) : Boolean;
 var
   i : Integer;
 //  bmp : TRnQBitmap;
@@ -1489,7 +1490,7 @@ end;
  {$ENDIF USE_GDIPLUS}
 
   {$IFNDEF USE_GDIPLUS}
-function TRQtheme.GetBrush(name : TPicName) : HBRUSH;
+function TRQtheme.GetBrush(name: TPicName): HBRUSH;
 var
   i : Integer;
   bmp : TRnQBitmap;
@@ -2212,7 +2213,7 @@ begin
 //   Result := True;
 end;
 
-function TRQtheme.pic2hIcon(const picName:TPicName; var ico:HICON) : Boolean;
+function TRQtheme.pic2hIcon(const picName: TPicName; var ico: HICON): Boolean;
 var
   bmp : TRnQBitmap;
 //  vIco : TIcon;
@@ -2314,7 +2315,7 @@ begin
 //      FBigPics.AddObject(AnsiLowerCase(name), tempPic)
 end;
 
-function TRQtheme.addprop(const name: TPicName; kind:TthemePropertyKind; var pBmp: TRnQBitmap) : Integer;
+function TRQtheme.addprop(const name: TPicName; kind: TthemePropertyKind; var pBmp: TRnQBitmap): Integer;
 var
   i : Integer;
 //  tempPic :TPicObj;
@@ -2786,6 +2787,7 @@ var
 //  LastPicFName : String; // For support '@' at pics
 //  LastLoadedPic : TRnQBitmap;
   LastPicIDX : Integer; // For support '@' at pics
+  CurrentPPI: Word;
 
   function fullpath(const fn: string): string;
   begin
@@ -3200,6 +3202,7 @@ begin
   Exit;
 // path:=ExtractFilePath(fn);
  inc(curToken);
+ CurrentPPI := cDefaultDPI;
  // Adding one empty image
     {$IFDEF USE_GDIPLUS}
    loadedpic := TRnQBitmap.Create(icon_size, icon_size, PixelFormat32bppARGB);
@@ -3256,6 +3259,7 @@ begin
      else
       begin
         section:=TRQsection(i);
+        CurrentPPI := cDefaultDPI;
         continue;
       end;
     end;
@@ -3265,6 +3269,12 @@ begin
   if k='include' then
    begin
      loadThemeScript(UnUTF(v), ts);
+     continue;
+   end;
+
+  if k='PPI' then
+   begin
+     CurrentPPI := StrToIntDef(v, cDefaultDPI);
      continue;
    end;
 
@@ -3336,7 +3346,7 @@ begin
          LastSmile := par;
         {$IFDEF RNQ_FULL}
          if not NonAnimated then
-           i := addprop(LastSmile, loadedAniPic)
+           i := addprop(LastSmile, loadedAniPic, CurrentPPI)
           else
            if Assigned(loadedAniPic) then
              loadedAniPic.Free;
@@ -4484,7 +4494,7 @@ end;
  {$ENDIF RNQ_LITE}
 
 {$IFDEF RNQ_FULL}
-function TRQtheme.addProp(name:AnsiString; pic: TRnQAni) : Integer;
+function TRQtheme.addProp(name: AnsiString; pic: TRnQAni; const PPI: WORD): Integer;
 //var
 //  Index: Integer;
 begin

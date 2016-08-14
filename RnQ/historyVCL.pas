@@ -1524,13 +1524,13 @@ var
                 b := infoToXStatus(sa);
   //              if (not XStatusAsMain) and (st <> SC_ONLINE)and (b>0) then
                 if (st <> byte(SC_ONLINE))or(not XStatusAsMain)or (b=0)  then
-                 with statusDrawExt(Cnv.Handle, curX+2, curY, st, (length(sa)>4) and boolean(sa[5])) do
+                 with statusDrawExt(Cnv.Handle, curX+2, curY, st, (length(sa)>4) and boolean(sa[5]), 0, PPI) do
                   inc(curX, cx+2);
 
   //              with statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s)), (length(s)>4) and boolean(s[5])) do
  {$IFDEF PROTOCOL_ICQ}
                 if (b > 0) then
-                 inc(curX, theme.drawPic(Cnv.Handle, curX+2, curY, XStatusArray[b].PicName).cx+2);
+                 inc(curX, theme.drawPic(Cnv.Handle, curX+2, curY, XStatusArray[b].PicName, True, PPI).cx+2);
  {$ENDIF PROTOCOL_ICQ}
               end;
              end;
@@ -1542,14 +1542,14 @@ var
            sa := ev.getBodyBin;
            if length(sa) >= 1 then
             if (byte(sa[1]) <= High(XStatusArray)) then
-              inc(curX, theme.drawPic(Cnv.Handle, curX+2, curY, XStatusArray[byte(sa[1])].PicName).cx);
+              inc(curX, theme.drawPic(Cnv.Handle, curX+2, curY, XStatusArray[byte(sa[1])].PicName, True, PPI).cx);
 //            statusDrawExt(cnv.Handle, x+2,y, SC_UNK, false, ord(s[1]));
 //            statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s), false, ord(s[1]));
  //            vPicName := status2imgName(Tstatus(str2int(s)), (length(s)>4) and boolean(s[5]));
  {$ENDIF PROTOCOL_ICQ}
          end;
        EK_OFFGOING:
-         statusDrawExt(Cnv.Handle, curX+2, curY, byte(SC_OFFLINE));
+         statusDrawExt(Cnv.Handle, curX+2, curY, byte(SC_OFFLINE), False, 0, PPI);
  //        vPicName := status2imgName(SC_OFFLINE);
      end;
     end;

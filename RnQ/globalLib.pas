@@ -53,7 +53,7 @@ const
  {$IFDEF DB_ENABLED}
   RnQBuild = ;
  {$ELSE ~DB_ENABLED}
-  RnQBuild = 1125;
+  RnQBuild = 1126;
   PIC_CLIENT_LOGO                 = TPicName('rnq');
  {$ENDIF ~DB_ENABLED}
 //  {$Include RnQBuiltTime.inc}
