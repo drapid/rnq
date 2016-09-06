@@ -3870,12 +3870,16 @@ begin
   if cnv=NIL then
     exit;
 
+  border := 5;
+  roundsize := 16;
+  maxWidth  := 300;
   if PPI > cDefaultDPI then
     begin
-      border := MulDiv(5, PPI, cDefaultDPI);
-      roundsize := MulDiv(16, PPI, cDefaultDPI);
-      maxWidth  := MulDiv(300, PPI, cDefaultDPI);
-    end;
+      border := MulDiv(border, PPI, cDefaultDPI);
+      roundsize := MulDiv(roundsize, PPI, cDefaultDPI);
+      maxWidth  := MulDiv(maxWidth, PPI, cDefaultDPI);
+    end
+   ;
 
 //  n:=getNode(node);
  {$IFDEF PROTOCOL_ICQ}
