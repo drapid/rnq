@@ -91,10 +91,11 @@ const
 implementation
  uses
    SysUtils, StrUtils, Masks,
-   RDGlobal, RnQStrings, RDUtils, RQUtil,
+   RDGlobal, RnQStrings, RDUtils,
    RnQLangFrm, RnQGlobal,
  {$IFDEF RNQ}
    RQlog,
+   RQUtil,
  {$ENDIF RNQ}
  {$IFDEF USE_ZIP}
   RnQZip,
@@ -453,7 +454,9 @@ var
   fn: String;
   isUTF: Boolean;
 begin
+ {$IFDEF RNQ}
   loggaEvtS('loading language: ');
+ {$ENDIF RNQ}
 
   langFN0 := f.fn;
   langFN1 := f.subFile;
@@ -532,7 +535,9 @@ begin
      hLangStr.Sorted := True;
   {$ENDIF}
 
+ {$IFDEF RNQ}
   loggaEvtS('language loaded');
+ {$ENDIF RNQ}
 end;
 
 Function TRnQLang.TranslateString(const Str: AnsiString): String;
