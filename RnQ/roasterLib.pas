@@ -1519,6 +1519,7 @@ var
               end;
             inc(Rb.Y, p.y);
 //            inc(Rb.Bottom, y);
+            SetStretchBltMode(DC, HALFTONE);
             DrawRbmp(DC, Bmp, Rb);
             Result.cx := paintinfo.node.NodeHeight;
 //            Result.cy := paintinfo.node.NodeHeight;

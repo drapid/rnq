@@ -5495,6 +5495,7 @@ begin
    begin
 //          TPaintBox(sender).Canvas.Brush.Color := paramSmile.color;
     TPaintBox(sender).Canvas.FillRect(TPaintBox(sender).Canvas.ClipRect);
+    SetStretchBltMode(TPaintBox(sender).Canvas.Handle, HALFTONE);
 
     DrawRbmp(TPaintBox(sender).Canvas.Handle, cnt.icon.Bmp,
              DestRect(cnt.icon.Bmp.GetWidth, cnt.icon.Bmp.GetHeight,
