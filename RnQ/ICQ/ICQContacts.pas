@@ -59,13 +59,13 @@ type
    { $IFDEF CHECK_INVIS}
     invisibleState: byte;
    { $ENDIF}
-    crypt : record
+    crypt: record
       supportCryptMsg: Boolean;
       cryptPWD: RawByteString;
       qippwd: Integer;
      end;  
     gender: Smallint;
-    age: Smallint ;
+    age: Smallint;
     MarStatus: word;
     email,
     address,
@@ -94,29 +94,29 @@ type
     ssCell,
     ssCell2,
     ssCell3,
-    ssMail : String;
-    OnlineTime : dWord;       // В секундах!
-    lastUpdate_dw:dword;
-    lastinfoupdate_dw:dword;
-    lastStatusUpdate_dw:dword;
+    ssMail: String;
+    OnlineTime: DWord;       // В секундах!
+    lastUpdate_dw: DWord;
+    lastinfoupdate_dw: DWord;
+    lastStatusUpdate_dw: DWord;
     country, workCountry, birthCountry: word;
-    IdleTime : word;          // В секундах!
-    GMThalfs:Shortint;
-    lang : Tlanguages;
+    IdleTime: word;          // В секундах!
+    GMThalfs: Shortint;
+    lang: Tlanguages;
     CreateTime,           // GMT
     memberSince,          // GMT
     onlineSince,          // local time
     lastUpdate,           // local time
     lastInfoUpdate,       // local time
     lastStatusUpdate,     // local time
-    infoUpdatedTo:TdateTime;        // local time
-    proto:integer;
-    fServerProto : String;
-    connection : record
-      port, ft_port:integer;
+    infoUpdatedTo: TdateTime;        // local time
+    proto: integer;
+    fServerProto: String;
+    connection: record
+      port, ft_port: integer;
       ip,internal_ip: DWord;
-      proxy_ip : DWord;
-      dc_cookie:dword;
+      proxy_ip: DWord;
+      dc_cookie: DWord;
      end;
     SMSable,
     nodb,
@@ -124,62 +124,62 @@ type
     birthFlag,
     icq2go,
     isMobile,
-    isAIM : Boolean;
-    capabilitiesBig:set of 1..45;
-    capabilitiesSm:set of 1..30;
+    isAIM: Boolean;
+    capabilitiesBig: set of 1..45;
+    capabilitiesSm: set of 1..30;
     capabilitiesXTraz: set of 1..50;
-    extracapabilities : RawByteString;
-    InfoToken : RawByteString;
-//    Interests : Array of record code : Integer; Str : String; end;
-    cookie : RawByteString;
-    lastAccept : TicqAccept;
+    extracapabilities: RawByteString;
+    InfoToken: RawByteString;
+//    Interests: Array of record code : Integer; Str : String; end;
+    cookie: RawByteString;
+    lastAccept: TicqAccept;
 
-    ICQ6Status : String; 
-    xStatusStr : String;
+    ICQ6Status: String; 
+    xStatusStr: String;
     xStatusDesc: String;
-    xStatus : byte;
+    xStatus: byte;
 //    xStatusOld : byte;
-     ICQIcon : record
+     ICQIcon: record
 //       Hash_safe : String[16];
 //       Hash : String[16];
        Hash_safe : RawByteString;
        Hash : RawByteString;
       end;
-    interests : Tinterests; // By Shyr
+    interests: Tinterests; // By Shyr
 //    data : tce;
    public
-    constructor Create(pProto : TRnQProtocol; const uin_: TUID); override;
+    constructor Create(pProto: TRnQProtocol; const uin_: TUID); override;
     destructor Destroy; override;
 //     class operator Implicit(const a: AnsiString) : TContact; inline;// Implicit conversion of an Integer to type TMyClass
     procedure clear; override;
     procedure clearInterests;
     procedure setOffline;
     procedure OfflineClear;
-    function  isOnline : Boolean; override; final;
-    function  isInvisible : Boolean; override;
-    function  isOffline : Boolean; override; final;
-    function  canEdit : Boolean; override;
-    function  getGMT:TdateTime;
-    function  GMTavailable:boolean;
-    function  uinAsStr:string; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-    function  uin2Show:string; OverRide; Final;
-    function  getStatusName : String; OverLoad; OverRide; final;
-    function  statusImg : TPicName; OverRide; final;
-    function  getStatus : byte; OverRide; final;
-    procedure SetDisplay(const s : String); OverRide; final;
-    function  GetDBrow : RawByteString; OverRide; final;
-    function  ParseDBrow(ItemType : Integer; const item : RawByteString) : Boolean; OverRide; final;
+    function  isOnline: Boolean; override; final;
+    function  isInvisible: Boolean; override;
+    function  isOffline: Boolean; override; final;
+    function  canEdit: Boolean; override;
+    function  getGMT: TdateTime;
+    function  GMTavailable: boolean;
+    function  uinAsStr: string; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+    function  uin2Show: string; OverRide; Final;
+    function  getStatusName: String; OverLoad; OverRide; final;
+    function  statusImg: TPicName; OverRide; final;
+    function  getStatus: byte; OverRide; final;
+    procedure SetDisplay(const s: String); OverRide; final;
+    function  GetDBrow: RawByteString; OverRide; final;
+    function  ParseDBrow(ItemType: Integer; const item: RawByteString) : Boolean; OverRide; final;
     procedure ViewInfo; OverRide; final;
-    function  isAcceptFile : Boolean; OverRide; final;
-    class function trimUID(const sUID : TUID) : TUID; OverRide; final;
-    procedure AddInterest(idx : byte; code : Integer; str : String);
+    function  isAcceptFile: Boolean; OverRide; final;
+    class function trimUID(const sUID: TUID): TUID; OverRide; final;
+    procedure AddInterest(idx: byte; code: Integer; str: String);
    end; // TICQcontact
 //  Tcontact = TICQcontact;
 //  function  ICQCL_buinlist(cl : TRnQCList; Proto : IRnQProtocol):string;
-  procedure ICQCL_setStatus(cl : TRnQCList; st: TICQStatus);
-  function  ICQCL_idxBySSID(cl : TRnQCList; ssid:Word):integer;
-  function  ICQCL_C8SSIByGrp(cl : TRnQCList; grID : Integer): AnsiString;
-  function  ICQCL_SSIByGrp(cl : TRnQCList; grID : Integer): AnsiString;
+  procedure ICQCL_setStatus(cl: TRnQCList; st: TICQStatus);
+  function  ICQCL_idxBySSID(cl: TRnQCList; ssid: Word):integer;
+  function  ICQCL_C8SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
+  function  ICQCL_SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
 
 
 //var
@@ -229,7 +229,7 @@ end; // destroy
 
 procedure TICQcontact.clear;
 var
-  i : Byte;
+  i: Byte;
 begin
 //uid:='';
 //nick:='';
@@ -350,10 +350,10 @@ begin
 end;
 
 function TICQcontact.getGMT:TdateTime;
-begin result:=-GMThalfs/48 end;
+begin result := -GMThalfs/48 end;
 
 function TICQcontact.GMTavailable:boolean;
-begin result:=abs(GMThalfs)<>100 end;
+begin result := abs(GMThalfs)<>100 end;
 
 function TICQcontact.isOnline: Boolean;
 begin
@@ -405,10 +405,10 @@ end;
 
 procedure TICQcontact.ViewInfo;
 var
-  vi:TRnQViewInfoForm;
+  vi: TRnQViewInfoForm;
 begin
   begin
-   vi:=findViewInfo(self);
+   vi := findViewInfo(self);
    if vi = NIL then
     try
      TviewinfoFrm.doAll(RnQmain, self)

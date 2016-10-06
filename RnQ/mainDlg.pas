@@ -2540,17 +2540,17 @@ procedure TRnQmain.OnTimer(Sender: TObject);
 
   procedure processOutbox;
   var
-    oe:Toevent;
+    oe: Toevent;
   begin
   if outboxCount > 0 then
     dec(outboxCount);
   if outboxCount = 0 then
     if assigned(Account.AccProto) and Account.AccProto.isOnline and outboxprocessChk then
      begin
-      oe:= Account.outbox.popVisible;
+      oe := Account.outbox.popVisible;
       if oe=NIL then
         exit;
-      outboxCount:=timeBetweenMsgs;
+      outboxCount := timeBetweenMsgs;
       if Assigned(outboxFrm) then
        outboxFrm.updateList;
       processOevent(oe);

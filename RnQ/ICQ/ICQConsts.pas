@@ -75,6 +75,7 @@ const
   ICQ_TCP_VERSION = My_proto_ver;
   maxPwdLength = 16;
   AIM_MD5_STRING : AnsiString = 'AOL Instant Messenger (SM)';
+  ICQ_DEV_ID : AnsiString = 'ic1nmMjqg7Yu-0hL';
   uinToUpdate    =  223223181;
   AIMprefix = 'AIM_';
   ICQMaxAvatarSize = 7800;
@@ -719,7 +720,8 @@ type
     EC_cantConnect_dc,
     EC_proxy_error,
     EC_proxy_badPwd,
-    EC_proxy_unk         // unknown reply
+    EC_proxy_unk,         // unknown reply
+    EC_SSI_error
   );
 
 const
@@ -742,7 +744,8 @@ const
     'proxy: error',
     'PROXY: Invalid user/password', // 'proxy: wrong user/pwd',
 //    'PROXY: Unknown reply\n[%d]\n%s'      // 'proxy: unk'
-    ProxyUnkError   
+    ProxyUnkError,
+    'SSI message error\n%s'   
   );
 
 

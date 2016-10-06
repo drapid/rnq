@@ -744,13 +744,13 @@ begin
     result:=result+getTranslation(Languages[i].Value)+CRLF;
 end;
 
-function InterestsToStr : String;
+function InterestsToStr: String;
 var
   i: Word;
 begin
-  result:='';
+  result := '';
   for i := Low(arrInterests) to High(arrInterests) do
-    result:=result+getTranslation(arrInterests[i].Value)+CRLF;
+    result := result+getTranslation(arrInterests[i].Value)+CRLF;
 end;
 
 procedure CountrysToCB(cb : TComboBox);

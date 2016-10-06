@@ -1312,12 +1312,12 @@ begin
     T_ARRAY:
       begin
         API.ValueElementsCount(Value, arrSize);
-        OleValue := VarArrayCreate([0, arrSize], varVariant );
+        OleValue := VarArrayCreate([0, arrSize], varVariant);
         for j := 0 to arrSize - 1 do
         begin
           oArrItem := Unassigned;
           API.ValueNthElementValue(Value, j, @sArrItem);
-          S2V(@sArrItem, oArrItem );
+          S2V(@sArrItem, oArrItem);
           VarArrayPut(Variant(OleValue), oArrItem, [j]);
         end;
         Result := HV_OK;

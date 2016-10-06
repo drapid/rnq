@@ -90,6 +90,7 @@ const
   EI_flags=1;
 //  EI_shit=3;
   EI_UID = 11;
+  EI_WID = 12;
 
   HI_event=-1;
   HI_hashed=-2;
@@ -102,7 +103,7 @@ Type
     date: String;
   end;
 
-  Thevent=class
+  Thevent = class
    private
     f_flags    : Integer;
     f_who      : TRnQContact;
@@ -112,11 +113,12 @@ Type
     txt        : String;
  {$ELSE ~DB_ENABLED}
     f_info     : RawByteString;
+    fpos: integer;
  {$ENDIF ~DB_ENABLED}
 
+    WID: RawByteString;
     ID : int64;
     kind,
-    fpos,
     expires    : integer;  // tenths of second, negative if permanent
     when       : TdateTime;
     fIsMyEvent : Boolean;
@@ -136,13 +138,13 @@ Type
  {$IFDEF DB_ENABLED}
              const txt_ : String;
  {$ENDIF DB_ENABLED}
-             flags_: integer; pID: integer = 0): Thevent;
+             flags_: integer; pID: integer = 0; GUID: RawByteString = ''): Thevent;
     destructor Destroy; override;
     function  pic: TPicName;
     function  PicSize(const PPI: Integer): TSize;
     function  Draw(DC: HDC; x, y: Integer; const PPI: Integer): TSize;
 //    function  GetImgElm : TRnQThemedElementDtls;
-//    function  font:Tfont;
+//    function  font: Tfont;
     procedure applyFont(font: Tfont);
     function  getFont: Tfont;
 //    function  useFont : String;
@@ -156,6 +158,8 @@ Type
     function  decrittedInfoOrg: RawByteString;
     procedure appendToHistoryFile(par: TUID='');
  {$ENDIF ~DB_ENABLED}
+
+    procedure writeWID(pID: integer; GUID: RawByteString);
 
     function  getBodyBin: RawByteString;
     function  getBodyText: string;
@@ -174,7 +178,7 @@ Type
  {$ENDIF ~DB_ENABLED}
   end; // Thevent
 
-  TeventQ=class(Tlist)
+  TeventQ = class(Tlist)
    public
     OnNewTop: procedure of object;
 
@@ -229,22 +233,23 @@ var
 
 function Thevent.clone: Thevent;
 begin
-  result:=Thevent.create;
-  result.ID:=ID;
-  result.kind:=kind;
-  result.who:=who;
-  result.otherpeer:=otherpeer;
-  result.when:=when;
+  result := Thevent.create;
+  result.ID := ID;
+  Result.WID := WID;
+  result.kind := kind;
+  result.who := who;
+  result.otherpeer := otherpeer;
+  result.when := when;
   Result.fIsMyEvent := fIsMyEvent;
    {$IFDEF DB_ENABLED}
   result.fBin := fBin;
   result.txt:= txt;
    {$ELSE ~DB_ENABLED}
   result.f_info:= f_info;
+  result.fpos := fpos;
    {$ENDIF ~DB_ENABLED}
-  result.flags:=flags;
-  result.fpos:=fpos;
-  result.cryptMode:=cryptMode;
+  result.flags := flags;
+  result.cryptMode := cryptMode;
   Result.HistoryToken := 0;
   Result.fImgElm.ThemeToken := -1;
   try
@@ -255,7 +260,7 @@ begin
   except
     result.cl:=NIL
   end;
-  result.expires:=expires;
+  result.expires := expires;
 end; // clone
 
 destructor Thevent.Destroy;
@@ -274,20 +279,27 @@ end;
  {$IFNDEF DB_ENABLED}
 procedure Thevent.appendToHistoryFile(par: TUID='');
 var
-  s:string;
+  s: string;
 begin
-if par='' then
-  par:=who.uid;
-s:= Account.ProtoPath+historyPath + par;
-fpos:=sizeOfFile(s);
-appendFile(s, toString);
+  if par='' then
+    par := who.uid;
+  s := Account.ProtoPath+historyPath + par;
+  fpos := sizeOfFile(s);
+  appendFile(s, toString);
 end; // appendToHistoryFile
  {$ENDIF ~DB_ENABLED}
 
-function Thevent.urgent:boolean;
-begin result:=flags and IF_urgent > 0 end;
+procedure Thevent.writeWID(pID: integer; GUID: RawByteString);
+begin
+ {$IFDEF DB_ENABLED}
+ // make update
+ {$ENDIF DB_ENABLED}
+end;
 
-procedure Thevent.applyFont(font:Tfont);
+function Thevent.urgent: boolean;
+begin result := flags and IF_urgent > 0 end;
+
+procedure Thevent.applyFont(font: Tfont);
 begin
  if fIsMyEvent then
   theme.ApplyFont('history.my', font) //history.myfont
@@ -295,7 +307,7 @@ begin
   theme.ApplyFont('history.his', font); //history.hisfont
 end;
 
-function Thevent.getFont:Tfont;
+function Thevent.getFont: Tfont;
 begin
  if theme.token <> fntToken then
    begin
@@ -315,7 +327,7 @@ begin
   result := hisFont;
 end;
 
-function Thevent.pic:TPicName;
+function Thevent.pic: TPicName;
 begin
  if (kind = EK_msg) then
    begin
@@ -339,7 +351,7 @@ begin
 //   if kind = EK_XstatusMsg then
 //     result:=
 //    else
-    result:=event2imgName(kind)
+    result := event2imgName(kind)
 end;
 
 function Thevent.PicSize(const PPI: Integer): TSize;
@@ -373,8 +385,8 @@ end;}
 function Thevent.decrittedInfo: String;
 begin
   case cryptMode of
-   CRYPT_SIMPLE: result:=unUTF(decritted(f_info, StrToIntDef(who.uid, 0)));
-   CRYPT_KEY1: result:=unUTF(decritted(f_info, histcrypt.pwdKey));
+   CRYPT_SIMPLE: result := unUTF(decritted(f_info, StrToIntDef(who.uid, 0)));
+   CRYPT_KEY1: result := unUTF(decritted(f_info, histcrypt.pwdKey));
   end;
 //  result := UnWideStr(result);  // By Rapid D!
 //  if pos('<RnQImage>', result) <= 0 then
@@ -384,8 +396,8 @@ end; // decrittedInfo
 function Thevent.decrittedInfoOrg: RawByteString;
 begin
 case cryptMode of
-  CRYPT_SIMPLE: result:=decritted(f_info, StrToIntDef(who.uid, 0));
-  CRYPT_KEY1: result:=decritted(f_info, histcrypt.pwdKey);
+  CRYPT_SIMPLE: result := decritted(f_info, StrToIntDef(who.uid, 0));
+  CRYPT_KEY1: result := decritted(f_info, histcrypt.pwdKey);
   end;
 end; // decrittedInfo
 
@@ -393,16 +405,16 @@ procedure Thevent.setInfo(const info_: RawByteString);
 begin
 if histcrypt.enabled then
   begin
-  cryptMode:=CRYPT_KEY1;
-  f_info:=critted(info_, histcrypt.pwdKey);
+  cryptMode := CRYPT_KEY1;
+  f_info := critted(info_, histcrypt.pwdKey);
   end
 else
   begin
-  cryptMode:=CRYPT_SIMPLE;
+  cryptMode := CRYPT_SIMPLE;
   if who<>NIL then
-    f_info:=critted(info_, StrToIntDef(who.uid, 0))
+    f_info := critted(info_, StrToIntDef(who.uid, 0))
    else
-    f_info:=critted(info_, 0);
+    f_info := critted(info_, 0);
   end;
 end; // setInfo
  {$ENDIF ~DB_ENABLED}
@@ -411,50 +423,53 @@ class function Thevent.new(kind_: integer;
             who_: TRnQContact; when_: TdateTime;
             const info_: RawByteString;
  {$IFDEF DB_ENABLED}
-            const txt_ : String;
+            const txt_: String;
  {$ENDIF DB_ENABLED}
-            flags_:integer; pID : Integer = 0): Thevent;
+            flags_: integer; pID: Integer = 0; GUID: RawByteString = ''): Thevent;
 begin
-result:=Thevent.create;
-result.kind:=kind_;
-result.who:=who_;
-result.when:=when_;
-result.flags:=flags_;
-result.fpos:=-1;
-result.expires:=-1;
-result.cl:=NIL;
-result.ID := pID;
+  result := Thevent.create;
+  result.kind := kind_;
+  result.who := who_;
+  result.when := when_;
+  result.flags := flags_;
+  result.expires := -1;
+  result.cl := NIL;
+  result.ID := pID;
+  Result.WID := guID;
  {$IFDEF DB_ENABLED}
   result.fBin := info_;
   result.txt := txt_;
  {$ELSE ~DB_ENABLED}
-result.setInfo(info_);
+  result.fpos := -1;
+  result.setInfo(info_);
  {$ENDIF ~DB_ENABLED}
-Result.HistoryToken := 0;
-Result.fImgElm.ThemeToken := -1;
+  Result.HistoryToken := 0;
+  Result.fImgElm.ThemeToken := -1;
 end; // new
 
 function Thevent.toString: RawByteString;
 
   function extraInfo: RawByteString;
   begin
-    result:=TLV2(EI_flags, int2str(flags));
+    result := TLV2(EI_flags, int2str(flags));
     if not isOnlyDigits(who.UID) then
 //
 //    if who.isAIM then
       result:= Result + TLV2(EI_UID, int2str(length(who.UID))+who.UID);
 //      result:= Result + TLV2(EI_UID, who.UID);
-    result:=int2str(length(result))+result;
+    if wid > '' then
+      result := Result + TLV2(EI_WID, wid);
+    result := int2str(length(result))+result;
   end; // extrainfo
  {$IFDEF DB_ENABLED}
 var
-  sa : RawByteString;
+  sa: RawByteString;
  {$ENDIF DB_ENABLED}
 begin
  {$IFDEF DB_ENABLED}
   sa := StrToUTF8(txt);
  {$ENDIF DB_ENABLED}
-  result:=int2str(HI_event)+AnsiChar(kind)+int2str(StrToIntDef(who.uid, 0))
+  result := int2str(HI_event)+AnsiChar(kind)+int2str(StrToIntDef(who.uid, 0))
        +dt2str(when)+extrainfo
  {$IFDEF DB_ENABLED}
        +int2str(length(fBin)) + fBin
@@ -468,7 +483,7 @@ end; // toString
 procedure Thevent.ParseMsgStr(const pMsg: RawByteString);
  {$IFDEF DB_ENABLED}
 var
-  i, k : Integer;
+  i, k: Integer;
   msg : RawByteString;
  {$ENDIF DB_ENABLED}
 begin

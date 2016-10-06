@@ -157,9 +157,9 @@ begin
   chatFrm.addEvent_openchat(cnt, ev);
 end; // sendICQaddedYou
 
-procedure sendICQcontacts(cnt : TRnQContact;flags:integer; cl:TRnQCList);
+procedure sendICQcontacts(cnt: TRnQContact; flags: integer; cl: TRnQCList);
 var
-  ev:THevent;
+  ev: THevent;
 //  c:Tcontact;
 begin
 //  c:=Tcontact(contactsDB.get(TICQContact, uin));
@@ -173,42 +173,42 @@ begin
   chatFrm.addEvent_openchat(cnt, ev);
 end; // sendICQcontacts
 
-procedure sendICQautomsgreq(cnt : TRnQContact);
+procedure sendICQautomsgreq(cnt: TRnQContact);
 var
-  oe:Toevent;
+  oe: Toevent;
 begin
-  oe:=Toevent.create;
-  oe.kind:=OE_automsgreq;
-  //oe.uid:=uin;
-  oe.whom:=cnt;
-  oe.timeSent:=now;
-  oe.ID:= TicqSession(cnt.fProto).sendAutoMsgReq(cnt.uid);
+  oe := Toevent.create;
+  oe.kind := OE_automsgreq;
+  //oe.uid := uin;
+  oe.whom := cnt;
+  oe.timeSent := now;
+  oe.ID := TicqSession(cnt.fProto).sendAutoMsgReq(cnt.uid);
   plugins.castEv( PE_AUTOMSG_REQ_SENT, cnt.uid);
   Account.acks.add(oe);
 end; // sendICQautomsgreq
 
 {$IFDEF usesDC}
-//function sendICQfiles(uin:TUID; files, msg:string):integer;
-function sendICQfiles(cnt : TRnQContact; files : TFilePacket; msg:string;
-            useLocProxy : Boolean; ThrSrv : Boolean; var drct : TICQdirect):integer;
+//function sendICQfiles(uin: TUID; files, msg: string): integer;
+function sendICQfiles(cnt: TRnQContact; files: TFilePacket; msg: string;
+            useLocProxy: Boolean; ThrSrv: Boolean; var drct: TICQdirect): integer;
 //var
-//  ss:Tstrings;
-//  i,size:integer;
-//  drct : Tdirect;
+//  ss: Tstrings;
+//  i, size: integer;
+//  drct: Tdirect;
 begin
   Result := -1;
 //  if not OnlFeature(icq) then
 //    Exit;
-//  ss:=TstringList.create;
-//  ss.Text:=files;
-//  ss.Text:=files;
+//  ss := TstringList.create;
+//  ss.Text := files;
+//  ss.Text := files;
   if files.count=1 then
    begin
 //    size := TFileAbout(files.FileList.Objects[0]).Size;
-//    result:=ICQ.sendFileReq(uin, msg, extractFileName(files.FileList.Strings[0]), size)
-//    result:=ICQ.sendFileReq(uin, msg, TFileAbout(files.FileList.Objects[0]), useProxy)
-//    result:=ICQ.sendFileTest($FF, contactsDB.get(uin), extractFileName(files.FileList.Strings[0]), size)
-      drct:= TICQSession(cnt.fProto).directTo(TICQContact(cnt));
+//    result := ICQ.sendFileReq(uin, msg, extractFileName(files.FileList.Strings[0]), size)
+//    result := ICQ.sendFileReq(uin, msg, TFileAbout(files.FileList.Objects[0]), useProxy)
+//    result := ICQ.sendFileTest($FF, contactsDB.get(uin), extractFileName(files.FileList.Strings[0]), size)
+      drct := TICQSession(cnt.fProto).directTo(TICQContact(cnt));
       drct.imserver := True;
       drct.imsender := True;
       drct.kind := DK_file;
@@ -237,11 +237,11 @@ begin
    end;
 end; // sendICQfiles
 
-//procedure receiveFile2(thisICQ : TicqSession; evID : Int64; fromCnt : TContact;
-//                       fn : String);
-procedure receiveFile(d : TProtodirect);
+//procedure receiveFile2(thisICQ: TicqSession; evID: Int64; fromCnt: TContact;
+//                       fn: String);
+procedure receiveFile(d: TProtodirect);
 //var
-//  d : Tdirect;
+//  d: Tdirect;
 begin
  {$IFNDEF usesDC}
     msgDlg(getTranslation('%s - would like to send you file "%s"', [fromCnt.displayed, thisICQ.eventFilename]),  mtInformation);
@@ -261,7 +261,7 @@ end; // receiveFile
 
 
 {
-procedure receiveFile(d:Tdirect);
+procedure receiveFile(d: Tdirect);
 begin
   TfiletransferFrm.doAll(d);
   if not (d.sock.State in [wsListening, wsConnecting, wsSocksConnected, wsConnected]) then
@@ -269,9 +269,9 @@ begin
 end; // receiveFile
 }
 
-procedure ICQsendfile(c:TICQcontact; const fn:string);
+procedure ICQsendfile(c: TICQcontact; const fn: string);
 //var
-//  d : TDirect;
+//  d: TDirect;
 begin
 //  d := TICQSession(c.iProto.ProtoElem).directTo(c);
 //  d.fileName := fn;
@@ -282,11 +282,11 @@ begin
 end; // sendfile
 {$ENDIF usesDC}
 
-procedure ChangeXStatus(pICQ : TICQSession; const st : Byte;
-        const StName : String = ''; const StText : String = ''
-       ;const ChgdUseOldXSt : Boolean = false);
+procedure ChangeXStatus(pICQ: TICQSession; const st: Byte;
+        const StName: String = ''; const StText: String = ''
+       ;const ChgdUseOldXSt: Boolean = false);
 var
-  b : Boolean;
+  b: Boolean;
 begin
   if (st in [Low(XStatusArray)..High(XStatusArray)])
 //     and ((UseOldXSt and (xsf_Old in XStatusArray[st].flags))
@@ -319,60 +319,60 @@ begin
   end;
 end;
 
-function getDescForSnac(const s:RawByteString):string;
+function getDescForSnac(const s: RawByteString): string;
 begin
 case getSnacService(s) of
-  $0102:result:='ready';
+  $0102: result := 'ready';
   $0103: result := 'supported snac families list';
   $0104: result := 'request service';
   $0105: result := 'redirect to requested service';
   $0106: result := 'rates request';
-  $0107:result:='rates';
-  $0108:result:='rates ack';
+  $0107: result := 'rates';
+  $0108: result := 'rates ack';
   $010A: result := 'rate update or warning';
   $010B: result := 'server pause';
   $010C: result := 'client pause ack';
   $010D: result := 'server resume';
   $010E: result := 'my info request';
-  $010F:result:='my info';
-  $0113:result:='motd';
+  $010F: result := 'my info';
+  $0113: result := 'motd';
   $0115: result := 'list of well known urls';
-  $0117:result:='i''m icq';
-  $0118:result:='you''re icq';
-  $011E:result:='set status';
+  $0117: result := 'i''m icq';
+  $0118: result := 'you''re icq';
+  $011E: result := 'set status';
   $0121: result := 'own extended status';
   $0202: result := 'location rights request';
-  $0203:result:='location rights';
-  $0204:result:='set capabilities';
+  $0203: result := 'location rights';
+  $0204: result := 'set capabilities';
   $0205: result := 'user info request';
-  $0206:result:='user info';
+  $0206: result := 'user info';
   $0302: result := 'buddy rights request';
-  $0303:result:='buddy rights';
-  $0304:result:='+roster';
-  $0305:result:='-roster';
-  $030a:result:='can''t notify';
-  $030b:result:='oncoming/new status';
-  $030c:result:='offgoing';
-  $0401:result:='error msg';
+  $0303: result := 'buddy rights';
+  $0304: result := '+roster';
+  $0305: result := '-roster';
+  $030a: result := 'can''t notify';
+  $030b: result := 'oncoming/new status';
+  $030c: result := 'offgoing';
+  $0401: result := 'error msg';
   $0402: result := 'im rights request';
   $0404: result := 'im rights request';
-  $0405:result:='im rights';
-  $0406:result:='out msg';
-  $0407:result:='in msg';
-  $040B:result:='ack msg';
-  $040C:result:='server ack msg';
+  $0405: result := 'im rights';
+  $0406: result := 'out msg';
+  $0407: result := 'in msg';
+  $040B: result := 'ack msg';
+  $040C: result := 'server ack msg';
   $0410: result := 'ICBM: offline messages request';
-  $0414:result:='typing notification';
+  $0414: result := 'typing notification';
   $0417: result := 'ICBM: no more offline msgs';
   $0902: result := 'bos rights request';
-  $0903:result:='bos rights';
-  $0905:result:='+visible';
-  $0906:result:='-visible';
-  $0907:result:='+invisible';
-  $0908:result:='-invisible';
+  $0903: result := 'bos rights';
+  $0905: result := '+visible';
+  $0906: result := '-visible';
+  $0907: result := '+invisible';
+  $0908: result := '-invisible';
   $0B02: result := 'min stats report interval';
   $1006: result := 'avatar request';
-  $1007:result:='avatar';
+  $1007: result := 'avatar';
   $1301: result := 'client or server error';
   $1302: result := 'SSI limits request';
   $1303: result := 'SSI limits response';
@@ -380,72 +380,72 @@ case getSnacService(s) of
   $1305: result := 'contact list check request';
   $1306: result := 'reply CL';
   $1307: result := 'activate server-side contact list';
-  $1308:result:='SSI edit: add item(s)';
-  $1309:result:='SSI edit: update item(s)';
-  $130A:result:='SSI edit: remove item(s)';
-  $130E:result:='SSI edit server ack';
-  $130F:result:='client local SSI is up-to-date';
-  $1311:result:='SSI edit: Start transaction';
-  $1312:result:='SSI edit: End transaction';
+  $1308: result := 'SSI edit: add item(s)';
+  $1309: result := 'SSI edit: update item(s)';
+  $130A: result := 'SSI edit: remove item(s)';
+  $130E: result := 'SSI edit server ack';
+  $130F: result := 'client local SSI is up-to-date';
+  $1311: result := 'SSI edit: Start transaction';
+  $1312: result := 'SSI edit: End transaction';
   $1314: result := 'grant future auth';
   $1315: result := 'future auth granted';
   $1316: result := 'delete yoursef from another CL';
   $1318: result := 'request auth';
-  $1319:result:='auth request';
+  $1319: result := 'auth request';
   $131a: result := 'reply to auth';
   $131b: result := 'auth reply';
   $131c: result := 'you were added';
   $1502:
     case getMPservice(s) of
       $3C: result := 'offline msgs request';
-      $3E:result:='delete offline msgs';
-      $D098:result:='xml';
+      $3E: result := 'delete offline msgs';
+      $D098: result := 'xml';
       $D01F,
-      $D069:result:='ask short contact info';
-      $D0BA:result:='ask short contact info (2001)';
-      $D0B2:result:='ask contact info';
-      $D015:result:='ask wp (short)';
-      $D05F:result:='ask wp (short) (2001)';
-      $D033:result:='ask wp (full)';
-      $D0D0:result:='ask my contact info';
-      $D0EA:result:='save my info (home)';
-      $D0FD:result:='save my info (hp/more)';
-      $D006:result:='save my info (about)';
-      $D0F3:result:='save my info (work)';
-      $D00B:result:='save my info (emails)';
-      $D010:result:='save my info (interests)';
-      $D02E:result:='change password';
-      $D0C4:result:='remove user';
-      $D024:result:='set permissions';
-      $D082:result:='out sms';
-      $D029:result:='search by email';
-      $D073:result:='search by email (2001)';
-      else result:='out multipurpose';
+      $D069: result := 'ask short contact info';
+      $D0BA: result := 'ask short contact info (2001)';
+      $D0B2: result := 'ask contact info';
+      $D015: result := 'ask wp (short)';
+      $D05F: result := 'ask wp (short) (2001)';
+      $D033: result := 'ask wp (full)';
+      $D0D0: result := 'ask my contact info';
+      $D0EA: result := 'save my info (home)';
+      $D0FD: result := 'save my info (hp/more)';
+      $D006: result := 'save my info (about)';
+      $D0F3: result := 'save my info (work)';
+      $D00B: result := 'save my info (emails)';
+      $D010: result := 'save my info (interests)';
+      $D02E: result := 'change password';
+      $D0C4: result := 'remove user';
+      $D024: result := 'set permissions';
+      $D082: result := 'out sms';
+      $D029: result := 'search by email';
+      $D073: result := 'search by email (2001)';
+      else result := 'out multipurpose';
       end;
   $1503:
     case getMPservice(s) of
-      $41:result:='offline msg';
-      $42:result:='no more offline msgs';
+      $41: result := 'offline msg';
+      $42: result := 'no more offline msgs';
       $DA9A,
-      $DAA4:result:='short contact info';
-      $DAAE:result:='short contact info (last)';
-      $DAE6:result:='contact info (about)';
-      $DAC8:result:='contact info (main)';
-      $DADC:result:='contact info (hp)';
-      $DAD2:result:='contact info (work)';
-      $DA0E:result:='contact info (unk)';
-      $DAFA:result:='contact info (past background)';
-      $DAF0:result:='contact info (interests)';
-      $DAEB:result:='contact info (emails)';
+      $DAA4: result := 'short contact info';
+      $DAAE: result := 'short contact info (last)';
+      $DAE6: result := 'contact info (about)';
+      $DAC8: result := 'contact info (main)';
+      $DADC: result := 'contact info (hp)';
+      $DAD2: result := 'contact info (work)';
+      $DA0E: result := 'contact info (unk)';
+      $DAFA: result := 'contact info (past background)';
+      $DAF0: result := 'contact info (interests)';
+      $DAEB: result := 'contact info (emails)';
       $DAB4: result := 'uin info';
-      $DAAA:result:='password changed';
-      $DA64:result:='info saved (main)';
-      $DA78:result:='info saved (hp/more)';
-      $DA82:result:='info saved (about)';
-      $DA6E:result:='info saved (work)';
-      $DA87:result:='info saved (emails)';
-      $DA8C:result:='info saved (interests)';
-      else result:='in multipurpose';
+      $DAAA: result := 'password changed';
+      $DA64: result := 'info saved (main)';
+      $DA78: result := 'info saved (hp/more)';
+      $DA82: result := 'info saved (about)';
+      $DA6E: result := 'info saved (work)';
+      $DA87: result := 'info saved (emails)';
+      $DA8C: result := 'info saved (interests)';
+      else result := 'in multipurpose';
       end;
     $1702: result := 'md5 login start';
     $1703: result := 'server login or error reply';
@@ -455,15 +455,15 @@ case getSnacService(s) of
     $2503: result := 'new uin info response';
   else
     if getSnacService(s) and $FF=1 then
-      result:=getTranslation(Str_Error)
+      result := getTranslation(Str_Error)
     else
-      result:=getTranslation(Str_unk);
+      result := getTranslation(Str_unk);
   end;
 end; // getDescForSnac
 
-procedure loggaICQPkt(const prefix : String; what:TwhatLog; data:RawByteString='');
+procedure loggaICQPkt(const prefix: String; what: TwhatLog; data: RawByteString='');
 var
-  head,s:string;
+  head, s: string;
 begin
  if prefix > '' then
    s := prefix + ' '
@@ -474,23 +474,23 @@ begin
  if Length(Data) > 10 then
    if getFlapChannel(data) = SNAC_CHANNEL then
     s := s + '(' + IntToHex(hi(getSnacService(data)), 2) +',' + IntToHex(lo(getSnacService(data)), 2) + ') ';
- s:=s + LogWhatNames[what];
+ s := s + LogWhatNames[what];
 if data>'' then
   if what in [WL_CONNECTED, WL_DISCONNECTED, WL_connecting] then
     begin
-    s:=s+' '+data;
-    data:='';
+    s := s+' '+data;
+    data := '';
     end
   else
-    s:=s+' size:'+intToStr(length(data),4);
+    s := s+' size:'+intToStr(length(data),4);
 case what of
   WL_serverGot, WL_serverSent:
     if length(data) >= FLAP_HEAD_SIZE then
       case getFlapChannel(data) of
-        LOGIN_CHANNEL: s:=s+' (login flap)';
-        LOGOUT_CHANNEL: s:=s+' (logout flap)';
-        KEEPALIVE_CHANNEL: s:=s+' (keepalive flap)';
-        SNAC_CHANNEL: s:=s+' ref:'+intToHex(getSnacRef(data),8)+' '+getDescForSnac(data);
+        LOGIN_CHANNEL:     s := s+' (login flap)';
+        LOGOUT_CHANNEL:    s := s+' (logout flap)';
+        KEEPALIVE_CHANNEL: s := s+' (keepalive flap)';
+        SNAC_CHANNEL:      s := s+' ref:'+intToHex(getSnacRef(data),8)+' '+getDescForSnac(data);
         end;
   end;
 
@@ -571,59 +571,61 @@ begin result:=getTranslation(visibility2ShowStr[vi]) end;
 
 function clb2contactlist(data: RawByteString): TRnQCList;
 var
-  grpname : String;
-  line : RawByteString;
-  grp:integer;
-  c : TICQContact;
+  grpname: String;
+  line: RawByteString;
+  grp: integer;
+  c: TICQContact;
 begin
-result:=TRnQCList.create;
+result := TRnQCList.create;
 while data>'' do
   try
-    line:=trim(chop(AnsiString(#10),data));
-    grpname:= UnUTF(chop(AnsiString(';'),line));
-    c:=TICQContact(contactsDB.get(TICQContact, chop(AnsiString(';'),line)));
-   	if c.nick='' then c.nick:=chop(AnsiString(';'),line)
-    else c.fDisplay:=chop(AnsiString(';'),line);
+    line := trim(chop(AnsiString(#10),data));
+    grpname := UnUTF(chop(AnsiString(';'),line));
+    c := TICQContact(contactsDB.get(TICQContact, chop(AnsiString(';'),line)));
+   	if c.nick='' then
+      c.nick := chop(AnsiString(';'),line)
+     else
+      c.fDisplay := chop(AnsiString(';'),line);
     if (c.group=0) and (grpname>'') then
       begin
-      grp:=groups.name2id(grpname);
+      grp := groups.name2id(grpname);
       if grp<0 then
         begin
-        grp:=groups.add;
-        groups.a[groups.idxOf(grp)].name:=grpname;
+        grp := groups.add;
+        groups.a[groups.idxOf(grp)].name := grpname;
         end;
-      c.group:=grp;
+      c.group := grp;
       end;
     result.add(c);
   except
   end;
 end; // clb2contactlist
 
-function contactlist2clb(cl:TRnQCList):AnsiString;
+function contactlist2clb(cl: TRnQCList): AnsiString;
 var
-  i:integer;
+  i: integer;
 //  s:string;
 begin
-result:='';
-for i:=0 to TList(cl).count-1 do
-  begin
-//  s:='';
-  with TRnQcontact(cl.getat(i)) do
-    result:=result+
-      AnsiString(groups.id2name(group))+';'+ uid+';'+AnsiString(displayed)+';'+CRLF
-  end;
+  result := '';
+  for i:=0 to TList(cl).count-1 do
+   begin
+//    s := '';
+    with TRnQcontact(cl.getat(i)) do
+      result := result+
+        AnsiString(groups.id2name(group))+';'+ uid+';'+AnsiString(displayed)+';'+CRLF
+   end;
 end; // contactlist2clb
 
 function str2status(const s: AnsiString): byte;
 var
-  ss : TPicName;
+  ss: TPicName;
 begin
-  ss:=LowerCase(s);
+  ss := LowerCase(s);
  for result:=byte(low(status2img)) to byte(high(status2img)) do
 //  if LowerCase(status2img[TICQStatus(result)]) = s then
   if status2img[result] = ss then
     exit;
- result:= byte(SC_ONLINE); // shut up compiler warning
+ result := byte(SC_ONLINE); // shut up compiler warning
 end; // str2status
 
 function str2visibility(const s: AnsiString): Tvisibility;
@@ -660,13 +662,13 @@ result:=NIL;
 end; // findViewInfo
 
   {$IFDEF usesDC}
-function findSendfile(id: Int64):TsendfileFrm;
+function findSendfile(id: Int64): TsendfileFrm;
 var
-  i:integer;
+  i: integer;
 begin
 with childWindows do
   begin
-  i:=0;
+  i := 0;
   while i < count do
     begin
     if Tobject(items[i]) is TsendfileFrm then
@@ -678,8 +680,9 @@ with childWindows do
     inc(i);
     end;
   end;
-result:=NIL;
+result := NIL;
 end; // findSendfile
+
 function findRcvfile(id: Int64): TfiletransferFrm;
 var
   i: integer;
@@ -708,12 +711,13 @@ var
   c: TICQcontact;
   b: boolean;
   i: integer;
-  sU : string;
+  sU: string;
   e, TempEv: Thevent;
-  TempCh : TchatInfo;
-  vS : AnsiString;
-  cuid : TUID;
-  SA : RawByteString;
+  TempCh: TchatInfo;
+  vS: AnsiString;
+  cuid: TUID;
+  SA: RawByteString;
+  session: TSessionParams;
  {$IFDEF usesDC}
 
   vSendFileForm: TsendfileFrm;
@@ -732,12 +736,13 @@ if ev in [TicqEvent(IE_msg),IE_url,IE_contacts,IE_authReq,IE_addedyou,
       IE_email, IE_webpager, IE_fromMirabilis, IE_TYPING, IE_ackXStatus, IE_XStatusReq,
       IE_StickerMsg, IE_MultiChat] then
   begin
-  e:=Thevent.new(EK_null, c, thisICQ.eventTime,
-                 ''{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, thisICQ.eventFlags);
-  e.otherpeer:=c;
+  e := Thevent.new(EK_null, c, thisICQ.eventTime,
+                 ''{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, thisICQ.eventFlags,
+                 thisICQ.eventMsgID, thisICQ.eventWID);
+  e.otherpeer := c;
   if ev in [IE_contacts] then
     begin
-     e.cl:=thisICQ.eventContacts.clone;
+     e.cl := thisICQ.eventContacts.clone;
      e.cl.remove(thisICQ.getMyInfo);
      e.cl.remove(c);
     end
@@ -765,7 +770,7 @@ else
 case ev of
 	IE_serverAck:
   	begin
-    i:= Account.acks.findID(thisICQ.eventMsgID);
+    i := Account.acks.findID(thisICQ.eventMsgID);
     if i >= 0 then  // exploit only for automsgreq
     	begin
         if Account.acks.getAt(i).kind = OE_msg then
@@ -777,6 +782,7 @@ case ev of
                  TempEv := TempCh.historyBox.history.getByID(thisICQ.eventMsgID);
                  if TempEv <> NIL then
                   TempEv.flags := TempEv.flags OR IF_SERVER_ACCEPT;// IF_MSG_SERVER;
+                  TempEv.writeWID(thisICQ.eventMsgID, thisICQ.eventWID);
 //                 TempEv := NIL;
                  TempCh.repaint();
               end;
@@ -1118,7 +1124,7 @@ case ev of
         if thisICQ.eventAccept <> AC_ok then
           c.lastAccept:=thisICQ.eventAccept;
 
-        pTCE(c.data).lastAutoMsg:= sU;
+        pTCE(c.data).lastAutoMsg := sU;
         plugins.castEv( PE_AUTOMSG_GOT, cuid, sU);
         behave(e, EK_automsg);
         end
@@ -1138,7 +1144,7 @@ case ev of
        end
       else
        begin
-        b:=(c.lastAccept<>thisICQ.eventAccept) or (TCE(c.data^).lastAutoMsg<>sU);
+        b := (c.lastAccept<>thisICQ.eventAccept) or (TCE(c.data^).lastAutoMsg<>sU);
         case thisICQ.eventAccept of
           AC_away:
             if b then
@@ -1254,7 +1260,38 @@ case ev of
       rosterRepaintDelayed:=TRUE;
       end;
   IE_error:
-    if thisICQ.eventError = EC_badContact then
+    if thisICQ.eventError = EC_SSI_error then
+    begin
+      case thisICQ.eventInt of
+        $01: thisICQ.eventMsgA := 'Invalid SNAC header.';
+        $02: thisICQ.eventMsgA := 'Server rate limit exceeded';
+        $03: thisICQ.eventMsgA := 'Client rate limit exceeded';
+        $04: thisICQ.eventMsgA := 'Recipient is not logged in';
+        $05: thisICQ.eventMsgA := 'Requested service unavailable';
+        $06: thisICQ.eventMsgA := 'Requested service not defined';
+        $07: thisICQ.eventMsgA := 'You sent obsolete SNAC';
+        $08: thisICQ.eventMsgA := 'Not supported by server';
+        $09: thisICQ.eventMsgA := 'Not supported by client';
+        $0A: thisICQ.eventMsgA := 'Refused by client';
+        $0B: thisICQ.eventMsgA := 'Reply too big';
+        $0C: thisICQ.eventMsgA := 'Responses lost';
+        $0D: thisICQ.eventMsgA := 'Request denied';
+        $0E: thisICQ.eventMsgA := 'Incorrect SNAC format';
+        $0F: thisICQ.eventMsgA := 'Insufficient rights';
+        $10: thisICQ.eventMsgA := 'In local permit/deny (recipient blocked)';
+        $11: thisICQ.eventMsgA := 'Sender too evil';
+        $12: thisICQ.eventMsgA := 'Receiver too evil';
+        $13: thisICQ.eventMsgA := 'User temporarily unavailable';
+        $14: thisICQ.eventMsgA := 'No match';
+        $15: thisICQ.eventMsgA := 'List overflow';
+        $16: thisICQ.eventMsgA := 'Request ambiguous';
+        $17: thisICQ.eventMsgA := 'Server queue full';
+        $18: thisICQ.eventMsgA := 'Not while on AOL';
+      end;
+      msgDlg(getTranslation(icqerror2str[thisICQ.eventError], [getTranslation(thisICQ.eventMsgA)]), False, mtError);
+    end
+    else if thisICQ.eventError = EC_badContact then
+
       loggaEvtS(format('ERROR: bad contact: %s',[cuid]))
     else
       begin
@@ -1313,7 +1350,7 @@ case ev of
         updateViewInfo(thisICQ.getMyInfo);
 //        myStatus := thisICQ.getStatus;
         if thisICQ.getStatus <> byte(SC_OFFLINE) then
-          lastStatus:= thisICQ.getStatus;
+          lastStatus := thisICQ.getStatus;
         RnQmain.updateStatusGlyphs;
         roasterLib.updateHiddenNodes;
         roasterLib.redraw;
@@ -1457,15 +1494,15 @@ case ev of
       statusIcon.showballoon(2000, getTranslation('Online'),
                              Application.MainForm.Caption, bitinfo);
       {$ENDIF Use_Baloons}
-      thisICQ.offlineMsgsChecked:=FALSE;
+      thisICQ.offlineMsgsChecked := FALSE;
       checkupdate.checking := false;
  {$IFDEF UseNotSSI}
       if not thisICQ.useSSI and (thisICQ.readList(LT_ROSTER).count < 1) then
 //        thisICQ.SSIreqRoster;
         RQ_ICQ.RequestContactList(thisICQ);
  {$ENDIF UseNotSSI}
-      outboxCount:=timeBetweenMsgs;
-      stayconnected:=autoreconnect;
+      outboxCount := timeBetweenMsgs;
+      stayconnected := autoreconnect;
       plugins.castEv(PE_CONNECTED);
       if getOfflineMsgs then
         thisICQ.sendReqOfflineMsgs
@@ -1484,6 +1521,8 @@ case ev of
         Check_my_avatar(thisICQ);
       {$ENDIF RNQ_AVATARS}
  {$ENDIF UseNotSSI}
+          if thisICQ.useWebProtocol then
+            thisICQ.getSession;
      end
     else
       begin
@@ -1512,6 +1551,17 @@ case ev of
       {$ENDIF CHECK_INVIS}
         Account.acks.Clear;
       plugins.castEv(PE_DISCONNECTED);
+
+        if thisICQ.useWebProtocol then
+        begin
+          session := thisICQ.getSession(False);
+          if not (session.aimsid = '') then
+          begin
+            SU := '';
+            LoadFromURL0('http://api.icq.net/aim/endSession?f=json&r=1&aimsid=' + session.aimsid, sU);
+            loggaEvtS('AIM session ' + session.aimsid + ' closed');
+          end;
+        end;
       end;
     noOncomingCounter:=150;
     with chatFrm do

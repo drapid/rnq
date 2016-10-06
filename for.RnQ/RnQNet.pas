@@ -1255,12 +1255,12 @@ begin
 //     httpCli.ThreadAttach;
      Result := True;
     except
-     on e:EHttpException do
+     on e: EHttpException do
       if e.ErrorCode <> 404 then
         msgDlg(getTranslation(ProxyUnkError, [e.ErrorCode, e.Message]), False, mtError)
     end;
 //    httpCli.
-    if Result then
+    if Result and (fn>'') then
      begin
        AvStream.Seek(0,0);
        if ExtByContent then

@@ -144,14 +144,14 @@ function  isUnderDiv(n: Tnode): Tdivisor;
   procedure ICON_ORDER_PREF_parse(const str: RawByteString);
 
 var
-  building:boolean=FALSE;
-  dragging: boolean=FALSE; // roster.dragging doesn't work
+  building: boolean = FALSE;
+  dragging: boolean = FALSE; // roster.dragging doesn't work
   inplace: record
-    edit    :Tedit;
-    what    :integer;
-    contact :TRnQContact;
-    groupId :integer;
-    node    :Tnode;
+    edit    : Tedit;
+    what    : integer;
+    contact : TRnQContact;
+    groupId : integer;
+    node    : Tnode;
    end;
   contactsPool : Tlist;
   expandedByTempFocus : Tnode;
@@ -182,10 +182,10 @@ uses
 var
   // declared globally to speedup the compare callback functions
 
-  divs:array [Tdivisor] of Tnode;
-  buildingOnline:boolean;
+  divs: array [Tdivisor] of Tnode;
+  buildingOnline: boolean;
 
-function Filtered( c:TRnQcontact) : Boolean;
+function Filtered(c: TRnQcontact): Boolean;
 begin
   if FilterTextBy = '' then
    Result := False
@@ -213,24 +213,24 @@ begin
        result := False;
 end;
 
-function getNode(tn:Pvirtualnode):Tnode;
+function getNode(tn: Pvirtualnode): Tnode;
 begin
-if tn=NIL then
-  result:=NIL
-else
-  begin
-  result := RnQmain.roster.getnodedata(tn);
-  if result<>NIL then
-    result:=Tnode(pointer(result)^);
-  end;
+  if tn=NIL then
+    result := NIL
+   else
+    begin
+     result := RnQmain.roster.getnodedata(tn);
+     if result<>NIL then
+       result := Tnode(pointer(result)^);
+    end;
 end; // getNode
 
 function str2divisor(const s: AnsiString): Tdivisor;
 begin
-for result:=low(result) to high(result) do
-  if s = divisor2str[result] then
-    exit;
-raise Exception.Create('str2divisor');
+  for result:=low(result) to high(result) do
+    if s = divisor2str[result] then
+      exit;
+  raise Exception.Create('str2divisor');
 end; // str2divisor
 
 procedure updateHiddenNode(n: Tnode);
@@ -259,7 +259,7 @@ var
   tmpB1,tmpB2: boolean;
   tmpT1,tmpT2: Tdatetime;
 begin
-  result:=0;
+  result := 0;
   if (c1=c2) or (c1=NIL) or (c2=NIL) then
     exit;
   if OnlOfflInOne then
@@ -300,10 +300,10 @@ case sortBy of
       result:=compareText(c1.displayed, c2.displayed)
     else
       if tmpT1 > tmpT2 then
-        result:=-1
+        result := -1
        else
         if tmpT1 < tmpT2 then
-          result:=+1;
+          result := +1;
     end;
   SB_STATUS:
     begin
@@ -311,22 +311,22 @@ case sortBy of
        begin
         Result := c1.fProto.compareStatusFor(c1, c2);
         if Result = 0 then
-          result:=compareText(c1.displayed, c2.displayed);
+          result := compareText(c1.displayed, c2.displayed);
        end
       else
        result := compareInt(cardinal(c1.fProto), cardinal(c2.fProto)) ;
     end;
   else
     begin
-    tmpB1:= c1.imVisibleTo;
-    tmpB2:= c2.imVisibleTo;
+    tmpB1 := c1.imVisibleTo;
+    tmpB2 := c2.imVisibleTo;
     if tmpb1 and not tmpb2 then
-      result:=-1
+      result := -1
      else
     if tmpb2 and not tmpb1 then
-      result:=+1
+      result := +1
      else
-      result:=compareText(c1.displayed, c2.displayed);
+      result := compareText(c1.displayed, c2.displayed);
     end;
   end;
 end; // compareContacts
@@ -334,15 +334,15 @@ end; // compareContacts
 // this sort criteria is deeper than compareContacts one, sit has to think about groups and online status
 function compareContacts4build(item1, item2: pointer): integer;
 var
-  tmpC1,tmpC2: TRnQContact;
-  t1, t2 : byte;
-  tmpI1,tmpI2: integer;
+  tmpC1, tmpC2: TRnQContact;
+  t1, t2: byte;
+  tmpI1, tmpI2: integer;
 begin
-  result:=0;
+  result := 0;
   if (item1=item2) or (item1=NIL) or (item2=NIL) then
     exit;
-  tmpC1:=TRnQContact(item1);
-  tmpC2:=TRnQContact(item2);
+  tmpC1 := TRnQContact(item1);
+  tmpC2 := TRnQContact(item2);
   if tmpC1.isOnline then
     t1 := 3
    else
@@ -361,9 +361,9 @@ begin
 if buildingOnline then
   if t1<>t2 then
     if t2>t1 then
-      result:=+1
+      result := +1
      else
-      result:=-1;
+      result := -1;
 {  case tmpC1.status of
     SC_UNK:
       case tmpC2.status of
@@ -409,70 +409,70 @@ if result<>0 then
 if showGroups and (tmpC1.group <> tmpC2.group) then
   begin
   if tmpC1.group = 0 then
-    result:=-1
+    result := -1
   else
     if tmpC2.group = 0 then
-      result:=+1
+      result := +1
     else
       begin
-      tmpI1:=groups.get(tmpC1.group).order;
-      tmpI2:=groups.get(tmpC2.group).order;
+      tmpI1 := groups.get(tmpC1.group).order;
+      tmpI2 := groups.get(tmpC2.group).order;
       if tmpI1=tmpI2 then
-        result:=compareText(groups.id2name(tmpC1.group), groups.id2name(tmpC2.group))
+        result := compareText(groups.id2name(tmpC1.group), groups.id2name(tmpC2.group))
       else
         if tmpI1<tmpI2 then
-          result:=-1
+          result := -1
          else
-          result:=+1;
+          result := +1;
       end;
   exit;
   end;
-result:=compareContacts(tmpC1,tmpC2);
+result := compareContacts(tmpC1, tmpC2);
 end; // compareContacts4build
 
-function compareNodes(Node1,Node2:Tnode):integer;
+function compareNodes(Node1, Node2: Tnode): integer;
 var
-  l1, l2 : Integer;
+  l1, l2: Integer;
 begin
-  result:=0;
+  result := 0;
   if (node1=NIL) or (node2=NIL) or (node1=node2) then
     exit;
   l1 := node1.level;
   l2 := node2.level;
   if l1 < l2 then
-    result:=-1
+    result := -1
    else
     if l1 > l2 then
-     result:=+1;
+     result := +1;
   if result<>0 then
     exit;
   if (node1.kind=node2.kind) and (node1.order<>node2.order) then
    begin
     if node1.order < node2.order then
-      result:=-1
+      result := -1
      else
-      result:=+1;
+      result := +1;
     exit;
    end;
  case node1.kind of
   NODE_DIV:
     if node2.kind <> NODE_DIV then
-      result:=-1
+      result := -1
      else
-      result:=compareInt(ord(node1.divisor),ord(node2.divisor));
+      result := compareInt(ord(node1.divisor),ord(node2.divisor));
   NODE_GROUP:
     case node2.kind of
-      NODE_DIV: result:=+1;
-      NODE_CONTACT: result:=+1;
+      NODE_DIV: result := +1;
+      NODE_CONTACT: result := +1;
       NODE_GROUP:
-        result:=compareText( groups.id2name(node1.groupId),
+        result := compareText( groups.id2name(node1.groupId),
           groups.id2name(node2.groupId) );
       end;
   NODE_CONTACT:
     case node2.kind of
-      NODE_DIV: result:=+1;
-      NODE_GROUP: result:=-1;
-      NODE_CONTACT: result:=compareContacts(node1.contact,node2.contact);
+      NODE_DIV: result := +1;
+      NODE_GROUP: result := -1;
+      NODE_CONTACT: result := compareContacts(node1.contact,node2.contact);
       end;
   end;
 end; // compareNodes
@@ -480,25 +480,25 @@ end; // compareNodes
 constructor Tnode.create(divisor_: Tdivisor);
 begin
   inherited create;
-  kind   := NODE_DIV;
-  divisor:= divisor_;
+  kind    := NODE_DIV;
+  divisor := divisor_;
 end; // create
 
-constructor Tnode.create(groupId_:integer; divisor_:Tdivisor);
+constructor Tnode.create(groupId_: integer; divisor_: Tdivisor);
 begin
   inherited create;
-  kind   := NODE_GROUP;
-  groupId:= groupId_;
-  divisor:= divisor_;
+  kind    := NODE_GROUP;
+  groupId := groupId_;
+  divisor := divisor_;
 end; // create
 
-constructor Tnode.create(contact_:TRnQContact);
+constructor Tnode.create(contact_: TRnQContact);
 begin
   inherited create;
   kind    := NODE_CONTACT;
   contact := contact_;
   groupId := contact_.group;
-  TCE(contact_.data^).node:=self;
+  TCE(contact_.data^).node := self;
   contactsPool.add(self);
 end; // create
 
@@ -508,145 +508,145 @@ case kind of
   NODE_CONTACT:
     begin
     contactsPool.remove(self);
-    TCE(contact.data^).node:=NIL;
+    TCE(contact.data^).node := NIL;
     end;
   NODE_GROUP: groups.a[groups.idxOf(groupId)].node[divisor]:=NIL;
-  NODE_DIV: divs[divisor]:=NIL;
+  NODE_DIV: divs[divisor] := NIL;
   end;
 inherited;
 end; // destroy
 
 function Tnode.parent: Tnode;
 begin
-if treenode.parent=NIL then
-  result:=NIL
-else
-  result:=getNode(treenode.parent)
+  if treenode.parent=NIL then
+    result := NIL
+   else
+    result := getNode(treenode.parent)
 end;
 
-function Tnode.childrenCount:integer;
+function Tnode.childrenCount: integer;
 begin
-  result:=treenode.childcount
+  result := treenode.childcount
 end;
 
-function Tnode.firstChild:Tnode;
+function Tnode.firstChild: Tnode;
 begin
-  result:=getNode(treenode.FirstChild)
+  result := getNode(treenode.FirstChild)
 end;
 
 function Tnode.next: Tnode;
 begin
-  result:=getNode(treenode.NextSibling)
+  result := getNode(treenode.NextSibling)
 end;
 
 function Tnode.prev: Tnode;
 begin
-  result:=getNode(treenode.PrevSibling)
+  result := getNode(treenode.PrevSibling)
 end;
 
 function Tnode.expanded: boolean;
 begin
-  result:=vsExpanded in treenode.states
+  result := vsExpanded in treenode.states
 end;
 
 function Tnode.level: integer;
 begin
-  result:=RnQmain.roster.getnodelevel(treenode)
+  result := RnQmain.roster.getnodelevel(treenode)
 end;
 
 function Tnode.isVisible: boolean;
 var
-  n,root: Pvirtualnode;
+  n, root: Pvirtualnode;
 begin
-n:=treenode;
-root:=RnQmain.roster.rootnode;
+  n := treenode;
+  root := RnQmain.roster.rootnode;
 
-result:=vsVisible in n.states;
+  result := vsVisible in n.states;
   repeat
-  n:=n.parent;
+  n := n.parent;
   if n<>root then
-    result:=(vsVisible in n.states) and (vsExpanded in n.states); 
+    result := (vsVisible in n.states) and (vsExpanded in n.states);
   until not result or (n=root);
 end; // isVisible
 
-procedure Tnode.setExpanded(val: boolean; recur: boolean=FALSE);
+procedure Tnode.setExpanded(val: boolean; recur: boolean = FALSE);
 begin
-if not recur then
-  RnQmain.roster.expanded[treenode]:=val
-else
-  if val then
-    RnQmain.roster.FullExpand(treenode)
-  else
-    RnQmain.roster.FullCollapse(treenode);
+  if not recur then
+    RnQmain.roster.expanded[treenode] := val
+   else
+    if val then
+      RnQmain.roster.FullExpand(treenode)
+     else
+      RnQmain.roster.FullCollapse(treenode);
 end; // setexpanded
 
 function Tnode.rect: Trect;
 begin
-  result:=RnQmain.roster.GetDisplayRect(treenode, -1, FALSE)
+  result := RnQmain.roster.GetDisplayRect(treenode, -1, FALSE)
 end;
 
 /////////////////////////////////////////////////////////////
 
 function insertNode(d: Tdivisor): Tnode; overload;
 var
-  a:Tnode;
+  a: Tnode;
 begin
   Result := NIL;
   if not (d in [Low(Tdivisor)..High(Tdivisor)]) then
     Exit;
-  result:=divs[d];
+  result := divs[d];
   if assigned(result) then
     exit;
 
-  a:=Tnode.create(d);
-  result:=a;
-  result.treenode:=RnQmain.roster.addchild(NIL, result);
-  divs[d]:=result;
+  a := Tnode.create(d);
+  result := a;
+  result.treenode := RnQmain.roster.addchild(NIL, result);
+  divs[d] := result;
   if not building then
     sort(result);
 end; // insertNode
 
 function insertNode(id: integer; d: Tdivisor): Tnode; overload;
 var
-  idx:integer;
+  idx: integer;
 begin
-  idx:=groups.idxOf(id);
-  result:=groups.a[idx].node[d];
+  idx := groups.idxOf(id);
+  result := groups.a[idx].node[d];
   if assigned(result) then
     exit;
   insertNode(d); // ensure divisor existence
-  result:=Tnode.create(id, d);
-  result.order:=groups.a[idx].order;
-  result.treenode:=RnQmain.roster.addChild(divs[d].treenode, result);
-  groups.a[idx].node[d]:=result;
+  result := Tnode.create(id, d);
+  result.order := groups.a[idx].order;
+  result.treenode := RnQmain.roster.addChild(divs[d].treenode, result);
+  groups.a[idx].node[d] := result;
   if not building then
    sort(result);
 end; // insertNode
 
 function shouldBeUnder(c: TRnQContact; d: Tdivisor): Tnode;
 begin
-  result:=insertNode(d);
+  result := insertNode(d);
   if (c.group = 0) or not showGroups or not (d in divsWithGroups) then
     exit;
   if not groups.exists(c.group) then
-    c.group:=0
+    c.group := 0
    else
-    result:=insertNode(c.group, d);
+    result := insertNode(c.group, d);
 end; // shouldBeUnder
 
 function insertNode(c: TRnQContact; under: Tnode): Tnode; overload;
 
   procedure checkExpansion;
   var
-    n:Tnode;
-    d:Tdivisor;
+    n: Tnode;
+    d: Tdivisor;
   begin
-  n:=result.parent;
+    n := result.parent;
     repeat
     case n.kind of
       NODE_GROUP:
         begin
-        d:=n.parent.divisor;
+        d := n.parent.divisor;
         n.setexpanded(groups.a[groups.idxOf(n.groupId)].expanded[d]);
         end;
       NODE_DIV:
@@ -655,79 +655,79 @@ function insertNode(c: TRnQContact; under: Tnode): Tnode; overload;
         break;
         end;
       end;
-    n:=n.parent;
+    n := n.parent;
     until n=NIL;
   end; // checkExpansion
 
 begin
-result:=Tnode.create(c);
+  result := Tnode.create(c);
 
-result.treenode:=RnQmain.roster.addChild(under.treenode, result);
+  result.treenode := RnQmain.roster.addChild(under.treenode, result);
 //Result.groupId := under.groupId;
-updateHiddenNode(result);
-if not building then
-  checkExpansion;
-autosizeDelayed:=TRUE;
-if not building then
-  sort(result);
+  updateHiddenNode(result);
+  if not building then
+    checkExpansion;
+  autosizeDelayed := TRUE;
+  if not building then
+    sort(result);
 end; // insertNode
 
 function insertNode(c: TRnQcontact; d: Tdivisor): Tnode; overload;
 begin
-  result:=insertNode(c, shouldBeUnder(c,d))
+  result := insertNode(c, shouldBeUnder(c, d))
 end;
 
 function GetContactDiv(c: TRnQContact; isRoster: Boolean = false): Tdivisor;
 begin
-if (not isRoster) and notinlist.exists(c) then
-  result:= d_nil
-else
-  if (not isRoster) and not c.isInRoster then
-    result:= Tdivisor(13)
-  else
-    if buildingOnline and not OnlOfflInOne then
+  if (not isRoster) and notinlist.exists(c) then
+    result := d_nil
+   else
+    if (not isRoster) and not c.isInRoster then
+      result := Tdivisor(13)
+     else
+      if buildingOnline and not OnlOfflInOne then
       {$IFDEF CHECK_INVIS}
       if supportInvisCheck and (c.isInvisible) then
-        result:= d_invis
+        result := d_invis
        else
       {$ENDIF}
         if c.isOffline or (showUnkAsOffline and not c.isOnline) then
-          result:= d_offline
+          result := d_offline
          else
-          result:= d_online
-    else
-      if buildingOnline and showOnlyOnline and not c.isOnline then
-        Result := d_offline
-       else
-        result := d_contacts
+          result := d_online
+      else
+       if buildingOnline and showOnlyOnline and not c.isOnline then
+         Result := d_offline
+        else
+         result := d_contacts
 end;
 
 function insertNode(c: TRnQContact): Tnode; overload;
 var
-  d : Tdivisor;
+  d: Tdivisor;
 begin
   if filtered(c) then
     Exit(nil);
   d := GetContactDiv(c);
 //  if d in [d_online..d_nil] then
   if d in [Low(Tdivisor).. High(Tdivisor)] then
-    result:=insertNode(c, d)
+    result :=insertNode(c, d)
    else
     Result := nil;
 end; // insertNode
 
 function removeNode(n: Tnode): boolean; overload;
 var
-  parent:Tnode;
+  parent: Tnode;
 begin
-  result:=assigned(n);
+  result := assigned(n);
   if not result then
     exit;
 
   while n.childrenCount > 0 do
     removeNode(n.firstChild);
 
-  parent:=n.parent;
+  parent := n.parent;
   RnQmain.roster.deleteNode(n.treenode);
   n.free;
 
@@ -739,13 +739,13 @@ begin
      NODE_DIV: if parent.divisor in [d_nil, d_contacts] then
                  removeNode(parent);
     end;
-  autosizeDelayed:=TRUE;
+  autosizeDelayed := TRUE;
 end; // removeNode
 
 function removeNode(c: TRnQContact): boolean; overload;
 var
-  n : Tnode;
-  tn : PVirtualNode;
+  n: Tnode;
+  tn: PVirtualNode;
 begin
   n := TCE(c.data^).node;
   if Assigned(n) and (n.treenode <> NIL) then
@@ -764,29 +764,29 @@ begin
         end;
     end;
 
-  result:=removeNode(TCE(c.data^).node);
+  result := removeNode(TCE(c.data^).node);
   if Result then
-    autosizeDelayed:=TRUE;
+    autosizeDelayed := TRUE;
 
   TCE(c.data^).node := NIL;
 end;
 
 procedure rebuild;
 var
-  i:integer;
-  rosterList:TRnQCList;
-  d:Tdivisor;
-  c:TRnQContact;
-  oldFocusedContact:TRnQContact;
+  i: integer;
+  rosterList: TRnQCList;
+  d: Tdivisor;
+  c: TRnQContact;
+  oldFocusedContact: TRnQContact;
 //  oldtopnode : PVirtualNode;
 begin
   if building then
     Exit;
   FilterTextBy := AnsiUpperCase(FilterTextBy);
-  oldFocusedContact:= focusedContact;
+  oldFocusedContact := focusedContact;
 //  oldtopnode := RnQmain.roster.TopNode;
  try
-  building:=TRUE;
+  building := TRUE;
   //with RnQmain.roster.treeoptions do autooptions:=autoOptions-[toAutosort];
   // reset
   RnQmain.roster.BeginUpdate;
@@ -799,10 +799,10 @@ begin
     with groups.a[i] do
       fillchar(node, sizeOf(node), 0);
   // roster section
-  rosterList:= Account.AccProto.readList(LT_ROSTER).clone;
+  rosterList := Account.AccProto.readList(LT_ROSTER).clone;
   rosterList.sort(compareContacts4build);
 
-  buildingOnline:= Account.AccProto.isOnline;
+  buildingOnline := Account.AccProto.isOnline;
   if buildingOnline  and not OnlOfflInOne then
     begin
     insertNode(d_online);
@@ -814,7 +814,7 @@ begin
   rosterList.resetEnumeration;
   while rosterList.hasMore do
    begin
-    c:= rosterList.getNext;
+    c := rosterList.getNext;
     if Filtered(c) then
      Continue;
     d := GetContactDiv(c, True);
@@ -848,9 +848,9 @@ begin
 
   updateHiddenNodes;
   //with RnQmain.roster.treeoptions do autooptions:=autoOptions+[toAutosort];
-  autosizeDelayed:=TRUE;
+  autosizeDelayed := TRUE;
 finally
-  building:=FALSE;
+  building := FALSE;
   RnQmain.roster.EndUpdate;
 //sort(RnQmain.roster.rootnode);
 with RnQmain.roster do
@@ -866,8 +866,8 @@ with RnQmain.roster do
   else
     if totalcount > 0 then
       begin
-      focusedNode:=RootNode.firstchild;
-      topnode:=RootNode.firstchild;
+      focusedNode := RootNode.firstchild;
+      topnode := RootNode.firstchild;
       end;
   end;
 end;
@@ -880,11 +880,11 @@ end;
 
 function redraw(c: TRnQContact): boolean;
 begin
-  result:=FALSE;
+  result := FALSE;
   if c=NIL then
     exit;
  try
-   result:=redraw(TCE(c.data^).node);
+   result := redraw(TCE(c.data^).node);
   except
  end;
 updateHiddenNode(TCE(c.data^).node);
@@ -903,9 +903,9 @@ end; // redraw
 
 function redraw(n: Tnode): boolean;
 var
-  r:Trect;
+  r: Trect;
 begin
-  result:=FALSE;
+  result := FALSE;
   if (n=NIL) or (n.treenode=NIL) then
     exit;
   R := RnQmain.roster.GetDisplayRect(n.treenode, -1, FALSE);
@@ -914,11 +914,11 @@ end; // redraw
 
 function update(c: TRnQContact): boolean;
 var
-  d:Tdivisor;
-  wasFocused:boolean;
-  n:Tnode;
+  d: Tdivisor;
+  wasFocused: boolean;
+  n: Tnode;
 begin
-  result:=FALSE;
+  result := FALSE;
   if c=NIL then
     exit;
   wasFocused := c=focusedContact;
@@ -929,17 +929,17 @@ begin
       if n.groupId <> c.group then
        begin
         removeNode(c);
-        n:=insertNode(c);
+        n := insertNode(c);
        end;
     end
    else
     begin
       removeNode(c);
-      n:=insertNode(c);
+      n := insertNode(c);
     end;
   if n=NIL then
     exit;
-  d:=isUnderDiv(n);
+  d := isUnderDiv(n);
   if assigned(divs[d]) then
     divs[d].setExpanded(TRUE);
   sort(c);
@@ -962,7 +962,7 @@ begin
        readList(LT_VISIBLE).remove(c);
       end;
   end;
-saveListsDelayed:=TRUE;
+saveListsDelayed := TRUE;
 removeNode(c);
 if chatFrm<>NIL then
   chatFrm.userChanged(c);
@@ -975,21 +975,21 @@ end;
 
 function focus(tn: Pvirtualnode): boolean; overload;
 begin
-  result:=focus(getnode(tn))
+  result := focus(getnode(tn))
 end;
 
 function focus(n: Tnode): boolean; overload;
 begin
-  result:=assigned(n) and assigned(n.treenode);
+  result := assigned(n) and assigned(n.treenode);
   if result then
-    RnQmain.roster.focusedNode:=n.treenode
+    RnQmain.roster.focusedNode := n.treenode
    else
-    RnQmain.roster.focusednode:=NIL;
-  clickedNode:=n;
-  clickedContact:=focusedContact;
+    RnQmain.roster.focusednode := NIL;
+  clickedNode := n;
+  clickedContact := focusedContact;
 //  clickedContact := NIL;
 //focusedCnt := focusedContact;
-  clickedGroup:=-1;
+  clickedGroup := -1;
   if clickedNode=NIL then
     exit;
   if clickedNode.kind=NODE_GROUP then
@@ -998,12 +998,12 @@ end; // focus
 
 function focus(c: TRnQContact): boolean; overload;
 begin
-  result:=(c<>NIL) and focus(TCE(c.data^).node)
+  result := (c<>NIL) and focus(TCE(c.data^).node)
 end;
 
 procedure formresized;
 var
-  d:Tdivisor;
+  d: Tdivisor;
 begin
   if not RnQmain.visible then
     exit;
@@ -1013,7 +1013,7 @@ end;
 
 procedure clear;
 var
-  d:Tdivisor;
+  d: Tdivisor;
 begin
   RnQmain.roster.clear;
 //  RnQmain.roster.
@@ -1030,8 +1030,8 @@ end; // clear
 function lowestVisibleNodeFrom(n: PVirtualNode): PvirtualNode;
 begin
 while RnQmain.roster.expanded[n] and (n.childcount>0) do
-  n:=RnQmain.roster.getLastVisibleChild(n);
-result:=n;
+  n := RnQmain.roster.getLastVisibleChild(n);
+result := n;
 end;
 
 function nodeBottomSide(n: PvirtualNode): integer;
@@ -1046,24 +1046,24 @@ end;
 function onlineMaxY: integer;
 begin
   if divs[d_online]=NIL then
-    result :=-1
+    result := -1
    else
     result :=nodeBottomSide( lowestVisibleNodeFrom(divs[d_online].treenode) );
  {$IFDEF CHECK_INVIS}
   if divs[d_invis]=NIL then
-    exit //result:=-1
+    exit //result := -1
    else
     if RnQmain.roster.isVisible[divs[d_invis].treenode] then
-      result:=nodeBottomSide( lowestVisibleNodeFrom(divs[d_invis].treenode) );
+      result := nodeBottomSide( lowestVisibleNodeFrom(divs[d_invis].treenode) );
  {$ENDIF}
 end; // onlineMaxY
 
 function fullMaxY: integer;
 begin
   if RnQmain.roster.RootNodeCount = 0 then
-    result:=-1
+    result := -1
    else
-    result:=nodeBottomSide( lowestVisibleNodeFrom(RnQmain.roster.rootnode) )
+    result := nodeBottomSide( lowestVisibleNodeFrom(RnQmain.roster.rootnode) )
 end;
 
 function addGroup(const name: string): integer;
@@ -1072,27 +1072,27 @@ var
   first: Tnode;
 begin
 // create the new group
-result:=groups.add;
-groups.a[groups.idxOf(result)].name:=name;
+result := groups.add;
+groups.a[groups.idxOf(result)].name := name;
 // add it to divisors, and focus on the first one
-first:=NIL;
+first := NIL;
 for d:=high(d) downto low(d) do
   if (d in divsWithGroups) and assigned(divs[d]) then
-    first:=insertNode(result, d);
+    first := insertNode(result, d);
 focus(first);
-saveGroupsDelayed:=TRUE;
+saveGroupsDelayed := TRUE;
 end; // addGroup
 
 function removeGroup(id: integer): boolean;
 var
-  cl:TRnQCList;
-  c:TRnQContact;
-  d:Tdivisor;
+  cl: TRnQCList;
+  c: TRnQContact;
+  d: Tdivisor;
 begin
-  result:=groups.exists(id);
+  result := groups.exists(id);
   if not result then
     exit;
-  cl:= Account.AccProto.readList(LT_ROSTER).clone;
+  cl := Account.AccProto.readList(LT_ROSTER).clone;
   cl.resetEnumeration;
   while cl.hasMore do
     begin
@@ -1107,7 +1107,7 @@ begin
       removeNode(node[d]);
    end;
   groups.delete(id);
-  saveGroupsDelayed:=TRUE;
+  saveGroupsDelayed := TRUE;
 end; // removeGroup
 
 procedure edit(n: Tnode);
@@ -1126,53 +1126,53 @@ begin
   if not formVisible(RnQmain) then
     Exit;
 focus(n);
-inplace.edit:=Tedit.create(RnQmain.roster);
+inplace.edit := Tedit.create(RnQmain.roster);
 inplace.edit.hide;
-inplace.edit.parentFont:=FALSE;
-inplace.edit.parent:=RnQmain.roster;
+inplace.edit.parentFont := FALSE;
+inplace.edit.parent := RnQmain.roster;
 inplace.edit.DoubleBuffered := DwmCompositionEnabled;
-inplace.node:=n;
+inplace.node := n;
 with n.rect do
   inplace.edit.SetBounds(n.textOfs,top,right-n.textofs-1,bottom-top);
 case n.kind of
   NODE_CONTACT:
     begin
-    inplace.what:=NODE_CONTACT;
-    inplace.contact:=n.contact;
-    inplace.edit.text:=inplace.contact.displayed;
+    inplace.what := NODE_CONTACT;
+    inplace.contact := n.contact;
+    inplace.edit.text := inplace.contact.displayed;
     end;
   NODE_GROUP:
     begin
     with inplace.edit.font do
-      style:=style+[fsBold];
-    inplace.what:=NODE_GROUP;
-    inplace.groupId:=n.groupId;
-    inplace.edit.text:=groups.id2name(n.groupId);
+      style := style+[fsBold];
+    inplace.what := NODE_GROUP;
+    inplace.groupId := n.groupId;
+    inplace.edit.text := groups.id2name(n.groupId);
     end;
   end;
 inplace.edit.show;
 inplace.edit.SetFocus;
-inplace.edit.onExit:=RnQmain.roasterStopEditing;
-inplace.edit.onKeyPress:=RnQmain.roasterKeyEditing;
+inplace.edit.onExit := RnQmain.roasterStopEditing;
+inplace.edit.onKeyPress := RnQmain.roasterKeyEditing;
 end; // edit
 
 function focused: Tnode;
 begin
 with RnQmain.roster do
   if focusedNode=NIL then
-    result:=NIL
+    result := NIL
   else
-    result:=getNode(focusednode)
+    result := getNode(focusednode)
 end; // focused
 
 function focusedContact: TRnQContact;
 var
-  n:Tnode;
+  n: Tnode;
 begin
-result:=NIL;
-n:=focused;
-if (n<>NIL) and (n.kind = NODE_CONTACT) then
-  result:=n.contact
+  result := NIL;
+  n := focused;
+  if (n<>NIL) and (n.kind = NODE_CONTACT) then
+    result := n.contact
 end; // focusedContact
 
 procedure expand(n: Tnode);
@@ -1189,22 +1189,22 @@ end;
 
 function nodeAt(x, y: integer): Tnode;
 var
-  n:Pvirtualnode;
+  n: Pvirtualnode;
 begin
 with RnQmain.roster do
   begin
-  n:=getNodeAt(x,y);
+  n := getNodeAt(x,y);
   if n=NIL then
-    result:=NIL
+    result := NIL
   else
-    result:=getNode(n)
+    result := getNode(n)
   end;
 end; // nodeAt
 
 procedure focusPrevious;
 begin
   with RnQmain.roster do
-    focusedNode:=GetPreviousVisible(focusedNode)
+    focusedNode := GetPreviousVisible(focusedNode)
 end;
 
 procedure setOnlyOnline(v: boolean);
@@ -1237,83 +1237,83 @@ end;
 
 procedure setNewGroupFor(c: TRnQContact; grp: integer);
 begin
-  c.group:=grp;
+  c.group := grp;
   c.fProto.updateGroupOf(c);
   update(c);
-  dbUpdateDelayed:=TRUE;
+  dbUpdateDelayed := TRUE;
 end; // setNewGroupFor
 
-function isUnderDiv(n:Tnode):Tdivisor;
+function isUnderDiv(n: Tnode): Tdivisor;
 begin
-result:=d_contacts;
-while n<>NIL do
+  result := d_contacts;
+  while n<>NIL do
   if n.kind = NODE_DIV then
     begin
-    result:=n.divisor;
-    exit;
+      result := n.divisor;
+      exit;
     end
-  else
-    n:= n.parent;
+   else
+    n := n.parent;
 enD; // isUnderDiv
 
-function focusTemp(n:Tnode):boolean;
+function focusTemp(n: Tnode): boolean;
 var
-  p:Tnode;
-  bak:boolean;
+  p: Tnode;
+  bak: boolean;
 begin
-bak:=setRosterAnimation(FALSE);
-if (expandedByTempFocus<>NIL) and (n<>expandedByTempFocus) then
-  begin
-  p:=expandedByTempFocus.parent;
-  if p.kind = NODE_GROUP then
-    p.setExpanded(FALSE);
-  end;
-if not n.isVisible then
-  expandedByTempFocus:=n;
-result:=focus(n);
-setRosterAnimation(bak);
+  bak := setRosterAnimation(FALSE);
+  if (expandedByTempFocus<>NIL) and (n<>expandedByTempFocus) then
+    begin
+      p := expandedByTempFocus.parent;
+      if p.kind = NODE_GROUP then
+        p.setExpanded(FALSE);
+    end;
+  if not n.isVisible then
+    expandedByTempFocus := n;
+  result := focus(n);
+  setRosterAnimation(bak);
 end; // focusTemp
 
-procedure popup(x: integer=-1; y: integer=-1);
+procedure popup(x: integer = -1; y: integer = -1);
 begin
   popupOn(clickedNode)
 end;
 
-procedure popupOn(n: Tnode; x: integer=-1; y: integer=-1);
+procedure popupOn(n: Tnode; x: integer = -1; y: integer = -1);
 begin
-if x<0 then
+  if x<0 then
   begin
-  x:=mousePos.x;
-  y:=mousePos.y;
+    x := mousePos.x;
+    y := mousePos.y;
   end;
-if n=NIL then
-  RnQmain.divisorMenu.popup(x,y)
-else
-  case n.kind of
-    NODE_GROUP: RnQmain.groupMenu.popup(x,y);
-    NODE_CONTACT: RnQmain.contactMenu.popup(x,y);
-    else RnQmain.divisorMenu.popup(x,y);
+  if n=NIL then
+    RnQmain.divisorMenu.popup(x,y)
+   else
+    case n.kind of
+      NODE_GROUP: RnQmain.groupMenu.popup(x,y);
+      NODE_CONTACT: RnQmain.contactMenu.popup(x,y);
+      else RnQmain.divisorMenu.popup(x,y);
     end;
 end; // popupOn
 
-function contactsUnder(n:Tnode):integer;
+function contactsUnder(n: Tnode): integer;
 begin
-  result:=0;
-  n:=n.firstChild;
+  result := 0;
+  n := n.firstChild;
   while n<>NIL do
    begin
     if n.childrenCount > 0 then
       inc(result, contactsUnder(n));
     if n.kind = NODE_CONTACT then
       inc(result);
-    n:=n.next;
+    n := n.next;
    end;
 end; // contactsUnder
 
 
 procedure RstrDrawNode(Sender: TBaseVirtualTree; const PaintInfo: TVTPaintInfo; const PPI: Integer);
 var
-  n:Tnode;
+  n: Tnode;
 //  function DrawContactIcon(DC : THandle; pIcon : Byte; x, y : Integer; Cnt : TContact; pIsRight : boolean = false) : TSize;
 //  function DrawContactIcon(DC : THandle; pIcon : TRnQCLIconsSet; x, y : Integer;
   function DrawContactIcon(DC: THandle; pIcon: TRnQCLIconsSet; p: TPoint;
@@ -1497,7 +1497,7 @@ var
              Result := theme.drawPic(DC, p.x, p.y, PIC_OUTBOX, True, PPI);
             end
           else
-            n.outboxRect:=rect(-1,-1,-1,-1);
+            n.outboxRect := rect(-1,-1,-1,-1);
          end;
    {$IFDEF RNQ_AVATARS}
       CNT_ICON_AVT:
@@ -1569,10 +1569,10 @@ var
    Options: TDTTOpts;
 begin
 
-  cnv:=paintinfo.canvas;
+  cnv := paintinfo.canvas;
   cnv.Font.Assign(sender.Font);
-  R:=paintinfo.CellRect;
-  n:=Tnode(PNode(sender.getnodedata(paintinfo.node))^);
+  R := paintinfo.CellRect;
+  n := Tnode(PNode(sender.getnodedata(paintinfo.node))^);
 //  inc(r.Right);
  if paintinfo.node = sender.focusednode then
   begin
@@ -1601,26 +1601,26 @@ begin
 //  cnv.Brush.color:=theme.GetColor('roaster.selection', clGrayText); //roaster.selectioncolor;
 //  cnv.fillrect(r);
   end;
- theme.ApplyFont(Str_roster, cnv.font);
- bakmode:=getbkmode(cnv.handle);
- SetBkMode(cnv.handle, TRANSPARENT);
+  theme.ApplyFont(Str_roster, cnv.font);
+  bakmode := getbkmode(cnv.handle);
+  SetBkMode(cnv.handle, TRANSPARENT);
 //Dec(R.Bottom);
-Dec(R.Right);
-x:=0;
-y:=0;
+  Dec(R.Right);
+  x := 0;
+  y := 0;
 case n.kind of
   NODE_CONTACT:
     begin
-    inc(x,2);
+    inc(x, 2);
  {$IFDEF PROTOCOL_ICQ}
     if n.contact is TICQcontact then
-      c:=  TICQContact(n.contact)
+      c :=  TICQContact(n.contact)
      else
       c := NIL;
  {$ENDIF PROTOCOL_ICQ}
     if n.contact.UID = '' then
       Exit;
-    isNIL:=notinlist.exists(n.contact);
+    isNIL := notinlist.exists(n.contact);
     if indentRoster and showgroups and (n.contact.group>0) and not isNIL then
       inc(x, theme.getPicSize(RQteDefault, PIC_CLOSE_GROUP, 0, PPI).cx);
 
@@ -1692,20 +1692,20 @@ case n.kind of
      end;
     case rosterItalic of
       RI_LIST: b := n.contact.fProto.readList(LT_VISIBLE).exists(n.contact);
-      RI_VISIBLETO: b:= n.contact.imVisibleTo;
-      else b:=FALSE;
+      RI_VISIBLETO: b := n.contact.imVisibleTo;
+      else b := FALSE;
       end;
     if b then
       if fsItalic in cnv.font.style then
         cnv.font.style:=cnv.font.style-[fsItalic]
       else
         cnv.font.style:=cnv.font.style+[fsItalic];
-    n.textOfs:=x;
-    cntTxt:= R;
-    cntTxt.Left:= x;
+    n.textOfs := x;
+    cntTxt := R;
+    cntTxt.Left := x;
     Dec(cntTxt.Right, dx);
     // -=S@x
-    //cnv.textout(x,y+2, c.displayed);
+    //cnv.textout(x, y+2, c.displayed);
     // S@x=-
      // -=S@x
         s := dupAmperstand(n.contact.displayed);
@@ -1748,12 +1748,12 @@ case n.kind of
        else
         vPicName := PIC_CLOSE_GROUP;
       inc(x, theme.drawPic(cnv.Handle, x+2,y, vPicName).cx+4);
-      n.outboxRect:=rect(2,2,x-2,r.bottom-1);
+      n.outboxRect := rect(2,2,x-2,r.bottom-1);
 
-      n.textOfs:=x;
+      n.textOfs := x;
       s := groups.id2name(n.groupId);
   //    cnv.textout(x,y+2,s);
-      cnv.textout(x,y+2, s);
+      cnv.textout(x, y+2, s);
       GetTextExtentPoint32(cnv.handle, pchar(s),length(s), res);
       x := x+res.cx;
       cnv.textout(x,y+2,' (');
@@ -1766,8 +1766,8 @@ case n.kind of
       if OnlOfflInOne then
         s := intToStr(Account.AccProto.readList(LT_ROSTER).getCount(n.groupID, True))
        else
-        s:= intToStr(n.childrenCount);
-      cnv.textout(x,y+2,s);
+        s := intToStr(n.childrenCount);
+      cnv.textout(x, y+2, s);
       GetTextExtentPoint32(cnv.handle,pchar(s),length(s), res);
   //    s := '';
       x := x+res.cx;
@@ -1787,23 +1787,23 @@ case n.kind of
   //    cnv.font:=f1;
       cnv.Font.Assign(sender.Font);
       theme.ApplyFont(f1n, cnv.font);
-      cnv.textout(x,y+2,')');
+      cnv.textout(x, y+2, ')');
     end;
   NODE_DIV:
     begin
       theme.ApplyFont('roaster.divisor', cnv.font);
-      cnv.pen.color:=cnv.font.color;
+      cnv.pen.color := cnv.font.color;
       s := getTranslation(divisor2ShowStr[Tdivisor(n.divisor)])+' '+intToStr(contactsUnder(n));
-      size:=txtSize(cnv.handle, s);
-      x:=(r.right+r.left-size.cx) div 2;
-      y:=(r.bottom+r.top-size.cy) div 2;
+      size := txtSize(cnv.handle, s);
+      x := (r.right+r.left-size.cx) div 2;
+      y := (r.bottom+r.top-size.cy) div 2;
       if x < 10 then
-        x:=10;
-      n.textOfs:=x;
+        x := 10;
+      n.textOfs := x;
 
-      cnv.textout(x,y,s);
+      cnv.textout(x, y, s);
 
-      y:=(r.top+r.bottom) div 2-2;
+      y := (r.top+r.bottom) div 2-2;
       cnv.moveTo(r.left, y);
       cnv.lineTo(x-1, cnv.penpos.y);
       cnv.moveTo(x+size.cx+3, cnv.penpos.y);
@@ -1813,17 +1813,17 @@ case n.kind of
  SetBkMode(cnv.handle, bakmode);
 end;
 
-function ICON_ORDER_PREF : RawByteString;
+function ICON_ORDER_PREF: RawByteString;
 var
-  a : TRnQCLIconsSet;
+  a: TRnQCLIconsSet;
 begin
   Result := ';';
   for a in SHOW_ICONS_ORDER do
     Result := Result + RnQCLIcons[a].PrefText + ';';
 end;
 
-procedure ICON_ORDER_PREF_parse(const str : RawByteString);
-  function can_add(idx : byte; a : TRnQCLIconsSet) : Boolean;
+procedure ICON_ORDER_PREF_parse(const str: RawByteString);
+  function can_add(idx: byte; a: TRnQCLIconsSet): Boolean;
   var
     I: Integer;
   begin
@@ -1868,8 +1868,8 @@ end;
 
 INITIALIZATION
 
-contactsPool:=Tlist.create;
-sortBy:=SB_event;
+contactsPool := Tlist.create;
+sortBy := SB_event;
 //ContactThemes := TRQtheme.Create;
  {$IFDEF USE_SECUREIM}
   useSecureIM := loadlib;

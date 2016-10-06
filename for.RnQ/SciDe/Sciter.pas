@@ -1334,6 +1334,7 @@ end;
 constructor TSciter.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  SetExceptionMask(GetExceptionMask + [exInvalidOp, exOverflow, exUnderflow]);
   Application.HookMainWindow(MainWindowHook);
   FEventMap := TSciterEventMap.Create(Self, TSciterEventMapRule);
   FEventList := TInterfaceList.Create;
@@ -1346,9 +1347,13 @@ destructor TSciter.Destroy;
 begin
   FEventList.Clear;
   FEventList.Free;
+  FEventList := NIL;
   FManagedElements.Free;
+  FManagedElements := NIL;
   if FEventMap <> nil then
     FEventMap.Free;
+  FEventMap := NIL;
+  
   Application.UnhookMainWindow(MainWindowHook);
   inherited;
 end;

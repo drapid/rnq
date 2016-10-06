@@ -751,7 +751,7 @@ begin
  {$ENDIF ICQ_ONLY}
 end;
 
-function  Proto_Outbox_add(kind: Integer; dest:TRnQContact; flags:integer=0; const info:string=''):Toevent;
+function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer=0; const info: string=''): Toevent;
 //var
 //  pr : TRnQProtocol;
 begin
@@ -767,7 +767,7 @@ begin
     Result := NIL;
 end;
 
-function  Proto_Outbox_add(kind: Integer; dest:TRnQContact; flags:integer; cl:TRnQCList):Toevent;
+function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer; cl: TRnQCList):Toevent;
 //var
 //  pr : TRnQProtocol;
 begin
@@ -783,7 +783,7 @@ begin
     Result := NIL;
 end;
 
-procedure getTrayIconTip(var vPic : TPicName; var vTip : String);
+procedure getTrayIconTip(var vPic: TPicName; var vTip: String);
 var
   e:Thevent;
 //  nIco : String;

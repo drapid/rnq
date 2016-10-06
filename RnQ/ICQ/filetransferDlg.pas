@@ -47,7 +47,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure someDataRCVD(Sender: TObject; ErrCode: Word);
     procedure Disconnected(Sender: TObject; ErrCode: Word);
-    procedure notifFunc(Sender: TObject; ErrCode: Word; msg : String);
+    procedure notifFunc(Sender: TObject; ErrCode: Word; msg: String);
     procedure EndTrasfer;
     procedure AcceptBtnClick(Sender: TObject);
     procedure CloseBtnClick(Sender: TObject);
@@ -57,26 +57,26 @@ type
     procedure T1Timer(Sender: TObject);
     procedure ClsWinChkClick(Sender: TObject);
   public
-    id : Int64;
-    fSize : Int64;
-    direct : TProtoDirect;
-    fn :string;
-//    fs :integer;
+    id: Int64;
+    fSize: Int64;
+    direct: TProtoDirect;
+    fn: string;
+    // fs :integer;
     constructor doAll(d: TProtoDirect);
 //    constructor doAll(thisICQ : TicqSession; evID : Int64; fromCnt : TContact;
 //                       fn : String); Overload;
   protected
-    fpath : String;
-    myICQ : TICQSession;
-    fstr : TStream;
-    rcvdSize : Int64;
-    times : TCalcTime;
-    FileDone : Boolean;
-    Closing : Boolean;
+    fpath: String;
+    myICQ: TICQSession;
+    fstr: TStream;
+    rcvdSize: Int64;
+    times: TCalcTime;
+    FileDone: Boolean;
+    Closing: Boolean;
 //    transferID : Int64;
 //    who : TContact;
 //    state : byte;
-    procedure SetPrgrsPos(pos : Integer);
+    procedure SetPrgrsPos(pos: Integer);
   end;
 
 var
@@ -107,7 +107,7 @@ begin
      Exit;
    end;
   inherited create(rnqmain);
-  position:=poDefaultPosOnly;
+  position := poDefaultPosOnly;
   childWindows.Add(self);
   Theme.pic2ico(RQteFormIcon, PIC_FILE, icon);
   translateWindow(self);
@@ -139,7 +139,7 @@ begin
 //  if FNLEdit.Text = '' then
 //    FNLEdit.Text := 'Unknown';
 //  fpath := userPath + 'Received\' + d.fileName;
-  fpath := IncludeTrailingPathDelimiter(fileIncomePath(direct.contact))+ FNLEdit.Text;
+  fpath := IncludeTrailingPathDelimiter(fileIncomePath(direct.contact)) + FNLEdit.Text;
   PathLEdit.Text   := fpath;
   SizeLEdit.Text   := size2str(d.fileSizeTotal);
   SetPrgrsPos(0);
@@ -148,7 +148,7 @@ begin
     AcceptBtn.Enabled := True;
   ClsWinChk.Checked := CloseFTWndAuto;
   showForm(self);
-  bringForeground:=handle;
+  bringForeground := handle;
 end;
 
 procedure TfiletransferFrm.FormShow(Sender: TObject);
@@ -163,7 +163,7 @@ end;
 
 procedure TfiletransferFrm.PathBtnClick(Sender: TObject);
 var
-  l : String;
+  l: String;
 begin
 //  l := openSaveDlg(self, false, '*', 'All files', 'Save file as', PathLEdit.Text);
   l := openSaveDlg(self, '', false, '', '', PathLEdit.Text);
@@ -186,14 +186,14 @@ begin
     tmp.free;
    end;}
   FreeAndNil(fstr);
-  action:=caFree;
+  Action := caFree;
   destroyHandle;
 end;
 
 procedure TfiletransferFrm.someDataRCVD(Sender: TObject; ErrCode: Word);
 var
- i, l : Integer;
- md : Word;
+  i, l: Integer;
+  md: Word;
 begin
   if ErrCode > 0 then
    begin
@@ -286,10 +286,10 @@ end;
 
 procedure TfiletransferFrm.AcceptBtnClick(Sender: TObject);
 var
-  wasErr : Boolean;
-  needRes : Boolean;
-  fp : TFilePacket;
-  i : Integer;
+  wasErr: Boolean;
+  needRes: Boolean;
+  fp: TFilePacket;
+  i: Integer;
 begin
 //  fsize := 0;
   SetPrgrsPos(0);
@@ -321,7 +321,7 @@ begin
        mrAbort: Exit;
      end;
     end;
-  direct.data:=self;
+  direct.data := self;
   direct.OnDataAvailable := someDataRCVD;
   direct.OnDisconnect    := Disconnected;
   direct.OnNotification  := notifFunc;
@@ -438,11 +438,11 @@ end;
 
 procedure TfiletransferFrm.T1Timer(Sender: TObject);
 var
-  speed, tLeft : Int64;
-  b : Integer;
+  speed, tLeft: Int64;
+  b: Integer;
   I, PrevTimeIDX: byte;
-  dt : TDateTime;
-  ts : Double;
+  dt: TDateTime;
+  ts: Double;
 begin
   b := 0;
   times.bt[times.curBT].bytes := rcvdSize - times.prevRcvd;
@@ -473,7 +473,7 @@ begin
  if speed > 0 then
    begin
     tLeft := (fSize - rcvdSize) div speed;
-    TimeLeftLEdit.Text :=getTranslation('%d:%.2d',[tLeft div 60, tLeft mod 60]);
+    TimeLeftLEdit.Text := getTranslation('%d:%.2d', [tLeft div 60, tLeft mod 60]);
    end
   else
    begin
@@ -481,7 +481,7 @@ begin
    end;
 end;
 
-procedure TfiletransferFrm.SetPrgrsPos(pos : Integer);
+procedure TfiletransferFrm.SetPrgrsPos(pos: Integer);
 begin
   FTProgress.Position := pos;
   FTProgress.Hint := intToStr(pos) + '%';

@@ -87,10 +87,10 @@ type
   private
     { Private declarations }
 //   var
-    wnd:TselectCntsFrm;
+    wnd: TselectCntsFrm;
   public
     { Public declarations }
-    procedure CloseAction(sender:Tobject);
+    procedure CloseAction(Sender: Tobject);
 
     procedure initPage; Override; final;
     procedure unInitPage; Override; final;
@@ -117,22 +117,22 @@ type
    end;
 const
   CliCaps : array[0..3] of TCapsRec = (
-      (v:'&RQinside'; S: '&RQ'; pic: PIC_CLI_NRQ),
-      (v:'Smaper '; S: 'Smaper'; pic: PIC_CLI_smaper),
-      (v:'PIGEON!'; S: 'Pigeon'; pic: PIC_CLI_pigeon),
-      (v:'SIM client'; S: 'SIM'; pic: PIC_CLI_SIM)
+      (v: '&RQinside'; S: '&RQ'; pic: PIC_CLI_NRQ),
+      (v: 'Smaper '; S: 'Smaper'; pic: PIC_CLI_smaper),
+      (v: 'PIGEON!'; S: 'Pigeon'; pic: PIC_CLI_pigeon),
+      (v: 'SIM client'; S: 'SIM'; pic: PIC_CLI_SIM)
       ) ;
   TypNotifCap = 'Typing Notification';
   ChkInvCap = 'Support invisibility check';
 var
-  needSaveChkList : Boolean;
+  needSaveChkList: Boolean;
 
 procedure TicqFr.initPage;
 var
   I: Integer;
 begin
-  pwdBox.onKeyDown:=RnQmain.pwdboxKeyDown;
-//  pwdBox.Width:= ServerCBox.Width;
+  pwdBox.onKeyDown := RnQmain.pwdboxKeyDown;
+//  pwdBox.Width := ServerCBox.Width;
   pwdBox.Width := TS1.Clientwidth - GAP_SIZE2 - pwdBox.Left;
 
   birthGrp.width  := TS1.Clientwidth - GAP_SIZE2;

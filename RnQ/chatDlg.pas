@@ -4840,12 +4840,13 @@ var
   PicMaxSize: Integer;
 //  s, s2 : AnsiString;
   s, s2: RawByteString;
+  sU: String;
+  isRnQPic: Boolean;
 //  bmp : TBitmap;
   fs: TFileStream;
 begin
-  PicMaxSize := round(thisChat.who.fProto.maxCharsFor(thisChat.who, True) * 3 / 4 )- 100;
-  if OpenSaveFileDialog(Application.Handle, 'wbmp',
-     getSupPicExts + ';'#0 + 'R&Q Pics Files (wbmp)|*.wbmp'
+  if OpenSaveFileDialog(Application.Handle, '*',
+     getSupPicExts //+ ';'#0 + 'R&Q Pics Files (wbmp)|*.wbmp'
      , '', 'Select R&Q Pic File', fn, True) then
 //  if OpenPicDlg.Execute then
   begin
@@ -4859,11 +4860,25 @@ begin
        msgDlg('This picture format is not supported', True, mtError);
        exit;
      end;
+
+    PicMaxSize := round(thisChat.who.fProto.maxCharsFor(thisChat.who, True) * 3 / 4 )- 100;
+
     fs := TFileStream.Create(fn, fmOpenRead or fmShareDenyNone);
-    if (fs.Size > PicMaxSize) or (fs.Size < 4) then
+    sU := SysUtils.ExtractFileExt(fn);
+    isRnQPic := (sU = '.wbmp')or(sU = '.wbm');
+
+    if (not isRnQPic and (fs.Size > PicMaxSize)) or (fs.Size < 4) then
      begin
        msgDlg('Max ' + IntToStr(PicMaxSize) + ' bytes', true, mtError);
        msgDlg('This file is too big', True, mtError);
+       fs.Free;
+       exit;
+     end;
+    if (isRnQPic and (fs.Size > 0)) or (fs.Size < 4) then
+     begin
+       // Unsupported for now!
+//       msgDlg('Max ' + IntToStr(0) + ' bytes', true, mtError);
+       msgDlg('This image format is unsupported for now', True, mtError);
        fs.Free;
        exit;
      end;

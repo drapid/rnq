@@ -23,7 +23,7 @@ object viewinfoFrm: TviewinfoFrm
     Top = 33
     Width = 432
     Height = 423
-    ActivePage = InterSheet
+    ActivePage = mainSheet
     Align = alClient
     TabOrder = 0
     OnChange = pagectrlChange

@@ -1,6 +1,6 @@
 ﻿{
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit ICQv9;
 {$I RnQConfig.inc}
@@ -252,10 +252,17 @@ type
   );
 
   TSessionParams = record
-    secret     : String;
-    token      : String;
-    tokenExpIn : Integer;
-    tokenTime  : Integer;
+    fetchURL     : String;
+    aimsid       : String;
+    devid        : String;
+    secret       : String;
+    secretenc64  : RawByteString;
+    token        : String;
+    tokenExpIn   : Integer;
+    tokenTime    : Integer;
+    hostOffset   : Integer;
+    restToken    : String;
+    restClientId : String;
   end;
 
 
@@ -397,10 +404,7 @@ type
 
     fPwd               : String;
     fPwdHash           : ShortString;
-    fSessionSecret     : String;
-    fSessionToken      : String;
-    fSessionTokenExpIn : Integer;
-    fSessionTokenTime  : Integer;
+    fSession           : TSessionParams;
 
     buzzedLastTime     : TDateTime;
 //    getAvatarFor       : Integer;
@@ -453,14 +457,15 @@ type
     eventNameA          : AnsiString;
     eventData           : RawByteString;
 //    eventFilename       : string;
-    eventInt            :integer;    // multi-purpose
-    eventFlags          :dword;
+    eventInt            : integer;    // multi-purpose
+    eventFlags          : dword;
 //    eventFileSize       :LongWord;
-    eventTime           :TdateTime;  // in local time
-    eventMsgID          :TmsgID;
+    eventTime           : TdateTime;  // in local time
+    eventMsgID          : TmsgID;
     eventStream: TMemoryStream;
+    eventWID            : RawByteString;
 {$IFDEF usesDC}
-    eventDirect         :TICQDirect;
+    eventDirect         : TICQDirect;
 {$ENDIF usesDC}
 
 //    acceptKey: string;
@@ -480,6 +485,7 @@ type
      LoginMD5,
      useSSI2, useLSI2,
    {$ENDIF UseNotSSI}
+    useWebProtocol,
     saveMD5Pwd,
     AvatarsSupport,
     AvatarsAutoGet,
@@ -542,7 +548,10 @@ type
     function  getPwdOnly: String; //OverRide; Final;
     procedure setPwd(const value: String); OverRide; Final;
     procedure refreshSessionSecret();
-    function  getSession: TSessionParams; //OverRide; Final;
+    procedure loginAndCreateSession();
+    function  sessionNeedsUpdate: Boolean;
+    function  restAvailable: Boolean;
+    function  getSession(updateIfReq: Boolean = True): TSessionParams;
 
     function  getStatus: byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  getVisibility: byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -916,6 +925,7 @@ uses
    AnsiStrings, AnsiClasses,
  {$ENDIF UNICODE}
    RnQZip, OverbyteIcsZLibHigh,
+   NetEncoding, cHash, JSON,
    OverbyteIcsMD5, OverbyteIcsWSocket,
 //   ElAES,
    aes_type, aes_ecb,
@@ -2074,8 +2084,10 @@ begin
     Attached_login_email := '';
   fPwd     := '';
   fPwdHash := '';
-  fSessionTokenExpIn := 86400;
-  SNACref:=1;
+//  fSessionTokenExpIn := 86400;
+  fSession.tokenExpIn := 604800; // Week
+  fSession.DevId := ICQ_DEV_ID;
+  SNACref := 1;
 //  FLAPseq:=$6700+random($100);
 //  FLAPseq := Flap_start;
 //  FLAPseq :=  Flap_start+random($100);
@@ -2111,7 +2123,7 @@ Q:=TflapQueue.create;
     {$IFDEF usesDC}
       directs:= Tdirects.create(self);
     {$ENDIF usesDC}
-    DCmode:=DC_none;
+    DCmode := DC_none;
     showInfo := 2;
     webaware := True;
     fRoster      := TRnQCList.create;
@@ -2609,20 +2621,34 @@ begin
   Result := fPwd;
 end;
 
-function TicqSession.getSession: TSessionParams;
-var
-  params: TSessionParams;
+function TicqSession.sessionNeedsUpdate: Boolean;
 begin
-  if (fSessionToken = '') or
-     (fSessionTokenTime = 0) or
-     (fSessionTokenTime + fSessionTokenExpIn > DateTimeToUnix(Now, False)) then
-     refreshSessionSecret();
+  Result := (fSession.Token = '') or (fSession.TokenTime = 0) or
+            (fSession.TokenTime + fSession.TokenExpIn < DateTimeToUnix(Now, False));
+end;
 
-  params.secret := fSessionSecret;
-  params.token := fSessionToken;
-  params.tokenExpIn := fSessionTokenExpIn;
-  params.tokenTime := fSessionTokenTime;
-  Result := params;
+function TicqSession.restAvailable: Boolean;
+begin
+  Result := not (fSession.AimSid = '') and not (fSession.RESTToken = '') and not (fSession.RESTClientId = '');
+end;
+
+function TicqSession.getSession(updateIfReq: Boolean = True): TSessionParams;
+begin
+  if updateIfReq and sessionNeedsUpdate then
+     loginAndCreateSession();
+
+  Result.fetchURL := fSession.FetchURL;
+  Result.aimsid := fSession.aimsid;
+  Result.devid := fSession.devid;
+  Result.secret := fSession.secret;
+  Result.secretenc64 := fSession.secretenc64;
+  Result.token := fSession.token;
+  Result.tokenExpIn := fSession.tokenExpIn;
+  Result.tokenTime := fSession.tokenTime;
+  Result.hostOffset := fSession.hostOffset;
+  Result.restToken := fSession.restToken;
+  Result.restClientId := fSession.restClientId;
+
 end;
 
 procedure TicqSession.setPwd(const value:String);
@@ -2684,7 +2710,7 @@ begin
     if (SendedFlaps > ICQMaxFlaps)and (phase=online_)  then
       sock.Pause;
    end;}
-   eventData:=s;
+   eventData := s;
    notifyListeners(IE_serverGot);
    inc(FLAPseq);
    if FLAPseq >= $8000 then FLAPseq:=0;
@@ -2696,10 +2722,10 @@ end; // sendFLAP
 
 function TicqSession.sendSNAC(fam, sub: word; const data: RawByteString): boolean;
 begin
-  result := sendFLAP(SNAC_CHANNEL, SNAC(fam,sub, SNACref)+data)
+  result := sendFLAP(SNAC_CHANNEL, SNAC(fam, sub, SNACref)+data)
 end;
 
-function TicqSession.sendSNAC(fam,sub, flags:word; const data: RawByteString):boolean;
+function TicqSession.sendSNAC(fam, sub, flags: word; const data: RawByteString): boolean;
 begin
   result := sendFLAP(SNAC_CHANNEL, SNAC(fam,sub,flags, SNACref)+data)
 end;
@@ -2721,20 +2747,20 @@ begin
    listener(self, Integer(ev));
 end; // notifyListeners
 
-function TicqSession.isOffline:boolean;
+function TicqSession.isOffline: boolean;
 begin
   result:= phase=null_
 end;
 
-function TicqSession.isOnline:boolean;
+function TicqSession.isOnline: boolean;
 begin
   result:= phase=online_
 end;
 
-function TicqSession.isConnecting:boolean;
+function TicqSession.isConnecting: boolean;
 begin
 //  result:=not (isOffline or isOnline)
-  result:=(phase<>online_) and (phase<>null_)
+  result := (phase<>online_) and (phase<>null_)
 end;
 
 {$IFDEF usesDC}
@@ -2930,9 +2956,9 @@ begin
 //  addRef(REF_status, '');
 end;
 
-procedure TicqSession.sendStatusCode(sendVis : Boolean); //011E
+procedure TicqSession.sendStatusCode(sendVis: Boolean); //011E
 const
-  vcookie=#1#2#3#4;
+  vcookie = #1#2#3#4;
 var
   dc : RawByteString;
 //  i : Integer;
@@ -3054,10 +3080,10 @@ addRef(REF_null,0);}
       sendAddInvisible(fIntInvisibleList);
     {$ENDIF UseNotSSI}
 
-    eventContact:=NIL;
+    eventContact := NIL;
     notifyListeners(IE_visibilityChanged);
   end;
- previousInvisible:= isInvisible;
+ previousInvisible := isInvisible;
 end; // sendStatusCode
 
 procedure TicqSession.sendXStatusCodeOnly(); //011E
@@ -3403,7 +3429,7 @@ sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
                + dword_BEasStr(eventDirect.fileSizeTotal)// Total Bytes, the sum of the size in bytes of all files to be transferred
                + StrToUTF8(eventDirect.fileName)+ #00)
     + TLV($2712, 'utf-8')));
-  result:=addRef(REF_file,uin);
+  result := addRef(REF_file, uin);
 end; // sendFileReq
 
 function TicqSession.sendFileReqPro(drct : TICQDirect):integer;
@@ -3482,7 +3508,7 @@ begin
                + dword_BEasStr(drct.fileSizeTotal)// Total Bytes, the sum of the size in bytes of all files to be transferred
                + StrToUtf8(drct.fileName)+ AnsiChar(#00))
     + TLV($2712, 'utf-8')));
-  result:=addRef(REF_file,c.UID);
+  result := addRef(REF_file, c.UID);
 end; // sendFileReq
 
 function TicqSession.sendFileReq2(drct : TICQDirect):integer;
@@ -3534,7 +3560,7 @@ begin
     + TLV($17, word_BEasStr($FFFF)) //word_BEasStr(serverPort)
      )
    );
-  result:=addRef(REF_file, drct.contact.UID);
+  result := addRef(REF_file, drct.contact.UID);
 end; // sendFileReq
 
 procedure TicqSession.sendFileOk(Drct : TICQDirect; SendMsg : Boolean = False;
@@ -3669,30 +3695,30 @@ sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(msgID)+#0#2
 );
 end; // sendFileAck
 
-procedure TicqSession.sendAuthReq(const uin:TUID; const msg:string);
+procedure TicqSession.sendAuthReq(const uin: TUID; const msg: string);
 var
-  c:TICQcontact;
-  iam : TRnQContact;
+  c: TICQcontact;
+  iam: TRnQContact;
 begin
-c:=getICQContact(uin);
-if not imVisibleTo(c) then
- if addTempVisMsg then
-   addTemporaryVisible(c);
+  c := getICQContact(uin);
+  if not imVisibleTo(c) then
+    if addTempVisMsg then
+      addTemporaryVisible(c);
   iam := getMyInfo;
-sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
-  + Length_B(uin)
-  +TLV(5, myUINle+ AnsiChar(MTYPE_AUTHREQ)+ AnsiChar(#0)
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
+    + Length_B(uin)
+    +TLV(5, myUINle+ AnsiChar(MTYPE_AUTHREQ)+ AnsiChar(#0)
 //    +WNTS(getMyInfo.nick+#$FE+getMyInfo.first+#$FE+getMyInfo.last+#$FE+ MyInfo0.email+#$FE#0#$FE+msg)
-    +WNTS(StrToUTF8(iam.nick)+AnsiChar(#$FE)+
+      +WNTS(StrToUTF8(iam.nick)+AnsiChar(#$FE)+
           StrToUTF8(iam.first)+AnsiChar(#$FE)+
           StrToUTF8(iam.last)+AnsiChar(#$FE)+
           ''+AnsiString(#$FE#0#$FE)+
           StrToUTF8(msg))
-  )
-);
+       )
+    );
 end; // sendAuthReq
 
-procedure TicqSession.sendMSGsnac(const uin : TUID; const sn : RawByteString);
+procedure TicqSession.sendMSGsnac(const uin: TUID; const sn: RawByteString);
 begin
   sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
     + Length_B(uin)
@@ -3744,18 +3770,18 @@ var
 //  key : AnsiString;
   key : array [0..31] of byte;
   ctx : TAESContext;
-  CrptMsg : RawByteString;
+  CrptMsg: RawByteString;
   I, len, len2: Integer;
   crc : Cardinal;
   CompressType : Word;
   flagChar,priorityChar: AnsiChar;
-  isUnicode : Boolean;
-  lShouldEncr : Boolean;
+  isUnicode: Boolean;
+  lShouldEncr: Boolean;
 //    key : String;
 //    sendKey : String;
-    MD5Digest  : TMD5Digest;
-    MD5Context : TMD5Context;
-  isBin : boolean;
+    MD5Digest: TMD5Digest;
+    MD5Context: TMD5Context;
+  isBin: boolean;
 begin
   result:=-1;
   if not isReady then
@@ -3763,8 +3789,8 @@ begin
 
 //  c:= getICQContact(uin);
   c := TICQcontact(cnt);
-  isBin := (AnsiPos(RnQImageTag, msg) > 0) or ((AnsiPos(RnQImageExTag, msg) > 0))
-      or (IF_Bin and flags>0)
+  isBin := (IF_Bin and flags>0) or
+           (AnsiPos(RnQImageTag, msg) > 0) or ((AnsiPos(RnQImageExTag, msg) > 0))
       ;
   if isBin then
     flags := flags or IF_Bin;
@@ -3781,19 +3807,38 @@ begin
    else
     status := #00#00;
 
-  flagChar:=#0;
+  flagChar := #0;
   if IF_multiple and flags>0 then
-    flagChar:=#$80;
-  priorityChar:=#1;
+    flagChar := #$80;
+  priorityChar := #1;
   if IF_urgent and flags>0 then
-    priorityChar:=#2;
+    priorityChar := #2;
   if IF_noblink and flags>0 then
-    priorityChar:=#4;
+    priorityChar := #4;
 
   if c.SendTransl and not isBin then
     Msg2 := Translit(msg)
    else
     Msg2 := msg;
+
+  if isBin then
+   begin
+//     i := AnsiPos(RnQImageTag, msg);
+//     if(i > 0) then
+//       begin
+//         len2 := PosEx(RnQImageUnTag, msg, i+10);
+//         if len2 >= 0 then
+//           begin
+//             Msg2 := Copy(msg, i, len2-i+11);
+//             Msg2Send := Msg2;
+//             Msg2Send := RnQImageTag + Base64DecodeString(Msg2Send) + RnQImageUnTag;
+//           end
+//          else
+//            Msg2Send := AnsiString(Msg);
+//       end
+//      else
+       Msg2Send := AnsiString(Msg);
+   end;
 
   sutf := '';
   lShouldEncr := UseCryptMsg and c.Crypt.supportCryptMsg and not isBin;
@@ -3801,7 +3846,7 @@ begin
       or lShouldEncr)
      and not (IF_Simple and flags > 0) then
   begin
-   requiredACK:=TRUE;
+   requiredACK := TRUE;
    if SendingUTF and ((CAPS_sm_UTF8 in c.capabilitiesSm)or c.isAIM or (c.status = SC_OFFLINE))
        and not isBin then
      begin
@@ -3810,6 +3855,7 @@ begin
        Msg2Send := StrToUTF8(Msg2);
      end
     else
+     if not isBin then
      begin
 //       sutf := '';
        Msg2Send := AnsiString(msg2);
@@ -3913,7 +3959,7 @@ begin
     if UseCryptMsg and (CAPS_big_QIP_Secure in c.capabilitiesBig)
          and (c.Crypt.qippwd > 0) and not isBin then
       begin  // QIP crypt message
-       Msg2Send := qip_msg_crypt(msg2, c.Crypt.qippwd);
+       Msg2Send := qip_msg_crypt(msg2send, c.Crypt.qippwd);
 //       sutf := Length_DLE(GUIDToString(msgQIPpass));
        sutf := Length_DLE(msgQIPpassStr);
        sendMSGsnac(c.UID, AnsiChar(MTYPE_PLAIN)+flagChar
@@ -3950,7 +3996,7 @@ begin
  else
   begin // Simple MSG
 //  requiredACK:=FALSE;
-    requiredACK:=True;
+    requiredACK := True;
    if SendingUTF
 //     or (c.status = SC_OFFLINE)
 //      and ((CAPS_sm_UTF8 in c.capabilitiesSm)or c.isAIM) and (c.isOnline)
@@ -3973,7 +4019,8 @@ begin
 //       sutf := #$00#$03; // LATIN_1 - ISO 8859-1
        sutf := #$00#$00; // ASCII - ANSI ASCII -- ISO 646
        isUnicode := False;
-       Msg2Send := RawByteString(msg2);
+       if not isBin then
+         Msg2Send := RawByteString(msg2);
       end;
    flags := IF_Simple or flags;   
     sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#1
@@ -4075,39 +4122,39 @@ begin
    with cl.getNext do
     s:=s + uid +#$FE + StrToUTF8(nick) + #$FE;
 
-sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
-  + cnt.buin 
-  +TLV(5, myUINle+ AnsiChar(MTYPE_CONTACTS)+ AnsiChar(#00)+WNTS(s))
-  +TLV(6,'')
-);
-addRef(REF_contacts,cnt.uid);
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
+    + cnt.buin 
+    +TLV(5, myUINle+ AnsiChar(MTYPE_CONTACTS)+ AnsiChar(#00)+WNTS(s))
+    +TLV(6,'')
+   );
+  addRef(REF_contacts, cnt.uid);
 end; // sendContacts
 
-procedure TicqSession.sendAuth(const uin:TUID);
+procedure TicqSession.sendAuth(const uin: TUID);
 var
-  c:TICQcontact;
+  c: TICQcontact;
 begin
-if not isReady then exit;
-c:=getICQContact(uin);
-if not imVisibleTo(c) then
-  if addTempVisMsg then
-   addTemporaryVisible(c);
-sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
-  + Length_B(uin)
-  +TLV(5, myUINle+ AnsiChar(MTYPE_AUTHOK)+#0+WNTS(''))
-  +TLV(6, '')
-);
-addRef(REF_auth,uin);
+  if not isReady then exit;
+  c := getICQContact(uin);
+  if not imVisibleTo(c) then
+    if addTempVisMsg then
+      addTemporaryVisible(c);
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
+    + Length_B(uin)
+    +TLV(5, myUINle+ AnsiChar(MTYPE_AUTHOK)+#0+WNTS(''))
+    +TLV(6, '')
+   );
+  addRef(REF_auth, uin);
 end; // sendAuth
 
-procedure TicqSession.sendAuthDenied(const uin:TUID; const msg:string);
+procedure TicqSession.sendAuthDenied(const uin: TUID; const msg: string);
 begin
-if not isReady then exit;
-sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
-  + Length_B(uin)
-  +TLV(5, myUINle+ AnsiChar(MTYPE_AUTHDENY)+#0+WNTS(StrToUTF8(msg)))
-  +TLV(6, '')
-);
+  if not isReady then exit;
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
+    + Length_B(uin)
+    +TLV(5, myUINle+ AnsiChar(MTYPE_AUTHDENY)+#0+WNTS(StrToUTF8(msg)))
+    +TLV(6, '')
+  );
 end; // sendAuth
 
 procedure TicqSession.sendNewQueryInfo(const uin: TUID);
@@ -4133,9 +4180,9 @@ begin
   addRef(REF_query, '');
 end;
 
-procedure TicqSession.sendSimpleQueryInfo(const uin:TUID);
+procedure TicqSession.sendSimpleQueryInfo(const uin: TUID);
 var
-  a : Integer;
+  a: Integer;
 begin
   if not isReady then exit;
   a := StrToIntDef(uin, 0);
@@ -4151,7 +4198,7 @@ end; // sendSimpleQueryInfo
 
 procedure TicqSession.sendFullQueryInfo(const uin: TUID);
 var
-  a : Integer;
+  a: Integer;
 begin
   if not isReady then
     Exit;
@@ -4170,8 +4217,8 @@ procedure TicqSession.sendQueryInfo(uin: Integer);
 //const
 //  TAB:array [boolean] of AnsiChar=(#$B2,#$D0);
 var
-  wpS : TwpSearch;
-  cnt : TICQcontact;
+  wpS: TwpSearch;
+  cnt: TICQcontact;
 begin
   if not isReady then exit;
   if uin = 0 then Exit;
@@ -4200,7 +4247,7 @@ begin
 end; // sendQueryInfo}
 
 procedure TicqSession.sendWPsearch(wp: TwpSearch; idx : Integer);
-  function TLVIfNotNull(t: word; const s: RawByteString) : RawByteString;
+  function TLVIfNotNull(t: word; const s: RawByteString): RawByteString;
   begin
     if s > '' then
      result := TLV_LE(t, WNTS(s));
@@ -4313,7 +4360,7 @@ procedure TicqSession.sendWPsearch2(wp: TwpSearch; idx: Integer; IsWP: Boolean =
 //const
 //  TAB:array [boolean] of AnsiChar=(#$B2,#$D0);
 var
-  s : RawByteString;
+  s: RawByteString;
 begin
   if not isReady then
     exit;
@@ -4444,8 +4491,8 @@ begin
      + word_LEasStr(CLI_META_INFO_REQ)
      + word_LEasStr($01)
      + word_LEasStr(META_REQUEST_DELETE_UIN)
-     +myUINle
-     +WNTS(pwd)
+     + myUINle
+     + WNTS(pwd)
   )));
 end; // sendDeleteUIN
 
@@ -4502,7 +4549,7 @@ procedure TicqSession.sendsaveMyInfoNew(c: TICQcontact);
 //  tab1:array [boolean] of AnsiChar=(#1,#0);
 //  tab2:array [boolean] of AnsiChar=(#0,#1);
 var
-  sb : RawByteString;
+  sb: RawByteString;
 //  zi : Integer;
 begin
   if c.birth > 1 then
@@ -4751,7 +4798,7 @@ begin
 
 end;
 
-procedure TicqSession.sendInfoStatus(const s : String);
+procedure TicqSession.sendInfoStatus(const s: String);
 begin
   sendSnac(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
         TLV(1, Length_LE( myUINle
@@ -5016,7 +5063,7 @@ RESUME	2	SSL is being used and SSL resume is supported if desired
   sock.Connect;
 end; // parseCookie
 
-procedure TicqSession.parseREDIRECTxSERVICE(const pkt : RawByteString); // 0105
+procedure TicqSession.parseREDIRECTxSERVICE(const pkt: RawByteString); // 0105
 var
   add: RawByteString;
   i : integer;
@@ -5068,15 +5115,15 @@ end;
 procedure TicqSession.parseOncomingUser(const snac: RawByteString); // Snac 030B
 var
   s: RawByteString;
-  ofs, t, i, l :integer;
-  TLVCnt : Word;
-//  found:boolean;
+  ofs, t, i, l: integer;
+  TLVCnt: Word;
+//  found: boolean;
 begin
-eventFlags:=0;
-eventTime:=now;
-ofs:=1;
-eventContact:= getICQContact(getBUIN2(snac,ofs));
-inc(ofs, 2);
+  eventFlags := 0;
+  eventTime := now;
+  ofs := 1;
+  eventContact := getICQContact(getBUIN2(snac,ofs));
+  inc(ofs, 2);
   TLVCnt := readBEWORD(snac, ofs);
 
   if existsTLV($b, snac,ofs) then
@@ -5119,7 +5166,7 @@ inc(ofs, 2);
 end; // parseOncomingUser
 
 
-procedure TicqSession.parseOnlineInfo(const snac: RawByteString; pOfs: Integer; cont : TICQcontact; isSt : Boolean;
+procedure TicqSession.parseOnlineInfo(const snac: RawByteString; pOfs: Integer; cont: TICQcontact; isSt: Boolean;
                                       isMsg: Boolean; ShowCntSts: Boolean);
 var
   ofs: Integer;
@@ -5128,50 +5175,50 @@ var
   moodText, xStatusText: String;
   cap, capSm: RawByteString;
   found, status_changed: Boolean;
-  i : Integer;
-  t : Byte;
-  nickFlags : Int64;
-  skipIt, moodPresText, moodPresIcon : Boolean;
-  oldPic : TPicName;
+  i: Integer;
+  t: Byte;
+  nickFlags: Int64;
+  skipIt, moodPresText, moodPresIcon: Boolean;
+  oldPic: TPicName;
 begin
   ofs := pOfs;
   status_changed := False;
 
-  i := findTLV($02, snac,ofs);
+  i := findTLV($02, snac, ofs);
   if i > 0 then
     cont.createTime:=UnixToDateTime(getTLVdwordBE(@snac[i]));
 
-  i := findTLV($03, snac,ofs); // Signon time
+  i := findTLV($03, snac, ofs); // Signon time
   if i > 0 then
     cont.onlineSince:=UnixToDateTime(getTLVdwordBE(@snac[i]))+GMToffset
   else
-    cont.onlineSince:=0;
-//  if existsTLV(3, snac,ofs) then
-//    myinfo.memberSince:= UnixToDateTime(getTLVdwordBE(3, snac,ofs));
+    cont.onlineSince := 0;
+//  if existsTLV(3, snac, ofs) then
+//    myinfo.memberSince := UnixToDateTime(getTLVdwordBE(3, snac, ofs));
 
-  i := findTLV($04, snac,ofs); // Idle time in minutes
+  i := findTLV($04, snac, ofs); // Idle time in minutes
   if i>0 then
-    cont.IdleTime:= getTLVwordBE(@snac[i])
+    cont.IdleTime := getTLVwordBE(@snac[i])
    else
-    cont.IdleTime:= 0;
+    cont.IdleTime := 0;
 
-  i := findTLV($05, snac,ofs); // Approximation of AIM membership
+  i := findTLV($05, snac, ofs); // Approximation of AIM membership
   if i>0 then
-    cont.memberSince:=UnixToDateTime(getTLVdwordBE(@snac[i]));
+    cont.memberSince := UnixToDateTime(getTLVdwordBE(@snac[i]));
 
-  i := findTLV($0A, snac,ofs); // Network byte order IP address
+  i := findTLV($0A, snac, ofs); // Network byte order IP address
   if i>0 then
-   cont.connection.ip:=getTLVdwordBE(@snac[i]);
+   cont.connection.ip := getTLVdwordBE(@snac[i]);
 
-  i := findTLV($0F, snac,ofs); // Online time in seconds
+  i := findTLV($0F, snac, ofs); // Online time in seconds
   if i>0 then
     cont.OnlineTime := getTLVdwordBE(@snac[i])
    else
     cont.OnlineTime := 0;
 
-  i := findTLV($14, snac,ofs); // Set in first nick info. Identifies the instance number of this client
+  i := findTLV($14, snac, ofs); // Set in first nick info. Identifies the instance number of this client
 
-  i := findTLV($01, snac,ofs); // NICK_FLAGS - Flags that represent the user's state
+  i := findTLV($01, snac, ofs); // NICK_FLAGS - Flags that represent the user's state
    if i>0 then
      nickFlags := getTLVwordBE(@snac[i])
     else
@@ -5204,7 +5251,7 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
 *)
 //  i := findTLV($14, snac,ofs); // Set in first nick info. Identifies the instance number of this client
 //  i := findTLV($23, snac,ofs); // BUDDYFEED_TIME - Last Buddy Feed update time
-  i := findTLV($26, snac,ofs); // SIG_TIME - Time that the profile was set
+  i := findTLV($26, snac, ofs); // SIG_TIME - Time that the profile was set
   if i>0 then
     cont.lastInfoUpdate:=UnixToDateTime(getTLVdwordBE(@snac[i]))+GMToffset;
 //   else
@@ -5214,29 +5261,29 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
 //  i := findTLV($2A, snac,ofs); // GEO_COUNTRY - Two character country code. Sent from host to client if country is known
 
  found := false;
- i := findTLV($19, snac,ofs);  // Short form of capabilities
+ i := findTLV($19, snac, ofs);  // Short form of capabilities
  if i>0 then
 	with cont do
      begin
-		 s:=getTLV(@snac[i]);
-	   capabilitiesBig:=[];
-	   capabilitiesSm:=[];
-	   capabilitiesXTraz:=[];
-     extracapabilities:='';
+       s := getTLV(@snac[i]);
+       capabilitiesBig := [];
+       capabilitiesSm := [];
+       capabilitiesXTraz := [];
+       extracapabilities := '';
       while s > '' do
        begin
-        capSm:=copy(s,1,2);
-        delete(s,1,2);
-        found:=FALSE;
+        capSm := copy(s, 1, 2);
+        delete(s, 1, 2);
+        found := FALSE;
          for i:=1 to length(CapsSmall) do
           if capSm = CapsSmall[i].v then
           begin
-             include(capabilitiesSm,i);
-             found:=TRUE;
+             include(capabilitiesSm, i);
+             found := TRUE;
              break;
           end;
          if not found then
-          extracapabilities:=extracapabilities+
+          extracapabilities := extracapabilities +
            CapsMakeBig1 + capSm + CapsMakeBig2;
        end;
 	  // temporary fix for icq2go, this prevents from using type-2 messages
@@ -5254,29 +5301,29 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
      t := $05;
     end;
 }
- i := findTLV($0D, snac,ofs);
+ i := findTLV($0D, snac, ofs);
  if i>0 then
- 	with cont do
-	  begin
-     s:=getTLV(@snac[i]);
+  with cont do
+   begin
+     s := getTLV(@snac[i]);
      if not found then
       begin
-       capabilitiesBig:=[];
-       capabilitiesSm:=[];
+       capabilitiesBig := [];
+       capabilitiesSm := [];
        capabilitiesXTraz := [];
-       extracapabilities:='';
+       extracapabilities := '';
       end;
      t := 0;
       while s > '' do
         begin
-        cap:=copy(s,1,16);
-        delete(s,1,16);
-        found:=FALSE;
+        cap := copy(s,1,16);
+        delete(s, 1, 16);
+        found := FALSE;
         for i:=1 to length(BigCapability) do
           if cap = BigCapability[i].v then
             begin
-             include(capabilitiesBig,i);
-             found:=TRUE;
+             include(capabilitiesBig, i);
+             found := TRUE;
              break;
             end;
         if copy(cap, 1, 2) = CapsMakeBig1 then
@@ -5286,8 +5333,8 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
              for i:=1 to length(CapsSmall) do
               if cap = CapsSmall[i].v then
               begin
-                 include(capabilitiesSm,i);
-                 found:=TRUE;
+                 include(capabilitiesSm, i);
+                 found := TRUE;
                  break;
               end;
            end;
@@ -5297,16 +5344,16 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
             if xsf_Old in XStatusArray[i].flags then
              if cap = XStatusArray[i].pidOld then
               begin
-               include(capabilitiesXTraz,i);
+               include(capabilitiesXTraz, i);
                found := TRUE;
                break;
               end;
          end;
-      if not found then
-          extracapabilities:=extracapabilities+cap;
+         if not found then
+           extracapabilities := extracapabilities + cap;
         end;
 	  // temporary fix for icq2go, this prevents from using type-2 messages
-	   icq2go:=(CAPS_sm_UTF8 in capabilitiesSm) and not (CAPS_sm_ICQSERVERRELAY in capabilitiesSm);
+	   icq2go := (CAPS_sm_UTF8 in capabilitiesSm) and not (CAPS_sm_ICQSERVERRELAY in capabilitiesSm);
       if not (CAPS_sm_ICQSERVERRELAY in capabilitiesSm) then
         icq2go := True;
       if (CAPS_big_CryptMsg in capabilitiesBig) then
@@ -5338,7 +5385,7 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
   i := findTLV($1D, snac, ofs); // Expressions
   if i>0 then
     begin
-     s:=getTLV(@snac[i]);
+     s := getTLV(@snac[i]);
      if s > '' then
        begin
         skipIt := False;
@@ -5593,12 +5640,12 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
    end;
 end;
 
-procedure TicqSession.parseStatus(const snac: RawByteString; ofs:integer; cont : TICQcontact; isInvis : Boolean = false; Status_changed : Boolean = False);
+procedure TicqSession.parseStatus(const snac: RawByteString; ofs: integer; cont: TICQcontact; isInvis: Boolean = false; Status_changed: Boolean = False);
 var
-  newStatus:TICQstatus;
-  newInvis:boolean;
-  code:integer;
-  i : Integer;
+  newStatus: TICQstatus;
+  newInvis: boolean;
+  code: integer;
+  i: Integer;
 begin
 if (not cont.isAIM) and (not existsTLV(6, snac,ofs)) then
   begin
@@ -5740,8 +5787,8 @@ var
   c: TICQcontact;
   vUID: TUID;
 begin
-  eventContacts:=TRnQCList.create;
-  chop(#$FE,s);      // skippo il numero dei contatti
+  eventContacts := TRnQCList.create;
+  chop(#$FE, s);      // skippo il numero dei contatti
   while s > '' do
     try
       vUID := chop(#$FE,s);
@@ -5975,13 +6022,16 @@ begin
   notifyListeners(IE_msgError);
 end; // parseMsgError
 
-procedure TicqSession.parseServerAck(const snac: RawByteString; ref:integer);
+procedure TicqSession.parseServerAck(const snac: RawByteString; ref: integer);
 var
-  ofs:integer;
+  ofs: integer;
 begin
-  eventMsgID:=qword_LEat(@snac[1]);
-  ofs:=11;
-  eventContact:=getICQContact(getBUIN2(snac,ofs));
+  if length(snac) < 12 then
+    Exit;
+  eventMsgID := qword_LEat(@snac[1]);
+  ofs := 11;
+  eventContact := getICQContact(getBUIN2(snac,ofs));
+  eventWID := getTLVsafe($09, snac, ofs);
   notifyListeners(IE_serverAck);
 end; // parseServerAck
 
@@ -6010,7 +6060,7 @@ var
   Plugin : AnsiString;
   Cap : RawByteString;
 //  bufStr : TMemoryStream;
-  msgEnc, msg, sA : RawByteString;
+  msgEnc, msg, sA: RawByteString;
 // {$IFDEF UNICODE}
 //  msgU : UnicodeString;
 // {$ENDIF UNICODE}
@@ -6020,7 +6070,7 @@ begin
 //  msgDwnCnt  := $FFFF;
   eventMsgID := qword_LEat(@snac[1]);
   ofs := 11;
-  thisCnt := getICQContact(getBUIN2(snac,ofs));
+  thisCnt := getICQContact(getBUIN2(snac, ofs));
   eventTime := now;
   inc(ofs, 2);
   TLVCnt := readBEWORD(snac, ofs);
@@ -6049,10 +6099,10 @@ if thisCnt.typing.bIsTyping then
  end;
 case Byte(snac[10]) of // msg format
   1:begin // Simply(old-type) message
-    if existsTLV($06, snac,ofs) then
+    if existsTLV($06, snac, ofs) then
      begin
       eventFlags := eventFlags or IF_offline;
-      i := findTLV($16, snac,ofs);
+      i := findTLV($16, snac, ofs);
       if i>0 then
 //        eventTime:= UnixToDateTime(getTLVdwordBE(@snac[i])) + GMToffset0;
         eventTime:= UnixToDateTime(getTLVdwordBE(@snac[i])) + GMToffset;
@@ -6116,7 +6166,7 @@ case Byte(snac[10]) of // msg format
 
     end;
 
-    sA := getTLVSafe($24, snac, ofs); // MSG-GUID
+    eventWID := getTLVSafe($24, snac, ofs2); // MSG-GUID
 
     sA := getTLVSafe($32, snac, ofs); // Original Sender
     if sA > '' then
@@ -6170,7 +6220,7 @@ case Byte(snac[10]) of // msg format
 //       ofs:=findTLV(5, snac,i)+4
 //      end
 //     else
-      ofs:=findTLV(5, snac,ofs)+4;
+      ofs := findTLV(5, snac, ofs)+4;
     case Byte(snac[ofs+1]) of
       1:begin
          eventContact := thisCnt;
@@ -6185,18 +6235,26 @@ case Byte(snac[10]) of // msg format
     inc(ofs, 2+8);
     Cap := copy(Snac, ofs, 16);
     inc(ofs, 16);
-    i := findTLV($04, snac,ofs);
+    i := findTLV($04, snac, ofs);
     if i>0 then
-      thisCnt.connection.ip:=getTLVdwordBE(@snac[i]);
-    i := findTLV($05, snac,ofs);
+      thisCnt.connection.ip := getTLVdwordBE(@snac[i]);
+    i := findTLV($05, snac, ofs);
     if i>0 then
-      thisCnt.connection.port:=getTLVwordBE(@snac[i]);
-    if existsTLV($06, snac,ofs) then
+      thisCnt.connection.port := getTLVwordBE(@snac[i]);
+    if existsTLV($06, snac, ofs) then
      begin
-      i := findTLV($16, snac,ofs);
+      i := findTLV($16, snac, ofs);
       if i>0 then
-        eventTime:= UnixToDateTime(getTLVdwordBE(@snac[i])) + GMToffset0;
+        eventTime := UnixToDateTime(getTLVdwordBE(@snac[i])) + GMToffset0;
      end;
+    if existsTLV($24, snac, ofs) then
+    begin
+      i := findTLV($24, snac, ofs);
+      if i > 0 then
+        eventWID := getTLV(@snac[i])
+      else
+        eventWID := '';
+    end;
     if Cap = BigCapability[CAPS_big_Buzz].v then
     begin
       eventContact := thisCnt;
@@ -6388,7 +6446,7 @@ case Byte(snac[10]) of // msg format
     else
     if Cap = BigCapability[CAPS_big_CryptMsg].v then
      begin
-      ofs:=findTLV($2711, snac,ofs)+4;
+      ofs := findTLV($2711, snac,ofs)+4;
       msgDwnCnt := word_LEat(@snac[ofs]);
       msgDwnCnt := word_LEat(@snac[ofs + msgDwnCnt]);
       inc(ofs, byte(snac[ofs])+2);
@@ -6396,11 +6454,11 @@ case Byte(snac[10]) of // msg format
   //    priority := ord(snac[ofs+4]);
   //  if Length(snac) < 7 then
   //   exit;
-      msgtype:=byte(snac[ofs]);
-      msgflags:=byte(snac[ofs+1]);
-      priority:=byte(snac[ofs+4]);
-      inc(ofs,6);
-      msg:=getWNTS(snac, ofs);
+      msgtype := byte(snac[ofs]);
+      msgflags := byte(snac[ofs+1]);
+      priority := byte(snac[ofs+4]);
+      inc(ofs, 6);
+      msg := getWNTS(snac, ofs);
 
        origMsgLen := cardinal( readDWORD(snac, ofs));
        origMsgCRC := readDWORD(snac, ofs);
@@ -6729,14 +6787,14 @@ var
   var
     next:integer;
   begin
-    next:=readWORD(snac, ofs);
+    next := readWORD(snac, ofs);
     inc(next,ofs);
     eventwp.uin    := Int2UID(readINT(snac, ofs));
     eventwp.nick   := UnUTF(getWNTS(snac, ofs));
     eventwp.first  := UnUTF(getWNTS(snac, ofs));
     eventwp.last   := UnUTF(getWNTS(snac, ofs));
     eventwp.email  := UnUTF(getWNTS(snac, ofs));
-    eventwp.authRequired:=readBYTE(snac, ofs)=0;
+    eventwp.authRequired := readBYTE(snac, ofs)=0;
     eventwp.status := readWORD(snac, ofs);
     eventWP.gender := readBYTE(snac, ofs);
     eventWP.age := readWORD(snac, ofs);
@@ -6746,7 +6804,7 @@ var
 //       eventWP.BaseID := getWNTS(snac, ofs); //The base ID. (ðàìáëåð, áèãìèð, àòëàñ ...)
       except
      end;
-    ofs:=next;
+    ofs := next;
 
     // request issued from white pages
     if wasUINwp or (refs[ref].kind = REF_wp) then
@@ -6756,25 +6814,25 @@ var
       end;
 
     // request issued for internal use
-    eventContact:= getICQContact(eventWP.uin);
+    eventContact := getICQContact(eventWP.uin);
     with eventContact do
      begin
-      nick:=eventwp.nick;
-      first:=eventwp.first;
-      last:=eventwp.last;
-      email:=eventwp.email;
+      nick := eventwp.nick;
+      first := eventwp.first;
+      last := eventwp.last;
+      email := eventwp.email;
       notifyListeners(IE_userinfo);
      end;
   end; // extractWP
 
   procedure extractWP_CP;
   var
-    s : RawByteString;
-    Pkt1, Pkt2 : RawByteString;
-    isExstsTLV : Boolean;
-    t, i, k, ofs1, code : Integer;
-    t64 : Int64;
-    sU, PhoneNum, PhoneCnt : String;
+    s: RawByteString;
+    Pkt1, Pkt2: RawByteString;
+    isExstsTLV: Boolean;
+    t, i, k, ofs1, code: Integer;
+    t64: Int64;
+    sU, PhoneNum, PhoneCnt: String;
     cnt : TICQcontact;
   begin
     eventwp.uin    := getTLVSafe(META_COMPAD_UID, snac, ofs);
@@ -6854,6 +6912,7 @@ var
               country := dword_BEat(Pointer(s));
            end;
 
+        isExstsTLV := existsTLV(META_COMPAD_FROM, snac, ofs);
         Pkt1 := getTLVSafe(META_COMPAD_FROM, snac, ofs);
          Pkt1 := getTLVSafe(1, Pkt1);
           if pkt1 <> '' then
@@ -6872,8 +6931,9 @@ var
               birthCountry := 0;
            end;
 
-         Pkt1 := getTLVSafe(META_COMPAD_PHONES, snac, ofs);
-         if (Pkt1 > '') and (Length(Pkt1) > 3) then
+        isExstsTLV := existsTLV(META_COMPAD_PHONES, snac, ofs);
+        Pkt1 := getTLVSafe(META_COMPAD_PHONES, snac, ofs);
+        if (Pkt1 > '') and (Length(Pkt1) > 3) then
          begin
            t := word_BEat(Pkt1, 1);
            ofs1 := 3;
@@ -7002,18 +7062,18 @@ var
 
 
 var
-  d,m:byte;
-  i : byte;
-  msgtype,msgflags:byte;
-  ReplyType, replySubtype : Word;
-  y:word;
+  d, m: byte;
+  i: byte;
+  msgtype, msgflags: byte;
+  ReplyType, replySubtype: Word;
+  y: word;
   msg: RawByteString;
 
-  cont : TICQContact;
+  cont: TICQContact;
 //  msgU,
-  sU : String;
-  OldNick : String;
-  cntUID : TUID;
+  sU: String;
+  OldNick: String;
+  cntUID: TUID;
 begin
   eventFlags := 0;
   cntUID := refs[ref].uid;
@@ -7164,7 +7224,7 @@ case ReplyType of
                 not cont.CntIsLocal and (cont.SSIID > 0) then
                SSI_UpdateContact(cont);
           end;
-          eventInt:=0;
+          eventInt := 0;
           eventContact := cont;
           if wasUINwp then
             notifyListeners(IE_wpEnd)
@@ -7174,7 +7234,7 @@ case ReplyType of
         else
           if refs[ref].kind = REF_wp then
             begin
-            eventInt :=-1;
+            eventInt := -1;
             notifyListeners(IE_wpEnd);
             end
           else
@@ -7198,7 +7258,7 @@ case ReplyType of
             eventInt := readINT(snac, ofs);
            end
           else
-           eventInt:=-1;
+           eventInt := -1;
           if refs[ref].kind = REF_wp then
             notifyListeners(IE_wpEnd);
         end;
@@ -7206,8 +7266,8 @@ case ReplyType of
         begin
           if Assigned(cont) then
           begin
-            cont.infoUpdatedTo:=now;
-            inc(ofs,1);
+            cont.infoUpdatedTo := now;
+            inc(ofs, 1);
             cont.about:=unUTF(getWNTS(snac, ofs));
             if (flags and 1) = 0 then
               notifyListeners(IE_userinfo);
@@ -7215,7 +7275,7 @@ case ReplyType of
         end;
       META_AFFILATIONS_USERINFO:
         begin
-        cont.infoUpdatedTo:=now;
+        cont.infoUpdatedTo := now;
 //        if snac[ofs+2]=#$14 then
         if readBYTE(snac, ofs)=$14 then
           cont.nodb:=TRUE;
@@ -7224,24 +7284,24 @@ case ReplyType of
         end;
       META_BASIC_USERINFO:   // query result (main, home)
         begin
-        inc(ofs,1);
+        inc(ofs, 1);
         if Assigned(cont) then
         with cont do
           begin
-          noDB:=FALSE;
-          infoUpdatedTo:=now;
+          noDB := FALSE;
+          infoUpdatedTo := now;
  {$IFDEF UseNotSSI}
            if useSSI then
  {$ENDIF UseNotSSI}
              OldNick := displayed;
-          nick:=unUTF(getWNTS(snac, ofs));
+          nick := unUTF(getWNTS(snac, ofs));
           if (display = UID) and (nick > '') then
             display := '';
-          first:=unUTF(getWNTS(snac, ofs));
-          last:=unUTF(getWNTS(snac, ofs));
-          email:=getWNTS(snac, ofs);
-          city:=getWNTS(snac, ofs);
-          state:=getWNTS(snac, ofs);
+          first := unUTF(getWNTS(snac, ofs));
+          last := unUTF(getWNTS(snac, ofs));
+          email := getWNTS(snac, ofs);
+          city := getWNTS(snac, ofs);
+          state := getWNTS(snac, ofs);
           // skip 3
           getWNTS(snac, ofs); // 	home phone
           getWNTS(snac, ofs); //  home fax
@@ -7250,14 +7310,14 @@ case ReplyType of
           SMSable:=pos(' SMS',cellular)>0;
           if SMSable then
             delete(cellular,length(cellular)-3,4);
-          zip:=getWNTS(snac, ofs);
-          country:=readWORD(snac, ofs);
-          GMThalfs:=readBYTE(snac, ofs);
+          zip := getWNTS(snac, ofs);
+          country := readWORD(snac, ofs);
+          GMThalfs := readBYTE(snac, ofs);
           readBYTE(snac, ofs); // authorization flag
           readBYTE(snac, ofs); // webaware flag
           readBYTE(snac, ofs); // direct connection permissions
-//          pPublicEmail:= not boolean(readBYTE(snac, ofs));
-          pPublicEmail:= boolean(readBYTE(snac, ofs));
+//          pPublicEmail := not boolean(readBYTE(snac, ofs));
+          pPublicEmail := boolean(readBYTE(snac, ofs));
            if
  {$IFDEF UseNotSSI}
             useSSI and
@@ -7271,27 +7331,27 @@ case ReplyType of
         end;
       META_MORE_USERINFO:   // query result (homepage/more)
         begin
-        inc(ofs,1);
+        inc(ofs, 1);
         if Assigned(cont) then
         with cont do
           begin
-          infoUpdatedTo:=now;
-          age:=readWORD(snac, ofs);
-          gender:=readBYTE(snac, ofs);
-          homepage:=getWNTS(snac, ofs);
-          y:=readWORD(snac, ofs);
-          m:=readBYTE(snac, ofs);
-          d:=readBYTE(snac, ofs);
+          infoUpdatedTo := now;
+          age := readWORD(snac, ofs);
+          gender := readBYTE(snac, ofs);
+          homepage := getWNTS(snac, ofs);
+          y := readWORD(snac, ofs);
+          m := readBYTE(snac, ofs);
+          d := readBYTE(snac, ofs);
           if y > 0 then
             begin
              if not tryEncodeDate(y,m,d, birth) then
-               birth:=0;
+               birth := 0;
             end
            else
-             birth:=0;
-          lang[1]:=readBYTE(snac, ofs);
-          lang[2]:=readBYTE(snac, ofs);
-          lang[3]:=readBYTE(snac, ofs);
+             birth := 0;
+          lang[1] := readBYTE(snac, ofs);
+          lang[2] := readBYTE(snac, ofs);
+          lang[3] := readBYTE(snac, ofs);
            readWORD(snac, ofs); // unknown
            getWNTS(snac, ofs);  // original from: city string
            getWNTS(snac, ofs);  // original from: state string
@@ -7312,11 +7372,11 @@ case ReplyType of
         end;
       META_WORK_USERINFO:   // query result (work)
         begin
-          inc(ofs,1);
+          inc(ofs, 1);
           with cont do
            begin
             infoUpdatedTo:=now;
-            workcity :=unUTF(getWNTS(snac, ofs));
+            workcity := unUTF(getWNTS(snac, ofs));
             workstate := getWNTS(snac, ofs);
             workphone := getWNTS(snac, ofs);
             workfax := getWNTS(snac, ofs);
@@ -7340,7 +7400,7 @@ case ReplyType of
            with cont do
             begin
 //            inc(ofs,3);
-             infoUpdatedTo:=now;
+             infoUpdatedTo := now;
               Interests.Count := readBYTE(snac, ofs); // Êîë-âî èíòåðåñîâ
 //              SetLength(Interests.InterestBlock, Interests.Count);
 //              if Interests.Count > 0 then
@@ -7365,7 +7425,7 @@ case ReplyType of
 //               Interests[i].Str := getWNTS(snac, ofs);
             end
           else
-            eventInt:=-1;
+            eventInt := -1;
 
         if (flags and 1) = 0 then
           notifyListeners(IE_userinfo);
@@ -7391,17 +7451,17 @@ case ReplyType of
           end
         else
           begin
-          eventError:=EC_cantchangePwd;
+          eventError := EC_cantchangePwd;
           notifyListeners(IE_error);
           end;
-      META_SET_WORKINFO_ACK,META_SET_MOREINFO_ACK,
-      META_SET_NOTES_ACK,META_SET_EMAILINFO_ACK,
+      META_SET_WORKINFO_ACK, META_SET_MOREINFO_ACK,
+      META_SET_NOTES_ACK, META_SET_EMAILINFO_ACK,
       META_SET_FULLINFO_ACK:   // acks to save-my-info
         begin
         inc(savingMyinfo.ACKcount);
         if savingMyinfo.ACKcount = 4 then
           begin
-          savingMyinfo.running:=FALSE;
+          savingMyinfo.running := FALSE;
           sendStatusCode(False); // needed(?) for the server to save publicemail
           notifyListeners(IE_myinfoACK);
           end;
@@ -7634,7 +7694,7 @@ while Q.available do
                  if protoType = SESS_AVATARS then
                   begin
                    sendClientReady;
-                    phase:=ONLINE_;
+                    phase := ONLINE_;
                   end;
                end;
         $010F: parse010F(pkt);
@@ -7664,7 +7724,7 @@ while Q.available do
                       else
                        status := SC_OFFLINE;
 
-                    invisible:=FALSE;
+                    invisible := FALSE;
                 end;
                 end;
     //          myinfo.proto:=My_proto_ver;  // By Rapid D
@@ -7715,7 +7775,7 @@ while Q.available do
             (protoType = SESS_AVATARS)
           then
            begin
-            phase:=ONLINE_;
+            phase := ONLINE_;
             notifyListeners(IE_online);
            end;
           end;
@@ -7769,7 +7829,7 @@ while Q.available do
                  sendAddContact(fRoster);
 //                   sendAddTempContact(fRoster);
               {$ENDIF UseNotSSI}
-              phase:=ONLINE_;
+              phase := ONLINE_;
               notifyListeners(IE_online);
              end;
             SSIsendReady;
@@ -7850,7 +7910,7 @@ end;
 eventData:='';
 end; // received
 
-procedure TicqSession.sendIMparameter(chn : AnsiChar); // 0402
+procedure TicqSession.sendIMparameter(chn: AnsiChar); // 0402
 const
   CHANNEL_MSGS_ALLOWED = $00000001; //Wants ICBMs on this channel 
   MISSED_CALLS_ENABLED = $00000002; //Wants MISSED_CALLS on this channel 
@@ -7863,8 +7923,8 @@ const
   unk2_ALLOWED = $00000800;
   unk3_ALLOWED = $00040000;
 var
-  i : word;
-//  Chr3 : Char;
+  i: word;
+//  Chr3: Char;
 begin
   i := MISSED_CALLS_ENABLED or CHANNEL_MSGS_ALLOWED;
   if ((chn=#0)or (chn = #1)or(chn = #2)) and SupportTypingNotif then
@@ -7906,7 +7966,7 @@ end;
 
 procedure TicqSession.sendCapabilities; // 0204
 var
-  s : RawByteString;
+  s: RawByteString;
 begin
 //  s := '';
   s := CAPS_sm2big(CAPS_sm_ICQSERVERRELAY) + CAPS_sm2big(CAPS_sm_ICQ);
@@ -9964,13 +10024,13 @@ begin
             if not (KeyValPair.Strings[1] = 'OK') then Break;
 
           if (KeyValPair.Strings[0] = 'token_a') then
-            fSessionToken := KeyValPair.Strings[1];
+            fSession.Token := KeyValPair.Strings[1];
           if (KeyValPair.Strings[0] = 'token_expiresIn') then
-            TryStrToInt(KeyValPair.Strings[1], fSessionTokenExpIn);
+            TryStrToInt(KeyValPair.Strings[1], fSession.TokenExpIn);
           if (KeyValPair.Strings[0] = 'hostTime') then
-            TryStrToInt(KeyValPair.Strings[1], fSessionTokenTime);
+            TryStrToInt(KeyValPair.Strings[1], fSession.TokenTime);
           if (KeyValPair.Strings[0] = 'sessionSecret') then
-            fSessionSecret := KeyValPair.Strings[1];
+            fSession.Secret := KeyValPair.Strings[1];
         end;
       end;
     finally
@@ -9978,6 +10038,134 @@ begin
     end;
   end;
 end;
+
+procedure TicqSession.loginAndCreateSession();
+var
+  query, hash, baseUrl, unixTime, sToken: String;
+  sSecret, hashStr, respStr: RawByteString;
+  digest: T256BitDigest;
+  fs: TMemoryStream;
+  session: RawByteString;
+  JSONObject: TJSONObject;
+  i: Integer;
+begin
+  if (MyAccNum = '') or (fPwd = '') then
+    Exit;
+
+  query := 'https://wlogin.icq.com/siteim/icqbar/php/proxy_jsonp.php?sk=0.36625886284782827&username=' + String(MyAccNum) + '&password=' + fPwd + '&time=' + IntToStr(DateTimeToUnix(Now, False)) + '&remember=1';
+  loggaICQPkt('[GET] Login and create session', WL_rcvd_text, query);
+  fs := TMemoryStream.Create;
+  LoadFromUrl(query, fs);
+  SetLength(session, fs.Size);
+  fs.ReadBuffer(session[1], fs.Size);
+  fs.Clear;
+
+  loggaICQPkt('[GET] Login and create session', WL_rcvd_text, session);
+
+  try
+    JSONObject := TJSONObject.ParseJSONValue(session) as TJSONObject;
+    if Assigned(JSONObject) then
+    if (JSONObject.GetValue('statusCode').Value = '200') or (JSONObject.GetValue('statusCode').Value = '304') then
+    begin
+      fSession.FetchURL := JSONObject.GetValue('fetchBaseURL').Value;
+      fSession.AimSid := JSONObject.GetValue('aimsid').Value;
+      fSession.DevId := JSONObject.GetValue('k').Value;
+      fSession.SecretEnc64 := JSONObject.GetValue('sessionKey').Value;
+      fSession.Token := JSONObject.GetValue('a').Value;
+      fSession.TokenTime := StrToInt(JSONObject.GetValue('ts').Value);
+      fSession.HostOffset := StrToInt(JSONObject.GetValue('tsDelta').Value);
+    end;
+
+    if (getPwdOnly = '') or ((fSession.Secret = '') and (fSession.SecretEnc64 = '')) or (fSession.Token = '') then
+    begin
+      OutputDebugString(PChar('Not enough data for REST auth'));
+      Exit;
+    end;
+
+    sToken := TNetEncoding.url.Encode(fSession.Token);
+    if fSession.SecretEnc64 = '' then
+    begin
+      digest := CalcHMAC_SHA256(StrToUTF8(getPwdOnly), StrToUTF8(fSession.Secret));
+      sSecret := Base64EncodeString(SHA256DigestToStrA(digest));
+    end else
+      sSecret := fSession.SecretEnc64;
+{
+    // Start session (auth is not working)
+    baseUrl := 'https://api.icq.net/aim/startSession';
+    unixTime := IntToStr(DateTimeToUnix(Now, False) - session.hostOffset);
+
+    query := 'a=' + sToken + '&f=json&k=' + session.devid + '&imf=plain&clientName=SiteIM&buildNumber=410&majorVersion=11&minorVersion=9999&pointVersion=0&clientVersion=5000' +
+    '&events=myInfo,presence,buddylist,typing,sentIM,dataIM,userAddedToBuddyList,service,webrtcMsg,mchat,hist,hiddenChat,diff,permitDeny' +
+    '&includePresenceFields=aimId,buddyIcon,bigBuddyIcon,displayId,friendly,offlineMsg,state,statusMsg,userType,phoneNumber,cellNumber,smsNumber,workNumber,otherNumber,capabilities,ssl,abPhoneNumber,moodIcon,lastName,abPhones,abContactName,lastseen,mute' +
+    '&assertCaps=0946134E4C7F11D18222444553540000' +
+    '&interestCaps=8eec67ce70d041009409a7c1602a5c84' +
+    '&invisible=false&language=en-us&mobile=0&rawMsg=0&deviceId=dev1&sessionTimeout=86400&inactiveView=offline&activeTimeout=30' +
+    '&ts=' + unixtime + '&view=online';
+
+    hash := 'POST&' + TNetEncoding.url.Encode(baseUrl) + '&' + TNetEncoding.url.Encode(query);
+    digest := CalcHMAC_SHA256(sSecret, StrToUTF8(hash));
+    hashStr := Base64EncodeString(SHA256DigestToStrA(digest));
+    query := query + '&sig_sha256=' + TNetEncoding.url.Encode(hashStr);
+
+    fn := 'C:\SpeedProgs\Inet\Chat\RnQ\Build\response.dat';
+    LoadFromURL(baseUrl, fn, 0, False, True, query, True);
+}
+    // REST token
+    baseUrl := 'https://rapi.icq.net/genToken';
+    unixTime := IntToStr(DateTimeToUnix(Now, False) - fSession.HostOffset);
+    query := 'a=' + sToken + '&k=' + fSession.DevId + '&ts=' + unixTime;
+
+    hash := 'POST&' + TNetEncoding.url.Encode(baseUrl) + '&' + TNetEncoding.url.Encode(query);
+    digest := CalcHMAC_SHA256(sSecret, StrToUTF8(hash));
+    hashStr := Base64EncodeString(SHA256DigestToStrA(digest));
+    query := query + '&sig_sha256=' + TNetEncoding.url.Encode(hashStr);
+    loggaICQPkt('[POST] REST auth token', WL_sent_text, baseUrl + '?' + query);
+
+    LoadFromURL(baseUrl, fs, 0, False, True, query, True);
+    fs.Seek(0, soBeginning);
+    SetLength(respStr, fs.Size);
+    fs.ReadBuffer(respStr[1], fs.Size);
+    fs.Clear;
+
+    JSONObject := TJSONObject.ParseJSONValue(respStr) as TJSONObject;
+    if Assigned(JSONObject) then
+    begin
+      fSession.RESTToken := (JSONObject.GetValue('results') as TJSONObject).GetValue('authToken').Value;
+      loggaICQPkt('[POST] REST auth token', WL_rcvd_text, respStr);
+    end else
+    begin
+      fSession.RESTToken := '';
+      loggaICQPkt('[POST] REST auth token', WL_rcvd_text, 'Failed to get auth token');
+      Exit;
+    end;
+
+    // REST client id
+    baseUrl := 'https://rapi.icq.net/';
+    unixTime := IntToStr(DateTimeToUnix(Now, False) - fSession.HostOffset);
+    query := '{"method": "addClient", "reqId": "1-' + unixTime + '", "authToken": "' + fSession.RESTToken + '", "params": ""}';
+    loggaICQPkt('[POST] REST client id', WL_sent_text, query);
+    LoadFromURL(baseUrl, fs, 0, False, True, query, True);
+
+    fs.Seek(0, soBeginning);
+    SetLength(respStr, fs.Size);
+    fs.ReadBuffer(respStr[1], fs.Size);
+    fs.Clear;
+
+    JSONObject := TJSONObject.ParseJSONValue(respStr) as TJSONObject;
+    if Assigned(JSONObject) then
+    begin
+      fSession.RESTClientId := (JSONObject.GetValue('results') as TJSONObject).GetValue('clientId').Value;
+      loggaICQPkt('[POST] REST client id', WL_rcvd_text, respStr);
+    end else
+    begin
+      fSession.RESTClientId := '';
+      loggaICQPkt('[POST] REST client id', WL_rcvd_text, 'Failed to get client id');
+    end;
+  finally
+    FreeAndNil(fs)
+  end;
+end;
+
 
 function Ticqsession.getFullStatusCode:dword;
 begin
@@ -10104,7 +10292,7 @@ begin
 
  sendSnac(ICQ_LOCATION_FAMILY, $05, word_BEasStr(04)+ Length_B(uin));
 // sendSnac(ICQ_LOCATION_FAMILY, $05, word_LEasStr(05)+ BUIN(uin));
-  result := addRef(REF_msg,uin);
+  result := addRef(REF_msg, uin);
 //  acks.add(OE_msg, uin, 0, 'Inv').ID := id;
 //  result := 0;
 end;
@@ -10160,7 +10348,7 @@ CERTS	0x00000008	The CERT Blob
 HTML_INFO	0x00000400	Return HTML formatted Buddy Info page
 }
 // sendSnac(ICQ_LOCATION_FAMILY, $05, word_LEasStr(05)+ BUIN(uin));
-  result := addRef(REF_msg,uin);
+  result := addRef(REF_msg, uin);
 //  acks.add(OE_msg, uin, 0, 'Inv').ID := id;
 //  result := 0;
 end;
@@ -11050,7 +11238,7 @@ begin
    end;
   inc(SNACref);
   if SNACref > maxRefs then
-    SNACref:=1;
+    SNACref := 1;
   cnt.SSIID := 0;
   result := SSI_CreateItem(cnt.UID2cmp, s, groups.id2ssi(cnt.group), cnt.SSIID, FEEDBAG_CLASS_ID_BUDDY);
 {
@@ -11281,7 +11469,7 @@ begin
           '</NOTIFY></N>'+CRLF)));
 end;
 
-procedure TicqSession.AuthRequest(cnt : TRnQContact; const reason : String);
+procedure TicqSession.AuthRequest(cnt: TRnQContact; const reason: String);
 begin
 //   sendSNAC(ICQ_LISTS_FAMILY, $14, BUIN(uin) + Length_BE('') + #$00#$00);
 //   AuthGrant(cnt);

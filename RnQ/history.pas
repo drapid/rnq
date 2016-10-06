@@ -38,19 +38,19 @@ type
 //    function Clear;
     procedure deleteFromTo(const uid: TUID; st, en: integer);
     procedure deleteFromToTime(const uid: TUID; const st, en: TDateTime);
-//    function  load(uid:AnsiString; quite : Boolean = false):boolean;
-    function  load(cnt: TRnQContact; const quiet: Boolean = false):boolean;
-//    function  RepaireHistoryFile(fn: String; var rslt : String) : Boolean;
+//    function  load(uid: AnsiString; quite: Boolean = false): boolean;
+    function  load(cnt: TRnQContact; const quiet: Boolean = false): boolean;
+//    function  RepaireHistoryFile(fn: String; var rslt: String): Boolean;
      property Token : Cardinal read fToken;
    protected
     procedure Notify(Ptr: Pointer; Action: TListNotification); OverRide;
    private
-//    function  RepaireHistoryStream(str : TMemoryStream; var rslt : String) : boolean;
-//    function  fromString(s:AnsiString; quite : Boolean = false):boolean;
+//    function  RepaireHistoryStream(str: TMemoryStream; var rslt: String): boolean;
+//    function  fromString(s: AnsiString; quite: Boolean = false): boolean;
    end; // Thistory
 
-  function  DelHistWith(uid : TUID) : Boolean;
-  function  ExistsHistWith(uid : TUID) : Boolean;
+  function  DelHistWith(uid: TUID) : Boolean;
+  function  ExistsHistWith(uid: TUID) : Boolean;
 
 procedure writeHistorySafely(ev: Thevent; other: TRnQContact=NIL);
 procedure flushHistoryWritingQ;
@@ -106,11 +106,11 @@ begin
 end;
 }
 
-function Thistory.fromStream(str:Tstream; quiet : Boolean = false):boolean;
+function Thistory.fromStream(str: Tstream; quiet: Boolean = false):boolean;
 var
-  ev:Thevent;
-  thisCnt, thisCnt2 : TRnQcontact;
-  Cnt1I, Cnt2I : Int64;
+  ev: Thevent;
+  thisCnt, thisCnt2: TRnQcontact;
+  Cnt1I, Cnt2I: Int64;
 //  cur:integer;
 
   function getByte:byte;
@@ -125,7 +125,7 @@ var
 //    inc(cur,8)
   end;
 
-  function getInt:integer;
+  function getInt: integer;
   begin
     str.Read(result, 4);
 //    inc(cur,4);
@@ -182,28 +182,30 @@ var
 }
   procedure parseExtrainfo;
   var
-    code,next,extraEnd:integer;
-    cur : Integer;
-    s : AnsiString;
+    code, next, extraEnd: integer;
+    cur: Integer;
+    s: RawByteString;
+    len: Integer;
   begin
     cur := 1;
     extraEnd := 4+getInt;
     inc(cur, 4);
   while cur < extraEnd do
     begin
-    code:=getInt;
+      code := getInt;
     inc(cur, 4);
-//    inc(cur, 4);
-    next:=cur+ getInt + 4;
+  //    inc(cur, 4);
+      len := getInt;
+      next := cur + len + 4;
     case code of
       EI_flags:
         begin
-         ev.flags:=getInt;
-//         inc(cur, 4);
+           ev.flags := getInt;
+  //         inc(cur, 4);
         end;
       EI_UID:
         begin
-//          s := str.re
+  //          s := str.re
           s := getString;
           if Length(s) > 0 then
           if Assigned(thisCnt) and thisCnt.equals(s) then
@@ -217,8 +219,13 @@ var
                  ev.who  := thisCnt;
               end;
         end;
+        EI_WID:
+          begin
+            SetLength(s, len);
+            str.Read(s[1], len);
+          end;
       end;
-    cur:=next;
+      cur := next;
     end;
   end; // parseExtraInfo
 var

@@ -36,44 +36,44 @@ type
 //    UID   : TUID;
     email : string;
     info  : string;
-    cl:TRnQCList;
-    wrote,lastmodify:Tdatetime;
+    cl: TRnQCList;
+    wrote, lastmodify: Tdatetime;
     // ack fields
-    timeSent:TdateTime;
-    ID:integer;
-    filepos:integer;
+    timeSent: TdateTime;
+    ID: integer;
+    filepos: integer;
 //    constructor Create;// override;
     constructor Create;// override;
     destructor Destroy; override;
     function   toString: RawByteString;
-    function   fromString(s: RawByteString) : Boolean;
-    function   Clone : TOEvent;
+    function   fromString(const s: RawByteString) : Boolean;
+    function   Clone: TOEvent;
     end; // TOEvent
 
-  Toutbox=class(Tlist)
+  Toutbox = class(Tlist)
    public
 //    destructor Destroy; override;
 
     function  toString: RawByteString;
     procedure fromString(s: RawByteString);
 
-    function empty:boolean;
-    function pop:TOevent;
-    function popVisible:TOevent;
+    function empty: boolean;
+    function pop: TOevent;
+    function popVisible: TOevent;
 
     procedure Clear; override;
     procedure clearU;
    protected
     procedure Notify(Ptr: Pointer; Action: TListNotification); OverRide;
    public
-    function add(kind: Integer; dest:TRnQContact; flags:integer=0; const info:string=''):Toevent; overload;
-    function add(kind: Integer; dest:TRnQContact; flags:integer; cl:TRnQCList):Toevent; overload;
-    function getAt(idx:integer):TOevent;
-    function remove(ev:TOevent):boolean; overload;
-    function stFor(who:TRnQContact):boolean;
-    function findID(id:Integer):integer;
+    function add(kind: Integer; dest: TRnQContact; flags: integer=0; const info: string=''): Toevent; overload;
+    function add(kind: Integer; dest: TRnQContact; flags: integer; cl: TRnQCList): Toevent; overload;
+    function getAt(idx: integer): TOevent;
+    function remove(ev: TOevent): boolean; overload;
+    function stFor(who: TRnQContact): boolean;
+    function findID(id: Integer): integer;
 
-    procedure updateScreenFor(cnt : TRnQContact);
+    procedure updateScreenFor(cnt: TRnQContact);
     end; // Toutbox
 
 implementation
@@ -95,9 +95,9 @@ function Toutbox.toString: RawByteString;
 var
   s: RawByteString;
   res : RawByteString;
-  i:integer;
+  i: integer;
 begin
-  res:='';  // file version
+  res := '';  // file version
   if count > 0 then
    begin
     for i:=0 to count-1 do
@@ -107,17 +107,17 @@ begin
      end;
     critt(res, StrToIntDef(Account.AccProto.ProtoElem.MyAccNum, 0));
    end;
-  result:='VER'+int2str(1)+res;
+  result := 'VER'+int2str(1)+res;
 end; // toString
 
 procedure Toutbox.fromString(s: RawByteString);
 var
-  i,l:integer;
-  ev:Toevent;
+  i, l: integer;
+  ev: Toevent;
 begin
-  s:=decritted(copy(s,8,length(s)), StrToIntDef(Account.AccProto.ProtoElem.MyAccNum, 0));
+  s := decritted(copy(s,8,length(s)), StrToIntDef(Account.AccProto.ProtoElem.MyAccNum, 0));
   clearU;
-  i:=1;
+  i := 1;
   if length(s) < 4 then
     exit;
   try
@@ -154,14 +154,14 @@ begin
     except
     end;
  end;}
-inherited;
-saveOutboxDelayed:=TRUE;
+  inherited;
+  saveOutboxDelayed := TRUE;
 end; // clear
 
 procedure Toutbox.clearU;
 var
-  i:integer;
-  oe : TOEvent;
+  i: integer;
+  oe: TOEvent;
 begin
   for i:=count-1 downto 0 do
    begin
@@ -177,15 +177,15 @@ begin
       end;
    end;
   inherited;
-  saveOutboxDelayed:=TRUE;
+  saveOutboxDelayed := TRUE;
 end;
 
 
 function Toutbox.add(kind: Integer; dest: TRnQContact; flags: integer; cl: TRnQCList): TOevent;
 begin
-result:=add(kind,dest,flags);
-result.cl:=TRnQCList.create;
-result.cl.assign(cl);
+  result := add(kind, dest, flags);
+  result.cl := TRnQCList.create;
+  result.cl.assign(cl);
 end; // add
 
 function Toutbox.add(kind: Integer; dest: TRnQContact; flags: integer=0; const info: string=''):TOevent;
@@ -194,31 +194,31 @@ var
   i: integer;
 begin
   result := NIL;
-  found:=FALSE;
-  if (kind in [OE_addedyou,OE_auth,OE_authDenied]) then
+  found := FALSE;
+  if (kind in [OE_addedyou, OE_auth, OE_authDenied]) then
    for i:=0 to count-1 do
    begin
-     result:=getAt(i);
+     result := getAt(i);
      if (kind=result.kind) and (dest.equals(result.whom)) then
       begin
-       found:=TRUE;
+       found := TRUE;
        break;
       end;
    end;
   if not found then
   begin
-   result:=TOevent.create;
+   result := TOevent.create;
    add(result);
   end;
-result.kind:=kind;
-result.flags:=flags;
-result.whom:=dest;
-result.info:=info;
-result.wrote:=now;
-result.lastmodify:=now;
-result.cl := NIL;
-updateScreenFor(result.whom);
-saveOutboxDelayed:=TRUE;
+  result.kind := kind;
+  result.flags := flags;
+  result.whom := dest;
+  result.info := info;
+  result.wrote := now;
+  result.lastmodify := now;
+  result.cl := NIL;
+  updateScreenFor(result.whom);
+  saveOutboxDelayed:=TRUE;
 end; // add
 
 function Toutbox.getAt(idx:integer):TOevent;
@@ -363,40 +363,40 @@ function TOevent.toString: RawByteString;
   end;
 
 begin
-result:='';
-writeDown(OEK_kind, int2str(kind));
-writeDown(OEK_flags, int2str(flags));
+  result:='';
+  writeDown(OEK_kind, int2str(kind));
+  writeDown(OEK_flags, int2str(flags));
   if kind=OE_email then
     writeDown(OEK_email, StrToUTF8(email))
    else
 //    writeDown(OEK_uin, int2str(uid));
     if Assigned(whom) then
       writeDown(OEK_uid, StrToUTF8(whom.UID2cmp));
-writeDown(OEK_info, StrToUTF8(info));
-writeDown(OEK_wrote, dt2str(wrote));
-if assigned(cl) then
+  writeDown(OEK_info, StrToUTF8(info));
+  writeDown(OEK_wrote, dt2str(wrote));
+  if assigned(cl) then
   writeDown(OEK_cl, cl.tostring);
 end; // toString
 
-function TOevent.fromString(s: RawByteString) : Boolean;
+function TOevent.fromString(const s: RawByteString): Boolean;
 var
   i,L,code,next:integer;
   uid : TUID;
 begin
-  i:=1;
+  i := 1;
   Result := True;
   try
   while i < length(s) do
    begin
-    L:=integer((@s[i])^); inc(i,4);
-    code:=integer((@s[i])^); inc(i,4);
-    next:=i+L;
+    L := integer((@s[i])^); inc(i,4);
+    code := integer((@s[i])^); inc(i,4);
+    next := i+L;
     case code of
-      OEK_kind: kind:=integer((@s[i])^);
-      OEK_flags: flags:=integer((@s[i])^);
-      OEK_wrote: wrote:=Tdatetime((@s[i])^);
-      OEK_info: info:= UnUTF(copy(s,i,L));
-      OEK_email: email:= UnUTF(copy(s,i,L));
+      OEK_kind: kind := integer((@s[i])^);
+      OEK_flags: flags := integer((@s[i])^);
+      OEK_wrote: wrote := Tdatetime((@s[i])^);
+      OEK_info: info := UnUTF(copy(s,i,L));
+      OEK_email: email := UnUTF(copy(s,i,L));
       OEK_uin:
          begin
       {$IFDEF UID_IS_UNICODE}
@@ -418,11 +418,11 @@ begin
       OEK_cl:
         begin
           if cl=NIL then
-            cl:=TRnQCList.create;
+            cl := TRnQCList.create;
           cl.fromstring(Account.AccProto, copy(s,i,L), contactsDB);
         end;
       end;
-    i:=next;
+    i := next;
    end;
   except
     Result := false;

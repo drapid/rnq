@@ -287,15 +287,15 @@ begin
 //    curXStatusStr := xstatusBox.Text;
 //  if xstatusBox.Text <> contact.xStatusStr then
 //   contact.xStatusStr := xstatusBox.Text;
- TCE(contact.data^).dontdelete:=dontdeleteChk.checked;
- TCE(contact.data^).notes:=notesBox.text;
+ TCE(contact.data^).dontdelete := dontdeleteChk.checked;
+ TCE(contact.data^).notes := notesBox.text;
  contact.lclImportant := lclNoteStrEdit.Text;
  TICQcontact(contact).ssImportant := ssNoteStrEdit.Text;
  TICQcontact(contact).ssCell  := CellularEdt.Text;
   TICQcontact(contact).ssCell2 := CellularEdt2.text;
   TICQcontact(contact).ssCell3 := CellularEdt3.text;
  TICQcontact(contact).ssMail := localMailEdt.Text;
- contact.SendTransl:=ChkSendTransl.checked;
+ contact.SendTransl := ChkSendTransl.checked;
 
  if contact.icon.ToShow <> IcShRGrp.ItemIndex then
   begin

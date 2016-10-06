@@ -1846,17 +1846,17 @@ begin
 
 {if (c.lastPriority>0) and (c.status in [SC_dnd,SC_occupied]) then
   oe.flags:=oe.flags or c.lastPriority;}
-  oe.flags:=oe.flags or IF_urgent;
+  oe.flags := oe.flags or IF_urgent;
 
   if oe.flags and IF_multiple <> 0 then
-   oe.flags:=oe.flags or IF_noblink and not IF_urgent;
+   oe.flags := oe.flags or IF_noblink and not IF_urgent;
 
-  vBin := plugins.castEv( PE_MSG_SENT, oe.whom.uid,oe.flags,oe.info);
+  vBin := plugins.castEv( PE_MSG_SENT, oe.whom.uid, oe.flags, oe.info);
   if (vBin>'') then
     if(byte(vBin[1])=PM_DATA) then
      begin
       i := _int_at(vBin, 2);
-      send_msg:= UnUTF(_istring_at(vBin, 2));
+      send_msg := UnUTF(_istring_at(vBin, 2));
       if length(vBin)>= 1+4+ i  + 4 then
        oe.info := UnUTF(_istring_at(vBin, 2+4+ i))
       else
@@ -1873,7 +1873,7 @@ begin
     exit;
   result := True;
   oe.id := oe.whom.fProto.sendMsg(oe.whom, oe.flags, send_msg, result);
-  oe.timeSent:=now;
+  oe.timeSent := now;
   if result then
     Account.acks.add(oe.kind, oe.whom, oe.flags, 'MSG').ID := oe.ID;
 
@@ -1906,7 +1906,7 @@ begin
       fl := oe.flags or IF_UTF8_TEXT;
     end;
  {$ENDIF ~DB_ENABLED}
-  ev:=Thevent.new(EK_MSG, oe.whom.fProto.getMyInfo, oe.timeSent, vBin{$IFDEF DB_ENABLED}, vStr{$ENDIF DB_ENABLED}, fl, oe.id);
+  ev := Thevent.new(EK_MSG, oe.whom.fProto.getMyInfo, oe.timeSent, vBin{$IFDEF DB_ENABLED}, vStr{$ENDIF DB_ENABLED}, fl, oe.id);
   ev.fIsMyEvent := True;
    if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) and ( oe.flags and IF_not_save_hist = 0) then
     writeHistorySafely(ev, oe.whom);
@@ -3729,7 +3729,7 @@ procedure drawHint(cnv: Tcanvas; kind: Integer;
 }
 var
 //  n:Tnode;
-  maxX,x,y,dy, xdy: integer;
+  maxX, x, y, dy, xdy: integer;
   border, roundsize, maxWidth: WORD;
 
   procedure textout(s: string); overload;
@@ -3826,13 +3826,13 @@ var
 
   procedure rulerOut();
   begin
-   inc(y,dy div 2);
+   inc(y, dy div 2);
    if not calcOnly then
      lineOut(cnv.Pen.Color);
-   inc(y,2);
+   inc(y, 2);
    if not calcOnly then
      lineOut(cnv.Pen.Color);
-   inc(y,dy div 2);
+   inc(y, dy div 2);
   end; // rulerOut
 
 //  procedure picOut(picName:String);
@@ -3842,26 +3842,27 @@ var
   function timeToStr(t: Tdatetime): string;
   begin
     if t<1 then
-      result:=''
+      result := ''
      else
-      result:=dateTocoolstr(t)+', '+FormatDateTime('h:nn',t)
+      result := dateTocoolstr(t)+', '+FormatDateTime('h:nn',t)
   end;
 
 var
   i,
   a, a2, a3: integer;
   cl: TRnQCList;
-  ty : Integer;
-  pic : TPicName;
+  ty: Integer;
+  pic: TPicName;
  {$IFDEF PROTOCOL_ICQ}
-  cnt : TICQcontact;
+  cnt: TICQcontact;
  {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
 //  cnt2 : TMRAcontact;
  {$ENDIF PROTOCOL_MRA}
 //  gr : TGPGraphics;
 //  region:HRGN;
-  tS : String;
+  tS: String;
+  tR: TGPRect;
 begin
   if (kind = NODE_CONTACT) and (c=NIL) then
     exit;
@@ -4085,13 +4086,29 @@ case kind of
      if Assigned(c.icon.Bmp) then
        if calcOnly then
          begin
-           inc(y, c.icon.Bmp.GetHeight);
-           maxX := Max(maxX, c.icon.Bmp.GetWidth + 15);
+           ty := c.icon.Bmp.GetHeight;
+           ty := MulDiv(ty, PPI, cDefaultDPI);
+           inc(y, ty);
+
+           ty := c.icon.Bmp.GetWidth;
+           ty := MulDiv(ty, PPI, cDefaultDPI);
+           maxX := Max(maxX, ty + 15);
 //         inc(y, cnt.icon.Bmp.GetHeight);
          end
         else
          begin
-          DrawRbmp(cnv.Handle, c.icon.Bmp, 10, y);
+          tR.Width := c.icon.Bmp.GetWidth;
+          tR.Height := c.icon.Bmp.GetHeight;
+          if PPI > cDefaultDPI then
+           begin
+            tR.Width := MulDiv(tR.Width, PPI, cDefaultDPI);
+            tR.Height := MulDiv(tR.Height, PPI, cDefaultDPI);
+           end;
+
+          tR.X := 10;
+          tR.Y := y;
+
+          DrawRbmp(cnv.Handle, c.icon.Bmp, tR);
          end
       else
        if Assigned(cnt) then
@@ -4114,13 +4131,13 @@ case kind of
         inc(x, cx+3);
         inc(y, cy-dy);
        end;
-    cl:= Account.AccProto.readList(LT_ROSTER);
+    cl := Account.AccProto.readList(LT_ROSTER);
     fieldOutDP('Total', intToStr(cl.getCount(groupid)));
     if Account.AccProto.isOnline then
      begin
-      a:=0;
-      a2:=0;
-      a3:=0;
+      a := 0;
+      a2 := 0;
+      a3 := 0;
       for i:=0 to TList(cl).count-1 do
         with TRnQcontact(cl.getAt(i)) do
           if group = groupid then
@@ -4131,19 +4148,19 @@ case kind of
                inc(a2)
               else
                inc(a3) ;
-      fieldOutDP('Online',inttostr(a2));
-      fieldOutDP('Offline',inttostr(a));
-      fieldOutDP('Unknown',inttostr(a3));
+      fieldOutDP('Online', inttostr(a2));
+      fieldOutDP('Offline', inttostr(a));
+      fieldOutDP('Unknown', inttostr(a3));
      end;
     end;
   else // Unknown type
     begin
-     r:=rect(0,0,0,0);
+     r := rect(0,0,0,0);
      exit;
     end;
   end;
 //r:=rect(0,0,maxX+ShadowSize+roundsize,y+ShadowSize+roundsize);
-r:=rect(0, 0, maxX+ShadowSize + 5, y+ShadowSize);
+r := rect(0, 0, maxX+ShadowSize + 5, y+ShadowSize);
 // cnv.Rectangle(r);
 // SetWindowRgn(cnv.Handle, region, TRUE);
 
@@ -4154,12 +4171,12 @@ function infoToStatus(const info: RawByteString): byte;
 begin
  {$IFDEF PROTOCOL_ICQ}
   if length(info) < 4 then
-    result:= byte(SC_UNK)
+    result := byte(SC_UNK)
    else
-    result:= str2int(info);
+    result := str2int(info);
 if not (result in [byte(SC_ONLINE)..byte(SC_Last)]) then
  {$ENDIF PROTOCOL_ICQ}
-  result:= byte(SC_UNK);
+  result := byte(SC_UNK);
 //if (result<SC_ONLINE) or (result>SC_UNK) then result:=SC_UNK;
 end; // infoToStatus
 
@@ -4167,9 +4184,9 @@ function infoToXStatus(const info: RawByteString): Byte;
 begin
  {$IFDEF PROTOCOL_ICQ}
   if length(info) < 6 then
-    result:=0
+    result := 0
    else
-    result:= byte(info[6]);
+    result := byte(info[6]);
   if Result > High(XStatusArray) then
  {$ENDIF PROTOCOL_ICQ}
    result := 0;
@@ -4177,7 +4194,7 @@ end; // infoToXStatus
 
 function exitFromAutoaway():boolean;
 begin
-  result:=FALSE;
+  result := FALSE;
   if autoaway.triggered=TR_none then
     exit;
  {$IFDEF PROTOCOL_ICQ}
@@ -4194,15 +4211,15 @@ begin
     setStatus(Account.AccProto, autoaway.bakstatus);
  {$ENDIF PROTOCOL_ICQ}
   setAutomsg(autoaway.bakmsg);
-  autoaway.bakmsg:='';
-  result:=TRUE;
+  autoaway.bakmsg := '';
+  result := TRUE;
 end; // exitFromAutoaway
 
-function getShiftState():integer;
+function getShiftState(): integer;
 var
-  keys:TkeyboardState;
+  keys: TkeyboardState;
 begin
-  result:=0;
+  result := 0;
   if not GetKeyboardState(keys) then
    exit;
   if keys[VK_SHIFT] >= $80 then
@@ -4213,19 +4230,19 @@ begin
     inc(result, 4);
 end; // getShiftState
 
-procedure addTempVisibleFor(time:integer; c:TRnQContact);
+procedure addTempVisibleFor(time: integer; c: TRnQContact);
 begin
 // {$IFDEF UseNotSSI}
 //  ICQ.addTemporaryVisible(c);
   c.fProto.AddToList(LT_TEMPVIS, c);
-  removeTempVisibleTimer:=time;
-  removeTempVisibleContact:=c;
+  removeTempVisibleTimer := time;
+  removeTempVisibleContact := c;
 //{$ELSE UseSSI}
 //  msgDlg(Str_unsupported, mtWarning);
 //{$ENDIF UseNotSSI}
 end; // addTempVisibleFor
 
-procedure processOevent(oe:Toevent);
+procedure processOevent(oe: Toevent);
 begin
 case oe.kind of
   OE_MSG: //if sendICQmsg(oe) then exit;
@@ -4245,7 +4262,7 @@ case oe.kind of
   end;
 end; // processOevent
 
-function OnlFeature(const pr : TRnQProtocol; check : Boolean = True) : Boolean;
+function OnlFeature(const pr: TRnQProtocol; check: Boolean = True): Boolean;
 // True if online
 begin
   if check and (pr <> NIL) then
@@ -4257,14 +4274,14 @@ begin
 end;
 
  {$IFDEF Use_Baloons}
-procedure ShowBalloonEv(ev : Thevent);
+procedure ShowBalloonEv(ev: Thevent);
 var
-  counter : Int64;
-  s : String;
+  counter: Int64;
+  s: String;
 begin
 //  str1:=ev.decrittedInfoOrg;
   //if pos(#13,str1)<>0 then str1:=copy(str1,1,pos(#13,str1)-1);
-  counter:=behaviour[ev.kind].TipTime;
+  counter := behaviour[ev.kind].TipTime;
 //  s := copy(ev.decrittedInfo,1,255);
   s := copy(ev.getBodyText, 1, 255);
 
@@ -4287,7 +4304,7 @@ begin
 end;
  {$ENDIF Use_Baloons}
 
-function  CheckAntispam(c : TRnQcontact) : Boolean;
+function  CheckAntispam(c: TRnQcontact): Boolean;
 begin
   Result := False;
 //  if not (rosterLib.exists(c) or notInList.exists(c)) then
@@ -4296,21 +4313,21 @@ end;
 
 procedure CheckBDays;
 const
-  bds : TPicName = 'birthday';
+  bds: TPicName = 'birthday';
   PrefIsShowBDFirst  = 'is-show-bd-first';
   PrefShowBDFirst    = 'show-bd-first';
   PrefIsShowBDBefore = 'is-show-bd-before';
   PrefShowBDBefore   = 'show-bd-before';
 var
   bPrefIsShowBDFirst,
-  bPrefIsShowBDBefore : Boolean;
+  bPrefIsShowBDBefore: Boolean;
   iPrefShowBDFirst,
-  iPrefShowBDBefore : Integer;
-  cl : TRnQCList;
-  c : TRnQContact;
-  k, l : Integer;
-  ss : TPicName;
-  played, showInform : Boolean;
+  iPrefShowBDBefore: Integer;
+  cl: TRnQCList;
+  c: TRnQContact;
+  k, l: Integer;
+  ss: TPicName;
+  played, showInform: Boolean;
 begin
 // if not Assigned(Account.AccProto) then Exit;
  iPrefShowBDFirst  := 7;
