@@ -92,7 +92,7 @@ uses
   tipDlg in '..\For.rnq\tipDlg.pas',
   RnQLangFrm in '..\For.rnq\RnQLangFrm.pas' {FrmLangs},
   RDUtils in '..\for.RnQ\RTL\RDUtils.pas',
- {$IFDEF PROTOCOL_ICQ}
+  { $IFDEF PROTOCOL_ICQ}
   filetransferDlg in 'ICQ\filetransferDlg.pas' {filetransferFrm},
   ICQ.Stickers in 'ICQ\ICQ.Stickers.pas',
   icq_fr in 'ICQ\icq_fr.pas' {icqFr},
@@ -110,7 +110,7 @@ uses
   viewSSI in 'ICQ\viewSSI.pas' {SSIForm},
   wpDlg in 'ICQ\wpDlg.pas' {wpFrm},
   ICQ.RESTapi in 'ICQ\ICQ.RESTapi.pas',
- {$ENDIF PROTOCOL_ICQ}
+  { $ENDIF PROTOCOL_ICQ}
   MenuEmoji in 'MenuEmoji.pas' {FEmoji},
   ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm};
 

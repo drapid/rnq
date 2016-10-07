@@ -9780,49 +9780,49 @@ begin
     if length(snac) > (ofs + 47) then
       begin
        inc(ofs, 47);
-       accept:= Byte(snac[ofs]);
+       accept := Byte(snac[ofs]);
        inc(ofs,4);
 //    eventMsg:= UnUTF(getWNTS(snac,ofs));
-       eventMsgA:= getWNTS(snac,ofs);
-       eventContact:= getICQContact(refs[eventInt].uid);
+       eventMsgA := getWNTS(snac,ofs);
+       eventContact := getICQContact(refs[eventInt].uid);
       end
      else
       begin
-       accept:= 0;
-       eventMsgA:= '';
+       accept := 0;
+       eventMsgA := '';
        eventContact := getICQContact(uin);
       end;
-    eventOldStatus:=eventContact.status;
-    eventOldInvisible:=eventContact.invisible;
+    eventOldStatus := eventContact.status;
+    eventOldInvisible := eventContact.invisible;
     case accept of
-      $0,$C: eventAccept:=AC_ok;
+      $0,$C: eventAccept := AC_ok;
       $9:
         begin
-        eventContact.status:=SC_occupied;
-        eventAccept:=AC_denied;
+        eventContact.status := SC_occupied;
+        eventAccept := AC_denied;
         end;
       $A:
         begin
-        eventContact.status:=SC_dnd;
-        eventAccept:=AC_denied;
+        eventContact.status := SC_dnd;
+        eventAccept := AC_denied;
         end;
       $4:
         begin
-        eventContact.status:=SC_away;
-        eventAccept:=AC_away;
+        eventContact.status := SC_away;
+        eventAccept := AC_away;
         end;
       $E:
         begin
-        eventContact.status:=SC_na;
-        eventAccept:=AC_away;
+        eventContact.status := SC_na;
+        eventAccept := AC_away;
         end;
       end;
     if eventOldStatus<>eventContact.status then
-      eventContact.prevStatus:=eventContact.status;
+      eventContact.prevStatus := eventContact.status;
     if (eventOldStatus<>eventContact.status) or (eventOldInvisible<>eventContact.invisible) then
       begin
-      eventFlags:=0;
-      eventTime:=now;
+      eventFlags := 0;
+      eventTime := now;
       notifyListeners(IE_statuschanged);
       end;
 
@@ -9849,17 +9849,17 @@ begin
 end; // parse040B
 
 {$IFDEF usesDC}
-function TicqSession.getNewDirect : TProtoDirect;
+function TicqSession.getNewDirect: TProtoDirect;
 begin
   Result := TICQdirect.Create;
 //  Result.directs :=
 end;
 
-function TicqSession.directTo(c:TICQcontact): TICQdirect;
-begin result:= TICQdirect(directs.newFor(c)) end;
+function TicqSession.directTo(c: TICQcontact): TICQdirect;
+begin result := TICQdirect(directs.newFor(c)) end;
 {$ENDIF usesDC}
 
-function TicqSession.serverPort:word;
+function TicqSession.serverPort: word;
 {$IFDEF usesDC}
 //var
 //  s : String;
@@ -9873,17 +9873,17 @@ begin
 //      result:=p
 //    else
 {$ENDIF usesDC}
-      result:=0;
-  except result:=0
+      result := 0;
+  except result := 0
   end
 end;
 
-function TicqSession.serverStart:word;
+function TicqSession.serverStart: word;
 begin
-if (DCmode = DC_none)or(DCmode = DC_FAKE) then
+  if (DCmode = DC_none)or(DCmode = DC_FAKE) then
   begin
-  result:=0;
-  exit;
+    result := 0;
+    exit;
   end;
 {$IFDEF usesDC}
 {server.port:='0';
@@ -9891,7 +9891,7 @@ server.addr:='0.0.0.0';
 server.listen;
 }
 {$ENDIF usesDC}
-result:=serverPort;
+  result := serverPort;
 end; // serverStart
 
 {function TicqSession.getIPasDword_BE:string;
@@ -9919,7 +9919,7 @@ begin
   if (protoType = SESS_IM) and
      (((fPwd = '') and (fPwdHash= ''))or (MyAccount='')) then
   begin
-   eventError:=EC_missingLogin;
+   eventError := EC_missingLogin;
    notifyListeners(IE_error);
    exit;
   end;
@@ -9933,7 +9933,7 @@ begin
  sock.Close;
  sock.WaitForClose;  // prevent to change properties while the socket is open
 
- sock.proto:='tcp';
+ sock.proto := 'tcp';
 { if sock.http.enabled then
   begin
    sock.Addr:= sock.http.addr;
@@ -9944,8 +9944,8 @@ begin
 // if avt_session then
  if (protoType = SESS_AVATARS) then
   begin
-   sock.addr:=serviceServerAddr;
-   sock.port:=serviceServerPort;
+   sock.addr := serviceServerAddr;
+   sock.port := serviceServerPort;
    CopyProxy(aProxy, MainProxy);
   end
  else
@@ -9955,9 +9955,9 @@ begin
   end;
 // if avt_session then
  if (protoType = SESS_AVATARS) then
-  phase:= relogin_
+  phase := relogin_
  else
-  phase:=CONNECTING_;
+  phase :=CONNECTING_;
 // sock.MultiThreaded := True; 
  eventAddress := sock.AddrPort;
  notifyListeners(IE_connecting);
@@ -9968,16 +9968,16 @@ begin
   on E:Exception do
    begin
      eventMsgA := E.Message;
-     eventError:=EC_cantconnect;
-     eventInt:=WSocket_WSAGetLastError;
+     eventError := EC_cantconnect;
+     eventInt := WSocket_WSAGetLastError;
      notifyListeners(IE_error);
      goneOffline;
    end
   else
    begin
     eventMsgA := '';
-    eventError:=EC_cantconnect;
-    eventInt:=WSocket_WSAGetLastError;
+    eventError := EC_cantconnect;
+    eventInt := WSocket_WSAGetLastError;
     eventMsgA := WSocketErrorDesc(eventInt);
     notifyListeners(IE_error);
     goneOffline;
@@ -9987,55 +9987,10 @@ end; // connect
 
 // Get session data for web login
 procedure TicqSession.refreshSessionSecret();
-var
-  fs: TMemoryStream;
-  session: RawByteString;
-  Params, KeyValPair: TStringList;
-  i: Integer;
 begin
   if not (MyAccNum = '') and not (fPwd = '') then
   begin
-    fs := TMemoryStream.Create;
-    LoadFromUrl('https://api.login.icq.net/auth/clientLogin', fs, 0, false, true,
-                'devId=ic1nmMjqg7Yu-0hL&f=qs&s=' + String(MyAccNum) + '&pwd=' + fPwd, false);
-    SetLength(session, fs.Size);
-    fs.ReadBuffer(session[1], fs.Size);
-    fs.Free;
-
-    Params := TStringList.Create;
-    KeyValPair := TStringList.Create;
-    try
-      Params.Delimiter := '&';
-      Params.StrictDelimiter := true;
-      Params.DelimitedText := UTF8ToStr(session);
-
-      KeyValPair.Delimiter := '=';
-      KeyValPair.StrictDelimiter := true;
-
-      for i := 0 to Params.Count -1 do
-      begin
-        KeyValPair.Clear;
-        KeyValPair.DelimitedText := UTF8ToStr(StringReplace(Params.Strings[i], '+', ' ', [rfReplaceAll]));
-        if KeyValPair.Count >= 2 then
-        begin
-          if (KeyValPair.Strings[0] = 'statusCode') then
-            if not ((KeyValPair.Strings[1] = '200') or (KeyValPair.Strings[1] = '304')) then Break;
-          if (KeyValPair.Strings[0] = 'statusText') then
-            if not (KeyValPair.Strings[1] = 'OK') then Break;
-
-          if (KeyValPair.Strings[0] = 'token_a') then
-            fSession.Token := KeyValPair.Strings[1];
-          if (KeyValPair.Strings[0] = 'token_expiresIn') then
-            TryStrToInt(KeyValPair.Strings[1], fSession.TokenExpIn);
-          if (KeyValPair.Strings[0] = 'hostTime') then
-            TryStrToInt(KeyValPair.Strings[1], fSession.TokenTime);
-          if (KeyValPair.Strings[0] = 'sessionSecret') then
-            fSession.Secret := KeyValPair.Strings[1];
-        end;
-      end;
-    finally
-      Params.Free;
-    end;
+    ICQREST_refreshSessionSecret(MyAccNum, fPwd, fSession);
   end;
 end;
 

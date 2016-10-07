@@ -12,7 +12,8 @@ interface
    RnQProtocol;
 
 
-  procedure ICQREST_loginAndCreateSession(pAcc, pPwd: String; var pSession: TSessionParams);
+  procedure ICQREST_loginAndCreateSession(const pAcc, pPwd: String; var pSession: TSessionParams);
+  procedure ICQREST_refreshSessionSecret(const pAcc, pPwd: String; var pSession: TSessionParams);
   procedure ICQREST_openICQURL(const pURL: String);
   procedure ICQREST_checkServerHistory(ICQ: TicqSession; uid: TUID);
   procedure ICQREST_getServerHistory(ICQ: TicqSession; uid: TUID);
@@ -312,7 +313,7 @@ begin
 *)
 end;
 
-procedure ICQREST_loginAndCreateSession(pAcc, pPwd: String; var pSession: TSessionParams);
+procedure ICQREST_loginAndCreateSession(const pAcc, pPwd: String; var pSession: TSessionParams);
 var
   query, hash, baseUrl, unixTime, sToken: String;
   sSecret, hashStr, respStr: RawByteString;
@@ -326,7 +327,7 @@ begin
     Exit;
 
   query := 'https://wlogin.icq.com/siteim/icqbar/php/proxy_jsonp.php?sk=0.36625886284782827&username=' + String(pAcc) + '&password=' + pPwd + '&time=' + IntToStr(DateTimeToUnix(Now, False)) + '&remember=1';
-  loggaICQPkt('[GET] Login and create session', WL_rcvd_text, query);
+  loggaICQPkt('[GET] Login and create session', WL_sent_text, query);
   fs := TMemoryStream.Create;
   LoadFromUrl(query, fs);
   if fs.Size = 0 then
@@ -336,7 +337,8 @@ begin
    end;
 
   SetLength(session, fs.Size);
-  fs.ReadBuffer(session[1], fs.Size);
+  if fs.Size>0 then
+    fs.ReadBuffer(session[1], fs.Size);
   fs.Clear;
 
   loggaICQPkt('[GET] Login and create session', WL_rcvd_text, session);
@@ -444,6 +446,60 @@ begin
     end;
   finally
     FreeAndNil(fs)
+  end;
+end;
+
+procedure ICQREST_refreshSessionSecret(const pAcc, pPwd: String; var pSession: TSessionParams);
+var
+  fs: TMemoryStream;
+  session: RawByteString;
+  Params, KeyValPair: TStringList;
+  i: Integer;
+begin
+  if not (pAcc = '') and not (pPwd = '') then
+  begin
+    fs := TMemoryStream.Create;
+    LoadFromUrl('https://api.login.icq.net/auth/clientLogin', fs, 0, false, true,
+                'devId=' + ICQ_DEV_ID +'&f=qs&s=' + String(pAcc) + '&pwd=' + pPwd, false);
+    SetLength(session, fs.Size);
+    if fs.Size > 0 then
+      fs.ReadBuffer(session[1], fs.Size);
+    fs.Free;
+
+    Params := TStringList.Create;
+    KeyValPair := TStringList.Create;
+    try
+      Params.Delimiter := '&';
+      Params.StrictDelimiter := true;
+      Params.DelimitedText := UTF8ToStr(session);
+
+      KeyValPair.Delimiter := '=';
+      KeyValPair.StrictDelimiter := true;
+
+      for i := 0 to Params.Count -1 do
+      begin
+        KeyValPair.Clear;
+        KeyValPair.DelimitedText := UTF8ToStr(StringReplace(Params.Strings[i], '+', ' ', [rfReplaceAll]));
+        if KeyValPair.Count >= 2 then
+        begin
+          if (KeyValPair.Strings[0] = 'statusCode') then
+            if not ((KeyValPair.Strings[1] = '200') or (KeyValPair.Strings[1] = '304')) then Break;
+          if (KeyValPair.Strings[0] = 'statusText') then
+            if not (KeyValPair.Strings[1] = 'OK') then Break;
+
+          if (KeyValPair.Strings[0] = 'token_a') then
+            pSession.Token := KeyValPair.Strings[1];
+          if (KeyValPair.Strings[0] = 'token_expiresIn') then
+            TryStrToInt(KeyValPair.Strings[1], pSession.TokenExpIn);
+          if (KeyValPair.Strings[0] = 'hostTime') then
+            TryStrToInt(KeyValPair.Strings[1], pSession.TokenTime);
+          if (KeyValPair.Strings[0] = 'sessionSecret') then
+            pSession.Secret := KeyValPair.Strings[1];
+        end;
+      end;
+    finally
+      Params.Free;
+    end;
   end;
 end;
 
