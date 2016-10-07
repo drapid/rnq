@@ -671,7 +671,7 @@ end;
 
 function TLV2(code: integer; const data: RawByteString): RawByteString;
 var
-  s : RawByteString;
+  s: RawByteString;
 //  ps : PAnsiChar;
   ps : Pointer;
   i : Integer;

@@ -36,15 +36,16 @@ type
       BaseID : Word;
     end; // TwpResult
 
-  TwpSearch=packed record
-    nick,first,last,email,city,state, keyword:string;
-    uin:TUID;
-    Token : RawByteString;
-    gender, lang:byte;
-    onlineOnly:boolean;
-    country:word;
-    wInterest : Word;
-    age:integer;
+  TwpSearch = packed record
+    nick, first, last, email,
+     city, state, keyword: string;
+    uin: TUID;
+    Token: RawByteString;
+    gender, lang: byte;
+    onlineOnly: boolean;
+    country: word;
+    wInterest: Word;
+    age: integer;
    end; // TwpSearch
 
   TOSSIItem = class(TObject)
@@ -925,7 +926,6 @@ uses
    AnsiStrings, AnsiClasses,
  {$ENDIF UNICODE}
    RnQZip, OverbyteIcsZLibHigh,
-   NetEncoding, cHash, JSON,
    OverbyteIcsMD5, OverbyteIcsWSocket,
 //   ElAES,
    aes_type, aes_ecb,
@@ -937,7 +937,7 @@ uses
    RnQ_Avatars,
  {$ENDIF}
    globalLib, UtilLib,
-   RQ_ICQ, ICQClients, ICQ.Stickers,
+   RQ_ICQ, ICQClients, ICQ.Stickers, ICQ.RESTapi,
    themesLib,
 
    RnQStrings, outboxLib, icq_fr,
@@ -948,31 +948,31 @@ const
 var
   lastSendedFlap : TDateTime;
 
-procedure splitCL(proc:TsplitProc; cl:TRnQCList);
+procedure splitCL(proc: TsplitProc; cl: TRnQCList);
 var
-  i,cnt:integer;
+  i, cnt: integer;
   s: RawByteString;
 begin
-if TList(cl).count=0 then
-  begin
-  proc('');
-  exit;
-  end;
-i:=0;
-while (i< TList(cl).count) do
-  begin
-  if i > 0 then
-    sleep(1000);
-  cnt:=600;
-  s:='';
-  while (i< TList(cl).count) and (cnt>0) do
+  if TList(cl).count=0 then
     begin
-    s:=s + TICQContact(cl.getAt(i)).buin;
-    inc(i);
-    dec(cnt);
+      proc('');
+      exit;
     end;
-  proc(s);
-  end;
+  i := 0;
+  while (i< TList(cl).count) do
+    begin
+      if i > 0 then
+        sleep(1000);
+      cnt := 600;
+      s := '';
+      while (i< TList(cl).count) and (cnt>0) do
+        begin
+          s := s + TICQContact(cl.getAt(i)).buin;
+          inc(i);
+          dec(cnt);
+        end;
+      proc(s);
+    end;
 end;
 
 procedure splitSSICL(proc: TsplitProc; cl: TRnQCList; OnlyLocal: Boolean);
@@ -982,8 +982,8 @@ var
 begin
   if TList(cl).count=0 then
     begin
-    proc('');
-    exit;
+      proc('');
+      exit;
     end;
   i := 0;
   while (i< TList(cl).count) do
@@ -1013,22 +1013,22 @@ var
 begin
   if TList(cl).count=0 then
     begin
-    proc('');
-    exit;
+      proc('');
+      exit;
     end;
-  i:=0;
+  i := 0;
   while (i< TList(cl).count) do
    begin
     if i > 0 then
       sleep(1000);
-    cnt:=10;
-    s:='';
+    cnt := 10;
+    s := '';
     while (i< TList(cl).count) and (cnt>0) do
       begin
        with TICQContact(cl.getAt(i)) do
        if CntIsLocal or (not OnlyLocal and not Authorized) then
         begin
-         s:=s + buin;
+         s := s + buin;
          dec(cnt);
         end;
        inc(i);
@@ -1051,17 +1051,17 @@ end;
 procedure SplitCL2SSI_Items(proc: TsplitSSIProc; cl: TRnQCList;
                      iExtData: RawByteString; gID, iID, Tp: word);
 var
-  i, len1, LenAll:integer;
-  k : Integer;
-  arr : array of TOSSIItem;
+  i, len1, LenAll: integer;
+  k: Integer;
+  arr: array of TOSSIItem;
 //  s:string;
 begin
   if TList(cl).count=0 then
     begin
-    proc([]);
-    exit;
+      proc([]);
+      exit;
     end;
-  i:=0;
+  i := 0;
   while (i< TList(cl).count) do
    begin
     if i > 0 then
@@ -1098,18 +1098,18 @@ function code2status(code: dword): TICQstatus;
 begin
   code := code and ($FFFF-8-flag_invisible);
   case code of
-    $10: begin result:=SC_OCCUPIED; exit end;
-    4: begin result:=SC_NA; exit end;
-    2: begin result:=SC_DND; exit end;
+    $10: begin result := SC_OCCUPIED; exit end;
+    4: begin result := SC_NA; exit end;
+    2: begin result := SC_DND; exit end;
    end;
   for result:=low(result) to high(result) do
-    if status2code[result] = code then
+    if status2code[result]=code then
       exit;
-  result:= SC_ONLINE;
+  result := SC_ONLINE;
 end; // code2status
 
-function sameMethods(a,b: TicqNotify): boolean;
-begin result := double((@a)^) = double((@b)^) end;
+function sameMethods(a, b: TicqNotify): boolean;
+begin result := double((@a)^)=double((@b)^) end;
 
 function encrypted(const s: RawByteString): RawByteString;
 const
@@ -1121,7 +1121,7 @@ begin
   setLength(result, i);
   while i > 0 do
    begin
-     byte(result[i]):=byte(s[i]) xor cryptData[i];
+     byte(result[i]) := byte(s[i]) xor cryptData[i];
      dec(i);
    end;
 end; // encrypted
@@ -1149,16 +1149,16 @@ var
   i: integer;
   ss: AnsiString;
 begin
-result:='';
-for i:=1 to length(s) do
-  begin
-  case s[i] of
-    ' ':ss:='%20';
-    'A'..'Z','a'..'z','0'..'9':ss:=s[i];
-    else ss:='%'+IntToHexA(Byte(s[i]),2);
+  result := '';
+  for i:=1 to length(s) do
+    begin
+    case s[i] of
+      ' ': ss := '%20';
+      'A'..'Z','a'..'z','0'..'9': ss := s[i];
+      else ss := '%'+IntToHexA(Byte(s[i]),2);
+      end;
+    result := result+ss;
     end;
-  result:=result+ss;
-  end;
 end; // str2url
 
 function str2html(const s: AnsiString): AnsiString;
@@ -1166,24 +1166,24 @@ var
   i: integer;
   ss: AnsiString;
 begin
-result:='';
-for i:=1 to length(s) do
+  result := '';
+  for i:=1 to length(s) do
   begin
-  case s[i] of
-{    'à':ss:='&egrave;';
-    'è':ss:='&egrave;';
-    'é':ss:='&eacute;';
-    'ì':ss:='&igrave;';
-    'ò':ss:='&ograve;';
-    'ù':ss:='&ugrave;';
-    'É':ss:='&Eacute;';}
-    '<': ss := '&lt;';
-    '>': ss := '&gt;';
-    '"': ss := '&quot;';
-    '&': ss := '&amp;';
-    else ss:=s[i];
-    end;
-  result:=result+ss;
+    case s[i] of
+  {    'à':ss:='&egrave;';
+      'è':ss:='&egrave;';
+      'é':ss:='&eacute;';
+      'ì':ss:='&igrave;';
+      'ò':ss:='&ograve;';
+      'ù':ss:='&ugrave;';
+      'É':ss:='&Eacute;';}
+      '<': ss := '&lt;';
+      '>': ss := '&gt;';
+      '"': ss := '&quot;';
+      '&': ss := '&amp;';
+      else ss:=s[i];
+      end;
+    result:=result+ss;
   end;
 end; // str2html
 
@@ -1212,9 +1212,9 @@ begin
   ]);
 end; // str2html
 
-function xml_sms(me: TRnQcontact; const dest, msg: AnsiString; ack:boolean): AnsiString;
+function xml_sms(me: TRnQcontact; const dest, msg: AnsiString; ack: boolean): AnsiString;
 const
-  yesno:array [boolean] of AnsiString=('No','Yes');
+  yesno: array [boolean] of AnsiString=('No','Yes');
 begin
 result:=
  '<icq_sms_message>'+
@@ -1249,21 +1249,21 @@ begin
   UseLocProxy := True;
   myspeed:=100;}
   Inherited;
-  sock.OnDataAvailable:=received;
-  sock.OnSessionClosed:=disconnected;
+  sock.OnDataAvailable := received;
+  sock.OnSessionClosed := disconnected;
 end; // create
 
 procedure TICQDirect.listen;
 var
-  i : Integer;
-  s : Boolean;
+  i: Integer;
+  s: Boolean;
 begin
-  sock.OnSessionAvailable:=connected;
+  sock.OnSessionAvailable := connected;
   imserver := TRUE;
   Directed := False;
 //  mode := dm_init;
-  sock.addr:='0.0.0.0';
-  sock.Port:= '0';
+  sock.addr := '0.0.0.0';
+  sock.Port := '0';
   s := false;
   for I := 0 to portsListen.PortsCount do
    try
@@ -1277,7 +1277,7 @@ begin
   if not s then
    begin
 //     sock.getFreePort;
-     sock.Port:= '0';
+     sock.Port := '0';
      sock.listen;
    end;
   logMsg(0, getTranslation('Listening port: %s', [sock.Port]));
@@ -1287,20 +1287,20 @@ begin
 
 end; // listen
 
-function TICQdirect.sendProxyCMD(cmd, flags :word; const data: RawByteString):boolean;
+function TICQdirect.sendProxyCMD(cmd, flags: word; const data: RawByteString):boolean;
 var
   s: RawByteString;
 begin
   result:=FALSE;
   if sock.State <> wsConnected then exit;
-  s:=word_BEasStr((Length(Data) + 10)) // Len
+  s := word_BEasStr((Length(Data) + 10)) // Len
       +#$04#$4A // PackVer
       +word_BEasStr(cmd) // CmdType
       +z          // Unknown
       +word_BEasStr(flags) // Flags
       +data;
   sendPkt(s);
-  s:='';
+  s := '';
   result:=TRUE;
 end; // sendFLAP
 
@@ -10040,130 +10040,10 @@ begin
 end;
 
 procedure TicqSession.loginAndCreateSession();
-var
-  query, hash, baseUrl, unixTime, sToken: String;
-  sSecret, hashStr, respStr: RawByteString;
-  digest: T256BitDigest;
-  fs: TMemoryStream;
-  session: RawByteString;
-  JSONObject: TJSONObject;
-  i: Integer;
 begin
   if (MyAccNum = '') or (fPwd = '') then
     Exit;
-
-  query := 'https://wlogin.icq.com/siteim/icqbar/php/proxy_jsonp.php?sk=0.36625886284782827&username=' + String(MyAccNum) + '&password=' + fPwd + '&time=' + IntToStr(DateTimeToUnix(Now, False)) + '&remember=1';
-  loggaICQPkt('[GET] Login and create session', WL_rcvd_text, query);
-  fs := TMemoryStream.Create;
-  LoadFromUrl(query, fs);
-  SetLength(session, fs.Size);
-  fs.ReadBuffer(session[1], fs.Size);
-  fs.Clear;
-
-  loggaICQPkt('[GET] Login and create session', WL_rcvd_text, session);
-
-  try
-    JSONObject := TJSONObject.ParseJSONValue(session) as TJSONObject;
-    if Assigned(JSONObject) then
-    if (JSONObject.GetValue('statusCode').Value = '200') or (JSONObject.GetValue('statusCode').Value = '304') then
-    begin
-      fSession.FetchURL := JSONObject.GetValue('fetchBaseURL').Value;
-      fSession.AimSid := JSONObject.GetValue('aimsid').Value;
-      fSession.DevId := JSONObject.GetValue('k').Value;
-      fSession.SecretEnc64 := JSONObject.GetValue('sessionKey').Value;
-      fSession.Token := JSONObject.GetValue('a').Value;
-      fSession.TokenTime := StrToInt(JSONObject.GetValue('ts').Value);
-      fSession.HostOffset := StrToInt(JSONObject.GetValue('tsDelta').Value);
-    end;
-
-    if (getPwdOnly = '') or ((fSession.Secret = '') and (fSession.SecretEnc64 = '')) or (fSession.Token = '') then
-    begin
-      OutputDebugString(PChar('Not enough data for REST auth'));
-      Exit;
-    end;
-
-    sToken := TNetEncoding.url.Encode(fSession.Token);
-    if fSession.SecretEnc64 = '' then
-    begin
-      digest := CalcHMAC_SHA256(StrToUTF8(getPwdOnly), StrToUTF8(fSession.Secret));
-      sSecret := Base64EncodeString(SHA256DigestToStrA(digest));
-    end else
-      sSecret := fSession.SecretEnc64;
-{
-    // Start session (auth is not working)
-    baseUrl := 'https://api.icq.net/aim/startSession';
-    unixTime := IntToStr(DateTimeToUnix(Now, False) - session.hostOffset);
-
-    query := 'a=' + sToken + '&f=json&k=' + session.devid + '&imf=plain&clientName=SiteIM&buildNumber=410&majorVersion=11&minorVersion=9999&pointVersion=0&clientVersion=5000' +
-    '&events=myInfo,presence,buddylist,typing,sentIM,dataIM,userAddedToBuddyList,service,webrtcMsg,mchat,hist,hiddenChat,diff,permitDeny' +
-    '&includePresenceFields=aimId,buddyIcon,bigBuddyIcon,displayId,friendly,offlineMsg,state,statusMsg,userType,phoneNumber,cellNumber,smsNumber,workNumber,otherNumber,capabilities,ssl,abPhoneNumber,moodIcon,lastName,abPhones,abContactName,lastseen,mute' +
-    '&assertCaps=0946134E4C7F11D18222444553540000' +
-    '&interestCaps=8eec67ce70d041009409a7c1602a5c84' +
-    '&invisible=false&language=en-us&mobile=0&rawMsg=0&deviceId=dev1&sessionTimeout=86400&inactiveView=offline&activeTimeout=30' +
-    '&ts=' + unixtime + '&view=online';
-
-    hash := 'POST&' + TNetEncoding.url.Encode(baseUrl) + '&' + TNetEncoding.url.Encode(query);
-    digest := CalcHMAC_SHA256(sSecret, StrToUTF8(hash));
-    hashStr := Base64EncodeString(SHA256DigestToStrA(digest));
-    query := query + '&sig_sha256=' + TNetEncoding.url.Encode(hashStr);
-
-    fn := 'C:\SpeedProgs\Inet\Chat\RnQ\Build\response.dat';
-    LoadFromURL(baseUrl, fn, 0, False, True, query, True);
-}
-    // REST token
-    baseUrl := 'https://rapi.icq.net/genToken';
-    unixTime := IntToStr(DateTimeToUnix(Now, False) - fSession.HostOffset);
-    query := 'a=' + sToken + '&k=' + fSession.DevId + '&ts=' + unixTime;
-
-    hash := 'POST&' + TNetEncoding.url.Encode(baseUrl) + '&' + TNetEncoding.url.Encode(query);
-    digest := CalcHMAC_SHA256(sSecret, StrToUTF8(hash));
-    hashStr := Base64EncodeString(SHA256DigestToStrA(digest));
-    query := query + '&sig_sha256=' + TNetEncoding.url.Encode(hashStr);
-    loggaICQPkt('[POST] REST auth token', WL_sent_text, baseUrl + '?' + query);
-
-    LoadFromURL(baseUrl, fs, 0, False, True, query, True);
-    fs.Seek(0, soBeginning);
-    SetLength(respStr, fs.Size);
-    fs.ReadBuffer(respStr[1], fs.Size);
-    fs.Clear;
-
-    JSONObject := TJSONObject.ParseJSONValue(respStr) as TJSONObject;
-    if Assigned(JSONObject) then
-    begin
-      fSession.RESTToken := (JSONObject.GetValue('results') as TJSONObject).GetValue('authToken').Value;
-      loggaICQPkt('[POST] REST auth token', WL_rcvd_text, respStr);
-    end else
-    begin
-      fSession.RESTToken := '';
-      loggaICQPkt('[POST] REST auth token', WL_rcvd_text, 'Failed to get auth token');
-      Exit;
-    end;
-
-    // REST client id
-    baseUrl := 'https://rapi.icq.net/';
-    unixTime := IntToStr(DateTimeToUnix(Now, False) - fSession.HostOffset);
-    query := '{"method": "addClient", "reqId": "1-' + unixTime + '", "authToken": "' + fSession.RESTToken + '", "params": ""}';
-    loggaICQPkt('[POST] REST client id', WL_sent_text, query);
-    LoadFromURL(baseUrl, fs, 0, False, True, query, True);
-
-    fs.Seek(0, soBeginning);
-    SetLength(respStr, fs.Size);
-    fs.ReadBuffer(respStr[1], fs.Size);
-    fs.Clear;
-
-    JSONObject := TJSONObject.ParseJSONValue(respStr) as TJSONObject;
-    if Assigned(JSONObject) then
-    begin
-      fSession.RESTClientId := (JSONObject.GetValue('results') as TJSONObject).GetValue('clientId').Value;
-      loggaICQPkt('[POST] REST client id', WL_rcvd_text, respStr);
-    end else
-    begin
-      fSession.RESTClientId := '';
-      loggaICQPkt('[POST] REST client id', WL_rcvd_text, 'Failed to get client id');
-    end;
-  finally
-    FreeAndNil(fs)
-  end;
+  ICQREST_loginAndCreateSession(MyAccNum, fPwd, fSession);
 end;
 
 

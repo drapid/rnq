@@ -2027,29 +2027,29 @@ end; // convertHistoriesDlg
 function addToRoster(c: TRnQContact; group: integer; const isLocal: Boolean = True): boolean;
 begin
   // Add SSI
-  result:=FALSE;
+  result := FALSE;
   if c=NIL then
     exit;
   if group=2000 then
-    group:=0;
-  c.group:=group;
-  saveGroupsDelayed:=TRUE;
+    group := 0;
+  c.group := group;
+  saveGroupsDelayed := TRUE;
   result := addToRoster(c, isLocal) or roasterLib.update(c);
 end; // addToRoster
 
 function addToNIL(c: TRnQContact; isBulk: Boolean = false): boolean;
 begin
-  result:=FALSE;
+  result := FALSE;
   c.fProto.removeContact(c);
   if not notInList.add(c) then
     exit;
   if not isBulk then
    begin
     roasterlib.update(c);
-    saveListsDelayed:=TRUE;
+    saveListsDelayed := TRUE;
    end;
   plugins.castEvList( PE_LIST_ADD, PL_NIL, c);
-  result:=TRUE;
+  result := TRUE;
 end; // addToNIL
 
 procedure NILifNIL(c: TRnQContact; isBulk: Boolean = false);

@@ -1072,15 +1072,15 @@ var
   first: Tnode;
 begin
 // create the new group
-result := groups.add;
-groups.a[groups.idxOf(result)].name := name;
+  result := groups.add;
+  groups.a[groups.idxOf(result)].name := name;
 // add it to divisors, and focus on the first one
-first := NIL;
-for d:=high(d) downto low(d) do
-  if (d in divsWithGroups) and assigned(divs[d]) then
-    first := insertNode(result, d);
-focus(first);
-saveGroupsDelayed := TRUE;
+  first := NIL;
+  for d:=high(d) downto low(d) do
+    if (d in divsWithGroups) and assigned(divs[d]) then
+      first := insertNode(result, d);
+  focus(first);
+  saveGroupsDelayed := TRUE;
 end; // addGroup
 
 function removeGroup(id: integer): boolean;

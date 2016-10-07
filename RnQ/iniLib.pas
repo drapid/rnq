@@ -1313,10 +1313,10 @@ procedure beforeWindowsCreation;
 
   procedure parseCmdLinePar;
    var
-    i: integer;
+    i, m: integer;
     s: string;
-    UIN : TUID;
-    prCl : TRnQProtoClass;
+    UIN: TUID;
+    prCl: TRnQProtoClass;
   begin
     myPath:=ExtractFilePath(paramStr(0));
     cmdlinepar.extraini := '';
@@ -1386,7 +1386,10 @@ procedure beforeWindowsCreation;
            cmdLinePar.mainPath := includeTrailingPathDelimiter(cmdLinePar.mainPath);
            if not DirectoryExists(cmdLinePar.mainPath) then
              begin
-              if messageDlg(getTranslation('Directory "%s" does not exist. Do you want to create it?', [cmdLinePar.mainPath]), mtConfirmation, [mbYes,mbNo],0) = mrYes then
+              m := messageDlg(getTranslation('Directory "%s" does not exist. Do you want to create it?', [cmdLinePar.mainPath]), mtConfirmation, [mbYes, mbIgnore, mbAbort],0);
+              if m = mrAbort then
+                Halt;
+              if m = mrYes then
                 CreateDir(cmdLinePar.mainPath)
                else
                 cmdLinePar.mainPath := '';
@@ -1400,7 +1403,10 @@ procedure beforeWindowsCreation;
            cmdLinePar.userPath := includeTrailingPathDelimiter(cmdLinePar.userPath);
            if not DirectoryExists(cmdLinePar.userPath) then
              begin
-              if messageDlg(getTranslation('Directory "%s" does not exist. Do you want to create it?', [cmdLinePar.userPath]), mtConfirmation, [mbYes,mbNo],0) = mrYes then
+              m := messageDlg(getTranslation('Directory "%s" does not exist. Do you want to create it?', [cmdLinePar.userPath]), mtConfirmation, [mbYes, mbIgnore, mbAbort],0);
+              if m = mrAbort then
+                Halt;
+              if m = mrYes then
                 CreateDir(cmdLinePar.userPath)
                else
                 cmdLinePar.userPath := '';

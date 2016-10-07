@@ -1259,7 +1259,7 @@ begin
             bmp.fFormat := ff;
               begin
                 if not Assigned(bmp.fBmp) then
-                 bmp.fBmp :=TBitmap.Create;
+                 bmp.fBmp := TBitmap.Create;
     //            FreeAndNil(fBmp32);
                 bmp.fBmp.Height:= IcoStream[Idx].bHeight;
                 bmp.fBmp.Width := IcoStream[Idx].bWidth;
@@ -3070,14 +3070,14 @@ begin
 //            [foCompact, foIncludeAll, foIncludeExtension], nil);
 // !!!!!!!!!!!!!!!!!         ADDD       WBMP, GIF         !!!!!!!!!!!!!
 end;
-function isSupportedPicFile(fn:string):boolean;
+function isSupportedPicFile(fn: string): boolean;
 //var
 //  Extensions: TStringList;
 //  i : Integer;
 begin
 //  result:=true;
-  result:=false;
-  fn:=lowercase(SysUtils.ExtractFileExt(fn));
+  result := false;
+  fn := lowercase(SysUtils.ExtractFileExt(fn));
 //  if fn <> '' then
   if Length(fn) > 3 then // dot + extension
   begin
@@ -3105,7 +3105,7 @@ begin
    end;
   end}
   else
-     result:=false;
+     result := false;
   end;
 end; // isSupportedPicFile
 
@@ -3113,7 +3113,7 @@ end; // isSupportedPicFile
 function DetectFileFormatStream(str: TStream): TPAFormat;
 var
 //  s : String;
-  s : array[0..3] of AnsiChar;
+  s: array[0..3] of AnsiChar;
 begin
   str.Seek(0, soFromBeginning);
 //  str.Position := 0;
@@ -3148,9 +3148,9 @@ begin
     Result:= PA_FORMAT_UNK;
 end;
 
-procedure  StretchPic(var bmp:TBitmap; maxH, maxW : Integer);
+procedure  StretchPic(var bmp: TBitmap; maxH, maxW: Integer);
 var
-  bmp1 : TBitmap;
+  bmp1: TBitmap;
 begin
   if (bmp.Width > maxW )
    or (bmp.Height > maxH) then
@@ -3234,7 +3234,7 @@ begin
 //   SetStretchBltMode(DC, HALFTONE);
   bmp.Draw(DC, DestR, SrcR);
 end;
-procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; DestR : TGPRect; Bound: Boolean = True); OverLoad;
+procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR: TGPRect; Bound: Boolean = True); OverLoad;
 var
   Pt: TPoint;
   r2: TGPRect;

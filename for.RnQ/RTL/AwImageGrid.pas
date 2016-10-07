@@ -1704,6 +1704,7 @@ begin
           DrawRbmp(Canvas.Handle, TempThumb, R.Left + Offset.X, R.Top + Offset.Y);
           TempThumb.Free;
           *)
+          SetStretchBltMode(Canvas.Handle, HALFTONE);
           DrawRbmp(Canvas.Handle, Thumb, MakeRect(R));
         end;
       end

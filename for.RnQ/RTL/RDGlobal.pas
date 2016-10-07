@@ -141,9 +141,9 @@ const
   CRLFCRLF  = AnsiString(CRLF+CRLF);
 //  CRLFCRLF : AnsiString =AnsiString(CRLF+CRLF);
 //  CRLFCRLF : AnsiString = AnsiString(#13#10#13#10);
-  NL=#10;
+  NL = #10;
   HexChars = ['A'..'F', 'a'..'f', '0'..'9'];
-  yesno:array [boolean] of AnsiString=('No','Yes');
+  yesno: array [boolean] of AnsiString=('No','Yes');
   Def_DateTimeFormat = 'DD.MM.YYYY HH:NN:SS';
   Def_DateFormat     = 'DD.MM.YYYY';
 
@@ -158,7 +158,7 @@ const
 
 var
 //  myPath           : String;
-  ShellVersion : Cardinal;
+  ShellVersion: Cardinal;
 
 const
  // Windows resourses!!!!!!!!
@@ -185,7 +185,7 @@ Begin
    msg.Msg := 0;
 end;
 
-  function MakePoint(p2 : TPoint): TGPPoint;
+  function MakePoint(p2: TPoint): TGPPoint;
   begin
     Result.X := p2.X;
     Result.Y := p2.Y;

@@ -580,23 +580,23 @@ var
     pwdKey  : integer;
     pwd     : String;
    end;
-  AccPass : String;
-  autoaway : record
-    time :cardinal;
+  AccPass: String;
+  autoaway: record
+    time: cardinal;
 //  {$IFDEF WIN98_SUP}
 //    lastMousePos :Tpoint;
 //    lastKeybPos :integer;
 //  {$ENDIF WIN98_SUP}
 
     away, na, ss, boss, autoexit,
-    clearXSts, setVol : boolean;
-    awayTime, naTime : Integer;
-    msg :string;
-    triggered:(TR_none, TR_away, TR_na);
-    bakstatus : byte;
-    bakxstatus : byte;
-    bakmsg :string;
-     vol : Integer;
+    clearXSts, setVol: boolean;
+    awayTime, naTime: Integer;
+    msg: string;
+    triggered: (TR_none, TR_away, TR_na);
+    bakstatus: byte;
+    bakxstatus: byte;
+    bakmsg: string;
+     vol: Integer;
    end;
   BossMode: Record
     isBossKeyOn,

@@ -109,6 +109,7 @@ uses
   viewinfoDlg in 'ICQ\viewinfoDlg.pas' {viewinfoFrm},
   viewSSI in 'ICQ\viewSSI.pas' {SSIForm},
   wpDlg in 'ICQ\wpDlg.pas' {wpFrm},
+  ICQ.RESTapi in 'ICQ\ICQ.RESTapi.pas',
  {$ENDIF PROTOCOL_ICQ}
   MenuEmoji in 'MenuEmoji.pas' {FEmoji},
   ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm};

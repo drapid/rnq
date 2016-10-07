@@ -2561,19 +2561,19 @@ procedure TRnQmain.OnTimer(Sender: TObject);
 var
   i: integer;
   vi1: TRnQViewInfoForm;
-  Fcs : THandle;
+  Fcs: THandle;
 //  cnt : Tcontact;
-  cnt1 : TRnQContact;
+  cnt1: TRnQContact;
   aNewDawn: boolean;   // TRUE once after each midnight
 //  vLastInput : DWord;
   isSSRuning: Boolean;
   b: boolean;
   AwayXsts: TXStatStr;
 begin
-  aNewDawn:=FALSE;
+  aNewDawn := FALSE;
 
   if not running then
-   Exit;
+    Exit;
 
 
 // things to do once per second
@@ -2620,8 +2620,8 @@ begin
 // keyboard search timeout
 if now-lastSearchTime > 1.2*DTseconds then
   begin
-  searching:='';
-  roasterLib.expandedByTempFocus:=NIL;
+  searching := '';
+  roasterLib.expandedByTempFocus := NIL;
   end;
 
 // keyboard search timeout
@@ -2650,17 +2650,17 @@ if bringForeground <> 0 then
     begin
     // update transparency on mainfrm (de)selection
       applyTransparency;
-      bringForeground:=0;
+      bringForeground := 0;
     end;
 //trackingMouse;
-longdelayCount:=succ(longdelayCount) mod 50;
-reconnectdelayCount:=succ(reconnectdelayCount) mod boundInt(toReconnectTime, 50, 600);
+longdelayCount := succ(longdelayCount) mod 50;
+reconnectdelayCount := succ(reconnectdelayCount) mod boundInt(toReconnectTime, 50, 600);
 if longdelayCount = 1 then
   begin
-  aNewDawn:= trunc(now)-trunc(lastOnTimer) = 1;
-  lastOnTimer:=now;
+  aNewDawn := trunc(now)-trunc(lastOnTimer) = 1;
+  lastOnTimer := now;
   // windows colors could have been changed, so lets recalculate "selectedColor"
-  selectedColor:=blend(clHighlight, clBtnFace, 0.4);
+  selectedColor := blend(clHighlight, clBtnFace, 0.4);
   // trayicon could disappear on crash, lets replace it
   if assigned(statusIcon) and assigned(statusIcon.trayIcon) then
     statusIcon.trayIcon.update;
@@ -2669,7 +2669,7 @@ if longdelayCount = 1 then
      and not checkupdate.checking
      and not startingLock then
     begin
-      checkupdate.autochecking:=TRUE;
+      checkupdate.autochecking := TRUE;
       check4update;
     end;
   end;
@@ -2752,7 +2752,7 @@ if usertime mod 20=0 then
       then
      inc(inactiveTime)
     else
-     inactiveTime:=0;
+     inactiveTime := 0;
   end;
 { autohide triggers if
 { - it is enabled
@@ -2770,7 +2770,7 @@ and formVisible(self) and not into(mousePos, self.boundsrect)
 TipsProced;
 
 // decay events
-i:=0;
+i := 0;
 with eventQ do
 while i < count do
  try
@@ -2792,7 +2792,7 @@ while i < count do
 blinkCount:=succ(blinkCount) mod blinkSpeed;
 if blinkCount = 0 then
   begin
-  blinking:=not blinking;
+  blinking := not blinking;
   if Assigned(statusIcon) then
    begin
     if statusIcon.trayIcon.hidden and not BossMode.isBossKeyOn then
@@ -2803,7 +2803,7 @@ if blinkCount = 0 then
     statusIcon.update;
    end;
   // roster blinking
-  i:=0;
+  i := 0;
   with eventQ do
     while i < count do
       begin
@@ -2841,15 +2841,15 @@ if saveDBtimer > 0 then
   if saveDBtimer=0 then
 //    saveDB;
      begin
-      saveListsDelayed:=FALSE;
+      saveListsDelayed := FALSE;
 //      saveCfgDelayed := false;
-      saveInboxDelayed:=FALSE;
-      saveOutboxDelayed:=FALSE;
-      saveGroupsDelayed:=FALSE;
+      saveInboxDelayed := FALSE;
+      saveOutboxDelayed := FALSE;
+      saveGroupsDelayed := FALSE;
       saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies);
      end;
-  if saveDBtimer>300 then
-    saveDBtimer:=300;
+  if saveDBtimer > 3000 then
+    saveDBtimer := 3000;
   end;
 
 if showRosterTimer > 0 then
@@ -2887,8 +2887,8 @@ if longdelayCount = 0 then
       fixWindowPos(chatFrm);
       end;
     // runs along the whole roster
-    b:=FALSE;
-    i:=0;
+    b := FALSE;
+    i := 0;
     with Account.AccProto, readList(LT_ROSTER) do
       while i<count do
         begin
@@ -2902,13 +2902,14 @@ if longdelayCount = 0 then
  {$ENDIF UseNotSSI}
              CntIsLocal or(SSIID > 0)  then
             begin
-             b:=TRUE;
-             toQuery:=FALSE;
+             b := TRUE;
+             toQuery := FALSE;
              inc(saveDBtimer, saveDBdelay);
              retrieveQ.add(getAt(i));
             end;
         inc(i);
         end;
+   saveDBtimer := min(saveDBtimer, 600);
    if not fantomWork then
    begin
     if b then
@@ -2930,16 +2931,29 @@ if longdelayCount = 0 then
       saveGroupsDelayed:=FALSE;
       groups.save;
       end;}
+    if saveInboxDelayed or
+       saveOutboxDelayed or
+       saveListsDelayed or
+       saveGroupsDelayed or
+       saveCfgDelayed then
+     // Increase saveDBtimer to maximum. If ScreenSaver is running than it's 30 min
+     begin
+      SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, @isSSRuning, 0);
+      if (isSSRuning or isLocked) or not isMoved(4*(10*60)) or BossMode.isBossKeyOn then
+        saveDBtimer := max(saveDBtimer, 1800)
+       else
+        saveDBtimer := max(saveDBtimer, 500);
+     end;
+
     if saveCfgDelayed then
      begin
       UpdateProperties;
-      saveDBtimer := 500;
-      saveListsDelayed := FALSE;
-      saveCfgDelayed   := False;
+      saveListsDelayed  := FALSE;
+      saveCfgDelayed    := False;
 //      savelists(MainProto);
-      saveInboxDelayed := FALSE;
-      saveOutboxDelayed:= FALSE;
-      saveGroupsDelayed:= FALSE;
+      saveInboxDelayed  := FALSE;
+      saveOutboxDelayed := FALSE;
+      saveGroupsDelayed := FALSE;
       saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies);
      end;
     if saveInboxDelayed or
@@ -2949,13 +2963,12 @@ if longdelayCount = 0 then
        saveCfgDelayed
     then
      begin
-      saveDBtimer := 500;
-      saveListsDelayed:=FALSE;
+      saveListsDelayed := FALSE;
       saveCfgDelayed := false;
 //      savelists(MainProto);
-      saveInboxDelayed:=FALSE;
-      saveOutboxDelayed:=FALSE;
-      saveGroupsDelayed:=FALSE;
+      saveInboxDelayed := FALSE;
+      saveOutboxDelayed := FALSE;
+      saveGroupsDelayed := FALSE;
       saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies);
      end;
    end;
@@ -3011,7 +3024,7 @@ if delayCount = 0 then
       begin
        Account.AccProto.sendkeepalive;
 //      avt_icq.sendKeepalive;
-      keepalive.timer:=keepalive.freq*2;
+      keepalive.timer := keepalive.freq*2;
       end;
     end;
    end;
@@ -3032,7 +3045,7 @@ if delayCount = 0 then
        inc(autoaway.time, 5);    // we are in delay-block then 0.5s
        if isMoved and not(autoaway.ss and (isSSRuning or isLocked))and not(autoaway.boss and BossMode.isBossKeyOn ) then
         begin
-         autoaway.time:=0;
+         autoaway.time := 0;
          if (autoaway.autoexit) and (autoaway.triggered<>TR_NONE) then
           exitFromAutoaway();
         end
@@ -3304,20 +3317,20 @@ end;
 procedure TRnQmain.rosterKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-clickedContact:=roasterlib.focusedContact;
-if shift=[] then
-  case key of
-    VK_HOME, VK_END, VK_PRIOR, VK_NEXT,
-    VK_UP, VK_DOWN, VK_RIGHT, VK_LEFT: searching:='';
-    VK_DELETE: delete1click(self);
-    VK_F2: roasterLib.edit(roasterlib.focused);
-    VK_F3: chatFrm.flash();
-    VK_APPS: roasterLib.popup();
-    end;
-if shift=[ssShift] then
-  case key of
-    VK_F10: roasterLib.popup();
-    end;
+  clickedContact := roasterlib.focusedContact;
+  if shift=[] then
+    case key of
+      VK_HOME, VK_END, VK_PRIOR, VK_NEXT,
+      VK_UP, VK_DOWN, VK_RIGHT, VK_LEFT: searching := '';
+      VK_DELETE: delete1click(self);
+      VK_F2: roasterLib.edit(roasterlib.focused);
+      VK_F3: chatFrm.flash();
+      VK_APPS: roasterLib.popup();
+      end;
+  if shift=[ssShift] then
+    case key of
+      VK_F10: roasterLib.popup();
+      end;
 end;
 
 procedure TRnQmain.roasterStopEditing(sender:Tobject);
@@ -3330,13 +3343,13 @@ begin
 case key of
   #27:
     begin
-     key:=#0;
+     key := #0;
      inplace.edit.hide;
      roster.setfocus;
     end;
   #13:
     begin
-    key:=#0;
+    key := #0;
     with inplace do
       case what of
         NODE_GROUP:
@@ -3345,22 +3358,22 @@ case key of
             begin
              with groups.a[groups.idxOf(groupId)] do
               begin
-               name:=edit.text;
+               name := edit.text;
                ServerUpdate;
               end;
-             saveGroupsDelayed:=TRUE;
+             saveGroupsDelayed := TRUE;
             end;
         NODE_CONTACT:
           begin
-          if edit.text <> contact.displayed then
-           begin
-            contact.display:=edit.text;
-           end;
-//                roasterLib.updateHiddenNodes;
-//                chatFrm.userChanged(contact);
-                redraw(contact);
-          dbUpdateDelayed:=TRUE;
-          updateViewInfo(contact);
+            if edit.text <> contact.displayed then
+             begin
+              contact.display := edit.text;
+             end;
+  //                roasterLib.updateHiddenNodes;
+  //                chatFrm.userChanged(contact);
+                  redraw(contact);
+            dbUpdateDelayed := TRUE;
+            updateViewInfo(contact);
           end;
         end;
     roasterLib.sort(inplace.node);
@@ -3408,61 +3421,68 @@ end;
 
 procedure TRnQmain.rosterCollapsed(Sender: TBaseVirtualTree; Node: PVirtualNode);
 var
-  n:Tnode;
+  n: Tnode;
+  ex: Boolean;
 begin
   if roasterLib.building then
     exit;
-  autosizeDelayed:=TRUE;
-  n:=getNode(node);
+  autosizeDelayed := TRUE;
+  n := getNode(node);
   if n.kind = NODE_GROUP then
-    groups.a[groups.idxOf(n.groupId)].expanded[n.divisor]:=vsExpanded in node.states;
-  saveGroupsDelayed:=TRUE;
+    begin
+      ex := groups.a[groups.idxOf(n.groupId)].expanded[n.divisor];
+      if ex <> (vsExpanded in node.states) then
+        begin
+          groups.a[groups.idxOf(n.groupId)].expanded[n.divisor] := vsExpanded in node.states;
+          saveGroupsDelayed := TRUE;
+        end;
+    end;
 end;
 
 procedure TRnQmain.rosterCollapsing(Sender: TBaseVirtualTree;
   Node: PVirtualNode; var Allowed: Boolean);
 var
-  n:Tnode;
+  n: Tnode;
 begin
-  n:=getNode(node);
+  n := getNode(node);
   if not assigned(n) then
     exit;
-  allowed:= n.kind<>NODE_DIV;
+  allowed := n.kind<>NODE_DIV;
 end;
 
 procedure TRnQmain.rosterDragOver(Sender: TBaseVirtualTree;
   Source: TObject; Shift: TShiftState; State: TDragState; Pt: TPoint;
   Mode: TDropMode; var Effect: Integer; var Accept: Boolean);
 var
-  dest, destGrp,destDiv, clickedGrp,clickedDiv:Tnode;
+  dest, destGrp,destDiv, clickedGrp, clickedDiv: Tnode;
 begin
-  accept:=FALSE;
+  accept := FALSE;
   if not Sender.Equals(Source) then
     Exit;
-  dest:=roasterLib.nodeAt(pt.x,pt.y);
+  dest := roasterLib.nodeAt(pt.x,pt.y);
   if dest=NIL then
     exit;
   case dest.kind of
    NODE_CONTACT:
     begin
-    destGrp:=dest.Parent;
+    destGrp := dest.Parent;
     if destGrp.kind = NODE_GROUP then  // it's not sure that contact is under a group
-      destDiv:=destGrp.parent
+      destDiv := destGrp.parent
     else
       begin
-      destDiv:=destGrp;
-      destGrp:=NIL;
+      destDiv := destGrp;
+      destGrp := NIL;
       end;
     end;
    NODE_GROUP:
     begin
-      destGrp:=dest;
-      destDiv:=destGrp.parent;
+      destGrp := dest;
+      destDiv := destGrp.parent;
     end;
    NODE_DIV:
     begin
-      destGrp:=NIL;
-      destDiv:=dest;
+      destGrp := NIL;
+      destDiv := dest;
     end;
    else
     begin   // should never reach this
@@ -3472,14 +3492,14 @@ begin
   end;
 if clickedContact <> NIL then
 begin
-  clickedGrp:=Tnode(TCE(clickedContact.data^).node).parent;
+  clickedGrp := Tnode(TCE(clickedContact.data^).node).parent;
   if clickedGrp.kind = NODE_DIV then
     begin
-    clickedDiv:=clickedGrp;
-    clickedGrp:=NIL;
+    clickedDiv := clickedGrp;
+    clickedGrp := NIL;
     end
   else
-    clickedDiv:=clickedGrp.parent;
+    clickedDiv := clickedGrp.parent;
   Accept := (clickedDiv=destDiv) and (clickedContact<>NIL)
             and (clickedGrp<>destGrp);
   if Accept then
@@ -3515,57 +3535,57 @@ procedure TRnQmain.rosterDragDrop(Sender: TBaseVirtualTree;
   Source: TObject; DataObject: IDataObject; Formats: TFormatArray;
   Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
 var
-  grpOrDiv,n:Tnode;
-  o:integer;
+  grpOrDiv,n: Tnode;
+  o: integer;
 begin
   if not Sender.Equals(Source) then
     Exit;
 
-roasterLib.dragging:=FALSE;
-grpOrDiv:=roasterLib.nodeAt(pt.x,pt.y);
-while grpOrDiv.kind=NODE_CONTACT do
-  grpOrDiv:=grpOrDiv.Parent;
-if clickedContact<>NIL then
-  setNewGroupFor(clickedContact, RDUtils.ifThen(grpOrDiv.kind=NODE_GROUP, grpOrDiv.groupId));
-if clickedGroup>0 then
+  roasterLib.dragging := FALSE;
+  grpOrDiv := roasterLib.nodeAt(pt.x,pt.y);
+  while grpOrDiv.kind=NODE_CONTACT do
+    grpOrDiv := grpOrDiv.Parent;
+  if clickedContact<>NIL then
+    setNewGroupFor(clickedContact, RDUtils.ifThen(grpOrDiv.kind=NODE_GROUP, grpOrDiv.groupId));
+  if clickedGroup>0 then
   begin
-  n:=grpOrDiv;
-  if n.kind=NODE_DIV then // we want the group to be the first
-    begin
-    // n = first group on this div
-    n:=n.firstChild;
-      repeat
-      n:=n.next;
-      if n=NIL then
-        exit;
-      until n.kind=NODE_GROUP;
-    groups.get(clickedGroup).order:=n.order-1
-    end
-  else
-    begin
-    // is this the last group?
-    repeat
-      n:=n.next
-    until (n=NIL) or (n.kind=NODE_GROUP);
-    if n=NIL then
-      // we want the group to be the last
-      groups.get(clickedGroup).order:=grpOrDiv.order+1
-     else
+    n := grpOrDiv;
+    if n.kind=NODE_DIV then // we want the group to be the first
       begin
-        n:=grpOrDiv;
-        o:=n.order-1;
-        groups.get(clickedGroup).order:=o;
+        // n = first group on this div
+        n := n.firstChild;
         repeat
-        if n.groupID<>clickedGroup then
-          begin
-          dec(o);
-          groups.get(n.groupId).order:=o;
-          end;
-        n:=n.prev;
-        until (n=NIL) or (n.kind<>NODE_GROUP);
+          n := n.next;
+          if n=NIL then
+            exit;
+        until n.kind=NODE_GROUP;
+        groups.get(clickedGroup).order := n.order-1
+      end
+    else
+      begin
+      // is this the last group?
+      repeat
+        n := n.next
+      until (n=NIL) or (n.kind=NODE_GROUP);
+      if n=NIL then
+        // we want the group to be the last
+        groups.get(clickedGroup).order := grpOrDiv.order+1
+       else
+        begin
+          n := grpOrDiv;
+          o := n.order-1;
+          groups.get(clickedGroup).order := o;
+          repeat
+          if n.groupID<>clickedGroup then
+            begin
+            dec(o);
+            groups.get(n.groupId).order := o;
+            end;
+          n := n.prev;
+          until (n=NIL) or (n.kind<>NODE_GROUP);
+        end;
       end;
-    end;
-  rosterRebuildDelayed:=TRUE;
+    rosterRebuildDelayed := TRUE;
   end;
 end;
 
@@ -3629,17 +3649,17 @@ begin
 
   uninstallHook;
   installHook(self.Handle);
-width:=120;
+  width := 120;
 //contactsPnl:=sbar.panels[0];
 
-application.OnActivate:=appActivate;
-application.OnDeActivate:=appActivate;
+  application.OnActivate := appActivate;
+  application.OnDeActivate := appActivate;
    {Let Windows know we accept dropped files}
    DragAcceptFiles(self.Handle, True);
 //  Application.OnMessage := AppMessage;
-oldHandle := 0;
-mainfrmHandleUpdate;
- toggling := False;
+  oldHandle := 0;
+  mainfrmHandleUpdate;
+  toggling := False;
   Self.GlassFrame.SheetOfGlass := CheckWin32Version(6);
 
   if StyleServices.Enabled and DwmCompositionEnabled then
@@ -3662,13 +3682,13 @@ end;
 
 procedure TRnQmain.FormKeyPress(Sender: TObject; var Key: Char);
 begin
-if key=#27 then
-  toggleVisible;
+  if key=#27 then
+    toggleVisible;
 end;
 
 procedure TRnQmain.rosterKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  formKeyDown(sender,key,shift)
+  formKeyDown(sender, key, shift)
 end;
 
 procedure TRnQmain.menusendaddedyou1Click(Sender: TObject);
@@ -3690,7 +3710,7 @@ begin
   if warnVisibilityAutoMsgReq and not clickedContact.imVisibleTo then
     case messageDlg(getTranslation('This action might make you visible to the contact.\nDo you want to continue?'), mtConfirmation, [mbYes,mbYesToAll,mbNo], 0) of
       mrYes: ;
-      mrYesToAll: warnVisibilityAutoMsgReq:=FALSE;
+      mrYesToAll: warnVisibilityAutoMsgReq := FALSE;
       else
 //       mrNo:
        exit;
@@ -3709,7 +3729,7 @@ begin
   if warnVisibilityAutoMsgReq and not clickedContact.imVisibleTo then
     case messageDlg(getTranslation('This action might make you visible to the contact.\nDo you want to continue?'), mtConfirmation, [mbYes,mbYesToAll,mbNo], 0) of
       mrYes: ;
-      mrYesToAll: warnVisibilityAutoMsgReq:=FALSE;
+      mrYesToAll: warnVisibilityAutoMsgReq := FALSE;
       else
 //       mrNo:
        exit;
@@ -3723,8 +3743,8 @@ procedure TRnQmain.rosterMouseMove(Sender: TObject; Shift: TShiftState; X,
 begin
 if (ssLeft in shift) and ((clickedContact<>NIL) or (clickedGroup>0)) then
   begin
-  roasterLib.dragging:=TRUE;
-  roster.BeginDrag(FALSE);
+    roasterLib.dragging := TRUE;
+    roster.BeginDrag(FALSE);
   end;
 end;
 
@@ -3780,22 +3800,22 @@ end;
 
 procedure TRnQmain.pwdBoxKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
-  i:integer;
-  s,sub:string;
+  i: integer;
+  s,sub: string;
 begin
 if key=VK_RETURN then
   begin
-  sub:='';
-  if shift=[SSctrl] then sub:= CRLF;
-  if shift=[SSshift] then sub:=#13;
-  if shift=[SSalt] then sub:=#10;
+  sub := '';
+  if shift=[SSctrl] then sub := CRLF;
+  if shift=[SSshift] then sub := #13;
+  if shift=[SSalt] then sub := #10;
   with sender as Tedit do
     begin
-    i:=selstart;
-    s:=text;
-    insert(sub,s,i+1);
-    text:=s;
-    selstart:=i+length(sub);
+    i := selstart;
+    s := text;
+    insert(sub, s, i+1);
+    text := s;
+    selstart := i+length(sub);
     end;
   end;
 end; // pwdboxKeyDown
@@ -3819,10 +3839,10 @@ begin
 //   p:=drawmenuitemR98(ACanvas, TmenuItem(sender).GetParentMenu, TmenuItem(sender), rect(0,0,width,height), TRUE)
 //  else
  {$ENDIF WIN98}
-   p:=GPdrawmenuitemR7(ACanvas, TmenuItem(sender).GetParentMenu, TmenuItem(sender), rect(0,0,width,height), TRUE);
-  width:=p.x;
+   p := GPdrawmenuitemR7(ACanvas, TmenuItem(sender).GetParentMenu, TmenuItem(sender), rect(0,0,width,height), TRUE);
+  width := p.x;
 //  inc(height,2);
-  inc(p.y,2);
+  inc(p.y, 2);
   if (not MenuHeightPerm) or (height<p.y) then
     height := p.y;
 end;
@@ -3877,8 +3897,8 @@ begin
       TAction(Sender).visible:=FALSE
      else
   begin
-    TAction(Sender).visible:=TRUE;
-    TAction(Sender).caption:=getTranslation('%s (copy IP)', [ip2str(TICQContact(clickedContact).connection.ip)] );
+    TAction(Sender).visible := TRUE;
+    TAction(Sender).caption := getTranslation('%s (copy IP)', [ip2str(TICQContact(clickedContact).connection.ip)] );
   end;
  {$ENDIF PROTOCOL_ICQ}
 end;
@@ -3888,7 +3908,7 @@ begin
  {$IFDEF PROTOCOL_ICQ}
   if clickedContact <> nil then
 //    TAction(Sender).visible := Contact.email > ''
-    TAction(Sender).visible:=((not (clickedContact is TICQcontact)) or (TICQcontact(clickedContact).email > ''))
+    TAction(Sender).visible := ((not (clickedContact is TICQcontact)) or (TICQcontact(clickedContact).email > ''))
 //                  or (Contact is TMRAcontact)
   else
     TAction(Sender).visible := False;
@@ -3937,11 +3957,11 @@ then
   if isInList(LT_TEMPVIS, clickedContact) then
     TAction(Sender).HelpKeyword:=PIC_RIGHT
    else
-    TAction(Sender).HelpKeyword:='';
+    TAction(Sender).HelpKeyword := '';
  end
  else
  {$ENDIF PROTOCOL_ICQ}
-   TAction(Sender).Visible:=false;
+   TAction(Sender).Visible := false;
 end;
 
 procedure TRnQmain.AReadautomessage1Update(Sender: TObject);
@@ -3951,7 +3971,7 @@ begin
  {$IFDEF PROTOCOL_ICQ}
 showHidden:=getShiftState() and (1+2)>0; // shift OR control
 if clickedContact <> nil then
- TAction(Sender).visible:=showHidden or
+ TAction(Sender).visible := showHidden or
   clickedContact.fProto.isOnline and (CAPS_sm_ICQSERVERRELAY in TICQContact(clickedContact).capabilitiesSm) and
   (byte(TICQContact(clickedContact).status) in statusWithAutomsg);
  {$ENDIF PROTOCOL_ICQ}
@@ -3993,7 +4013,7 @@ end;
 
 procedure TRnQmain.SelectTheme(Sender: TObject);
 var
-  i : NativeInt;
+  i: NativeInt;
 begin
   if not(Sender is TRQMenuItem) then
     exit;
@@ -4024,7 +4044,7 @@ end;
 
 procedure TRnQmain.SelectSmiles(Sender: TObject);
 var
-  i : NativeInt;
+  i: NativeInt;
 begin
   if not(Sender is TRQMenuItem) then
     exit;
@@ -4067,7 +4087,7 @@ begin
 end;
 procedure TRnQmain.SelectSounds(Sender: TObject);
 var
-  i : NativeInt;
+  i: NativeInt;
 begin
   if not(Sender is TRQMenuItem) then
     exit;
@@ -4114,25 +4134,25 @@ end;
 procedure TRnQmain.AShowgroups1Update(Sender: TObject);
 begin
   if showGroups then
-    TAction(Sender).HelpKeyword:=PIC_RIGHT
+    TAction(Sender).HelpKeyword := PIC_RIGHT
    else
-    TAction(Sender).HelpKeyword:='';
+    TAction(Sender).HelpKeyword := '';
 end;
 
 procedure TRnQmain.AShowonlyonlinecontacts1Update(Sender: TObject);
 begin
   if showOnlyOnline then
-    TAction(Sender).HelpKeyword:=PIC_RIGHT
+    TAction(Sender).HelpKeyword := PIC_RIGHT
    else
-    TAction(Sender).HelpKeyword:='';
+    TAction(Sender).HelpKeyword := '';
 end;
 
 procedure TRnQmain.Amenushowonlyimvisibleto1Update(Sender: TObject);
 begin
   if showOnlyImVisibleTo then
-    TAction(Sender).HelpKeyword:=PIC_RIGHT
+    TAction(Sender).HelpKeyword := PIC_RIGHT
    else
-    TAction(Sender).HelpKeyword:='';
+    TAction(Sender).HelpKeyword := '';
 end;
 
 procedure TRnQmain.ANothingExecute(Sender: TObject);
@@ -4143,17 +4163,17 @@ end;
 procedure TRnQmain.AVisiblelist1Update(Sender: TObject);
 begin //tag = 3000
   if Assigned(clickedContact) and clickedContact.isInList(LT_VISIBLE) then
-    TAction(Sender).HelpKeyword:=PIC_RIGHT
+    TAction(Sender).HelpKeyword := PIC_RIGHT
    else
-    TAction(Sender).HelpKeyword:='';
+    TAction(Sender).HelpKeyword := '';
 end;
 
 procedure TRnQmain.AInvisiblelist1Update(Sender: TObject);
 begin // tag = 3001
   if Assigned(clickedContact) and clickedContact.isInList(LT_INVISIBLE) then
-    TAction(Sender).HelpKeyword:=PIC_RIGHT
+    TAction(Sender).HelpKeyword := PIC_RIGHT
    else
-    TAction(Sender).HelpKeyword:='';
+    TAction(Sender).HelpKeyword := '';
 end;
 
 procedure TRnQmain.ADelete1Update(Sender: TObject);
@@ -4168,14 +4188,14 @@ end;
 procedure TRnQmain.AIgnorelist1Update(Sender: TObject);
 begin //tag = 3007
   if ignoreList.exists(clickedContact) then
-    TAction(Sender).HelpKeyword:=PIC_RIGHT
+    TAction(Sender).HelpKeyword := PIC_RIGHT
    else
-    TAction(Sender).HelpKeyword:='';
+    TAction(Sender).HelpKeyword := '';
 end;
 
 procedure TRnQmain.mAThmCntEdtExecute(Sender: TObject);
 var
-  s : String;
+  s: String;
 begin
   if fantomWork then
     Exit;
@@ -4197,8 +4217,8 @@ end;
 
 procedure TRnQmain.mAvisibilityUpdate(Sender: TObject);
 var
-  b : Boolean;
-  visArr : TStatusArray;
+  b: Boolean;
+  visArr: TStatusArray;
 begin // tag = 3005
 //  TAction(Sender).HelpKeyword := visibilityImgName;
   b := True;

@@ -27,10 +27,10 @@ uses
   windows, sysutils, messages, classes;
 
 
-procedure installHook(hdl : THandle);
-//procedure installHook;
-procedure uninstallHook;
-function isMoved : Boolean;
+  procedure installHook(hdl : THandle);
+  //procedure installHook;
+  procedure uninstallHook;
+  function isMoved(awTime: Integer = -1): Boolean;
 
 var
   isHooked  : boolean;
@@ -112,11 +112,13 @@ begin
   Result := GetTickCount - LInput.dwTime;
 end;
 
-function isMoved : Boolean;
+function isMoved(awTime: Integer = -1): Boolean;
 begin
  result := False;
-    if (LastInput+5 < autoaway.time) then
-      result := True;
+ if awTime < 0 then
+   awTime := autoaway.time;
+ if (LastInput+5 < awTime) then
+   result := True;
 end;
 
 function RegisterSessionNotification(Wnd: HWND; dwFlags: DWORD): Boolean; 
@@ -208,7 +210,7 @@ end;
 
 
 begin
-  isHooked:=FALSE;
+  isHooked := FALSE;
   SessNotifHndl := 0;
   FRegisteredSessionNotification := false;
 end.
