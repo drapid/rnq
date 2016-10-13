@@ -18,14 +18,14 @@ uses
   RDGlobal, outboxLib;
 
 
-procedure Protos_Events(Sender:TRnQProtocol; event:Integer);
+procedure Protos_Events(Sender: TRnQProtocol; event: Integer);
 procedure Protos_ShowWP();
 function  Protos_getXstsPic(cnt: TRnQContact; isSelf: Boolean = false): TPicName;
 procedure Protos_GetOfflineMSGS(pr: TRnQProtocol);
 procedure Protos_DelOfflineMSGS(pr: TRnQProtocol);
 procedure Protos_OpenMailBox;
 procedure Protos_SendSMS(Parent: TComponent; cnt: TRnQContact);
-function  Protos_CanSMS(cnt: TRnQContact) : Boolean;
+function  Protos_CanSMS(cnt: TRnQContact): Boolean;
 procedure Protos_auth(cnt: TRnQContact);
 procedure Protos_AuthDenied(cnt: TRnQContact; const msg: string='');
 procedure Protos_DelCntFromSrv(cnt: TRnQContact);
@@ -36,17 +36,17 @@ function  status2imgName(s: byte; inv: boolean=FALSE): TPicName; inline;
 function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts: byte= 0): TPicName; inline;
 
 function  setStatus(const proto: TRnQProtocol; st: byte; isAuto: Boolean = False): byte;
-function  setStatusFull(const proto: TRnQProtocol; st: byte; xSt: byte; xStStr: TXStatStr; isAuto : Boolean = False): byte;
+function  setStatusFull(const proto: TRnQProtocol; st: byte; xSt: byte; xStStr: TXStatStr; isAuto: Boolean = False): byte;
 procedure setVisibility(const proto: TRnQProtocol; vi: byte);
 procedure userSetStatus(const proto: TRnQProtocol; st: byte; isShowAMWin: Boolean = True);
 procedure usersetVisibility(const proto: TRnQProtocol; vi: byte);
 
 function  sendEmailTo(c: TRnQContact): boolean;
-//function  str2db(cls : TRnQCntClass; const s: RawByteString; var ok: boolean):TRnQCList; overload;
-//function  str2db(cls : TRnQCntClass; const s: RawByteString): TRnQCList; overload;
-function  str2db(pProto: TRnQProtocol; const s: RawByteString; var ok: boolean; pCheckGroups : Boolean):TRnQCList; overload;
+//function  str2db(cls: TRnQCntClass; const s: RawByteString; var ok: boolean): TRnQCList; overload;
+//function  str2db(cls: TRnQCntClass; const s: RawByteString): TRnQCList; overload;
+function  str2db(pProto: TRnQProtocol; const s: RawByteString; var ok: boolean; pCheckGroups: Boolean): TRnQCList; overload;
 function  str2db(pProto: TRnQProtocol; const s: RawByteString): TRnQCList; overload;
-//function  getClientFor(c:TRnQcontact; pInInfo : Boolean = False):string;
+//function  getClientFor(c: TRnQcontact; pInInfo: Boolean = False):string;
 function  getProtosPref(): TPrefPagesArr;
 function  getProtoClass(ProtoID: Byte): TRnQProtoClass;
 function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer=0; const info: string=''): Toevent; overload;
@@ -160,9 +160,9 @@ begin
  {$ENDIF PROTOCOL_MRA}
 end;
 
-function  Protos_getXstsPic(cnt : TRnQContact; isSelf : Boolean = false) : TPicName;
+function  Protos_getXstsPic(cnt: TRnQContact; isSelf: Boolean = false): TPicName;
 var
-  pr : TRnQProtocol;
+  pr: TRnQProtocol;
 begin
   Result := '';
   if isSelf then
@@ -211,7 +211,7 @@ begin
     end;
 end;
 
-procedure Protos_GetOfflineMSGS(pr : TRnQProtocol);
+procedure Protos_GetOfflineMSGS(pr: TRnQProtocol);
 begin
   {$IFDEF PROTOCOL_ICQ}
  if pr is TicqSession then
@@ -225,7 +225,7 @@ begin
    ;
 end;
 
-procedure Protos_DelOfflineMSGS(pr : TRnQProtocol);
+procedure Protos_DelOfflineMSGS(pr: TRnQProtocol);
 begin
  {$IFDEF PROTOCOL_ICQ}
  if pr is TicqSession then
@@ -247,7 +247,7 @@ begin
  {$ENDIF PROTOCOL_MRA}
 end;
 
-procedure Protos_SendSMS(Parent : TComponent; cnt : TRnQContact);
+procedure Protos_SendSMS(Parent: TComponent; cnt: TRnQContact);
 begin
   if Assigned(cnt) then
    {$IFDEF PROTOCOL_MRA}
@@ -258,7 +258,7 @@ begin
    {$ENDIF PROTOCOL_MRA}
 end;
 
-function  Protos_CanSMS(cnt : TRnQContact) : Boolean;
+function  Protos_CanSMS(cnt: TRnQContact): Boolean;
 begin
   Result := Assigned(cnt) and
  {$IFDEF PROTOCOL_MRA}
@@ -268,19 +268,19 @@ begin
  {$ENDIF PROTOCOL_MRA}
 end;
 
-procedure Protos_auth(cnt : TRnQContact);
+procedure Protos_auth(cnt: TRnQContact);
 var
-  ev:THevent;
+  ev: THevent;
 begin
-//  c:=Tcontact(contactsDB.get(TICQContact, uin));
-  plugins.castEv( PE_AUTH_SENT, cnt.uid);
+//  c := Tcontact(contactsDB.get(TICQContact, uin));
+  plugins.castEv(PE_AUTH_SENT, cnt.uid);
 //ICQ.sendAuth(uin);
   with cnt.fProto do
    begin
      AuthGrant(cnt);
  {$IFNDEF ICQ_ONLY}
      case ProtoID of
-       ICQProtoID :
+       ICQProtoID:
  {$ENDIF ICQ_ONLY}
              begin
  {$IFDEF PROTOCOL_ICQ}
@@ -292,25 +292,25 @@ begin
      end;
  {$ENDIF ICQ_ONLY}
    end;
-  ev:=Thevent.new(EK_auth, cnt.fProto.getMyInfo, now, ''{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, 0);
+  ev := Thevent.new(EK_auth, cnt.fProto.getMyInfo, now, ''{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, 0);
   ev.fIsMyEvent := True;
   if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
     writeHistorySafely(ev, cnt);
   chatFrm.addEvent_openchat(cnt, ev);
 end; // sendICQauth
 
-procedure Protos_AuthDenied(cnt : TRnQContact; const msg:string='');
+procedure Protos_AuthDenied(cnt: TRnQContact; const msg: string='');
 var
-//  c:TRnQcontact;
-  ev:THevent;
+//  c: TRnQcontact;
+  ev: THevent;
 begin
-//  c:= contactsDB.get(TICQContact, uin);
-  plugins.castEv( PE_AUTHDENIED_SENT, cnt.uid, msg);
-//ICQ.sendAuthDenied(uin,msg);
+//  c := contactsDB.get(TICQContact, uin);
+  plugins.castEv(PE_AUTHDENIED_SENT, cnt.uid, msg);
+//ICQ.sendAuthDenied(uin, msg);
   with cnt.fProto do
  {$IFNDEF ICQ_ONLY}
    case ProtoID of
-     ICQProtoID :
+     ICQProtoID:
  {$ENDIF ICQ_ONLY}
            begin
  {$IFDEF PROTOCOL_ICQ}
@@ -319,11 +319,11 @@ begin
            end;
  {$IFNDEF ICQ_ONLY}
    {$IFDEF PROTOCOL_XMP}
-     XMPProtoID : TxmppSession(ProtoElem).AuthCancel(cnt);
+     XMPProtoID: TxmppSession(ProtoElem).AuthCancel(cnt);
    {$ENDIF PROTOCOL_XMP}
    end;
  {$ENDIF ICQ_ONLY}
-  ev:=Thevent.new(EK_authDenied, cnt.fProto.getMyInfo, now{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, msg, 0);
+  ev := Thevent.new(EK_authDenied, cnt.fProto.getMyInfo, now{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, msg, 0);
   ev.fIsMyEvent := True;
   if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
     writeHistorySafely(ev, cnt);
@@ -405,14 +405,14 @@ end;
 function setStatus(const proto: TRnQProtocol; st: byte; isAuto: Boolean = False): byte;
 begin
   if not isAuto then
-    autoaway.triggered:=TR_none;
+    autoaway.triggered := TR_none;
   result := byte(proto.getStatus);
 
  {$IFDEF PROTOCOL_ICQ}
   if proto is TicqSession then
     begin
       if not (st in [byte(SC_away), byte(SC_na)]) then
-        imAwaySince:=0
+        imAwaySince := 0
       else
        if not (byte(lastStatus) in [byte(SC_away), byte(SC_na)]) then
         imAwaySince:=now;
@@ -422,23 +422,23 @@ begin
   else if proto is TMRASession then
     begin
       if not (st = byte(mSC_away)) then
-        imAwaySince:=0
+        imAwaySince := 0
       else
        if not (byte(lastStatus) = byte(mSC_away)) then
         imAwaySince:=now;
     end
  {$ENDIF PROTOCOL_MRA}
    ;
-  lastStatus:=st;
+  lastStatus := st;
   if proto.isOffline and (st<>byte(SC_OFFLINE)) then
     doConnect
    else
     proto.setStatus(st);
-  if st= byte(SC_OFFLINE) then
+  if st = byte(SC_OFFLINE) then
    begin
-    stayconnected:=FALSE;
+    stayconnected := FALSE;
     setProgBar(proto, 0);
-    resolving:=FALSE;
+    resolving := FALSE;
    end;
 end; // setStatus
 
@@ -447,17 +447,17 @@ function setStatusFull(const proto: TRnQProtocol; st: byte; xSt: byte; xStStr: T
 //  xStsD : TXStatStr;
 begin
   if not isAuto then
-    autoaway.triggered:=TR_none;
+    autoaway.triggered := TR_none;
   result := byte(proto.getStatus);
 
  {$IFDEF PROTOCOL_ICQ}
   if proto is TicqSession then
     begin
       if not (st in [byte(SC_away), byte(SC_na)]) then
-        imAwaySince:=0
+        imAwaySince := 0
       else
        if not (byte(lastStatus) in [byte(SC_away), byte(SC_na)]) then
-        imAwaySince:=now;
+        imAwaySince := now;
     end
   else
  {$ENDIF PROTOCOL_ICQ}
@@ -465,14 +465,14 @@ begin
   if proto is TMRASession then
     begin
       if not (st = byte(mSC_away)) then
-        imAwaySince:=0
+        imAwaySince := 0
       else
        if not (byte(lastStatus) = byte(mSC_away)) then
-        imAwaySince:=now;
+        imAwaySince := now;
     end
  {$ENDIF PROTOCOL_MRA}
    ;
-  lastStatus:=st;
+  lastStatus := st;
   if proto.isOffline and (st<>byte(SC_OFFLINE)) then
     begin
  {$IFDEF PROTOCOL_ICQ}
@@ -491,11 +491,11 @@ begin
      {$ENDIF PROTOCOL_ICQ}
        proto.setStatus(st);
     end;
-  if st= byte(SC_OFFLINE) then
+  if st = byte(SC_OFFLINE) then
    begin
-    stayconnected:=FALSE;
+    stayconnected := FALSE;
     setProgBar(proto, 0);
-    resolving:=FALSE;
+    resolving := FALSE;
    end;
 end; // setStatusFull
 
@@ -515,21 +515,21 @@ begin
     automsgFrm.show;
    end;
  {$ENDIF PROTOCOL_ICQ}
-  lastStatusUserSet:=st;
+  lastStatusUserSet := st;
 end; // userSetStatus
 
 procedure setVisibility(const proto: TRnQProtocol; vi: byte);
  {$IFDEF PROTOCOL_ICQ}
 var
 //  changeStatus:boolean;
-  icq : TicqSession;
+  icq: TicqSession;
  {$ENDIF PROTOCOL_ICQ}
 begin
  {$IFDEF PROTOCOL_ICQ}
  if proto.ProtoElem is TicqSession then
  begin
   icq := proto.ProtoElem as TicqSession;
-  ICQ.visibility:=Tvisibility(vi);
+  ICQ.visibility := Tvisibility(vi);
  {$IFDEF UseNotSSI}
   ICQ.updateVisibility;
  {$ENDIF UseNotSSI}
@@ -589,17 +589,17 @@ function str2db(pProto: TRnQProtocol; const s: RawByteString;
 const
   ErrCorupted = 'The contacts database is corrupted, some data is lost';
 var
-  t,l,i: integer;
+  t, l, i: integer;
   d: RawByteString;
 //  c:TICQcontact;
   c: TRnQContact;
  {$IFDEF PROTOCOL_MRA}
-  cntMRA : TMRAContact;
+  cntMRA: TMRAContact;
  {$ENDIF PROTOCOL_MRA}
  {$IFDEF PROTOCOL_ICQ}
   cntICQ : TICQContact;
  {$ENDIF PROTOCOL_ICQ}
-  vUID : TUID;
+  vUID: TUID;
 begin
   ok := FALSE;
   result := TRnQCList.create;
@@ -614,14 +614,14 @@ while i < length(s) do
       exit;
      end;
    try
-    t:= dword_LEat(@s[i+1]); // 1234
-    l:=dword_LEat(@s[i+5]); // 5678
+    t := dword_LEat(@s[i+1]); // 1234
+    l := dword_LEat(@s[i+5]); // 5678
     if length(s)-pred(i) < l then
       begin
       msgDlg(ErrCorupted, True, mtError);
       exit;
       end;
-    d:=copy(s,i+9,l);
+    d := copy(s, i+9, l);
     inc(i, 8+l);
     if (t <> DBFK_OLDUIN) AND (t <> DBFK_UID) AND not Assigned(c) then
      Continue;
@@ -634,15 +634,15 @@ while i < length(s) do
                     end;
       DBFK_UID: if d > '' then
                  begin
-//                  c:= (result.get(cls, d));
+//                  c := (result.get(cls, d));
                    vUID := UnUTF(d);
                     c := result.add(pProto, vUID);
 //                  c.CntIsLocal := False;
                  end;
       DBFK_Authorized: c.Authorized := boolean(d[1]);
-      DBFK_DISPLAY:    c.fDisplay:= UnUTF(d);
+      DBFK_DISPLAY:    c.fDisplay := UnUTF(d);
       DBFK_NICK:       c.nick := UnUTF(d);
-      DBFK_FIRST:      c.first:= UnUTF(d);
+      DBFK_FIRST:      c.first := UnUTF(d);
       DBFK_LAST:       c.last := UnUTF(d);
 
       DBFK_GROUP:
@@ -678,18 +678,18 @@ while i < length(s) do
    except
    end;
   end;
-ok:=TRUE;
+ok := TRUE;
 end; // str2db
 
-function str2db(pProto : TRnQProtocol; const s: RawByteString):TRnQCList;
+function str2db(pProto: TRnQProtocol; const s: RawByteString): TRnQCList;
 var
-  asd:boolean;
+  asd: boolean;
 begin
-  result:=str2db(pProto, s,asd, false)
+  result := str2db(pProto, s, asd, false)
 end;
 
 (*
-function getClientFor(c:TRnQcontact; pInInfo : Boolean = False):string;
+function getClientFor(c: TRnQcontact; pInInfo: Boolean = False):string;
 begin
   result:='';
   if c=NIL then exit;
@@ -702,9 +702,9 @@ begin
 end; // getClientFor
 *)
 
-function  getProtosPref() : TPrefPagesArr;
+function  getProtosPref(): TPrefPagesArr;
 var
-  cl : TPrefFrameClass;
+  cl: TPrefFrameClass;
 begin
 //  SetLength(Result, length(Account.AccProto));
   if Assigned(Account.AccProto) then
@@ -727,7 +727,7 @@ begin
 
 end;
 
-function  getProtoClass(ProtoID : Byte) : TRnQProtoClass;
+function  getProtoClass(ProtoID: Byte): TRnQProtoClass;
 begin
  {$IFNDEF ICQ_ONLY}
   case ProtoID of
@@ -767,7 +767,7 @@ begin
     Result := NIL;
 end;
 
-function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer; cl: TRnQCList):Toevent;
+function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer; cl: TRnQCList): Toevent;
 //var
 //  pr : TRnQProtocol;
 begin
@@ -785,12 +785,12 @@ end;
 
 procedure getTrayIconTip(var vPic: TPicName; var vTip: String);
 var
-  e:Thevent;
-//  nIco : String;
-//  IcoDtl : TRnQThemedElementDtls;
-//  IcoPicName : TPicName;
-//  s:string;
-  MyInf : TRnQContact;
+  e: Thevent;
+//  nIco: String;
+//  IcoDtl: TRnQThemedElementDtls;
+//  IcoPicName: TPicName;
+//  s: string;
+  MyInf: TRnQContact;
 begin
   if BossMode.isBossKeyOn then
    begin
@@ -817,7 +817,7 @@ begin
     else
       if Account.AccProto.isConnecting or resolving then
         begin
-          vTip :=getTranslation('Connecting');
+          vTip := getTranslation('Connecting');
 //          nIco := PIC_CONNECTING;
 //          IcoDtl.ThemeToken := -1;
           if Account.AccProto.ProtoElem.progLogon>0 then
@@ -855,13 +855,13 @@ begin
     MyInf := Account.AccProto.getmyinfo;
     if assigned(MyInf) then
 //    if assigned(Account.AccProto.myinfo) then
-      vTip:= getTranslation('%s [%s]',[vTip, MyInf.displayed +' / '+ MyInf.uin2Show])
+      vTip := getTranslation('%s [%s]', [vTip, MyInf.displayed +' / '+ MyInf.uin2Show])
     else
-      vTip:='R&&&Q';
+      vTip := 'R&&&Q';
    end
   else
     begin
-     e:=eventQ.top;
+     e := eventQ.top;
      if Assigned(e) then
       begin
        if blinking or Account.AccProto.getStatusDisable.blinking then
@@ -871,7 +871,7 @@ begin
         else
          vPic := PIC_EMPTY;
        if (e.who=NIL)or(not (e.who is Trnqcontact)) then
-         vTip :=getTranslation(Str_Error)
+         vTip := getTranslation(Str_Error)
        else
      //    s:=gettr('tray '+event2str[e.kind],[e.who.displayed]);
          vTip :=getTranslation(trayevent2str[e.kind],[e.who.displayed]);

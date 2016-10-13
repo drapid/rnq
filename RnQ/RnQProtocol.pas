@@ -486,7 +486,7 @@ type
     property MyAccNum : TUID read MyAccount;
     property RefCount: Integer read FRefCount;
 
-    property  pwd:String read getPwd write setPwd;
+    property  pwd: String read getPwd write setPwd;
 //    property  MyInfo :TRnQContact read getMyInfo write setMyInfo;
     property  statuses : TStatusArray read getStatuses;
     property curXStatus : Byte read getXStatus;
@@ -591,7 +591,7 @@ type
     function  isInList(l : TLIST_TYPES) : Boolean;
 //   public
 //    function  GetProto : IRnQProtocol;
-    procedure SetGroupName(const pName : String);
+    procedure SetGroupName(const pName: String);
     function  buin: RawByteString;
     property  Display : string read fDisplay write SetDisplay;
     property  ProtoID : byte read _getProtoID;
@@ -627,51 +627,51 @@ type
     function  remove(cl: TRnQCList):TRnQCList; overload;
     function  intersect(cl: TRnQCList):TRnQCList;
     function  toString: RawByteString; reintroduce;
-//    function  fromString(cls : TRnQContactType; const s: RawByteString; db:TRnQCList):boolean;
-    function  fromString(pr : TRnQProtocol; const s: RawByteString; db:TRnQCList):boolean;
-    function  clone:TRnQCList;
-    procedure assign(cl:TRnQCList);
-    procedure apply(p:TcontactProc);
+//    function  fromString(cls: TRnQContactType; const s: RawByteString; db:TRnQCList):boolean;
+    function  fromString(pr: TRnQProtocol; const s: RawByteString; db:TRnQCList):boolean;
+    function  clone: TRnQCList;
+    procedure assign(cl: TRnQCList);
+    procedure apply(p: TcontactProc);
 //    procedure setStatus(st: TStatus);
-//    function  idxOf(iProto : IRnQProtocol; uin:TUID):integer; overload;
-    function  idxOf(cls : TRnQContactType; const uin:TUID):integer; overload;
-    function  idxOf(uin: Integer):integer; overload;
-    function  _idxOf(const uid:TUID):integer; overload;
-//    function  idxBySSID(ssid:Word):integer;
+//    function  idxOf(iProto: IRnQProtocol; uin: TUID): integer; overload;
+    function  idxOf(cls: TRnQContactType; const uin: TUID): integer; overload;
+    function  idxOf(uin: Integer): integer; overload;
+    function  _idxOf(const uid: TUID): integer; overload;
+//    function  idxBySSID(ssid: Word): integer;
     function  buinlist: RawByteString;
-    function  toIntArray:TIntegerDynArray;
-//    function  getCount(group:integer=-1; OnlyOnline : Boolean = false):integer;
-    function  getCount(group:integer; OnlyOnline : Boolean = false):integer;
-    procedure getOnlOfflCount(var pOnlCount, pOfflCount : Integer);
+    function  toIntArray: TIntegerDynArray;
+//    function  getCount(group: integer=-1; OnlyOnline: Boolean = false): integer;
+    function  getCount(group: integer; OnlyOnline: Boolean = false): integer;
+    procedure getOnlOfflCount(var pOnlCount, pOfflCount: Integer);
 //    procedure SetStatus(st: Byte);
-//    function  C8SSIByGrp(grID : Integer): String;
-//    function  SSIByGrp(grID : Integer): String;
+//    function  C8SSIByGrp(grID: Integer): String;
+//    function  SSIByGrp(grID: Integer): String;
     property Count;
    end; // TcontactList
 
 
 var
 //  protocols : array of IRnQProtocol;
-  RnQProtos : array of TRnQProtoClass;
+  RnQProtos: array of TRnQProtoClass;
 //  RnQProtos : array of TRnQProtoHelper;
   contactsDB: TRnQCList;
-  onContactCreation, onContactDestroying:TcontactProc;
-  onStatusDisable :array [0..15] of TOnStatusDisable;
+  onContactCreation, onContactDestroying: TcontactProc;
+  onStatusDisable: array [0..15] of TOnStatusDisable;
 
   masterUseSSI: Boolean; // ICQ - Use Server Side Information
 
-//  procedure RegisterProtocol(proto : IRnQProtocol);
-//  procedure RegisterProto(proto : TRnQProtoHelper);
-  procedure RegisterProto(proto : TRnQProtoClass);
+//  procedure RegisterProtocol(proto: IRnQProtocol);
+//  procedure RegisterProto(proto: TRnQProtoHelper);
+  procedure RegisterProto(proto: TRnQProtoClass);
 
-//  function ActiveProto : IRnQProtocol; Inline;
+//  function ActiveProto: IRnQProtocol; Inline;
 
-  procedure logProtoPkt(what:TwhatLog; const head : String; const data: RawByteString='');
+  procedure logProtoPkt(what: TwhatLog; const head: String; const data: RawByteString='');
   procedure FlushLogPktFile;
-//  function  activeICQ : TicqSession; Inline;
-  procedure setProgBar(const proto:TRnQProtocol; v:double);
+//  function  activeICQ: TicqSession; Inline;
+  procedure setProgBar(const proto: TRnQProtocol; v: double);
 
-  function  Int2UID(const i : Integer) : TUID; Inline;
+  function  Int2UID(const i: Integer): TUID; Inline;
 const
   LogWhatNames:array [TwhatLog] of string=('CONNECTED','DISCONNECTED','CLIENT','SERVER','DC RCVD','DC SENT',
                                      'CONNECTING',
@@ -847,7 +847,7 @@ end;
 
 procedure TRnQProtocol.ResetPrefs;
 begin
-  lastServerIP:= '';
+  lastServerIP := '';
   lastserverAddr := '';
   SupportTypingNotif := True;
   isSendTypingNotif  := True;
@@ -859,11 +859,11 @@ end;
 begin
   result := ICQ;
 end;}
-constructor TRnQcontact.create(pProto : TRnQProtocol; const uin_: TUID);
+constructor TRnQcontact.create(pProto: TRnQProtocol; const uin_: TUID);
 begin
   inherited create;
   clear1;
-  uid:=trimUID(uin_);
+  uid := trimUID(uin_);
   UID2cmp := LowerCase(uid);
   fProto := pProto;
 //  if assigned(onContactCreation) then onContactCreation(self);
@@ -887,14 +887,14 @@ end;
 function TRnQContact.displayed: string;
 begin
   if display > '' then
-    result:=display else
+    result := display else
   if nick > '' then
-    result:=nick else
+    result := nick else
   if first > '' then
-    result:=first else
+    result := first else
   if last > '' then
-    result:=last else
-   result:= uid;
+    result := last else
+   result := uid;
   if Length(result) > MaxDispayedLen then
     SetLength(result, MaxDispayedLen);
 end;
@@ -902,17 +902,17 @@ end;
 function TRnQContact.displayed4All: string;
 begin
   if nick > '' then
-    result:=nick else
+    result := nick else
   if first > '' then
-    result:=first else
+    result := first else
   if last > '' then
-    result:=last else
-   result:= uid;
+    result := last else
+   result := uid;
   if Length(result) > MaxDispayedLen then
     SetLength(result, MaxDispayedLen);
 end;
 
-function TRnQcontact.getFN : String;
+function TRnQcontact.getFN: String;
 begin
   Result := Self.fProto.ProtoName + '_' + UID2cmp;
 end;
@@ -921,14 +921,14 @@ end;
 
 procedure TRnQcontact.clear1;
 begin
-  uid:='';
+  uid := '';
   UID2cmp := '';
-  nick:='';
-  first:='';
-  last:='';
-//  status:=SC_UNK;
-  fDisplay:='';
-  birthL:=0;
+  nick := '';
+  first := '';
+  last := '';
+//  status := SC_UNK;
+  fDisplay := '';
+  birthL := 0;
   SSIID := 0;
 //  ClientStr := '';
   ClientPic := '';
@@ -942,9 +942,9 @@ begin
 //nodb:=FALSE;
 end; // clear
 
-function TRnQcontact.equals(c:TRnQcontact):boolean;
+function TRnQcontact.equals(c: TRnQcontact): boolean;
 //var
-//  i, j : Byte;
+//  i, j: Byte;
 begin
   try
    if (not assigned(self)) or (not assigned(c)) or (UID2cmp='') or (c.UID2cmp='') then
@@ -968,16 +968,16 @@ begin
         result := false;
     end;}
 //
-  result:=(c.UID2cmp = UID2cmp)
+  result := (c.UID2cmp = UID2cmp)
   except
    result := False;
   end;
 end;
 
-function TRnQcontact.equals(pUIN: Integer):boolean;
+function TRnQcontact.equals(pUIN: Integer): boolean;
 var
-//  i, j : Byte;
-  vUID : TUID;
+//  i, j: Byte;
+  vUID: TUID;
 begin
 //  try
   vUID := Int2UID(pUIN);
@@ -1002,16 +1002,16 @@ begin
         result := false;
     end;}
 //
-  result:=(UID2cmp = vUID)
+  result := (UID2cmp = vUID)
 //  except
 //   result := False;
 //  end;
 end;
 
-function TRnQcontact.equals(const pUID: TUID):boolean;
+function TRnQcontact.equals(const pUID: TUID): boolean;
 var
-//  i, j : Byte;
-  vUID : TUID;
+//  i, j: Byte;
+  vUID: TUID;
 begin
   try
    vUID := LowerCase(trimUID(pUID));
@@ -1036,13 +1036,13 @@ begin
         result := false;
     end;}
 //
-  result:=(UID2cmp = vUID)
+  result := (UID2cmp = vUID)
   except
    result := False;
   end;
 end;
 
-procedure TRnQcontact.SetDisplay(const s : String);
+procedure TRnQcontact.SetDisplay(const s: String);
 begin
   fDisplay := s;
 end;
@@ -1055,12 +1055,12 @@ begin
  result := AnsiChar(length(UID2cmp))+ AnsiString( UID2cmp ); // !!!!!!!!!
 end; // buin
 
-function TRnQcontact.imVisibleTo : Boolean;
+function TRnQcontact.imVisibleTo: Boolean;
 begin
   Result := fProto.imVisibleTo(self);
 end;
 
-function TRnQcontact.isInRoster : Boolean;
+function TRnQcontact.isInRoster: Boolean;
 begin
   Result := fProto.isInList(LT_ROSTER, self);
 end;
@@ -1070,12 +1070,12 @@ begin
   Result := false;
 end;
 
-function TRnQcontact.isInList(l : TLIST_TYPES) : Boolean;
+function TRnQcontact.isInList(l: TLIST_TYPES): Boolean;
 begin
   Result := fProto.isInList(l, self);
 end;
 
-function TRnQcontact.GetBDay : TDateTime;
+function TRnQcontact.GetBDay: TDateTime;
 begin
   if birthL > 0 then
    result := birthL
@@ -1086,15 +1086,15 @@ begin
      result := 0;
 end;
 
-function TRnQcontact.Days2Bd : smallInt;
+function TRnQcontact.Days2Bd: smallInt;
 const
 //  maxDate = EncodeDate(3000, 1, 1);
   maxYear = 3000;
   maxDate = maxYear * 365 + maxYear div 4 - maxYear div 100 + maxYear div 400 + 1 - DateDelta;
 var
- bd : TDateTime;
- y, m, d : Word;
- y2, m2, d2 : Word;
+ bd: TDateTime;
+ y, m, d: Word;
+ y2, m2, d2: Word;
 begin
   bd := GetBDay;
   if (bd = 0) or (bd > maxDate) then
@@ -1117,9 +1117,9 @@ begin
    end;
 end;
 
-procedure TRnQcontact.SetGroupName(const pName : String);
+procedure TRnQcontact.SetGroupName(const pName: String);
 var
-  gId : Integer;
+  gId: Integer;
 begin
   gID := groups.name2id(pName);
   if gID >= 0 then
@@ -1142,96 +1142,96 @@ end;
 
 /////////////// TRnQCList  ///////////////////////////////////////////////
 
-function TRnQCList.getAt(const idx:integer):TRnQcontact;
+function TRnQCList.getAt(const idx: integer): TRnQcontact;
 begin
 if (idx>=0) and (idx<count) then
 //  result:=TRnQContact(items[idx])
 //  result:= PRnQContact(List^[Idx])^
 //  result:= TRnQContact(List^[Idx])
-  result:= TRnQContact(List[Idx])
+  result := TRnQContact(List[Idx])
 else
-  result:=NIL
+  result := NIL
 end; // getAt
 
-function TRnQCList.idxOf(cls : TRnQContactType; const uin: TUID):integer;
+function TRnQCList.idxOf(cls: TRnQContactType; const uin: TUID): integer;
 var
-  min,max:integer;
-  u : TUID;
-  uid : TUID;
-  c : TRnQcontact;
+  min, max: integer;
+  u: TUID;
+  uid: TUID;
+  c: TRnQcontact;
 begin
   UID := LowerCase(cls.trimUID(uin));
   if TList(Self).count = 0 then
    begin
-    result:=-1;
+    result := -1;
     exit;
    end;
-  min:=0;
-  max:= TList(Self).count - 1;
+  min := 0;
+  max := TList(Self).count - 1;
   repeat
-    result:=(min+max) div 2;
+    result := (min+max) div 2;
     c := getAt(result);
     if Assigned(c) then
-      u:=c.UID2cmp
+      u := c.UID2cmp
      else
       u := '';
     if u = uid then
       exit
     else
       if u > uid then
-        max:=result-1
+        max := result-1
       else
-        min:=result+1;
+        min := result+1;
   until min > max;
-  result:=-1;
+  result := -1;
 end; // idxOf
 
-function TRnQCList._idxOf(const uid: TUID):integer;
+function TRnQCList._idxOf(const uid: TUID): integer;
 var
-  min,max:integer;
-  u : TUID;
-//  uid : TUID;
-  c : TRnQcontact;
+  min, max: integer;
+  u: TUID;
+//  uid: TUID;
+  c: TRnQcontact;
 begin
 //  UID := AnsiLowerCase(iProto.getContactClass.trimUID(uin));
   if count = 0 then
    begin
-    result:=-1;
+    result := -1;
     exit;
    end;
-  min:=0;
-  max:=count-1;
+  min := 0;
+  max := count-1;
   repeat
-    result:=(min+max) div 2;
+    result := (min+max) div 2;
     c := getAt(result);
     if Assigned(c) then
-      u:=c.UID2cmp
+      u := c.UID2cmp
      else
       u := '';
     if u = uid then
       exit
     else
       if u > uid then
-        max:=result-1
+        max := result-1
       else
-        min:=result+1;
+        min := result+1;
   until min > max;
-  result:=-1;
+  result := -1;
 end; // idxOf
 
-function TRnQCList.idxOf(uin: Integer):integer;
+function TRnQCList.idxOf(uin: Integer): integer;
 var
-  min,max:integer;
-//  u : TUID;
-  uid : TUID;
-  c : TRnQcontact;
+  min, max: integer;
+//  u: TUID;
+  uid: TUID;
+  c: TRnQcontact;
 begin
   uid := Int2UID(uin);
-  min:=0;
-  max:=count-1;
+  min := 0;
+  max := count-1;
   if max > 0 then
   repeat
-    result:=(min+max) div 2;
+    result := (min+max) div 2;
     c := getAt(result);
     if Assigned(c) then
      begin
@@ -1239,42 +1239,42 @@ begin
         exit
       else
         if c.UID2cmp > uid then
-          max:=result-1
+          max := result-1
         else
-          min:=result+1;
+          min := result+1;
      end
     else
-      min:=result+1;
+      min := result+1;
   until min > max;
-  result:=-1;
+  result := -1;
 end; // idxOf
 
 function TRnQCList.exists(const c: TRnQContact): boolean;
 begin result := (c<>NIL) and (_idxOf(c.UID2cmp)>=0) end;
 
-function TRnQCList.exists(const pProto : TRnQProtocol; const uin: TUID):boolean;
+function TRnQCList.exists(const pProto: TRnQProtocol; const uin: TUID): boolean;
 begin result := idxOf(pProto.getContactClass, uin)>=0 end;
 
-function TRnQCList.add(p:pointer):boolean;
-begin result:=Tobject(p) is TRnQContact and add(TRnQContact(p)) end;
+function TRnQCList.add(p: pointer): boolean;
+begin result := Tobject(p) is TRnQContact and add(TRnQContact(p)) end;
 
-function TRnQCList.add(c:TRnQContact):boolean;
+function TRnQCList.add(c: TRnQContact): boolean;
 var
-  i:integer;
-  min,max:integer;
-  cnt  : TRnQContact;
+  i: integer;
+  min, max: integer;
+  cnt: TRnQContact;
 begin
-result:=(c<>NIL) and not exists(c);
+  result := (c<>NIL) and not exists(c);
 if result then
   begin
-//  i:=0;
+//  i := 0;
 //  while (i<count) and (c.UID2cmp > getAt(i).UID2cmp) do
 //    inc(i);
-    min:=0;
-    max:=count-1;
+    min := 0;
+    max := count-1;
     if max >= 0 then
     repeat
-      i:=(min+max) div 2;
+      i := (min+max) div 2;
 //      i:=(min+max) shr 1;
       cnt := getAt(i);
       if Assigned(cnt) then
@@ -1295,55 +1295,56 @@ if result then
   end;
 end; // add
 
-function TRnQCList.putAt(const idx:integer; c:TRnQContact):boolean;
+function TRnQCList.putAt(const idx: integer; c: TRnQContact): boolean;
 begin
-result:=(c<>NIL) and not exists(c);
-if result then
-  insert(idx, c);
+  result := (c<>NIL) and not exists(c);
+  if result then
+    insert(idx, c);
 end; // putAt
 
 function TRnQCList.empty:boolean;
 begin result:= count=0 end;
 
-function TRnQCList.remove(const c: TRnQContact):boolean;
+function TRnQCList.remove(const c: TRnQContact): boolean;
 begin result := inherited remove(c) >= 0 end;
 
-function TRnQCList.remove(p:pointer):boolean;
+function TRnQCList.remove(p: pointer): boolean;
 //begin result:= Tobject(p^) is TRnQContact and remove(PRnQContact(p)^) end;
-begin result:= Tobject(p^) is TRnQContact and remove(TRnQContact(p)) end;
+begin result := Tobject(p^) is TRnQContact and remove(TRnQContact(p)) end;
 
-function TRnQCList.add(cl:TRnQCList):TRnQCList;
+function TRnQCList.add(cl: TRnQCList): TRnQCList;
 var
-  i:integer;
+  i: integer;
 begin
-result:=self;
-if cl=NIL then exit;
-for i:=0 to cl.count-1 do
-  add(cl.getAt(i));
+  result := self;
+  if cl=NIL then
+    exit;
+  for i:=0 to cl.count-1 do
+    add(cl.getAt(i));
 end; // add
 
-function TRnQCList.get(cls : TRnQContactType; const uin:integer):TRnQContact;
+function TRnQCList.get(cls: TRnQContactType; const uin: integer): TRnQContact;
 var
-  i:integer;
+  i: integer;
 begin
-  i:=idxOf(uin);
+  i := idxOf(uin);
   if i >= 0 then
-    result:= TRnQContact(getAt(i))
+    result := TRnQContact(getAt(i))
    else
     begin
 {
-     result:= cls.create(IntToStrA(uin));
+     result := cls.create(IntToStrA(uin));
      add(result);
 }
      result := NIL;
     end;
 end; // getDB
 
-function TRnQCList.add(const pProto : TRnQProtocol; const uid: TUID):TRnQcontact;
+function TRnQCList.add(const pProto: TRnQProtocol; const uid: TUID): TRnQcontact;
 var
-  i:integer;
-  cls : TRnQCntClass;
-  u : TUID;
+  i: integer;
+  cls: TRnQCntClass;
+  u: TUID;
 begin
   Result := NIL;
   cls := pProto.getContactClass;
@@ -1352,22 +1353,22 @@ begin
   u := LowerCase(cls.trimUID(uid));
   if Length(u)=0 then
     Exit;
-  i:=_idxOf(u);
+  i := _idxOf(u);
   if i >= 0 then
     result:= getAt(i)
    else
     begin
 //     result:= iProto.getContact(uid);
-     result:= cls.Create(pProto, uid);
+     result := cls.Create(pProto, uid);
      add(result);
     end;
 end; // add
 
 
-function TRnQCList.get(cls : TRnQContactType; const uid: TUID):TRnQContact;
+function TRnQCList.get(cls: TRnQContactType; const uid: TUID): TRnQContact;
 var
-  i:integer;
-  u : TUID;
+  i: integer;
+  u: TUID;
 begin
   Result := NIL;
   if (Length(UID) = 0) then
@@ -1375,41 +1376,42 @@ begin
   u := LowerCase(cls.trimUID(uid));
   if (Length(u)=0) then
     Exit;
-  i:=_idxOf(u);
+  i := _idxOf(u);
   if i >= 0 then
     result:= getAt(i)
    else
     begin
 {     result:= cls.create(uid);
      add(result);}
-     result:= NIL;
+     result := NIL;
     end;
 end; // getDB
 
 
-function TRnQCList.remove(cl:TRnQCList):TRnQCList;
+function TRnQCList.remove(cl: TRnQCList): TRnQCList;
 begin
-result:=self;
-if cl=NIL then exit;
-inherited assign(cl, laSrcUnique);
+  result := self;
+  if cl=NIL then
+    exit;
+  inherited assign(cl, laSrcUnique);
 end; // remove
 
-function TRnQCList.intersect(cl:TRnQCList):TRnQCList;
+function TRnQCList.intersect(cl: TRnQCList): TRnQCList;
 begin
-result:=self;
-if cl=NIL then
+  result := self;
+  if cl=NIL then
   begin
-  clear;
-  exit;
+    clear;
+    exit;
   end;
-inherited assign(cl, laAnd);
+  inherited assign(cl, laAnd);
 end; // intersect
 
 function TRnQCList.toString: RawByteString;
 var
-  i:integer;
+  i: integer;
 begin
-  result:='';
+  result := '';
   for i:=0 to count-1 do
 //  result:=result + TRnQContact(items[i]).uid + CRLF;
 //  result:=result + PRnQContact(List^[I]).uid + CRLF;
@@ -1425,11 +1427,11 @@ var
   ofs: Integer;
   len: Integer;
 begin
- result:=TRUE;
- clear;
- ofs := 1;
+  result := TRUE;
+  clear;
+  ofs := 1;
 // i := 1;
- len := Length(s);
+  len := Length(s);
 // while s>'' do
 // while i>0 do
  while ofs<Len do
@@ -1457,15 +1459,15 @@ end; // fromString
 
 function TRnQCList.clone: TRnQCList;
 var
-  i:integer;
+  i: integer;
 begin
-result := TRnQCList.create;
-for i:=0 to count-1 do
-  result.add(getAt(i))
+  result := TRnQCList.create;
+  for i:=0 to count-1 do
+    result.add(getAt(i))
 end; // clone
 
 procedure TRnQCList.resetEnumeration;
-begin enumIdx:=0 end;
+begin enumIdx := 0 end;
 
 function TRnQCList.hasMore: boolean;
 begin
@@ -1474,7 +1476,7 @@ end;
 
 function TRnQCList.getNext: TRnQContact;
 begin
- result:=getAt(enumIdx);
+ result := getAt(enumIdx);
  inc(enumIdx);
 end; // getNext
 
@@ -1490,7 +1492,7 @@ procedure TRnQCList.apply(p: TcontactProc);
 var
   i: integer;
 begin
-  i:=0;
+  i := 0;
   while i < count do
     begin
   //  p(PRnQContact(items[i])^);
@@ -1503,12 +1505,12 @@ function TRnQCList.buinlist: RawByteString;
 var
   i: integer;
 begin
-  result:='';
-  i:=0;
+  result := '';
+  i := 0;
   while i < count do
     begin
-  //    result:=result+ PRnQContact(items[i]).buin;
-      result:=result+ TRnQContact(items[i]).buin;
+  //    result := result+ PRnQContact(items[i]).buin;
+      result := result+ TRnQContact(items[i]).buin;
       inc(i);
     end;
 end; // buinList

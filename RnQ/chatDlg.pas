@@ -4890,8 +4890,8 @@ begin
     fs.Free;
     s2 := Base64EncodeString(s);
     s := '';
-      Proto_Outbox_add(OE_msg, thisChat.who, IF_Bin, RnQImageExTag+ s2 + RnQImageExUnTag);
-    s2 := '';  
+    Proto_Outbox_add(OE_msg, thisChat.who, IF_Bin, RnQImageExTag+ s2 + RnQImageExUnTag);
+    s2 := '';
 
   end;
 end;
@@ -5510,11 +5510,11 @@ begin
    begin
 //          TPaintBox(sender).Canvas.Brush.Color := paramSmile.color;
     TPaintBox(sender).Canvas.FillRect(TPaintBox(sender).Canvas.ClipRect);
-    SetStretchBltMode(TPaintBox(sender).Canvas.Handle, HALFTONE);
+//    SetStretchBltMode(TPaintBox(sender).Canvas.Handle, HALFTONE);
 
     DrawRbmp(TPaintBox(sender).Canvas.Handle, cnt.icon.Bmp,
              DestRect(cnt.icon.Bmp.GetWidth, cnt.icon.Bmp.GetHeight,
-             TPaintBox(sender).ClientWidth, TPaintBox(sender).ClientHeight));
+                      TPaintBox(sender).ClientWidth, TPaintBox(sender).ClientHeight), false);
 {    gr := TGPGraphics.Create(TPaintBox(sender).Canvas.Handle);
 //    ia.SetWrapMode(w)
     with DestRect(cnt.icon.Bmp.GetWidth, cnt.icon.Bmp.GetHeight,

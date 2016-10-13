@@ -178,9 +178,9 @@ end; // reset
 procedure TprefFrm.apply;
 var
   {$IFDEF DELPHI9_UP}
-  pp : TPrefPage;
+  pp: TPrefPage;
   {$ELSE}
-  i:byte;
+  i: byte;
   {$IFEND DELPHI9_UP}
 begin
  SetBtnEnable(false);
@@ -220,13 +220,13 @@ end; // apply
 
 procedure TprefFrm.FormShow(Sender: TObject);
 begin
-// prefFrm.height:=prefHeight;
+// prefFrm.height := prefHeight;
   applyTaskButton(self);
-  caption:=getTranslation('Preferences for %s', [RnQUser]);
+  caption := getTranslation('Preferences for %s', [RnQUser]);
 {  if (ICQ <> NIL) AND (ICQ.myInfo <> NIL) then
-    caption:=getTranslation('Preferences for %s',[ICQ.myinfo.displayed])
+    caption := getTranslation('Preferences for %s',[ICQ.myinfo.displayed])
    else
-    caption:=getTranslation('Preferences for %s', [RnQUser]);}
+    caption := getTranslation('Preferences for %s', [RnQUser]);}
 
 // theme.pic2ico(PIC_PREFERENCES, icon);
 end;

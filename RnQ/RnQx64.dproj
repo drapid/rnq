@@ -398,6 +398,40 @@ $(PreBuildEvent)]]></PreBuildEvent>
             <Form>FEmoji</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="ICQ\ICQv9.pas"/>
+        <DCCReference Include="ICQ\ICQflap.pas"/>
+        <DCCReference Include="ICQ\ICQContacts.pas"/>
+        <DCCReference Include="ICQ\ICQConsts.pas"/>
+        <DCCReference Include="ICQ\Protocol_ICQ.pas"/>
+        <DCCReference Include="ICQ\RQ_ICQ.pas"/>
+        <DCCReference Include="ICQ\sendfileDlg.pas">
+            <Form>sendfileFrm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="ICQ\RQCodes.pas"/>
+        <DCCReference Include="ICQ\wpDlg.pas">
+            <Form>wpFrm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="ICQ\ICQClients.pas"/>
+        <DCCReference Include="ICQ\ICQ.Stickers.pas"/>
+        <DCCReference Include="ICQ\icq_fr.pas">
+            <Form>icqFr</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="ICQ\viewSSI.pas">
+            <Form>SSIForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="ICQ\viewinfoDlg.pas">
+            <Form>viewinfoFrm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="ICQ\MenuStickers.pas">
+            <Form>FStickers</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="ICQ\ICQ.RESTapi.pas"/>
         <None Include="..\For.rnq\RnQConfig.inc"/>
         <None Include="RnQConfig.inc"/>
         <BuildConfiguration Include="Base">

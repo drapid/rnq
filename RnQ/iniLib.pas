@@ -2131,7 +2131,7 @@ else
 //    SaveSpamQuests;
     UpdateProperties;
     savecommonCFG;
-    saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies);
+    saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies, 'Quit user');
    end
 //  else
 //   roasterLib.clear;

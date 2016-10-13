@@ -15,6 +15,7 @@ Distro/*/Themes/
 Distro/*/*.ini
 Distro/*/db5
 RnQ/Units/
+RnQ/RnQBuiltTime.inc
 #################
 ## Delphi
 #################

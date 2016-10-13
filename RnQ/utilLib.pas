@@ -128,7 +128,7 @@ function  ints2cl(a: TintegerDynArray): TRnQCList;
 function  event2imgName(e: integer): TPicName;
 function  statusDrawExt(const DC: HDC; const x, y: Integer; const s: byte;
                         const inv: Boolean = False; const ExtSts: Byte = 0;
-                        const PPI: Integer = 0) : TSize;
+                        const PPI: Integer = 0): TSize;
 //function  statusDraw(cnv:Tcanvas; x,y:integer; s:Tstatus; inv:boolean=FALSE) : TSize;
 function  beh2str(kind: integer): RawByteString;
 procedure str2beh(const b, s: RawByteString); overload;
@@ -160,7 +160,7 @@ procedure wallpaperize(DC: THandle; r: TRect); {$IFDEF HAS_INLINE} inline; {$END
 function  delSUBtree(subPath: string): boolean;
 function  deltree(path: string): boolean;
 function  deleteFromTo(const fn: string; from, to_: integer): boolean;
-function  saveAllLists(const uPath: String; const pr: TRnQProtocol; pProxys : Tarrproxy) : Boolean;
+function  saveAllLists(const uPath: String; const pr: TRnQProtocol; pProxys: Tarrproxy; reason: String=''): Boolean;
 function  loadDB(zp: TZipFile; pCheckGroups: Boolean): boolean;
 //procedure saveDB;
 //procedure saveLists(pr: TRnQProtocol);
@@ -178,13 +178,13 @@ procedure loadOutInBox(zp: TZipFile);
 //procedure saveRetrieveQ;
 function  openSaveDlg(parent: Tform; const Cptn: String; IsOpen: Boolean;
                       const ext: String = ''; const extCptn: String = '';
-                      const defFile: String = ''; MultiSelect: boolean = false):string;
+                      const defFile: String = ''; MultiSelect: boolean = false): string;
 
 function  str2sortby(const s: AnsiString): TsortBy;
 procedure CheckBDays;
 function  GetWidth(chk: TCheckBox): integer;
 procedure parseMsgImages(const imgStr: RawByteString; var imgList: TAnsiStringList);
-function  CacheImage(var mem: TMemoryStream; url, ext: RawByteString): Boolean;
+function  CacheImage(var mem: TMemoryStream; const url, ext: RawByteString): Boolean;
 procedure CacheType(const url, mime, ctype: RawByteString);
 function  CheckType(const lnk: String; var sA: RawByteString; var ext: String): Boolean; overload;
 function  CheckType(const lnk: String): Boolean; overload;
@@ -268,7 +268,7 @@ implementation
 uses
 //  ShlObj,
   shellapi,
-  Themes, DwmApi, math, UITypes,
+  Themes, DwmApi, math, UITypes, System.Threading,
  {$IFDEF UNICODE}
    AnsiStrings,
    Character,
@@ -686,14 +686,69 @@ begin
 end;
 *)
 
-function  saveAllLists(const uPath : String; const pr : TRnQProtocol; pProxys : Tarrproxy) : Boolean;
+procedure saveStreamDBAsync(const uPath: String; const str: TMemoryStream);
+var
+  copiedStr: Boolean;
+begin
+  copiedStr := false;
+  TTask.Create(procedure
+    var
+      memStream: TMemoryStream;
+      lFileOld, lFileNew, lFileBak: string;
+      Saved: Boolean;
+    begin
+{      ListsCS.Acquire;
+      try}
+        try
+          memStream := TMemoryStream.Create;
+          str.SaveToStream(memStream);
+          copiedStr := True;
+          memStream.SaveToFile(uPath + dbFileName + '5.new');
+          memStream.Free;
+//          str.SaveToFile(uPath + dbFileName + '5.new');
+          Saved := True;
+         except
+          msgDlg('Error on saving DB5', True, mtError);
+          Saved := False;
+        end;
+        if Saved then
+         try
+           if FileExists(uPath + dbFileName + '5') then
+             begin
+              lFileOld := uPath + dbFileName + '5';
+              lFileNew := uPath + dbFileName + '5.new';
+              lFileBak := uPath + dbFileName + '5.bak';
+              if MakeBakups then
+                begin
+                  ReplaceFile(PChar(lFileOld), PChar(lFileNew), PChar(lFileBak), REPLACEFILE_IGNORE_MERGE_ERRORS, NIL, NIL)
+                end
+               else
+                ReplaceFile(PChar(lFileOld), PChar(lFileNew), NIL, REPLACEFILE_IGNORE_MERGE_ERRORS, NIL, NIL)
+             end
+            else
+      //       DeleteFile(uPath + dbFileName + '5');
+           RenameFile(uPath + dbFileName + '5.new', uPath + dbFileName + '5');
+          except
+      //    RnQFileUtil.saveFile(userPath + dbFileName, s, True);
+           msgDlg('Error on saving DB', True, mtError);
+         end;
+{      finally
+        ListsCS.Release;
+      end;}
+    end).Start;
+  while not copiedStr do
+    Application.ProcessMessages;
+//    Sleep(10);
+end;
+
+function  saveAllLists(const uPath: String; const pr: TRnQProtocol; pProxys: Tarrproxy; reason: String=''): Boolean;
 const
-  splitMsg='automsg: ';
-  autoaway_name='AUTO-AWAY';
+  splitMsg = 'automsg: ';
+  autoaway_name = 'AUTO-AWAY';
 var
   zf: TZipFile;
 //  ZIP: TZIPWriter;
-  procedure AddFile2Zip(const fn : String; const cfg : RawByteString);
+  procedure AddFile2Zip(const fn: String; const cfg: RawByteString);
 //  var
 //    fIDX : Integer;
   begin
@@ -714,13 +769,13 @@ var
   sA: AnsiString;
 //  i: Integer;
   k, l: integer;
-  Saved: Boolean;
   memStream: TMemoryStream;
-  lFileOld,lFileNew, lFileBak: string;
 begin
- Result := False; 
- if fantomWork then
-   Exit;
+  Result := False;
+  if fantomWork then
+    Exit;
+//  if reason>'' then
+    loggaEvtS('Save DB5. Reason: '+ reason);
 {
     groups.save;          -- OK
     saveLists(MainProto); -- OK
@@ -790,13 +845,13 @@ begin
   begin
    if Length(automessages[0]) > 5000 then
      automessages.Strings[0] := copy(automessages[0], 1, 5000);
-   cfg:= StrToUTF8(automessages[0]) + CRLF;
-   k:=1;
+   cfg := StrToUTF8(automessages[0]) + CRLF;
+   k := 1;
    while k < automessages.count do
     begin
-      cfg:= cfg+splitMsg+ StrToUTF8(automessages[k])+CRLF+
-                          StrToUTF8(automessages[k+1])+CRLF;
-      inc(k,2);
+      cfg := cfg+splitMsg+ StrToUTF8(automessages[k])+CRLF+
+                           StrToUTF8(automessages[k+1])+CRLF;
+      inc(k, 2);
     end;
    cfg := cfg+splitMsg+ autoaway_name+CRLF+ StrToUTF8(autoaway.msg)+CRLF;
    AddFile2Zip(automsgFilename, cfg);
@@ -879,40 +934,40 @@ begin
   end;
   AddFile2Zip(proxiesFileName, cfg);
 
-  try
-//    zf.SaveToFile(uPath+dbFileName + '4.new');
+//  try
     memStream := TMemoryStream.Create;
     zf.SaveToStream(memStream);
-    memStream.SaveToFile(uPath+dbFileName + '5.new');
+    zf.Free; zf := NIL;
+    saveStreamDBAsync(uPath, memStream);
+//    memStream.SaveToFile(uPath + dbFileName + '5.new');
     memStream.Free;
-    Saved := True;
+{    Saved := True;
    except
     msgDlg('Error on saving DB5', True, mtError);
     Saved := False;
-  end;
-  zf.Free;
-  if Saved then
+  end;}
+{  if Saved then
    try
-     if FileExists(uPath+dbFileName + '5') then
+     if FileExists(uPath + dbFileName + '5') then
        begin
-        lFileOld := uPath+dbFileName + '5';
-        lFileNew := uPath+dbFileName + '5.new';
-        lFileBak := uPath+dbFileName + '5.bak';
-     if MakeBakups then
-       begin
-           ReplaceFile(PChar(lFileOld), PChar(lFileNew), PChar(lFileBak), REPLACEFILE_IGNORE_MERGE_ERRORS, NIL, NIL)
+        lFileOld := uPath + dbFileName + '5';
+        lFileNew := uPath + dbFileName + '5.new';
+        lFileBak := uPath + dbFileName + '5.bak';
+        if MakeBakups then
+          begin
+            ReplaceFile(PChar(lFileOld), PChar(lFileNew), PChar(lFileBak), REPLACEFILE_IGNORE_MERGE_ERRORS, NIL, NIL)
+          end
+         else
+          ReplaceFile(PChar(lFileOld), PChar(lFileNew), NIL, REPLACEFILE_IGNORE_MERGE_ERRORS, NIL, NIL)
        end
       else
-           ReplaceFile(PChar(lFileOld), PChar(lFileNew), NIL, REPLACEFILE_IGNORE_MERGE_ERRORS, NIL, NIL)
-       end
-      else
-//       DeleteFile(uPath+dbFileName + '5');
-     RenameFile(uPath+dbFileName + '5.new', uPath+dbFileName + '5');
+//       DeleteFile(uPath + dbFileName + '5');
+     RenameFile(uPath + dbFileName + '5.new', uPath + dbFileName + '5');
     except
-//    RnQFileUtil.saveFile(userPath+dbFileName, s, True);
+//    RnQFileUtil.saveFile(userPath + dbFileName, s, True);
      msgDlg('Error on saving DB', True, mtError);
    end;
-
+}
 //    if FileExists(userPath+dbFileName) then
 //      DeleteFile(userPath+dbFileName);
 //  if FileExists(userPath+dbFileName + '2') then
@@ -922,8 +977,8 @@ end;
 
 function doConnect: boolean;
 var
-// msg : string;
-// evInt : Integer;
+// msg: string;
+// evInt: Integer;
  pr: TRnQProtocol;
 begin
  result := FALSE;
@@ -931,9 +986,9 @@ begin
     not Account.AccProto.isOffline then
    exit;
 
- result:=TRUE;
+ result := TRUE;
  if not useLastStatus then
-  lastStatus:= RnQstartingStatus;
+  lastStatus := RnQstartingStatus;
  setProgBar(Account.AccProto, 0.1/progLogonTotal);
  pr := Account.AccProto.ProtoElem;
 // if MainProto.ProtoName = 'ICQ' then
@@ -978,7 +1033,7 @@ begin
     //      icq.sock.MultiThreaded := True;
     //      icq.sock.ThreadAttach
 //          try
-            resolving:=TRUE;
+            resolving := TRUE;
           PostMessage(RnQmain.Handle, WM_RESOLVE_DNS, 0, 0);
   {          pr.sock.DnsLookup(pr.aProxy.serv.host);
           except
@@ -1009,7 +1064,7 @@ begin
    end
 end; // doConnect
 
-procedure connect_after_dns(const proto : TRnQProtocol);
+procedure connect_after_dns(const proto: TRnQProtocol);
 //var
 //  icq : TicqSession;
 begin
@@ -1036,9 +1091,9 @@ function findAuthReq(c: TRnQContact): TauthreqFrm;
 var
   i: integer;
 begin
-with childWindows do
+ with childWindows do
   begin
-  i:=0;
+  i := 0;
   while i < count do
     begin
     if Tobject(items[i]) is TauthreqFrm then
@@ -1050,28 +1105,28 @@ with childWindows do
     inc(i);
     end;
   end;
-result:=NIL;
+ result := NIL;
 end; // findAuthreq
 
 function findViewInfo(c: TRnQContact): TRnQViewInfoForm;
 var
   i: integer;
 begin
-with childWindows do
+ with childWindows do
   begin
-  i:=0;
+  i := 0;
   while i < count do
     begin
     if Tobject(items[i]) is TRnQViewInfoForm then
       begin
-      result:=TRnQViewInfoForm(items[i]);
+      result := TRnQViewInfoForm(items[i]);
       if result.contact.equals(c) then
         exit;
       end;
     inc(i);
     end;
   end;
-result:=NIL;
+ result := NIL;
 end;
 
 
@@ -1092,7 +1147,7 @@ const
   transcolor:integer;
   brF : HBRUSH;
   st : Integer;
-//  transcolor :TColor;
+//  transcolor: TColor;
 }
 begin
  try
@@ -1144,7 +1199,7 @@ begin
 //     theme.drawPic(b0.Canvas.Handle, (max(cx, minWidth)- cx) div 2, 30, PIC_SPLASH,
      theme.drawPic(b0.Canvas.Handle, Point(0, 0), splashImgElm);
 
-//     region:= CreateRectRgn(0, 0, cx, 30 + cy);
+//     region := CreateRectRgn(0, 0, cx, 30 + cy);
 //     b1 := TGPBitmap.Create(max(cx, minWidth), cy + 30);
 {     if cx < minWidth then
        x := (minWidth - cx) div 2
@@ -1178,9 +1233,9 @@ begin
 
 //  b0.Transparent := True;
 //  region:=getRegion2(b0);
-  region:=getRegion(b0);
+  region := getRegion(b0);
 *)
-   splashFrm:=TForm.create(application);
+   splashFrm := TForm.create(application);
 
 //    SetWindowLong(splashFrm.Handle, GWL_EXSTYLE, GetWindowLong(splashFrm.Handle, GWL_EXSTYLE) or WS_EX_LAYERED);
 //    GetWindowLong(Parent.Handle, GWL_STYLE)
@@ -1194,17 +1249,17 @@ begin
   @g_pUpdateLayeredWindow := GetProcAddress(g_hLib_User32, 'UpdateLayeredWindow');
   with splashFrm do
     begin
-//    color:=clBlack;
+//    color := clBlack;
 //    color := theme.GetFontProp('splash', FPT_COLOR).color;
 //    TransparentColorValue := transcolor;
-    position:=poScreenCenter;
-    Width:= cx;
-    Height:= cy;
+    position := poScreenCenter;
+    Width := cx;
+    Height := cy;
     borderstyle := bsNone;
 //    if region > 0 then
-//      SetWindowRgn(handle,region,TRUE);
+//      SetWindowRgn(handle, region, TRUE);
      BorderStyle := bsNone;
-    onPaint:=RnQmain.splashPaint;
+    onPaint := RnQmain.splashPaint;
 
 //    st := GetWindowLong(splashFrm.Handle, GWL_EXSTYLE);
 //    SetWindowLong(splashFrm.Handle, GWL_EXSTYLE, st and not WS_EX_LAYERED);
@@ -1214,7 +1269,7 @@ begin
     SetWindowPos(splashFrm.Handle, 0, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_NOZORDER or SWP_FRAMECHANGED);
     show;
     RnQmain.splashPaint(splashFrm);
-     bringForeground:= splashFrm.handle;
+     bringForeground := splashFrm.handle;
      setTopMost(splashFrm, True);
 //    repaint;
 //      splashFrm.Canvas.Draw(0, 0, b0);
@@ -1225,32 +1280,32 @@ begin
 end;
 end; // ShowSplash
 
-function viewHeventWindow(ev:Thevent):Tform;
+function viewHeventWindow(ev: Thevent): Tform;
 begin
-  result:=NIL;
+  result := NIL;
   if ev=NIL then
     exit;
   result := viewTextWindow(ev.getHeaderText, ev.getBodyText, ev.getBodyBin);
 //theme.GetIco2(ev.pic, result.icon);
-theme.pic2ico(RQteFormIcon, ev.pic, result.icon);
+  theme.pic2ico(RQteFormIcon, ev.pic, result.icon);
 end; // viewHeventWindow
 
-function openSaveDlg(parent:Tform; const Cptn : String; IsOpen : Boolean;
-         const ext : String= ''; const extCptn : String = '';
-         const defFile : String =''; MultiSelect : boolean = false):string;
+function openSaveDlg(parent: Tform; const Cptn: String; IsOpen: Boolean;
+         const ext: String = ''; const extCptn: String = '';
+         const defFile: String = ''; MultiSelect: boolean = false): string;
 var
-  Filtr : String;
-  fn : String;
-  hndl : THandle;
-//  defDir : String;
+  Filtr: String;
+  fn: String;
+  hndl: THandle;
+//  defDir: String;
 begin
   if ext > '' then
    if extCptn > '' then
-    Filtr:=getTranslation(extCptn)+'|*.'+ext+'|'+getTranslation('All files')+'|*.*'
+    Filtr := getTranslation(extCptn)+'|*.'+ext+'|'+getTranslation('All files')+'|*.*'
    else
-    Filtr:='*.'+ext+'|*.'+ext+'|'+getTranslation('All files')+'|*.*'
+    Filtr := '*.'+ext+'|*.'+ext+'|'+getTranslation('All files')+'|*.*'
   else
-    Filtr:=getTranslation('All files')+'|*.*';
+    Filtr := getTranslation('All files') + '|*.*';
 //  if defFile = '' then
 //    defFile := myPath;
 //dlg.options:=[ofFileMustExist,ofEnableSizing];
@@ -1261,35 +1316,35 @@ begin
   fn := ExtractFileName(defFile);
   if OpenSaveFileDialog(Hndl, ext, Filtr, ExtractFileDir(defFile),
     getTranslation(cptn), fn, IsOpen, MultiSelect) then
-    result:=fn
+    result := fn
   else
-    result:='';
+    result := '';
 end; // opendlg
 
-function str2html(const s:string):string;
+function str2html(const s: string): string;
 begin
-result:=template(s, [
-  '&', '&amp;',
-  '"', '&quot;',
-  '<', '&lt;',
-  '>', '&gt;',
-  CRLF, '<br>',
-  #13, '<br>',
-  #10, '<br>'
-]);
+  result := template(s, [
+    '&', '&amp;',
+    '"', '&quot;',
+    '<', '&lt;',
+    '>', '&gt;',
+    CRLF, '<br>',
+    #13, '<br>',
+    #10, '<br>'
+   ]);
 end; // str2html
 
-function strFromHTML(const s:string):string;
+function strFromHTML(const s: string): string;
 begin
-result:=template(s, [
-  '&amp;', '&',
-  '&quot;', '"',
-  '&lt;', '<',
-  '&gt;', '>',
-  '<br>', CRLF
+  result := template(s, [
+    '&amp;', '&',
+    '&quot;', '"',
+    '&lt;', '<',
+    '&gt;', '>',
+    '<br>', CRLF
 //  '<br>', #13,
 //  '<br>', #10,
-]);
+   ]);
 end; // str2html
 
 
@@ -1303,32 +1358,32 @@ end; // restoreForeWIndow
 
 procedure applyTransparency(forced: integer = -1);
 var
-  bak:Thandle;
+  bak: Thandle;
 begin
   if not running then
     exit;
   bak := RnQmain.handle;
-  RnQmain.alphablend:=transparency.forRoster or (forced>0);
-  chatfrm.alphablend:=transparency.forChat or (forced>0);
+  RnQmain.alphablend := transparency.forRoster or (forced>0);
+  chatfrm.alphablend := transparency.forChat or (forced>0);
   if RnQmain.alphablend then
    if forced >= 0 then
   	begin
-    RnQmain.alphablendvalue:=forced;
-//    chatfrm.alphablendvalue:=forced
+    RnQmain.alphablendvalue := forced;
+//    chatfrm.alphablendvalue := forced
     end
   else
   	begin
-//    chatFrm.AlphaBlendValue:=transparency.active;
+//    chatFrm.AlphaBlendValue := transparency.active;
     if RnQmain.handle=getForegroundWindow then
-      RnQmain.alphablendvalue:=transparency.active
+      RnQmain.alphablendvalue := transparency.active
     else
-      RnQmain.alphablendvalue:=transparency.inactive;
+      RnQmain.alphablendvalue := transparency.inactive;
     end;
   if chatfrm.alphablend then
    if forced >= 0 then
-     chatfrm.alphablendvalue:=forced
+     chatfrm.alphablendvalue := forced
     else
-     chatFrm.AlphaBlendValue:=transparency.active;
+     chatFrm.AlphaBlendValue := transparency.active;
   if bak<>RnQmain.handle then
     mainfrmHandleUpdate;
 end; // applyTransparency
@@ -1433,7 +1488,7 @@ begin
          begin
            zf.LoadFromFile(Account.ProtoPath + dbFileName + '3');
            i := zf.IndexOf(dbFileName);
-           if i >=0 then
+           if i >= 0 then
              s := zf.data[i];
          end
         except
@@ -1445,15 +1500,15 @@ begin
 //      s := ZDecompressStrEx(loadFile(userPath+dbFileName + '2'))
 //     else
 //  contactsDB:=str2db(Account.AccProto.getContactClass, s, result)
-  contactsDB:=str2db(Account.AccProto, s, result, pCheckGroups);
+  contactsDB := str2db(Account.AccProto, s, result, pCheckGroups);
   contactsDB.add(Account.AccProto, Account.AccProto.ProtoElem.MyAccNum)
 end; // loadDB
 
 (*
 procedure saveDB;
 var
- s : string;
-  zf : TZipFile;
+  s: string;
+  zf: TZipFile;
 //  ZIP: TZIPWriter;
 begin
   s := db2str(contactsDB);
@@ -1487,38 +1542,38 @@ begin
 end;
 *)
 
-function compContacts(Item1, Item2: Pointer):Integer;
+function compContacts(Item1, Item2: Pointer): Integer;
 begin
   result := compareText(TRnQContact(item1).displayed, TRnQContact(item2).displayed)
 end;
 
-function compContactsByGroup(Item1, Item2: Pointer):Integer;
+function compContactsByGroup(Item1, Item2: Pointer): Integer;
 var
-  c1,c2 : TRnQcontact;
+  c1, c2: TRnQcontact;
 begin
-  c1:=TRnQcontact(item1);
-  c2:=TRnQcontact(item2);
-if c1.group < c2.group then
-  result:=-1
-else
-  if c1.group > c2.group then
-    result:=+1
-  else
-    result:=compareText(c1.displayed, c2.displayed);
+  c1 := TRnQcontact(item1);
+  c2 := TRnQcontact(item2);
+  if c1.group < c2.group then
+    result := -1
+   else
+    if c1.group > c2.group then
+      result := +1
+     else
+      result := compareText(c1.displayed, c2.displayed);
 end; // compContacts
 
-procedure sortCL(cl:TRnQCList);
+procedure sortCL(cl: TRnQCList);
 begin
   cl.sort(compContacts)
 end;
 
-procedure sortCLbyGroups(cl:TRnQCList);
+procedure sortCLbyGroups(cl: TRnQCList);
 begin
   cl.sort(compContactsByGroup)
 end;
 
 //////////////////////////////////////////////////////////////////////////
-procedure hideForm(frm:Tform);
+procedure hideForm(frm: Tform);
 begin
   if frm=NIL then
     exit;
@@ -1529,7 +1584,7 @@ begin
      exit;
   end;
   frm.hide;
-  ShowWindow(application.handle,SW_HIDE)
+  ShowWindow(application.handle, SW_HIDE)
 end;
 
 function PrefIsVisiblePage(const pf: String): Boolean;
@@ -1550,14 +1605,14 @@ begin
  {$ENDIF ICQ_ONLY}
 end;
 
-procedure showForm(whatForm:TwhatForm; const Page: String = ''; Mode: TfrmViewMode = vmFull);
+procedure showForm(whatForm: TwhatForm; const Page: String = ''; Mode: TfrmViewMode = vmFull);
 var
-  frm:^Tform;
-  frmclass:TcomponentClass;
+  frm: ^Tform;
+  frmclass: TcomponentClass;
   i //, actPage
    : Byte;
-  arr : array of TPrefPage;
-  cr : boolean;
+  arr: array of TPrefPage;
+  cr: boolean;
 begin
 case whatForm of
 // {$IFNDEF RNQ_LITE}
@@ -1703,11 +1758,11 @@ end;
 procedure saveOutbox;
 begin saveFile( userPath+outboxFilename, outbox.toString ) end;}
 
-procedure loadOutInBox(zp : TZipFile);
+procedure loadOutInBox(zp: TZipFile);
 var
- s : RawByteString;
- i : Integer;
- zipPref : Boolean;
+  s: RawByteString;
+  i: Integer;
+  zipPref: Boolean;
 begin
   i := -1;
   zipPref := False;
@@ -1734,7 +1789,7 @@ begin
    else
     s := loadfileA(Account.ProtoPath + inboxFilename);
 
-  eventQ.fromString( s );
+  eventQ.fromString(s);
   eventQ.removeExpiringEvents;
 end;
 
@@ -1765,33 +1820,33 @@ var
   j: integer;
   existsDot: boolean;
 begin
-result := -1;
-if s[start] in EMAILCHARS then   // chi comincia bene...
+  result := -1;
+  if s[start] in EMAILCHARS then   // chi comincia bene...
   begin
   // try to find the @
-  j := start+1;
-  while (j < length(s)) and (s[j] in EMAILCHARS) do
-    inc(j);
-  if s[j]='@' then
+    j := start+1;
+    while (j < length(s)) and (s[j] in EMAILCHARS) do
+      inc(j);
+    if s[j]='@' then
     begin
     // @ found, now skip the @ and search for .
-    inc(j);
-    existsDot:=FALSE;
-    while (j < length(s)) and (s[j+1] in EMAILCHARS) do
-      begin
-      if s[j]='.' then
-        begin
-        existsDot:=TRUE;
-        break;
-        end;
       inc(j);
+      existsDot := FALSE;
+      while (j < length(s)) and (s[j+1] in EMAILCHARS) do
+      begin
+        if s[j]='.' then
+          begin
+           existsDot := TRUE;
+           break;
+          end;
+        inc(j);
       end;
     if existsDot and (s[j] in EMAILCHARS) then // at least a valid char after the . must exists
       begin
         repeat
-        inc(j);
+          inc(j);
         until (j > length(s)) or not  (s[j] in EMAILCHARS); // go forth till we're out or we meet an invalid char
-      result:=j-1;
+        result := j-1;
       end;
     end;
   end;
@@ -1802,15 +1857,15 @@ begin
   msgDlg('This feature isn''t available yet.\nCome back tomorrow...', True, mtInformation)
 end;
 
-function childParent(child,parent:integer):boolean;
+function childParent(child, parent: integer): boolean;
 begin
- result:=TRUE;
+  result := TRUE;
   repeat
-  if child = parent then
-    exit;
-  child:=getParent(child);
+    if child = parent then
+      exit;
+    child := getParent(child);
   until child=0;
- result:= parent=0;
+  result := parent=0;
 end; // childParent
 
 procedure myBeep;
@@ -1819,22 +1874,22 @@ begin
     beep
 end;
 
-function whatStatusPanel(statusbar:Tstatusbar; x:integer):integer;
+function whatStatusPanel(statusbar: Tstatusbar; x: integer): integer;
 var
-  x1:integer;
+  x1: integer;
 begin
-result:=0;
-x1:=statusbar.panels[0].width;
-while (x > x1) and (result<statusbar.Panels.Count-1) do
+  result := 0;
+  x1 := statusbar.panels[0].width;
+  while (x > x1) and (result<statusbar.Panels.Count-1) do
   begin
-  inc(result);
-  inc(x1, statusbar.panels[result].width);
+    inc(result);
+    inc(x1, statusbar.panels[result].width);
   end;
 end; // whatStatusPanel
 
 function sendProtoMsg(var oe: TOevent): Boolean;
 var
-//  c  : Tcontact;
+//  c: Tcontact;
   ev: THevent;
   vBin: RawByteString;
   vStr: String;
@@ -1916,33 +1971,33 @@ begin
   ev.Free;
 end; // sendProtoMsg
 
-procedure SendEmail2Mail(const email : String);
+procedure SendEmail2Mail(const email: String);
 begin
   if email > '' then
-    exec('mailto:'+ email);
+    exec('mailto:' + email);
 end;
 
-function deleteFromTo(const fn: string; from,to_:integer):boolean;
+function deleteFromTo(const fn: string; from, to_: integer): boolean;
 begin
-  result := partDeleteFile(fn,from,to_-from)
+  result := partDeleteFile(fn, from, to_-from)
 end;
 
 function enterUinDlg(const proto: TRnQProtocol; var uin: TUID; const title: string=''): boolean;
 var
   res: TUID;
-  ttl : String;
-  s : String;
+  ttl: String;
+  s: String;
 //  e: integer;
-//  fUIN : Int64;
-   prCl : TRnQProtoClass;
+//  fUIN: Int64;
+   prCl: TRnQProtoClass;
 begin
   if title='' then
-    ttl:='uin'
+    ttl := 'uin'
    else
     ttl := title;
-  res:='';
+  res := '';
   repeat
-   result:=InputQuery(getTranslation(ttl), getTranslation('UIN'), s);
+   result := InputQuery(getTranslation(ttl), getTranslation('UIN'), s);
    res := s;
    if result then
     begin
@@ -1955,13 +2010,13 @@ begin
 //          if prCl._isValidUid(uin) then
           if prCl._isProtoUid(uin) then
            begin
-            result:= True;
+            result := True;
             uin := res;
             break;
            end;
         end
        else
-        result:= proto.validUid1(uin);
+        result := proto.validUid1(uin);
      if result then
        begin
 //        uin := res;
@@ -1978,8 +2033,8 @@ function enterPwdDlg(var pwd: String; const title: string = ''; maxLength: integ
 var
   frm: pwdDlg.TmsgFrm;
 begin
-  frm:=pwdDlg.TmsgFrm.create(Application);
-  frm.txtBox.MaxLength:=maxLength;
+  frm := pwdDlg.TmsgFrm.create(Application);
+  frm.txtBox.MaxLength := maxLength;
   translateWindow(frm);
   {$ifdef CPUX64}
   SetWindowLongPtr(frm.handle, GWLP_HWNDPARENT, 0);
@@ -1991,18 +2046,18 @@ begin
 //  SetParent(frm.handle, 0);
   if title > '' then
 //    frm.caption:=getTranslation(title)
-    frm.caption:= title
+    frm.caption := title
 //   else
      ;
-  frm.txtBox.text:='';
+  frm.txtBox.text := '';
   frm.AllowNull := AllowNull;
-  bringForeground:=frm.handle;
+  bringForeground := frm.handle;
   // setTopMost(frm, True);
   frm.showModal;
   frm.BringToFront;
   result := frm.exitCode=pwdDlg.EC_enter;
   if result then
-    pwd:=trim(frm.txtBox.text);
+    pwd := trim(frm.txtBox.text);
   FreeAndNil(frm);
 end; // enterPwdDlg
 
@@ -2122,7 +2177,7 @@ else
 end; // rosterImgIdxFor
 
 {
-function statusDraw(cnv:Tcanvas; x,y:integer; s:Tstatus; inv:boolean=FALSE) : TSize;
+function statusDraw(cnv: Tcanvas; x, y: integer; s: Tstatus; inv: boolean=FALSE): TSize;
 begin
   result := theme.drawPic(cnv, x, y, status2imgName(s, inv),
    statusPics[s, inv].tkn, statusPics[s, inv].Loc, statusPics[s, inv].idx)
@@ -2193,27 +2248,27 @@ end;
 
 procedure toggleOnlyImVisibleTo;
 begin
-  showOnlyImvisibleto:=not showOnlyImvisibleto;
+  showOnlyImvisibleto := not showOnlyImvisibleto;
   saveCfgDelayed := True;
   updateHiddenNodes;
 end; // toggleOnlyImVisibleto
 
-function setAutomsg(const s:string):string;
+function setAutomsg(const s: string): string;
 begin
-  result:=automessages[0];
-  automessages[0]:=s;
+  result := automessages[0];
+  automessages[0] := s;
 end; // setAutomsg
 
-function applyVars(c:TRnQcontact; const s : String; fromAM : boolean = false) : String;
+function applyVars(c: TRnQcontact; const s: String; fromAM: boolean = false): String;
 var
-  h:Tdatetime;
-  s1, s2 : String;
+  h: Tdatetime;
+  s1, s2: String;
 begin
   if imAwaySince > 0 then
-    h:=(now-imAwaySince)*24
+    h := (now-imAwaySince)*24
   else
-    h:=0;
-   result:=template(s, [
+    h := 0;
+  result := template(s, [
     '%awaysince%', formatDatetime(timeformat.automsg, imAwaySince),
     '%awaysince-gmt%', formatDatetime(timeformat.automsg, imAwaySince-GMToffset),
     '%elapsedhours%', intToStr(trunc(h)),
@@ -2258,7 +2313,7 @@ begin
         s1 := getTranslation(Str_unk);
         s2 := s1;
        end;
-     result:=template(result, [
+     result := template(result, [
       '%you%',   c.displayed,
       '%nick%',  c.nick,
       '%first%', c.first,
@@ -2269,7 +2324,7 @@ begin
      ]);
     end
    else
-    result:=template(result, [
+    result := template(result, [
       '%you%',    '',
       '%nick%',   '',
       '%first%',  '',
@@ -2318,12 +2373,12 @@ begin
 end; // check4update
 
  {$IFDEF PROTOCOL_ICQ}
-function CheckUpdates(cnt : TRnQContact) : Boolean;
+function CheckUpdates(cnt: TRnQContact): Boolean;
 var
-//  ss:Tstrings;
-  v,previewv:Longword;
-  serial:integer;
-  ct : TICQContact;
+//  ss: Tstrings;
+  v, previewv: Longword;
+  serial: integer;
+  ct: TICQContact;
 //  thisVer:string;
   procedure found(v: longword; preview: boolean);
   var
@@ -2332,7 +2387,7 @@ var
     if preview then
       url := ct.workpage
      else
-      url:= ct.homepage;
+      url := ct.homepage;
   //  ps:=plugins.castEv(PE_UPDATE_INFO, checkupdate.info, ip2str(v), url, preview, v);
   //  if isAbort(ps) then exit;
     vs := IntToStr(v) + ifThen(preview, ' PREVIEW');
@@ -2419,7 +2474,7 @@ begin
     nothingFound;
  finally
  end;
- checkupdate.lastSerial:=serial;
+ checkupdate.lastSerial := serial;
 // saveCFG;
  saveCfgDelayed := True;
 end;
@@ -2436,10 +2491,10 @@ begin
   RnQmain.boundsrect := r;
 end; // dockSet
 
-procedure dockSet(var r:Trect);
+procedure dockSet(var r: Trect);
 var
-  w:integer;
-  vOn : Boolean;
+  w: integer;
+  vOn: Boolean;
 begin
   if not RnQmain.visible or not running then
     exit;
@@ -2455,7 +2510,7 @@ begin
   r := desktopWorkArea(RnQmain.Handle);
   if docking.appBar then
   begin
-    r.left:=0;
+    r.left := 0;
     r.right := screen.width;
   end;
   if docking.pos=DP_left then
@@ -2522,14 +2577,14 @@ begin
 //     (not roasterLib.exists(c) or notInList.exists(c))
      (notInList.exists(c) or not c.isInRoster) then
   begin
-    result:=TRUE;
+    result := TRUE;
     exit;
   end;
   if spamfilter.ignoreNIL and //(not roasterLib.exists(c) or notInList.exists(c))
     (notInList.exists(c) or not c.isInRoster)
     or spamfilter.ignorepagers and (IF_pager and flags>0) then
   begin
-    result:=TRUE;
+    result := TRUE;
     exit;
   end;
   result := FALSE;
@@ -2538,13 +2593,13 @@ begin
     if TryStrToInt(c.uid, i) and (i <= spamfilter.uingt) then
       exit
      else
-      filter:=TRUE;
+      filter := TRUE;
   if spamfilter.notnil then
 //  if roasterLib.exists(c) then exit
     if c.isInRoster then
       exit
      else
-      filter:=TRUE;
+      filter := TRUE;
   if spamfilter.multisend then
     if flags and IF_multiple = 0 then
       exit
@@ -2557,12 +2612,12 @@ begin
       filter := TRUE;
   if spamfilter.nobadwords then
   begin
-    b:=FALSE;
-    s:=spamfilter.badwords;
+    b := FALSE;
+    s := spamfilter.badwords;
     while not b and (s>'') do
      begin
-       wrd := chop(';',s);
-       b:=ansiContainsText(msg, wrd);
+       wrd := chop(';', s);
+       b := ansiContainsText(msg, wrd);
      end;
     if b then
       filter := TRUE
@@ -2627,17 +2682,17 @@ var
     end;
   end; // addStr
 var
-  i:integer;
-  cnt : TRnQContact;
+  i: integer;
+  cnt: TRnQContact;
 begin
-  result:='';
-  dim:=0;
-  i:=0;
+  result := '';
+  dim := 0;
+  i := 0;
   while i < TList(db).count do
    begin
     cnt := db.getAt(i);
     if Assigned(cnt) then
-      addStr( cnt.GetDBrow);
+      addStr(cnt.GetDBrow);
     inc(i);
    end;
   setLength(result, dim);
@@ -2647,10 +2702,10 @@ procedure clearDB(db: TRnQCList);
 var
   i: integer;
 begin
-for i:=0 to TList(db).count-1 do
-  with db.getAt(i) do
-    free;
-db.clear;
+  for i:=0 to TList(db).count-1 do
+    with db.getAt(i) do
+      free;
+  db.clear;
 end; // clearDB
 
 procedure freeDB(var db: TRnQCList);
@@ -2659,7 +2714,7 @@ begin
     Exit;
   clearDB(db);
   db.free;
-  db:=NIL;
+  db := NIL;
 end; // freeDB
 
 procedure contactCreation(c: TRnQContact);
@@ -2667,7 +2722,7 @@ begin
 //  getMem(c.data, sizeof(TCE));
 //  new(TCE(c.data));
   c.data := AllocMem(sizeof(TCE));
-  fillChar(c.data^, sizeOf(TCE),0);
+  fillChar(c.data^, sizeOf(TCE), 0);
   TCE(c.data^).toquery:=TRUE;
 end;
 
@@ -2689,17 +2744,17 @@ end;
 
 procedure startTimer;
 begin
-  RnQmain.timer.enabled:=TRUE
+  RnQmain.timer.enabled := TRUE
 end;
 
 procedure stopMainTimer;
 begin
-  RnQmain.timer.enabled:=FALSE;
+  RnQmain.timer.enabled := FALSE;
 //  RnQmain.timer.OnTimer := NIL;
 end;
 
-function behave(ev: Thevent; kind:integer=-1{; const info: AnsiString=''}): boolean;
-  function IsAnswer(ans : array of string; text : String) : Boolean;
+function behave(ev: Thevent; kind: integer=-1{; const info: AnsiString=''}): boolean;
+  function IsAnswer(ans: array of string; text: String): Boolean;
   var
     I: Integer;
   begin
@@ -2714,7 +2769,7 @@ function behave(ev: Thevent; kind:integer=-1{; const info: AnsiString=''}): bool
           Exit;
         end;
   end;
-  procedure Answers0(var ans : array of string);
+  procedure Answers0(var ans: array of string);
   var
     I: Integer;
   begin
@@ -2731,36 +2786,36 @@ const
 var
   ok: boolean;
   wnd: TselectCntsFrm;
-//  str1:string;
-//  spamCnt : Tcontact;
-  spmHist : Thistory;
-  i,j : Integer;
-  ev0 : Thevent;
-  s : string;
-  fn : string;
-  foundInSpam : Boolean;
-  vProto : TRnQProtocol;
+//  str1: string;
+//  spamCnt: Tcontact;
+  spmHist: Thistory;
+  i, j: Integer;
+  ev0: Thevent;
+  s: string;
+  fn: string;
+  foundInSpam: Boolean;
+  vProto: TRnQProtocol;
   vCnt: TRnQContact;
-  tipsAllowed : Boolean;
-  SkipEvent   : Boolean;
-  picsFound : Boolean;
-  picsName : TPicName;
-  gr : Pgroup;
-  dd : TDivisor;
+  tipsAllowed: Boolean;
+  SkipEvent: Boolean;
+  picsFound: Boolean;
+  picsName: TPicName;
+  gr: Pgroup;
+  dd: TDivisor;
 begin
-  result:=FALSE;
+  result := FALSE;
  {$IFNDEF DB_ENABLED}
 //  if info > '' then
 //    ev.setInfo(info);
  {$ENDIF ~DB_ENABLED}
   if kind >= 0 then
-    ev.kind:=kind;
+    ev.kind := kind;
 
   case kind of
     EK_GCARD,
     EK_MSG,
-    EK_URL: ok:=not filterRefuse(ev.who, ev.getBodyText, 0, ev);
-    EK_AUTHREQ: ok:=(not (enableignorelist and ignorelist.exists(ev.who)))and (not filterRefuse(ev.who, '', IF_auth));
+    EK_URL: ok := not filterRefuse(ev.who, ev.getBodyText, 0, ev);
+    EK_AUTHREQ: ok := (not (enableignorelist and ignorelist.exists(ev.who)))and (not filterRefuse(ev.who, '', IF_auth));
    else
      ok := not filterRefuse(ev.who);
   end;
@@ -2810,7 +2865,6 @@ begin
 //       spamCnt := contactsDB.get(spamsFilename);
        spmHist := Thistory.Create;
        fn := Account.ProtoPath + historyPath + spamsFilename;
-//       spmHist.fromString(loadFile(fn));
        spmHist.load(vProto.getContact(spamsFilename));
 //       chatFrm.closeChatWith(spamCnt);
        foundInSpam := false;
@@ -2941,15 +2995,15 @@ if minOnOff then
 
   result:=TRUE;
   if ev.kind in [EK_msg..EK_automsg] then
-    TCE(ev.who.data^).lastEventTime:=now;
-  if ev.kind in [EK_MSG,EK_URL,EK_CONTACTS,EK_auth,EK_authDenied,EK_AUTHREQ] then
+    TCE(ev.who.data^).lastEventTime := now;
+  if ev.kind in [EK_MSG, EK_URL, EK_CONTACTS, EK_auth, EK_authDenied, EK_AUTHREQ] then
     TCE(vCnt.data^).lastMsgTime := ev.when;
 
  // SAVE
  if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
    writeHistorySafely(ev)
- else
-   ev.fpos:=-1;
+  else
+   ev.fpos := -1;
 
  SkipEvent := false;
  if DsblEvnt4ClsdGrp and (ev.kind in [EK_oncoming, EK_offgoing, EK_statuschange,
@@ -3053,40 +3107,40 @@ function beh2str(kind: integer): RawByteString;
 var
   s: RawByteString;
 begin
-  s:='';
+  s := '';
   if behaviour[kind].tiptimes then
-    s:=s+'times('+IntToStrA(behaviour[kind].tiptimeplus)+')+';
+    s := s + 'times('+IntToStrA(behaviour[kind].tiptimeplus)+')+';
   if BE_tip in behaviour[kind].trig then
-    s:=s+'tip('+IntToStrA(behaviour[kind].tiptime)+')+';
+    s := s + 'tip('+IntToStrA(behaviour[kind].tiptime)+')+';
   if BE_tray in behaviour[kind].trig then
-    s:=s+'tray+';
+    s := s + 'tray+';
   if BE_openchat in behaviour[kind].trig then
-    s:=s+'openchat+';
+    s := s + 'openchat+';
   if BE_save in behaviour[kind].trig then
-    s:=s+'save+';
+    s := s + 'save+';
   if BE_sound in behaviour[kind].trig then
-    s:=s+'sound+';
+    s := s + 'sound+';
   if BE_history in behaviour[kind].trig then
-    s:=s+'history+';
+    s := s + 'history+';
   if BE_popup in behaviour[kind].trig then
-    s:=s+'popup+';
+    s := s + 'popup+';
   if BE_flashchat in behaviour[kind].trig then
-    s:=s+'flashchat+';
+    s := s + 'flashchat+';
   if BE_balloon in behaviour[kind].trig then
-    s:=s+'balloon+';
-  delete(s,length(s),1);
-  result:=s;
+    s := s + 'balloon+';
+  delete(s, length(s), 1);
+  result := s;
 end; // beh2str
 
-procedure str2beh(const b, s : RawByteString);
+procedure str2beh(const b, s: RawByteString);
 var
-  i : byte;
+  i: byte;
 begin
 //    for e:=EK_last downto 1 do
 //    for i:=0 to EK_last-1 do
     for i:=1 to EK_last do
       if b = event2str[i]+'-behaviour' then
-        behaviour[i]:=str2beh(s)
+        behaviour[i] := str2beh(s)
 end;
 
 function str2beh(s: AnsiString): Tbehaviour;
@@ -3095,36 +3149,36 @@ const
 
   function extractPar(const lab: AnsiString): AnsiString;
   var
-    i,j: integer;
+    i, j: integer;
   begin
-    result:='';
-    i := AnsiPos(lab+'(',s);
+    result := '';
+    i := AnsiPos(lab + '(', s);
     if i > 0 then
      begin
-       inc(i,length(lab)+1);
-       j:= PosEx(')', s, i);
+       inc(i, length(lab) + 1);
+       j := PosEx(')', s, i);
    //    j:=i;
    //    while (length(s) > j) and (s[j]<>')') do
    //      inc(j);
        if j > 0 then
-         result:=copy(s,i,j-i)
+         result := copy(s, i, j-i)
         else
-         result:=''
+         result := ''
      end;
   end; // extractPar
 var
-  tS : AnsiString;
+  tS: AnsiString;
 begin
-result.trig:=[];
-result.tiptime := 0;
-result.tiptimes := false;
-result.tiptimeplus := 0;
-s := Lowercase(s);
-result.tiptimes:=ansiContainsText(s, AnsiString('times'));
+  result.trig := [];
+  result.tiptime := 0;
+  result.tiptimes := false;
+  result.tiptimeplus := 0;
+  s := Lowercase(s);
+  result.tiptimes := ansiContainsText(s, AnsiString('times'));
   try
     tS := extractPar(AnsiString('times'));
     if tS <>'' then
-      result.tiptimeplus:=strToInt(ts)
+      result.tiptimeplus := strToInt(ts)
   except
   end;
   if ansiContainsText(s, tipstr) then
@@ -3132,21 +3186,21 @@ result.tiptimes:=ansiContainsText(s, AnsiString('times'));
   try
     tS := extractPar(tipstr);
     if tS <>'' then
-      result.tiptime:=strToInt(ts)
+      result.tiptime := strToInt(ts)
   except
   end;
-if ansiContainsText(s, AnsiString('tray')) then include(result.trig, BE_tray);
-if ansiContainsText(s, AnsiString('openchat')) then include(result.trig, BE_openchat);
-if ansiContainsText(s, AnsiString('save')) then include(result.trig, BE_save);
-if ansiContainsText(s, AnsiString('sound')) then include(result.trig, BE_sound);
-if ansiContainsText(s, AnsiString('history')) then include(result.trig, BE_history);
-if ansiContainsText(s, AnsiString('popup')) then include(result.trig, BE_popup);
-if ansiContainsText(s, AnsiString('flashchat')) then include(result.trig, BE_FLASHCHAT);
-if ansiContainsText(s, AnsiString('balloon')) then include(result.trig, BE_BALLOON);
+  if ansiContainsText(s, AnsiString('tray')) then include(result.trig, BE_tray);
+  if ansiContainsText(s, AnsiString('openchat')) then include(result.trig, BE_openchat);
+  if ansiContainsText(s, AnsiString('save')) then include(result.trig, BE_save);
+  if ansiContainsText(s, AnsiString('sound')) then include(result.trig, BE_sound);
+  if ansiContainsText(s, AnsiString('history')) then include(result.trig, BE_history);
+  if ansiContainsText(s, AnsiString('popup')) then include(result.trig, BE_popup);
+  if ansiContainsText(s, AnsiString('flashchat')) then include(result.trig, BE_FLASHCHAT);
+  if ansiContainsText(s, AnsiString('balloon')) then include(result.trig, BE_BALLOON);
 
 end; // str2beh
 
-//function event2imgidx(e:integer):integer;
+//function event2imgidx(e: integer): integer;
 function event2imgName(e: integer): TPicName;
 begin
 case e of
@@ -3168,42 +3222,42 @@ end; // event2imgidx
 
 procedure hideTaskButtonIfUhave2;
 begin
-if not menuViaMacro then
-  ShowWindow(application.handle,SW_HIDE)
+  if not menuViaMacro then
+    ShowWindow(application.handle, SW_HIDE)
 end;
 
 function registerHK(id: integer; hk: word): boolean;
 var
   m: integer;
 begin
-  m:=0;
+  m := 0;
   if hk and $1000>0 then inc(m, MOD_WIN);
   if hk and $2000>0 then inc(m, MOD_SHIFT);
   if hk and $4000>0 then inc(m, MOD_CONTROL);
   if hk and $8000>0 then inc(m, MOD_ALT);
-  result:=RegisterHotKey(RnQmain.handle, id, m, LOBYTE(hk));
+  result := RegisterHotKey(RnQmain.handle, id, m, LOBYTE(hk));
 end; // registerHK
 
 function updateSWhotkeys: Boolean;
 var
   i: integer;
 begin
-  result:=False;
+  result := False;
  if RnQmain = nil then
    Exit;
-removeSWhotkeys;
-result:=TRUE;
-for i:=0 to length(macros)-1 do
-  if macros[i].sw then
-    result:=registerHK(i, macros[i].hk) and result;
+  removeSWhotkeys;
+  result := TRUE;
+  for i:=0 to length(macros)-1 do
+    if macros[i].sw then
+      result := registerHK(i, macros[i].hk) and result;
 end; // updateSWhotkeys
 
 procedure removeSWhotkeys;
 var
-  i:integer;
+  i: integer;
 begin
-for i:=0 to 200 do
-  unregisterHotKey(RnQmain.handle, i);
+  for i:=0 to 200 do
+    unregisterHotKey(RnQmain.handle, i);
 end; // removeSWhotkeys
 
 {
@@ -3218,7 +3272,7 @@ else
 end; // saveRetrieveQ
 }
 
-procedure addToignorelist(c:TRnQcontact; const Local_only : Boolean = false);
+procedure addToignorelist(c: TRnQcontact; const Local_only: Boolean = false);
 //var
 //  i : Byte;
 begin
@@ -3240,12 +3294,12 @@ begin
       if Assigned(prefPages[i].frame) then
         TignoreFr(prefPages[i].frame).ignoreBox.addItem(c.displayed,c);
 }
-  saveListsDelayed:=TRUE;
+  saveListsDelayed := TRUE;
 end; // addToIgnorelist
 
-procedure removeFromIgnorelist(c:TRnQcontact);
+procedure removeFromIgnorelist(c: TRnQcontact);
 //var
-//  i : Byte;
+//  i: Byte;
 begin
   if (c=NIL) or not ignoreList.exists(c) then
     exit;
@@ -3269,15 +3323,15 @@ begin
   saveListsDelayed:=TRUE;
 end; // removeFromIgnorelist
 
-procedure removeFromRoster(c:TRnQContact; const WithHistory : Boolean = false);
+procedure removeFromRoster(c: TRnQContact; const WithHistory: Boolean = false);
 var
-  grp:integer;
+  grp: integer;
 begin
   if c=NIL then
     exit;
   if c.isInRoster then
-    plugins.castEvList( PE_LIST_REMOVE, PL_ROSTER, c);
-  grp:=c.group;
+    plugins.castEvList(PE_LIST_REMOVE, PL_ROSTER, c);
+  grp := c.group;
   roasterLib.remove(c);
 //  c.iProto.removeContact(c);
   if WithHistory then
@@ -3285,21 +3339,21 @@ begin
 //    if FileExists(userPath + historyPath + c.UID) then
 //     DeleteFile(userPath + historyPath + c.UID);
 
-if (grp>0) and (TRnQCList(c.fProto.readList(LT_ROSTER)).getCount(grp) = 0) then
-  if messageDlg(getTranslation('This group (%s) is empty! Do you want to delete it?',[groups.id2name(grp)]),mtConfirmation, [mbYes,mbNo], 0) = mrYes then
-    roasterLib.removeGroup(grp);
-c.group:=0;
+  if (grp>0) and (TRnQCList(c.fProto.readList(LT_ROSTER)).getCount(grp) = 0) then
+    if messageDlg(getTranslation('This group (%s) is empty! Do you want to delete it?',[groups.id2name(grp)]),mtConfirmation, [mbYes,mbNo], 0) = mrYes then
+      roasterLib.removeGroup(grp);
+  c.group := 0;
 end; // removeFromRoster
 
-procedure realizeEvents(const kind_:integer; c:TRnQcontact);
+procedure realizeEvents(const kind_: integer; c: TRnQcontact);
 var
-  k : Integer;
-  ev0 : Thevent;
+  k: Integer;
+  ev0: Thevent;
 
 begin
   k := -1;
   repeat
-    k:=eventQ.getNextEventFor(c, k);
+    k := eventQ.getNextEventFor(c, k);
 //       if (ev0 = nil) then
 //         Break;
 //       if ev0.kind in clearEvents then
@@ -3329,7 +3383,7 @@ procedure realizeEvent(ev: Thevent);
 var
   wnd: TselectCntsFrm;
  {$IFDEF PROTOCOL_ICQ}
-  dd : TProtoDirect;
+  dd: TProtoDirect;
  {$ENDIF PROTOCOL_ICQ}
 //  ev0:Thevent;
   vCnt: TRnQContact;
@@ -3414,20 +3468,20 @@ end; // chopAndRealizeEvent
 
 procedure trayAction;
 begin
-if not chopAndRealizeEvent then
-  if useSingleClickTray or (not RnQmain.visible) then
-    RnQmain.toggleVisible
-  else
-    if not doConnect then
-      RnQmain.toggleVisible;
+  if not chopAndRealizeEvent then
+    if useSingleClickTray or (not RnQmain.visible) then
+      RnQmain.toggleVisible
+     else
+      if not doConnect then
+        RnQmain.toggleVisible;
 //  doConnect;
 end; // trayAction
 
-{function loadNewOrOldVersionContactList(fn:string; altpath:string=''):string;
+{function loadNewOrOldVersionContactList(fn: string; altpath: string=''): string;
 var
-  s:string;
+  s: string;
 begin
-if altpath='' then altpath:=userpath;
+  if altpath='' then altpath:=userpath;
 //if fileExists(altPath+fn+'.txt') then
 //  result:=loadFile(altPath+fn+'.txt')
 if fileExists(altPath+fn) then
@@ -3447,9 +3501,9 @@ end; // loadNewOrOldVersionContactList
 
 function ints2cl(a: Types.TintegerDynArray): TRnQCList;
 var
-  i:integer;
+  i: integer;
 begin
-  result:=TRnQCList.create;
+  result := TRnQCList.create;
  {$IFDEF PROTOCOL_ICQ}
   for i:=0 to length(a)-1 do
 //    result.add(contactsDB.get(TICQContact, IntToStr(a[i])));
@@ -3457,7 +3511,7 @@ begin
  {$ENDIF PROTOCOL_ICQ}
 end; // ints2cl
 
-function doLock : Boolean;
+function doLock: Boolean;
 begin
   Result := False;
   if (AccPass = '') and (Account.AccProto.pwd = '') then
@@ -3476,19 +3530,19 @@ begin
     end;
 end; // doLock
 
-{function sendMCIcommand(cmd:PChar):string;
+{function sendMCIcommand(cmd: PChar): string;
 var
-  res:array [0..100] of char;
-  trash:Thandle;
+  res: array [0..100] of char;
+  trash: Thandle;
 begin
-trash:=0; // shut up compiler
-mciSendString(cmd, res, length(res), trash);
-result:=res;
+  trash := 0; // shut up compiler
+  mciSendString(cmd, res, length(res), trash);
+  result := res;
 end; // sendMCI
 {
-function statusName(s:Tstatus):string;
+function statusName(s: Tstatus): string;
 begin
-  result:=getTranslation(status2str[s])
+  result := getTranslation(status2str[s])
 end;}
 
 function behactionName(a: Tbehaction): string;
@@ -3501,8 +3555,8 @@ begin
   result := floatToStrF(q/(1024*1024),ffFixed,20,1)+getTranslation('Mb')
 end;
 
-//function eventName(ev:integer):string;
-//begin result:=getTranslation(event2str[ev]) end;
+//function eventName(ev: integer): string;
+//begin result := getTranslation(event2str[ev]) end;
 
 function setRosterAnimation(v: boolean): boolean;
 begin
@@ -3531,7 +3585,7 @@ end; // wallpaperize
 procedure applyUserCharset(f: Tfont);
 begin
   if userCharset >= 0 then
-    f.charset:=usercharset
+    f.charset := usercharset
 end;
 
 function getLeadingInMsg(const s: string; ofs: integer=1): string;
@@ -3541,7 +3595,7 @@ begin
   i := 0;
   while (i<length(s)) and (s[i+ofs] in ['>',' ']) do
     inc(i);
-  result := copy(s,ofs,i);
+  result := copy(s, ofs, i);
 end; // getLeadingInMsg
 
 function  fileIncomePath(cnt: TRnQContact): String;
@@ -3601,7 +3655,7 @@ end; // applyCommonSettings
 
 procedure mainfrmHandleUpdate;
 var
-  b : Boolean;
+  b: Boolean;
 begin
   b := StyleServices.enabled and DwmCompositionEnabled and (not docking.Docked2chat and RnQmain.Floating);
   if mainDlg.RnQmain.GlassFrame.Enabled <> b then
@@ -3631,7 +3685,7 @@ procedure setupChatButtons;
 { Toolbar.buttonheight to the right value. Width is instead set for each
 { button }
 var
-  h:integer;
+  h: integer;
 {
   procedure setupChatButton(newBtn:TspeedButton; pic:Tbitmap); overload;
   begin
@@ -3658,38 +3712,38 @@ begin
   if StyleServices.enabled then
     inc(h, 2);
   chatFrm.pagectrl.tabHeight := h;
-  chatFrm.closeBtn.left:=chatFrm.SendBtn.boundsrect.right+10;
-  chatFrm.closeBtn.top:=chatFrm.SendBtn.top;
+  chatFrm.closeBtn.left := chatFrm.SendBtn.boundsrect.right+10;
+  chatFrm.closeBtn.top := chatFrm.SendBtn.top;
 // applyCommonSettings(chatFrm);
 
   chatfrm.toolbar.left := chatFrm.closeBtn.boundsrect.right+10;
-  chatFrm.tb0.Width := chatFrm.toolbar.Left-30;
+  chatFrm.tb0.Width := chatFrm.toolbar.Left - 30;
 //  chatfrm.toolbar.Height:=18+theme.GetPicSize(PIC_HISTORY).cy;
-  chatfrm.panel.Height:=18+theme.getPicSize(RQteButton, PIC_HISTORY, 16).cy;
-  h := chatfrm.panel.Height -18;
+  chatfrm.panel.Height := 18+theme.getPicSize(RQteButton, PIC_HISTORY, 16).cy;
+  h := chatfrm.panel.Height - 18;
   with chatFrm.toolbar do
-    top:=(chatfrm.panel.ClientHeight-height) div 2;
-  chatFrm.toolbar.buttonheight:=h+5;
+    top := (chatfrm.panel.ClientHeight-height) div 2;
+  chatFrm.toolbar.buttonheight := h + 5;
 end; // setupChatButtons
 
-procedure toggleMainfrmBorder(setBrdr : Boolean = false; IsBrdr : Boolean = True);
+procedure toggleMainfrmBorder(setBrdr: Boolean = false; IsBrdr: Boolean = True);
 begin
   with RnQmain do
    if not( setBrdr and( (IsBrdr and (borderstyle <>bsNone)or (not IsBrdr and (borderstyle =bsNone))) ) ) then
-   if borderstyle=bsNone then
-     begin
+    if borderstyle=bsNone then
+      begin
 //       TopLbl.Visible := False;
-       borderStyle:=bsSizeToolWin;
+       borderStyle := bsSizeToolWin;
 //       BorderWidth := 0;
        showMainBorder := True;
-     end
-   else
-    begin
+      end
+     else
+      begin
 //     TopLbl.Visible := True;
-     borderStyle:=bsNone;
-//     borderStyle:=bsSingle;
+       borderStyle := bsNone;
+//     borderStyle := bsSingle;
        showMainBorder := false;
-    end;
+      end;
   mainfrmHandleUpdate;
 end; // toggleMainfrmBorder
 
@@ -3709,14 +3763,14 @@ end;
 
 function unexistant(const uin: TUID): boolean;
 begin
-result:=not (Account.AccProto.getMyInfo.equals(uin))
+  result:=not (Account.AccProto.getMyInfo.equals(uin))
     and not Account.AccProto.readList(LT_ROSTER).exists(Account.AccProto, uin)
     and not notInlist.exists(Account.AccProto, uin)
 end; // unexistant
 
-function isAbort(const pluginReply: AnsiString):boolean;
+function isAbort(const pluginReply: AnsiString): boolean;
 begin
-  result:= (pluginReply>'') and (Byte(pluginReply[1])=PM_ABORT)
+  result := (pluginReply>'') and (Byte(pluginReply[1])=PM_ABORT)
 end;
 
 procedure drawHint(cnv: Tcanvas; kind: Integer;
@@ -3771,7 +3825,7 @@ var
         cnv.TextRect(rr, s, [tfBottom, tfLeft, tfWordBreak, tfEndEllipsis, tfEditControl]);
        {$ENDIF DELPHI9_UP}
 //      xdy := rr.Bottom - rr.Top;
-      x:=rr.Right;
+      x := rr.Right;
     end;
 {   else
     begin
@@ -3779,7 +3833,7 @@ var
       x:=cnv.penpos.x;
     end;}
   if x > maxX then
-    maxX:=x;
+    maxX := x;
   end; // textout
 
   procedure textout(const s: string; a: TFontStyles); overload;
@@ -3798,7 +3852,7 @@ var
         textout(getTranslation(fc), [fsBold])
        else
         textout(fc, [fsBold]);
-    x:=border;
+    x := border;
   //  inc(y, dy+2);
     inc(y, xdy+2);
   end; // fieldout
@@ -3812,14 +3866,14 @@ var
         textout(getTranslation(fc), [fsBold])
        else
         textout(fc, [fsBold]);
-    x:=border;
+    x := border;
   //  inc(y, dy+2);
     inc(y, xdy+2);
   end; // fieldout
 
   procedure lineOut(clr: Tcolor);
   begin
-    cnv.Pen.color:=clr;
+    cnv.Pen.color := clr;
     cnv.moveTo(r.left+15, y);
     cnv.LineTo(r.right-15, y);
   end; // lineout
@@ -3857,10 +3911,10 @@ var
   cnt: TICQcontact;
  {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
-//  cnt2 : TMRAcontact;
+//  cnt2: TMRAcontact;
  {$ENDIF PROTOCOL_MRA}
-//  gr : TGPGraphics;
-//  region:HRGN;
+//  gr: TGPGraphics;
+//  region: HRGN;
   tS: String;
   tR: TGPRect;
 begin
@@ -3918,14 +3972,14 @@ case kind of
         with theme.GetPicSize(RQteDefault, pic, 0, PPI) do
          begin
           inc(x, cx+3);
-          ty := max(cy,ty);
+          ty := max(cy, ty);
          end;
  {$IFDEF PROTOCOL_ICQ}
         if (c is TICQcontact) and (TICQcontact(c).birthFlag) then
           with theme.GetPicSize(RQteDefault, PIC_BIRTH, 0, PPI) do
            begin
             inc(x, cx+3);
-            ty := max(cy,ty);
+            ty := max(cy, ty);
            end;
  {$ENDIF PROTOCOL_ICQ}
        end
@@ -3938,14 +3992,14 @@ case kind of
         with theme.drawpic(cnv.Handle,x,y, pic, True, PPI) do
          begin
           inc(x, cx+3);
-          ty := max(cy,ty);
+          ty := max(cy, ty);
          end;
  {$IFDEF PROTOCOL_ICQ}
         if (c is TICQcontact) and (TICQcontact(c).birthFlag) then
           with theme.drawpic(cnv.Handle,x,y, PIC_BIRTH, True, PPI) do
            begin
             inc(x, cx+3);
-            ty := max(cy,ty);
+            ty := max(cy, ty);
            end;
  {$ENDIF PROTOCOL_ICQ}
        end;
@@ -3981,7 +4035,7 @@ case kind of
 
      if cnt.IdleTime > 0 then
        fieldOutDP('Idle time',
-         getTranslation('%d:%.2d',[cnt.IdleTime div 60, cnt.IdleTime mod 60]));
+         getTranslation('%d:%.2d', [cnt.IdleTime div 60, cnt.IdleTime mod 60]));
     end;
  {$ENDIF PROTOCOL_ICQ}
 
@@ -4108,7 +4162,7 @@ case kind of
           tR.X := 10;
           tR.Y := y;
 
-          DrawRbmp(cnv.Handle, c.icon.Bmp, tR);
+          DrawRbmp(cnv.Handle, c.icon.Bmp, tR, false);
          end
       else
        if Assigned(cnt) then
@@ -4147,7 +4201,7 @@ case kind of
              if isOnline then
                inc(a2)
               else
-               inc(a3) ;
+               inc(a3);
       fieldOutDP('Online', inttostr(a2));
       fieldOutDP('Offline', inttostr(a));
       fieldOutDP('Unknown', inttostr(a3));
@@ -4160,7 +4214,7 @@ case kind of
     end;
   end;
 //r:=rect(0,0,maxX+ShadowSize+roundsize,y+ShadowSize+roundsize);
-r := rect(0, 0, maxX+ShadowSize + 5, y+ShadowSize);
+  r := rect(0, 0, maxX+ShadowSize + 5, y+ShadowSize);
 // cnv.Rectangle(r);
 // SetWindowRgn(cnv.Handle, region, TRUE);
 
@@ -4192,7 +4246,7 @@ begin
    result := 0;
 end; // infoToXStatus
 
-function exitFromAutoaway():boolean;
+function exitFromAutoaway(): boolean;
 begin
   result := FALSE;
   if autoaway.triggered=TR_none then
@@ -4540,7 +4594,7 @@ begin
   Result := CheckType(lnk, sA, ext);
 end;
 
-function CacheImage(var mem: TMemoryStream; url, ext: RawByteString): Boolean;
+function CacheImage(var mem: TMemoryStream; const url, ext: RawByteString): Boolean;
 var
   imgcache, fn: String;
   hash: LongWord;

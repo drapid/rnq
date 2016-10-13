@@ -2846,7 +2846,7 @@ if saveDBtimer > 0 then
       saveInboxDelayed := FALSE;
       saveOutboxDelayed := FALSE;
       saveGroupsDelayed := FALSE;
-      saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies);
+      saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies, 'DB timer');
      end;
   if saveDBtimer > 3000 then
     saveDBtimer := 3000;
@@ -2931,7 +2931,7 @@ if longdelayCount = 0 then
       saveGroupsDelayed:=FALSE;
       groups.save;
       end;}
-    if saveInboxDelayed or
+{    if saveInboxDelayed or
        saveOutboxDelayed or
        saveListsDelayed or
        saveGroupsDelayed or
@@ -2943,7 +2943,7 @@ if longdelayCount = 0 then
         saveDBtimer := max(saveDBtimer, 1800)
        else
         saveDBtimer := max(saveDBtimer, 500);
-     end;
+     end;}
 
     if saveCfgDelayed then
      begin
@@ -2954,7 +2954,8 @@ if longdelayCount = 0 then
       saveInboxDelayed  := FALSE;
       saveOutboxDelayed := FALSE;
       saveGroupsDelayed := FALSE;
-      saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies);
+      saveDBtimer := 0;
+      saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies, 'CFG changed');
      end;
     if saveInboxDelayed or
        saveOutboxDelayed or
@@ -2969,7 +2970,8 @@ if longdelayCount = 0 then
       saveInboxDelayed := FALSE;
       saveOutboxDelayed := FALSE;
       saveGroupsDelayed := FALSE;
-      saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies);
+      saveDBtimer := 0;
+      saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies, 'delay');
      end;
    end;
   end;
