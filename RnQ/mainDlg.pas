@@ -2835,10 +2835,10 @@ if removeTempVisibleTimer > 0 then
 		Account.AccProto.RemFromList(LT_TEMPVIS, removeTempVisibleContact);
   end;
 
-if saveDBtimer > 0 then
+if saveDBtimer2 > 0 then
   begin
-  dec(saveDBtimer);
-  if saveDBtimer=0 then
+  dec(saveDBtimer2);
+  if saveDBtimer2=0 then
 //    saveDB;
      begin
       saveListsDelayed := FALSE;
@@ -2848,8 +2848,8 @@ if saveDBtimer > 0 then
       saveGroupsDelayed := FALSE;
       saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies, 'DB timer');
      end;
-  if saveDBtimer > 3000 then
-    saveDBtimer := 3000;
+  if saveDBtimer2 > 3000 then
+    saveDBtimer2 := 3000;
   end;
 
 if showRosterTimer > 0 then
@@ -2904,12 +2904,13 @@ if longdelayCount = 0 then
             begin
              b := TRUE;
              toQuery := FALSE;
-             inc(saveDBtimer, saveDBdelay);
+//             inc(saveDBtimer, saveDBdelay);
+             incDBTimer;
              retrieveQ.add(getAt(i));
             end;
         inc(i);
         end;
-   saveDBtimer := min(saveDBtimer, 600);
+   saveDBtimer2 := min(saveDBtimer2, 600);
    if not fantomWork then
    begin
     if b then
@@ -2931,19 +2932,6 @@ if longdelayCount = 0 then
       saveGroupsDelayed:=FALSE;
       groups.save;
       end;}
-{    if saveInboxDelayed or
-       saveOutboxDelayed or
-       saveListsDelayed or
-       saveGroupsDelayed or
-       saveCfgDelayed then
-     // Increase saveDBtimer to maximum. If ScreenSaver is running than it's 30 min
-     begin
-      SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, @isSSRuning, 0);
-      if (isSSRuning or isLocked) or not isMoved(4*(10*60)) or BossMode.isBossKeyOn then
-        saveDBtimer := max(saveDBtimer, 1800)
-       else
-        saveDBtimer := max(saveDBtimer, 500);
-     end;}
 
     if saveCfgDelayed then
      begin
@@ -2954,7 +2942,7 @@ if longdelayCount = 0 then
       saveInboxDelayed  := FALSE;
       saveOutboxDelayed := FALSE;
       saveGroupsDelayed := FALSE;
-      saveDBtimer := 0;
+      saveDBtimer2 := 0;
       saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies, 'CFG changed');
      end;
     if saveInboxDelayed or
@@ -2970,7 +2958,7 @@ if longdelayCount = 0 then
       saveInboxDelayed := FALSE;
       saveOutboxDelayed := FALSE;
       saveGroupsDelayed := FALSE;
-      saveDBtimer := 0;
+      saveDBtimer2 := 0;
       saveAllLists(Account.ProtoPath, Account.AccProto, AllProxies, 'delay');
      end;
    end;
@@ -3123,7 +3111,8 @@ if delayCount = 0 then
   if dbUpdateDelayed then
     begin
     dbUpdateDelayed := FALSE;
-    inc(saveDBtimer, saveDBdelay);
+//    inc(saveDBtimer, saveDBdelay);
+    incDBTimer;
     if Assigned(RnQdbFrm) AND (RnQdbFrm.Handle <> 0) then
       RnQdbFrm.updateList;
     end;

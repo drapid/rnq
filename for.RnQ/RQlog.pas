@@ -18,10 +18,10 @@ uses
 type
   PLogItem = ^TLogItem;
   TLogItem = record
-   pkt : Boolean;
-   Cpt, Text : String;
-   PktData : RawByteString;
-   Img : TPicName;
+   pkt: Boolean;
+   Cpt, Text: String;
+   PktData: RawByteString;
+   Img: TPicName;
   end;
 
 type
@@ -31,6 +31,8 @@ type
     menu: TPopupMenu;
     Clear1: TMenuItem;
     CopytoClipboard1: TMenuItem;
+    Showevents1: TMenuItem;
+    Showpackets1: TMenuItem;
     procedure LogListDrawNode(Sender: TBaseVirtualTree;
       const PaintInfo: TVTPaintInfo);
     procedure FormCreate(Sender: TObject);
@@ -41,11 +43,18 @@ type
     procedure Clear1Click(Sender: TObject);
     procedure LogListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure FormDestroy(Sender: TObject);
+    procedure Showevents1Click(Sender: TObject);
+    procedure Showpackets1Click(Sender: TObject);
+  private
+    fShowEvents: Boolean;
+    fShowPackets: Boolean;
   public
     LogList: TVirtualDrawTree;
 //    procedure DestroyHandle; Override;
     procedure addToLog(pkt: Boolean; const s, Text: String;
                        const data: rawByteString; const Img: TPicName);
+    procedure HideAllEvents(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
+    procedure updateVisibility;
   end;
 
 procedure loggaEvtS(s: String; const img: TPicName = '';
@@ -74,15 +83,15 @@ uses
   RnQGraphics32;
 
 var
-  logEvFileData : String;
+  logEvFileData: String;
 
 procedure TlogFrm.addToLog(pkt: Boolean; const s, Text: String;
                      const data: rawByteString; const Img: TPicName);
 var
-  it : PLogItem;
+  it: PLogItem;
 //  i:integer;
-  SetLast : Boolean;
-  n : PVirtualNode;
+  SetLast: Boolean;
+  n: PVirtualNode;
 begin
  if LogList.FocusedNode = LogList.GetLast then
    SetLast := True
@@ -96,6 +105,18 @@ begin
  it.Img := Img;
  it.PktData := data;
 
+  if (fShowPackets and pkt)or(fShowEvents and not pkt) then
+    begin
+      Include(N.States, vsVisible);
+      Exclude(N.States, vsFiltered);
+    end
+   else
+    begin
+      Exclude(N.States, vsVisible);
+      Include(N.States, vsFiltered);
+    end;
+
+  if vsVisible in n.States then
   if SetLast then
    with LogList do
    begin
@@ -105,6 +126,33 @@ begin
        Selected[n] := True;
    end;
 end; // addToLog
+
+procedure TlogFrm.HideAllEvents(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
+begin
+  with TlogItem(PLogItem(Sender.getnodedata(Node))^) do
+   begin
+     if (fShowPackets and pkt)or(fShowEvents and not pkt) then
+       begin
+         if not(vsVisible in Node.States) then
+          begin
+           Include(node.States, vsVisible);
+           Exclude(node.States, vsFiltered);
+          end;
+       end
+      else
+       if vsVisible in Node.States then
+         begin
+           Exclude(node.States, vsVisible);
+           Include(node.States, vsFiltered);
+         end;
+   end;
+end;
+
+procedure TlogFrm.updateVisibility;
+begin
+  LogList.IterateSubtree(nil, HideAllEvents, NIL);
+  LogList.Invalidate;
+end;
 
 
 //procedure TlogFrm.destroyHandle;
@@ -143,6 +191,8 @@ begin
     OnDrawNode := LogListDrawNode;
     OnFreeNode := LogListFreeNode;
   end;
+  fShowEvents := Showevents1.Checked;
+  fShowPackets := Showpackets1.Checked;
 end;
 
 procedure TlogFrm.FormDestroy(Sender: TObject);
@@ -177,9 +227,9 @@ end;
 procedure TlogFrm.LogListDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-  s : String;
-  x : Integer;
-  r : tgprect;
+  s: String;
+  x: Integer;
+  r: tgprect;
 begin
  with TlogItem(PLogItem(LogList.getnodedata(PaintInfo.Node))^) do
  begin
@@ -218,37 +268,50 @@ begin
   end;
 end;
 
+procedure TlogFrm.Showevents1Click(Sender: TObject);
+begin
+  fShowEvents := Showevents1.Checked;
+  updateVisibility;
+end;
+
+procedure TlogFrm.Showpackets1Click(Sender: TObject);
+begin
+  fShowPackets := Showpackets1.Checked;
+  updateVisibility;
+end;
+
 procedure TlogFrm.Clear1Click(Sender: TObject);
 //var
 //  i:integer;
 begin
- LogList.Clear;
- dumpBox.Clear;
+  LogList.Clear;
+  dumpBox.Clear;
 //pktsBox.clear;
 end;
 
 procedure TlogFrm.CopytoClipboard1Click(Sender: TObject);
 var
- s : String;
+ s: String;
 begin
-  if LogList.FocusedNode = NIL then Exit;
+  if LogList.FocusedNode = NIL then
+    Exit;
   s := TlogItem(PLogItem(LogList.getnodedata(LogList.FocusedNode))^).Text;
   s := BetterStrS(s);
   clipboard.asText := s;
 end;
 {
-procedure loggaEvtA(s: AnsiString; const img : TPicName = '';
-                   const pFlush : Boolean = false);
+procedure loggaEvtA(s: AnsiString; const img: TPicName = '';
+                   const pFlush: Boolean = false);
 var
-  h:AnsiString;
+  h: AnsiString;
 begin
-  h:='';
+  h := '';
   while s>'' do
-    h:=h+chopline(RawByteString(s))+CRLF;
+    h := h+chopline(RawByteString(s))+CRLF;
   while h[length(h)] in [#10, #13] do
     SetLength(h, length(h)-1);
 //  h :=
-  s:=logtimestamp+h;
+  s := logtimestamp+h;
 
   if logpref.evts.onfile then
     logEvFileData := logEvFileData + s + CRLF;
@@ -258,25 +321,25 @@ begin
 
   if logpref.evts.onwindow and assigned(logfrm) then
     begin
-    h:=s;
+    h := s;
     logFrm.addToLog(False, chopline(RawByteString(h)), s, '', img);
     end;
 
 end; // loggaEvt
 }
-procedure loggaEvtS(s: String; const img : TPicName = '';
-                   const pFlush : Boolean = false);
+procedure loggaEvtS(s: String; const img: TPicName = '';
+                   const pFlush: Boolean = false);
 var
-  h : String;
+  h: String;
 begin
-  h:='';
+  h := '';
   while s>'' do
-    h:=h+chopline(s)+CRLF;
+    h := h+chopline(s)+CRLF;
 //  while h[length(h)] in [#10, #13] do
   while CharInSet( h[length(h)], [#10, #13] ) do
     SetLength(h, length(h)-1);
 //  h :=
-  s:=logtimestamp+h;
+  s := logtimestamp+h;
 
   if logpref.evts.onfile then
     logEvFileData := logEvFileData + s + CRLF;
@@ -286,23 +349,23 @@ begin
 
   if logpref.evts.onwindow and assigned(logfrm) then
     begin
-    h:=s;
+    h := s;
     logFrm.addToLog(False, chopline(h), s, '', img);
     end;
 
 end; // loggaEvt
 
-procedure logEvPkt(const Head : String; const TextData : String;
-      const data: RawByteString; const img : TPicName; needHex : Boolean = True);
+procedure logEvPkt(const Head: String; const TextData: String;
+      const data: RawByteString; const img: TPicName; needHex: Boolean = True);
 //var
-//  h:string;
+//  h: string;
 begin
-//  h:='';
-//  s:=logtimestamp+h;
+//  h := '';
+//  s := logtimestamp+h;
 //  if logpref.evts.onwindow and assigned(logfrm) then
   if logpref.pkts.onwindow and assigned(logfrm) then
     begin
-//    h:=s;
+//    h := s;
     logFrm.addToLog(needHex, Head, TextData, Data, img);
     end;
 

@@ -1526,7 +1526,8 @@ case ev of
      end
     else
       begin
-      inc(saveDBtimer, saveDBdelay);
+//        inc(saveDBtimer, saveDBdelay);
+        incDBTimer;
      {$IFDEF RNQ_FULL}
 //      statusIcon.showballoon(2000, getTranslation('Offline'),
 //                             Application.MainForm.Caption, bitinfo);

@@ -292,7 +292,7 @@ end;
 
 procedure TprefFrm.pagesBoxClick(Sender: TObject);
 //var
-//  i:integer;
+//  i: integer;
 begin
   if PrefList.FocusedNode = NIL then
    exit;

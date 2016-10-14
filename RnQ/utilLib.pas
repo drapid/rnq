@@ -188,6 +188,7 @@ function  CacheImage(var mem: TMemoryStream; const url, ext: RawByteString): Boo
 procedure CacheType(const url, mime, ctype: RawByteString);
 function  CheckType(const lnk: String; var sA: RawByteString; var ext: String): Boolean; overload;
 function  CheckType(const lnk: String): Boolean; overload;
+procedure incDBTimer;
 
 // costants for files
 const
@@ -285,7 +286,7 @@ uses
   RQUtil, RDFileUtil, RDUtils, RnQSysUtils,
   RQMenuItem, RQThemes, RQLog, RnQDialogs,
   RnQLangs, RnQButtons, RnQBinUtils, RnQGlobal, RnQCrypt, RnQPics,
-  RDtrayLib, RnQTips,
+  RDtrayLib, RnQTips, Hook,
   Murmur2, json,
    {$IFDEF RNQ_FULL2}
      converthistoriesDlg,
@@ -4639,6 +4640,23 @@ begin
   Result := True;
 end;
 
+procedure incDBTimer;
+var
+  isSSRuning: Boolean;
+begin
+  if saveDBtimer2=0 then
+     // Increase saveDBtimer to maximum. If ScreenSaver is running than it's 10 min
+     begin
+      SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, @isSSRuning, 0);
+      if (isSSRuning or isLocked) or not isMoved(4*(10*60)) or BossMode.isBossKeyOn then
+        saveDBtimer2 := max(saveDBtimer2, 600)
+       else
+        saveDBtimer2 := max(saveDBtimer2, 240);
+     end
+   else
+    inc(saveDBtimer2, saveDBdelay);
+
+end;
 
 INITIALIZATION
 

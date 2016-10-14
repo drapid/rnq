@@ -462,7 +462,7 @@ var
   clickedNode : Tnode;
 
   prefHeight      : integer;
-  saveDBtimer     : integer;
+  saveDBtimer2    : integer;
 //  loginServer  :string;
   lastServerIP, lastserverAddr : string;
   cmdLinePar : record

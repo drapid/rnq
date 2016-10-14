@@ -2875,23 +2875,23 @@ end; // proxy_connected
 
 procedure TicqSession.disconnected(Sender: TObject; Error: Word);
 begin
-q.reset;
-eventAddress:=sock.addr;
-eventMsgA := '';
-notifyListeners(IE_serverDisconnected);
-if error <> 0 then
-  begin
-  goneOffline;
-  eventInt:=WSocket_WSAGetLastError;
-//  GetWinsockErr
-  if eventInt=0 then eventInt:=error;
-  eventMsgA := WSocketErrorDesc(eventInt);
-  eventError:=EC_socket;
-  notifyListeners(IE_error);
-  exit;
-  end;
-if (phase<>login_)or(cookie='') then
-  goneOffline;
+  q.reset;
+  eventAddress:=sock.addr;
+  eventMsgA := '';
+  notifyListeners(IE_serverDisconnected);
+  if error <> 0 then
+    begin
+      goneOffline;
+      eventInt:=WSocket_WSAGetLastError;
+    //  GetWinsockErr
+      if eventInt=0 then eventInt:=error;
+      eventMsgA := WSocketErrorDesc(eventInt);
+      eventError:=EC_socket;
+      notifyListeners(IE_error);
+      exit;
+    end;
+  if (phase<>login_)or(cookie='') then
+    goneOffline;
 end; // disconnected
 
 function TicqSession.isReady:boolean;
@@ -2911,8 +2911,8 @@ end;
 
 procedure TicqSession.sendVisibility;
 var
-  i : Integer;
-  s : RawByteString;
+  i: Integer;
+  s: RawByteString;
 begin
   if isReady then
   begin
@@ -2960,12 +2960,12 @@ procedure TicqSession.sendStatusCode(sendVis: Boolean); //011E
 const
   vcookie = #1#2#3#4;
 var
-  dc : RawByteString;
+  dc: RawByteString;
 //  i : Integer;
-  i : Cardinal;
-  StFirst : Boolean;
-  xStsTLV : RawByteString;
-  Pck     : RawByteString;
+  i: Cardinal;
+  StFirst: Boolean;
+  xStsTLV: RawByteString;
+  Pck: RawByteString;
 begin
   if not isReady then
     exit;
@@ -2976,7 +2976,7 @@ begin
     if DCmode = DC_FAKE then
       dc := dword_LEasStr(fDC_Fake_ip.S_addr) + dword_BEasStr(fDC_Fake_port)
      else
-      dc:=dword_LEasStr(getLocalIP) +
+      dc := dword_LEasStr(getLocalIP) +
 //  server.GetXAddr + //#127#0#0#1+
         dword_BEasStr(serverPort);
   if sock.http.enabled then
@@ -2986,21 +2986,21 @@ begin
       dc := dc+#2#0
      else
       dc := dc+#4#0;
- dc:=dc + AnsiChar(ICQ_TCP_VERSION)+vcookie+dword_BEasStr($50)
-//  + #0#0#0#3+dword_BEasStr(myinfo.lastUpdate_dw)+dword_BEasStr(myinfo.lastInfoUpdate_dw)+Z+#0#0;
-  + #0#0#0#1;
- if showClientID then
-   begin
-     i := RnQBuild;
-    if LiteVersion then
-     i:= $40000000 or i;
-    if TestVersion then
-     i:= $80000000 or i;
-    dc := dc +dword_BEasStr(RnQclientID)+dword_BEasStr(i)
-   end
-  else
-   dc := dc + dword_BEasStr(Random($40FFFFFF)) + dword_BEasStr(Random($40FFFFFF));
- dc := dc+ dword_BEasStr(Random($40FFFFFF)) +#0#0;
+  dc := dc + AnsiChar(ICQ_TCP_VERSION)+vcookie+dword_BEasStr($50)
+   //    + #0#0#0#3+dword_BEasStr(myinfo.lastUpdate_dw)+dword_BEasStr(myinfo.lastInfoUpdate_dw)+Z+#0#0;
+       + #0#0#0#1;
+  if showClientID then
+     begin
+       i := RnQBuild;
+      if LiteVersion then
+       i := $40000000 or i;
+      if TestVersion then
+       i := $80000000 or i;
+      dc := dc +dword_BEasStr(RnQclientID)+dword_BEasStr(i)
+     end
+   else
+    dc := dc + dword_BEasStr(Random($40FFFFFF)) + dword_BEasStr(Random($40FFFFFF));
+  dc := dc+ dword_BEasStr(Random($40FFFFFF)) +#0#0;
 
   StFirst := True;
   if previousInvisible<>isInvisible then
@@ -3088,9 +3088,10 @@ end; // sendStatusCode
 
 procedure TicqSession.sendXStatusCodeOnly(); //011E
 var
-  xStsTLV : RawByteString;
+  xStsTLV: RawByteString;
 begin
-  if not isReady then Exit;
+  if not isReady then
+    Exit;
 
   xStsTLV := TLV($1D,
              word_BEasStr(BART_TYPE_XSTATUS) +
@@ -3150,10 +3151,10 @@ begin
    end;
 end;
 
-procedure TicqSession.setStatusFull(st: byte; xSt : byte; stStr : TXStatStr);
+procedure TicqSession.setStatusFull(st: byte; xSt: byte; stStr: TXStatStr);
 var
-  s : String;
-  ChangedSts, ChangedXStsID, ChangedXStsDesc : Boolean;
+  s: String;
+  ChangedSts, ChangedXStsID, ChangedXStsDesc: Boolean;
 begin
   eventContact := NIL;
   if not (xSt in [0.. High(XStatusArray)]) then
@@ -3217,27 +3218,31 @@ end;
 
 
 {$IFDEF UseNotSSI}
-procedure TicqSession.sendAddVisible(const buinlist:RawByteString);
+procedure TicqSession.sendAddVisible(const buinlist: RawByteString);
 begin
-  if not isReady or not isInvisible then exit;
+  if not isReady or not isInvisible then
+    exit;
   sendSNAC(ICQ_BOS_FAMILY, 5, buinlist);
 end; // sendAddVisible
 
-procedure TicqSession.sendRemoveVisible(const buinlist:RawByteString);
+procedure TicqSession.sendRemoveVisible(const buinlist: RawByteString);
 begin
-  if not isReady or not isInvisible then exit;
+  if not isReady or not isInvisible then
+    exit;
   sendSNAC(ICQ_BOS_FAMILY, 6, buinlist);
 end; // sendRemoveVisible
 
-procedure TicqSession.sendAddInvisible(const buinlist:RawByteString);
+procedure TicqSession.sendAddInvisible(const buinlist: RawByteString);
 begin
-  if not isReady or isInvisible then exit;
+  if not isReady or isInvisible then
+    exit;
   sendSNAC(ICQ_BOS_FAMILY, 7, buinlist);
 end; // sendAddInvisible
 
 procedure TicqSession.sendRemoveInvisible(const buinlist: RawByteString);
 begin
-  if not isReady or isInvisible then exit;
+  if not isReady or isInvisible then
+    exit;
   sendSNAC(ICQ_BOS_FAMILY, 8, buinlist);
 end; // sendRemoveInvisible
 
@@ -3337,20 +3342,21 @@ end; // sendRemoveTempContact
 {$IFDEF usesDC}
 
 //function TicqSession.sendFileReq(uin:TUID; msg,fn:string; size:integer):integer;
-function TicqSession.sendFileReq(const uin:TUID; const msg:string; fa : TFileAbout; useProxy : Boolean):integer;
+function TicqSession.sendFileReq(const uin: TUID; const msg: string; fa: TFileAbout; useProxy: Boolean): integer;
 var
-  c:TICQcontact;
-  proxyIP : Integer;
-  proxyPort  : Integer;
-  s : RawByteString;
+  c: TICQcontact;
+  proxyIP: Integer;
+  proxyPort: Integer;
+  s: RawByteString;
 begin
-result:=-1;
-if not isReady then exit;
+  result := -1;
+  if not isReady then
+    exit;
 
-c := getICQContact(uin);
-if not imVisibleTo(c) then
- if addTempVisMsg then
-  addTemporaryVisible(c);
+  c := getICQContact(uin);
+  if not imVisibleTo(c) then
+   if addTempVisMsg then
+     addTemporaryVisible(c);
 
 {
 sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
@@ -3373,7 +3379,7 @@ sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
     end
    else}
     begin
-      eventDirect:=directTo(c);
+      eventDirect := directTo(c);
       eventDirect.imserver := True;
       eventDirect.imsender := True;
       eventDirect.kind := DK_file;
@@ -3432,17 +3438,18 @@ sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
   result := addRef(REF_file, uin);
 end; // sendFileReq
 
-function TicqSession.sendFileReqPro(drct : TICQDirect):integer;
+function TicqSession.sendFileReqPro(drct: TICQDirect): integer;
 var
-  c:TRnQContact;
-  proxyIP, myIP : Integer;
-  ProxyPort  : Integer;
-  s : RawByteString;
+  c: TRnQContact;
+  proxyIP, myIP: Integer;
+  ProxyPort: Integer;
+  s: RawByteString;
 begin
-  result:=-1;
-  if not isReady then exit;
+  result := -1;
+  if not isReady then
+    exit;
 
-  c:= drct.contact;
+  c := drct.contact;
   if not imVisibleTo(c) then
    if addTempVisMsg then
     addTemporaryVisible(TICQcontact(c));
@@ -3511,15 +3518,16 @@ begin
   result := addRef(REF_file, c.UID);
 end; // sendFileReq
 
-function TicqSession.sendFileReq2(drct : TICQDirect):integer;
+function TicqSession.sendFileReq2(drct: TICQDirect): integer;
 var
 //  c:Tcontact;
-  proxyIP : Integer;
-  port  : Integer;
-  s : RawByteString;
+  proxyIP: Integer;
+  port: Integer;
+  s: RawByteString;
 begin
-  result:=-1;
-  if not isReady then exit;
+  result := -1;
+  if not isReady then
+    exit;
 
 //  c:=contactsDB.get(uin);
   if not imVisibleTo(drct.contact) then
@@ -3563,8 +3571,8 @@ begin
   result := addRef(REF_file, drct.contact.UID);
 end; // sendFileReq
 
-procedure TicqSession.sendFileOk(Drct : TICQDirect; SendMsg : Boolean = False;
-                  isListen : Boolean = false; useProxy : Boolean = false);
+procedure TicqSession.sendFileOk(Drct: TICQDirect; SendMsg: Boolean = False;
+                  isListen: Boolean = false; useProxy: Boolean = false);
 begin
 //if not isReady then exit;
 
@@ -3624,7 +3632,7 @@ begin
  end;
 end; // sendFileOK
 
-procedure TicqSession.ProcessReceiveFile(dirct : TICQDirect);
+procedure TicqSession.ProcessReceiveFile(dirct: TICQDirect);
 begin
 //  if not isReady then exit;
 
@@ -3662,37 +3670,39 @@ begin
 end; // sendFileOK
 {$ENDIF usesDC}
 
-procedure TicqSession.sendFileAbort(cnt : TICQcontact; msgID:TmsgID);
+procedure TicqSession.sendFileAbort(cnt: TICQcontact; msgID: TmsgID);
 //var
 //  c:Tcontact;
 begin
-if not isReady then exit;
+  if not isReady then
+    exit;
 
 //c:=contactsDB.get(refs[msgID].uid);
-if not imVisibleTo(cnt) then
-  if addTempVisMsg then
-  addTemporaryVisible(cnt);
+  if not imVisibleTo(cnt) then
+    if addTempVisMsg then
+      addTemporaryVisible(cnt);
 
-sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(msgID)+#0#2
-  + cnt.buin
-  +TLV(5, #0#0+qword_LEasStr(msgID)+CAPS_sm2big(CAPS_sm_FILE)+TLV($B,#0#1) )
-);
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(msgID)+#0#2
+         + cnt.buin
+         +TLV(5, #0#0+qword_LEasStr(msgID)+CAPS_sm2big(CAPS_sm_FILE)+TLV($B,#0#1) )
+           );
 end; // sendFileAbort
 
-procedure TicqSession.sendFileAck(msgID:TmsgID);
+procedure TicqSession.sendFileAck(msgID: TmsgID);
 var
-  c:TICQcontact;
+  c: TICQcontact;
 begin
-if not isReady then exit;
-c:= getICQContact(refs[msgID].uid);
-if not imVisibleTo(c) then
- if addTempVisMsg then
-  addTemporaryVisible(c);
+  if not isReady then
+    exit;
+  c := getICQContact(refs[msgID].uid);
+  if not imVisibleTo(c) then
+   if addTempVisMsg then
+     addTemporaryVisible(c);
 
-sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(msgID)+#0#2
-  + Length_B(refs[msgID].uid)
-  +TLV(5, #0#2+qword_LEasStr(msgID) + CAPS_sm2big(CAPS_sm_ICQSERVERRELAY ))
-);
+  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(msgID)+#0#2
+          + Length_B(refs[msgID].uid)
+          +TLV(5, #0#2+qword_LEasStr(msgID) + CAPS_sm2big(CAPS_sm_ICQSERVERRELAY ))
+           );
 end; // sendFileAck
 
 procedure TicqSession.sendAuthReq(const uin: TUID; const msg: string);
@@ -3739,7 +3749,7 @@ begin
   );
 end;
 
-procedure TicqSession.sendCryptMSGsnac(const uin : TUID; const sn : RawByteString);
+procedure TicqSession.sendCryptMSGsnac(const uin: TUID; const sn: RawByteString);
 begin
   sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
     + Length_B(uin)
@@ -3758,22 +3768,22 @@ function TicqSession.sendMsg(cnt: TRnQContact; var flags: dword; const msg: stri
 // $0406
 var
   c: TICQcontact;
-  status : AnsiString;
-  sutf   : RawByteString;
+  status: AnsiString;
+  sutf: RawByteString;
 
 //  buf, destBuf : TStringStream;
-  buf, destBuf : TMemoryStream;
+  buf, destBuf: TMemoryStream;
 //  s : String;
-  Msg2 : String;
-  sA, Msg2Send : RawByteString;
+  Msg2: String;
+  sA, Msg2Send: RawByteString;
 //  key : TAESKey256;
 //  key : AnsiString;
-  key : array [0..31] of byte;
-  ctx : TAESContext;
+  key: array [0..31] of byte;
+  ctx: TAESContext;
   CrptMsg: RawByteString;
   I, len, len2: Integer;
-  crc : Cardinal;
-  CompressType : Word;
+  crc: Cardinal;
+  CompressType: Word;
   flagChar,priorityChar: AnsiChar;
   isUnicode: Boolean;
   lShouldEncr: Boolean;
@@ -3783,7 +3793,7 @@ var
     MD5Context: TMD5Context;
   isBin: boolean;
 begin
-  result:=-1;
+  result := -1;
   if not isReady then
     exit;
 

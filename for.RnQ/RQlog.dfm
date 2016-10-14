@@ -52,5 +52,17 @@ object logFrm: TlogFrm
       Caption = 'Clear'
       OnClick = Clear1Click
     end
+    object Showevents1: TMenuItem
+      AutoCheck = True
+      Caption = 'Show events'
+      Checked = True
+      OnClick = Showevents1Click
+    end
+    object Showpackets1: TMenuItem
+      AutoCheck = True
+      Caption = 'Show packets'
+      Checked = True
+      OnClick = Showpackets1Click
+    end
   end
 end

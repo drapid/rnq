@@ -24,16 +24,16 @@ type
   Tstatus = (SC_ONLINE = 0, SC_OFFLINE, SC_UNK);
 type
   TXStatStr = record
-                Cap, Desc : String;
+                Cap, Desc: String;
               end;
 type
  TLIST_TYPES = (LT_ROSTER, LT_VISIBLE, LT_INVISIBLE, LT_TEMPVIS, LT_SPAM);
  PStatusProp = ^TStatusProp;
  TStatusProp = record
-   Cptn : String;
-   ShortName : AnsiString;
-   ImageName : TPicName;
-   idx : byte;
+   Cptn: String;
+   ShortName: AnsiString;
+   ImageName: TPicName;
+   idx: byte;
  end;
 type
   TStatusArray = array of TStatusProp;
@@ -43,7 +43,7 @@ type
      tips,
      blinking,
      sounds,
-     OpenChat :boolean;
+     OpenChat: boolean;
    end;
 
 const
