@@ -2566,7 +2566,7 @@ var
   cnt1: TRnQContact;
   aNewDawn: boolean;   // TRUE once after each midnight
 //  vLastInput : DWord;
-  isSSRuning: Boolean;
+  isSSRuning: BOOL;
   b: boolean;
   AwayXsts: TXStatStr;
 begin

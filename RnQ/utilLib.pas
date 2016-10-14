@@ -4642,7 +4642,7 @@ end;
 
 procedure incDBTimer;
 var
-  isSSRuning: Boolean;
+  isSSRuning: BOOL;
 begin
   if saveDBtimer2=0 then
      // Increase saveDBtimer to maximum. If ScreenSaver is running than it's 10 min
