@@ -2529,11 +2529,11 @@ end; // dockSet
 
 procedure setAppBarSize;
 //var
-//  r : TRect;
+//  r: TRect;
 begin
 //  r := RnQmain.boundsrect;
 ////  r.Right := r.Right + 10;
-  RnQSysUtils.setAppBarSize( RnQmain.handle, RnQmain.boundsrect, WM_DOCK, docking.pos=DP_left)
+  RnQSysUtils.setAppBarSize(RnQmain.handle, RnQmain.boundsrect, WM_DOCK, docking.pos=DP_left)
 end; // setAppBarSize
 
 procedure fixWindowPos(frm: Tform);
@@ -2549,8 +2549,8 @@ begin
   if fixingWindows.lastWidth <> dwa.right then
    begin
     if fixingWindows.onTheRight then
-      frm.left:=dwa.right-fixingWindows.lastRightSpace;
-    fixingWindows.lastWidth:=dwa.right;
+      frm.left := dwa.right-fixingWindows.lastRightSpace;
+    fixingWindows.lastWidth := dwa.right;
    end;
   if frm.left < (dwa.left-frm.Width) then
     frm.left := dwa.left-frm.Width+10;
@@ -2724,7 +2724,7 @@ begin
 //  new(TCE(c.data));
   c.data := AllocMem(sizeof(TCE));
   fillChar(c.data^, sizeOf(TCE), 0);
-  TCE(c.data^).toquery:=TRUE;
+  TCE(c.data^).toquery := TRUE;
 end;
 
 procedure contactDestroying(c: TRnQContact);
@@ -2994,7 +2994,7 @@ if minOnOff then
   or (ev.kind=EK_OFFGOING) and (now-TCE(vCnt.data^).lastOncoming < minOnOffTime*DTseconds) then
     exit;
 
-  result:=TRUE;
+  result := TRUE;
   if ev.kind in [EK_msg..EK_automsg] then
     TCE(ev.who.data^).lastEventTime := now;
   if ev.kind in [EK_MSG, EK_URL, EK_CONTACTS, EK_auth, EK_authDenied, EK_AUTHREQ] then
@@ -3003,8 +3003,11 @@ if minOnOff then
  // SAVE
  if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
    writeHistorySafely(ev)
+ {$IFNDEF DB_ENABLED}
   else
-   ev.fpos := -1;
+   ev.fpos := -1
+ {$ENDIF ~DB_ENABLED}
+  ;
 
  SkipEvent := false;
  if DsblEvnt4ClsdGrp and (ev.kind in [EK_oncoming, EK_offgoing, EK_statuschange,

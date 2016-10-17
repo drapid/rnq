@@ -403,7 +403,7 @@ begin
     showMainBorder := ShowBrdrChk.Checked;
     toggleMainfrmBorder(True, showMainBorder);
    end;
-  alwaysOnTop:=ontop1.checked;
+  alwaysOnTop := ontop1.checked;
 
   useSingleClickTray := SingleClickChk.Checked;
 
@@ -411,10 +411,10 @@ begin
                       or (transparency.forChat<>chattranspChk.checked)
                       or (transparency.active<>transpActive.position)
                       or (transparency.inactive<>transpInactive.position);
-  transparency.forRoster:=roastertranspChk.checked;
-  transparency.forChat:=chattranspChk.checked;
-  transparency.active:=transpActive.position;
-  transparency.inactive:=transpInactive.position;
+  transparency.forRoster := roastertranspChk.checked;
+  transparency.forChat := chattranspChk.checked;
+  transparency.active := transpActive.position;
+  transparency.inactive := transpInactive.position;
 
   MenuHeightPerm   := ChkMenuHeight.Checked;
 //  MenuDrawExt    := ChkExtDrawMenu.Checked;
@@ -471,9 +471,11 @@ begin
     else roasterbarGrp.ItemIndex:=1;
   if not RnQmain.FilterBar.visible then FilterBarGrp.ItemIndex:=2
   else
-    if FilterBarOnTop then FilterBarGrp.ItemIndex:=0
-    else FilterBarGrp.ItemIndex:=1;
-  showcontacttipChk.Checked:=RnQmain.roster.ShowHint;
+    if FilterBarOnTop then
+      FilterBarGrp.ItemIndex := 0
+     else
+      FilterBarGrp.ItemIndex := 1;
+  showcontacttipChk.Checked := RnQmain.roster.ShowHint;
   aniroasterChk.checked := animatedRoster;
   UINDelimChk.Checked   := ShowUINDelimiter;
   italicGrp.itemindex   := rosterItalic;
@@ -489,9 +491,9 @@ begin
     dockGrp.itemIndex := 0
   else
     if not docking.appBar then
-      dockGrp.itemIndex :=1
+      dockGrp.itemIndex := 1
     else
-      dockGrp.itemIndex :=2;
+      dockGrp.itemIndex := 2;
   Dock2ChatChk.Checked := docking.Dock2Chat;
 
   sortbyGrp.itemIndex    := sb2index[sortBy];

@@ -1,4 +1,6 @@
 unit histUtilsDlg;
+{$I RnQConfig.inc}
+{$I NoRTTI.inc}
 
 interface
 
@@ -25,8 +27,8 @@ type
     procedure AddHistToContactAction(sender:Tobject);
   end;
 
-  function load : boolean;
-  function unLoad : boolean;
+  function load: boolean;
+  function unLoad: boolean;
 
 var
   histUtilsFrm: ThistUtilsFrm;
@@ -41,9 +43,9 @@ uses
 {$R *.dfm}
 
 var
-   loadedLib : Boolean;
+   loadedLib: Boolean;
 
-function load : boolean;
+function load: boolean;
 begin
   @Splicing := nil;
   @ReNum := nil;
@@ -68,7 +70,7 @@ begin
   end;
 end;
 
-function unLoad : boolean;
+function unLoad: boolean;
 begin
   @Splicing := nil;
   @ReNum := nil;
@@ -82,8 +84,8 @@ end;
 
 procedure ThistUtilsFrm.loadHistBtnClick(Sender: TObject);
 var
-  dir : String;
-  rslt : String;
+  dir: String;
+  rslt: String;
 //  fn : String;
 begin
  //chatFrm.closeAllPages;
@@ -113,9 +115,9 @@ end;
 procedure ThistUtilsFrm.RepHistBtnClick(Sender: TObject);
 begin
 {var
-  rslt : String;
-  fn : String;
-  hist : Thistory;
+  rslt: String;
+  fn: String;
+  hist: Thistory;
 begin
 
      fn := openSavedlg(self, 'Select file with history', True);
@@ -143,13 +145,13 @@ end;
 
 procedure ThistUtilsFrm.AddHistToContactAction(sender: Tobject);
 var
-  wnd:TselectCntsFrm;
-  cntct : TRnQContact;
-  histFile : String;
-  rslt : String;
-  fn : String;
+  wnd: TselectCntsFrm;
+  cntct: TRnQContact;
+  histFile: String;
+  rslt: String;
+  fn: String;
 begin
-  wnd:=(sender as Tcontrol).parent as TselectCntsFrm;
+  wnd := (sender as Tcontrol).parent as TselectCntsFrm;
   cntct := wnd.current;
   if cntct = NIL then
     msgDlg('You must select contact', True, mtInformation)

@@ -74,12 +74,16 @@ uses
   OverbyteIcsSSLEAY,
   tipDlg, history,
   MenuSmiles, menusUnit,
-   histUtilsDlg,
+ {$IFDEF DB_ENABLED}
+   RnQDB,
+ {$ELSE ~DB_ENABLED}
+  histUtilsDlg,
+ {$ENDIF ~DB_ENABLED}
    Protocols_all;
 
 var
   initOnce: boolean;
-  uin2Bstarted : TUID;
+  uin2Bstarted: TUID;
 
 procedure resetCFG;
 var
@@ -95,11 +99,11 @@ begin
   UnloadAutomessages;
 //  autoMessages.clear;
   autoMessages.add('');
-  sendOnEnter:=0;
-  skipSplash:=FALSE;
-  autoSwitchKL:=False;
+  sendOnEnter := 0;
+  skipSplash := FALSE;
+  autoSwitchKL := False;
   //resetTheme;
-  sortBy:=SB_event;
+  sortBy := SB_event;
 
 //fillChar(icqv9.onStatusDisable, sizeOf(icqv9.onStatusDisable), 0);
 //fillChar(mrav1.onStatusDisable, sizeOf(mrav1.onStatusDisable), 0);
@@ -127,21 +131,21 @@ begin
     serv.port := DefLoginPort;
     end;}
 
-  enableIgnoreList:=TRUE;
+  enableIgnoreList := TRUE;
   ignorelist.clear;
   notinlist.clear;
  {$IFDEF CHECK_INVIS}
    CheckInvis.CList.Clear;
  {$ENDIF}
-connectOnConnection:=FALSE;
+connectOnConnection := FALSE;
 InitMacroses;
-keepalive.enabled:= True;
-keepalive.freq:=60;
+keepalive.enabled := True;
+keepalive.freq := 60;
 with RnQmain do
  begin
-  width:=120;
-  height:=250;
-  left:=screen.width-width-30;
+  width := 120;
+  height := 250;
+  left := screen.width-width-30;
  end;
 
   with transparency do
@@ -224,46 +228,46 @@ filterbarOnTop := True;
  RnQmain.FilterBar.Visible := False;
 
 doFixWindows := True;
-animatedRoster:= False;
-blinkSpeed:=5;
-userCharSet:=-1;
-logpref.writehistory:=TRUE;
-logpref.pkts.onWindow:=FALSE;
-logpref.pkts.onFile:=FALSE;
-logpref.pkts.clear:=FALSE;
-logpref.evts.onWindow:=FALSE;
-logpref.evts.onFile:=FALSE;
-logpref.evts.clear:=FALSE;
-rosterItalic:=RI_list;
+animatedRoster := False;
+blinkSpeed := 5;
+userCharSet := -1;
+logpref.writehistory := TRUE;
+logpref.pkts.onWindow := FALSE;
+logpref.pkts.onFile := FALSE;
+logpref.pkts.clear := FALSE;
+logpref.evts.onWindow := FALSE;
+logpref.evts.onFile := FALSE;
+logpref.evts.clear := FALSE;
+rosterItalic := RI_list;
 
-popupautomsg:=TRUE;
-oncomingOnAway:=FALSE;
-showOnlyOnline:=FALSE;
-showOnlyImVisibleTo:=FALSE;
+popupautomsg := TRUE;
+oncomingOnAway := FALSE;
+showOnlyOnline := FALSE;
+showOnlyImVisibleTo := FALSE;
 OnlOfflInOne := false;
 showUnkAsOffline := True;
-closeAuthAfterReply:=TRUE;
+closeAuthAfterReply := TRUE;
 CloseFTWndAuto := False;
-autoConsumeEvents:=TRUE;
+autoConsumeEvents := TRUE;
 DsblEvnt4ClsdGrp := False;
 
-RnQmain.roster.ShowHint:=TRUE;
+RnQmain.roster.ShowHint := TRUE;
 
-warnVisibilityAutoMsgReq:=TRUE;
-showStatusOnTabs:=TRUE;
+warnVisibilityAutoMsgReq := TRUE;
+showStatusOnTabs := TRUE;
 //webaware:=TRUE;
-indentRoster:=FALSE;
+indentRoster := FALSE;
 NILdoWith := 0;
 dontSavePwd := FALSE;
 clearPwdOnDSNCT := FALSE;
 askPassOnBossKeyOn := False;
-MakeBakups:=FALSE;
-startMinimized:=FALSE;
-autoReconnect:=TRUE;
-autoReconnectStop:=false;
+MakeBakups := FALSE;
+startMinimized := FALSE;
+autoReconnect := TRUE;
+autoReconnectStop := false;
 SaveIP := false;
-quitconfirmation:=FALSE;
-minimizeRoster:=TRUE;
+quitconfirmation := FALSE;
+minimizeRoster := TRUE;
 
 ShowHintsInChat := True;
 {$IFDEF CHAT_USE_LSB}
@@ -273,12 +277,12 @@ chatFrm.popupLSB:=TRUE;
 closeChatOnSend := True;
 ClosePageOnSingle := False;
 
-getOfflineMsgs:=TRUE;
+getOfflineMsgs := TRUE;
 delOfflineMsgs:=TRUE;
 lockOnStart:=FALSE;
 autocopyhist:=TRUE;
 bViewTextWrap := True;
-  useSmiles:=TRUE;
+  useSmiles := TRUE;
   ShowSmileCaption := FALSE;
   ShowAniSmlPanel := True;
   prefSmlAutoSize := True;
@@ -400,13 +404,13 @@ end; // resetCFG
 
 procedure UpdateProperties;
 var
-  pp : TRnQPref;
+  pp: TRnQPref;
 //  l : RawByteString;
-  sU : String;
-  i : Integer;
-  myInf : TRnQContact;
-  mainRect : TRect;
-  WinRect : TRect;
+  sU: String;
+  i: Integer;
+  myInf: TRnQContact;
+  mainRect: TRect;
+  WinRect: TRect;
 begin
 //  pp := TRnQPref.Create;
   pp := MainPrefs;
@@ -1716,7 +1720,7 @@ begin
    end;
   s := 'R&Q' + uin2Bstarted;
 //there is no previous Mutex so create new one
-  Mutex := CreateMutex(nil,false, PChar(s));
+  Mutex := CreateMutex(nil, false, PChar(s));
 
 //take ownership of our mutex
   WaitForSingleObject(Mutex,INFINITE);
@@ -1738,6 +1742,11 @@ begin
 
   setProgBar(nil, 1/maxProg);
 
+ {$IFDEF DB_ENABLED}
+  if not initRnQdb then
+    Halt(1);
+  InitRnQBase;
+ {$ENDIF DB_ENABLED}
 
   MainPrefs := TRnQPref.Create;
 

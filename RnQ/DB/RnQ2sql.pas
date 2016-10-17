@@ -1,9 +1,13 @@
+{
+This file is part of R&Q2.
+Under same license
+}
 unit RnQ2SQL;
-{$I Compilers.inc}
 {$I RnQConfig.inc}
+{$I NoRTTI.inc}
 
 interface
-   uses RQGlobal;
+   uses RDGlobal;
 
 const
   SQLCreate_CLIST_TYPES : AnsiString =
@@ -12,7 +16,7 @@ const
     ' [DESC] CHAR(20) NOT NULL ON CONFLICT IGNORE,' + CRLF +
     ' CONSTRAINT [CLIST_TYPES_PK] PRIMARY KEY ([ID] COLLATE BINARY) ON CONFLICT IGNORE);';
 
-  SQLData_CLIST_TYPES =
+  SQLData_CLIST_TYPES: AnsiString =
     'INSERT INTO [CLIST_TYPES] ' + CRLF +
     ' SELECT 1, ''ROSTER'' UNION ' + CRLF +
     ' SELECT 2, ''VISIBLE'' UNION ' + CRLF +
@@ -191,29 +195,32 @@ const
 //CREATE UNIQUE INDEX UID_IM ON UserBase(IMTYPE,UID)
 }
   SQLCreateHistTable : AnsiString =
-   'CREATE TABLE IF NOT EXISTS History (' +
-   ' MSG_TIME DOUBLE NOT NULL,'+
-   ' ISSEND INTEGER,' +
-   ' IMTYPE INTEGER NOT NULL, ' + CRLF +
-   ' FROM_UID TEXT NOT NULL ON CONFLICT FAIL,'+
-   ' TO_UID TEXT NOT NULL ON CONFLICT FAIL,'+
-   ' kind integer NOT NULL,'+
-   ' flags integer,'+
-   ' info binary,'+
-//   ' msg text);';
-   ' msg text '+
-   ', PRIMARY KEY (MSG_TIME, ISSEND, FROM_UID, TO_UID) '+
-   ' ); '
+   'CREATE TABLE IF NOT EXISTS "Conversations" ('
+        + '"Chat" TEXT NOT NULL,'
+        + '"When" DATETIME NOT NULL,'
+        + '"Who" TEXT NOT NULL,'
+        + '"Kind" INTEGER NOT NULL,'
+        + '"Text" TEXT,'
+        + '"Binary" BLOB,'
+        + '"Flags" INTEGER DEFAULT 0,'
+        + '"Out" INTEGER,'
+        + '"WID" GUID,'
+        + '"MsgID" INTEGER);' + CRLF
+    +'CREATE INDEX "timeindex" ON "Conversations" ("Chat", "When");'
+//    +'CREATE INDEX "chatindex" ON "Conversations" ("Chat");'
+//   ', PRIMARY KEY (MSG_TIME, FROM_UID, TO_UID, ISSEND) '+
 //   ' CREATE INDEX MSG_UID ON History(FROM_UID, TO_UID)'
   ;
 
-  SQLInsertHistory : AnsiString =
-   'INSERT INTO History (' +
-   ' MSG_TIME, ISSEND, IMTYPE, FROM_UID, TO_UID, kind, flags, info, msg) ' +
-   ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)';
-  SQLDeleteHistoryWith : AnsiString =
-   'DELETE History WHERE FROM_UID = "%s" or TO_UID = "%s"';
-  SQLSelectHistoryWith : AnsiString =
+
+  SQLInsertHistory =
+   'INSERT INTO Conversations (' +
+   ' "Chat", "when", "who", "kind", "flags", "Binary", "Text", "out") ' +
+   ' VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
+
+  SQLDeleteHistoryWith: AnsiString =
+   'DELETE Conversations WHERE "Chat" = "%s"';
+  SQLSelectHistoryWith: AnsiString =
 //   'SELECT MSG_TIME, ISSEND, IMTYPE, FROM_UID, TO_UID, kind, flags, info, msg '+
 //    ' FROM History WHERE FROM_UID = "%s" or TO_UID = "%s" ORDER BY MSG_TIME';
 
@@ -222,11 +229,10 @@ const
     ' FROM History WHERE FROM_UID = ?1 or TO_UID = ?1 ORDER BY MSG_TIME';
 //    ' FROM History WHERE FROM_UID like "?1" or TO_UID like "?1" ORDER BY MSG_TIME';
 }
-   'SELECT * FROM (SELECT MSG_TIME, ISSEND, IMTYPE, FROM_UID, TO_UID, kind, flags, info, msg '+
-    ' FROM History WHERE FROM_UID = ?1'+
-    ' UNION SELECT MSG_TIME, ISSEND, IMTYPE, FROM_UID, TO_UID, kind, flags, info, msg '+
-    ' FROM History WHERE TO_UID = ?1'+
-    ') ORDER BY MSG_TIME';
+//   'SELECT MSG_TIME, ISSEND, IMTYPE, FROM_UID, TO_UID, kind, flags, info, msg '+
+    'SELECT "Chat", "when", "who", "kind", "flags", "Binary", "Text", "out" '+
+    ' FROM History WHERE "Chat" = ?1'+
+    ' ORDER BY MSG_TIME';
   SQLSelectSelfHistory : AnsiString =
    'SELECT MSG_TIME, ISSEND, IMTYPE, FROM_UID, TO_UID, kind, flags, info, msg '+
     ' FROM History WHERE FROM_UID = TO_UID ORDER BY MSG_TIME';

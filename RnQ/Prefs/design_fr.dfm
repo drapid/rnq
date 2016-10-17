@@ -573,6 +573,10 @@ object designFr: TdesignFr
       object avtTS: TTabSheet
         Caption = 'Avatars'
         ImageIndex = 4
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object AvtShwChtChk: TCheckBox
           Left = 6
           Top = 6

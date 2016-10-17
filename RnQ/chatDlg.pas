@@ -1718,9 +1718,10 @@ begin
   //   SearchPnl.Visible := findBtn.Down;
      if usePlugPanel then
        begin
-        if plugBtns.PluginsTB <> toolbar then
+        if (plugBtns.PluginsTB <> toolbar) and Assigned(plugBtns.PluginsTB) then
          begin
           plugBtns.PluginsTB.Parent := ch.btnPnl;
+          plugBtns.PluginsTB.Align := alClient;
           plugBtns.PluginsTB.Visible := True;
          end;
        end
@@ -1756,6 +1757,7 @@ begin
        begin
         if plugBtns.PluginsTB <> toolbar then
         begin
+          plugBtns.PluginsTB.Align := alNone;
           plugBtns.PluginsTB.Parent := self;
           plugBtns.PluginsTB.Visible := False;
         end;
@@ -2364,6 +2366,10 @@ begin
     pagectrl.tabHeight := y + 4
    else
     pagectrl.tabHeight := 0;
+
+//  if usePlugPanel and (plugBtns.PluginsTB <> toolbar) then
+//    chat.btnPnl.Height := Max(24, MulDiv(24, NewDPI, cDefaultDPI));
+
 end;
 
 procedure TchatFrm.FormAfterMonitorDpiChanged(Sender: TObject; OldDPI,
@@ -2494,7 +2500,9 @@ begin
 //  with  do
    begin
     if plugBtns.PluginsTB.Parent = oldCh.btnPnl then
+     begin
       plugBtns.PluginsTB.Parent := pagectrl;
+     end;
     lastContact := oldCh.who;
 
     if oldCh.chatType = CT_PLUGING then

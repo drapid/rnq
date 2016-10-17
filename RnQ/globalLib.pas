@@ -49,9 +49,10 @@ const
  {$ENDIF}
 //  ANDRQversion:Longword=$00090412;  // remember: it's hex
 //  RnQversion:Longword = $000A00DB;  // remember: it's hex
-  RQversion:Longword = $000A01FF;  // remember: it's hex
+  RQversion: Longword = $000A01FF;  // remember: it's hex
  {$IFDEF DB_ENABLED}
-  RnQBuild = ;
+  RnQBuild = 1200;
+  PIC_CLIENT_LOGO = TPicName('rnq');
  {$ELSE ~DB_ENABLED}
   RnQBuild = 1126;
   PIC_CLIENT_LOGO                 = TPicName('rnq');

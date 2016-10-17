@@ -1335,44 +1335,45 @@ end;
 
 procedure TRnQmain.doAutosize;
 var
-  y,limit, delta:integer;
+  y, limit, delta: integer;
 begin
   if not autoSizeRoster
      or docking.active
      or (not self.Floating )
-     or not formVisible(self) then exit;
+     or not formVisible(self) then
+    exit;
   if autosizeFullRoster then
-    y:=roasterLib.fullMaxY
+    y := roasterLib.fullMaxY
    else
-    y:=roasterLib.onlineMaxY;
-if y > 20 then
-  begin
-  inc(y, 5);
-//  if bar.Visible then inc(y, sbar.height);
-  if bar.Visible       then inc(y, PntBar.height);
-  if TopLbl.Visible    then inc(y, TopLbl.height);
-  if FilterBar.Visible then inc(y, FilterBar.height);
-  if MlCntBtn.Visible  then inc(y, MlCntBtn.height);
-//  limit:=desktopWorkArea.Bottom - self.clientToScreen(point(0, 0)).y;
-  if autosizeUp then
+    y := roasterLib.onlineMaxY;
+  if y > 20 then
     begin
-      limit:= top+Height - Screen.MonitorFromWindow(self.Handle).WorkareaRect.Top;
-    //  limit:= Screen.DesktopTop + Screen.DesktopHeight - clientToScreen(point(0,0)).y;
-      if y > limit then
-        y:=limit;
-      delta := y-clientheight;
-      Top := Top - delta;
-      clientheight:=y;
-    end
-   else
-    begin
-      limit := Screen.MonitorFromWindow(self.Handle).WorkareaRect.Bottom - self.clientToScreen(point(0, 0)).y;
-    //  limit:= Screen.DesktopTop + Screen.DesktopHeight - clientToScreen(point(0,0)).y;
-      if y > limit then
-        y:=limit;
-      clientheight:=y;
+      inc(y, 5);
+    //  if bar.Visible then inc(y, sbar.height);
+      if bar.Visible       then inc(y, PntBar.height);
+      if TopLbl.Visible    then inc(y, TopLbl.height);
+      if FilterBar.Visible then inc(y, FilterBar.height);
+      if MlCntBtn.Visible  then inc(y, MlCntBtn.height);
+    //  limit:=desktopWorkArea.Bottom - self.clientToScreen(point(0, 0)).y;
+      if autosizeUp then
+        begin
+          limit := top+Height - Screen.MonitorFromWindow(self.Handle).WorkareaRect.Top;
+        //  limit:= Screen.DesktopTop + Screen.DesktopHeight - clientToScreen(point(0,0)).y;
+          if y > limit then
+            y := limit;
+          delta := y-clientheight;
+          Top := Top - delta;
+          clientheight := y;
+        end
+       else
+        begin
+          limit := Screen.MonitorFromWindow(self.Handle).WorkareaRect.Bottom - self.clientToScreen(point(0, 0)).y;
+        //  limit:= Screen.DesktopTop + Screen.DesktopHeight - clientToScreen(point(0,0)).y;
+          if y > limit then
+            y := limit;
+          clientheight := y;
+        end;
     end;
-  end;
 end; // doAutosize
 
 procedure TRnQmain.Viewmyinfo1Click(Sender: TObject);
@@ -2424,6 +2425,7 @@ case msg.msg of
     if not docking.enabled then
       begin
       inherited;
+      docking.active := false;
       exit;
       end;
     i := mousepos.x;
@@ -2789,7 +2791,7 @@ while i < count do
  except
  end;
 // do blink!
-blinkCount:=succ(blinkCount) mod blinkSpeed;
+blinkCount := succ(blinkCount) mod blinkSpeed;
 if blinkCount = 0 then
   begin
   blinking := not blinking;
@@ -2997,7 +2999,7 @@ if delayCount = 0 then
                 vi1.displayBox.setFocus
               else
                 vi1.nickBox.setFocus;}
-              bringForeground:=vi1.handle;
+              bringForeground := vi1.handle;
               end;
             end;
          end
@@ -3759,7 +3761,7 @@ end;
 procedure TRnQmain.rosterDrawHint(Sender: TBaseVirtualTree;
   HintCanvas: TCanvas; Node: PVirtualNode; R: TRect; Column: TColumnIndex);
 var
-  n : Tnode;
+  n: Tnode;
 begin
 { pre-paint is made on another canvas, the font is different, and i don't know
 { how to get the system tooltip font size. To get the same font size in paint
@@ -3792,7 +3794,7 @@ end;
 procedure TRnQmain.pwdBoxKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
   i: integer;
-  s,sub: string;
+  s, sub: string;
 begin
 if key=VK_RETURN then
   begin
@@ -3823,7 +3825,7 @@ end;
 
 procedure TRnQmain.menuMeasureItem(Sender: TObject; ACanvas: TCanvas; var Width, Height: Integer);
 var
-  p:Tpoint;
+  p: Tpoint;
 begin
  {$IFNDEF NO_WIN98}
 // if Win32MajorVersion < 5 then
@@ -3938,33 +3940,33 @@ end;
 procedure TRnQmain.Atempvisiblelist1Update(Sender: TObject);
 begin //and tag= 3009
  {$IFDEF PROTOCOL_ICQ}
-if (clickedContact <> nil) {and not useSSI}
-   and (clickedContact is TICQcontact)
-then
-  with clickedContact.fProto do
- begin
-  TAction(Sender).visible := isOnline and isInList(LT_TEMPVIS, clickedContact)
-                           or not imVisibleTo(clickedContact);
-  if isInList(LT_TEMPVIS, clickedContact) then
-    TAction(Sender).HelpKeyword:=PIC_RIGHT
+  if (clickedContact <> nil) {and not useSSI}
+     and (clickedContact is TICQcontact)
+  then
+    with clickedContact.fProto do
+     begin
+      TAction(Sender).visible := isOnline and isInList(LT_TEMPVIS, clickedContact)
+                               or not imVisibleTo(clickedContact);
+      if isInList(LT_TEMPVIS, clickedContact) then
+        TAction(Sender).HelpKeyword:=PIC_RIGHT
+       else
+        TAction(Sender).HelpKeyword := '';
+     end
    else
-    TAction(Sender).HelpKeyword := '';
- end
- else
  {$ENDIF PROTOCOL_ICQ}
-   TAction(Sender).Visible := false;
+     TAction(Sender).Visible := false;
 end;
 
 procedure TRnQmain.AReadautomessage1Update(Sender: TObject);
 var
-  showHidden:boolean;
+  showHidden: boolean;
 begin
  {$IFDEF PROTOCOL_ICQ}
-showHidden:=getShiftState() and (1+2)>0; // shift OR control
-if clickedContact <> nil then
- TAction(Sender).visible := showHidden or
-  clickedContact.fProto.isOnline and (CAPS_sm_ICQSERVERRELAY in TICQContact(clickedContact).capabilitiesSm) and
-  (byte(TICQContact(clickedContact).status) in statusWithAutomsg);
+  showHidden := getShiftState() and (1+2)>0; // shift OR control
+  if clickedContact <> nil then
+   TAction(Sender).visible := showHidden or
+    clickedContact.fProto.isOnline and (CAPS_sm_ICQSERVERRELAY in TICQContact(clickedContact).capabilitiesSm) and
+    (byte(TICQContact(clickedContact).status) in statusWithAutomsg);
  {$ENDIF PROTOCOL_ICQ}
 end;
 
@@ -4281,13 +4283,13 @@ begin
   TAction(Sender).visible := //not icq.useSSI;
   (Account.AccProto.ProtoElem is TicqSession) and not TicqSession(Account.AccProto.ProtoElem).UseSSI
  {$ELSE UseNotSSI}
-  TAction(Sender).visible:= False;
+  TAction(Sender).visible := False;
  {$ENDIF UseNotSSI}
 end;
 
 procedure TRnQmain.cACheckInvisibilityExecute(Sender: TObject);
 //var
-//  id : Integer;
+//  id: Integer;
 begin
  {$IFDEF CHECK_INVIS}
   checkInvQ.add(clickedContact);
@@ -4312,7 +4314,7 @@ end;
 
 procedure TRnQmain.mAChkInvisAllExecute(Sender: TObject);
 //var
-//  id : Integer;
+//  id: Integer;
 begin
  {$IFDEF CHECK_INVIS}
  checkInvis.lastAllChkTime := now;
@@ -4341,7 +4343,7 @@ end;
 
 procedure TRnQmain.cAReadXstUpdate(Sender: TObject);
 var
-  k : byte;
+  k: byte;
 begin
   TAction(Sender).Visible := False;
  {$IFDEF PROTOCOL_ICQ}
@@ -4375,7 +4377,7 @@ end;
 
 procedure TRnQmain.cASendFileExecute(Sender: TObject);
 var
-  fn : String;
+  fn: String;
 begin
  {$IFDEF usesDC}
   fn := openSaveDlg(self, 'Select file to transfer', True);
@@ -4427,7 +4429,7 @@ end;
 
 procedure TRnQmain.cAAdd2ServerUpdate(Sender: TObject);
 var
-  prt : byte;
+  prt: byte;
 begin
   if Sender is TAction then
    with Sender as TAction do
@@ -4484,17 +4486,17 @@ end;
 
 procedure TRnQmain.cAChkInvisListExecute(Sender: TObject);
 //var
-//  c:Tcontact;
+//  c: Tcontact;
 begin
  {$IFDEF CHECK_INVIS}
   if clickedContact=NIL then
     exit;
-//  c:= TICQContact(clickedContact);
+//  c := TICQContact(clickedContact);
   if CheckInvis.CList.exists(clickedContact) then
     CheckInvis.CList.remove(clickedContact)
   else
     CheckInvis.CList.Add(clickedContact);
-  saveListsDelayed:=TRUE;
+  saveListsDelayed := TRUE;
  {$ENDIF}
 end;
 
@@ -4505,9 +4507,9 @@ begin
   TAction(Sender).Visible := supportInvisCheck;
  {$IFDEF CHECK_INVIS}
   if CheckInvis.CList.exists(clickedContact) then
-    TAction(Sender).HelpKeyword:=PIC_RIGHT
+    TAction(Sender).HelpKeyword := PIC_RIGHT
    else
-    TAction(Sender).HelpKeyword:='';
+    TAction(Sender).HelpKeyword := '';
  {$ENDIF}
 { $ELSE}
 //  TAction(Sender).Visible := false;
@@ -4603,7 +4605,7 @@ end;
 procedure TRnQmain.statusBtnMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-//  x1, y1 : Integer;
+//  x1, y1: Integer;
   R: TRect;
 begin
   if button = mbRight then
@@ -4676,7 +4678,7 @@ end;
 
 procedure TRnQmain.mAXStatusExecute(Sender: TObject);
 var
-  x, y : Integer;
+  x, y: Integer;
   R: TRect;
 begin
 //  with mousePos do xstatusMenu.Popup(x,y);
@@ -4743,8 +4745,8 @@ end;
 
 procedure TRnQmain.menuPopup(Sender: TObject);
 var
-//  i : Integer;
-  ev : TaMenuItemUpd;
+//  i: Integer;
+  ev: TaMenuItemUpd;
 begin
 //  for i := Low(aMainMenuUpd) to High(aMainMenuUpd) do
 //    aMainMenuUpd[i].amiuEv(aMainMenuUpd[i].amiuMenu);
@@ -4766,8 +4768,8 @@ end;
 
 procedure TRnQmain.StatusMenuPopup(Sender: TObject);
 var
-//  i : Integer;
-  ev : TaMenuItemUpd;
+//  i: Integer;
+  ev: TaMenuItemUpd;
 begin
 //  for i := Low(aStatusMenuUpd) to High(aStatusMenuUpd) do
 //    aStatusMenuUpd[i].amiuEv(aStatusMenuUpd[i].amiuMenu);
