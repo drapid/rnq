@@ -542,35 +542,35 @@ case _byte_at(data,1) of
         end;
       PG_AWAYTIME:
         if Account.AccProto.getMyInfo=NIL then
-          resStr:=AnsiChar(PM_ERROR)+ AnsiCHAR(PERR_NOUSER)
+          resStr := AnsiChar(PM_ERROR)+ AnsiCHAR(PERR_NOUSER)
         else
-          resStr:=AnsiChar(PM_DATA)+_dt( autoaway.time/tenthsPerDay );
+          resStr := AnsiChar(PM_DATA)+_dt( autoaway.time/tenthsPerDay );
       PG_ANDRQ_PATH: resStr:=AnsiChar(PM_DATA)+_istring( mypath );
       PG_USERTIME:
         if Account.AccProto.getMyInfo=NIL then
-          resStr:=AnsiChar(PM_ERROR)+AnsiChar(PERR_NOUSER)
+          resStr := AnsiChar(PM_ERROR)+AnsiChar(PERR_NOUSER)
         else
-          resStr:=AnsiChar(PM_DATA)+_dt( usertime/tenthsPerDay );
+          resStr := AnsiChar(PM_DATA)+_dt( usertime/tenthsPerDay );
       PG_USER_PATH:
         if Account.AccProto.getMyInfo=NIL then
-          resStr:=AnsiChar(PM_ERROR)+AnsiChar(PERR_NOUSER)
+          resStr := AnsiChar(PM_ERROR)+AnsiChar(PERR_NOUSER)
         else
-          resStr :=AnsiChar(PM_DATA)+_istring( AccPath );
+          resStr := AnsiChar(PM_DATA)+_istring( AccPath );
       PG_CONNECTIONSTATE:
         if Account.AccProto.isOnline then
-          resStr :=AnsiChar(PM_DATA)+AnsiChar( PCS_CONNECTED )
+          resStr := AnsiChar(PM_DATA)+AnsiChar( PCS_CONNECTED )
         else
           if Account.AccProto.isOffline then
-            resStr :=AnsiChar(PM_DATA)+AnsiChar( PCS_DISCONNECTED )
+            resStr := AnsiChar(PM_DATA)+AnsiChar( PCS_DISCONNECTED )
           else
-            resStr :=AnsiChar(PM_DATA)+AnsiChar( PCS_CONNECTING );
+            resStr := AnsiChar(PM_DATA)+AnsiChar( PCS_CONNECTING );
       PG_WINDOW:
         begin
         w:=whatwindow(_byte_at(data,3));
         if w=NIL then
-          resStr :=AnsiChar(PM_ERROR)+AnsiChar(PERR_UNEXISTENT)
+          resStr := AnsiChar(PM_ERROR)+AnsiChar(PERR_UNEXISTENT)
         else
-          resStr :=AnsiChar(PM_DATA)+_int([ w.handle, w.left, w.top, w.width, w.height ]);
+          resStr := AnsiChar(PM_DATA)+_int([ w.handle, w.left, w.top, w.width, w.height ]);
         end;
       PG_AUTOMSG: resStr := AnsiChar(PM_DATA)+_istring(automessages[0]);
       PG_CHAT_UIN:
@@ -652,7 +652,7 @@ case _byte_at(data,1) of
           end;
        else resStr :=AnsiChar(PM_ERROR)+AnsiChar(PERR_UNK_REQ);
       end;//case
-  else resStr :=AnsiChar(PM_ERROR)+AnsiChar(PERR_UNK_REQ);
+  else resStr := AnsiChar(PM_ERROR)+AnsiChar(PERR_UNK_REQ);
   end;//case
  finally
 //   result:=resStr;
@@ -661,7 +661,7 @@ case _byte_at(data,1) of
 end; // callbackStr
 
     {$WARN UNSAFE_CODE OFF}
-function callback(data:Pinteger):pointer; stdcall;
+function callback(data: Pinteger): pointer; stdcall;
 var
   s, s2: RawByteString;
   ppp: TThreadProcedure;

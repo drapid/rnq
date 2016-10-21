@@ -60,11 +60,12 @@ type
     RQteButton,
     RQteMenu,
     RQteTrayNotify,
-    RQteFormIcon
+    RQteFormIcon,
+    RQteSmile
   );
 
 const
-  TE2Str : array[TRnQThemedElement] of TPicName = ('', 'button.', 'menu.', 'tray.', 'formicon.');
+  TE2Str : array[TRnQThemedElement] of TPicName = ('', 'button.', 'menu.', 'tray.', 'formicon.', 'smile.');
 
 type
   TPicLocation = (PL_pic, PL_icon, PL_int, PL_Ani, PL_Smile);
@@ -137,15 +138,16 @@ type
    public
     constructor Create;
     destructor Destroy; override;
-    function Clone : TFontObj;
+    function Clone: TFontObj;
   end;
  {$IFDEF RNQ_FULL}
   TThemePic = class(TObject)
    public
      PicIDX: Integer;
 //    Name : String;
-     r : TGPRect;
-     isWholeBig : Boolean;
+     r: TGPRect;
+     isWholeBig: Boolean;
+     picDPI: Word;
 //    constructor Create;
 //    destructor Destroy; override;
 //    procedure SetPicIDX(idx : Integer);
@@ -158,7 +160,7 @@ type
   TAniPicParams = record
 //    Name : String;
     IDX: Integer;
-    SmileIDX : Integer;
+    SmileIDX: Integer;
 //    Bounds: TRect;
     Bounds: TGPRect;
   {$IFNDEF USE_GDIPLUS}
@@ -167,8 +169,8 @@ type
     Color: Cardinal;
 //    DC : HDC;
   {$ENDIF NOT_USE_GDIPLUS}
-    Canvas : TCanvas;
-    selected : Boolean;
+    Canvas: TCanvas;
+    selected: Boolean;
 //    bg : TRnQBitmap;
 //    Count: Integer;
   end;
@@ -239,7 +241,8 @@ type
     procedure addprop(const name: TPicName; const SmlCaption: String;
                       Smile: TRnQBitmap; origSmile: TMemoryStream;
                       var pTP: TThemePic; bStretch: Boolean = false;
-                      Ani: Boolean = false; AniIdx: Integer = -1); overload;
+                      Ani: Boolean = false; AniIdx: Integer = -1;
+                      pDPI: Integer = 0); overload;
 //    function  GetIco2(name : String; ico : TIcon) : Boolean;
   {$IFDEF USE_GDIPLUS}
     function  GetPic13(name: TPicName; var pic: TGPImage; AddPic: Boolean = True): boolean;
@@ -691,9 +694,9 @@ end;
 
 procedure TRQtheme.clear(pTSC : TThemeSubClass);
 var
-  i : Integer;
-  po : TPicObj;
-  so : TSndObj;
+  i: Integer;
+  po: TPicObj;
+  so: TSndObj;
 begin
 {   WITH FIntPics do
    For i := 0 to Count-1 do
@@ -873,7 +876,7 @@ end;
 procedure TRQtheme.FreeResource;
 var
   I, k: Integer;
-  po : TPicObj;
+  po: TPicObj;
 //var
 //  i : Integer;
 begin
@@ -1575,10 +1578,12 @@ function TRQtheme.GetPicSize(pTE: TRnQThemedElement; const name: TPicName; minSi
 var
   i: Integer;
   s, s1: TPicName;
+  lPicDPI: Integer;
 begin
   s1 := AnsiLowerCase(name);
   s := TE2Str[pTE] + s1;
   i := FThemePics.IndexOf(s);
+  lPicDPI := fDPI;
   if i < 0 then
    i := FThemePics.IndexOf(s1);
   if i >= 0 then
@@ -1612,6 +1617,8 @@ begin
           begin
             Result.cx := Width;
             Result.cy := Height;
+//            if picDPI>20 then
+//              lPicDPI := picDPI;
           end
          else
         {$ENDIF RNQ_FULL}
@@ -1626,6 +1633,8 @@ begin
 //              Result.cx := r.Width;
 //              Result.cy := r.Height;
               result := Tsize(r.size);
+              if picDPI>20 then
+                lPicDPI := picDPI;
             end
            else
           {$ENDIF RNQ_FULL}
@@ -1636,10 +1645,10 @@ begin
           end;
         end;
     end;
-  if dpi <> fDPI then
+  if dpi <> lPicDPI then
    begin
-     result.cx := MulDiv(result.cx, dpi, fDPI);
-     result.cy := MulDiv(result.cy, dpi, fDPI);
+     result.cx := MulDiv(result.cx, dpi, lPicDPI);
+     result.cy := MulDiv(result.cy, dpi, lPicDPI);
    end;
 end;
 
@@ -2273,7 +2282,7 @@ end;
 
 function TRQtheme.addBigPic(var pBmp: TRnQBitmap; const origPic: TMemoryStream): Integer;
 //var
-//  tempPic :TPicObj;
+//  tempPic: TPicObj;
 begin
   result := Length(FBigPics);
   SetLength(FBigPics, result + 1);
@@ -2317,9 +2326,9 @@ end;
 
 function TRQtheme.addprop(const name: TPicName; kind: TthemePropertyKind; var pBmp: TRnQBitmap): Integer;
 var
-  i : Integer;
+  i: Integer;
 //  tempPic :TPicObj;
-  thp : TThemePic;
+  thp: TThemePic;
 begin
   result := -1;
   if not Assigned(pBmp) then
@@ -2370,7 +2379,7 @@ begin
     else
 //     with TPicObj(FBigPics.Objects[i]) do
      begin
-       thp := TThemePic(FThemePics.Objects[i]);
+      thp := TThemePic(FThemePics.Objects[i]);
       thp.r.X := 0; thp.r.Y := 0;
       thp.r.Width  := pBmp.Width;
       thp.r.Height := pBmp.Height;
@@ -2396,7 +2405,7 @@ end; // addthemeprop
 
 procedure TRQtheme.addProp(const name: TPicName; kind: TthemePropertyKind; var pic: TThemePic);
 var
-  i : Integer;
+  i: Integer;
 begin
   if not Assigned(pic) then
     exit;
@@ -2445,10 +2454,10 @@ end;
 procedure TRQtheme.addHIco(const name: TPicName; hi: HICON; Internal: Boolean = false);
 //procedure TRQtheme.addprop(name:string;hi: HICON; Internal : Boolean = false);
 var
-  i : Integer;
-//  j, cnt : Integer;
-//  bmp : TRnQBitmap;
-//  ff : TGUID;
+  i: Integer;
+//  j, cnt: Integer;
+//  bmp: TRnQBitmap;
+//  ff: TGUID;
 begin
   if hi = 0 then
     exit;
@@ -2541,13 +2550,14 @@ end;
 procedure TRQtheme.addprop(const name: TPicName; const SmlCaption: String;
                            Smile: TRnQBitmap; origSmile: TMemoryStream;
                            var pTP: TThemePic; bStretch: Boolean = false;
-                           Ani: Boolean = false; AniIdx: Integer=-1);
+                           Ani: Boolean = false; AniIdx: Integer=-1;
+                           pDPI: Integer = 0);
 var
-  i, j : Integer;
-  NewSmile : TSmlObj;
-  vST : TthemePropertyKind;
-  tp  : TThemePic;
-  pic : TRnQBitmap;
+  i, j: Integer;
+  NewSmile: TSmlObj;
+  vST: TthemePropertyKind;
+  tp: TThemePic;
+  pic: TRnQBitmap;
   origPic: TMemoryStream;
 begin
 //  if bStretch then
@@ -2581,6 +2591,7 @@ vST := TP_smile;
       pic := Smile;
       origPic := origSmile;
       tp.picIdx := addBigSmile(pic, origPic);
+      tp.picDPI := pDPI;
 //      NewSmile.AniIdx :=
       addprop(name, vST, tp);
      end
@@ -2608,6 +2619,7 @@ vST := TP_smile;
           pic := Smile;
           origPic := origSmile;
           tp.picIdx := addBigSmile(pic, origPic);
+          tp.picDPI := pDPI;
           addprop(name, vST, tp);
          end
         else
@@ -2620,10 +2632,10 @@ end; // theme.addprop
 
 procedure TRQtheme.addprop(name: TPicName; ts: TThemeSourcePath; kind: TthemePropertyKind; const s: String);
 var
-  StrObj : TStrObj;
-  sndObj : TSndObj;
-  i : Integer;
-  curList : TObjList;
+  StrObj: TStrObj;
+  sndObj: TSndObj;
+  i: Integer;
+  curList: TObjList;
 begin
   if name='' then
     exit;
@@ -2682,10 +2694,10 @@ begin
 end;
 }
 
-procedure TRQtheme.addprop(const pName:TPicName; fnt: TFontObj);
+procedure TRQtheme.addprop(const pName: TPicName; fnt: TFontObj);
 var
-  i : Integer;
-  fo : TFontObj;
+  i: Integer;
+  fo: TFontObj;
 //  j: Integer;
 //  Found : Boolean;
 begin
@@ -2753,9 +2765,9 @@ begin
    end;
 end;
 
-procedure TRQtheme.addProp(const name:TPicName; c: TColor);
+procedure TRQtheme.addProp(const name: TPicName; c: TColor);
 var
-  i : Integer;
+  i: Integer;
 begin
  i := FClr.IndexOf(AnsiLowerCase(name));
  if i < 0 then
@@ -2766,9 +2778,9 @@ begin
   end;
 end;
 
-procedure TRQtheme.loadThemeScript(const fn:string; const path : string);
+procedure TRQtheme.loadThemeScript(const fn: string; const path: string);
 var
-  ts : TThemeSourcePath;
+  ts: TThemeSourcePath;
 begin
   ts.pathType := pt_path;
     {$IFDEF USE_ZIP}
@@ -2782,7 +2794,7 @@ begin
   loadThemeScript(fn, ts);
 end;
 
-procedure TRQtheme.loadThemeScript(fn: string; ts : TThemeSourcePath);
+procedure TRQtheme.loadThemeScript(fn: string; ts: TThemeSourcePath);
 var
 //  LastPicFName : String; // For support '@' at pics
 //  LastLoadedPic : TRnQBitmap;
@@ -2791,10 +2803,10 @@ var
 
   function fullpath(const fn: string): string;
   begin
-    if ansipos(':',fn)=0 then
-      result:=ts.path+fn
+    if ansipos(':', fn)=0 then
+      result := ts.path+fn
      else
-      result:=fn
+      result := fn
   end;
 //  function fullpath(fn:string):string;
 //  begin if ansipos(':',fn)=0 then result:=path+fn else result:=fn end;
@@ -2907,11 +2919,11 @@ var
 }
   function parsePic(IsSmile: boolean; const v: AnsiString; const PicName: TPicName = ''): TThemePic;
   var
-    s : RawByteString;
+    s: RawByteString;
     fn: AnsiString;
     x,y,dx,dy, idx:integer;
-    w, h : Integer;
-    tempPic : TRnQBitmap;
+    w, h: Integer;
+    tempPic: TRnQBitmap;
     origPic: TMemoryStream;
     I: Integer;
   begin
@@ -3147,19 +3159,19 @@ var
     fontProp.Free;
   end; // parseFont
 
-  procedure parseFontFile(const v : AnsiString; const PicName : TPicName = '');
+  procedure parseFontFile(const v: AnsiString; const PicName: TPicName = '');
 (*  var
-    s : RawByteString;
+    s: RawByteString;
     fn: AnsiString;
     x,y,dx,dy, idx:integer;
-    w, h : Integer;
-    tempFont : RawByteString;
-    hnd : THandle;
+    w, h: Integer;
+    tempFont: RawByteString;
+    hnd: THandle;
     I: Integer;
-    fCnt : DWORD;*)
+    fCnt: DWORD;*)
   begin
-{    s:=v;
-    fn:=chop(RawByteString(';'),s);
+{    s := v;
+    fn := chop(RawByteString(';'),s);
     if fn='' then exit;
 {    tempFont := loadFromZipOrFile(ts.zp, ts.path, fn);
     hnd := AddFontMemResourceEx(@tempFont[1], Length(tempFont), 0, @fCnt);
@@ -3172,25 +3184,25 @@ var
 
 
 var
-  k,v : RawByteString;
-  txt,line  : RawByteString;
-  param  : AnsiString; // ”казывает на параметр: roaster, menu, tip, history
-  prefix : AnsiString; // Prefix for Font and other...
-  par : AnsiString;
-  LastSmile : AnsiString;
-  i   : integer;
-  loadedpic  : TRnQBitmap;
+  k, v: RawByteString;
+  txt, line: RawByteString;
+  param: AnsiString; // ”казывает на параметр: roaster, menu, tip, history
+  prefix: AnsiString; // Prefix for Font and other...
+  par: AnsiString;
+  LastSmile: AnsiString;
+  i: integer;
+  loadedpic: TRnQBitmap;
   origPic: TMemoryStream;
-  themePic : TThemePic;
-//  loadedpic  : TRnQBitmap;
+  themePic: TThemePic;
+//  loadedpic: TRnQBitmap;
  {$IFDEF RNQ_FULL}
-  loadedAniPic : TRnQAni;
+  loadedAniPic: TRnQAni;
 //  loadedAniPic : TRnQBitmap;
  {$ENDIF RNQ_FULL}
-  section   : TRQsection;
-  NonAnimated : Boolean;
-  hasSmilePic : Boolean;
-  Parsed : Boolean;
+  section: TRQsection;
+  NonAnimated: Boolean;
+  hasSmilePic: Boolean;
+  Parsed: Boolean;
 //  loadedFontProp : TFontProps;
 begin
  ts.path :=  ts.path + ExtractFilePath(fn);
@@ -3221,14 +3233,14 @@ begin
  themePic := NIL;
  LastPicIDX := -1;
  hasSmilePic := false;
- section:=_null;
+ section := _null;
  SetLength(prefix, 0);
  txt := loadfile(ts, fn);
  while txt>'' do
   try
-   line:=chopline(txt);
+   line := chopline(txt);
    par := trim(line);
-   line:=trim(chop('#',line));
+   line := trim(chop('#',line));
    if (line='')or((line[1]=';') and not ((section = _smiles)and hasSmilePic)) then
      continue;
    if (line[1]='[') and (line[length(line)]=']') then
@@ -3239,33 +3251,33 @@ begin
         begin
          k := copy(param, 1, i-1);
          prefix := copy(param, i+1, 100) + '.';
-         i:=findInStrings(k, RQsectionLabels);
+         i := findInStrings(k, RQsectionLabels);
          k := '';
         end
        else
         begin
-         i:=findInStrings(param, RQsectionLabels);
+         i := findInStrings(param, RQsectionLabels);
          SetLength(prefix, 0);
         end;
-    if i<0 then
-      begin
-        if (section = _smiles) and hasSmilePic then
-         else
-          begin
-           section:=_null;
-           continue;
-          end;
-      end
-     else
-      begin
-        section:=TRQsection(i);
-        CurrentPPI := cDefaultDPI;
-        continue;
-      end;
+      if i<0 then
+        begin
+          if (section = _smiles) and hasSmilePic then
+           else
+            begin
+             section := _null;
+             continue;
+            end;
+        end
+       else
+        begin
+          section := TRQsection(i);
+          CurrentPPI := cDefaultDPI;
+          continue;
+        end;
     end;
-  v:=line;
-  k:=trim(chop('=',v));
-  v:=trim(v);
+  v := line;
+  k := trim(chop('=',v));
+  v := trim(v);
   if k='include' then
    begin
      loadThemeScript(UnUTF(v), ts);
@@ -3358,7 +3370,7 @@ begin
       else
        Parsed := false;
 //      addProp(LastSmile, line, loadedPic, Parsed, not NonAnimated, i);
-      addProp(LastSmile, string(par), loadedpic, origPic, themePic, Parsed, not NonAnimated, i);
+      addProp(LastSmile, string(par), loadedpic, origPic, themePic, Parsed, not NonAnimated, i, CurrentPPI);
       FreeAndNil(origPic);
       loadedPic := NIL;
 //      FreeAndNil(loadedPic);
@@ -4508,7 +4520,7 @@ begin
 // result :=index;
 end;
 {
-function TRQtheme.addProp(name:string; pic: TRnQBitmap) : Integer;
+function TRQtheme.addProp(name: string; pic: TRnQBitmap): Integer;
 //var
 //  Index: Integer;
 begin

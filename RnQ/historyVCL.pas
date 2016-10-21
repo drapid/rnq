@@ -353,14 +353,14 @@ procedure ThistoryBox.paintOn(cnv: Tcanvas; vR: TRect; const PPI: Integer; const
 var
 //  vCnvHandle : HDC;
   lineHeight, bodySkipCounter, skippedLines,
-  evIdx, Nitems : Integer;
-  rightLimit, bottomLimit : Integer;
+  evIdx, Nitems: Integer;
+  rightLimit, bottomLimit: Integer;
   SOS, EOS: ThistoryPos;
   ev: Thevent;
 //  c: Tcontact;
    selectedClr: Tcolor;
 //   selectedMyClr, selectedHisClr : TColor;
-  linkTheWholeBody : string;
+  linkTheWholeBody: string;
   foundLink: ThistoryLink;
   mouse: Tpoint;
  {$IFDEF RNQ_FULL}
@@ -371,8 +371,8 @@ var
     pleaseDontDrawUpwardArrows: boolean;
   oldMode: Integer;
   Nrows: integer;
-  MaxChatImgWidthVal : Integer;// = 100;
-  MaxChatImgHeightVal : Integer;// = 100;
+  MaxChatImgWidthVal: Integer;// = 100;
+  MaxChatImgHeightVal: Integer;// = 100;
 
   procedure newLine(var x, y: Integer);
   begin
@@ -492,6 +492,13 @@ var
        hasDownArrow:= false; }
   end; // addItem
 
+  procedure removeLastItemsTo(o: integer);
+  begin
+    if Nitems <= length(items) then
+     while (Nitems > 0)and(items[Nitems-1].evIdx = evIdx) and (items[Nitems-1].ofs > o) do
+       dec(Nitems);
+  end; // addItem
+
   function withinTheLink(i: integer): boolean;
   begin
     result := (foundLink.from > 0)
@@ -502,7 +509,6 @@ var
 //  function drawBody(cnv:Tcanvas; pTop : Integer) : Integer;
   function drawBody(pTop: Integer): Integer;
   var
-    whatFound: ( _nothing, _wrap, _return, _smile, _link, _bold, _underline, _RnQPic, _RnQPicEx, _aniSmile );
     fndSmileI: Integer;
     fndSmile: String;
     fndSmileN: TPicName;
@@ -510,10 +516,10 @@ var
     RnQPicStream: TMemoryStream;
     BodyText: String;
     BodyCurChar: Char;
+    BodyCurMChar: String;
     BodyBin: RawByteString;
 
-    i, j, chunkStart, quoteCounter
-     : Integer;
+    i: Integer;
 
       function findLink(): boolean;
 
@@ -542,7 +548,7 @@ var
 //            while CharInSet(BodyText[end_], ['?',')','.',',', '/']) do
             while CharInSet(BodyText[end_], ['?',')','.',',']) do
               dec(end_);
-          foundLink.str:=copy(BodyText, i, end_-i+1);
+          foundLink.str := copy(BodyText, i, end_-i+1);
           foundLink.from := i;
           foundLink.to_ := end_;
           foundLink.kind := lk;
@@ -727,19 +733,21 @@ var
 
   var
     quoteCounting: boolean;
+    quoteCounter: Integer;
     r, intersect: Trect;
     nowPos: ThistoryPos;
     PntFontIdx: Byte;
 
-    function withinTheSelection(i: integer): boolean;
+    function withinTheSelection(pi: integer): boolean;
     begin
       nowPos.evIdx := evIdx;
       nowPos.ev := ev;
-      nowPos.ofs := i;
-      result := (SOS.ev<>NIL) and (EOS.ev<>NIL) and (
-        (SOS.ofs<0) and within(SOS.evIdx,evIdx,EOS.evIdx)
-        or not minor(EOS,nowPos) and minor(SOS,nowpos)
-      );
+      nowPos.ofs := pi;
+      result := (SOS.ev<>NIL) and (EOS.ev<>NIL) and
+                 (
+                   (SOS.ofs<0) and within(SOS.evIdx, evIdx, EOS.evIdx)
+                    or not minor(EOS, nowPos) and minor(SOS, nowpos)
+                  );
     end;
 
     procedure applyFont();
@@ -791,7 +799,9 @@ var
         theme.applyFont('history.link', cnv.font);
     end; // applyFont
   var
-   tempColor: TColor;
+    whatFound: ( _nothing, _wrap, _return, _smile, _link, _bold, _underline, _RnQPic, _RnQPicEx, _aniSmile );
+    tempColor: TColor;
+    chunkStart: Integer;
     len, smileCount: integer;
     size, tempSize: Tsize;
     lastLineStart: Integer;
@@ -800,6 +810,7 @@ var
     fndSmlIT: Integer; fndAniSmlT: Boolean;
     first, bool, wasInsideSelection: boolean;
     SelectionStartPos, SelectionEndPos: Integer;
+    k, lx: Integer;
 
 
 //    vDBPic: TBitmap;
@@ -903,118 +914,140 @@ var
       _nothing:
         begin
         applyFont();
-        j := x;
+        lx := x;
         // go forth, until sth special is found
         while i <= len do
           begin
-          // reached the end of the link, stop, we must paint it underlined
-          if (foundLink.from > 0) and (i > foundLink.to_) then
-           begin
-//            nowLink := False;
-            if (foundLink.kind <> LK_UIN) then
-              whatFound := _link;
-            break;
-           end;
-          // reached a selection edge, stop, we must paint it selected
-          bool := withinTheSelection(i);
-          if wasInsideSelection <> bool then
-            begin
-             wasInsideSelection := bool;
-             if wasInsideSelection then
-               SelectionStartPos := i
-              else
-               SelectionEndPos := i;
-             break;
-            end;
-          BodyCurChar := BodyText[i];
-          // things to consider only outside a link
-          if foundLink.from = 0 then
-            begin
-                if BodyCurChar in [#10, #13] then
-                begin
-                  whatFound := _return;
-                  break
-                end;
-                if useSmiles and findSmile() then
-                begin
-                  whatFound := _smile;
-                  break
-                end;
-//            if findRnQPic() then begin whatFound:=_RnQPic; break end;
-//            if findRnQPicEx() then begin whatFound:=_RnQPicEx; break end;
-            if BodyCurChar < #32 then
-              begin
-               BodyText[i] := #32; // convert control chars
-               BodyCurChar := #32;
-              end;
-            if findLink() and (foundLink.kind <> LK_UIN) then
-              begin
-//                nowLink := True;
+            // reached the end of the link, stop, we must paint it underlined
+            if (foundLink.from > 0) and (i > foundLink.to_) then
+             begin
+  //            nowLink := False;
+              if (foundLink.kind <> LK_UIN) then
                 whatFound := _link;
-//                chunkStart := i;
-                break;
-              end;
-            if quoteCounting then
-              if BodyCurChar = '>' then
-                inc(quoteCounter)
-               else
-              	{ quoting sequence terminates where a non-">" char is found
-                { or a non-single blankspace is found or a non-">"-preceeded
-                { blankspace is found }
-                if (BodyCurChar<>' ') or (quoteCounter=0) or (i=1) or (BodyText[i-1]<>'>') then
-                  quoteCounting := False;
-            if fontstylecodes.enabled then
+              break;
+             end;
+
+            BodyCurChar := BodyText[i];
+            if TCharacter.IsSurrogate(BodyCurChar) then
               begin
-              if (BodyCurChar='*') and (nowBold or findFidonet('*')) then
-                  begin
-                    whatFound := _bold;
-                    break
-                  end;
-              if (BodyCurChar='_') and (nowUnderline or findFidonet('_')) then
-                  begin
-                    whatFound := _underline;
-                    break
-                  end;
-              end;
-            end;
-          applyFont();
-          size := txtSizeL(Cnv.Handle, @BodyText[i], 1);
-          inc(j, size.cx);
-          if j > rightLimit then // no more room
-           begin
-            // search backward for a good place where to split
-            j := i;
-            repeat
-              dec(j)
-            until (j=lastLineStart) or
-                  (BodyText[j] in ['-', ' ', ',', ';', '.']);
-            // found. choose it
-            if j>chunkStart then
-              i := j+1
+               k := i+1;
+                while (k<=Length(BodyText)) and BodyText[k].IsLowSurrogate do
+                 inc(k);
+               dec(k);
+               boundInt(k, i, Length(BodyText));
+               BodyCurMChar := Copy(BodyText, i, k-i+1);
+              end
              else
-              if i = lastLineStart then
-               inc(i);
-            whatFound := _wrap;
-            break
-           end;
-          if not JustCalc then
-           begin
-            r := rect(j-size.cx, y, j, y+size.cy);
-            if bodySkipCounter<=0 then
-              if withinTheLink(i) then
-                addItem(PK_LINK, i, 1, r)
-              else
-                addItem(PK_TEXT, i, 1, r);
-           end;
-          inc(i);
+              BodyCurMChar := BodyCurChar;
+
+            // reached a selection edge, stop, we must paint it selected
+            bool := withinTheSelection(i);
+            if wasInsideSelection <> bool then
+              begin
+               wasInsideSelection := bool;
+               if bool then
+                 begin
+                   SelectionStartPos := i;
+//                   inc(i, Length(BodyCurMChar));
+                 end
+                else
+                 begin
+                   inc(i, Length(BodyCurMChar)-1);
+                   SelectionEndPos := i;
+                   inc(i);
+                 end;
+               break;
+              end;
+
+            // things to consider only outside a link
+            if foundLink.from = 0 then
+              begin
+                  if BodyCurChar in [#10, #13] then
+                  begin
+                    whatFound := _return;
+                    break
+                  end;
+                  if useSmiles and findSmile() then
+                  begin
+                    whatFound := _smile;
+                    break
+                  end;
+  //            if findRnQPic() then begin whatFound:=_RnQPic; break end;
+  //            if findRnQPicEx() then begin whatFound:=_RnQPicEx; break end;
+              if BodyCurChar < #32 then
+                begin
+                 BodyText[i] := #32; // convert control chars
+                 BodyCurChar := #32;
+                end;
+              if findLink() and (foundLink.kind <> LK_UIN) then
+                begin
+  //                nowLink := True;
+                  whatFound := _link;
+  //                chunkStart := i;
+                  break;
+                end;
+              if quoteCounting then
+                if BodyCurChar = '>' then
+                  inc(quoteCounter)
+                 else
+                  { quoting sequence terminates where a non-">" char is found
+                  { or a non-single blankspace is found or a non-">"-preceeded
+                  { blankspace is found }
+                  if (BodyCurChar<>' ') or (quoteCounter=0) or (i=1) or (BodyText[i-1]<>'>') then
+                    quoteCounting := False;
+              if fontstylecodes.enabled then
+                begin
+                if (BodyCurChar='*') and (nowBold or findFidonet('*')) then
+                    begin
+                      whatFound := _bold;
+                      break
+                    end;
+                if (BodyCurChar='_') and (nowUnderline or findFidonet('_')) then
+                    begin
+                      whatFound := _underline;
+                      break
+                    end;
+                end;
+              end;
+            applyFont();
+            size := txtSizeL(Cnv.Handle, @BodyCurMChar[1], Length(BodyCurMChar));
+            inc(lx, size.cx);
+            if lx > rightLimit then // no more room
+             begin
+              // search backward for a good place where to split
+              k := i;
+              repeat
+                dec(k)
+              until (k=lastLineStart) or
+                    (BodyText[k] in ['-', ' ', ',', ';', '.']);
+              // found. choose it
+              if k>chunkStart then
+                i := k+1
+               else
+                if i = lastLineStart then
+                 inc(i);
+              removeLastItemsTo(i);
+              whatFound := _wrap;
+              break
+             end;
+            if not JustCalc then
+             begin
+              r := rect(lx-size.cx, y, lx, y+size.cy);
+              if bodySkipCounter<=0 then
+                if withinTheLink(i) then
+                  addItem(PK_LINK, i, Length(BodyCurMChar), r)
+                else
+                  addItem(PK_TEXT, i, Length(BodyCurMChar), r);
+             end;
+            inc(i, Length(BodyCurMChar));
           end; //while
         // no text, suddenly a break comes
-            if i = chunkStart then
-              continue;
+          if i = chunkStart then
+            continue;
 
-          j := i-chunkStart; // = length of text
+          k := i-chunkStart; // = length of text
           applyFont();
-          size := txtSizeL(Cnv.Handle, @BodyText[chunkStart], j); // size on screen
+          size := txtSizeL(Cnv.Handle, @BodyText[chunkStart], k); // size on screen
         // is it a link?
           if withinTheLink(chunkStart)
             and (evIdx = linkToUnderline.evIdx)
@@ -1031,22 +1064,22 @@ var
           else
             cnv.brush.color := TextBGColor;
         // finally paint the text
-//        if bodySkipCounter<=0 then textOut(cnv.handle, x,y+lineHeight-size.cy, @s[chunkStart], j);
-        if bodySkipCounter<=0 then
-        begin
-          if not withinTheSelection(chunkStart) then
+//        if bodySkipCounter<=0 then textOut(cnv.handle, x,y+lineHeight-size.cy, @s[chunkStart], k);
+          if bodySkipCounter<=0 then
           begin
-            oldMode := SetBKMode(Cnv.Handle, TRANSPARENT);
-            textOut(Cnv.Handle, x, y, @BodyText[chunkStart], j);
-//            SetBKMode(cnv.Handle, oldMode);
-          end
-          else
-            textOut(Cnv.Handle, x, y, @BodyText[chunkStart], j);
-        end;
-        inc(x, size.cx);
-            if (i > foundLink.to_) then
-              foundLink.from := 0;
-        continue;
+            if not withinTheSelection(chunkStart) then
+            begin
+              oldMode := SetBKMode(Cnv.Handle, TRANSPARENT);
+              textOut(Cnv.Handle, x, y, @BodyText[chunkStart], k);
+  //            SetBKMode(cnv.Handle, oldMode);
+            end
+            else
+              textOut(Cnv.Handle, x, y, @BodyText[chunkStart], k);
+          end;
+          inc(x, size.cx);
+          if (i > foundLink.to_) then
+            foundLink.from := 0;
+          continue;
         end;
       _link:
         begin
@@ -1095,9 +1128,9 @@ var
           if Length(fndSmile) = 0 then
             break;
           smileCount := 1;
-          j := length(fndSmile);
-          inc(i, j);
-          lastSmileChar := fndSmile[j];
+          k := length(fndSmile);
+          inc(i, k);
+          lastSmileChar := fndSmile[k];
 //          fndSmlT1 := fndSmile;
           fndSmlT2 := fndSmileN;
           fndSmlIT := fndSmileI;
@@ -1119,7 +1152,7 @@ var
 //        theme.GetPic(theme.GetSmileName(foundSmileIdx), vDBPic);
 //        vPicName := ;
 //        pic:=theme.GetSmile(foundSmileIdx); //smiles.pics[foundSmileIdx];
-            tempSize := theme.GetPicSize(RQteDefault, fndSmileN, 0, PPI);
+            tempSize := theme.GetPicSize(RQteSmile, fndSmileN, 0, PPI);
             newLineHeight(tempSize.cy+2);
 
          // paint
@@ -1139,13 +1172,13 @@ var
               // only the first one has full length
 //              if first then j:=length(fndSmile) else j:=1;
               if not first then
-                j:=1;
+                k := 1;
               if not JustCalc then
                begin
                 r := rect(x, y, x+size.cx, y+size.cy + 1);
                 if bodySkipCounter<=0 then
                   begin
-                   addItem( PK_SMILE, chunkStart,j, r);
+                   addItem( PK_SMILE, chunkStart, k, r);
                    begin
                     if withinTheSelection(chunkStart) then
                       begin
@@ -1153,7 +1186,7 @@ var
                         cnv.fillRect(r);
                        {$IFDEF RNQ_FULL}
                         if foundAniSmile then
-                          tempColor :=selectedClr;
+                          tempColor := selectedClr;
                        {$ENDIF RNQ_FULL}
                       end
                   {$IFDEF RNQ_FULL}
@@ -1187,7 +1220,7 @@ var
                   end;
                end; // endif not JustCalc
 //          inc(chunkStart);
-          inc(chunkStart, j);
+          inc(chunkStart, k);
           inc(x, size.cx);
           first := False;
           dec(smileCount);
@@ -1229,7 +1262,7 @@ var
       case whatFound of
         _nothing:
           begin
-          j := x;
+          lx := x;
           // go forth, until sth special is found
           while i <= len do
            begin
@@ -1321,8 +1354,8 @@ var
                 r := rect(x, y, x+size.cx + 1, y+size.cy);
                 if bodySkipCounter<=0 then
                   begin
-                    j := foundPicSize + length(RnQImageTag) + length(RnQImageUnTag);
-                    addItem( PK_RQPIC, chunkStart,j, r);
+                    k := foundPicSize + length(RnQImageTag) + length(RnQImageUnTag);
+                    addItem( PK_RQPIC, chunkStart, k, r);
                     if withinTheSelection(chunkStart) then
                       cnv.fillRect(r);
   //                  if not JustCalc then
@@ -1357,17 +1390,19 @@ var
              // paint
             if not JustCalc then
              begin
-              cnv.brush.color := selectedClr;
               // only the first one has full length
               r := rect(x, y, x+size.cx, y+size.cy);
               if bodySkipCounter<=0 then
                 begin
-                  j:=foundPicSize + 25; // 25=length(RnQImageExTag) + length(RnQImageExUnTag);
-                  addItem( PK_RQPICEX, chunkStart, j, r);
+                  k := foundPicSize + 25; // 25=length(RnQImageExTag) + length(RnQImageExUnTag);
+                  addItem( PK_RQPICEX, chunkStart, k, r);
   //                if not JustCalc then
                    begin
                      if withinTheSelection(chunkStart) then
+                      begin
+                       cnv.brush.color := selectedClr;
                        cnv.fillRect(r);
+                      end;
                      cnv.Lock;
                      DrawRbmp(Cnv.Handle, vRnQpicEx,
                               MakeRect(x, y+(lineHeight-size.cy) div 2, size.cx, size.cy));
@@ -1469,7 +1504,7 @@ var
 //    c := ev.who;
   // shall we paint the header as selected?
     if not JustCalc then
-      if wholeEventsAreSelected and within(SOS.evIdx,evIdx,EOS.evIdx) then
+      if wholeEventsAreSelected and within(SOS.evIdx, evIdx, EOS.evIdx) then
         cnv.brush.color := selectedClr
        else
         SetBKMode(Cnv.Handle, TRANSPARENT);
@@ -1581,7 +1616,7 @@ var
   y: Integer;
   tempS: String;
   lGapBtwMsg: Integer;
-  vFullR: TRect;
+  vFullR, R: TRect;
   smlRefresh: Boolean;
   ch: AnsiChar;
  {$IFDEF UNICODE}
@@ -1796,6 +1831,20 @@ begin
        P_topEventNrows := Nrows-1;
     firstEvent := False;
   end; //while
+
+{ For DEBUG of paints
+ if length(Items) > 0 then
+  begin
+   cnv.Brush.Style := bsClear;
+   cnv.Pen.Color := clRed;
+   for I := 0 to length(Items)-1 do
+     begin
+       r := Items[i].r;
+       Rectangle(Cnv.Handle, r.Left, r.Top, R.Right, r.Bottom);
+     end;
+  end;
+}
+
  P_bottomEvent := evIdx-1;
  P_lastEventIsFullyVisible := eventFullyPainted and (evIdx=history.count);
  if not JustCalc then
@@ -2313,8 +2362,8 @@ procedure ThistoryBox.mouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: 
 
   function doubleClick: boolean;
   begin
-  result := just2clicked;
-  if just2clicked and not justTriggeredAlink and equal(lastClickedItem, pointedItem) then
+   result := just2clicked;
+   if just2clicked and not justTriggeredAlink and equal(lastClickedItem, pointedItem) then
     begin
       if ((lastClickedItem.Kind = PK_RQPIC) or (lastClickedItem.Kind = PK_RQPICEX)) and not (lastClickedItem.ev.getBodyBin = '') then
         viewImageDimmed(clickedItem.ev.getBodyBin, clickedItem.ofs)
@@ -2524,8 +2573,8 @@ begin
       result := items[m];
       break;
       end;
-    if (pt.y < r.top) or (pt.y < r.bottom) and (pt.x < r.left) then
-      j:=m-1
+    if (pt.y < r.top) or ((pt.y < r.bottom) and (pt.x < r.left)) then
+      j := m-1
      else
       i := m+1;
     end;
@@ -2778,14 +2827,14 @@ begin
   if not selecting then
     exit;
 // selecting, no link has to be triggered
-  dontTriggerLink:=TRUE;
+  dontTriggerLink := TRUE;
 // updating the selection end point
   if pointedSpace.kind=PK_NONE then
     exit;
   p := historyitem2pos(pointedSpace);
   if minor(startSel, p) then
     inc(p.ofs, pointedSpace.l-1);
-  if equal(endSel,p) then
+  if equal(endSel, p) then
     exit; // no change?
   endSel := p;
   pEnd := p;
@@ -2795,16 +2844,17 @@ begin
      (minor(p, startSel) and minor(startSel, pEnd)) then
     inc(startSel.ofs, pointedSpace.l-1);
   
-// some adjustment could be needed
-if nothingIsSelected() then
-  startSel := historyitem2pos(pointedItem)
-else
-  if startSel.ofs < 0 then
-    endSel.ofs := -1
-  else
-    if endSel.ofs < 0 then
-      endSel.ofs := 0;
-repaint();
+  // some adjustment could be needed
+  if nothingIsSelected() then
+    startSel := historyitem2pos(pointedItem)
+   else
+    if startSel.ofs < 0 then
+      endSel.ofs := -1
+    else
+      if endSel.ofs < 0 then
+        endSel.ofs := 0;
+//  repaint();
+  invalidate();
 end; // updatePointedItem
 
 function ThistoryBox.triggerLink(item: ThistoryItem): boolean;
@@ -2942,7 +2992,7 @@ begin
       SmlBG.SetSize(clientWidth, ClientHeight);
     end;
 //     br := CreateSolidBrush(ColorToRGB(theme.GetColor(ClrHistBG, clWindow)));
-  SmlBG.Canvas.Brush.Color :=theme.GetColor(ClrHistBG, clWindow);
+  SmlBG.Canvas.Brush.Color := theme.GetColor(ClrHistBG, clWindow);
   SmlBG.Canvas.FillRect(SmlBG.Canvas.ClipRect);
 //   Br := TGPSolidBrush.Create(theme.GetAColor(ClrHistBG, clWindow));
 //   gr.FillRectangle(br, r);

@@ -29,16 +29,16 @@ uses
 type
   Tincapsulate=class
     str: RawByteString;
-    int:integer;
-    dt:TdateTime;
-    bool:boolean;
-    obj:Tobject;
-    what:set of (I_str,I_int,I_dt,I_bool,I_obj);
+    int: integer;
+    dt: TdateTime;
+    bool: boolean;
+    obj: Tobject;
+    what: set of (I_str, I_int, I_dt, I_bool, I_obj);
     constructor aString(const s_: RawByteString);
-    constructor anInt(i_:integer);
-    constructor aDatetime(dt_:Tdatetime);
-    function  toString:RawByteString; Reintroduce;
-    constructor fromString(s:RawByteString); Reintroduce;
+    constructor anInt(i_: integer);
+    constructor aDatetime(dt_: Tdatetime);
+    function  toString: RawByteString; Reintroduce;
+    constructor fromString(s: RawByteString); Reintroduce;
    end; // incapsulate
 
 implementation
@@ -49,62 +49,62 @@ uses
 constructor Tincapsulate.aString(const s_: RawByteString);
 begin
   inherited;
-  what:=[I_str];
-  str:=s_;
+  what := [I_str];
+  str := s_;
 end;
 
 constructor Tincapsulate.anInt(i_:integer);
 begin
   inherited;
-  what:=[I_int];
-  int:=i_;
+  what := [I_int];
+  int := i_;
 end;
 
 constructor Tincapsulate.aDatetime(dt_:Tdatetime);
 begin
   inherited;
-  what:=[I_dt];
-  dt:=dt_;
+  what := [I_dt];
+  dt := dt_;
 end;
 
-constructor Tincapsulate.fromString(s:RawByteString);
+constructor Tincapsulate.fromString(s: RawByteString);
 begin
-inherited;
-what:=[];
-while s > '' do
-  case s[1] of
+  inherited;
+  what := [];
+  while s > '' do
+   case s[1] of
     'S':
       begin
-      include(what, I_str);
-      setLength(str, integer((@s[2])^));
-      move(s[6], str[1], length(str));
-      delete(s, 1, 5+length(str));
+        include(what, I_str);
+        setLength(str, integer((@s[2])^));
+        move(s[6], str[1], length(str));
+        delete(s, 1, 5+length(str));
       end;
     'I':
       begin
-      include(what, I_int);
-      int:=integer((@s[2])^);
-      delete(s, 1, 5);
+        include(what, I_int);
+        int := integer((@s[2])^);
+        delete(s, 1, 5);
       end;
     'D':
       begin
-      include(what, I_dt);
-      dt:=Tdatetime((@s[2])^);
-      delete(s, 1, 9);
+        include(what, I_dt);
+        dt := Tdatetime((@s[2])^);
+        delete(s, 1, 9);
       end;
     else raise Exception.create('invalid data'); // should never reach this
-    end;
+   end;
 end; // fromString
 
-function Tincapsulate.toString:RawByteString;
+function Tincapsulate.toString: RawByteString;
 begin
-result:='';
-if I_str in what then
-  result:=result+'S'+int2str(length(str))+str;
-if I_int in what then
-  result:=result+'I'+int2str(int);
-if I_dt in what then
-  result:=result+'D'+dt2str(int);
+  result := '';
+  if I_str in what then
+    result := result+'S'+int2str(length(str))+str;
+  if I_int in what then
+    result := result+'I'+int2str(int);
+  if I_dt in what then
+    result := result+'D'+dt2str(int);
 end; // toString
 
 end.

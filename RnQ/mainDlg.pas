@@ -590,8 +590,8 @@ end;
 
 procedure TRnQmain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-canClose := True;
-canClose:=not quitconfirmation or (messageDlg(getTranslation('Really quit?'), mtConfirmation, [mbYes,mbNo],0) = mrYes);
+  canClose := True;
+  canClose := not quitconfirmation or (messageDlg(getTranslation('Really quit?'), mtConfirmation, [mbYes,mbNo],0) = mrYes);
 //if canclose then quit;
 end;
 
@@ -608,8 +608,8 @@ end;
 
 procedure TRnQmain.closeAllChildWindows;
 var
-  i:integer;
-  c:Tcomponent;
+  i: integer;
+  c: Tcomponent;
 begin
   i := childWindows.Count-1;
   while i >= 0 do
@@ -907,7 +907,7 @@ procedure TRnQmain.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftStat
     s: TShiftState;
   begin
    ShortCutToKey(sc, k, s);
-   result:=(k=key) and (s=shift);
+   result := (k=key) and (s=shift);
   end; // its
 var
   i: Integer;
@@ -996,12 +996,12 @@ procedure TRnQmain.in_visiblelist1Click(Sender: TObject);
 begin
  if Assigned(visibilityFrm) then
    visibilityFrm.BringToFront
- else
- begin
-  visibilityFrm := TvisibilityFrm.Create(Application);
-  translateWindow(visibilityFrm);
-  showForm(visibilityFrm)
- end;
+  else
+   begin
+    visibilityFrm := TvisibilityFrm.Create(Application);
+    translateWindow(visibilityFrm);
+    showForm(visibilityFrm)
+   end;
 end;
 
 procedure TRnQmain.Showlogwindow1Click(Sender: TObject);
@@ -1033,8 +1033,8 @@ var
    PaintOnGlass : Boolean;
   MemDC: HDC;
   PaintBuffer: HPAINTBUFFER;
-  br : HBRUSH;
-  oldF : HFONT;
+  br: HBRUSH;
+  oldF: HFONT;
   s: String;
   progress: Double;
 begin
@@ -1276,8 +1276,8 @@ begin
   if (clickedContact.iProto.ProtoElem is TicqSession) then
     TicqSession(clickedContact.iProto.ProtoElem).updateVisibility;
  {$ENDIF UseNotSSI}
-saveListsDelayed:=TRUE;
-roasterLib.redraw(clickedContact);
+  saveListsDelayed := TRUE;
+  roasterLib.redraw(clickedContact);
 end;
 
 procedure TRnQmain.invisiblelist1Click(Sender: TObject);
@@ -1405,7 +1405,7 @@ end;
 
 procedure TRnQmain.AppActivate(Sender: TObject);
 begin
- inactiveTime:=0;
+ inactiveTime := 0;
  TipsShowTop;
  applyTransparency;
 end;
@@ -1435,8 +1435,8 @@ end;
 
 procedure TRnQmain.authReqClick(Sender: TObject);
 var
-  rsn, s1, s2 : String;
-  uid : TUID;
+  rsn, s1, s2: String;
+  uid: TUID;
 begin
   if not Assigned(clickedContact) or (clickedContact.fProto = NIL) then
     Exit;
@@ -1465,7 +1465,7 @@ end;
 
 procedure TRnQmain.Openincomingfolder1Click(Sender: TObject);
 //var
-//  s : String;
+//  s: String;
 begin
   if Assigned(clickedContact) then
    begin
@@ -1482,7 +1482,7 @@ end;
 
 procedure TRnQmain.Deletegroup1Click(Sender: TObject);
 var
-  id:integer;
+  id: integer;
 begin
   if roasterlib.focused=NIL then
     exit;
@@ -1500,8 +1500,8 @@ end; // delete group
 
 procedure TRnQmain.Closeallgroups1Click(Sender: TObject);
 var
-  i:integer;
-  d:Tdivisor;
+  i: integer;
+  d: Tdivisor;
 begin
   if not Assigned(clickedNode) then
     exit;
@@ -1516,8 +1516,8 @@ end; // close all groups
 
 procedure TRnQmain.Openallgroups1Click(Sender: TObject);
 var
-  i:integer;
-  d:Tdivisor;
+  i: integer;
+  d: Tdivisor;
 begin
   if not Assigned(clickedNode) then
     exit;
@@ -1546,19 +1546,19 @@ end;
 
 procedure TRnQmain.Deleteallemptygroups1Click(Sender: TObject);
 var
-  i,id:integer;
+  i, id: integer;
 begin
-for i:=0 to groups.count-1 do
+  for i:=0 to groups.count-1 do
   begin
-  id:=groups.a[i].id;
-  if Account.AccProto.readList(LT_ROSTER).getCount(id) = 0 then
-    roasterLib.removeGroup(id);
+    id:=groups.a[i].id;
+    if Account.AccProto.readList(LT_ROSTER).getCount(id) = 0 then
+      roasterLib.removeGroup(id);
   end;
 end;
 
 procedure TRnQmain.movecontactsAction(sender:Tobject);
 var
-  oldID,newID:integer;
+  oldID, newID: integer;
   c: TRnQcontact;
 begin
   if roasterlib.focused=NIL then
@@ -1568,7 +1568,7 @@ begin
      oldID:=groupID
     else
      exit;
-  newID:=(sender as Tmenuitem).tag;
+  newID := (sender as Tmenuitem).tag;
   if newID = 2000 then
     newID:=0; // 2000 means no group
 //roster.hide;
@@ -1579,7 +1579,7 @@ begin
     resetEnumeration;
     while hasMore do
       begin
-      c:= getNext;
+      c := getNext;
       if c.group=oldID then
         setNewGroupFor(c, newID);
       end;
@@ -1606,34 +1606,34 @@ end;
 
 procedure TRnQmain.doSearch;
 
-  function twiceOrMore(const s:string):boolean;
+  function twiceOrMore(const s: string): boolean;
   var
-    i:integer;
+    i: integer;
   begin
-  result:=TRUE;
-  if length(s) < 2 then
-    result:=FALSE
-  else
-    for i:=1 to length(s) do
-      if s[i]<>s[1] then
+    result := TRUE;
+    if length(s) < 2 then
+      result:=FALSE
+     else
+      for i:=1 to length(s) do
+       if s[i]<>s[1] then
         begin
-        result:=FALSE;
-        exit;
+         result := FALSE;
+         exit;
         end;
   end; // twiceOrMore
 
 var
-  i, cnt, maxcnt :integer;
-  node, found :Tnode;
-  s :string;
+  i, cnt, maxcnt: integer;
+  node, found: Tnode;
+  s: string;
 begin
  if twiceOrMore(searching) then
   begin
     // search for next one
-    node:=roasterLib.focused;
+    node := roasterLib.focused;
     if Assigned(node) then
      repeat
-       node:=getNode(roster.GetNextVisible(node.treenode));
+       node := getNode(roster.GetNextVisible(node.treenode));
      until (node=NIL) or (node.kind=NODE_CONTACT) and AnsiStartsText(searching[1], node.contact.displayed);
     // found, exit
     if node<>NIL then
@@ -1642,10 +1642,10 @@ begin
       exit;
      end;
     // not found, restart from top
-    node:=getNode(roster.GetFirst);
+    node := getNode(roster.GetFirst);
     if Assigned(node) then
      repeat
-       node:=getNode(roster.GetNextVisible(node.treenode));
+       node := getNode(roster.GetNextVisible(node.treenode));
      until (node=NIL) or (node.kind=NODE_CONTACT) and AnsiStartsText(searching[1], node.contact.displayed);
     // found
     if node<>NIL then
@@ -1654,20 +1654,20 @@ begin
   end;
 // cnt is how many chars of the the current node matches the search
 // maxcnt is the highest valor reached by cnt 
-found:=NIL;
-maxcnt:=0;
-i:=0;
+  found := NIL;
+  maxcnt := 0;
+  i := 0;
 while i < roasterLib.contactsPool.count do
   begin
-  node:=Tnode(roasterLib.contactsPool[i]);
-  s:=uppercase(node.contact.displayed);
+  node := Tnode(roasterLib.contactsPool[i]);
+  s := uppercase(node.contact.displayed);
   cnt:=0;
   while (cnt<length(s)) and (cnt<length(searching)) and (s[cnt+1]=upcase(searching[cnt+1])) do
     inc(cnt);
   if (cnt > maxcnt) or (cnt = maxcnt) and (found<>NIL) and (found.treenode.index > node.treenode.index) then
     begin
-    maxcnt:=cnt;
-    found:=node;
+    maxcnt := cnt;
+    found := node;
     end;
   if s=searching then
     break;
@@ -1681,24 +1681,24 @@ function TRnQmain.clickedGroupList:TRnQCList;
 var
   c: TRnQcontact;
 begin
-result:=TRnQCList.create;
-with Account.AccProto.readList(LT_ROSTER) do
+  result := TRnQCList.create;
+  with Account.AccProto.readList(LT_ROSTER) do
   begin
-  resetEnumeration;
-  while hasMore do
-    begin
-    c:=getNext;
-    if c.group = clickedGroup then
-      result.add(c);
-    end;
+    resetEnumeration;
+    while hasMore do
+     begin
+      c := getNext;
+      if c.group = clickedGroup then
+        result.add(c);
+     end;
   end;
 end; // clickedGroupList
 
 procedure TRnQmain.tovisiblelist1Click(Sender: TObject);
 var
-  cl:TRnQCList;
+  cl: TRnQCList;
 begin
-  cl:=clickedGroupList;
+  cl := clickedGroupList;
 (* {$IFDEF UseNotSSI}
   if not icq.useSSI then
     begin
@@ -1711,14 +1711,14 @@ begin
 *)
       Account.AccProto.AddToList(LT_VISIBLE, cl);
   cl.free;
-  saveListsDelayed:=TRUE;
+  saveListsDelayed := TRUE;
 end; // group to visible
 
 procedure TRnQmain.tempvisiblelist2Click(Sender: TObject);
 var
-  cl:TRnQCList;
+  cl: TRnQCList;
 begin
-  cl:=clickedGroupList;
+  cl := clickedGroupList;
   Account.AccProto.AddToList(LT_TEMPVIS, cl);
   cl.Free;
 //roasterLib.redraw(clickedContact);
@@ -1726,9 +1726,9 @@ end;
 
 procedure TRnQmain.toinvisiblelist1Click(Sender: TObject);
 var
-  cl:TRnQCList;
+  cl: TRnQCList;
 begin
-  cl:=clickedGroupList;
+  cl := clickedGroupList;
 (*
  {$IFDEF UseNotSSI}
   if not icq.useSSI then
@@ -1743,14 +1743,14 @@ begin
 *)
       Account.AccProto.AddToList(LT_INVISIBLE, cl);
   cl.free;
-  saveListsDelayed:=TRUE;
+  saveListsDelayed := TRUE;
 end; // group to invisible
 
 procedure TRnQmain.tonormalvisibility1Click(Sender: TObject);
 var
-  cl:TRnQCList;
+  cl: TRnQCList;
 begin
-  cl:=clickedGroupList;
+  cl := clickedGroupList;
 (* {$IFDEF UseNotSSI}
   if not icq.useSSI then
     begin
@@ -1766,7 +1766,7 @@ begin
       Account.AccProto.RemFromList(LT_VISIBLE, cl);
     end;
   cl.free;
-  saveListsDelayed:=TRUE;
+  saveListsDelayed := TRUE;
 end;
 
 procedure TRnQmain.TopLblDblClick(Sender: TObject);
@@ -1788,36 +1788,36 @@ end;
 
 procedure TRnQmain.sbarMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-if button = mbLeft then
-  if into(point(x,y), outboxSbarRect) then
-   begin
-    if not Assigned(outboxfrm) then
+  if button = mbLeft then
+    if into(point(x,y), outboxSbarRect) then
      begin
-      outboxfrm := ToutboxFrm.Create(Application);
-      translateWindow(outboxfrm);
+      if not Assigned(outboxfrm) then
+       begin
+        outboxfrm := ToutboxFrm.Create(Application);
+        translateWindow(outboxfrm);
+       end;
+      outboxfrm.open;
      end;
-    outboxfrm.open;
-   end;
-if button = mbRight then
+  if button = mbRight then
 //  with boundsrect do
 //   menu.Popup(left,utilLib.IfThen(roasterbarOnTop,integer(Top), bottom))
-with bar.boundsrect do
-  with ClientToScreen(point(left,bottom)) do
+  with bar.boundsrect do
+   with ClientToScreen(point(left,bottom)) do
 		menu.Popup(X,Y)
 end;
 
 procedure TRnQmain.Viewinfoof1Click(Sender: TObject);
 var
   uid: TUID;
-  cnt : TRnQContact;
+  cnt: TRnQContact;
 begin
-if enterUinDlg(Account.AccProto, uid, getTranslation('View info of...')) then
-  begin
+  if enterUinDlg(Account.AccProto, uid, getTranslation('View info of...')) then
+   begin
 //  viewInfoabout(MainProto.getContact(uid));
     cnt := Account.AccProto.getContact(uid);
     if Assigned(cnt) then
       cnt.ViewInfo;
-  end;
+   end;
 end;
 
 procedure TRnQmain.Outbox1Click(Sender: TObject);
@@ -1838,28 +1838,28 @@ end;
  {$IFDEF usesDC}
 procedure TRnQmain.WMDROPFILES(var Message: TWMDROPFILES);
 var
-  node:Tnode;
-  i, n:integer;
-  ss:string;
-  buffer:array[0..2000] of char;
+  node: Tnode;
+  i, n: integer;
+  ss: string;
+  buffer: array[0..2000] of char;
 begin
   with roster.ScreenToClient(mousePos) do
     node:=roasterLib.nodeAt(x,y);
   if (node=NIL) or (node.kind<>NODE_CONTACT) then
     exit;
 //  if node.contact.status in [SC_OFFLINE,SC_UNK] then exit;
-  ss:='';
-  n:=DragQueryFile(Message.Drop,cardinal(-1),NIL,0);
+  ss := '';
+  n := DragQueryFile(Message.Drop,cardinal(-1),NIL,0);
   for i:=0 to n-1 do
     begin
-    DragQueryFile(Message.Drop, i, @buffer, sizeof(buffer));
-    ss:=ss+buffer+CRLF;
+     DragQueryFile(Message.Drop, i, @buffer, sizeof(buffer));
+     ss := ss+buffer+CRLF;
     end;
   DragFinish(message.drop);
   if node.contact is TICQContact then
 //    TsendFileFrm.doAll(self, TICQContact(node.contact), ss);
     ICQsendfile(TICQContact(node.contact), ss);
-  ss:='';
+  ss := '';
 end; // WMDROPFILES
  {$ENDIF usesDC}
 
@@ -1871,9 +1871,9 @@ end;
 
 procedure TRnQmain.displayHint(Sender: TObject);
 begin
-case hintMode of
-  HM_comm: chatFrm.setStatusbar(application.Hint);
-//  HM_url: chatFrm.setStatusbar(getURLfromFav(application.Hint));
+  case hintMode of
+   HM_comm: chatFrm.setStatusbar(application.Hint);
+//   HM_url: chatFrm.setStatusbar(getURLfromFav(application.Hint));
   end;
 end;
 
@@ -1885,30 +1885,30 @@ end;
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 procedure TRnQmain.WMDNSLookUp(var pMsg: TMessage);
 var
- evInt : Integer;
- vmsg : String;
+ evInt: Integer;
+ vmsg: String;
 begin
   try
-    resolving:=TRUE;
+    resolving := TRUE;
     with Account.AccProto.ProtoElem do
     sock.DnsLookup(aProxy.serv.host);
   except
-   on E:Exception do
+   on E: Exception do
     begin
-      evInt:=WSocket_WSAGetLastError;
+      evInt := WSocket_WSAGetLastError;
       vmsg := E.Message;
       Account.AccProto.disconnect;
-       resolving:= False;
-       setProgBar(Account.AccProto, 0);
+      resolving := False;
+      setProgBar(Account.AccProto, 0);
       msgDlg(getTranslation('DNS error: [%d]\n%s' , [evInt, vmsg]), False, mtError);
     end
    else
     begin
-      evInt:=WSocket_WSAGetLastError;
+      evInt := WSocket_WSAGetLastError;
       vmsg := WSocketErrorDesc(evInt);
       Account.AccProto.disconnect;
-       resolving:= False;
-       setProgBar(Account.AccProto, 0);
+      resolving := False;
+      setProgBar(Account.AccProto, 0);
       msgDlg(getTranslation('DNS error: [%d]\n%s' , [evInt, vmsg]), False, mtError);
     end;
   end;
@@ -1918,12 +1918,12 @@ procedure TRnQmain.dnslookup(sender: Tobject; error: word);
 begin
   if not resolving then
     exit;
-  resolving:=FALSE;
+  resolving := FALSE;
   setProgBar(Account.AccProto, 0.5/progLogonTotal);
   if Error = 0 then
    begin
     lastserverAddr := Account.AccProto.ProtoElem.loginServerAddr;
-    lastServerIP:= Account.AccProto.ProtoElem.sock.DnsResultList[0];
+    lastServerIP := Account.AccProto.ProtoElem.sock.DnsResultList[0];
    end
   else
    begin
@@ -1955,18 +1955,18 @@ var
   oldF : HFONT;
   s : String;
 }
-  blend_function : BLENDFUNCTION;
-  p : TPoint;
-  hdcScreen, hdcMem : HDC;
-  nWidth, nHeight : Integer;
-  bitmap_info : BITMAPINFO;
-  m_hBmp : HBITMAP;
+  blend_function: BLENDFUNCTION;
+  p: TPoint;
+  hdcScreen, hdcMem: HDC;
+  nWidth, nHeight: Integer;
+  bitmap_info: BITMAPINFO;
+  m_hBmp: HBITMAP;
   m_pBits: Pointer;
   hOldBitmap: HGDIOBJ;
   ptSrc, ptDest: TPoint;
   size: TSize;
-  st : Integer;
-  is32 : Boolean;
+  st: Integer;
+  is32: Boolean;
 begin
 //  brF := CreateSolidBrush(RGB($FF, 02, 01))
 //   FillRect(splashFrm.Canvas.Handle, splashFrm.Canvas.ClipRect, brF);
@@ -2104,9 +2104,9 @@ end;
 
 procedure TRnQmain.menuBtnClick(Sender: TObject);
 begin
-with bar.boundsrect do
-  with ClientToScreen(point(left,bottom)) do
-		menu.Popup(X,Y)
+  with bar.boundsrect do
+    with ClientToScreen(point(left,bottom)) do
+  		menu.Popup(X,Y)
 end;
 
 procedure TRnQmain.sbarDblClick(Sender: TObject);
@@ -2186,33 +2186,33 @@ end;
 
 procedure TRnQmain.contactMenuPopup(Sender: TObject);
 var
-  showHidden:boolean;
+  showHidden: boolean;
 begin
   if clickedContact = NIL then
     Exit;
-  showHidden:=getShiftState() and (1+2) > 0; // shift OR control
+  showHidden := getShiftState() and (1+2) > 0; // shift OR control
 //menusendaddedyou1.tag:=PIC_ADDEDYOU;
-  UIN1.caption:=getTranslation('%s (copy UIN)', [clickedContact.uin2Show]);
+  UIN1.caption := getTranslation('%s (copy UIN)', [clickedContact.uin2Show]);
  {$IFDEF PROTOCOL_ICQ}
   if (clickedContact is TICQcontact) and (TICQContact(clickedContact).connection.ip <> 0) then
     begin
       IP1.visible := TRUE;
-      IP1.caption:=getTranslation('%s (copy IP)', [ip2str(TICQContact(clickedContact).connection.ip)] );
+      IP1.caption := getTranslation('%s (copy IP)', [ip2str(TICQContact(clickedContact).connection.ip)] );
     end
    else
  {$ENDIF PROTOCOL_ICQ}
     IP1.visible := FALSE;
  {$IFDEF PROTOCOL_ICQ}
-  Sendemail1.visible:=((not (clickedContact is TICQcontact)) or (TICQcontact(clickedContact).email > ''));
+  Sendemail1.visible := ((not (clickedContact is TICQcontact)) or (TICQcontact(clickedContact).email > ''));
 //                  or (clickedContact is TMRAcontact);
  {$ENDIF PROTOCOL_ICQ}
 
-  movetogroup1.visible:= clickedContact.fProto.readList(LT_ROSTER).exists(clickedContact);
+  movetogroup1.visible := clickedContact.fProto.readList(LT_ROSTER).exists(clickedContact);
   if clickedContact.group = 0 then
-    movetogroup1.caption:=getTranslation('Move to group')
+    movetogroup1.caption := getTranslation('Move to group')
    else
-    movetogroup1.caption:=getTranslation('Move from %s to group', [dupAmperstand(groups.id2name(clickedContact.group))] );
-  addtocontactlist1.visible:=not movetogroup1.visible;
+    movetogroup1.caption := getTranslation('Move from %s to group', [dupAmperstand(groups.id2name(clickedContact.group))] );
+  addtocontactlist1.visible := not movetogroup1.visible;
 
   if movetogroup1.visible then
     addGroupsToMenu(self, movetogroup1, addcontactAction,
@@ -2270,8 +2270,8 @@ end;
 
 procedure TRnQmain.updateStatusGlyphs;
 var
-  i : Integer;
-  sa : TStatusArray;
+  i: Integer;
+  sa: TStatusArray;
 begin
   if Assigned(Account.AccProto) then
     begin
@@ -2304,7 +2304,7 @@ end;
 
 procedure TRnQmain.Checkforupdates1Click(Sender: TObject);
 begin
-  checkupdate.autochecking:=FALSE;
+  checkupdate.autochecking := FALSE;
   check4update
 end;
 
@@ -2337,13 +2337,13 @@ end;
 
 procedure TRnQmain.WndProc(var msg:TMessage);
 var
-  i : integer;
-  ScrLeft, ScrWidth : Integer;
+  i: integer;
+  ScrLeft, ScrWidth: Integer;
   r: TRect;
 begin
 case msg.msg of
  {$IFDEF RNQ_PLAYER}
-  WM_USER : begin
+  WM_USER: begin
    if msg.WParam = IPC_STARTPLAY then
      mARnQPlayerExecute(self)// «апускаем проигрыватель
 {    case msg.lParam of // что делаем
@@ -2387,9 +2387,9 @@ case msg.msg of
   WM_SYSCOMMAND:
     case msg.WParam and $FFF0 of  // first four bits are reserved
       SC_CLOSE: toggleVisible;
-      SC_MINIMIZE:toggleVisible;
+      SC_MINIMIZE: toggleVisible;
       else
-        autosizeDelayed:=TRUE;
+        autosizeDelayed := TRUE;
         inherited;
       end;
   WM_TRAY:
@@ -2422,45 +2422,45 @@ case msg.msg of
         end;
   WM_MOVING:
     begin
-    if not docking.enabled then
-      begin
-      inherited;
-      docking.active := false;
-      exit;
-      end;
-    i := mousepos.x;
-//    ScrWidth := screen.width
-//    r := Screen.MonitorFromWindow(self.Handle).WorkareaRect;
-    r := desktopWorkArea(Self.Handle);
-     begin
-       ScrWidth := r.Right;
-       ScrLeft  := r.Left;
-     end;
-//    limit:=Screen.MonitorFromWindow(self.Handle).WorkareaRect.Bottom - self.clientToScreen(point(0, 0)).y;
-//    if not docking.active and ((i<DOCK_SNAP) or (i>screen.width-DOCK_SNAP)) then
-    if not docking.active and ((i<ScrLeft+DOCK_SNAP) or (i>scrWidth-DOCK_SNAP)) then
-      begin
-      docking.active := TRUE;
-      docking.pos := DP_right;
-      if i < ScrLeft+DOCK_SNAP then
-        docking.pos := DP_left;
-      docking.bakOfs := point(mousepos.x-boundsrect.left, mousepos.y-boundsrect.top);
-      docking.bakSize := point(width, height);
-    	end;
-    if docking.active and (i>ScrLeft+DOCK_SNAP) and (i<scrWidth-DOCK_SNAP) then
-      begin
-      docking.active := False;
-      with Trect(pointer(msg.lparam)^) do
+      if not docking.enabled then
         begin
-        left  := mousepos.x-docking.bakOfs.x;
-        top   := mousepos.y-docking.bakOfs.y;
-        right := left+docking.bakSize.x;
-        bottom:= top+docking.bakSize.y;
+         inherited;
+         docking.active := false;
+         exit;
         end;
-      end;
-    utilLib.dockSet(Trect(pointer(msg.lparam)^));
-    if not docking.active then
-      inherited;
+      i := mousepos.x;
+  //    ScrWidth := screen.width
+  //    r := Screen.MonitorFromWindow(self.Handle).WorkareaRect;
+      r := desktopWorkArea(Self.Handle);
+       begin
+         ScrWidth := r.Right;
+         ScrLeft  := r.Left;
+       end;
+  //    limit:=Screen.MonitorFromWindow(self.Handle).WorkareaRect.Bottom - self.clientToScreen(point(0, 0)).y;
+  //    if not docking.active and ((i<DOCK_SNAP) or (i>screen.width-DOCK_SNAP)) then
+      if not docking.active and ((i<ScrLeft+DOCK_SNAP) or (i>scrWidth-DOCK_SNAP)) then
+        begin
+        docking.active := TRUE;
+        docking.pos := DP_right;
+        if i < ScrLeft+DOCK_SNAP then
+          docking.pos := DP_left;
+        docking.bakOfs := point(mousepos.x-boundsrect.left, mousepos.y-boundsrect.top);
+        docking.bakSize := point(width, height);
+        end;
+      if docking.active and (i>ScrLeft+DOCK_SNAP) and (i<scrWidth-DOCK_SNAP) then
+        begin
+        docking.active := False;
+        with Trect(pointer(msg.lparam)^) do
+          begin
+          left  := mousepos.x-docking.bakOfs.x;
+          top   := mousepos.y-docking.bakOfs.y;
+          right := left+docking.bakSize.x;
+          bottom:= top+docking.bakSize.y;
+          end;
+        end;
+      utilLib.dockSet(Trect(pointer(msg.lparam)^));
+      if not docking.active then
+        inherited;
     end;
   WM_SIZING:
     begin
@@ -3878,8 +3878,8 @@ end;
 
 procedure TRnQmain.AUIN1Update(Sender: TObject);
 begin
-if clickedContact <> nil then
-  TAction(Sender).Caption:=getTranslation('%s (copy UIN)', [clickedContact.uin2Show]);
+  if clickedContact <> nil then
+    TAction(Sender).Caption := getTranslation('%s (copy UIN)', [clickedContact.uin2Show]);
 end;
 
 procedure TRnQmain.AIP1Update(Sender: TObject);
@@ -4078,6 +4078,7 @@ begin
       TRQMenuItem(mainmenuthemes1.items[i]).ImageName := PIC_UNCHECKED;
   TRQMenuItem(Sender).ImageName := PIC_CHECKED;}
 end;
+
 procedure TRnQmain.SelectSounds(Sender: TObject);
 var
   i: NativeInt;
@@ -4304,9 +4305,9 @@ end;
 procedure TRnQmain.cACheckInvisibilityUpdate(Sender: TObject);
 begin
  {$IFDEF CHECK_INVIS}
-if clickedContact <> nil then
-  TAction(Sender).Visible := supportInvisCheck and
-     ((not clickedContact.isOnline) or (clickedContact.isInvisible));
+  if clickedContact <> nil then
+    TAction(Sender).Visible := supportInvisCheck and
+       ((not clickedContact.isOnline) or (clickedContact.isInvisible));
  {$ELSE}
    TAction(Sender).Visible := false;
  {$ENDIF}
@@ -4917,11 +4918,11 @@ end;
 
 //function TRnQmain.AddMainMenuItem(wPar: WPARAM; lPar: LPARAM): Integer; cdecl;
 function TRnQmain.AddContactMenuItem(pMI : PCLISTMENUITEM ): Integer;// cdecl;
-{function TRnQmain.AddContactMenuItem(pPluginProc : Pointer; menuIcon: hIcon; menuCaption:String;
-              menuHint:string; //procIdx : Integer;
-              position : Integer;
-              PopupName : String; popupPosition : Integer;
-              hotKey : DWORD; PicName : String = ''):integer;}
+{function TRnQmain.AddContactMenuItem(pPluginProc: Pointer; menuIcon: hIcon; menuCaption: String;
+              menuHint: string; //procIdx: Integer;
+              position: Integer;
+              PopupName: String; popupPosition: Integer;
+              hotKey: DWORD; PicName: String = ''): integer;}
 var
 //  clMI : TCLISTMENUITEM;
   Str, Str1: String;
@@ -4988,8 +4989,8 @@ begin
   result := MI.Handle;
 end;
 
-//function TRnQmain.UpdateContactMenuItem(menuHandle: hmenu; pMI : PCLISTMENUITEM ): Integer;// cdecl;
-Procedure TRnQmain.UpdateContactMenuItem(menuHandle: hmenu; pMI : PCLISTMENUITEM );// cdecl;
+//function TRnQmain.UpdateContactMenuItem(menuHandle: hmenu; pMI: PCLISTMENUITEM ): Integer;// cdecl;
+Procedure TRnQmain.UpdateContactMenuItem(menuHandle: hmenu; pMI: PCLISTMENUITEM );// cdecl;
   function findItem(item: TMenuItem): TmenuItem;
   var
     I: Integer;
