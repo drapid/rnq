@@ -87,11 +87,11 @@ type
 type
   TRnQBitmap = class
    protected
-    fHI     :  HICON;
-//    fBmp32  : TBitmap32;
-    FNumFrames : Integer;
-    FCurrentFrame : Integer;
-    FNumIterations : Integer;
+    fHI:  HICON;
+//    fBmp32: TBitmap32;
+    FNumFrames: Integer;
+    FCurrentFrame: Integer;
+    FNumIterations: Integer;
 
     fFrames: TAniFrameList;
 
@@ -105,13 +105,14 @@ type
     fBmp    : TBitmap;
     htMask  : TBitmap;
     htTransparent: boolean; // is Has Mask
-    fTransparentColor : COLORREF;
+    fTransparentColor: COLORREF;
     f32Alpha : Boolean;
     fFormat : TPAFormat;
     fWidth  : Integer;
     fHeight : Integer;
+    fDPI    : Integer;
    private
-    fAnimated : Boolean;
+    fAnimated: Boolean;
 //    procedure Draw32bit(DC: HDC; DX, DY: Integer);
     procedure SetCurrentFrame(AFrame: Integer);
     procedure NextFrame(OldFrame: Integer);
@@ -125,10 +126,10 @@ type
     procedure   MakeEmpty;
     procedure   loadFromStream(stream: TStream);
 //    procedure   Free; overload;
-//    function  loadPic(fn:string):Tbitmap;
+//    function  loadPic(fn: string): Tbitmap;
 
-    procedure MaskDraw(DC : HDC; const DestBnd, SrcBnd: TGPRect); Overload;
-    procedure MaskDraw(DC : HDC; const DX, DY: Integer); Overload;
+    procedure MaskDraw(DC: HDC; const DestBnd, SrcBnd: TGPRect); Overload;
+    procedure MaskDraw(DC: HDC; const DX, DY: Integer); Overload;
     procedure Draw(DC: HDC; DX, DY: Integer); Overload;
 //    procedure Draw(DC: HDC; DestR : TRect; SrcX, SrcY, SrcW, SrcH : Integer; pEnabled : Boolean= True; isCopy : Boolean= false); Overload;
     procedure Draw(DC: HDC; DestBnd, SrcBnd: TGPRect; pEnabled : Boolean= True; isCopy32: Boolean = false); Overload;
@@ -142,8 +143,8 @@ type
     procedure GetHICON(var hi : HICON);
     function  GetWidth  : Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
     function  GetHeight : Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-    function  RnQCheckTime : Boolean;
-    property  Animated : Boolean read fAnimated;
+    function  RnQCheckTime: Boolean;
+    property  Animated: Boolean read fAnimated;
     property  NumFrames: Integer read FNumFrames;
     property  Width: integer read fWidth;
     property  Height: integer read FHeight;
@@ -415,6 +416,7 @@ begin
 //  fBMP32 := NIL;
   f32Alpha := False;
   fFormat := PA_FORMAT_UNK;
+  fDPI  := 0;
 
   fAnimated := False;
   FCurrentFrame := 1;
@@ -1538,14 +1540,14 @@ function TransparentStretchBlt(DstDC: HDC; DstX, DstY, DstW, DstH: Integer;
 const
   ROP_DstCopy		= $00AA0029;
 var
-  MemDC			,
-  OrMaskDC		: HDC;
-  MemBmp		,
-  OrMaskBmp		: HBITMAP;
-  Save			,
-  OrMaskSave		: THandle;
-  crText, crBack	: TColorRef;
-  SavePal		: HPALETTE;
+  MemDC,
+  OrMaskDC: HDC;
+  MemBmp,
+  OrMaskBmp: HBITMAP;
+  Save,
+  OrMaskSave: THandle;
+  crText, crBack: TColorRef;
+  SavePal: HPALETTE;
 
 begin
   Result := True;
@@ -1656,7 +1658,7 @@ function TransparentBlt(hdcSrc: HDC; nXOriginSrc, nYOriginSrc, nWidthSrc,
   nHeightDest: Integer; crTransparent: LongWord): BOOL; stdcall; external msimg32 name 'TransparentBlt';
 {$ENDIF}
 
-procedure TRnQBitmap.MaskDraw(DC : HDC; const DestBnd, SrcBnd: TGPRect);
+procedure TRnQBitmap.MaskDraw(DC: HDC; const DestBnd, SrcBnd: TGPRect);
 {Draw parts of this bitmap on ACanvas}
 var
   OldPalette, myPalette: HPalette;
@@ -1712,7 +1714,7 @@ end;
 
 procedure TRnQBitmap.MakeEmpty;
 var
-  hbr : HBRUSH;
+  hbr: HBRUSH;
 begin
  if Assigned(fBmp) then
   begin
@@ -1726,7 +1728,7 @@ begin
   end;
 end;
 
-procedure TRnQBitmap.MaskDraw(DC : HDC; const DX, DY: Integer);
+procedure TRnQBitmap.MaskDraw(DC: HDC; const DX, DY: Integer);
 {Draw parts of this bitmap on ACanvas}
 var
   OldPalette, myPalette: HPalette;

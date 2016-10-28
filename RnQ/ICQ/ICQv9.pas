@@ -579,15 +579,15 @@ type
 //    class function  isValidUid(var uin: TUID): boolean; Static;
     procedure AddToList(l: TLIST_TYPES; cnt: TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure RemFromList(l: TLIST_TYPES; cnt: TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  isInList(l: TLIST_TYPES; cnt: TRnQContact) : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  isInList(l: TLIST_TYPES; cnt: TRnQContact): Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    function  addContact(c: TRnQContact; isLocal: Boolean = false):boolean; overload;OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  addContact(c: TRnQContact; isLocal: Boolean = false): boolean; overload;OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  removeContact(cnt: TRnQContact): boolean;OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    procedure InputChangedFor(cnt: TRnQContact; InpIsEmpty : Boolean; timeOut : boolean = false); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure InputChangedFor(cnt: TRnQContact; InpIsEmpty: Boolean; timeOut: boolean = false); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure UpdateGroupOf(cnt: TRnQContact); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure getClientPicAndDesc4(cnt: TRnQContact; var pPic : TPicName; var CliDesc : String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  maxCharsFor(const c: TRnQContact; isBin : Boolean = false):integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure getClientPicAndDesc4(cnt: TRnQContact; var pPic: TPicName; var CliDesc: String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  maxCharsFor(const c: TRnQContact; isBin: Boolean = false): integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  compareStatusFor(cnt1, Cnt2: TRnqContact) : Smallint; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure sendKeepalive; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  canAddCntOutOfGroup: Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -3851,7 +3851,7 @@ begin
    end;
 
   sutf := '';
-  lShouldEncr := UseCryptMsg and c.Crypt.supportCryptMsg and not isBin;
+  lShouldEncr := (UseCryptMsg and c.Crypt.supportCryptMsg) and (not useMsgType2For(c) or not isBin);
   if ( useMsgType2For(c)
       or lShouldEncr)
      and not (IF_Simple and flags > 0) then
@@ -8985,8 +8985,8 @@ end; // removeTemporaryVisible
 
 function TicqSession.removeTemporaryVisible(cl:TRnQCList):boolean;
 begin
-  result:=TRUE;
-  cl:= cl.clone.intersect(tempVisibleList);
+  result := TRUE;
+  cl := cl.clone.intersect(tempVisibleList);
   if isReady and not cl.empty then
   begin
     tempvisibleList.remove(cl);
@@ -9001,7 +9001,7 @@ begin
      else
  {$ENDIF UseNotSSI}
        SSIsendDelTempVisible(cl.buinlist);
-    eventContact:=NIL;
+    eventContact := NIL;
     notifyListeners(IE_visibilityChanged);
   end;
   cl.free;
@@ -9014,13 +9014,14 @@ end;
 
 function TicqSession.useMsgType2for(c: TICQcontact): boolean;
 begin
-  result:=(not (c.status in [SC_OFFLINE, SC_UNK])) //and (not c.invisible)
+  result := (not (c.status in [SC_OFFLINE, SC_UNK])) //and (not c.invisible)
               and (not c.icq2go)
               and (c.proto>7)
 //              and (not ((getClientPicFor(c) = PIC_RNQ) and (getRnQVerFor(c) < 1053)))
               and ( (CAPS_sm_ICQSERVERRELAY in c.capabilitiesSm)
 //                   or
 //                    (CAPS_big_CryptMsg in c.capabilitiesBig)
+                    or (UseCryptMsg and c.Crypt.supportCryptMsg)
                    )
 end;
 
@@ -9062,8 +9063,10 @@ begin
 //    result:=450
     result:=1000
    else}
-  if useMsgType2for(TICQContact(c)) then result:=7000
-   else result:=2540;
+  if useMsgType2for(TICQContact(c)) then
+    result := 7000
+   else
+    result := 2540;
   with TICQContact(c) do
   begin
     if not isBin then

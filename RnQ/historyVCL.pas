@@ -1205,8 +1205,9 @@ var
 
     //                    theme.
     //                    theme.drawPic(cnv, x, y+(lineHeight-size.cy) div 2, )
+                        SetStretchBltMode(Cnv.Handle, HALFTONE);
                         with theme.GetAniPic(fndSmileI) do
-                          Draw(Cnv.Handle, x, y+(lineHeight-size.cy) div 2);
+                          Draw(Cnv.Handle, MakeRect(x, y+(lineHeight-size.cy) div 2, size.cx, size.cy));
                        end;
                       end
                        else
@@ -1214,7 +1215,7 @@ var
                     ;
                   {$ENDIF RNQ_FULL}
 //                     if not JustCalc then
-                      theme.drawPic(Cnv.Handle, x, y+(lineHeight-size.cy) div 2, fndSmileN);
+                      theme.drawPic(Cnv.Handle, x, y+(lineHeight-size.cy) div 2, fndSmileN, True, PPI);
   //                    cnv.draw(x,y+(lineHeight-size.cy) div 2, vDBPic);
                    end;
                   end;
@@ -1703,6 +1704,7 @@ begin
 //          end;
      {$ENDIF RNQ_FULL}
           DoBackground(cnv, vR, theme.AnibgPic, PPI);
+          theme.AnibgPicPPI := PPI;
      {$IFDEF RNQ_FULL}
         end;
       {$ENDIF RNQ_FULL}

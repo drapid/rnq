@@ -33,35 +33,35 @@ type
     { Private declarations }
 //    menu_pic : TBitmap;
 //    menu_btAc, menu_btIn : TBitmap;
-    fLastMousePos : TPoint;
+    fLastMousePos: TPoint;
     FAniParamList: TAniSmileParamsArray;
-    FAniDrawCnt : Integer;
-    DrawLines, DrawSmiles : Integer;
-    procedure RenderAllMenu(cnv : TCanvas);
+    FAniDrawCnt: Integer;
+    DrawLines, DrawSmiles: Integer;
+    procedure RenderAllMenu(cnv: TCanvas);
     procedure TickAniTimer(Sender: TObject);
     procedure AddAniParam( PicIdx, SmlIDX : Integer; Bounds: TGPRect;
-              Color: TColor; cnv, cnvSrc : TCanvas; Sel : Boolean = false);
+              Color: TColor; cnv, cnvSrc: TCanvas; Sel: Boolean = false);
     procedure ClearAniParams;
-    procedure DrawSmilesMenu(DC0 : HDC; i : Integer);
-    procedure SetMenuSel(i : Integer);
+    procedure DrawSmilesMenu(DC0: HDC; i: Integer; PPI: Integer);
+    procedure SetMenuSel(i: Integer);
   public
     { Public declarations }
-    procedure CreateParams( var Params: TCreateParams );override;
+    procedure CreateParams( var Params: TCreateParams ); override;
   end;
   procedure ShowSmileMenu(t: tpoint);
 
 const
-  Smile_Btn_space = 3;
   Btn_Max_Width   = 45;
   Btn_Max_Height  = 30;
-  Smile_Text_Height = 12;
 
 var
+  Smile_Btn_space: Integer = 3;
+  Smile_Text_Height: Integer = 12;
   FSmiles: TFSmiles;
-  SmileToken : Integer;
-  prefBtnWidth, prefBtnHeight : Integer;
-  prefSmlAutoSize : Boolean;
-  DrawSmileGrid : Boolean;
+  SmileToken: Integer;
+  prefBtnWidth, prefBtnHeight: Integer;
+  prefSmlAutoSize: Boolean;
+  DrawSmileGrid: Boolean;
 
 implementation
 
@@ -96,13 +96,13 @@ begin
   SetForegroundWindow(v);
 end;
 
-procedure DrawSelBG(dc : HDC; r : TRect);
+procedure DrawSelBG(dc: HDC; r: TRect);
 var
   FadeColor1, FadeColor2: Cardinal;
-  bgClr : TColor;
-  rB : TRect;
+  bgClr: TColor;
+  rB: TRect;
 //  oldBr,
-  brF : HBRUSH;
+  brF: HBRUSH;
 begin
 //   FadeColor2 := AlphaMask or Cardinal(ColorToRGB(theme.GetColor('menu.selected', clMenuHighlight)));
    bgClr := theme.GetColor('menu.smiles.selected', clMenuHighlight);
@@ -128,9 +128,9 @@ begin
    DeleteObject(brF);
 end;
 
-procedure Add2input(const s : String);
+procedure Add2input(const s: String);
 begin
-  chatFrm.thisChat.input.SelText:= s;
+  chatFrm.thisChat.input.SelText := s;
 end;
 
 function getmenuselrect(col, row: integer): trect;
@@ -143,7 +143,7 @@ begin
     inc(result.Bottom, Smile_Text_Height);
 end;
 
-procedure TFSmiles.RenderAllMenu(cnv : TCanvas);
+procedure TFSmiles.RenderAllMenu(cnv: TCanvas);
 var
 //  gr: TGPGraphics;
   i, c, y: integer;
@@ -154,6 +154,7 @@ var
   s: String;
   menu_pic: TBitmap;
   ts: Boolean;
+  PPI: Integer;
 //  brLog : tagLOGBRUSH;
 begin
 {  begin
@@ -167,6 +168,7 @@ begin
   menu_pic := createBitmap(MenuSmilesBox.Width, MenuSmilesBox.Height);
  if Assigned(menu_pic) then
  try
+   PPI:= GetParentCurrentDpi;
   menu_pic.Canvas.Brush.Color := cnv.Brush.Color;
   brF := CreateSolidBrush(ColorToRGB(theme.GetColor('menu.smiles.bg', clMenu)));
 //  FillRect(menu_pic.Canvas.Handle, Rect(0, 0, MenuSmilesBox.Width, MenuSmilesBox.Height), GetSysColorBrush(COLOR_MENU));
@@ -195,7 +197,7 @@ begin
     SmileObj := theme.GetSmileObj(i);
     if ShowAniSmlPanel and theme.useAnimated AND SmileObj.Animated then
       AddAniParam(SmileObj.AniIdx, i, r2, clMenu, cnv, NIL);
-    DrawSmilesMenu(menu_pic.Canvas.Handle, i);
+    DrawSmilesMenu(menu_pic.Canvas.Handle, i, PPI);
 {    if ShowSmileCaption then
      begin
        r.Top := r.Bottom;
@@ -272,9 +274,9 @@ end;
 
 procedure TFSmiles.FormShow(Sender: TObject);
 var
-//tt : integer;
+//tt: integer;
 //  dl1,
-  dc1 : Integer;
+  dc1: Integer;
 begin
 //if themechanged then ParseSmile;
 //for tt := 0 to smiles.count-1 do
@@ -291,7 +293,7 @@ begin
    if not TryStrToInt(GetString('smile.menu.cnt'), DrawLines) then
      begin
 //    if not ShowSmileCaption then
-      DrawLines:=Round(sqrt(DrawSmiles)+1);       //mn
+      DrawLines := Round(sqrt(DrawSmiles)+1);       //mn
 //      dl1 := DrawLines;
       dc1 := DrawSmiles div DrawLines;
       if dc1 > 1 then
@@ -403,8 +405,8 @@ end;
 procedure TFSmiles.MenuSmilesBoxMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 var
-  i,col,row:integer;
-  p : tpoint;
+  i, col, row: integer;
+  p: tpoint;
 //  menup : boolean;
 begin
 //  menup := ((sender as tpaintbox).Name = 'MenuSmilesBox');
@@ -429,25 +431,25 @@ begin
    SetMenuSel(menusel);
 end;
 
-procedure TFSmiles.DrawSmilesMenu(DC0 : HDC; i : Integer);
+procedure TFSmiles.DrawSmilesMenu(DC0: HDC; i: Integer; PPI: Integer);
 var
 // i,
- col, row : integer;
-// rend : string;
- r, r2 : TRect;
-// menup : boolean;
-//  oldF : HFONT;
+ col, row: integer;
+// rend: string;
+ r, r2: TRect;
+// menup: boolean;
+//  oldF: HFONT;
   SmileObj: TSmlObj;
-  Ani : TRnQAni;
-  StatImName : TPicName;
-  b2 : TBitmap;
-  brF : HBRUSH;
-  sz : TSize;
-  h : Integer; 
-  DC : HDC;
-  DrawOnBMP : Boolean;
-//  bgClr : Cardinal;
-//  bgClr : TColor;
+  Ani: TRnQAni;
+  StatImName: TPicName;
+  b2: TBitmap;
+  brF: HBRUSH;
+  sz: TSize;
+  h: Integer;
+  DC: HDC;
+  DrawOnBMP: Boolean;
+//  bgClr: Cardinal;
+//  bgClr: TColor;
 begin
 //  MenuSmilesBox.Canvas.Draw(0, 0, menu_pic);
   if (i >=0)and(i < DrawSmiles) then
@@ -462,12 +464,17 @@ begin
        Ani := theme.GetAniPic(SmileObj.AniIdx);
        sz.cx := Ani.Width;
        sz.cy := Ani.Height;
+       if (Ani.fDPI <> cDefaultDPI)and (Ani.fDPI > 36) then
+         begin
+           sz.cx := MulDiv(sz.cx, PPI, Ani.fDPI);
+           sz.cy := MulDiv(sz.cy, PPI, Ani.fDPI);
+         end;
 //       Ani.Animate := True;
       end
      else
       begin
         StatImName := SmileObj.SmlStr.Strings[0];
-        sz := theme.GetPicSize(RQteDefault, StatImName);
+        sz := theme.GetPicSize(RQteDefault, StatImName, PPI);
       end;
     h := Btn_Height;
 //    if ShowSmileCaption then
@@ -504,11 +511,13 @@ begin
       dec(r2.Bottom, Smile_Text_Height);
 
     if ShowAniSmlPanel and SmileObj.Animated then
-       Ani.Draw(DC, r2.Left + (Btn_Width-sz.cx)div 2, r2.Top+(Btn_Height-sz.cy) div 2)
+      begin
+       Ani.Draw(DC, MakeRect(r2.Left + (Btn_Width-sz.cx)div 2, r2.Top+(Btn_Height-sz.cy) div 2, sz.cx, sz.cy))
+      end
      else
        theme.drawPic(DC, r2.Left + (Btn_Width-sz.cx)div 2,
                          r2.Top+(Btn_Height-sz.cy) div 2,
-                     StatImName);
+                     StatImName, True, PPI);
     if ShowSmileCaption then
      begin
        SelectObject(dc0, MenuSmilesBox.Font.Handle);
@@ -544,13 +553,16 @@ begin
    end;
 end;
 
-procedure TFSmiles.SetMenuSel(i : Integer);
+procedure TFSmiles.SetMenuSel(i: Integer);
+var
+  PPI: Integer;
 begin
   Menusel := i;
   if menusel <> oldsel then
    begin
-     DrawSmilesMenu(MenuSmilesBox.Canvas.Handle, oldsel);
-     DrawSmilesMenu(MenuSmilesBox.Canvas.Handle, menusel);
+     PPI := GetParentCurrentDpi;
+     DrawSmilesMenu(MenuSmilesBox.Canvas.Handle, oldsel, PPI);
+     DrawSmilesMenu(MenuSmilesBox.Canvas.Handle, menusel, PPI);
      oldsel := menusel;
      if (menusel>=0)and(menusel < theme.SmilesCount) then
        MenuSmilesBox.Hint := theme.GetSmileObj(menusel).SmlStr.Strings[0]
@@ -589,12 +601,13 @@ procedure TFSmiles.TickAniTimer(Sender: TObject);
 var
   i: Integer;
 //  bmp, b1: TRnQBitmap;
-  b2 : TBitmap;
+  b2: TBitmap;
 //  testSmile: TGifImage;
   paramSmile: TAniPicParams;
-//  gr, grb : TGPGraphics;
-//  br : TGPBrush;
-  brF : HBrush;
+//  gr, grb: TGPGraphics;
+//  br: TGPBrush;
+  brF: HBrush;
+  PPI, w2, h2: Integer;
 begin
 //  if not UseAnime then Exit;
 
@@ -604,6 +617,7 @@ begin
 //   if items[i].
   if Length(FAniParamList) > 0 then
   begin
+    PPI := GetParentCurrentDpi;
 //    b2 := createBitmap( paramSmile.Bounds.Right-paramSmile.Bounds.Left,
 //            paramSmile.Bounds.Bottom-paramSmile.Bounds.Top);
     b2 := createBitmap( Btn_Width, Btn_Height);
@@ -644,9 +658,16 @@ begin
                 DeleteObject(brF);
                end;
            end;
-//           Draw(b2.Canvas.Handle, 0, 0);
-            Draw(b2.Canvas.Handle, (Btn_Width-Width)div 2,
-                 (Btn_Height- Height) div 2)
+              if (fDPI <> PPI)and (fDPI > 36) then
+                begin
+                  w2 := MulDiv(Width, PPI, fDPI);
+                  h2 := MulDiv(Height, PPI, fDPI);
+                  Draw(b2.Canvas.Handle, MakeRect((Btn_Width - w2)div 2,
+                       (Btn_Height - h2) div 2, w2, h2))
+                end
+               else
+                Draw(b2.Canvas.Handle, (Btn_Width-Width)div 2,
+                     (Btn_Height- Height) div 2)
         end;
 
           if Assigned(paramSmile.Canvas)
@@ -738,6 +759,8 @@ var
   ar: array[1..4] of TRect;
   scr, intr, a: Trect;
   i, p1, p2: integer;
+  PPI: Integer;
+  w2, h2: Integer;
 begin
   fsmiles.FormShow(nil);
 
@@ -771,6 +794,7 @@ begin
   Btn_Height_Full := Btn_Height;
   if ShowSmileCaption then
     inc(Btn_Height_Full, Smile_Text_Height);
+
   fsmiles.ClientHeight := (Btn_Height_Full + Smile_Btn_space) * FSmiles.DrawLines + Smile_Btn_space;
   fsmiles.ClientWidth := (MenuSmiles.Btn_Width + Smile_Btn_space) * (ceil(FSmiles.DrawSmiles /
       FSmiles.DrawLines)) + Smile_Btn_space;
@@ -783,6 +807,21 @@ begin
 
 //    r := Screen.MonitorFromWindow(self.Handle).WorkareaRect;
 //  scr := Rect(0, 0, Screen.Width, Screen.Height);
+  PPI := Screen.MonitorFromPoint(t).PixelsPerInch;
+  if PPI <> cDefaultDPI then
+    begin
+      h2 := fsmiles.ClientHeight;
+      w2 := fsmiles.ClientWidth;
+
+      fsmiles.ClientHeight := MulDiv(h2, PPI, cDefaultDPI);
+      fsmiles.ClientWidth := MulDiv(w2, PPI, cDefaultDPI);
+      Btn_Width := MulDiv(Btn_Width, PPI, cDefaultDPI);
+      Btn_Height := MulDiv(Btn_Height, PPI, cDefaultDPI);
+      Btn_Height_Full := MulDiv(Btn_Height_Full, PPI, cDefaultDPI);
+      Smile_Btn_space := MulDiv(Smile_Btn_space, PPI, cDefaultDPI);
+      Smile_Text_Height := MulDiv(Smile_Text_Height, PPI, cDefaultDPI);
+    end;
+  
   scr := Screen.MonitorFromPoint(t).WorkareaRect;
   ar[1] := Rect(t.X, t.Y - fsmiles.Height, t.X + fsmiles.Width, t.Y);
   ar[2] := Rect(t.X - fsmiles.Width, t.Y - fsmiles.Height, t.X, t.Y);

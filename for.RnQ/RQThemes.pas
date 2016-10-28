@@ -262,9 +262,12 @@ type
     useTSC : TThemeSubClass;
 //    supSmiles : Boolean;
  {$IFDEF RNQ_FULL}
+ {$IFDEF SMILES_ANI_ENGINE}
     useAnimated : Boolean;
 //    Anipicbg : Boolean;
     AnibgPic : TBitmap;
+    AnibgPicPPI: Integer;
+ {$ENDIF SMILES_ANI_ENGINE}
  {$ENDIF RNQ_FULL}
 //    logo:TRnQBitmap;
     themelist2 : aThemeinfo;
@@ -1617,8 +1620,8 @@ begin
           begin
             Result.cx := Width;
             Result.cy := Height;
-//            if picDPI>20 then
-//              lPicDPI := picDPI;
+            if fDPI>20 then
+              lPicDPI := fDPI;
           end
          else
         {$ENDIF RNQ_FULL}
@@ -2043,7 +2046,7 @@ begin
 end;
 
 
-function TRQtheme.GetColor(const name : TPicName; pDefColor : TColor = clDefault) : TColor;
+function TRQtheme.GetColor(const name: TPicName; pDefColor: TColor = clDefault): TColor;
 var
   i : Integer;
 begin
@@ -2059,7 +2062,7 @@ begin
     end
 end;
 
-function TRQtheme.GetAColor(const name : TPicName; pDefColor : Integer = clDefault) : Cardinal;
+function TRQtheme.GetAColor(const name: TPicName; pDefColor: Integer = clDefault): Cardinal;
 var
   i : Integer;
 begin
@@ -2085,7 +2088,7 @@ begin
     end
 end;
 
-function TRQtheme.GetTColor(const name : TPicName; pDefColor : Cardinal) : Cardinal;
+function TRQtheme.GetTColor(const name: TPicName; pDefColor: Cardinal): Cardinal;
 var
   i : Integer;
 begin
@@ -2111,7 +2114,7 @@ begin
     end
 end;
 
-function TRQtheme.pic2ico(pTE : TRnQThemedElement; const picName: TPicName; ico:Ticon) : Boolean;
+function TRQtheme.pic2ico(pTE: TRnQThemedElement; const picName: TPicName; ico: Ticon): Boolean;
 var
   bmp : TRnQBitmap;
 //  vIco : TIcon;
@@ -2224,12 +2227,12 @@ end;
 
 function TRQtheme.pic2hIcon(const picName: TPicName; var ico: HICON): Boolean;
 var
-  bmp : TRnQBitmap;
-//  vIco : TIcon;
-  i : Integer;
-//  hi : HICON;
+  bmp: TRnQBitmap;
+//  vIco: TIcon;
+  i: Integer;
+//  hi: HICON;
 begin
-//   bmp :=TRnQBitmap.Create;
+//   bmp := TRnQBitmap.Create;
    if ico <> 0 then
      DeleteObject(ico);
    ico := 0;
@@ -2327,7 +2330,7 @@ end;
 function TRQtheme.addprop(const name: TPicName; kind: TthemePropertyKind; var pBmp: TRnQBitmap): Integer;
 var
   i: Integer;
-//  tempPic :TPicObj;
+//  tempPic: TPicObj;
   thp: TThemePic;
 begin
   result := -1;
@@ -2452,7 +2455,7 @@ begin
 end;
 
 procedure TRQtheme.addHIco(const name: TPicName; hi: HICON; Internal: Boolean = false);
-//procedure TRQtheme.addprop(name:string;hi: HICON; Internal : Boolean = false);
+//procedure TRQtheme.addprop(name: string; hi: HICON; Internal: Boolean = false);
 var
   i: Integer;
 //  j, cnt: Integer;
@@ -2679,7 +2682,7 @@ begin
   end
 end; // addthemeprop
 {
-procedure TRQtheme.addprop(name:string; fnt: TFont);
+procedure TRQtheme.addprop(name: string; fnt: TFont);
 var
   i : Integer;
 begin
@@ -3197,7 +3200,6 @@ var
 //  loadedpic: TRnQBitmap;
  {$IFDEF RNQ_FULL}
   loadedAniPic: TRnQAni;
-//  loadedAniPic : TRnQBitmap;
  {$ENDIF RNQ_FULL}
   section: TRQsection;
   NonAnimated: Boolean;
@@ -3315,6 +3317,7 @@ begin
              if not NonAnimated then
               begin
                loadedAniPic := loadedpic;
+               loadedAniPic.fDPI := CurrentPPI;
     //           loadedpic := loadedAniPic.CloneFrame(-1);
                if (i < 1) or (i > loadedAniPic.NumFrames) then
                 i := 1;
@@ -3817,7 +3820,7 @@ begin
   end
 end;
 
-function TRQtheme.drawPic(DC: HDC; pR: TGPRect; var picElm : TRnQThemedElementDtls; const DPI: Integer):Tsize;
+function TRQtheme.drawPic(DC: HDC; pR: TGPRect; var picElm: TRnQThemedElementDtls; const DPI: Integer): Tsize;
 var
 //  i : Integer;
   r1  : TGPRect;
@@ -4573,11 +4576,12 @@ procedure TRQtheme.TickAniTimer(Sender: TObject);
 var
   i: Integer;
 //  bmp, b1: TRnQBitmap;
-  b2 : TBitmap;
-  b2DC : HDC;
+  b2: TBitmap;
+  b2DC: HDC;
   paramSmile: TAniPicParams;
-//  gr, grb : TGPGraphics;
-//  br : TGPBrush;
+  w2, h2: Integer;
+//  gr, grb: TGPGraphics;
+//  br: TGPBrush;
 begin
 //  if not UseAnime then Exit;
 
@@ -4631,15 +4635,22 @@ begin
         with GetAniPic(paramSmile.Idx) do
         begin
 //         bmp:= TRnQBitmap.Create(Width, Height, PixelFormat32bppRGB);
-           if (b2.Width <> Width)or
-              (b2.Height <> Height) then
+           w2 := Width;
+           h2 := Height;
+           if (fDPI <> cDefaultDPI)and (fDPI > 36) then
+             begin
+               w2 := MulDiv(w2, AnibgPicPPI, fDPI);
+               h2 := MulDiv(h2, AnibgPicPPI, fDPI);
+             end;
+           if (b2.Width <> w2)or
+              (b2.Height <> h2) then
             begin
              b2.Height := 0;
            {$IFDEF DELPHI9_UP}
-             b2.SetSize(Width, Height);
+             b2.SetSize(w2, h2);
            {$ELSE DELPHI_9_dn}
-             b2.Width := Width;
-             b2.Height := Height;
+             b2.Width := w2;
+             b2.Height := h2;
            {$ENDIF DELPHI9_UP}
             end;
            b2DC := b2.Canvas.Handle;
@@ -4663,9 +4674,9 @@ begin
             end;
 }
           if Assigned(AnibgPic) and (not paramSmile.selected) then
-            BitBlt(b2DC, 0, 0, b2.Width, b2.Height,
-                   AnibgPic.Canvas.Handle,
-              paramSmile.Bounds.X, paramSmile.Bounds.Y, SRCCOPY)
+              BitBlt(b2DC, 0, 0, b2.Width, b2.Height,
+                     AnibgPic.Canvas.Handle,
+                paramSmile.Bounds.X, paramSmile.Bounds.Y, SRCCOPY)
            else
            begin
              b2.Canvas.Brush.Color := paramSmile.color;
@@ -4679,7 +4690,11 @@ begin
 //            grb.DrawImage(b1, 0, 0);
 //           b1.Free;
 //           grb.Free;
-           Draw(b2DC, 0, 0);
+              SetStretchBltMode(b2DC, HALFTONE);
+              if (fDPI <> cDefaultDPI)and (fDPI > 36) then
+                Draw(b2DC, MakeRectI(0, 0, w2, h2))
+               else
+                Draw(b2DC, 0, 0);
 //           BitBlt()
 //          paramSmile.Canvas.FillRect(paramSmile.Bounds);
 //          Draw(paramSmile.Canvas, paramSmile.Bounds.Left, paramSmile.Bounds.Top);
