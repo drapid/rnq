@@ -53,10 +53,12 @@ type
 const
   Btn_Max_Width   = 45;
   Btn_Max_Height  = 30;
+  Smile_Btn_space0 = 3;
+  Smile_Text_Height0 = 12;
 
 var
-  Smile_Btn_space: Integer = 3;
-  Smile_Text_Height: Integer = 12;
+  Smile_Btn_space: Integer = Smile_Btn_space0;
+  Smile_Text_Height: Integer = Smile_Text_Height0;
   FSmiles: TFSmiles;
   SmileToken: Integer;
   prefBtnWidth, prefBtnHeight: Integer;
@@ -393,10 +395,15 @@ begin
 end;
 
 procedure TFSmiles.MenuSmilesBoxClick(Sender: TObject);
+var
+  po: TSmlObj;
 begin
   if menusel>-1 then
   begin
-   Add2input(theme.GetSmileName(menusel));
+//   Add2input(theme.GetSmileName(menusel));
+   po := theme.GetSmileObj(menusel);
+   if Assigned(po) then
+     Add2input(po.SmlStr.Strings[0]);
    self.Hide;
   end;
   gotochat;
@@ -473,7 +480,7 @@ begin
       end
      else
       begin
-        StatImName := SmileObj.SmlStr.Strings[0];
+        StatImName := UTF8Encode(SmileObj.SmlStr.Strings[0]);
         sz := theme.GetPicSize(RQteDefault, StatImName, PPI);
       end;
     h := Btn_Height;
@@ -761,66 +768,78 @@ var
   i, p1, p2: integer;
   PPI: Integer;
   w2, h2: Integer;
+  picName: TPicName;
 begin
   fsmiles.FormShow(nil);
 
- if theme.SmilesCount > 0 then
- begin
-  if prefSmlAutoSize then
-   begin
-    if SmileToken <> theme.token then
-    begin
-     SmileToken := theme.token;
-     Btn_Width  := 25;
-     Btn_Height := 20;
-     for I := 0 to FSmiles.DrawSmiles - 1 do
-     with theme.GetPicSize(RQteDefault, theme.GetSmileObj(i).SmlStr.Strings[0]) do
-     begin
-      Btn_Width  := min(Btn_Max_Width,  max(cx, Btn_Width ));
-      Btn_Height := min(Btn_Max_Height, max(cy, Btn_Height));
-      if (Btn_Height = Btn_Max_Height)
-         and (Btn_Width = Btn_Max_Width) then
-        Break;
-     end;
-     inc(Btn_Width, 2);
-     inc(Btn_Height, 2);
-    end;
-   end
-  else
-   begin
-     Btn_Width  := prefBtnWidth;
-     Btn_Height := prefBtnHeight;
-   end;
-  Btn_Height_Full := Btn_Height;
-  if ShowSmileCaption then
-    inc(Btn_Height_Full, Smile_Text_Height);
+  PPI := Screen.MonitorFromPoint(t).PixelsPerInch;
 
-  fsmiles.ClientHeight := (Btn_Height_Full + Smile_Btn_space) * FSmiles.DrawLines + Smile_Btn_space;
-  fsmiles.ClientWidth := (MenuSmiles.Btn_Width + Smile_Btn_space) * (ceil(FSmiles.DrawSmiles /
+ if theme.SmilesCount > 0 then
+  begin
+    if SmileToken <> theme.token then
+      begin
+        if prefSmlAutoSize then
+          begin
+           SmileToken := theme.token;
+           Btn_Width  := 25;
+           Btn_Height := 20;
+           for I := 0 to FSmiles.DrawSmiles - 1 do
+             begin
+               picName := UTF8Encode(theme.GetSmileObj(i).SmlStr.Strings[0]);
+               with theme.GetPicSize(RQteDefault, picName) do
+               begin
+                Btn_Width  := min(Btn_Max_Width,  max(cx, Btn_Width ));
+                Btn_Height := min(Btn_Max_Height, max(cy, Btn_Height));
+                if (Btn_Height = Btn_Max_Height)
+                   and (Btn_Width = Btn_Max_Width) then
+                  Break;
+               end;
+             end;
+           inc(Btn_Width, 2);
+           inc(Btn_Height, 2);
+          end
+        else
+         begin
+           Btn_Width  := prefBtnWidth;
+           Btn_Height := prefBtnHeight;
+         end;
+
+        if PPI <> cDefaultDPI then
+         begin
+          Btn_Width := MulDiv(Btn_Width, PPI, cDefaultDPI);
+          Btn_Height := MulDiv(Btn_Height, PPI, cDefaultDPI);
+          Btn_Height_Full := MulDiv(Btn_Height_Full, PPI, cDefaultDPI);
+          Smile_Btn_space := MulDiv(Smile_Btn_space0, PPI, cDefaultDPI);
+          Smile_Text_Height := MulDiv(Smile_Text_Height0, PPI, cDefaultDPI);
+         end;
+      end;
+    Btn_Height_Full := Btn_Height;
+    if ShowSmileCaption then
+      inc(Btn_Height_Full, Smile_Text_Height);
+
+
+    fsmiles.ClientHeight := (Btn_Height_Full + Smile_Btn_space) * FSmiles.DrawLines + Smile_Btn_space;
+    fsmiles.ClientWidth := (Btn_Width + Smile_Btn_space) * (ceil(FSmiles.DrawSmiles /
       FSmiles.DrawLines)) + Smile_Btn_space;
- end
+  end
  else
   begin
+    if PPI <> cDefaultDPI then
+      begin
+        Btn_Width := MulDiv(Btn_Width, PPI, cDefaultDPI);
+        Btn_Height := MulDiv(Btn_Height, PPI, cDefaultDPI);
+        Btn_Height_Full := MulDiv(Btn_Height_Full, PPI, cDefaultDPI);
+        Smile_Btn_space := MulDiv(Smile_Btn_space0, PPI, cDefaultDPI);
+        Smile_Text_Height := MulDiv(Smile_Text_Height0, PPI, cDefaultDPI);
+        fsmiles.ClientWidth := MulDiv(200, PPI, cDefaultDPI);
+      end
+     else
+      fsmiles.ClientWidth := 200;
     fsmiles.ClientHeight := Smile_Text_Height + Smile_Btn_space shl 1;
-    fsmiles.ClientWidth := 200;
   end;
 
 //    r := Screen.MonitorFromWindow(self.Handle).WorkareaRect;
 //  scr := Rect(0, 0, Screen.Width, Screen.Height);
-  PPI := Screen.MonitorFromPoint(t).PixelsPerInch;
-  if PPI <> cDefaultDPI then
-    begin
-      h2 := fsmiles.ClientHeight;
-      w2 := fsmiles.ClientWidth;
-
-      fsmiles.ClientHeight := MulDiv(h2, PPI, cDefaultDPI);
-      fsmiles.ClientWidth := MulDiv(w2, PPI, cDefaultDPI);
-      Btn_Width := MulDiv(Btn_Width, PPI, cDefaultDPI);
-      Btn_Height := MulDiv(Btn_Height, PPI, cDefaultDPI);
-      Btn_Height_Full := MulDiv(Btn_Height_Full, PPI, cDefaultDPI);
-      Smile_Btn_space := MulDiv(Smile_Btn_space, PPI, cDefaultDPI);
-      Smile_Text_Height := MulDiv(Smile_Text_Height, PPI, cDefaultDPI);
-    end;
   
   scr := Screen.MonitorFromPoint(t).WorkareaRect;
   ar[1] := Rect(t.X, t.Y - fsmiles.Height, t.X + fsmiles.Width, t.Y);

@@ -141,8 +141,11 @@ type
     function Clone: TFontObj;
   end;
  {$IFDEF RNQ_FULL}
+  TBigPicType = (PT_PIC, PT_SMILE);
+
   TThemePic = class(TObject)
    public
+     PicType: TBigPicType;
      PicIDX: Integer;
 //    Name : String;
      r: TGPRect;
@@ -193,7 +196,7 @@ type
 //    section : String;
     section : AnsiString;
     name: TPicName;
-    kind:TthemePropertyKind;
+    kind: TthemePropertyKind;
 //    ptr:pointer;
     end;
   aTthemeProperty = array of TthemeProperty;
@@ -204,13 +207,15 @@ type
   TObjList =  TStringList;
  {$ENDIF UNICODE}
   TFontList = TDictionary<string, TFontObj>;
+  PBigPicsArr = ^TBigPicsArr;
+  TBigPicsArr = array of TPicObj;
 
 type
   TRQtheme = class
    private
     curToken : Integer;
-    fDPI : Integer;
-    FBigPics, FSmileBigPics : array of TPicObj;
+    fDPI: Integer;
+    FBigPics, FSmileBigPics: TBigPicsArr;
     FThemePics,
     FSmilePics,
     FFonts2,
@@ -284,8 +289,7 @@ type
     procedure loadThemeScript(const fn: String; const path: string); overload;
     procedure loadThemeScript(fn: String; ts: TThemeSourcePath); overload;
    private
-    function  addBigPic(var pBmp: TRnQBitmap; const origPic: TMemoryStream): Integer;
-    function  addBigSmile(var pBmp: TRnQBitmap; const origPic: TMemoryStream): Integer;
+    function  addBigPic(pPicType: TBigPicType; var pBmp: TRnQBitmap; const origPic: TMemoryStream): Integer;
 //    procedure addprop(name:string;hi: HICON; Internal : Boolean = false); overload;
     function  addProp(const name: TPicName; kind: TthemePropertyKind; var pBmp: TRnQBitmap) : Integer; overload;
     procedure addProp(const name: TPicName; kind: TthemePropertyKind; var pic: TThemePic); overload;
@@ -880,6 +884,7 @@ procedure TRQtheme.FreeResource;
 var
   I, k: Integer;
   po: TPicObj;
+  bigArr: PBigPicsArr;
 //var
 //  i : Integer;
 begin
@@ -891,18 +896,53 @@ begin
  {$ENDIF DELPHI9_UP}
    if Assigned(po) then
     po.ref := 0;
-  end;  
+  end;
+ {$IFDEF DELPHI9_UP}
+  for po in FSmileBigPics do begin
+ {$ELSE DELPHI_9_dn}
+  for I := 0 to Length(FSmileBigPics) - 1 do begin
+    po := FSmileBigPics[i];
+ {$ENDIF DELPHI9_UP}
+   if Assigned(po) then
+    po.ref := 0;
+  end;
+
+
   for I := 0 to FThemePics.Count - 1 do
   begin
     with TThemePic(FThemePics.Objects[i]) do
      begin
-
-       if (PicIDX < Length(FBigPics)) then
+       if PicType = PT_SMILE then
+         bigArr := @FSmileBigPics
+        else
+         bigArr := @FBigPics;
+       if (PicIDX < Length(bigArr^)) then
         begin
-         inc(FBigPics[PicIDX].ref);
+         inc(bigArr^[PicIDX].ref);
          if (r.X = 0)and(r.Y = 0) and
-            (FBigPics[PicIDX].bmp.Width = r.Width)and
-            (FBigPics[PicIDX].bmp.Height = r.Height)
+            (bigArr^[PicIDX].bmp.Width = r.Width)and
+            (bigArr^[PicIDX].bmp.Height = r.Height)
+         then
+           isWholeBig := True; // ThemePic= BigPic
+        end
+       else
+        isWholeBig := False;
+     end;
+  end;
+  for I := 0 to FSmilePics.Count - 1 do
+  begin
+    with TThemePic(FSmilePics.Objects[i]) do
+     begin
+       if PicType = PT_SMILE then
+         bigArr := @FSmileBigPics
+        else
+         bigArr := @FBigPics;
+       if (PicIDX < Length(bigArr^)) then
+        begin
+         inc(bigArr^[PicIDX].ref);
+         if (r.X = 0)and(r.Y = 0) and
+            (bigArr^[PicIDX].bmp.Width = r.Width)and
+            (bigArr^[PicIDX].bmp.Height = r.Height)
          then
            isWholeBig := True; // ThemePic= BigPic
         end
@@ -933,21 +973,6 @@ begin
     po := FSmileBigPics[i];
  {$ENDIF DELPHI9_UP}
    if Assigned(po) then
-    po.ref := 0;
-  end;
-  for I := 0 to FSmilePics.Count - 1 do
-  begin
-    k := TThemePic(FSmilePics.Objects[i]).PicIDX;
-    if (k >=0)and (k < Length(FSmileBigPics)) then
-      inc(FSmileBigPics[k].ref);
-  end;
- {$IFDEF DELPHI9_UP}
-  for po in FSmileBigPics do begin
- {$ELSE DELPHI_9_dn}
-  for I := 0 to Length(FSmileBigPics) - 1 do begin
-    po := FSmileBigPics[i];
- {$ENDIF DELPHI9_UP}
-   if Assigned(po) then
    if po.ref = 0 then
       begin
         FreeAndNil(po.bmp);
@@ -968,17 +993,17 @@ begin
 }
 end;
 
-procedure TRQtheme.load(fn0:string; subFile : String = ''; loadBase : Boolean = True; subClass : TThemeSubClass = tsc_all);
+procedure TRQtheme.load(fn0: string; subFile: String = ''; loadBase: Boolean = True; subClass: TThemeSubClass = tsc_all);
 var
-//  path : string;
+//  path: string;
 //  f,
  {$IFDEF USE_ZIP}
-//  baseArc : string;
+//  baseArc: string;
   baseThemePath : TThemePath;
  {$ENDIF USE_ZIP}
-  s, fn_full, fn_Only, fn_Ext : String;
-  s1 : String;
-  ts : TThemeSourcePath;
+  s, fn_full, fn_Only, fn_Ext: String;
+  s1: String;
+  ts: TThemeSourcePath;
   I: Integer;
 begin
   fn_Only := ExtractFileName(fn0);
@@ -1566,12 +1591,26 @@ begin
   if TryStrToInt(picName, i) then
   begin
     with TThemePic(FSmilePics.Objects[i]) do
-    if Assigned(FSmileBigPics[picIdx].pic) then
-    begin
-      mem := TMemoryStream.Create;
-      mem.LoadFromStream(FSmileBigPics[picIdx].pic);
-      Result := True;
-    end;
+      begin
+        if PicType = PT_SMILE then
+          begin
+            if Assigned(FSmileBigPics[picIdx].pic) then
+            begin
+              mem := TMemoryStream.Create;
+              mem.LoadFromStream(FSmileBigPics[picIdx].pic);
+              Result := True;
+            end;
+          end
+         else
+          begin
+            if Assigned(FBigPics[picIdx].pic) then
+            begin
+              mem := TMemoryStream.Create;
+              mem.LoadFromStream(FBigPics[picIdx].pic);
+              Result := True;
+            end;
+          end
+      end;
   end;
  {$ENDIF PRESERVE_BIG_FILE}
 end;
@@ -1911,15 +1950,15 @@ begin
     result := NIL;
 end;
 
-function TRQtheme.GetSmlCnt : Integer;
+function TRQtheme.GetSmlCnt: Integer;
 begin
   result := FSmiles.Count;
 end;
 
 function TRQtheme.GetString(const name: TPicName; isAdd: Boolean = True): String;
 var
-  i : Integer;
-  ts : TThemeSourcePath;
+  i: Integer;
+  ts: TThemeSourcePath;
 begin
  i := Fstr.IndexOf(AnsiLowerCase(name));
  if i >= 0 then
@@ -1937,7 +1976,7 @@ end;
 
 function TRQtheme.GetSound(const name: TPicName): String;
 var
-  i : Integer;
+  i: Integer;
 begin
   i := Fsounds.IndexOf(AnsiLowerCase(name));
   if i >= 0 then
@@ -1945,10 +1984,10 @@ begin
   else
     result := '';
 end;
-function TRQtheme.PlaySound(const name : TPicName): Boolean;
+function TRQtheme.PlaySound(const name: TPicName): Boolean;
 var
-  i : Integer;
-//  s : String;
+  i: Integer;
+//  s: String;
 begin
   result := True;
   i := Fsounds.IndexOf(AnsiLowerCase(name));
@@ -1966,9 +2005,9 @@ begin
    result := false;
 end;
 
-procedure TRQtheme.ApplyFont(const pName : TPicName; fnt : TFont);
+procedure TRQtheme.ApplyFont(const pName: TPicName; fnt: TFont);
 var
-  i : Integer;
+  i: Integer;
 begin
   if not Assigned(fnt) then
 //   fnt := Screen.MenuFont;
@@ -1993,10 +2032,10 @@ begin
 end;
 
 {
-function TRQtheme.GetFontProp(name : String; Prop : TFontPropsTypes) : TFontProps;
+function TRQtheme.GetFontProp(name: String; Prop: TFontPropsTypes): TFontProps;
 var
-  i, j : Integer;
-  found : Boolean;
+  i, j: Integer;
+  found: Boolean;
 begin
   found := False;
   Result.fpType := Prop;
@@ -2026,10 +2065,10 @@ begin
     end;
 end;
 }
-function TRQtheme.GetFontName(const pName : TPicName) : String;
+function TRQtheme.GetFontName(const pName: TPicName): String;
 var
-  i : Integer;
-  found : Boolean;
+  i: Integer;
+  found: Boolean;
 begin
   found := False;
   i := FFonts2.IndexOf(AnsiLowerCase(pName));
@@ -2048,7 +2087,7 @@ end;
 
 function TRQtheme.GetColor(const name: TPicName; pDefColor: TColor = clDefault): TColor;
 var
-  i : Integer;
+  i: Integer;
 begin
   i := FClr.IndexOf(AnsiLowerCase(name));
   if i >= 0 then
@@ -2064,7 +2103,7 @@ end;
 
 function TRQtheme.GetAColor(const name: TPicName; pDefColor: Integer = clDefault): Cardinal;
 var
-  i : Integer;
+  i: Integer;
 begin
   i := FClr.IndexOf(AnsiLowerCase(name));
   if i >= 0 then
@@ -2090,7 +2129,7 @@ end;
 
 function TRQtheme.GetTColor(const name: TPicName; pDefColor: Cardinal): Cardinal;
 var
-  i : Integer;
+  i: Integer;
 begin
   i := FClr.IndexOf(AnsiLowerCase(name));
   if i >= 0 then
@@ -2116,11 +2155,11 @@ end;
 
 function TRQtheme.pic2ico(pTE: TRnQThemedElement; const picName: TPicName; ico: Ticon): Boolean;
 var
-  bmp : TRnQBitmap;
+  bmp: TRnQBitmap;
 //  vIco : TIcon;
-  i : Integer;
-  hi : HICON;
-  s : TPicName;
+  i: Integer;
+  hi: HICON;
+  s: TPicName;
 begin
   if picName = '' then
    begin
@@ -2283,48 +2322,31 @@ begin
    end;
 end;
 
-function TRQtheme.addBigPic(var pBmp: TRnQBitmap; const origPic: TMemoryStream): Integer;
-//var
+function TRQtheme.addBigPic(pPicType: TBigPicType; var pBmp: TRnQBitmap; const origPic: TMemoryStream): Integer;
+var
 //  tempPic: TPicObj;
+  picsArr: PBigPicsArr;
 begin
-  result := Length(FBigPics);
-  SetLength(FBigPics, result + 1);
-  FBigPics[Result] := TPicObj.Create;
-  FBigPics[Result].bmp := pBmp;
+  if pPicType = PT_SMILE then
+    picsArr := @FsmileBigPics
+   else
+    picsArr := @FBigPics;
+  result := Length(picsArr^);
+  SetLength(picsArr^, result + 1);
+  picsArr^[Result] := TPicObj.Create;
+  picsArr^[Result].bmp := pBmp;
   pBmp := nil;
  {$IFDEF PRESERVE_BIG_FILE}
   if Assigned(origPic) then
    begin
-    FBigPics[Result].pic := TMemoryStream.Create;
+    picsArr^[Result].pic := TMemoryStream.Create;
     origPic.Seek(0, soFromBeginning);
-    FBigPics[Result].pic.LoadFromStream(origPic);
-    FBigPics[Result].pic.Seek(0, soFromBeginning);
+    picsArr^[Result].pic.LoadFromStream(origPic);
+    picsArr^[Result].pic.Seek(0, soFromBeginning);
    end;
  {$ENDIF PRESERVE_BIG_FILE}
-      FBigPics[Result].ref := 0;
-//      FBigPics.AddObject(AnsiLowerCase(name), tempPic)
-end;
-
-function TRQtheme.addBigSmile(var pBmp: TRnQBitmap; const origPic: TMemoryStream): Integer;
-//var
-//  tempPic :TPicObj;
-begin
-  result := Length(FsmileBigPics);
-  SetLength(FsmileBigPics, result + 1);
-  FsmileBigPics[Result] := TPicObj.Create;
-  FsmileBigPics[Result].bmp := pBmp;
-  pBmp := nil;
- {$IFDEF PRESERVE_BIG_FILE}
-  if Assigned(origPic) then
-   begin
-    FSmileBigPics[Result].pic := TMemoryStream.Create;
-    origPic.Seek(0, soFromBeginning);
-    FSmileBigPics[Result].pic.LoadFromStream(origPic);
-    FSmileBigPics[Result].pic.Seek(0, soFromBeginning);
-   end;
- {$ENDIF PRESERVE_BIG_FILE}
-      FsmileBigPics[Result].ref := 0;
-//      FBigPics.AddObject(AnsiLowerCase(name), tempPic)
+  picsArr^[Result].ref := 0;
+//      picsArr.AddObject(AnsiLowerCase(name), tempPic)
 end;
 
 function TRQtheme.addprop(const name: TPicName; kind: TthemePropertyKind; var pBmp: TRnQBitmap): Integer;
@@ -2368,7 +2390,8 @@ begin
       thp.r.X := 0; thp.r.Y := 0;
       thp.r.Width  := pBmp.Width;
       thp.r.Height := pBmp.Height;
-      thp.PicIDX := addBigPic(pBmp, NIL);
+      thp.PicType := PT_PIC;
+      thp.PicIDX := addBigPic(thp.PicType, pBmp, NIL);
       inc(FBigPics[thp.PicIDX].ref);
 //      tempPic.bmp := Bmp.Clone(1, 1, Bmp.GetWidth, bmp.GetHeight, bmp.GetPixelFormat);
 //      tempPic.bmp := Bmp.Clone;
@@ -2389,7 +2412,7 @@ begin
 
       if Assigned(FBigPics[thp.PicIDX]) then
         dec(FBigPics[thp.PicIDX].ref);
-      thp.PicIDX := addBigPic(pBmp, NIL);
+      thp.PicIDX := addBigPic(PT_PIC, pBmp, NIL);
       inc(FBigPics[thp.PicIDX].ref);
 
 //       if Assigned(bmp) then
@@ -2593,7 +2616,8 @@ vST := TP_smile;
   //    pic := Smile.Clone(0, 0, tp.Width, tp.Height, Smile.GetPixelFormat);
       pic := Smile;
       origPic := origSmile;
-      tp.picIdx := addBigSmile(pic, origPic);
+      tp.PicType := PT_SMILE;
+      tp.picIdx := addBigPic(tp.PicType, pic, origPic);
       tp.picDPI := pDPI;
 //      NewSmile.AniIdx :=
       addprop(name, vST, tp);
@@ -2621,7 +2645,8 @@ vST := TP_smile;
   //        pic := Smile.Clone(0, 0, tp.Width, tp.Height, Smile.GetPixelFormat);
           pic := Smile;
           origPic := origSmile;
-          tp.picIdx := addBigSmile(pic, origPic);
+          tp.picType := PT_SMILE;
+          tp.picIdx := addBigPic(PT_SMILE, pic, origPic);
           tp.picDPI := pDPI;
           addprop(name, vST, tp);
          end
@@ -2801,7 +2826,8 @@ procedure TRQtheme.loadThemeScript(fn: string; ts: TThemeSourcePath);
 var
 //  LastPicFName : String; // For support '@' at pics
 //  LastLoadedPic : TRnQBitmap;
-  LastPicIDX : Integer; // For support '@' at pics
+  LastPicType: TBigPicType; // For support '@' at pics
+  LastPicIDX: Integer; // For support '@' at pics
   CurrentPPI: Word;
 
   function fullpath(const fn: string): string;
@@ -2924,7 +2950,7 @@ var
   var
     s: RawByteString;
     fn: AnsiString;
-    x,y,dx,dy, idx:integer;
+    x,y,dx,dy, idx: integer;
     w, h: Integer;
     tempPic: TRnQBitmap;
     origPic: TMemoryStream;
@@ -2969,6 +2995,7 @@ var
         Result.Width := dx;
         Result.Height := dy;}
         Result.R := MakeRectI(x, y, dx, dy);
+        Result.PicType := LastPicType;
 
         Result.PicIDX := LastPicIDX;
        end
@@ -2997,6 +3024,7 @@ var
             if i >=0 then
                with TThemePic(FThemePics.Objects[i]) do
                begin
+                 LastPicType := PicType;
                  LastPicIDX := PicIDX;
                  if x >=0 then x  := r.X + x
                   else  x  := r.X;
@@ -3021,7 +3049,11 @@ var
                 w := tempPic.GetWidth;
                 h := tempPic.GetHeight;
     //            LastPicIDX := addProp(fn, TP_pic, tempPic);
-                LastPicIDX := addBigPic(tempPic, origPic);
+                if IsSmile then
+                  LastPicType := PT_SMILE
+                 else
+                  LastPicType := pt_pic;
+                LastPicIDX := addBigPic(LastPicType, tempPic, origPic);
                 if Assigned(origPic) then
                   FreeAndNil(origPic);
               end
@@ -3066,6 +3098,7 @@ var
             Result.Width := dx;
             Result.Height := dy;}
             Result.R := MakeRectI(x, y, dx, dy);
+            Result.PicType := LastPicType;
             Result.PicIDX := LastPicIDX;
 
   //          bmp := LastLoadedPic.Clone(x,y,dx, dy,LastLoadedPic.GetPixelFormat);
@@ -3078,10 +3111,10 @@ var
 
   function fontAvailable(list: RawByteString): AnsiString;
    var
-     s : String;
+     s: String;
   begin
     repeat
-      Result := chop(AnsiString(';'),list);
+      Result := chop(AnsiString(';'), list);
       s := string(Result);
     until (list='') or (screen.fonts.IndexOf(s) >= 0);
 {    s := chop(AnsiString(';'),list);
@@ -3191,8 +3224,8 @@ var
   txt, line: RawByteString;
   param: AnsiString; // ”казывает на параметр: roaster, menu, tip, history
   prefix: AnsiString; // Prefix for Font and other...
-  par: AnsiString;
-  LastSmile: AnsiString;
+  par: RawByteString;
+  LastSmile: TPicName;
   i: integer;
   loadedpic: TRnQBitmap;
   origPic: TMemoryStream;
@@ -3373,7 +3406,7 @@ begin
       else
        Parsed := false;
 //      addProp(LastSmile, line, loadedPic, Parsed, not NonAnimated, i);
-      addProp(LastSmile, string(par), loadedpic, origPic, themePic, Parsed, not NonAnimated, i, CurrentPPI);
+      addProp(LastSmile, UnUTF(par), loadedpic, origPic, themePic, Parsed, not NonAnimated, i, CurrentPPI);
       FreeAndNil(origPic);
       loadedPic := NIL;
 //      FreeAndNil(loadedPic);
@@ -3573,8 +3606,12 @@ begin
            begin
              result.cx := r.Width;
              result.cy := r.Height;
-             DrawRbmp(DC, TPicObj(FSmileBigPics[PicIDX]).bmp,
-               MakeRectI(pX, pY, result.cx, result.cy), r, pEnabled);
+             if PicType = PT_SMILE then
+               DrawRbmp(DC, TPicObj(FSmileBigPics[PicIDX]).bmp,
+                  MakeRectI(pX, pY, result.cx, result.cy), r, pEnabled)
+              else
+               DrawRbmp(DC, TPicObj(FBigPics[PicIDX]).bmp,
+                  MakeRectI(pX, pY, result.cx, result.cy), r, pEnabled)
            end
           else
              begin
@@ -3646,7 +3683,10 @@ begin
              result := GetSize(pR.size);
              inc(r1.X, pR.X);
              inc(r1.Y, pR.Y);
-             DrawRbmp(DC, TPicObj(FSmileBigPics[PicIDX]).bmp, R1, r, pEnabled);
+             if PicType = PT_SMILE then
+               DrawRbmp(DC, TPicObj(FSmileBigPics[PicIDX]).bmp, R1, r, pEnabled)
+              else
+               DrawRbmp(DC, TPicObj(FBigPics[PicIDX]).bmp, R1, r, pEnabled);
            end
           else
              begin
@@ -3802,7 +3842,10 @@ begin
       begin
        result.cx := r.Width;
        result.cy := r.Height;
-       po := FSmileBigPics[PicIDX];
+       if PicType = PT_SMILE then
+         po := FSmileBigPics[PicIDX]
+        else
+         po := FBigPics[PicIDX];
        if Assigned(po) then
         begin
          DrawRbmp(DC, po.bmp,
@@ -3913,7 +3956,10 @@ begin
       begin
        result.cx := r.Width;
        result.cy := r.Height;
-       po := FSmileBigPics[PicIDX];
+       if PicType = PT_SMILE then
+         po := FSmileBigPics[PicIDX]
+        else
+         po := FBigPics[PicIDX];
        if Assigned(po) then
         begin
           r1 := DestRect(R.size, pR.size);
@@ -4509,7 +4555,7 @@ end;
  {$ENDIF RNQ_LITE}
 
 {$IFDEF RNQ_FULL}
-function TRQtheme.addProp(name: AnsiString; pic: TRnQAni; const PPI: WORD): Integer;
+function TRQtheme.addProp(name: TPicName; pic: TRnQAni; const PPI: WORD): Integer;
 //var
 //  Index: Integer;
 begin
@@ -4545,7 +4591,7 @@ begin
 end;}
 
 
-function  TRQtheme.GetAniPic(idx : integer) : TRnQAni;
+function  TRQtheme.GetAniPic(idx: integer): TRnQAni;
 //var
 //  i : Integer;
 begin

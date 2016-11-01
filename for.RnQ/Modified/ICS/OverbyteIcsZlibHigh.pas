@@ -77,8 +77,8 @@ uses
     {$IFDEF RTL_NAMESPACES}System.SysUtils{$ELSE}SysUtils{$ENDIF},
     {$IFDEF RTL_NAMESPACES}System.Classes{$ELSE}Classes{$ENDIF},
 {$IFDEF USE_ZLIB_OBJ}
-//    OverbyteIcsZLibObj;             {interface to access ZLIB C OBJ files}
-    System.ZLib;             {interface to access ZLIB C OBJ files}
+//Commented by Rapid D    OverbyteIcsZLibObj;             {interface to access ZLIB C OBJ files}
+    System.ZLib;             {interface to access ZLIB C OBJ files} // Added by Rapdi D
 {$ELSE}
     OverbyteIcsZLibDll;             {interface to access zLib1.dll} { AG V6.02 }
 {$ENDIF}
