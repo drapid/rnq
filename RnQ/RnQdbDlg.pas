@@ -125,7 +125,7 @@ begin
     exit;
   dbTree.Clear;
   dbTree.BeginUpdate;
-  with contactsDB, TList(contactsDB) do
+  with TRnQProtocol.contactsDB, TList(TRnQProtocol.contactsDB) do
    begin
 //   dbTree.
     resetEnumeration;
@@ -146,56 +146,56 @@ procedure TRnQdbFrm.purgeBtnClick(Sender: TObject);
 
   procedure purgeHistories;
   var
-    sr:Tsearchrec;
-    path:string;
+    sr: Tsearchrec;
+    path: string;
 //    uin:integer;
   begin
-  if not removenilhistoriesChk.checked then
-    exit;
- {$IFNDEF DB_ENABLED}
-  path:= Account.ProtoPath + historyPath;
-  if findFirst( path+'*', faAnyfile, sr ) = 0 then
-    repeat
-    if sr.attr and faDirectory <> 0 then
-      continue;
-    try
-//      uin:=strToInt(sr.name);
-      if unexistant(sr.name) then
-        if DeleteFile(path+sr.name) then
-          report:=report + getTranslation('history %s deleted',[sr.name])+CRLF
-        else
-          report:=report+getTranslation(Str_Error)+getTranslation(': cannot delete file ')+sr.name+CRLF;
-    except end;
-    until findNext(sr) <> 0;
-  findClose( SR );
- {$ENDIF ~DB_ENABLED}
+    if not removenilhistoriesChk.checked then
+      exit;
+   {$IFNDEF DB_ENABLED}
+    path := Account.ProtoPath + historyPath;
+    if findFirst( path+'*', faAnyfile, sr ) = 0 then
+      repeat
+      if sr.attr and faDirectory <> 0 then
+        continue;
+      try
+  //      uin:=strToInt(sr.name);
+        if unexistant(sr.name) then
+          if DeleteFile(path+sr.name) then
+            report := report + getTranslation('history %s deleted',[sr.name])+CRLF
+          else
+            report := report+getTranslation(Str_Error)+getTranslation(': cannot delete file ')+sr.name+CRLF;
+      except end;
+      until findNext(sr) <> 0;
+    findClose(SR);
+   {$ENDIF ~DB_ENABLED}
   end; // purgeHistories
 
   procedure purgeContacts;
   var
-    c:TRnQcontact;
-    s : String;
-    i:integer;
-    removeIt:boolean;
+    c: TRnQcontact;
+    s: String;
+    i: integer;
+    removeIt: boolean;
   begin
-  for i:= TList(contactsDB).count-1 downto 0 do
-    begin
-    c:=contactsDB.getAt(i);
-    removeIt:=FALSE;
-    if nilChk.checked then
-      removeIt:=unexistant(c.uid);
-    removeIt := removeIt and not TCE(c.data^).dontdelete;
-    if removeIt then
+    for i:= TList(TRnQProtocol.contactsDB).count-1 downto 0 do
       begin
-        s := c.displayed+' (UIN '+c.uid+')';
-        contactsDB.remove(c);
-        report:=report+getTranslation('contact %s deleted',[s])+CRLF;
-      { The c object should be freed but, since objects are shared, we would
-      { need a garbage collector system. since we are talking about few kbytes
-      { i think it is fair to send back this to the next quit ;)
-      }
+      c := TRnQProtocol.contactsDB.getAt(i);
+      removeIt := FALSE;
+      if nilChk.checked then
+        removeIt := unexistant(c.uid);
+      removeIt := removeIt and not TCE(c.data^).dontdelete;
+      if removeIt then
+        begin
+          s := c.displayed+' (UIN '+c.uid+')';
+          TRnQProtocol.contactsDB.remove(c);
+          report := report+getTranslation('contact %s deleted',[s])+CRLF;
+        { The c object should be freed but, since objects are shared, we would
+        { need a garbage collector system. since we are talking about few kbytes
+        { i think it is fair to send back this to the next quit ;)
+        }
+        end;
       end;
-    end;
   end; // purgeContacts
 
 begin
@@ -409,7 +409,7 @@ var
 begin
   if messageDlg(getTranslation('Are you sure?'), mtConfirmation,[mbYes,mbNo],0)=mrNo then
     exit;
-  with contactsDB, TList(contactsDB) do
+  with TRnQProtocol.contactsDB, TList(TRnQProtocol.contactsDB) do
     for i:=0 to count-1 do
       addToRoster(TRnQcontact(getAt(i)));
 end;
@@ -433,7 +433,7 @@ begin
    begin
 //     d := @n^.GetData;
      d := n.GetData;
-    contactsDB.remove(TRnQcontact((@d)^));
+    TRnQProtocol.contactsDB.remove(TRnQcontact((@d)^));
    end;
   dbTree.DeleteSelectedNodes
 

@@ -161,7 +161,6 @@ begin
   Application.CreateForm(TRnQmain, RnQmain);
   //  loggaEvt('Before chat');
   Application.CreateForm(TchatFrm, chatFrm);
-  Application.CreateForm(TFSmiles, FSmiles);
 //   loggaEvt('Before msgs');
   Application.CreateForm(TmsgsFrm, msgsFrm);
 //   loggaEvt('Before log');

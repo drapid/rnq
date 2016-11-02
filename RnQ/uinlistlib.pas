@@ -14,29 +14,29 @@ uses
 type
   PuinList=^TuinList;
   TuinList=record
-    name:string;
-    desc:string;
-    cl:TRnQCList;
+    name: string;
+    desc: string;
+    cl: TRnQCList;
    end;
 
   TuinLists=class(Tlist)
    private
-    enumidx :integer;
+    enumidx : integer;
    public
     destructor Destroy; override;
-    function  exists(const name:string):boolean;
-    function  idxOf(const name:string):integer;
-    function  getAt(idx:integer):PuinList;
-    function  put(const name:string):PuinList;
-		function  remove(ul:PuinList):boolean; overload;
-    procedure fromString(pr : TRnQProtocol; s: RawByteString);
+    function  exists(const name: string): boolean;
+    function  idxOf(const name: string): integer;
+    function  getAt(idx: integer): PuinList;
+    function  put(const name: string): PuinList;
+		function  remove(ul: PuinList): boolean; overload;
+    procedure fromString(pr: TRnQProtocol; s: RawByteString);
     function  toString: RawByteString;
     procedure Clear; override;
-    function  names:string;
-    function  get(const name:string):PuinList;
+    function  names: string;
+    function  get(const name: string): PuinList;
     procedure resetEnumeration;
-    function  hasMore:boolean;
-    function  getNext:PuinList;
+    function  hasMore: boolean;
+    function  getNext: PuinList;
    end;
 
 implementation
@@ -113,20 +113,20 @@ const
   FK_DESC=2;
   FK_UIN=3;
 
-procedure Tuinlists.fromString(pr : TRnQProtocol; s : RawByteString);
+procedure Tuinlists.fromString(pr: TRnQProtocol; s: RawByteString);
 var
-  l,t:integer;
+  l, t: integer;
 begin
  clear;
  while s > '' do
   begin
-   l:=integer((@s[1])^);
-   t:=integer((@s[5])^);
+   l := integer((@s[1])^);
+   t := integer((@s[5])^);
    case t of
     FK_NAME: put(UnUTF(copy(s,9,l)));
     FK_DESC: PuinList(last)^.desc := UnUTF(copy(s,9,l));
 //    FK_UIN: PuinList(last)^.cl.add(contactsDB.get(IntToStr(integer((@s[9])^))));
-    FK_UIN: PuinList(last)^.cl.add(contactsDB.add(pr, IntToStrA(integer((@s[9])^))));
+    FK_UIN: PuinList(last)^.cl.add(pr.contactsDB.add(pr, IntToStrA(integer((@s[9])^))));
    end;
    system.delete(s,1,8+l);
   end;
@@ -134,9 +134,9 @@ end; // fromstring
 
 function Tuinlists.toString: RawByteString;
 
-  procedure writeDown(code:integer; const data: RawByteString);
+  procedure writeDown(code: integer; const data: RawByteString);
   begin
-    result:=result+int2str(length(data))+int2str(code)+data
+    result := result+int2str(length(data))+int2str(code)+data
   end;
 
 var

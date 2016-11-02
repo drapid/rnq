@@ -1917,7 +1917,7 @@ begin
 if PREVIEWversion and (Account.AccProto.ProtoElem is TicqSession) then
  begin
   checkupdate.autochecking := True;
-  if contactsDB.exists(Account.AccProto, IntToStrA(uinToUpdate)) then
+  if TRnQProtocol.contactsDB.exists(Account.AccProto, IntToStrA(uinToUpdate)) then
    if CheckUpdates(TicqSession(Account.AccProto.ProtoElem).getICQContact(uinToUpdate)) then // contactsDB.get( TICQContact, uinToUpdate)) then
     begin
      halt(1);
@@ -2176,7 +2176,7 @@ else
     CheckInvis.CList.Clear;
  {$ENDIF}
 
- clearDB(contactsDB);
+ clearDB(TRnQProtocol.contactsDB);
   try
     if Assigned(Account.AccProto) then
      begin

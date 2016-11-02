@@ -133,6 +133,12 @@ Type
     HistoryToken : Cardinal;
     PaintHeight : Integer;
     otherpeer  : TRnQcontact; // used to keep track of other peer when "who" is us
+    class var hisFont : TFont;
+    class var myFont  : TFont;
+    class var fntToken: Integer;
+    class constructor Create;
+    class destructor Destroy;
+
     class function new(kind_: integer; who_: TRnQContact; when_: TdateTime;
              const info_: RawByteString;
  {$IFDEF DB_ENABLED}
@@ -225,11 +231,6 @@ uses
  {$ENDIF PROTOCOL_ICQ}
 //  Contacts
   roasterLib;
-
-var
-    hisFont : TFont;
-    myFont  : TFont;
-    fntToken : Integer;
 
 function Thevent.clone: Thevent;
 begin
@@ -418,6 +419,20 @@ else
   end;
 end; // setInfo
  {$ENDIF ~DB_ENABLED}
+
+class constructor Thevent.Create;
+begin
+  myFont := NIL;
+  hisFont := NIL;
+  hasMsgOK := False;
+  fntToken := -1;
+end;
+
+class destructor Thevent.Destroy;
+begin
+  FreeAndNil(myFont);
+  FreeAndNil(hisFont);
+end;
 
 class function Thevent.new(kind_: integer;
             who_: TRnQContact; when_: TdateTime;
@@ -932,29 +947,29 @@ end;
 
 constructor TeventQ.create;
 begin
-inherited create;
-blinking:=TRUE;
+  inherited create;
+  blinking := TRUE;
 end; // create
 
 function TeventQ.find(kind_: integer; c: TRnQcontact): integer;
 begin
-result:=count;
-while result > 0 do
-  begin
-  dec(result);
-  with Thevent(items[result]) do
-    if (kind = kind_) and isHis(c) then
-      exit;
-  end;
-result:=-1;
+  result := count;
+  while result > 0 do
+    begin
+    dec(result);
+    with Thevent(items[result]) do
+      if (kind = kind_) and isHis(c) then
+        exit;
+    end;
+  result := -1;
 end; // find
 
 procedure TeventQ.add(ev: Thevent);
 //var
-//  i:integer;
+//  i: integer;
 begin
-if sortBy = SB_event then
-  roasterLib.sort(ev.who);
+  if sortBy = SB_event then
+    roasterLib.sort(ev.who);
 // contacts and authreq requires distint windows for each event
 {if ev.kind in [EK_contacts,EK_auth] then
   i:=-1
@@ -981,26 +996,26 @@ end; // add
 
 function TeventQ.add(kind_: integer; c: TRnQContact; when: Tdatetime; flags_: integer): Thevent;
 begin
-result:=Thevent.create;
-result.kind:=kind_;
-result.who:=c;
-result.when:=when;
-result.flags:=flags_;
-add(result);
+  result := Thevent.create;
+  result.kind := kind_;
+  result.who := c;
+  result.when := when;
+  result.flags := flags_;
+  add(result);
 end; // add
 
 function TeventQ.pop: Thevent;
 begin
-  result:=top;
+  result := top;
   removeAt(0);
 end; // pop
 
 function TeventQ.top: Thevent;
 begin
   if count=0 then
-    result:=NIL
+    result := NIL
    else
-    result:=first
+    result := first
 end;
 
 procedure TeventQ.clear;
@@ -1016,16 +1031,16 @@ begin
 end; // destroy
 
 function TeventQ.empty: boolean;
-begin result:= count=0 end;
+begin result := count=0 end;
 
 function TeventQ.chop: boolean;
 begin
-result:=FALSE;
-if not empty then
-  begin
-  pop.free;
-  result:=TRUE;
-  end;
+  result := FALSE;
+  if not empty then
+    begin
+    pop.free;
+    result := TRUE;
+    end;
 end; // chop
 
 function TeventQ.removeAt(i: integer): boolean;
@@ -1051,7 +1066,7 @@ function TeventQ.firstEventFor(c: TRnQContact): Thevent;
 var
   i: integer;
 begin
-  i:=0;
+  i := 0;
   if Assigned(c) and (c is TRnQContact) then
 //result := NIL;
   while i < count do
@@ -1066,7 +1081,7 @@ begin
      end;
     inc(i);
     end;
-  result:=NIL;
+  result := NIL;
 end; // firstEventFor
 
 function TeventQ.getNextEventFor(c: TRnQContact; idx: Integer): Integer;
@@ -1096,7 +1111,7 @@ end; // firstEventFor
 
 function TeventQ.removeEvent(kind_: integer; c: TRnQContact): boolean;
 var
-  i : Integer;
+  i: Integer;
 begin
   Result := false;
   repeat
@@ -1138,11 +1153,11 @@ const
 
 procedure TeventQ.fromString(const Qs: RawByteString);
 var
-  t,l:integer;
-  e:Thevent;
-  uin : Integer;
-  s : RawByteString;
-  ofs : Integer;
+  t, l: integer;
+  e: Thevent;
+  uin: Integer;
+  s: RawByteString;
+  ofs: Integer;
 begin
   roasterLib.building := True;
   ofs := 1;
@@ -1191,14 +1206,14 @@ begin
       end;
         FK_WHO_STR:
       begin
-        e.who:= Account.AccProto.getContact(s);
+        e.who := Account.AccProto.getContact(s);
         if Assigned(e.who) then
               NILifNIL(e.who, True)
          else
           e.who:= Account.AccProto.getMyInfo;
       end;
-        FK_WHEN: e.when:=Tdatetime((@s[1])^);
-        FK_FLAGS: e.flags:=integer((@s[1])^);
+        FK_WHEN: e.when := Tdatetime((@s[1])^);
+        FK_FLAGS: e.flags := integer((@s[1])^);
      {$IFDEF DB_ENABLED}
         FK_INFO: e.fBin:= s;
         FK_TXT:  e.txt:= utf8tostr(s);
@@ -1209,7 +1224,7 @@ begin
           if l > 0 then
            begin
             e.cl := TRnQCList.create;
-            e.cl.fromString(Account.AccProto, s, contactsDB );
+            e.cl.fromString(Account.AccProto, s, Account.AccProto.contactsDB );
            end;
     end;//case
      end;
@@ -1222,11 +1237,11 @@ end; // fromString
 
 function TeventQ.toString: RawByteString;
 var
-  i:integer;
+  i: integer;
   s: RawByteString;
 begin
-result:='';
-i:=0;
+  result := '';
+  i := 0;
 while i < count do
   with Thevent(items[i]) do
     begin
@@ -1256,28 +1271,15 @@ end; // toString
 
 procedure TeventQ.removeExpiringEvents;
 var
-  i:integer;
+  i: integer;
 begin
-i:=0;
-while i < count do
-  if Thevent(items[i]).expires >= 0 then
-    removeAt(i)
-  else
-    inc(i);
+  i := 0;
+  while i < count do
+    if Thevent(items[i]).expires >= 0 then
+      removeAt(i)
+    else
+      inc(i);
 end; // removeExpiringEvents
 
-
-
-INITIALIZATION
-
-myFont := NIL;
-hisFont := NIL;
-hasMsgOK := False;
-fntToken := -1;
-
-FINALIZATION
-
-FreeAndNil(myFont);
-FreeAndNil(hisFont);
 
 end.

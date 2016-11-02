@@ -17,6 +17,7 @@ object FSmiles: TFSmiles
   OldCreateOrder = False
   ParentBiDiMode = False
   Position = poDefault
+  OnClose = FormClose
   OnCreate = FormCreate
   OnHide = FormHide
   OnKeyDown = FormKeyDown

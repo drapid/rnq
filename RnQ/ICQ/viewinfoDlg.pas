@@ -1163,18 +1163,18 @@ begin
   if ipbox2=NIL then
     exit;
   if Error = 0 then
-    ipbox2.text:=ipbox2.text+CRLF+TRnQSocket(sender).DnsResultList.text
+    ipbox2.text := ipbox2.text+CRLF+TRnQSocket(sender).DnsResultList.text
    else
-    ipbox2.text:=ipbox2.text+CRLF+getTranslation(Str_Error)+' '+intToStr(error);
+    ipbox2.text := ipbox2.text+CRLF+getTranslation(Str_Error)+' '+intToStr(error);
 end; // dnslookup
 
 procedure TviewinfoFrm.copyBtnClick(Sender: TObject);
 begin
 if ipbox2.Lines.Count > 1 then
-  clipboard.astext:=ipbox2.lines[1];
+  clipboard.astext := ipbox2.lines[1];
 end;
 
-procedure TviewinfoFrm.addcontactAction(sender:Tobject);
+procedure TviewinfoFrm.addcontactAction(sender: Tobject);
 begin
   addToRoster(contact, (sender as Tmenuitem).tag)
 end;
@@ -1195,7 +1195,7 @@ end;
 
 procedure TviewinfoFrm.FormCreate(Sender: TObject);
 begin
-  lookup:=TRnQsocket.create(self);
+  lookup := TRnQsocket.create(self);
   lookup.proxySettings(MainProxy);
   addmenu := TPopupMenu.Create(Self);
    {$IFDEF RNQ_AVATARS}

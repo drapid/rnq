@@ -143,7 +143,7 @@ case id of
   PL_INVISIBLELIST:   result := Account.AccProto.readList(LT_INVISIBLE);
   PL_IGNORELIST:      result := ignoreList;
   PL_TEMPVISIBLELIST: result := Account.AccProto.readList(LT_TEMPVIS);
-  PL_DB :     result := contactsDB;
+  PL_DB :     result := Account.AccProto.contactsDB;
   PL_NIL :    Result := notInList; // not in list
   else result:=NIL;
   end;
@@ -159,7 +159,7 @@ case id of
   PL_INVISIBLELIST:  Account.AccProto.AddToList(LT_INVISIBLE, cl);
 //  PL_IGNORELIST:   ICQ.ignoreList;
   PL_TEMPVISIBLELIST: Account.AccProto.AddToList(LT_TEMPVIS, cl);
-  PL_DB : contactsDB.add(cl);
+  PL_DB : Account.AccProto.contactsDB.add(cl);
   PL_NIL : notInList.add(cl); // not in list
 //  else result := NIL;
   end;
@@ -174,7 +174,7 @@ begin
   PL_INVISIBLELIST:   Account.AccProto.AddToList(LT_INVISIBLE, c);
   PL_IGNORELIST:     begin result := True; addToIgnorelist(c) end;
   PL_TEMPVISIBLELIST: Account.AccProto.AddToList(LT_TEMPVIS, c);
-  PL_DB :             result := contactsDB.add(c);
+  PL_DB :             result := Account.AccProto.contactsDB.add(c);
   PL_NIL :            result := notInList.add(c); // not in list
   else result := false;
  end;
@@ -189,7 +189,7 @@ begin
   PL_INVISIBLELIST:   Account.AccProto.RemFromList(LT_INVISIBLE, c);
   PL_IGNORELIST: begin result := True; removeFromIgnorelist(c); end;
   PL_TEMPVISIBLELIST: Account.AccProto.RemFromList(LT_TEMPVIS, c);
-  PL_DB :             result := contactsDB.remove(c);
+  PL_DB :             result := Account.AccProto.contactsDB.remove(c);
   PL_NIL :            result := notInList.remove(c); // not in list
   else result := false;
  end;

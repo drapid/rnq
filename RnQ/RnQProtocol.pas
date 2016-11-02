@@ -50,7 +50,7 @@ const
   ICQProtoID = 1; //!!! ICQ +AIM
  {$IFDEF ICQ_ONLY}
    MAXProtoID  = 1;
-   cProtosDesc : array[1..1] of String = ('ICQ');
+   cProtosDesc: array[1..1] of String = ('ICQ');
  {$ELSE ~ICQ_ONLY}
   MRAProtoID = 2; //!!! Mail.ru Agent
   XMPProtoID = 3; //!!! Jabber
@@ -58,8 +58,8 @@ const
 //  AIMProtoID = 4; //!!! AIM
   MAXProtoID  = 4;
 
-//  ProtosDesc : array[1..4] of String = ('ICQ', 'AIM', 'Mail.ru Agent', 'XMPP');
-  cProtosDesc : array[1..4] of String = ('ICQ', 'Mail.ru Agent', 'XMPP', 'OBIMP');
+//  ProtosDesc: array[1..4] of String = ('ICQ', 'AIM', 'Mail.ru Agent', 'XMPP');
+  cProtosDesc: array[1..4] of String = ('ICQ', 'Mail.ru Agent', 'XMPP', 'OBIMP');
  {$ENDIF ICQ_ONLY}
 
 const
@@ -181,9 +181,9 @@ type
     transferChkSum, fileChkSum : Cardinal;
     receivedChkSum : Cardinal;
 //    Received : Int64;
-    fileName: String;
-    myspeed :integer;
-    hisVer :integer;
+    fileName : String;
+    myspeed  : integer;
+    hisVer   : integer;
     AOLProxy : record
                  ip   : Cardinal;
                  port : word;
@@ -200,7 +200,7 @@ type
     procedure sended(Sender: TObject; Error: Word);
     procedure disconnected(Sender: TObject; Error: Word);
 }
-    function  myPort:integer;
+    function  myPort: integer;
 //    function  myinfo:TRnQContact;
 
     procedure sendPkt(const s: RawByteString);
@@ -224,7 +224,7 @@ type
 }
     procedure ProcessSend;
 //    procedure DoneTransfer;
-    procedure logMsg(err : Word; const msg : String);
+    procedure logMsg(err: Word; const msg: String);
 
     property OnDataAvailable : TDirectDataAvailable       read  FOnDataAvailable
                                                           write FOnDataAvailable;
@@ -234,8 +234,8 @@ type
                                                           write FOnDisconnect;
     property OnNotification : TDirectNotification         read FOnNotification
                                                           write FOnNotification;
-    property  host:AnsiString read P_host;
-    property  port:AnsiString read P_port;
+    property  host: AnsiString read P_host;
+    property  port: AnsiString read P_port;
    end; // Tdirect
 {$ENDIF usesDC}
 
@@ -381,43 +381,46 @@ type
 {$ENDIF usesDC}
     SupportTypingNotif,
     isSendTypingNotif   : Boolean;
+    class var contactsDB: TRnQCList;
 //    contactsDB          : TRnQCList;
+    class constructor Create;
+    class destructor Destroy;
     class function _GetProtoName: string; virtual; abstract;
-    class function _isProtoUid(var uin:TUID):boolean; virtual; abstract;
-    class function _isValidUid1(const uin:TUID):boolean; virtual; abstract;
-    class function _getDefHost : Thostport; virtual; abstract;
-    class function _getContactClass : TRnQCntClass; virtual; abstract;
-    class function _getProtoServers : String; virtual; abstract;
-    class function _getProtoID : Byte; Virtual; Abstract;
+    class function _isProtoUid(var uin: TUID): boolean; virtual; abstract;
+    class function _isValidUid1(const uin: TUID): boolean; virtual; abstract;
+    class function _getDefHost: Thostport; virtual; abstract;
+    class function _getContactClass: TRnQCntClass; virtual; abstract;
+    class function _getProtoServers: String; virtual; abstract;
+    class function _getProtoID: Byte; Virtual; Abstract;
     class function _MaxPWDLen: Integer; virtual; abstract;
 
-//    class function _CreateProto(const uid : TUID) : IRnQProtocol; Virtual; Abstract;
-    class function _CreateProto(const uid : TUID) : TRnQProtocol; Virtual; Abstract;
-    class function _RegisterUser(var pUID : TUID; var pPWD : String): Boolean; Virtual; Abstract;
-//    Constructor Create(uid : TUID); Virtual; Abstract;
-    procedure SetListener(l : TProtoNotify); Virtual;
+//    class function _CreateProto(const uid: TUID): IRnQProtocol; Virtual; Abstract;
+    class function _CreateProto(const uid: TUID) : TRnQProtocol; Virtual; Abstract;
+    class function _RegisterUser(var pUID: TUID; var pPWD: String): Boolean; Virtual; Abstract;
+//    Constructor Create(uid: TUID); Virtual; Abstract;
+    procedure SetListener(l: TProtoNotify); Virtual;
 
 
     function  getStatuses    : TStatusArray; Virtual; Abstract;
     function  getVisibilitis : TStatusArray; Virtual; Abstract;
     function  getStatusMenu : TStatusMenu; Virtual; Abstract;
     function  getVisMenu    : TStatusMenu; Virtual; Abstract;
-    function  getContactClass : TRnQCntClass; Virtual; Abstract;
-    function  getContact(const UID : TUID) : TRnQContact; Virtual; Abstract;
-//    function  ProtoName : String; Virtual; Abstract;
-    function  ProtoName : String; inline;
-    function  ProtoElem : TRnQProtocol; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-    procedure GetPrefs(var pp : TRnQPref); Virtual;
-    procedure SetPrefs(pp : TRnQPref); Virtual;
+    function  getContactClass: TRnQCntClass; Virtual; Abstract;
+    function  getContact(const UID: TUID) : TRnQContact; Virtual; Abstract;
+//    function  ProtoName: String; Virtual; Abstract;
+    function  ProtoName: String; inline;
+    function  ProtoElem: TRnQProtocol; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+    procedure GetPrefs(var pp: TRnQPref); Virtual;
+    procedure SetPrefs(pp: TRnQPref); Virtual;
     procedure ResetPrefs; Virtual;
     procedure Clear; Virtual; Abstract;
 
     procedure disconnect; Virtual; Abstract;
 //    procedure setStatus(s:Tstatus; inv:boolean);
 //    function  getStatus:Tstatus;
-    function  isOnline:boolean; Virtual; Abstract;
-    function  isOffline:boolean; Virtual; Abstract;
-    function  isReady:boolean;  Virtual; Abstract;    // we can send commands
+    function  isOnline: boolean; Virtual; Abstract;
+    function  isOffline: boolean; Virtual; Abstract;
+    function  isReady: boolean;  Virtual; Abstract;    // we can send commands
     function  isConnecting: boolean; Virtual; Abstract;
     function  isSSCL: boolean; Virtual; Abstract;
     function  getStatus: byte; Virtual; Abstract;
@@ -444,52 +447,52 @@ type
     procedure RemFromList(l: TLIST_TYPES; cnt: TRnQContact); OverLoad; Virtual; Abstract;
     function  isInList(l: TLIST_TYPES; cnt: TRnQContact) : Boolean; Virtual; Abstract;
 
-    function  addContact(c:TRnQContact; isLocal : Boolean = false):boolean; Virtual; Abstract;
-    function  removeContact(c:TRnQContact):boolean; Virtual; Abstract;
+    function  addContact(c: TRnQContact; isLocal: Boolean = false): boolean; Virtual; Abstract;
+    function  removeContact(c: TRnQContact): boolean; Virtual; Abstract;
 
-    function  validUid1(const uin:TUID):boolean; inline;
-//    function  getContact(uid : TUID) : TRnQContact;
-    function  ContactExists(const UID : TUID) : Boolean;
+    function  validUid1(const uin: TUID): boolean; inline;
+//    function  getContact(uid: TUID): TRnQContact;
+    function  ContactExists(const UID: TUID) : Boolean;
 
-    function  sendMsg(cnt : TRnQContact; var flags:dword; const msg:string; var requiredACK:boolean):integer; Virtual; Abstract; // returns handle
-    procedure UpdateGroupOf(cnt : TRnQContact); Virtual; Abstract;
+    function  sendMsg(cnt: TRnQContact; var flags:dword; const msg:string; var requiredACK:boolean):integer; Virtual; Abstract; // returns handle
+    procedure UpdateGroupOf(cnt: TRnQContact); Virtual; Abstract;
 {$IFDEF usesDC}
-    function getNewDirect : TProtoDirect; Virtual; Abstract;
+    function getNewDirect: TProtoDirect; Virtual; Abstract;
 {$ENDIF usesDC}
 
     // event managing
 
-    procedure InputChangedFor(cnt :TRnQContact; InpIsEmpty : Boolean; timeOut : boolean = false); Virtual; Abstract;
-    function  compareStatusFor(cnt1, Cnt2 : TRnqContact) : Smallint; Virtual; Abstract;
+    procedure InputChangedFor(cnt: TRnQContact; InpIsEmpty: Boolean; timeOut: boolean = false); Virtual; Abstract;
+    function  compareStatusFor(cnt1, Cnt2: TRnqContact): Smallint; Virtual; Abstract;
 
     procedure sendkeepalive; Virtual; Abstract;
 
-    procedure AuthGrant(Cnt : TRnQContact); Virtual; Abstract;
-    procedure AuthRequest(cnt : TRnQContact; const reason : String); Virtual; Abstract;
-    function  getPwd : String; Virtual; Abstract;
-    procedure setPwd(const pPWD : String); Virtual; Abstract;
-    function  pwdEqual(const pass : String) : Boolean; Virtual; Abstract;
-    function  getMyInfo : TRnQContact; Virtual; Abstract;
-//    procedure setMyInfo(cnt : TRnQContact);
-    function  getStatusDisable : TOnStatusDisable; Virtual; Abstract;
-    function  getPrefPage : TPrefFrameClass; Virtual; Abstract;
+    procedure AuthGrant(Cnt: TRnQContact); Virtual; Abstract;
+    procedure AuthRequest(cnt: TRnQContact; const reason : String); Virtual; Abstract;
+    function  getPwd: String; Virtual; Abstract;
+    procedure setPwd(const pPWD: String); Virtual; Abstract;
+    function  pwdEqual(const pass: String) : Boolean; Virtual; Abstract;
+    function  getMyInfo: TRnQContact; Virtual; Abstract;
+//    procedure setMyInfo(cnt: TRnQContact);
+    function  getStatusDisable: TOnStatusDisable; Virtual; Abstract;
+    function  getPrefPage: TPrefFrameClass; Virtual; Abstract;
 
     function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
     function _AddRef: Integer; stdcall;
     function _Release: Integer; stdcall;
         procedure AfterConstruction; override; final;
         procedure BeforeDestruction; override; final;
-    function getShowStr : String;
+    function getShowStr: String;
 
-    property  ProtoID : byte read _getProtoID;
+    property  ProtoID: byte read _getProtoID;
 //    class function getProtoByUID(uid : TUID) : TRnQProtoClass;
-    property MyAccNum : TUID read MyAccount;
+    property MyAccNum: TUID read MyAccount;
     property RefCount: Integer read FRefCount;
 
     property  pwd: String read getPwd write setPwd;
 //    property  MyInfo :TRnQContact read getMyInfo write setMyInfo;
-    property  statuses : TStatusArray read getStatuses;
-    property curXStatus : Byte read getXStatus;
+    property  statuses: TStatusArray read getStatuses;
+    property curXStatus: Byte read getXStatus;
   end;
 //type
 
@@ -512,27 +515,27 @@ type
 
   TRnQContact = class //(TObject)
    public
-    UID : TUID;
-    UID2cmp : TUID; // LowerCase and without delimiters
-    SSIID : Integer;
+    UID: TUID;
+    UID2cmp: TUID; // LowerCase and without delimiters
+    SSIID: Integer;
 //    ClientStr : AnsiString;
-    ClientPic : TPicName;
-    ClientDesc : String;
+    ClientPic: TPicName;
+    ClientDesc: String;
     fDisplay,       // if user want to rename this contact
     nick,
     first,
     last,
-    lclImportant : String;
-//    iProto : IRnQProtocol;
-    fProto : TRnQProtocol;
+    lclImportant: String;
+//    iProto: IRnQProtocol;
+    fProto: TRnQProtocol;
     antispam : record
        Tryes : Byte;
        lastQuests : array of String;
      end;
-    CntIsLocal : Boolean;
+    CntIsLocal: Boolean;
     Authorized,
-    SendTransl:Boolean; // By Rapid D
-    typing : packed record
+    SendTransl: Boolean; // By Rapid D
+    typing: packed record
       typingTime : TDateTime;
       bSupport,
       bIsTyping,
@@ -559,43 +562,43 @@ type
       end;
       {$ENDIF RNQ_AVATARS}
     data: pointer;
-    class function trimUID(const uid : TUID) : TUID; virtual; abstract;
-    constructor Create(pProto : TRnQProtocol; const uin_: TUID); Virtual;
+    class function trimUID(const uid: TUID): TUID; virtual; abstract;
+    constructor Create(pProto: TRnQProtocol; const uin_: TUID); Virtual;
     destructor Destroy; override;
     procedure clear; Virtual; abstract;
     procedure clear1;
-    function  getStatus : byte; virtual; abstract;
-    function  getStatusName : String; virtual; abstract;
-    function  statusImg : TPicName; virtual; abstract;
+    function  getStatus: byte; virtual; abstract;
+    function  getStatusName: String; virtual; abstract;
+    function  statusImg: TPicName; virtual; abstract;
     function  isOnline    : Boolean; virtual; abstract;
     function  isInvisible : Boolean; virtual; abstract;
     function  isOffline   : Boolean; virtual; abstract;
-    function  canEdit : Boolean; virtual; abstract;
-    function _getProtoID : Byte; inline;
-    function  displayed:string;
-    function  displayed4All:string;
-    function  uin2Show : String; virtual; abstract;
-    function  getFN : String;
-    function  equals(c:TRnQContact):boolean; reintroduce; OverLoad;
-    function  equals(const pUID: TUID):boolean; reintroduce; OverLoad;
-    function  equals(pUIN: Integer):boolean; reintroduce; OverLoad;
-    procedure SetDisplay(const s : String); Virtual;
-    function  GetDBrow : RawByteString; virtual; abstract;
-    function  ParseDBrow(ItemType : Integer; const item : RawByteString) : Boolean; virtual; abstract;
+    function  canEdit: Boolean; virtual; abstract;
+    function _getProtoID: Byte; inline;
+    function  displayed: string;
+    function  displayed4All: string;
+    function  uin2Show: String; virtual; abstract;
+    function  getFN: String;
+    function  equals(c: TRnQContact): boolean; reintroduce; OverLoad;
+    function  equals(const pUID: TUID): boolean; reintroduce; OverLoad;
+    function  equals(pUIN: Integer): boolean; reintroduce; OverLoad;
+    procedure SetDisplay(const s: String); Virtual;
+    function  GetDBrow: RawByteString; virtual; abstract;
+    function  ParseDBrow(ItemType: Integer; const item: RawByteString): Boolean; virtual; abstract;
     procedure ViewInfo; virtual; abstract;
-    function  isAcceptFile : Boolean; Virtual;
-    function  GetBDay : TDateTime;
-    function  Days2Bd : smallInt;
-    function  imVisibleTo : Boolean;
-    function  isInRoster : Boolean;
-    function  isInList(l : TLIST_TYPES) : Boolean;
+    function  isAcceptFile: Boolean; Virtual;
+    function  GetBDay: TDateTime;
+    function  Days2Bd: smallInt;
+    function  imVisibleTo: Boolean;
+    function  isInRoster: Boolean;
+    function  isInList(l: TLIST_TYPES): Boolean;
 //   public
 //    function  GetProto : IRnQProtocol;
     procedure SetGroupName(const pName: String);
     function  buin: RawByteString;
-    property  Display : string read fDisplay write SetDisplay;
-    property  ProtoID : byte read _getProtoID;
-    property  Status : byte read getStatus;
+    property  Display: string read fDisplay write SetDisplay;
+    property  ProtoID: byte read _getProtoID;
+    property  Status: byte read getStatus;
   end;
 
   TcontactProc=procedure(c:TRnQContact);
@@ -611,24 +614,24 @@ type
     procedure resetEnumeration;
     function  hasMore: boolean;
     function  getNext: TRnQContact;
-    function  get(cls : TRnQContactType; const UID:TUID):TRnQContact; OverLoad;
-    function  get(cls : TRnQContactType; const uin:integer):TRnQcontact; overload; //OverRide;
+    function  get(cls: TRnQContactType; const UID: TUID): TRnQContact; OverLoad;
+    function  get(cls: TRnQContactType; const uin: integer): TRnQcontact; overload; //OverRide;
     function  getAt(const idx: integer): TRnQContact;
     function  putAt(const idx: integer; c: TRnQContact): Boolean;
     function  exists(const c: TRnQContact): Boolean; overload;
-    function  exists(const pProto : TRnQProtocol; const uin:TUID):boolean; overload;
+    function  exists(const pProto: TRnQProtocol; const uin: TUID): boolean; overload;
     function  empty: boolean;
-    function  add(const pProto : TRnQProtocol; const UID:TUID):TRnQcontact; overload; //OverRide;
-    function  add(c: TRnQContact):boolean; overload;
-    function  add(p: pointer):boolean; overload;
-    function  add(cl: TRnQCList):TRnQCList; overload;
+    function  add(const pProto: TRnQProtocol; const UID: TUID): TRnQcontact; overload; //OverRide;
+    function  add(c: TRnQContact): boolean; overload;
+    function  add(p: pointer): boolean; overload;
+    function  add(cl: TRnQCList): TRnQCList; overload;
     function  remove(const c: TRnQContact): Boolean; overload;
-    function  remove(p: pointer):boolean; overload;
-    function  remove(cl: TRnQCList):TRnQCList; overload;
-    function  intersect(cl: TRnQCList):TRnQCList;
+    function  remove(p: pointer): boolean; overload;
+    function  remove(cl: TRnQCList): TRnQCList; overload;
+    function  intersect(cl: TRnQCList): TRnQCList;
     function  toString: RawByteString; reintroduce;
 //    function  fromString(cls: TRnQContactType; const s: RawByteString; db:TRnQCList):boolean;
-    function  fromString(pr: TRnQProtocol; const s: RawByteString; db:TRnQCList):boolean;
+    function  fromString(pr: TRnQProtocol; const s: RawByteString; db: TRnQCList): boolean;
     function  clone: TRnQCList;
     procedure assign(cl: TRnQCList);
     procedure apply(p: TcontactProc);
@@ -654,7 +657,7 @@ var
 //  protocols : array of IRnQProtocol;
   RnQProtos: array of TRnQProtoClass;
 //  RnQProtos : array of TRnQProtoHelper;
-  contactsDB: TRnQCList;
+//  contactsDB: TRnQCList;
   onContactCreation, onContactDestroying: TcontactProc;
   onStatusDisable: array [0..15] of TOnStatusDisable;
 
@@ -775,34 +778,45 @@ begin
   //if RefCount <> 0 then Error( reInvalidPtr );
 end;
 
-procedure TRnQProtocol.SetListener(l : TProtoNotify);
+class constructor TRnQProtocol.Create;
+begin
+  contactsDB := TRnQCList.create;
+end;
+
+class destructor TRnQProtocol.Destroy;
+begin
+  contactsDB.free;
+  contactsDB := NIL;
+end;
+
+procedure TRnQProtocol.SetListener(l: TProtoNotify);
 begin
   listener := l;
 end;
 
-function TRnQProtocol.ProtoName : String;
+function TRnQProtocol.ProtoName: String;
 begin
   Result := _GetProtoName;
 end;
 
-function TRnQProtocol.ProtoElem : TRnQProtocol;
+function TRnQProtocol.ProtoElem: TRnQProtocol;
 begin
   Result := self;
 end;
 
-function TRnQProtocol.validUid1(const uin:TUID):boolean;
+function TRnQProtocol.validUid1(const uin: TUID): boolean;
 begin
  Result := (Length(uin)>0) and self._isValidUid1(uin);
 end;
 
-function TRnQProtocol.ContactExists(const UID : TUID) : Boolean;
+function TRnQProtocol.ContactExists(const UID: TUID): Boolean;
 begin
   Result := contactsDB.exists(self, uid);
 end;
 
-function TRnQProtocol.getShowStr : String;
+function TRnQProtocol.getShowStr: String;
 var
-  mi : TRnQContact;
+  mi: TRnQContact;
 begin
   mi := getMyInfo;
   if Assigned(mi) then
@@ -1551,7 +1565,7 @@ end; // count
 procedure TRnQCList.getOnlOfflCount(var pOnlCount, pOfflCount : Integer);
 var
 //  a, b,
-  i : Integer;
+  i: Integer;
 begin
   pOnlCount:=0;
   pOfflCount:=0;
@@ -1568,8 +1582,8 @@ end;
 
 {procedure TRnQCList.SetStatus(st: Byte);
 var
-  i:integer;
-  cnt : TRnQContact;
+  i: integer;
+  cnt: TRnQContact;
 begin
   for i:=0 to count-1 do
    begin
@@ -1581,11 +1595,11 @@ begin
 end;}
 
 
-procedure logProtoPkt(what:TwhatLog; const head : String; const data: RawByteString='');
+procedure logProtoPkt(what: TwhatLog; const head: String; const data: RawByteString='');
 var
-  sA : RawByteString;
-  sU : String;
-  needHash : Boolean;
+  sA: RawByteString;
+  sU: String;
+  needHash: Boolean;
 begin
   needHash := not (what in [WL_sent_text, WL_rcvd_text]);
   if needHash then
@@ -1620,25 +1634,25 @@ begin
     logPktFileData := '';
 end;
 
-{procedure RegisterProto(proto : TRnQProtoHelper);
+{procedure RegisterProto(proto: TRnQProtoHelper);
 var
-  i : Integer;
+  i: Integer;
 begin
   i := Length(RnQProtos);
   SetLength(RnQProtos, i+1);
   RnQProtos[i] := proto;
 end;
                 }
-procedure RegisterProto(proto : TRnQProtoClass);
+procedure RegisterProto(proto: TRnQProtoClass);
 var
-  i : Integer;
+  i: Integer;
 begin
   i := Length(RnQProtos);
   SetLength(RnQProtos, i+1);
   RnQProtos[i] := proto;
 end;
 
-procedure setProgBar(const proto:TRnQProtocol; v:double);
+procedure setProgBar(const proto: TRnQProtocol; v: double);
 begin
   if Assigned(proto) then
     proto.progLogon := v
@@ -1652,14 +1666,14 @@ begin
 end;
 
 {$IFDEF usesDC}
-constructor Tdirects.create(sess_ : TRnQProtocol);
+constructor Tdirects.create(sess_: TRnQProtocol);
 begin
   proto := sess_;
 end; // create
 
 destructor Tdirects.Destroy;
 var
-  i:Integer;
+  i: Integer;
 begin
 for i:=count-1 downto 0 do
   TProtoDirect(items[i]).free;
@@ -1667,7 +1681,7 @@ inherited;
 end; // destroy
 
 
-function Tdirects.newFor(c:TRnQContact):TProtoDirect;
+function Tdirects.newFor(c: TRnQContact): TProtoDirect;
 begin
   result := c.fProto.getNewDirect;
   if Assigned(Result) then
@@ -1678,9 +1692,9 @@ begin
    end;
 end; // newFor
 
-function Tdirects.findID(id : UInt64):TProtoDirect;
+function Tdirects.findID(id: UInt64): TProtoDirect;
 var
-  i:Integer;
+  i: Integer;
 begin
   Result := NIL;
   for i:=count-1 downto 0 do
@@ -1697,13 +1711,13 @@ end;
 
 constructor TProtoDirect.create;
 begin
-  sock:=TRnQSocket.create(NIL);
-  sock.tag:=integer(@self);
+  sock := TRnQSocket.create(NIL);
+  sock.tag := integer(@self);
 //  sock.OnDataAvailable:=received;
 //  sock.OnSessionClosed:=disconnected;
   //sock.OnSocksError := OnProxyError;
-  imserver:=TRUE;
-  kind:=DK_none;
+  imserver := TRUE;
+  kind := DK_none;
   stage := 0;
   mode := dm_bin_direct;
   Directed := False;
@@ -1711,7 +1725,7 @@ begin
   AOLProxy.ip := 0;
   AOLProxy.port := 0;
   UseLocProxy := True;
-  myspeed:=100;
+  myspeed := 100;
 end; // create
 
 destructor TProtoDirect.Destroy;
@@ -1738,7 +1752,7 @@ end; // destroy
 
 procedure TProtoDirect.ProcessSend;
 var
-  b : Boolean;
+  b: Boolean;
 begin
   SetLength(buf, 0);
   b := false;
@@ -1751,7 +1765,7 @@ begin
    sock.Close;
 end;
 
-function TProtoDirect.myPort:integer;
+function TProtoDirect.myPort: integer;
 begin
   tryStrToInt(sock.getxPort, result)
 end;
@@ -1778,7 +1792,7 @@ begin
     end;
 end; // sendPkt
 
-procedure TProtoDirect.logMsg(err : Word; const msg : String);
+procedure TProtoDirect.logMsg(err: Word; const msg: String);
 begin
   if Assigned(OnNotification) then
     OnNotification(Self, err, msg);
@@ -1789,7 +1803,7 @@ end;
 ///////////////////////////////////////////////////////////////////////
 
 
-function  Int2UID(const i : Integer) : TUID;
+function  Int2UID(const i: Integer): TUID;
 begin
  {$IFDEF UID_IS_UNICODE}
    Result := IntToStr(i)
@@ -1800,23 +1814,18 @@ end;
 
 
 var
-  TZinfo:TTimeZoneInformation;
+  TZinfo: TTimeZoneInformation;
 
 INITIALIZATION
 
   GetTimeZoneInformation(TZinfo);
   case GetTimeZoneInformation(TZInfo) of
-    TIME_ZONE_ID_STANDARD: GMToffset:=TZInfo.StandardBias;
-    TIME_ZONE_ID_DAYLIGHT: GMToffset:=TZInfo.DaylightBias;
+    TIME_ZONE_ID_STANDARD: GMToffset := TZInfo.StandardBias;
+    TIME_ZONE_ID_DAYLIGHT: GMToffset := TZInfo.DaylightBias;
     else GMToffset := 0;
     end;
-  GMToffset:=-(TZinfo.bias+GMToffset)/(24*60);
-  GMToffset0 :=-(TZinfo.bias)/(24*60);
+  GMToffset := -(TZinfo.bias+GMToffset)/(24*60);
+  GMToffset0 := -(TZinfo.bias)/(24*60);
 //  ActProto := -1;
-  contactsDB:=TRnQCList.create;
-
-FINALIZATION
-
-contactsDB.free;
 
 end.

@@ -140,15 +140,15 @@ begin
    end;
 end;
 
-procedure SyncSSILocal(curICQ : TicqSession);
+procedure SyncSSILocal(curICQ: TicqSession);
 var
   I: Integer;
 //  k: Integer;
-  g_id : integer;
-  c : TICQcontact;
-  cnt : TRnQContact;
-  locCL, invCL, visCL : TRnQCList;
-  s : RawByteString;
+  g_id: integer;
+  c: TICQcontact;
+  cnt: TRnQContact;
+  locCL, invCL, visCL: TRnQCList;
+  s: RawByteString;
 begin
   if not Assigned(curICQ) then
     Exit;
@@ -156,7 +156,7 @@ begin
   invCL := TRnQCList.Create;
   visCL := TRnQCList.Create;
 
-  with ContactsDB do
+  with TRnQProtocol.ContactsDB do
     begin
       resetEnumeration;
       while hasMore do

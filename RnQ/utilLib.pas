@@ -408,7 +408,7 @@ renamefile(uPath + 'uin.list', uPath + uinlistFilename);
   else
 //   s := loadNewOrOldVersionContactList(rosterFileName1);
    s := loadFileA(uPath + rosterFileName1);
- pr.readList(LT_ROSTER).fromString(pr, s, contactsDB);
+ pr.readList(LT_ROSTER).fromString(pr, s, TRnQProtocol.contactsDB);
 
 
 { if zipLists then
@@ -422,20 +422,20 @@ renamefile(uPath + 'uin.list', uPath + uinlistFilename);
    s := loadFile(uPath + visibleFileName1);
  pr.readList(LT_VISIBLE).fromString(pr.getContactClass, s, contactsDB );
 }
- pr.readList(LT_VISIBLE).fromString(pr, LoadZorF(visibleFileName1), contactsDB );
+ pr.readList(LT_VISIBLE).fromString(pr, LoadZorF(visibleFileName1), TRnQProtocol.contactsDB );
 
- pr.readList(LT_INVISIBLE).fromString(pr, LoadZorF(invisibleFileName1), contactsDB );
+ pr.readList(LT_INVISIBLE).fromString(pr, LoadZorF(invisibleFileName1), TRnQProtocol.contactsDB );
 
- notInlist.fromString(pr, LoadZorF(nilFilename1), contactsDB );
+ notInlist.fromString(pr, LoadZorF(nilFilename1), TRnQProtocol.contactsDB );
  notInlist.remove(pr.readList(LT_ROSTER));
 
- ignoreList.fromString(pr, LoadZorF(ignoreFilename1), contactsDB );
+ ignoreList.fromString(pr, LoadZorF(ignoreFilename1), TRnQProtocol.contactsDB );
 
  uinlists.fromString(pr, LoadZorF(uinlistFilename) );
  {$IFDEF CHECK_INVIS}
-  CheckInvis.CList.fromString(pr, LoadZorF(CheckInvisFileName1), contactsDB );
+  CheckInvis.CList.fromString(pr, LoadZorF(CheckInvisFileName1), TRnQProtocol.contactsDB );
  {$ENDIF}
- retrieveQ.fromString(pr, LoadZorF(retrieveFileName1), contactsDB );
+ retrieveQ.fromString(pr, LoadZorF(retrieveFileName1), TRnQProtocol.contactsDB );
 end; // loadLists
 
 (*procedure saveLists(pr : TRnQProtocol);
@@ -799,7 +799,7 @@ begin
 //  zf.Data[i] := db2str(contactsDB);
   zf.ZipFileComment := 'DB file of R&Q ver.' + IntToStrA(RnQBuild);
 
-  cfg := db2strU(contactsDB);
+  cfg := db2strU(TRnQProtocol.contactsDB);
   AddFile2Zip(dbFileName, cfg);
 
   cfg := AnsiString('protocol=') + AnsiString(pr.ProtoName) +CRLF+
@@ -1457,7 +1457,7 @@ var
   zf: TZipFile;
   i: Integer;
 begin
-  freeDB(contactsDB);
+  freeDB(TRnQProtocol.contactsDB);
   s := '';
   if Assigned(zp) then
    begin
@@ -1501,8 +1501,8 @@ begin
 //      s := ZDecompressStrEx(loadFile(userPath+dbFileName + '2'))
 //     else
 //  contactsDB:=str2db(Account.AccProto.getContactClass, s, result)
-  contactsDB := str2db(Account.AccProto, s, result, pCheckGroups);
-  contactsDB.add(Account.AccProto, Account.AccProto.ProtoElem.MyAccNum)
+  TRnQProtocol.contactsDB := str2db(Account.AccProto, s, result, pCheckGroups);
+  TRnQProtocol.contactsDB.add(Account.AccProto, Account.AccProto.ProtoElem.MyAccNum)
 end; // loadDB
 
 (*
@@ -2645,7 +2645,7 @@ begin
     if (msg > '')and(Assigned(ev)) then
       begin
 //        spamCnt:= contactsDB.get(TICQContact, spamsFilename);
-        spamCnt:= contactsDB.Add(c.fProto, spamsFilename);
+        spamCnt:= c.fProto.contactsDB.Add(c.fProto, spamsFilename);
         writeHistorySafely(ev, spamCnt);
 //        if chatFrm.chats.idxOfUIN(spamsFilename) >= 0 then
           chatFrm.addEvent(spamCnt, ev.clone);
@@ -2926,10 +2926,10 @@ begin
       Answers0(ev.who.antispam.lastQuests);
       SetLength(ev.who.antispam.lastQuests, 0);
       if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
-       writeHistorySafely(ev, contactsDB.Add(vProto, spamsFilename));
+       writeHistorySafely(ev, vProto.contactsDB.Add(vProto, spamsFilename));
       if (BE_HISTORY in behaviour[ev.kind].trig) then
 //        if chatFrm.chats.idxOfUIN(spamsFilename) >= 0 then
-          chatFrm.addEvent(contactsDB.Add(vProto, spamsFilename), ev.clone);
+          chatFrm.addEvent(vProto.contactsDB.Add(vProto, spamsFilename), ev.clone);
       if ev.who.antispam.Tryes = spamfilter.BotTryesCount then
        begin
         inc(ev.who.antispam.Tryes);
@@ -3511,7 +3511,7 @@ begin
  {$IFDEF PROTOCOL_ICQ}
   for i:=0 to length(a)-1 do
 //    result.add(contactsDB.get(TICQContact, IntToStr(a[i])));
-    result.add(contactsDB.get(TICQContact, a[i]));
+    result.add(TRnQProtocol.contactsDB.get(TICQContact, a[i]));
  {$ENDIF PROTOCOL_ICQ}
 end; // ints2cl
 

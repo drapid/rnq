@@ -359,11 +359,11 @@ function TOevent.toString: RawByteString;
 
   procedure writeDown(code: integer; const data: RawByteString);
   begin
-    result:=result+int2str(length(data))+int2str(code)+data
+    result := result+int2str(length(data))+int2str(code)+data
   end;
 
 begin
-  result:='';
+  result := '';
   writeDown(OEK_kind, int2str(kind));
   writeDown(OEK_flags, int2str(flags));
   if kind=OE_email then
@@ -375,13 +375,13 @@ begin
   writeDown(OEK_info, StrToUTF8(info));
   writeDown(OEK_wrote, dt2str(wrote));
   if assigned(cl) then
-  writeDown(OEK_cl, cl.tostring);
+    writeDown(OEK_cl, cl.tostring);
 end; // toString
 
 function TOevent.fromString(const s: RawByteString): Boolean;
 var
-  i,L,code,next:integer;
-  uid : TUID;
+  i, L, code, next: integer;
+  uid: TUID;
 begin
   i := 1;
   Result := True;
@@ -419,7 +419,7 @@ begin
         begin
           if cl=NIL then
             cl := TRnQCList.create;
-          cl.fromstring(Account.AccProto, copy(s,i,L), contactsDB);
+          cl.fromstring(Account.AccProto, copy(s,i,L), Account.AccProto.contactsDB);
         end;
       end;
     i := next;

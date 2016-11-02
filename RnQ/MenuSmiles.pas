@@ -13,6 +13,9 @@ uses
   ExtCtrls, RDGlobal, RQThemes, RnQGraphics32;
 
 type
+  TOnGetHNDL = function: HWND of object;
+
+type
   TFSmiles = class(TForm)
     MenuSmilesBox: TPaintBox;
     UpdTmr: TTimer;
@@ -29,6 +32,8 @@ type
     procedure MenuSmilesBoxMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure FormHide(Sender: TObject);
+    constructor CreateMenuWindow(AOwner: TComponent; ChatFrmGetHNDL: TOnGetHNDL; onSelect: TGetStrProc);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
 //    menu_pic : TBitmap;
@@ -37,6 +42,9 @@ type
     FAniParamList: TAniSmileParamsArray;
     FAniDrawCnt: Integer;
     DrawLines, DrawSmiles: Integer;
+    fChatFrmGetHNDL: TOnGetHNDL;
+    fOnSelect: TGetStrProc;
+
     procedure RenderAllMenu(cnv: TCanvas);
     procedure TickAniTimer(Sender: TObject);
     procedure AddAniParam( PicIdx, SmlIDX : Integer; Bounds: TGPRect;
@@ -44,11 +52,14 @@ type
     procedure ClearAniParams;
     procedure DrawSmilesMenu(DC0: HDC; i: Integer; PPI: Integer);
     procedure SetMenuSel(i: Integer);
+    procedure gotochat;
+    procedure Add2input(const s: String);
   public
     { Public declarations }
     procedure CreateParams( var Params: TCreateParams ); override;
   end;
-  procedure ShowSmileMenu(t: tpoint);
+
+  procedure ShowSmileMenu(t: tpoint; AOwner: TComponent; const ChatFrmGetHNDL: TOnGetHNDL; const onSelect: TGetStrProc);
 
 const
   Btn_Max_Width   = 45;
@@ -59,7 +70,6 @@ const
 var
   Smile_Btn_space: Integer = Smile_Btn_space0;
   Smile_Text_Height: Integer = Smile_Text_Height0;
-  FSmiles: TFSmiles;
   SmileToken: Integer;
   prefBtnWidth, prefBtnHeight: Integer;
   prefSmlAutoSize: Boolean;
@@ -68,7 +78,7 @@ var
 implementation
 
 uses
-   chatDlg, RnQLangs, RnQGlobal,
+   RnQLangs, RnQGlobal,
 //   RnQAni,
    globalLib,
    RQUtil,
@@ -78,24 +88,27 @@ uses
 
 type
   TConfRec = record
-   Up, Down, Brd : DWORD;
-   Angle,BrdSize : integer;
+   Up, Down, Brd: DWORD;
+   Angle, BrdSize: integer;
   end;
 
 var
-  menusel, oldsel : integer;
-  Btn_Width : Integer;
-  Btn_Height : Integer;
-  Btn_Height_Full : Integer;
+  menusel, oldsel: integer;
+  Btn_Width: Integer;
+  Btn_Height: Integer;
+  Btn_Height_Full: Integer;
 
-procedure gotochat;
+procedure TFSmiles.gotochat;
 var
   v: hwnd;
 //  l: integer;
 begin
-  v := chatFrm.Handle;
-//  RQ_GetWindow(PW_CHAT, v, l, l, l, l);
-  SetForegroundWindow(v);
+ //  RQ_GetWindow(PW_CHAT, v, l, l, l, l);
+  if Assigned(fChatFrmGetHNDL) then
+    begin
+      v := fChatFrmGetHNDL;
+      SetForegroundWindow(v);
+    end;
 end;
 
 procedure DrawSelBG(dc: HDC; r: TRect);
@@ -130,9 +143,10 @@ begin
    DeleteObject(brF);
 end;
 
-procedure Add2input(const s: String);
+procedure TFSmiles.Add2input(const s: String);
 begin
-  chatFrm.thisChat.input.SelText := s;
+//  chatFrm.thisChat.input.SelText := s;
+  fOnSelect(s);
 end;
 
 function getmenuselrect(col, row: integer): trect;
@@ -259,6 +273,14 @@ begin
 end;
 
 
+constructor TFSmiles.CreateMenuWindow(AOwner: TComponent; ChatFrmGetHNDL: TOnGetHNDL; onSelect: TGetStrProc);
+begin
+//  TFSmiles.Create(AOwner);
+  fChatFrmGetHNDL := ChatFrmGetHNDL;
+  inherited Create(AOwner);
+  fOnSelect := onSelect;
+end;
+
 procedure TFSmiles.CreateParams( var Params: TCreateParams );
 begin
   inherited CreateParams( Params );
@@ -269,7 +291,7 @@ begin
 //ExStyle := WS_EX_OVERLAPPEDWINDOW or WS_EX_NOPARENTNOTIFY;
 
 //    WndParent := fprefs.Handle;
-    WndParent := chatFrm.Handle;
+    WndParent := fChatFrmGetHNDL;
   end;
 //  ShowWindow(Application.Handle,SW_HIDE)
 end;
@@ -688,6 +710,11 @@ begin
   end;
 end;
 
+procedure TFSmiles.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Action := caFree;
+end;
+
 procedure TFSmiles.FormCreate(Sender: TObject);
 begin
   oldsel := -1;
@@ -699,6 +726,8 @@ end;
 procedure TFSmiles.FormHide(Sender: TObject);
 begin
   ClearAniParams;
+//  Destroy;
+  Close;
 end;
 
 procedure TFSmiles.MenuSmilesBoxMouseUp(Sender: TObject;
@@ -717,8 +746,8 @@ blocksmile(smiles.pics[menusel].codes[0],smiles.pics[menusel].SmileStop);
 end;}
 end;
 
-procedure TFSmiles.AddAniParam( PicIdx, SmlIDX : Integer; Bounds: TGPRect;
-              Color: TColor; cnv, cnvSrc : TCanvas; Sel : Boolean = false);
+procedure TFSmiles.AddAniParam(PicIdx, SmlIDX: Integer; Bounds: TGPRect;
+              Color: TColor; cnv, cnvSrc: TCanvas; Sel: Boolean = false);
 begin
   Inc(FAniDrawCnt);
   SetLength(FAniParamList,FAniDrawCnt);
@@ -749,7 +778,7 @@ end;
 
 procedure TFSmiles.ClearAniParams;
 //var
-// i : Integer;
+// i: Integer;
 begin
   FAniDrawCnt:= 0;
   SetLength(FAniParamList,0);
@@ -761,7 +790,7 @@ begin
 //    FAniTimer.Enabled := false;
 end;
 
-procedure ShowSmileMenu(t: tpoint);
+procedure ShowSmileMenu(t: tpoint; AOwner: TComponent; const ChatFrmGetHNDL: TOnGetHNDL; const onSelect: TGetStrProc);
 var
   ar: array[1..4] of TRect;
   scr, intr, a: Trect;
@@ -769,7 +798,9 @@ var
   PPI: Integer;
   w2, h2: Integer;
   picName: TPicName;
+  FSmiles: TFSmiles;
 begin
+  FSmiles := TFSmiles.CreateMenuWindow(AOwner, ChatFrmGetHNDL, onSelect);
   fsmiles.FormShow(nil);
 
   PPI := Screen.MonitorFromPoint(t).PixelsPerInch;

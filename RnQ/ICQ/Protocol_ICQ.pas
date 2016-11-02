@@ -581,7 +581,7 @@ while data>'' do
   try
     line := trim(chop(AnsiString(#10),data));
     grpname := UnUTF(chop(AnsiString(';'),line));
-    c := TICQContact(contactsDB.get(TICQContact, chop(AnsiString(';'),line)));
+    c := TICQContact(TRnQProtocol.contactsDB.get(TICQContact, chop(AnsiString(';'),line)));
    	if c.nick='' then
       c.nick := chop(AnsiString(';'),line)
      else
@@ -1535,7 +1535,7 @@ case ev of
        if clearPwdOnDSNCT and dontSavePwd then
         if Assigned(thisICQ) and thisICQ.isOffline then
          thisICQ.pwd := '';
-       with contactsDB.clone do
+       with TRnQProtocol.contactsDB.clone do
        begin
         resetEnumeration;
         while hasMore do

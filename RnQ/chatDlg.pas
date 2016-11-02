@@ -327,6 +327,9 @@ type
 //    procedure showSmilePanel(p : TPoint);
 
     procedure WMAppCommand(var msg: TMessage); message WM_APPCOMMAND;
+    procedure OnSmileSelect(const S: string);
+    function  OnGetHNDL: HWND;
+
   private
     lastClick   : Tdatetime;
     lastClickIdx: Integer;
@@ -986,9 +989,6 @@ begin
   smileMenuExt.OnPopup := smilesMenuPopup;
   smileMenuExt.OnClose := smilesMenuClose;
 //  smilesBtn.PopupMenu := smileMenuExt;
-  if Assigned(FSmiles) then
-    SetSmilePopup(False)
-   else
  {$ENDIF USE_SMILE_MENU}
     SetSmilePopup(True);
 //  favMenuExt := TPopupMenu.Create(self);
@@ -2158,7 +2158,7 @@ if shift = [ssCtrl] then
           smileMenuExt.Popup(x, y)
         else
    {$ENDIF USE_SMILE_MENU}
-         ShowSmileMenu(smilesBtn.ClientOrigin);
+         ShowSmileMenu(smilesBtn.ClientOrigin, Self, OnGetHNDL, self.OnSmileSelect);
     VK_A:
       if (ch.chatType = CT_IM) then
        begin
@@ -2648,15 +2648,16 @@ end;
 
 procedure TchatFrm.smilesBtnClick(Sender: TObject);
 //var
-//  ch:Tchatinfo;
+//  ch: Tchatinfo;
 begin
 //  ShowSmileMenu(TRnQSpeedButton(Sender).ClientToScreen(Point(
 //      TRnQSpeedButton(Sender).Left, TRnQSpeedButton(Sender).Top)));
   ShowSmileMenu(toolbar.ClientToScreen(Point(
-      TRnQSpeedButton(Sender).Left, TRnQSpeedButton(Sender).Top)));
+      TRnQSpeedButton(Sender).Left, TRnQSpeedButton(Sender).Top)),
+      Self, OnGetHNDL, OnSmileSelect);
   enterCount := 0;
-{  useSmiles:=smilesBtn.down;
-  ch:=thischat;
+{  useSmiles := smilesBtn.down;
+  ch := thischat;
   if ch=NIL then exit;
   inc(ch.historyBox.history.Token);
   ch.repaint;
@@ -2669,7 +2670,7 @@ procedure TchatFrm.smilesBtnMouseUp(Sender: TObject; Button: TMouseButton;
 begin
   if (Button<>mbRight) then
     exit;
-  ShowSmileMenu(TRnQSpeedButton(Sender).ClientToScreen(Point(x,y)));
+  ShowSmileMenu(TRnQSpeedButton(Sender).ClientToScreen(Point(x,y)), Self, OnGetHNDL, OnSmileSelect);
   enterCount := 0;
 end;
 
@@ -3630,14 +3631,14 @@ begin
  len := Length(s);
  while ofs<Len do
   begin
-    i:=posEx(AnsiString(#10),s, ofs);
+    i := posEx(AnsiString(#10), s, ofs);
     if (i>1) and (s[i-1]=#13) then
       dec(i);
     if i=0 then
-      i:= Len+1;
+      i := Len+1;
     s1 := copy(s, ofs, i-ofs);
     try
-      openOn(contactsDB.add(Account.AccProto, UTF8ToStr(s1)), True, False);
+      openOn(Account.AccProto.contactsDB.add(Account.AccProto, UTF8ToStr(s1)), True, False);
      except
 //      result:=FALSE
     end;
@@ -3679,11 +3680,11 @@ end;
    {$IFDEF USE_SMILE_MENU}
 procedure TchatFrm.smilesMenuPopup(Sender: TObject);
 //var
-// r : TRect;
+// r: TRect;
 begin
   if smile_theme_token <> theme.token then
    begin
-    addSmilesToMenu(self,smileMenuExt.Items,addSmileAction);
+    addSmilesToMenu(self, smileMenuExt.Items, addSmileAction);
     smile_theme_token := theme.token;
    end;
 //  if GetWindowRect(smileMenuExt.WindowHandle, r) then
@@ -3699,9 +3700,10 @@ begin
 end;
    {$ENDIF USE_SMILE_MENU}
 
-procedure TchatFrm.addSmileAction(sender:Tobject);
+procedure TchatFrm.addSmileAction(sender: Tobject);
 begin
- thisChat.input.SelText:=TRQmenuitem(sender).ImageName;
+// thisChat.input.SelText := TRQmenuitem(sender).ImageName;
+  thisChat.input.SelText := TRQmenuitem(sender).Caption;
 end;
 
 procedure TchatFrm.histmenuPopup(Sender: TObject);
@@ -4009,6 +4011,17 @@ end;
 // onHistoryRepaint
 
 {$ENDIF CHAT_CEF}
+
+
+procedure TchatFrm.OnSmileSelect(const S: string);
+begin
+  thisChat.input.SelText := s;
+end;
+
+function  TchatFrm.OnGetHNDL: HWND;
+begin
+  Result := Handle;
+end;
 
 procedure TchatFrm.onTimer;
 begin
@@ -5251,8 +5264,8 @@ begin
   theme.ClearAniParams;
  {$ENDIF SMILES_ANI_ENGINE}
  {$IFDEF RNQ_FULL}
-  if Assigned(FSmiles) then
-    FSmiles.Hide;
+//  if Assigned(FSmiles) then
+//    FSmiles.Hide;
  {$IFDEF PROTOCOL_ICQ}
   if Assigned(FStickers) then
     FStickers.Hide;

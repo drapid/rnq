@@ -15,9 +15,9 @@ interface
   procedure InitMenuChats;
   procedure createMenusExt;
 
-  procedure addSmilesToMenu(own:Tcomponent; mi:Tmenuitem; action:TnotifyEvent);
-  procedure addGroupsToMenu(own:Tcomponent; mi:Tmenuitem; action:TnotifyEvent; pAddOut : Boolean);
-  procedure createFavMenu(root:Tmenuitem; action:TnotifyEvent);
+  procedure addSmilesToMenu(own: Tcomponent; mi: Tmenuitem; action: TnotifyEvent);
+  procedure addGroupsToMenu(own: Tcomponent; mi: Tmenuitem; action: TnotifyEvent; pAddOut: Boolean);
+  procedure createFavMenu(root: Tmenuitem; action: TnotifyEvent);
 
   procedure ClearAllMenuArrays;
 
@@ -269,9 +269,10 @@ end;
 
 procedure addSmilesToMenu(own: Tcomponent; mi: Tmenuitem; action: TnotifyEvent);
 var
-  i:integer;
+  i: integer;
   smiles_count, smlcnt: Integer;
-  dc1 : Integer;
+  dc1: Integer;
+  so: TSmlObj;
 begin
 // chatFrm.smileMenuExt.Items.OnAdvancedDrawItem := mainFrm.menuDrawItem;
  mi.clear;
@@ -286,7 +287,7 @@ begin
    if not TryStrToInt(GetString('smile.menu.cnt'), smlcnt) then
     if not ShowSmileCaption then
       begin
-       smlcnt:=Round(sqrt(smiles_count)+1);       //mn
+       smlcnt := Round(sqrt(smiles_count)+1);       //mn
        dc1 := smiles_count div smlcnt;
        if dc1 > 1 then
         while (smlcnt > 1)and ((smiles_count div smlcnt) = dc1) do
@@ -295,13 +296,16 @@ begin
      else
       smlcnt := 10;
    for i:=0 to smiles_count-1 do
-    with AddToMenu(mi, GetSmileName(i), '', false, action) do
+    with AddToMenu(mi, '', GetSmileName(i), false, action) do
      begin
-        ImageName := caption;
-        Hint := caption;
-        tag:=4000+i;
+       so := Theme.GetSmileObj(i);
+       Caption := so.SmlStr.Strings[0];
+//        ImageName := caption;
+       Hint := caption;
+       tag := 4000+i;
   //  if (i mod smlcnt=0)and(i<>0) then item.Break:=mbBarBreak;
-        if (i mod smlcnt=0)and(i<>0) then Break:=mbBreak;
+        if (i mod smlcnt=0)and(i<>0) then
+          Break := mbBreak;
      end;
  end;
 //applyCommonSettings(own);
@@ -309,8 +313,8 @@ end; // addSmilesToMenu
 
 procedure addGroupsToMenu(own: Tcomponent; mi: Tmenuitem; action: TnotifyEvent; pAddOut: Boolean);
 var
-  i:integer;
-  ss:Tstringlist;
+  i: integer;
+  ss: Tstringlist;
 begin
   mi.clear;
   if pAddOut then
@@ -336,27 +340,27 @@ begin
   //mi.Enabled := true;
 end; // addGroupsToMenu
 
-procedure createFavMenuFrom(path: String; root: TMenuItem; action: TnotifyEvent );
+procedure createFavMenuFrom(path: String; root: TMenuItem; action: TnotifyEvent);
 var
-  sr:TSearchRec;
+  sr: TSearchRec;
 Begin
-path:=IncludeTrailingPathDelimiter(path);
-if findFirst( path+'*.*', faDirectory, sr ) = 0 then
-  repeat
-  if sr.attr and faDirectory <> 0 then
-    begin
-    if (sr.name='.') or (sr.name='..') then continue;
-    createFavMenuFrom(path+sr.name,
-      AddToMenu(root, dupAmperstand(sr.name), PIC_CLOSE_GROUP, false), action);
-    continue;
-    end;
-  if compareText(copy(sr.name, length(sr.name)-3, 4), '.url')=0 then
-    begin
-     AddToMenu(root, dupAmperstand(copy(sr.name, 1, length(sr.name)-4)),
-       PIC_URL, false, action).hint:=path+sr.name;
-    end;
-  until findNext(sr) <> 0;
-findClose( SR );
+  path:=IncludeTrailingPathDelimiter(path);
+  if findFirst( path+'*.*', faDirectory, sr ) = 0 then
+    repeat
+    if sr.attr and faDirectory <> 0 then
+      begin
+      if (sr.name='.') or (sr.name='..') then continue;
+      createFavMenuFrom(path+sr.name,
+        AddToMenu(root, dupAmperstand(sr.name), PIC_CLOSE_GROUP, false), action);
+      continue;
+      end;
+    if compareText(copy(sr.name, length(sr.name)-3, 4), '.url')=0 then
+      begin
+       AddToMenu(root, dupAmperstand(copy(sr.name, 1, length(sr.name)-4)),
+         PIC_URL, false, action).hint:=path+sr.name;
+      end;
+    until findNext(sr) <> 0;
+  findClose( SR );
 end; // createFavMenuFrom
 
 procedure createFavMenu(root: Tmenuitem; action: TnotifyEvent);
