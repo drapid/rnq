@@ -422,11 +422,11 @@ implementation
   CommCtrl, mmSystem, Types;
 type
 //  Tsection=(_null,_roaster,_tip,_pics,_icons,_history,_smiles,_sounds,_menu);
-  TRQsection=(_null,_pics,_icons,_smiles,_sounds, _ico, _smile, _str, _desc, _fontfile);
+  TRQsection=(_null, _pics, _icons, _smiles, _sounds, _ico, _smile, _str, _desc, _fontfile);
 const
 //  sectionLabels:array [Tsection] of string=('','roaster','tip','pics','icons',
 //    'history','smiles','sounds','menu');
-  RQsectionLabels: array [TRQsection] of AnsiString=('','pics','icons','smiles',
+  RQsectionLabels: array [TRQsection] of AnsiString=('', 'pics', 'icons', 'smiles',
     'sounds', 'rnqpics', 'rnqsmiles', 'strings', 'desc', 'font');
 
  {$IFDEF USE_7Z}
@@ -452,9 +452,9 @@ const
   end;
 
 
-procedure InitThemePath(var ts : TThemeSourcePath; fn : String);
+procedure InitThemePath(var ts: TThemeSourcePath; fn: String);
 var
-  fn_Ext : String;
+  fn_Ext: String;
 begin
   fn_Ext := AnsiLowerCase(ExtractFileExt(fn));
  {$IFDEF USE_ZIP}
@@ -530,7 +530,8 @@ begin
 //    StrDispose(prop[i].name);
 //  SetLength(prop, 0);
 end;
-function TFontObj.Clone : TFontObj;
+
+function TFontObj.Clone: TFontObj;
 begin
   Result := TFontObj.Create;
   Result.flags := flags;
@@ -699,7 +700,7 @@ begin
 end;
 
 
-procedure TRQtheme.clear(pTSC : TThemeSubClass);
+procedure TRQtheme.clear(pTSC: TThemeSubClass);
 var
   i: Integer;
   po: TPicObj;

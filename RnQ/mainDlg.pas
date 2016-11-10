@@ -1949,11 +1949,11 @@ procedure TRnQmain.splashPaint(Sender: TObject);
   end;
 var
 //  MemDC: HDC;
-  r : TRect;
+  r: TRect;
 {  PaintBuffer: HPAINTBUFFER;
-  br : HBRUSH;
-  oldF : HFONT;
-  s : String;
+  br: HBRUSH;
+  oldF: HFONT;
+  s: String;
 }
   blend_function: BLENDFUNCTION;
   p: TPoint;
@@ -2067,7 +2067,7 @@ begin
     begin
       splashFrm.Canvas.Brush.Color := clWhite;
       splashFrm.Canvas.FillRect(r);
-      theme.drawPic(splashFrm.Canvas.Handle, p, splashImgElm, GetParentCurrentDpi);
+      theme.drawPic(splashFrm.Canvas.Handle, p, splashImgElm, splashFrm.pixelsPerInch);
     end;
 
 //   UpdateLayeredWindow(splashFrm.Handle, 0, 0, 0, MemDC, @p, 0, @blend_function, ULW_ALPHA);

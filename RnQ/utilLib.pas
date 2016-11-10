@@ -1134,20 +1134,22 @@ end;
 procedure ShowSplash;
 const
   minWidth = 200;
-{var
-//  region:HRGN;
-//  b0 : TBitmap;
-//  b1 : TGPBitmap;
-//  gr : TGPGraphics;
-//  p  :TGPPointF;
-//  gp : TGPGraphicsPath;
-//  fnt : TGPFont;
-//  br : TGPBrush;
-//  rgn : TGPRegion;
-//  x : Integer;
-  transcolor:integer;
-  brF : HBRUSH;
-  st : Integer;
+var
+//  region: HRGN;
+//  b0: TBitmap;
+//  b1: TGPBitmap;
+//  gr: TGPGraphics;
+//  p:TGPPointF;
+//  gp: TGPGraphicsPath;
+//  fnt: TGPFont;
+//  br: TGPBrush;
+//  rgn: TGPRegion;
+//  x: Integer;
+  sz: TSize;
+
+{  transcolor: integer;
+  brF: HBRUSH;
+  st: Integer;
 //  transcolor: TColor;
 }
 begin
@@ -1158,7 +1160,6 @@ begin
   splashImgElm.picName := PIC_SPLASH;
   splashImgElm.Element := RQteDefault;
   splashImgElm.pEnabled := True;
-  with theme.GetPicSize(splashImgElm) do
   begin
 
 (*
@@ -1254,8 +1255,10 @@ begin
 //    color := theme.GetFontProp('splash', FPT_COLOR).color;
 //    TransparentColorValue := transcolor;
     position := poScreenCenter;
-    Width := cx;
-    Height := cy;
+//    sz := theme.GetPicSize(splashImgElm, 20, splashFrm.GetParentCurrentDpi);
+    sz := theme.GetPicSize(splashImgElm, 20, splashFrm.pixelsperinch);
+    Width := sz.cx;
+    Height := sz.cy;
     borderstyle := bsNone;
 //    if region > 0 then
 //      SetWindowRgn(handle, region, TRUE);

@@ -642,28 +642,28 @@ var
     active, inactive: integer;
     tray: Integer;
    end;
-  macros : Tmacros;
-  splashFrm : Tform;
-  splashImgElm : TRnQThemedElementDtls;
-//  splashPicTkn : Integer;
-//  splashPicIdx : Integer;
-//  splashPicLoc : TPicLocation;
-  checkupdate : record
+  macros: Tmacros;
+  splashFrm: Tform;
+  splashImgElm: TRnQThemedElementDtls;
+//  splashPicTkn: Integer;
+//  splashPicIdx: Integer;
+//  splashPicLoc: TPicLocation;
+  checkupdate: record
     autochecking,
     checking,
     enabled,
-    betas : boolean;
-    every : integer;
-    lastSerial : integer;
-    last : Tdatetime;
+    betas: boolean;
+    every: integer;
+    lastSerial: integer;
+    last: Tdatetime;
 //    info : string;
     end;
   fontstylecodes: record
     enabled: boolean;
     end;
    {$IFDEF CHECK_INVIS}
-    checkInvQ, autoCheckInvQ : TRnQCList;
-  checkInvis : record
+    checkInvQ, autoCheckInvQ: TRnQCList;
+  checkInvis: record
       ChkInvisInterval  : Double;
       lastAllChkTime    : TDateTime;
       lastChkTime       : TDateTime;
@@ -675,7 +675,7 @@ var
       AutoCheckOnSend   : Boolean;
       Method            : Byte;
     end;
-    showCheckedInvOfl  : Boolean;// = True;
+    showCheckedInvOfl: Boolean;// = True;
    {$ENDIF}
   //booleans
   autoRequestXsts,

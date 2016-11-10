@@ -433,7 +433,7 @@ var
 //var
   pg: PPrefPage;
   protoPages: TPrefPagesArr;
-  FRM_H_Scaled, FRM_W_Scaled : Integer;
+  FRM_H_Scaled, FRM_W_Scaled: Integer;
 //  FrameClass: TClass;
 begin
   FRM_H_Scaled := MulDiv(FRM_HEIGHT, self.Monitor.PixelsPerInch, PixelsPerInch);
@@ -525,7 +525,7 @@ begin
 
       framePnl.top := GAP_SIZE;
       framePnl.left := GAP_SIZE;
-      framePnl.height := FRM_HEIGHT;
+      framePnl.height := FRM_H_Scaled;
       framePnl.Width := clientWidth - framePnl.left - GAP_SIZE;
 
       Bevel.left := GAP_SIZE;

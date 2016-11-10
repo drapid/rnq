@@ -85,7 +85,7 @@ type
     // Same for all historys
 //    firstCharactersForSmiles: set of AnsiChar; // for faster smile recognition
     firstCharactersForSmilesW: String; // for faster smile recognition
-    FOnScroll : TNotifyEvent;
+    FOnScroll: TNotifyEvent;
   //----------------------------------------------------------------------------
 //    hasDownArrow: Boolean;
 //    hDownArrow: Integer;
@@ -120,9 +120,9 @@ type
     margin: Trect;
     whole: boolean;         // see whole history
     rsb_visible: Boolean;
-    rsb_position : integer;
-    rsb_rowPerPos : integer;
-    newSession:integer;    // where, in the history, does start new session
+    rsb_position: integer;
+    rsb_rowPerPos: integer;
+    newSession: integer;    // where, in the history, does start new session
     onPainted: TNotifyEvent;
     w2s: String;
 
@@ -144,7 +144,7 @@ type
     destructor Destroy; override;
 
     procedure InitAll;
-    class procedure InitMenu(var pm : TPopupMenu; Own: TComponent);
+    class procedure InitMenu(var pm: TPopupMenu; Own: TComponent);
 
     procedure Paint(); override;
     procedure paintOn(cnv: Tcanvas; vR: TRect; const PPI: Integer; const JustCalc: Boolean = false);
@@ -637,7 +637,7 @@ var
           SmileObj := theme.GetSmileObj(k);
           for l := 0 to SmileObj.SmlStr.Count-1 do
            begin
-            smileCap:=SmileObj.SmlStr.Strings[l];
+            smileCap := SmileObj.SmlStr.Strings[l];
             if (smileCap[1] = BodyText[i]) and
                 matches(BodyText, i, smileCap) //and (SmileObj.Smile<>NIL)
                 and ((fndSmileI=-1) or (length(smileCap) > length(fndSmile))) then

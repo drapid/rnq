@@ -21,18 +21,18 @@ type
  {$ENDIF}
 const
  {$IFDEF CHECK_INVIS}
-  divsWithGroups=[d_online,d_contacts,d_offline, d_invis];
-  divisor2str:array [Tdivisor] of AnsiString=('online', 'invisible','offline','contacts','not in list');
-  divisor2ShowStr:array [Tdivisor] of string=('Online', 'Invisible','Offline','Contacts','Not in list');
+  divsWithGroups = [d_online, d_contacts, d_offline, d_invis];
+  divisor2str: array [Tdivisor] of AnsiString = ('online', 'invisible', 'offline', 'contacts', 'not in list');
+  divisor2ShowStr: array [Tdivisor] of string = ('Online', 'Invisible', 'Offline', 'Contacts', 'Not in list');
  {$ELSE}
-  divsWithGroups=[d_online,d_contacts,d_offline];
-  divisor2str:array [Tdivisor] of AnsiString=('online', 'offline','contacts','not in list');
-  divisor2ShowStr:array [Tdivisor] of string=('Online', 'Offline','Contacts','Not in list');
+  divsWithGroups = [d_online, d_contacts, d_offline];
+  divisor2str: array [Tdivisor] of AnsiString = ('online', 'offline', 'contacts', 'not in list');
+  divisor2ShowStr: array [Tdivisor] of string = ('Online', 'Offline', 'Contacts', 'Not in list');
  {$ENDIF}
-  NODE_ROOT=0;
-  NODE_DIV=1;
-  NODE_GROUP=2;
-  NODE_CONTACT=3;
+  NODE_ROOT = 0;
+  NODE_DIV = 1;
+  NODE_GROUP = 2;
+  NODE_CONTACT = 3;
 
 type
   TRnQCLIconsSet = (CNT_ICON_VIS,
@@ -43,14 +43,14 @@ type
                     CNT_ICON_BIRTH, CNT_ICON_AVT, CNT_ICON_VER);
 
   TRnQCLIcons = record
-//    IDX  : Byte;
-    idx   : TRnQCLIconsSet;
-    Name : String;
-    IconName : TPicName;
-    PrefText : AnsiString;
-//    Cptn : String;
-//    DefShortCut : String;
-//    ev   : procedure;
+//    IDX: Byte;
+    idx: TRnQCLIconsSet;
+    Name: String;
+    IconName: TPicName;
+    PrefText: AnsiString;
+//    Cptn: String;
+//    DefShortCut: String;
+//    ev: procedure;
   end;
 const
 //  RnQCLIcons : array[0..6] of TRnQCLIcons = (
@@ -69,12 +69,12 @@ const
   );
 
 var
-  SHOW_ICONS_ORDER : array[0.. Byte(High(TRnQCLIconsSet))] of TRnQCLIconsSet;
-  TO_SHOW_ICON : array[TRnQCLIconsSet] of boolean;
+  SHOW_ICONS_ORDER: array[0.. Byte(High(TRnQCLIconsSet))] of TRnQCLIconsSet;
+  TO_SHOW_ICON: array[TRnQCLIconsSet] of boolean;
 
 type
   PNode = ^Tnode;
-  Tnode=class
+  Tnode = class
    public
     kind       : integer;
     contact    : TRnQcontact;
@@ -110,13 +110,13 @@ procedure rebuild;
 procedure redraw; overload;
 function  redraw(c: TRnQContact): boolean; overload;
 function  redraw(n: Tnode): boolean; overload;
-function  update(c: TRnQContact):boolean;
-//function  exists(c:TRnQContact):boolean;
+function  update(c: TRnQContact): boolean;
+//function  exists(c: TRnQContact): boolean;
 function  focus(c: TRnQContact): boolean; overload;
 function  focus(n: Tnode): boolean; overload;
 function  focus(tn: Pvirtualnode): boolean; overload;
 function  focusTemp(n: Tnode): boolean;
-//function  remove(c:Tcontact):boolean;
+//function  remove(c:Tcontact): boolean;
 function  remove(c: TRnQContact): boolean;
 procedure sort(c: TRnQContact); overload;
 procedure sort(n: Tnode); overload;
@@ -138,7 +138,7 @@ procedure setOnlyOnline(v: boolean);
 function  getNode(tn: Pvirtualnode): Tnode;
 procedure setNewGroupFor(c: TRnQContact; grp: integer);
 function  isUnderDiv(n: Tnode): Tdivisor;
-//procedure filter(s : string);
+//procedure filter(s: string);
   procedure RstrDrawNode(Sender: TBaseVirtualTree; const PaintInfo: TVTPaintInfo; const PPI: Integer);
   function  ICON_ORDER_PREF: RawByteString;
   procedure ICON_ORDER_PREF_parse(const str: RawByteString);
@@ -153,12 +153,12 @@ var
     groupId : integer;
     node    : Tnode;
    end;
-  contactsPool : Tlist;
-  expandedByTempFocus : Tnode;
-  FilterTextBy : string;
+  contactsPool: Tlist;
+  expandedByTempFocus: Tnode;
+  FilterTextBy: string;
 
  {$IFDEF USE_SECUREIM}
-  useSecureIM : Boolean;
+  useSecureIM: Boolean;
  {$ENDIF USE_SECUREIM}
 
 implementation
@@ -256,16 +256,16 @@ end; // updateHiddenNodes
 
 function compareContacts(c1, c2: TRnQContact): integer;
 var
-  tmpB1,tmpB2: boolean;
-  tmpT1,tmpT2: Tdatetime;
+  tmpB1, tmpB2: boolean;
+  tmpT1, tmpT2: Tdatetime;
 begin
   result := 0;
   if (c1=c2) or (c1=NIL) or (c2=NIL) then
     exit;
   if OnlOfflInOne then
    begin
-{    tmpB1:= not c1.isOnline;
-    tmpB2:= not c2.isOnline;
+{    tmpB1 := not c1.isOnline;
+    tmpB2 := not c2.isOnline;
     if tmpb1  then
       Inc(result); //:=+1
     if tmpb2 then
@@ -279,25 +279,25 @@ begin
    Exit;
 case sortBy of
   SB_alpha:
-     result:=compareText(c1.displayed, c2.displayed);
+     result := compareText(c1.displayed, c2.displayed);
   SB_event:
     begin
-      tmpT1:=TCE(c1.data^).lastMsgTime;
-      tmpT2:=TCE(c2.data^).lastMsgTime;
-    tmpB1:=TRUE;
+      tmpT1 := TCE(c1.data^).lastMsgTime;
+      tmpT2 := TCE(c2.data^).lastMsgTime;
+    tmpB1 := TRUE;
     if (tmpT1 < startTime) and (tmpT2 < startTime) then
       if not(c1.isOnline or c2.isOnline) then
         begin
-        tmpT1:=TCE(c1.data^).lastEventTime;
-        tmpT2:=TCE(c2.data^).lastEventTime;
+        tmpT1 := TCE(c1.data^).lastEventTime;
+        tmpT2 := TCE(c2.data^).lastEventTime;
         if (tmpT1 < startTime) and (tmpT2 < startTime) then
-          tmpB1:=FALSE
+          tmpB1 := FALSE
         end
       else
-        tmpB1:=FALSE;
+        tmpB1 := FALSE;
 
     if not tmpB1 then
-      result:=compareText(c1.displayed, c2.displayed)
+      result := compareText(c1.displayed, c2.displayed)
     else
       if tmpT1 > tmpT2 then
         result := -1
@@ -314,7 +314,7 @@ case sortBy of
           result := compareText(c1.displayed, c2.displayed);
        end
       else
-       result := compareInt(cardinal(c1.fProto), cardinal(c2.fProto)) ;
+       result := compareInt(cardinal(c1.fProto), cardinal(c2.fProto));
     end;
   else
     begin
@@ -792,7 +792,7 @@ begin
   RnQmain.roster.BeginUpdate;
   clear;
 
-  fillChar(divs,sizeOf(divs),0);
+  fillChar(divs, sizeOf(divs), 0);
   if groups=NIL then
     exit;
   for i:=0 to groups.count-1 do
@@ -1193,7 +1193,7 @@ var
 begin
 with RnQmain.roster do
   begin
-  n := getNodeAt(x,y);
+  n := getNodeAt(x, y);
   if n=NIL then
     result := NIL
   else
@@ -1287,12 +1287,12 @@ begin
     y := mousePos.y;
   end;
   if n=NIL then
-    RnQmain.divisorMenu.popup(x,y)
+    RnQmain.divisorMenu.popup(x, y)
    else
     case n.kind of
-      NODE_GROUP: RnQmain.groupMenu.popup(x,y);
-      NODE_CONTACT: RnQmain.contactMenu.popup(x,y);
-      else RnQmain.divisorMenu.popup(x,y);
+      NODE_GROUP: RnQmain.groupMenu.popup(x, y);
+      NODE_CONTACT: RnQmain.contactMenu.popup(x, y);
+      else RnQmain.divisorMenu.popup(x, y);
     end;
 end; // popupOn
 
@@ -1322,7 +1322,7 @@ var
 //    newX Integer;
     po: TRnQThemedElementDtls;
 //    s : String;
-//    rB:Trect;
+//    rB: Trect;
     rB: TGPRect;
     ev: Thevent;
   begin
@@ -1553,8 +1553,8 @@ var
   i: Integer;
   w: Smallint;
   size: Tsize;
-  res : Tsize;
-  vPicName : TPicName;
+  res: Tsize;
+  vPicName: TPicName;
   dx: Integer;
   x, y: integer;
   oldCol: TColor;
@@ -1684,7 +1684,7 @@ case n.kind of
            if n.contact.isOffline then
              theme.ApplyFont('roaster.offline', cnv.font);
     if paintinfo.node = sender.focusednode then
-      cnv.font.color:=theme.GetColor('roaster.font.selected', cnv.font.color); //roaster.selectionTextColor
+      cnv.font.color := theme.GetColor('roaster.font.selected', cnv.font.color); //roaster.selectionTextColor
     if UseContactThemes and Assigned(ContactsTheme) then
      begin
       ContactsTheme.ApplyFont(TPicName('group.') + TPicName(AnsiLowerCase(groups.id2name(n.contact.group))) + '.roaster', cnv.font);
@@ -1697,9 +1697,9 @@ case n.kind of
       end;
     if b then
       if fsItalic in cnv.font.style then
-        cnv.font.style:=cnv.font.style-[fsItalic]
+        cnv.font.style := cnv.font.style-[fsItalic]
       else
-        cnv.font.style:=cnv.font.style+[fsItalic];
+        cnv.font.style := cnv.font.style+[fsItalic];
     n.textOfs := x;
     cntTxt := R;
     cntTxt.Left := x;
@@ -1754,10 +1754,10 @@ case n.kind of
       s := groups.id2name(n.groupId);
   //    cnv.textout(x,y+2,s);
       cnv.textout(x, y+2, s);
-      GetTextExtentPoint32(cnv.handle, pchar(s),length(s), res);
+      GetTextExtentPoint32(cnv.handle, pchar(s), length(s), res);
       x := x+res.cx;
-      cnv.textout(x,y+2,' (');
-      GetTextExtentPoint32(cnv.handle,' (',2, res);
+      cnv.textout(x, y+2, ' (');
+      GetTextExtentPoint32(cnv.handle,' (', 2, res);
       x := x+res.cx;
   //    cnv.font:=f2;
        cnv.Font.Assign(sender.Font);
@@ -1768,21 +1768,21 @@ case n.kind of
        else
         s := intToStr(n.childrenCount);
       cnv.textout(x, y+2, s);
-      GetTextExtentPoint32(cnv.handle,pchar(s),length(s), res);
+      GetTextExtentPoint32(cnv.handle, pchar(s), length(s), res);
   //    s := '';
       x := x+res.cx;
   //    cnv.font:=f1;
       cnv.Font.Assign(sender.Font);
       theme.ApplyFont(f1n, cnv.font);
-      cnv.textout(x,y+2,'/');
-      GetTextExtentPoint32(cnv.handle,'/',1, res);
+      cnv.textout(x, y+2, '/');
+      GetTextExtentPoint32(cnv.handle, '/', 1, res);
       x := x+res.cx;
   //    cnv.font:=f2;
       cnv.Font.Assign(sender.Font);
       theme.ApplyFont(f2n, cnv.font);
       s := intToStr(Account.AccProto.readList(LT_ROSTER).getCount(n.groupID));
-      cnv.textout(x,y+2, s);
-      GetTextExtentPoint32(cnv.handle,pchar(s),length(s), res);
+      cnv.textout(x, y+2, s);
+      GetTextExtentPoint32(cnv.handle, pchar(s), length(s), res);
       x := x+res.cx;
   //    cnv.font:=f1;
       cnv.Font.Assign(sender.Font);
@@ -1836,10 +1836,10 @@ procedure ICON_ORDER_PREF_parse(const str: RawByteString);
       end;
   end;
 var
-  a : TRnQCLIconsSet;
-  cur : Byte;
-  s : RawByteString;
-  ss : RawByteString;
+  a: TRnQCLIconsSet;
+  cur: Byte;
+  s: RawByteString;
+  ss: RawByteString;
 begin
   cur := Byte(low(TRnQCLIconsSet));
   ss := str;
