@@ -81,6 +81,7 @@ type
     lastWidth
 //    , lastHeight
        : Integer;
+    fDrawDebug: Boolean;
    private
     // Same for all historys
 //    firstCharactersForSmiles: set of AnsiChar; // for faster smile recognition
@@ -146,6 +147,7 @@ type
     procedure InitAll;
     class procedure InitMenu(var pm: TPopupMenu; Own: TComponent);
 
+    procedure ShowDebug;
     procedure Paint(); override;
     procedure paintOn(cnv: Tcanvas; vR: TRect; const PPI: Integer; const JustCalc: Boolean = false);
     procedure go2end(const calcOnly: Boolean = False; const precalc: Boolean = False);
@@ -183,15 +185,16 @@ type
   end; // ThistoryBox
 
 const
-    dStyle = dsGlobalBuffer2;
+  dStyle = dsGlobalBuffer2;
 //    dStyle = dsGlobalBuffer;
 //    dStyle = dsMemory; // Bad BG and not so fast :(
 //    dStyle = dsNone;
-  var
+
+var
     // dsNone, dsBuffer, dsGlobalBuffer, dsMemory
 //    dStyle: TDrawStyle = dsGlobalBuffer2;
 //    dStyle: TDrawStyle = dsNone;
-    hisBGColor, myBGColor: TColor;
+  hisBGColor, myBGColor: TColor;
 
 const
   aHistMenu: array[0..19] of TbMenuItem =
@@ -238,8 +241,9 @@ uses
 //  historyRnQ,
   Base64,
  {$IFDEF PROTOCOL_ICQ}
-  ICQConsts, ICQv9,
+//  ICQConsts, ICQv9,
  {$ENDIF PROTOCOL_ICQ}
+  Protocols_All,
   {$IFDEF USE_GDIPLUS}
     RnQGraphics,
   {$ELSE}
@@ -319,6 +323,7 @@ begin
   newSession := 0;
   offset := 0;
   deselect;
+  fDrawDebug := false;
 
   if dStyle = dsBuffer then
     buffer := TBitmap.Create;
@@ -343,6 +348,12 @@ procedure ThistoryBox.InitAll;
 begin
   ;
 end;
+
+procedure ThistoryBox.ShowDebug;
+begin
+  fDrawDebug := not fDrawDebug;
+end;
+
 
 class procedure ThistoryBox.InitMenu(var pm : TPopupMenu; Own: TComponent);
 begin
@@ -374,17 +385,13 @@ var
   MaxChatImgWidthVal: Integer;// = 100;
   MaxChatImgHeightVal: Integer;// = 100;
 
-  procedure newLine(var x, y: Integer);
+  procedure newLineH(var x, y: Integer);
   begin
-    if bodySkipCounter <= 0 then
-      inc(y, lineHeight)
-     else
-      inc(skippedLines);
+    inc(y, lineHeight);
     x := margin.left;
     lineHeight := 0;
     inc(Nrows);
-    dec(bodySkipCounter);
-  end; // newLine
+  end; // newHLine
 
   function isEmailAddress(const s: string; start: integer; var end_: integer): boolean;
   var
@@ -394,14 +401,16 @@ var
     result := False;
     j := start;
   // try to find the @
-    while (j <= length(s)) and (s[j] in EMAILCHARS) and (j - start < 30) do
+//    while (j <= length(s)) and (s[j] in EMAILCHARS) and (j - start < 30) do
+    while (j <= length(s)) and CharInSet(s[j], EMAILCHARS) and (j - start < 30) do
       inc(j);
     if s[j] <> '@' then
       exit;
   // @ found, now skip the @ and search for .
     inc(j);
     existsDot := False;
-    while (j < length(s)) and (s[j+1] in EMAILCHARS) do
+//    while (j < length(s)) and (s[j+1] in EMAILCHARS) do
+    while (j < length(s)) and CharInSet(s[j+1], EMAILCHARS) do
     begin
       if s[j] = '.' then
       begin
@@ -411,12 +420,14 @@ var
       inc(j);
     end;
     // at least a valid char after the . must exists
-    if not existsDot or not (s[j] in EMAILCHARS) then
+//    if not existsDot or not (s[j] in EMAILCHARS) then
+    if not existsDot or not CharInSet(s[j], EMAILCHARS) then
       exit;
     // go forth till we're out or we meet an invalid char
     repeat
       inc(j)
-    until (j > length(s)) or not (s[j] in EMAILCHARS);
+//    until (j > length(s)) or not (s[j] in EMAILCHARS);
+    until (j > length(s)) or not CharInSet(s[j], EMAILCHARS);
     end_:=j-1;
     if s[end_] = '.' then
       dec(end_);
@@ -425,7 +436,7 @@ var
   end; // isEmailAddress
 
   function isUIN(const s: string; start: integer; var end_: integer): boolean;
-    function isdig(ch: char): Boolean; inline;
+    function isdig(const ch: char): Boolean; inline;
     begin
      {$IFDEF UNICODE}
       result := ch.IsDigit;
@@ -443,7 +454,8 @@ var
     while (i <= length(s)) and isdig(s[i]) and (i - start < 10) do
       inc(i);
     if (i <= length(s)) and isdig(s[i])
-      or ((i < length(s)) and (s[i] in [',','.']) and isdig(s[i+1])) then
+//      or ((i < length(s)) and (s[i] in [',','.']) and isdig(s[i+1])) then
+      or ((i < length(s)) and CharInSet(s[i], [',','.']) and isdig(s[i+1])) then
 //      Result := False
      else 
     if i - start > 5 then
@@ -485,11 +497,11 @@ var
       result.link:=foundLink;
 {     if k = PK_ARROWS_DN then
        begin
-         hasDownArrow:= true;
-         hDownArrow:=  r.Bottom-r.Top;
+         hasDownArrow := true;
+         hDownArrow := r.Bottom-r.Top;
        end
      else
-       hasDownArrow:= false; }
+       hasDownArrow := false; }
   end; // addItem
 
   procedure removeLastItemsTo(o: integer);
@@ -540,7 +552,9 @@ var
 //                  dec(end_);
               end
              else
-              while (end_ < length(BodyText)) and (BodyText[end_+1] in allowedChars[lk]) do
+              while (end_ < length(BodyText))
+//                     and (BodyText[end_+1] in allowedChars[lk]) do
+                     and CharInSet(BodyText[end_+1], allowedChars[lk]) do
                 inc(end_);
             end;
           if (end_>0) and (end_<=length(BodyText)) then
@@ -590,7 +604,8 @@ var
       begin
         result := False;
         if (BodyText[i] <> sym)
-           or ((i>1) and not (BodyText[i-1] in WHITESPACES)) // word begin
+//           or ((i>1) and not (BodyText[i-1] in WHITESPACES)) // word begin
+           or ((i>1) and not CharInSet(BodyText[i-1], WHITESPACES)) // word begin
            or (i+2 > length(BodyText)) then
           exit;
         j := i+1;
@@ -612,7 +627,7 @@ var
         k, l: integer;
         smileCap: string;
  {$IFDEF UNICODE}
-        sA: AnsiString;
+//        sA: AnsiString;
  {$ENDIF UNICODE}
         SmileObj: TSmlObj;
       begin
@@ -730,6 +745,29 @@ var
             end;
           end;
       end; // findRnQPicEx
+
+      procedure newLineB(var x, y: Integer);
+      var
+        k: Integer;
+      begin
+        if bodySkipCounter <= 0 then
+          begin
+//            if JustCalc then
+//             begin
+//              k := Length(ev.preCalcHeights);
+//              SetLength(ev.preCalcHeights, k+1);
+//              ev.preCalcHeights[k] := lineHeight;
+//             end;
+            newLineH(x, y);
+          end
+         else
+          begin
+            inc(skippedLines);
+            dec(bodySkipCounter);
+            k := 0;
+            newLineH(x, k);
+          end;
+      end; // newLineB
 
   var
     quoteCounting: boolean;
@@ -928,7 +966,7 @@ var
              end;
 
             BodyCurChar := BodyText[i];
-            if TCharacter.IsSurrogate(BodyCurChar) then
+            if BodyCurChar.IsSurrogate then
               begin
                k := i+1;
                 while (k<=Length(BodyText)) and BodyText[k].IsLowSurrogate do
@@ -962,7 +1000,8 @@ var
             // things to consider only outside a link
             if foundLink.from = 0 then
               begin
-                  if BodyCurChar in [#10, #13] then
+//                  if BodyCurChar in [#10, #13] then
+                  if CharInSet(BodyCurChar, [#10, #13]) then
                   begin
                     whatFound := _return;
                     break
@@ -1019,7 +1058,8 @@ var
               repeat
                 dec(k)
               until (k=lastLineStart) or
-                    (BodyText[k] in ['-', ' ', ',', ';', '.']);
+//                    (BodyText[k] in ['-', ' ', ',', ';', '.']);
+                    CharInSet(BodyText[k], ['-', ' ', ',', ';', '.']);
               // found. choose it
               if k>chunkStart then
                 i := k+1
@@ -1120,7 +1160,7 @@ var
           quoteCounting := True;
           newLineHeight('I');
           lastLineStart := i;
-          newLine(x, y);
+          newLineB(x, y);
         end;
       _smile:
         begin
@@ -1166,8 +1206,8 @@ var
               begin
               if x+size.cx > rightLimit then
                 begin
-                newLine(x, y);
-                newLineHeight(tempSize.cy+1);
+                 newLineB(x, y);
+                 newLineHeight(tempSize.cy+1);
                 end;
               // only the first one has full length
 //              if first then j:=length(fndSmile) else j:=1;
@@ -1230,7 +1270,7 @@ var
         end;
       _wrap:
         begin
-          newLine(x, y);
+          newLineB(x, y);
           lastLineStart := i;
         end;
       end; //case
@@ -1246,7 +1286,7 @@ var
 //  if 1=2 then
   begin
     i := 1;
-    newLine(x, y);
+    newLineB(x, y);
     whatFound := _nothing;
 //    PntFontIdx := 101;
 //    foundLink.from:=0;
@@ -1337,7 +1377,7 @@ var
             quoteCounting := True;
             newLineHeight('I');
             lastLineStart := i;
-            newLine(x, y);
+            newLineB(x, y);
           end;
         _RnQPic:
           begin
@@ -1441,7 +1481,7 @@ var
           end;
         _wrap:
           begin
-            newLine(x, y);
+            newLineB(x, y);
             lastLineStart := i;
           end;
         end;//case
@@ -1451,7 +1491,7 @@ var
   if Assigned(RnQPicStream) then
     FreeAndNil(RnQPicStream);
 
-  newLine(x, y);
+  newLineB(x, y);
   Result := y - pTop;
      ev.HistoryToken  := history.Token;
      ev.PaintHeight := Result;
@@ -1492,11 +1532,9 @@ var
   function drawHeader(pTop: Integer): Integer;
   var
     curX, curY, LeftX: integer;
-    sa: RawByteString;
-    b: Byte;
-    st: byte;
     sz: TSize;
     s: String;
+    pic1, pic2: TPicName;
   begin
     lineHeight := 0;
     curX := margin.left;
@@ -1546,47 +1584,20 @@ var
    // some events draws an extra icon on the right
      case ev.kind of
        EK_ONCOMING,
-       EK_STATUSCHANGE:
-         begin
-//           sa := ev.binfo;
-           sa := ev.getBodyBin;
-           if length(sa) >= 4 then
-             begin
- //            vPicName := status2imgName(Tstatus(str2int(s)), (length(s)>4) and boolean(s[5]));
-//            statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s)), (length(s)>4) and boolean(s[5]), infoToXStatus(s))
-              st := str2int(sa);
-              if st in [byte(Low(Account.AccProto.statuses))..byte(High(Account.AccProto.statuses))] then
-              begin
-                b := infoToXStatus(sa);
-  //              if (not XStatusAsMain) and (st <> SC_ONLINE)and (b>0) then
-                if (st <> byte(SC_ONLINE))or(not XStatusAsMain)or (b=0)  then
-                 with statusDrawExt(Cnv.Handle, curX+2, curY, st, (length(sa)>4) and boolean(sa[5]), 0, PPI) do
-                  inc(curX, cx+2);
-
-  //              with statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s)), (length(s)>4) and boolean(s[5])) do
- {$IFDEF PROTOCOL_ICQ}
-                if (b > 0) then
-                 inc(curX, theme.drawPic(Cnv.Handle, curX+2, curY, XStatusArray[b].PicName, True, PPI).cx+2);
- {$ENDIF PROTOCOL_ICQ}
-              end;
-             end;
-         end;
-       EK_XstatusMsg:
-         begin
-//           sa := ev.binfo;
- {$IFDEF PROTOCOL_ICQ}
-           sa := ev.getBodyBin;
-           if length(sa) >= 1 then
-            if (byte(sa[1]) <= High(XStatusArray)) then
-              inc(curX, theme.drawPic(Cnv.Handle, curX+2, curY, XStatusArray[byte(sa[1])].PicName, True, PPI).cx);
-//            statusDrawExt(cnv.Handle, x+2,y, SC_UNK, false, ord(s[1]));
-//            statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s), false, ord(s[1]));
- //            vPicName := status2imgName(Tstatus(str2int(s)), (length(s)>4) and boolean(s[5]));
- {$ENDIF PROTOCOL_ICQ}
-         end;
+       EK_STATUSCHANGE,
+       EK_XstatusMsg,
        EK_OFFGOING:
-         statusDrawExt(Cnv.Handle, curX+2, curY, byte(SC_OFFLINE), False, 0, PPI);
- //        vPicName := status2imgName(SC_OFFLINE);
+         begin
+           Protos_EventExtraPics(who.fProto, ev.kind, ev.getBodyBin,
+            pic1, pic2);
+           if pic1 > '' then
+             with theme.drawPic(Cnv.Handle, curX+2, curY, pic1, True, PPI) do
+               inc(curX, cx+2);
+
+           if pic2 > '' then
+             with theme.drawPic(Cnv.Handle, curX+2, curY, pic2, True, PPI) do
+               inc(curX, cx+2);
+         end;
      end;
     end;
 
@@ -1596,7 +1607,7 @@ var
       LeftX := curX;
      end;
     inc(lineHeight);
-    newLine(curX, curY);
+    newLineH(curX, curY);
   // underline
     if not JustCalc then
     begin
@@ -1611,18 +1622,18 @@ var
 
 var
   i, ii: Integer;
-//  gr : TGPGraphics;
-//  dc : HDC;
+//  gr: TGPGraphics;
+//  dc: HDC;
   hls: Thls;
   y: Integer;
   tempS: String;
   lGapBtwMsg: Integer;
   vFullR, R: TRect;
   smlRefresh: Boolean;
-  ch: AnsiChar;
+//  ch: AnsiChar;
  {$IFDEF UNICODE}
-//  chU : Char;
-  sA: AnsiString;
+//  chU: Char;
+//  sA: AnsiString;
  {$ENDIF UNICODE}
 begin
   if ((Self.Width <> lastWidth)//or(Self.Height <> lastHeight)
@@ -1834,18 +1845,18 @@ begin
     firstEvent := False;
   end; //while
 
-{ For DEBUG of paints
- if length(Items) > 0 then
-  begin
-   cnv.Brush.Style := bsClear;
-   cnv.Pen.Color := clRed;
-   for I := 0 to length(Items)-1 do
-     begin
-       r := Items[i].r;
-       Rectangle(Cnv.Handle, r.Left, r.Top, R.Right, r.Bottom);
-     end;
-  end;
-}
+// For DEBUG of paints
+  if fDrawDebug then
+   if length(Items) > 0 then
+    begin
+     cnv.Brush.Style := bsClear;
+     cnv.Pen.Color := clRed;
+     for I := 0 to length(Items)-1 do
+       begin
+         r := Items[i].r;
+         Rectangle(Cnv.Handle, r.Left, r.Top, R.Right, r.Bottom);
+       end;
+    end;
 
  P_bottomEvent := evIdx-1;
  P_lastEventIsFullyVisible := eventFullyPainted and (evIdx=history.count);
@@ -1875,8 +1886,8 @@ begin
     begin
       with Canvas.ClipRect do
         begin
-         a := Right - Left;
-         b := Bottom- Top;
+         a := Right  - Left;
+         b := Bottom - Top;
         end;
 //      buffer.Width:=  Canvas.ClipRect.Right - Canvas.ClipRect.Left;
 //      buffer.Height:= Canvas.ClipRect.Bottom- Canvas.ClipRect.Top;
@@ -1895,13 +1906,13 @@ begin
    dsGlobalBuffer:
     begin
       paintOn(globalBuffer.Canvas, Canvas.ClipRect, GetParentCurrentDpi);
-      Canvas.Draw(0,0, globalBuffer);
+      Canvas.Draw(0, 0, globalBuffer);
     end;
 
   dsGlobalBuffer2:
     begin
-//      globalBuffer.Width:=  Canvas.ClipRect.Right - Canvas.ClipRect.Left;
-//      globalBuffer.Height:= Canvas.ClipRect.Bottom- Canvas.ClipRect.Top;
+//      globalBuffer.Width :=  Canvas.ClipRect.Right - Canvas.ClipRect.Left;
+//      globalBuffer.Height := Canvas.ClipRect.Bottom - Canvas.ClipRect.Top;
       if (globalBuffer.Width <> ClientWidth) or
          (globalBuffer.Height <> ClientHeight) then
         begin
@@ -2100,9 +2111,9 @@ end;
 
 function applyHtmlFont(fnt: Tfont; const s: string): string;
 var
-  h,q: string;
+  h, q: string;
 begin
-  h := '<font size=2 face="'+fnt.name+'" color=#'+color2str(fnt.color)+'>';
+  h := '<font size=2 face="' + fnt.name+ '" color=#' + color2strU(fnt.color) +'>';
   q := '</font>';
   if fsItalic in fnt.style then
     begin
@@ -2152,7 +2163,7 @@ begin
     SOS := endSel;
     EOS := startsel;
   end;
-  addStr('<html><head></head><body bgcolor=#'+color2str(TextBGColor)+'>');
+  addStr('<html><head></head><body bgcolor=#'+color2strU(TextBGColor)+'>');
   for i := SOS.evIdx to EOS.evIdx do
   begin
     ev := history.getAt(i);
@@ -2189,7 +2200,7 @@ begin
       color := ABCD_ADCB(ColorToRGB(color));
       result := '#'+IntToHexA(color,6);
     end;
-end; // color2str
+end; // color2html
 
 
 function ThistoryBox.getSelHtml2(smiles: boolean): RawByteString;
@@ -2368,7 +2379,7 @@ procedure ThistoryBox.mouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: 
    if just2clicked and not justTriggeredAlink and equal(lastClickedItem, pointedItem) then
     begin
       if ((lastClickedItem.Kind = PK_RQPIC) or (lastClickedItem.Kind = PK_RQPICEX)) and not (lastClickedItem.ev.getBodyBin = '') then
-        viewImageDimmed(clickedItem.ev.getBodyBin, clickedItem.ofs)
+        viewImageDimmed(self.Parent, clickedItem.ev.getBodyBin, clickedItem.ofs)
        else
         viewHeventWindow(history.getAt(endSel.evIdx));
     end;
@@ -2395,14 +2406,8 @@ begin
     if chatFrm.add2rstr.visible then
       try
         chatFrm.selectedUIN := pointedItem.link.str;
- {$IFDEF UseNotSSI}
-        addGroupsToMenu(self, chatFrm.add2rstr, chatFrm.addcontactAction, not who.iProto.isOnline or
-//          not icq.useSSI
-          ((who.iProto.ProtoElem is TicqSession) and not (TicqSession(who.iProto.ProtoElem).UseSSI))
-          );
- {$ELSE UseNotSSI}
-        addGroupsToMenu(self, chatFrm.add2rstr, chatFrm.addcontactAction, not who.fProto.isOnline);// false);
- {$ENDIF UseNotSSI}
+        addGroupsToMenu(self, chatFrm.add2rstr, chatFrm.addcontactAction,
+          who.fProto.canAddCntOutOfGroup or not who.fProto.isOnline);
       except
         chatFrm.add2rstr.visible := FALSE;
       end;
@@ -2778,7 +2783,6 @@ begin
       swap4(st, en);
 //  chatFrm.visible := False;
     Visible := false;
-//  history.deleteFromTo(userPath+historyPath + thisContact.uid, st,en);
     history.deleteFromTo(who.uid, st, en);
     Visible := True;
 //  chatFrm.visible:=TRUE;
@@ -3500,11 +3504,7 @@ begin
           else
            oldTime := 0;
          Clear;
-//         fromString(loadFile(userPath+historyPath + ch.who.uid));
          load(who);
-//         str := GetStream(userPath+historyPath + ch.who.uid);
-//         fromSteam(str);
-//         str.Free;
          news := Count;
          if oldTime > 0 then
           begin

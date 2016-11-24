@@ -11,7 +11,12 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   StdCtrls, ComCtrls, ExtCtrls, RnQButtons, RnQSpin,
-  RDGlobal, RnQPrefsLib;
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
+  RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
+  RDGlobal;
 
 type
   TotherFr = class(TPrefFrame)

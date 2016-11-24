@@ -55,9 +55,9 @@ type
     procedure sendBtnClick(Sender: TObject);
     procedure Label2Click(Sender: TObject);
   public
-    contact:TRnQContact;
-    constructor doAll(owner_ :Tcomponent; c:TRnQContact; reason:string);
-    procedure addcontactAction(sender:Tobject);
+    contact: TRnQContact;
+    constructor doAll(owner_ : Tcomponent; c: TRnQContact; reason: string);
+    procedure addcontactAction(sender: Tobject);
   end;
 
 implementation
@@ -73,17 +73,17 @@ uses
 
 constructor TauthreqFrm.doAll(owner_ :Tcomponent; c:TRnQContact; reason:string);
 begin
-inherited create(owner_);
-position:=poDefaultPosOnly;
-contact:=c;
-applyCommonSettings(self);
-childWindows.Add(self);
+  inherited create(owner_);
+  position := poDefaultPosOnly;
+  contact := c;
+  applyCommonSettings(self);
+  childWindows.Add(self);
 
 //theme.getPic(PIC_ADD_CONTACT, addBtn.glyph);
 //theme.getPic(PIC_INFO, viewinfoBtn.glyph);
-label1.caption:=getTranslation('%s asks to add you to his/her contact list.',[c.displayed]);
-msgBox.text:=reason;
-theme.pic2ico(RQteFormIcon, PIC_AUTH_REQ, icon);
+  label1.caption := getTranslation('%s asks to add you to his/her contact list.',[c.displayed]);
+  msgBox.text := reason;
+  theme.pic2ico(RQteFormIcon, PIC_AUTH_REQ, icon);
 //theme.getIco2(PIC_AUTH_REQ, icon);
 closeChk.checked:=closeAuthAfterReply;
 
@@ -128,16 +128,16 @@ end;
 
 procedure TauthreqFrm.addBtnClick(Sender: TObject);
 begin
-addGroupsToMenu(self, addmenu.items, addcontactAction, True);
-with clientToScreen(addBtn.BoundsRect.bottomRight) do
-  addmenu.popup(x,y);
+  addGroupsToMenu(self, addmenu.items, addcontactAction, True);
+  with clientToScreen(addBtn.BoundsRect.bottomRight) do
+    addmenu.popup(x,y);
 end;
 
 procedure TauthreqFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-childWindows.remove(self);
-action:=caFree;
-destroyHandle;
+  childWindows.remove(self);
+  action := caFree;
+  destroyHandle;
 end;
 
 procedure TauthreqFrm.FormPaint(Sender: TObject);
@@ -157,7 +157,7 @@ end;
 
 procedure TauthreqFrm.closeChkClick(Sender: TObject);
 begin
-  closeAuthAfterReply:=closeChk.checked
+  closeAuthAfterReply := closeChk.checked
 end;
 
 procedure TauthreqFrm.sendBtnClick(Sender: TObject);

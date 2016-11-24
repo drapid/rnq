@@ -81,7 +81,6 @@ uses
   hook in 'hook.pas',
   RnQTips in 'RnQTips.pas',
   HistAllSearch in 'HistAllSearch.pas' {AllHistSrchForm},
-  MenuSmiles in 'MenuSmiles.pas' {FSmiles},
   RnQProtocol in 'RnQProtocol.pas',
   visibilityDlg in 'visibilityDlg.pas' {visibilityFrm},
   Protocols_all in 'Protocols_all.pas',
@@ -92,7 +91,6 @@ uses
   tipDlg in '..\For.rnq\tipDlg.pas',
   RnQLangFrm in '..\For.rnq\RnQLangFrm.pas' {FrmLangs},
   RDUtils in '..\for.RnQ\RTL\RDUtils.pas',
-  { $IFDEF PROTOCOL_ICQ}
   filetransferDlg in 'ICQ\filetransferDlg.pas' {filetransferFrm},
   ICQ.Stickers in 'ICQ\ICQ.Stickers.pas',
   icq_fr in 'ICQ\icq_fr.pas' {icqFr},
@@ -110,12 +108,10 @@ uses
   viewSSI in 'ICQ\viewSSI.pas' {SSIForm},
   wpDlg in 'ICQ\wpDlg.pas' {wpFrm},
   ICQ.RESTapi in 'ICQ\ICQ.RESTapi.pas',
-  { $ENDIF PROTOCOL_ICQ}
-  MenuEmoji in 'MenuEmoji.pas' {FEmoji},
-  ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm};
+  ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm},
+  MenuSmiles in '..\for.RnQ\MenuSmiles.pas' {FSmiles};
 
-{ $R RnQ.RES}
-{$R *.RES}
+{ $R *.RES}
 
 //The UnicodeString in Delphi can contain Unicode or ANSI data at any given time,
 //  and in order to ensure that C++Builder code can correctly index the items,

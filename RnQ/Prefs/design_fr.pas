@@ -11,7 +11,13 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ActiveX,
-  StdCtrls, ExtCtrls, ComCtrls, RDGlobal, RnQPrefsLib, RnQSpin, VirtualTrees;
+  StdCtrls, ExtCtrls, ComCtrls, RDGlobal,
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
+  RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
+  RnQSpin, VirtualTrees;
 
 type
   TdesignFr = class(TPrefFrame)
@@ -143,12 +149,12 @@ begin
 // if prefPages[thisPrefIdx].frame <> NIL then
 //  with TdesignFr(prefPages[thisPrefIdx].frame) do
   if not autosizeRoster then
-    autosizeGrp.ItemIndex:=0
+    autosizeGrp.ItemIndex := 0
    else
     if not autosizeFullRoster then
-      autosizeGrp.ItemIndex:=1
+      autosizeGrp.ItemIndex := 1
      else
-      autosizeGrp.ItemIndex:=2;
+      autosizeGrp.ItemIndex := 2;
 end; // resetAutosize
 
 procedure TdesignFr.prefToggleShowGroups;

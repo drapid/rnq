@@ -10,7 +10,13 @@ interface
 
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, RnQSpin, RDGlobal, RnQPrefsLib;
+  StdCtrls, RnQSpin,
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
+  RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
+  RDGlobal;
 
 type
   TupdateFr = class(TPrefFrame)

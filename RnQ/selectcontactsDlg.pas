@@ -20,13 +20,13 @@ type
 
   PListItem = ^Tlistitem;
   Tlistitem = record
-     kind:(LI_group, LI_contact);
+     kind: (LI_group, LI_contact);
 //     check:TchkState;
      grpId: integer;
-     UID : TUID;
+     UID: TUID;
     end;
 
-  TscOptions=set of (sco_multi,sco_groups, sco_selected, sco_predefined);
+  TscOptions = set of (sco_multi,sco_groups, sco_selected, sco_predefined);
 
   PselectCntsFrm = ^TselectCntsFrm;
   TselectCntsFrm = class(TForm)
@@ -65,41 +65,35 @@ type
       Node: PVirtualNode; Column: TColumnIndex; var NodeWidth: Integer);
     procedure listChecked(Sender: TBaseVirtualTree; Node: PVirtualNode);
   public
-    cl:TRnQCList;
-    proto : TRnQProtocol;
-    extra:Tobject;
-    options:TscOptions;
-    constructor doAll(owner_ :Tcomponent;
-                      const caption_, doBtn_ :string;
-                      const pProto : TRnQProtocol;
-                      cl_ :TRnQCList;      // this object will be freed at close
-                      what2do :TnotifyEvent;
-                      options_:TscOptions;
-                      pfrm : PselectCntsFrm;
-                      doNIL : Boolean = false
-                      );
-    constructor doAll2(owner_ :Tcomponent;
-                      const caption_, doBtn_ :string;
-                      const pProto : TRnQProtocol;
-                      cl_ :TRnQCList;      // this object will be freed at close
-                      what2do :TnotifyEvent;
-                      options_:TscOptions;
-                      pfrm : PselectCntsFrm;
-                      doNIL : Boolean = false
+    cl: TRnQCList;
+    proto: TRnQProtocol;
+    extra: Tobject;
+    options: TscOptions;
+
+    // With translations in constructor
+    constructor doAll(owner_: Tcomponent;
+                      const caption_, doBtn_: string;
+                      const pProto: TRnQProtocol;
+                      cl_: TRnQCList;      // this object will be freed at close
+                      what2do: TnotifyEvent;
+                      options_: TscOptions;
+                      pfrm: PselectCntsFrm;
+                      doNIL: Boolean = false;
+                      doTranslate: Boolean = True
                       );
     procedure updateNumLbl;
-    function selectedList:TRnQCList;
-    function unselectedList:TRnQCList;
+    function selectedList: TRnQCList;
+    function unselectedList: TRnQCList;
     procedure updateList;
     procedure clearList;
-    function  findGroupNode(id : Integer) : PVirtualNode;
-    procedure toggleAt(Node : PVirtualNode);
-    procedure toggle(c:TRnQcontact);
-    function  current:TRnQContact;
+    function  findGroupNode(id: Integer) : PVirtualNode;
+    procedure toggleAt(Node: PVirtualNode);
+    procedure toggle(c: TRnQcontact);
+    function  current: TRnQContact;
    private
-    menu : TPopupMenu;
-    frm  : PselectCntsFrm;
-    doNILFrm : Boolean;
+    menu: TPopupMenu;
+    frm: PselectCntsFrm;
+    doNILFrm: Boolean;
   end;
 
 implementation
@@ -109,65 +103,38 @@ uses
   RnQSysUtils,
   RnQMenu, RnQPics,
   langLib, uinlistLib, globalLib, utilLib,
- {$IFDEF PROTOCOL_ICQ}
-  ICQv9,
- {$ENDIF PROTOCOL_ICQ}
   chatDlg, mainDlg, themesLib;
 
 {$R *.DFM}
 
-constructor TselectCntsFrm.doAll(owner_:Tcomponent;
-      const caption_,doBtn_:string; const pProto : TRnQProtocol;
-      cl_:TRnQCList; what2do:TnotifyEvent; options_:TscOptions;
-      pfrm : PselectCntsFrm; doNIL : Boolean = false );
+constructor TselectCntsFrm.doAll(owner_: Tcomponent;
+      const caption_, doBtn_: string; const pProto: TRnQProtocol;
+      cl_: TRnQCList; what2do: TnotifyEvent; options_: TscOptions;
+      pfrm: PselectCntsFrm; doNIL: Boolean = false;
+      doTranslate: Boolean = True );
 begin
-  if cl_ = NIL then exit;
+  if cl_ = NIL then
+    exit;
   inherited create(owner_);
   applyTaskButton(self);
   applyCommonSettings(self);
-  options := options_;
-  caption := getTranslation(caption_);
-  doBtn.caption := getTranslation(doBtn_);
-  doBtn.onClick:=what2do;
-  cl:=TRnQCList(cl_);
-  selectBtn.Enabled := sco_multi in options;
-  unselectBtn.Enabled := selectBtn.Enabled;
-  listPnl.visible:=SCO_predefined in options;
-  if not listPnl.visible then
-   begin
-     selectBtn.Top := selectBtn.Top + listPnl.height;
-     unselectBtn.Top := selectBtn.Top;
-     doBtn.Top := doBtn.Top + listPnl.height;
-     list.Height := list.Height + listPnl.height;
-   end;
-//  height:=height-listPnl.height;
-
-  updateList;
-  frm := pfrm;
-  doNILFrm := doNIL;
-  translateWindow(self);
-  showForm(self);
-  bringForeground:=handle;
-end;
-
-constructor TselectCntsFrm.doAll2(owner_:Tcomponent;
-      const caption_,doBtn_:string; const pProto : TRnQProtocol;
-      cl_:TRnQCList; what2do:TnotifyEvent; options_:TscOptions;
-      pfrm : PselectCntsFrm; doNIL : Boolean = false );
-begin
-  if cl_ = NIL then exit;
-  inherited create(owner_);
-  applyTaskButton(self);
-  applyCommonSettings(self);
-  options:=options_;
-  caption:=caption_;
-  doBtn.caption:=doBtn_;
-  doBtn.onClick:=what2do;
   proto := pProto;
-  cl:=TRnQCList(cl_);
+  options := options_;
+  if doTranslate then
+    begin
+      caption := getTranslation(caption_);
+      doBtn.caption := getTranslation(doBtn_);
+    end
+   else
+    begin
+     caption := caption_;
+     doBtn.caption := doBtn_;
+    end;
+  doBtn.onClick := what2do;
+  cl := TRnQCList(cl_);
   selectBtn.Enabled := sco_multi in options;
   unselectBtn.Enabled := selectBtn.Enabled;
-  listPnl.visible:=SCO_predefined in options;
+  listPnl.visible := SCO_predefined in options;
   if not listPnl.visible then
    begin
      selectBtn.Top := selectBtn.Top + listPnl.height;
@@ -182,9 +149,8 @@ begin
   doNILFrm := doNIL;
   translateWindow(self);
   showForm(self);
-  bringForeground:=handle;
+  bringForeground := handle;
 end;
-
 
 // doAll
 
@@ -195,7 +161,7 @@ end; // clearList
 
 function TselectCntsFrm.findGroupNode(id : Integer) : PVirtualNode;
 var
-//  i:integer;
+//  i: integer;
   ligrp: Plistitem;
   n : PVirtualNode;
 begin
@@ -341,9 +307,10 @@ begin
   clearList;
   menu.Free;
   cl.free;
-  cl:=NIL;
-  action:=caFree;
-  if doNILFrm then frm^ := NIL;
+  cl := NIL;
+  action := caFree;
+  if doNILFrm then
+    frm^ := NIL;
   destroyHandle;
 //  self := NIL;
 end;
@@ -375,21 +342,21 @@ begin
     node:= list.GetNext(node);
   end;// or (node.kind=NODE_CONTACT) and AnsiStartsText(searching[1], node.contact.displayed);
 
- sbar.simpletext:=getTranslation('Contacts selected: %d/%d',[cnt,cl.count]);
+ sbar.simpletext := getTranslation('Contacts selected: %d/%d',[cnt,cl.count]);
 end; // updateNumLbl
 
-function TselectCntsFrm.selectedList:TRnQCList;
+function TselectCntsFrm.selectedList: TRnQCList;
 var
-  n : PVirtualNode;
+  n: PVirtualNode;
 begin
- result:=TRnQCList.create;
+  result := TRnQCList.create;
   n := list.GetFirst;
   while n <> NIL do
    begin
     with Tlistitem(PListItem(list.getnodedata(n))^) do
 //      if (check=CK_on) and (kind=LI_contact) then
       if (n.CheckState =csCheckedNormal) and (kind=LI_contact) then
-     result.add( Account.AccProto.getContact(UID));
+     result.add( proto.getContact(UID));
     n := list.GetNext(n);
    end;
 end; // selectedList
@@ -405,7 +372,7 @@ begin
     with Tlistitem(PListItem(list.getnodedata(n))^) do
 //      if (check=CK_off) and (kind=LI_contact) then
       if (n.CheckState =csUncheckedNormal) and (kind=LI_contact) then
-     result.add( Account.AccProto.getContact(UID));
+     result.add( proto.getContact(UID));
     n := list.GetNext(n);
    end;
 end; // unselectedList
@@ -428,6 +395,7 @@ var
 //  cnv:Tcanvas;
   oldMode: Integer;
   s : string;
+  cnt : TRnQContact;
 begin
 //  cnv := PaintInfo.Canvas;
 //  if sender.Selected[PaintInfo.Node] then
@@ -454,11 +422,13 @@ begin
         PaintInfo.Canvas.font.style:=[];
 //        drawTxt(PaintInfo.Canvas.handle, x,y+1, cl.get(UID).displayed);
 //        PaintInfo.Canvas.TextOut(x,y+1, cl.get(UID).displayed);
-          with  Account.AccProto.getContact(UID) do
-          begin
-           inc(x, theme.drawPic(PaintInfo.Canvas.Handle, x,y, statusImg).cx+2);
-           s := displayed;
-          end;
+          cnt := proto.getContact(UID);
+          if Assigned(cnt) then
+           with cnt do
+            begin
+             inc(x, theme.drawPic(PaintInfo.Canvas.Handle, x,y, statusImg).cx+2);
+             s := displayed;
+            end;
           oldMode:= SetBKMode(PaintInfo.Canvas.Handle, TRANSPARENT);
           textOut(PaintInfo.Canvas.handle, x,y+1, PChar(s), length(s));
           SetBKMode(PaintInfo.Canvas.Handle, oldMode);
@@ -591,7 +561,8 @@ end; // toggleAt
 
 procedure TselectCntsFrm.listKeyPress(Sender: TObject; var Key: Char);
 begin
-  if key in [' ','+','-'] then
+//  if key in [' ','+','-'] then
+  if CharInSet(key, [' ','+','-']) then
     toggleAt(list.FocusedNode);
   if key=' ' then
     key := #0;
@@ -599,17 +570,17 @@ end;
 
 procedure TselectCntsFrm.saveBtnClick(Sender: TObject);
 begin
-if uinlistBox.text = '' then
-  msgDlg('You need to enter a name for this uin-list', True, mtWarning)
-else
-  if not uinlists.exists(uinlistbox.text) or (messageDlg(getTranslation('This uin-list already exists.\nDo you want to overwrite it?'), mtConfirmation, [mbYes,mbNo], 0)=mrYes) then
-    begin
-    uinlists.put(uinlistbox.text).cl:=selectedList;
-    uinlistBox.Items.text:=uinlists.names;
-    saveListsDelayed := True;
-//    if not saveFile(userPath+uinlistFilename, uinlists.toString) then
-//      msgDlg(getTranslation('Error saving uinlists'), mtError);
-    end;
+  if uinlistBox.text = '' then
+    msgDlg('You need to enter a name for this uin-list', True, mtWarning)
+   else
+    if not uinlists.exists(uinlistbox.text) or (messageDlg(getTranslation('This uin-list already exists.\nDo you want to overwrite it?'), mtConfirmation, [mbYes,mbNo], 0)=mrYes) then
+      begin
+        uinlists.put(uinlistbox.text).cl := selectedList;
+        uinlistBox.Items.text := uinlists.names;
+        saveListsDelayed := True;
+    //    if not saveFile(userPath+uinlistFilename, uinlists.toString) then
+    //      msgDlg(getTranslation('Error saving uinlists'), mtError);
+      end;
 end;
 
 procedure TselectCntsFrm.addBtnClick(Sender: TObject);
@@ -623,7 +594,7 @@ begin
   n := list.GetFirst;
   repeat
     with Tlistitem(PListItem(list.getnodedata(n))^) do
-      if (kind=LI_contact) and cl.exists(Account.AccProto, uid) then
+      if (kind=LI_contact) and cl.exists(proto, uid) then
         begin
 //         check:=CK_on;
           n.CheckState := csCheckedNormal
@@ -644,7 +615,7 @@ begin
   if kind = LI_group then
    result := NIL
   else
-   result := Account.AccProto.getContact(UID);
+   result := proto.getContact(UID);
 end;
 
 procedure TselectCntsFrm.Viewinfo1Click(Sender: TObject);
@@ -670,7 +641,7 @@ cl:=uinlists.get(uinlistbox.text).cl;
   n := list.GetFirst;
   repeat
     with Tlistitem(PListItem(list.getnodedata(n))^) do
-      if (kind=LI_contact) and cl.exists(Account.AccProto, UID) then
+      if (kind=LI_contact) and cl.exists(proto, UID) then
         begin
 //         check:=CK_off;
           n.CheckState := csUncheckedNormal; 

@@ -8,7 +8,7 @@
 @IF EXIST "*.o" del *.o
 @IF EXIST ".\Units\*.dcu" del .\Units\*.dcu
 @IF EXIST ".\Units\*.res" del .\Units\*.res
-@IF EXIST "Prefs\__history\*" del /q Prefs\__history\*
+@IF EXIST "Prefs\__history\*" rd /q Prefs\__history\
 @IF EXIST "Prefs\*.dcu" del /q Prefs\*.dcu
 @IF EXIST "__history\*" rd /q /s __history\
 @IF EXIST "ICQ\__history\*" rd /q ICQ\__history\

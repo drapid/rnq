@@ -60,9 +60,6 @@ uses
  {$ENDIF UNICODE}
   RDGlobal,
   globalLib, UtilLib, RnQLangs, RQUtil, RnQSysUtils, RnQCrypt,
- {$IFDEF PROTOCOL_ICQ}
-  ICQv9,
- {$ENDIF PROTOCOL_ICQ}
   iniLib,
   mainDlg, chatDlg;
 
@@ -85,24 +82,17 @@ end;
 
 procedure TlockFrm.OkBtnClick(Sender: TObject);
 var
-  sA : AnsiString;
-  rr : Boolean;
+//  sA: AnsiString;
+  rr: Boolean;
 begin
   if AccPass > '' then
     rr := compareText(AccPass, pwdBox.text) = 0
    else
-    begin
- {$IFDEF PROTOCOL_ICQ}
-      if LoginMD5 and  Account.AccProto.saveMD5Pwd then
-        sA := MD5Pass(pwdBox.text)
-       else
- {$ENDIF PROTOCOL_ICQ}
-        sA := pwdBox.text;
-      rr := compareText(sA, Account.AccProto.pwd) = 0;
-    end;
+    rr := Account.AccProto.pwdEqual(pwdBox.text);
+
 if rr then
   begin
-  locked:=FALSE;
+  locked := FALSE;
   if not startingLock then
 //    saveCFG;
     saveCfgDelayed := True;

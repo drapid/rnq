@@ -24,14 +24,14 @@ uses
   procedure TipsUpdateByCnt(c: TRnQcontact);
   procedure TipsProced;
   procedure tipDrawEvent(destDC: HDC; ev: Thevent; pCnt: TRnQContact;
-              var maxX, maxY: integer; calcOnly: Boolean);
+              var maxX, maxY: integer; calcOnly: Boolean; PPI: NativeInt);
 
 implementation
 
  uses
    math, StrUtils, Base64,
    RDUtils, RnQGraphics32, RnQSysUtils, RnQBinUtils,
-   RQUtil, RDGlobal, RQThemes, RnQLangs,
+   RQUtil, RDGlobal, RQThemes, RnQLangs, RnQGlobal,
    globalLib, utilLib, RDtrayLib, RnQPics,
  {$IFDEF UNICODE}
    AnsiStrings,
@@ -47,13 +47,13 @@ procedure TipsDraw(Sender: TtipFrm; mode: Tmodes; info: Pointer; pMaxX, pMaxY: I
 begin
   case mode of
     TM_EVENT:
-      tipDrawEvent(Sender.Canvas.Handle, Thevent(info), NIL, pMaxX, pMaxY, calcOnly);
+      tipDrawEvent(Sender.Canvas.Handle, Thevent(info), NIL, pMaxX, pMaxY, calcOnly, Sender.CurrentPPI);
     TM_PIC:
       Sender.Canvas.Draw(0,0, TBitmap(info));
     TM_PIC_EX:
        DrawRbmp(Sender.Canvas.Handle, TRnQBitmap(info));
     TM_BDay:
-      tipDrawEvent(Sender.Canvas.Handle, NIL, TRnQContact(info), pMaxX, pMaxY, calcOnly);
+      tipDrawEvent(Sender.Canvas.Handle, NIL, TRnQContact(info), pMaxX, pMaxY, calcOnly, Sender.CurrentPPI);
   end;
 end;
 
@@ -129,34 +129,34 @@ begin
      end;
 //          DrawText(pic.Canvas.Handle, PChar('Привет'), -1, R, DT_SINGLELINE);// or DT_VCENTER);
    end;
-//  mode:=TM_PIC;
-//counter:=0;
-//time:=now;
+//  mode := TM_PIC;
+//counter := 0;
+//time := now;
 //  ev := NIL;
 end;
 
 procedure TipAdd3(ev: Thevent; bmp2: tbitmap = NIL; pCnt: TRnQContact = NIL; seconds: Integer = -1);
 var
-//  isEv : Boolean;
-//  isPic : Boolean;
-  tipType : byte; {1 - ev, 2 - pic, 3 - birthday}
+//  isEv: Boolean;
+//  isPic: Boolean;
+  tipType: byte; {1 - ev, 2 - pic, 3 - birthday}
 
-  item : TRnQTip;
+  item: TRnQTip;
 //  cnt, idx: Integer;
 //  minX, minY,
-  needW, needH : Integer;
-  work:Trect;
-//  not_ok : Boolean;
-//  rt : TRnQTip;
+  needW, needH: Integer;
+  work: Trect;
+//  not_ok: Boolean;
+//  rt: TRnQTip;
 
-  sR : RawByteString;
-  s3m : TMemoryStream;
-  sl : Integer;
-  i, k : Integer;
-  pic : TBitmap;
+  sR: RawByteString;
+  s3m: TMemoryStream;
+  sl: Integer;
+  i, k: Integer;
+  pic: TBitmap;
 
-  ti : TTipInfo;
-  tempPic : TBitmap;
+  ti: TTipInfo;
+  tempPic: TBitmap;
 begin
 //  if ( TipsMaxCnt = 0 ) then
   if MainPrefs.getPrefIntDef('show-tips-count', 20)=0 then
@@ -185,7 +185,8 @@ begin
              and chatFrm.isVisible
              and (ev.who.equals(chatFrm.thisChat.who))
            )
-        then exit;
+        then
+          exit;
 
         if ev.kind in [EK_url,EK_msg,EK_contacts,EK_authReq,EK_automsg] then
         begin
@@ -242,11 +243,11 @@ begin
         ;
 
         work  := desktopWorkArea(Application.MainFormHandle);
-        item      := TRnQTip.Create;
+        item  := TRnQTip.Create;
 
         needW := 0; needH := 0;
         tempPic := createBitmap(1, 1);
-        tipDrawEvent(tempPic.Canvas.Handle, ev, NIL, needW, needH, True);
+        tipDrawEvent(tempPic.Canvas.Handle, ev, NIL, needW, needH, True, RnQmain.currentPPI);
         tempPic.Free;
         needH := min(work.Bottom - work.Top - TipsMaxTop, needH);
       //  needW := min()
@@ -282,7 +283,7 @@ begin
         needW := 0; needH := 0;
 
         tempPic := createBitmap(1, 1);
-        tipDrawEvent(tempPic.Canvas.Handle, NIL, pCnt, needW, needH, True);
+        tipDrawEvent(tempPic.Canvas.Handle, NIL, pCnt, needW, needH, True, RnQmain.currentPPI);
         tempPic.Free;
         needH := min(work.Bottom - work.Top - TipsMaxTop, needH);
       //  needW := min()
@@ -496,7 +497,7 @@ end;
 
 
 procedure tipDrawEvent(destDC: HDC; ev: Thevent; pCnt: TRnQContact;
-             var maxX,maxY: integer; calcOnly: Boolean);
+             var maxX, maxY: integer; calcOnly: Boolean; PPI: NativeInt);
 var
   x,y,h: integer;
   fullR, Rcap,
@@ -507,49 +508,49 @@ var
   font : TFont;
 
 //  gr: TGPGraphics;
-//  fnt : TGPFont;
-//  gfmt :TGPStringFormat;
-//  br  : TGPBrush;
-//  pen : TGPPen;
-//  gpR, resR :TGPRectF;
-//  pth :TGPGraphicsPath;
-  res : TSize;
+//  fnt: TGPFont;
+//  gfmt: TGPStringFormat;
+//  br: TGPBrush;
+//  pen: TGPPen;
+//  gpR, resR: TGPRectF;
+//  pth: TGPGraphicsPath;
+  res: TSize;
 //  cname,
   info,
-  sA : RawByteString;
-  s  : String;
-  days2BD : SmallInt;
+  sA: RawByteString;
+  s: String;
+  days2BD: SmallInt;
 
-  dc  : HDC;
-  ABitmap, HOldBmp : HBITMAP;
+  dc: HDC;
+  ABitmap, HOldBmp: HBITMAP;
 
-  oldFont    : HFONT;
-  brLog      : LOGBRUSH;
-  oldBr, hb  : HBRUSH;
-  oldPen, Hp : HPEN;
-  oldMode : Integer;
-  ta  : UINT;
-  ClrBg : TColor;
-  Clr2 : Cardinal;
+  oldFont: HFONT;
+  brLog: LOGBRUSH;
+  oldBr, hb: HBRUSH;
+  oldPen, Hp: HPEN;
+  oldMode: Integer;
+  ta: UINT;
+  ClrBg: TColor;
+  Clr2: Cardinal;
 
-  rad     : Integer;
+  rad: Integer;
 
-  i, k : Integer;
-//  l, m : Integer;
-//  proc : Byte;
-  RnQPicStream : TMemoryStream;
-  vRnQpicEx : TRnQBitmap;
-    b : Byte;
-    st : byte;
-  drawAvt : Boolean;
-  thisCnt : TRnQContact;
-  stsArr  : TStatusArray;
-//  xStsArr : TXStatStrArr;
+  i, k: Integer;
+//  l, m: Integer;
+//  proc: Byte;
+  RnQPicStream: TMemoryStream;
+  vRnQpicEx: TRnQBitmap;
+    b: Byte;
+    st: byte;
+  drawAvt: Boolean;
+  thisCnt: TRnQContact;
+  stsArr: TStatusArray;
+//  xStsArr: TXStatStrArr;
 
-  p : TPicName;
-//  picN : TPicName;
-  r2 : TGPRect;
-  ms : Integer;
+  p: TPicName;
+//  picN: TPicName;
+  r2: TGPRect;
+  ms: Integer;
 begin
 //inherited;
   if calcOnly then
@@ -614,13 +615,13 @@ begin
 //cname:=contact.displayed;
   work := desktopWorkArea(Application.MainFormHandle);
 
-  x:=4;
+  x := 4;
 //  R.left:=x;
-  y:=2;
+  y := 2;
   if calcOnly then
    begin
-    maxX:=x;
-    maxY:=y;
+    maxX := x;
+    maxY := y;
    end;
 //  gpR.Y := y;
 //  gpR.X := x;
@@ -702,9 +703,9 @@ begin
    {$ENDIF USE_GDIPLUS}
     end;
   if calcOnly then
-    vSize := theme.GetPicSize(RQteDefault, p)
+    vSize := theme.GetPicSize(RQteDefault, p, PPI)
    else
-    vSize := theme.drawPic(DC, x,y, p)
+    vSize := theme.drawPic(DC, x,y, p, true, PPI)
 ;
   p := '';
   inc(x, vSize.cx+2);
@@ -765,7 +766,7 @@ begin
    end;}
 
   if Assigned(ev) then
-    s:=getTranslation(tipevent2str[ev.kind])
+    s := getTranslation(tipevent2str[ev.kind])
    else
     if Assigned(pCnt) then
       begin
@@ -828,11 +829,9 @@ begin
                 if (st <> byte(SC_ONLINE))or(not XStatusAsMain)or (b=0)  then
                  begin
                  if calcOnly then
-  //                   inc(X,  statusDrawExt(0, 0, 0, st, (length(sa)>4) and boolean(sa[5])).cx)
-                     inc(X, theme.GetPicSize(RQteDefault, p).cx)
+                     inc(X, theme.GetPicSize(RQteDefault, p, PPI).cx)
                   else
-  //                   inc(X, statusDrawExt(DC, X+2, Y, st, (length(sa)>4) and boolean(sa[5])).cx)
-                      inc(X, theme.drawPic(DC, X+2, Y, p).cx);
+                      inc(X, theme.drawPic(DC, X+2, Y, p, true, PPI).cx);
                   ;
                   inc(X, 2);
                  end;
@@ -840,13 +839,13 @@ begin
  {$IFDEF PROTOCOL_ICQ}
                 if (b > 0) then
                 begin
-                 if {(b >= Low(xStsArr)) and} (b <=High(XStatusArray)) then
+                 if {(b >= Low(xStsArr)) and} (b <= High(XStatusArray)) then
                  begin
                    p := XStatusArray[b].PicName;
                    if calcOnly then
-                     inc(X, theme.GetPicSize(RQteDefault, p).cx+1)
+                     inc(X, theme.GetPicSize(RQteDefault, p, PPI).cx+1)
                     else
-                     theme.drawPic(DC, X+1, Y, p);
+                     theme.drawPic(DC, X+1, Y, p, True, PPI);
                  end;
                end;
  {$ENDIF PROTOCOL_ICQ}
@@ -860,8 +859,8 @@ begin
   inc(y, max(res.cy, vSize.cy) + 2);
   if calcOnly then
    begin
-    maxX:=x;
-    maxY:=y;
+    maxX := x;
+    maxY := y;
    end;
 
   if Assigned(ev) then
@@ -880,7 +879,7 @@ begin
     k := PosEx(RnQImageExUnTag, info, i+12);
     if (i > 0) and (k > 5) then
     begin
-     p:=Copy(info, i+12, k-i-12);
+     p := Copy(info, i+12, k-i-12);
      sa := '';
      try
        sa := Base64DecodeString(p);
@@ -901,6 +900,7 @@ begin
 //          resR.Height := vRnQpicEx.GetHeight;
           res.cx := vRnQpicEx.GetWidth;
           res.cy := vRnQpicEx.GetHeight;
+          { TODO -oRapid D -cHiDPI : Add HiDPI }
           if calcOnly then
             begin
              maxY := Y + res.cy + 7;

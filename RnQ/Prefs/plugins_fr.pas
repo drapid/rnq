@@ -10,7 +10,13 @@ interface
 
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, RnQButtons, RnQPrefsLib, VirtualTrees;
+  StdCtrls,
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
+  RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
+  RnQButtons, VirtualTrees;
 
 type
   TpluginsFr = class(TPrefFrame)

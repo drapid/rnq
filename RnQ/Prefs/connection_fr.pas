@@ -6,7 +6,12 @@ interface
 
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  ExtCtrls, StdCtrls, RnQSpin, RDGlobal, RnQPrefsLib,
+  ExtCtrls, StdCtrls, RnQSpin, RDGlobal,
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
+  RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
   RnQButtons, RnQNet;
 
 type
@@ -66,7 +71,7 @@ implementation
 uses
   prefDlg, utilLib, mainDlg, RQUtil,
  {$IFDEF PROTOCOL_ICQ}
-  ICQv9,
+  //ICQv9,
  {$ENDIF PROTOCOL_ICQ}
   globalLib
   ;

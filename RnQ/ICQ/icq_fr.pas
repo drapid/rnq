@@ -7,7 +7,8 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ComCtrls, StdCtrls, ExtCtrls, RnQButtons, RnQSpin, RDGlobal,
-  selectcontactsDlg, RnQPrefsLib,
+  selectcontactsDlg,
+  RnQPrefsLib,
   Mask, Menus;
 
 type
@@ -111,9 +112,9 @@ uses
 
 type
   TCapsRec = record
-     v : AnsiString;
-     S : String;
-     pic : TPicName;
+     v: AnsiString;
+     S: String;
+     pic: TPicName;
    end;
 const
   CliCaps : array[0..3] of TCapsRec = (
@@ -214,7 +215,7 @@ end;
 
 procedure TicqFr.CapEditChange(Sender: TObject);
 begin
-  CapsLabel.Caption := hex2StrSafe(CapEdit.Text);
+  CapsLabel.Caption := hex2StrU(CapEdit.Text);
 end;
 
 
@@ -229,28 +230,29 @@ var
   mustUpdPerms,
   mustUpdPerms2,
   mustUpdSts,
-  mustUpdCaps : Boolean;
-  tempStatus : byte;
-  icq : TICQSession;
-  i, l : Integer;
+  mustUpdCaps: Boolean;
+//  tempStatus: byte;
+  fICQ: TICQSession;
+  i, l: Integer;
 begin
   if not Assigned(Account.AccProto)
     or (Account.AccProto.ProtoName <> 'ICQ') then
     Exit;
-  icq := TICQSession(Account.AccProto.ProtoElem);
+  fICQ := TICQSession(Account.AccProto.ProtoElem);
 
-  if (icq.saveMD5Pwd <> SaveMD5chk.Checked) then
+  if (fICQ.saveMD5Pwd <> SaveMD5chk.Checked) then
    begin
-     icq.saveMD5Pwd   := SaveMD5chk.Checked;
-     if icq.saveMD5Pwd then
-       pwdBox.text := MD5Pass(pwdBox.text)
+     fICQ.saveMD5Pwd   := SaveMD5chk.Checked;
+     if fICQ.saveMD5Pwd then
+//       pwdBox.text := MD5Pass(pwdBox.text)
+       pwdBox.text := '                '// MD5Pass(pwdBox.text)
       else
        pwdBox.text := '';
    end;
-  if not icq.saveMD5Pwd then
-     ICQ.pwd := pwdBox.text;
+  if not fICQ.saveMD5Pwd then
+     fICQ.pwd := pwdBox.text;
 
-//    ICQ.loginServerPort:=portBox.text;
+//    fICQ.loginServerPort := portBox.text;
   mustUpdCaps  := False;
   mustUpdSts   := False;
   mustUpdPerms := False;
@@ -258,20 +260,20 @@ begin
 //  sendInterests := sendInterChk.Checked;
   if sendBalloonOn<>birthGrp.itemindex then
   begin
-    sendBalloonOn:=birthGrp.itemindex;
-    icq.applyBalloon;
+    sendBalloonOn := birthGrp.itemindex;
+    fICQ.applyBalloon;
     mustUpdSts := True;
   end;
   sendBalloonOnDate:=bdayBox.Date;
   case dcGrp.ItemIndex of
-    0: if ICQ.DCmode <> DC_NONE then begin mustUpdSts :=True; ICQ.DCmode:=DC_NONE; end;
-    1: if ICQ.DCmode <> DC_ROSTER then begin mustUpdSts :=True; ICQ.DCmode:=DC_ROSTER; end;
-    2: if ICQ.DCmode <> DC_EVERYONE then begin mustUpdSts :=True; ICQ.DCmode:=DC_EVERYONE; end;
-    3: if ICQ.DCmode <> DC_FAKE then begin mustUpdSts :=True; ICQ.DCmode:=DC_FAKE; end;
+    0: if fICQ.DCmode <> DC_NONE then begin mustUpdSts :=True; fICQ.DCmode:=DC_NONE; end;
+    1: if fICQ.DCmode <> DC_ROSTER then begin mustUpdSts :=True; fICQ.DCmode:=DC_ROSTER; end;
+    2: if fICQ.DCmode <> DC_EVERYONE then begin mustUpdSts :=True; fICQ.DCmode:=DC_EVERYONE; end;
+    3: if fICQ.DCmode <> DC_FAKE then begin mustUpdSts :=True; fICQ.DCmode:=DC_FAKE; end;
    end;
-  if ICQ.showclientid<>clientidChk.checked then
+  if fICQ.showclientid<>clientidChk.checked then
    begin
-    ICQ.showclientid:=clientidChk.checked;
+    fICQ.showclientid := clientidChk.checked;
     mustUpdSts := True;
    end;
   if (AddCapsChk.Checked <> AddExtCliCaps) then
@@ -279,11 +281,11 @@ begin
     AddExtCliCaps := AddCapsChk.Checked;
     mustUpdCaps   := True;
    end;
-  if (ExtClientCaps <> hex2StrSafe(CapEdit.Text)) then
+  if (ExtClientCaps <> hex2StrU(CapEdit.Text)) then
    begin
     if Length(CapEdit.Text) > 2 then
       begin
-        ExtClientCaps := hex2StrSafe(CapEdit.Text);
+        ExtClientCaps := hex2StrU(CapEdit.Text);
         l := Length(ExtClientCaps);
         if l < 16 then
          begin
@@ -299,56 +301,56 @@ begin
    end;
   if showInvisSts <> ShowInvChk.Checked then
     begin
-     if not showInvisSts and (ICQ.visibility in [VI_invisible, VI_privacy]) then
+     if not showInvisSts and (fICQ.visibility in [VI_invisible, VI_privacy]) then
       begin
-       ICQ.sendStatusCode(false);
+       fICQ.sendStatusCode(false);
        mustUpdSts := false;
       end;
      showInvisSts := ShowInvChk.Checked;
     end;
 //   ProtVerCBox
-  if ICQ.SupportUTF <> SendUTF8Chk.Checked then
+  if fICQ.SupportUTF <> SendUTF8Chk.Checked then
    begin
-    ICQ.SupportUTF := SendUTF8Chk.Checked;
+    fICQ.SupportUTF := SendUTF8Chk.Checked;
     mustUpdCaps := True;
    end;
-  if ICQ.UseCryptMsg <> MsgCryptChk.Checked then
+  if fICQ.UseCryptMsg <> MsgCryptChk.Checked then
    begin
-    ICQ.UseCryptMsg := MsgCryptChk.Checked;
+    fICQ.UseCryptMsg := MsgCryptChk.Checked;
     mustUpdCaps := True;
    end;
-  ICQ.SendingUTF := UTF8MsgsChk.Checked;
-  ICQ.UseAdvMsg := AdvMsgChk.Checked;
+  fICQ.SendingUTF := UTF8MsgsChk.Checked;
+  fICQ.UseAdvMsg := AdvMsgChk.Checked;
   useFBcontacts := XMPPChk.Checked;
-  warnVisibilityExploit:=visibilityexploitChk.checked;
-  if ICQ.webaware <> webawareChk.checked then
+  warnVisibilityExploit := visibilityexploitChk.checked;
+  if fICQ.webaware <> webawareChk.checked then
   begin
-    ICQ.webaware:=webawareChk.checked;
+    fICQ.webaware := webawareChk.checked;
 //    ICQ.webaware:=webaware;
 //    mustUpdPerms := True;
     mustUpdPerms2 := True;
     mustUpdSts   := True;
   end;
-  if PrivacyGrp.ItemIndex <> ICQ.showInfo then
+  if PrivacyGrp.ItemIndex <> fICQ.showInfo then
   begin
-    ICQ.showInfo := PrivacyGrp.ItemIndex;
+    fICQ.showInfo := PrivacyGrp.ItemIndex;
     mustUpdPerms2 := True;
 //    mustUpdSts   := True;
   end;
 
   sendTheAddedYou:=addedYouChk.checked;
-  if ICQ.authNeeded<>authNeededChk.checked then
+  if fICQ.authNeeded<>authNeededChk.checked then
    begin
-    ICQ.authNeeded:=authNeededChk.checked;
+    fICQ.authNeeded := authNeededChk.checked;
     mustUpdPerms := True;
     mustUpdSts := True;
    end;
-  if icq.SupportTypingNotif <> ChkTyping.Checked then
+  if fICQ.SupportTypingNotif <> ChkTyping.Checked then
    begin
      mustUpdCaps := True;
-     icq.SupportTypingNotif := ChkTyping.Checked;
+     fICQ.SupportTypingNotif := ChkTyping.Checked;
    end;
-  icq.isSendTypingNotif := ChkSendTyping.Checked;
+  fICQ.isSendTypingNotif := ChkSendTyping.Checked;
   typingInterval := MTNIdleSpin.AsInteger;
   {$IFDEF CHECK_INVIS}
     supportInvisCheck := ChkSupInvChk.Checked;
@@ -360,9 +362,9 @@ begin
     CheckInvis.Method := ChkInvisRG.ItemIndex;
     showCheckedInvOfl := ShwOfflBox.Checked;
   {$ENDIF}
-  ICQ.AvatarsSupport := SupAvtChk.Checked;
-  ICQ.AvatarsAutoGet := AvtAutLoadChk.Checked;
-  ICQ.AvatarsAutoGetSWF := AvtAutGetChk.Checked;
+  fICQ.AvatarsSupport := SupAvtChk.Checked;
+  fICQ.AvatarsAutoGet := AvtAutLoadChk.Checked;
+  fICQ.AvatarsAutoGetSWF := AvtAutGetChk.Checked;
   AvatarsNotDnlddInform := NotDnlddInfoChk.Checked;
   autoRequestXsts := AutoReqXStChk.Checked;
 {$IFDEF UseNotSSI}
@@ -384,18 +386,18 @@ begin
   useSSI2 := useSSIChk.Checked;
   useLSI2 := UseLSIChk.Checked;
 {$ENDIF UseNotSSI}
- if mustUpdCaps and icq.isOnline then
-  icq.sendCapabilities;
- if mustUpdSts and icq.isOnline then
-  icq.sendStatusCode;
- if mustUpdPerms and icq.isOnline then
+ if mustUpdCaps and fICQ.isOnline then
+  fICQ.sendCapabilities;
+ if mustUpdSts and fICQ.isOnline then
+  fICQ.sendStatusCode;
+ if mustUpdPerms and fICQ.isOnline then
   begin
-   icq.sendStatusCode;
-   icq.sendPermsNew;
+   fICQ.sendStatusCode;
+   fICQ.sendPermsNew;
   end;
- if mustUpdPerms2 and icq.isOnline then
+ if mustUpdPerms2 and fICQ.isOnline then
   begin
-   ICQ.sendPrivacy(PrivacyGrp.ItemIndex, webawareChk.checked, authNeededChk.Checked);
+   fICQ.sendPrivacy(PrivacyGrp.ItemIndex, webawareChk.checked, authNeededChk.Checked);
   end;
  if needSaveChkList then
    saveListsDelayed := True;
@@ -405,19 +407,19 @@ end;
 
 procedure TicqFr.resetPage;
 var
-  icq : TICQSession;
+  fICQ: TICQSession;
 begin
   if not Assigned(Account.AccProto)
     or (Account.AccProto.ProtoName <> 'ICQ') then
     Exit;
-  icq := TICQSession(Account.AccProto.ProtoElem);
+  fICQ := TICQSession(Account.AccProto.ProtoElem);
 
-  pwdBox.text        := icq.pwd;
-  SaveMD5chk.Checked := icq.saveMD5Pwd;
+  pwdBox.text        := fICQ.pwd;
+  SaveMD5chk.Checked := fICQ.saveMD5Pwd;
 //  sendInterChk.Checked := sendInterests;
   birthGrp.ItemIndex:=sendBalloonOn;
   bdayBox.Date:=sendBalloonOnDate;
-  case ICQ.DCmode of
+  case fICQ.DCmode of
     DC_ROSTER: dcGrp.ItemIndex:=1;
     DC_EVERYONE: dcGrp.ItemIndex:=2;
 //    DC_FAKE: dcGrp.ItemIndex := 3;
@@ -426,21 +428,21 @@ begin
       dcGrp.ItemIndex:=0;
     end;
   visibilityexploitChk.checked:=warnVisibilityExploit;
-  clientidChk.checked:= ICQ.showclientid;
+  clientidChk.checked:= fICQ.showclientid;
   AddCapsChk.Checked := AddExtCliCaps;
   CapEdit.Text := str2hexU(ExtClientCaps);
-  SendUTF8Chk.Checked := ICQ.SupportUTF;
-  UTF8MsgsChk.Checked := ICQ.SendingUTF;
-  MsgCryptChk.Checked := ICQ.UseCryptMsg;
-  AdvMsgChk.Checked   := ICQ.UseAdvMsg;
+  SendUTF8Chk.Checked := fICQ.SupportUTF;
+  UTF8MsgsChk.Checked := fICQ.SendingUTF;
+  MsgCryptChk.Checked := fICQ.UseCryptMsg;
+  AdvMsgChk.Checked   := fICQ.UseAdvMsg;
   XMPPChk.Checked     := useFBcontacts;
   ShowInvChk.Checked  := showInvisSts;
   addedYouChk.checked := sendTheAddedYou;
-  webawareChk.checked := ICQ.webaware;
-  PrivacyGrp.ItemIndex  := ICQ.showInfo;
-  authNeededChk.checked := ICQ.authNeeded;
-  ChkTyping.Checked   := icq.SupportTypingNotif;
-  ChkSendTyping.Checked := icq.isSendTypingNotif;
+  webawareChk.checked := fICQ.webaware;
+  PrivacyGrp.ItemIndex  := fICQ.showInfo;
+  authNeededChk.checked := fICQ.authNeeded;
+  ChkTyping.Checked   := fICQ.SupportTypingNotif;
+  ChkSendTyping.Checked := fICQ.isSendTypingNotif;
   MTNIdleSpin.Value := typingInterval;
    {$IFDEF CHECK_INVIS}
     ChkSupInvChk.Checked  := supportInvisCheck;
@@ -455,9 +457,9 @@ begin
     ChkSupInvChk.Checked  := False;
     ChkSupInvChk.Enabled  := False;
    {$ENDIF}
-   SupAvtChk.Checked     := ICQ.AvatarsSupport;
-   AvtAutLoadChk.Checked := ICQ.AvatarsAutoGet;
-   AvtAutGetChk.Checked  := ICQ.AvatarsAutoGetSWF;
+   SupAvtChk.Checked     := fICQ.AvatarsSupport;
+   AvtAutLoadChk.Checked := fICQ.AvatarsAutoGet;
+   AvtAutGetChk.Checked  := fICQ.AvatarsAutoGetSWF;
    NotDnlddInfoChk.Checked := AvatarsNotDnlddInform;
    AutoReqXStChk.Checked := autoRequestXsts;
    needSaveChkList       := false;
@@ -551,7 +553,7 @@ begin
   SetForegroundWindow(wnd.Handle)
  else
  begin
-   wnd:=TselectCntsFrm.doAll(TForm(parent),
+   wnd := TselectCntsFrm.doAll(TForm(parent),
                               'Select Invisibility check list', 'Select',
                               Account.AccProto,
                               Account.AccProto.readList(LT_ROSTER).clone, //.add(notinlist),
@@ -573,17 +575,17 @@ end;
 
 procedure TicqFr.CloseAction(sender:Tobject);
 var
-  wnd:TselectCntsFrm;
-//  cl:TcontactList;
-//  msg:string;
+  wnd: TselectCntsFrm;
+//  cl: TcontactList;
+//  msg: string;
 begin
-wnd:=(sender as Tcontrol).parent as TselectCntsFrm;
+  wnd := (sender as Tcontrol).parent as TselectCntsFrm;
  {$IFDEF CHECK_INVIS}
-   CheckInvis.CList:=wnd.selectedList;
+   CheckInvis.CList := wnd.selectedList;
  {$ENDIF}
-//cl.free;
-wnd.extra.free;
-wnd.close;
+  //cl.free;
+  wnd.extra.free;
+  wnd.close;
 end; // sendmessage action
 
 //INITIALIZATION

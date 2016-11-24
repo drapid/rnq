@@ -11,7 +11,12 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   StdCtrls, ExtCtrls, ComCtrls, VirtualTrees, Menus,
-  RnQButtons,RnQSpin, RDGlobal, RnQPrefsLib,
+  RnQButtons,RnQSpin, RDGlobal,
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
+  RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
   RnQProtocol;
 
 type

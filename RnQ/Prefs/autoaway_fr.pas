@@ -10,7 +10,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, RnQSpin, RDGlobal, RnQPrefsLib, ExtCtrls, ComCtrls;
+  StdCtrls, RnQSpin, RDGlobal,
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
+  RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
+  ExtCtrls, ComCtrls;
 
 type
   TautoawayFr = class(TPrefFrame)

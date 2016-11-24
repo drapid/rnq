@@ -166,7 +166,6 @@ object selectCntsFrm: TselectCntsFrm
     Align = alTop
     Anchors = [akLeft, akTop, akRight, akBottom]
     ButtonStyle = bsTriangle
-    CheckImageKind = ckXP
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
     Header.Font.Charset = DEFAULT_CHARSET

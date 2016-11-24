@@ -3,7 +3,7 @@
         <ProjectGuid>{94E0A466-1C1B-48B7-B4DC-61F2C1EBC94C}</ProjectGuid>
         <MainSource>RnQx64.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">R&amp;Q SCI Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>
@@ -107,7 +107,7 @@
         <PreBuildEvent><![CDATA[BuiltTime.exe
 $(PreBuildEvent)]]></PreBuildEvent>
         <Icon_MainIcon>Res\MAINICON_Lite.ico</Icon_MainIcon>
-        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\AES;..\For.rnq\Flash;..\For.rnq\RTL;.\ICQ;.\MRA;.\Prefs;.\xmpp;..\For.rnq\XML;.\DB;..\For.rnq\SQLite;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\AES;..\For.rnq\Flash;..\For.rnq\RTL;..\For.rnq\VCL;..\For.rnq\SQLite;.\ICQ;.\MRA;.\Prefs;.\xmpp;..\For.rnq\XML;.\DB;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <SanitizedProjectName>RnQx64</SanitizedProjectName>
         <DCC_UsePackage>rtl;$(DCC_UsePackage)</DCC_UsePackage>
         <Manifest_File>Res\rnq.manifest1</Manifest_File>
@@ -131,6 +131,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCC_F>false</DCC_F>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <Manifest_File>(None)</Manifest_File>
+        <Debugger_RunParams>--debug --xxx</Debugger_RunParams>
         <VerInfo_MajorVer>1</VerInfo_MajorVer>
         <VerInfo_MinorVer>0</VerInfo_MinorVer>
         <VerInfo_Release>0</VerInfo_Release>
@@ -141,6 +143,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
+        <Manifest_File>(None)</Manifest_File>
+        <Debugger_RunParams>--debug --xxx</Debugger_RunParams>
         <VerInfo_MajorVer>1</VerInfo_MajorVer>
         <VerInfo_MinorVer>0</VerInfo_MinorVer>
         <VerInfo_Build>0</VerInfo_Build>
@@ -160,6 +164,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <Manifest_File>(None)</Manifest_File>
         <DCC_DebugInformation>2</DCC_DebugInformation>
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1125;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
@@ -371,9 +376,6 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCCReference Include="HistAllSearch.pas">
             <Form>AllHistSrchForm</Form>
         </DCCReference>
-        <DCCReference Include="MenuSmiles.pas">
-            <Form>FSmiles</Form>
-        </DCCReference>
         <DCCReference Include="RnQProtocol.pas"/>
         <DCCReference Include="visibilityDlg.pas">
             <Form>visibilityFrm</Form>
@@ -391,49 +393,50 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCCReference Include="ICQ\filetransferDlg.pas">
             <Form>filetransferFrm</Form>
         </DCCReference>
-        <DCCReference Include="ViewHEventDlg.pas">
-            <Form>HEventFrm</Form>
-        </DCCReference>
-        <DCCReference Include="MenuEmoji.pas">
-            <Form>FEmoji</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="ICQ\ICQv9.pas"/>
-        <DCCReference Include="ICQ\ICQflap.pas"/>
-        <DCCReference Include="ICQ\ICQContacts.pas"/>
-        <DCCReference Include="ICQ\ICQConsts.pas"/>
-        <DCCReference Include="ICQ\Protocol_ICQ.pas"/>
-        <DCCReference Include="ICQ\RQ_ICQ.pas"/>
-        <DCCReference Include="ICQ\sendfileDlg.pas">
-            <Form>sendfileFrm</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="ICQ\RQCodes.pas"/>
-        <DCCReference Include="ICQ\wpDlg.pas">
-            <Form>wpFrm</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="ICQ\ICQClients.pas"/>
         <DCCReference Include="ICQ\ICQ.Stickers.pas"/>
         <DCCReference Include="ICQ\icq_fr.pas">
             <Form>icqFr</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="ICQ\viewSSI.pas">
-            <Form>SSIForm</Form>
+        <DCCReference Include="ICQ\ICQClients.pas"/>
+        <DCCReference Include="ICQ\ICQConsts.pas"/>
+        <DCCReference Include="ICQ\ICQContacts.pas"/>
+        <DCCReference Include="ICQ\ICQflap.pas"/>
+        <DCCReference Include="ICQ\ICQv9.pas"/>
+        <DCCReference Include="ICQ\MenuStickers.pas">
+            <Form>FStickers</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="ICQ\Protocol_ICQ.pas"/>
+        <DCCReference Include="ICQ\RQ_ICQ.pas"/>
+        <DCCReference Include="ICQ\RQCodes.pas"/>
+        <DCCReference Include="ICQ\sendfileDlg.pas">
+            <Form>sendfileFrm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="ICQ\viewinfoDlg.pas">
             <Form>viewinfoFrm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="ICQ\MenuStickers.pas">
-            <Form>FStickers</Form>
+        <DCCReference Include="ICQ\viewSSI.pas">
+            <Form>SSIForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="ICQ\wpDlg.pas">
+            <Form>wpFrm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="ICQ\ICQ.RESTapi.pas"/>
+        <DCCReference Include="ViewHEventDlg.pas">
+            <Form>HEventFrm</Form>
+        </DCCReference>
+        <DCCReference Include="..\for.RnQ\MenuSmiles.pas">
+            <Form>FSmiles</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="..\For.rnq\RnQConfig.inc"/>
         <None Include="RnQConfig.inc"/>
+        <None Include="..\for.RnQ\ForRnQConfig.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -519,7 +522,19 @@ $(PreBuildEvent)]]></PreBuildEvent>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\Distro\RnQx64.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>RnQx64.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\For.rnq\RnQConfig.inc" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="RnQConfig.inc" Configuration="R&amp;Q SCI Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -531,33 +546,30 @@ $(PreBuildEvent)]]></PreBuildEvent>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\Distro\RnQx64.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="..\For.rnq\RnQConfig.inc" Configuration="R&amp;Q SCI Debug" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\Distro\RnQx64.exe" Configuration="R&amp;Q SCI Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>RnQx64.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployClass Name="DependencyModule">
+                <DeployFile LocalName="..\for.RnQ\ForRnQConfig.inc" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
-                        <Operation>0</Operation>
-                        <Extensions>.dll;.bpl</Extensions>
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
                     </Platform>
+                </DeployFile>
+                <DeployClass Name="ProjectiOSDeviceResourceRules">
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectOSXResource">
@@ -909,12 +921,27 @@ $(PreBuildEvent)]]></PreBuildEvent>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="ProjectiOSDeviceResourceRules">
+                <DeployClass Name="DependencyModule">
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                        <Extensions>.dll;.bpl</Extensions>
+                    </Platform>
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
@@ -933,8 +960,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
     <Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
     <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
     <PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe
-</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -942,8 +968,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe
-</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -951,8 +976,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q CEF' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe
-</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -960,8 +984,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q CEF' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe
-</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -969,8 +992,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe
-</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -978,8 +1000,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe
-</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -987,8 +1008,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe
-</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -996,8 +1016,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe
-</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -1005,8 +1024,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q CEF Debug' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe
-</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -1014,8 +1032,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q CEF Debug' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe
-</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -1023,8 +1040,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI Debug' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>BuiltTime.exe
-</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
@@ -1032,8 +1048,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='R&amp;Q SCI Debug' And '$(Platform)'=='Win64'">
-        <PreBuildEvent>BuiltTime.exe
-</PreBuildEvent>
+        <PreBuildEvent>BuiltTime.exe</PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>

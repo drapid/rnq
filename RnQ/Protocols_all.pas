@@ -14,7 +14,8 @@ uses
   Protocol_icq, ICQcontacts,
  {$ENDIF PROTOCOL_ICQ}
   automsgDlg, globalLib,
-  RnQPrefsLib, RnQPics,
+  RnQPrefsLib,
+  RnQPics,
   RDGlobal, outboxLib;
 
 
@@ -29,9 +30,13 @@ function  Protos_CanSMS(cnt: TRnQContact): Boolean;
 procedure Protos_auth(cnt: TRnQContact);
 procedure Protos_AuthDenied(cnt: TRnQContact; const msg: string='');
 procedure Protos_DelCntFromSrv(cnt: TRnQContact);
+procedure Protos_SendFilesTo(cnt: TRnQContact; const pFiles: String);
 
 function  addToRoster(c: TRnQcontact; isLocal: Boolean = False): boolean; overload;
-function Proto_StsID2Name(Proto: TRnQProtocol; s: Byte; xs: byte): String;
+function  Proto_StsID2Name(Proto: TRnQProtocol; s: Byte; xs: byte): String;
+procedure Protos_EventExtraPics(Proto: TRnQProtocol; evKind : Integer;
+                                const evBody: RawByteString;
+                                var pic1, pic2: TPicName);
 function  status2imgName(s: byte; inv: boolean=FALSE): TPicName; inline;
 function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts: byte= 0): TPicName; inline;
 
@@ -46,7 +51,7 @@ function  sendEmailTo(c: TRnQContact): boolean;
 //function  str2db(cls: TRnQCntClass; const s: RawByteString): TRnQCList; overload;
 function  str2db(pProto: TRnQProtocol; const s: RawByteString; var ok: boolean; pCheckGroups: Boolean): TRnQCList; overload;
 function  str2db(pProto: TRnQProtocol; const s: RawByteString): TRnQCList; overload;
-//function  getClientFor(c: TRnQcontact; pInInfo: Boolean = False):string;
+//function  getClientFor(c: TRnQcontact; pInInfo: Boolean = False): string;
 function  getProtosPref(): TPrefPagesArr;
 function  getProtoClass(ProtoID: Byte): TRnQProtoClass;
 function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer=0; const info: string=''): Toevent; overload;
@@ -113,10 +118,10 @@ uses
   utilLib, themesLib, RQThemes, roasterlib,
   MainDlg, chatDlg, events, outboxDlg;
 
-procedure Protos_Events(Sender:TRnQProtocol; event:Integer);
+procedure Protos_Events(Sender: TRnQProtocol; event: Integer);
   {$IFDEF PROTOCOL_ICQ}
 var
-  icqSess : TicqSession;
+  icqSess: TicqSession;
   {$ENDIF PROTOCOL_ICQ}
 begin
  {$IFNDEF ICQ_ONLY}
@@ -216,9 +221,9 @@ begin
   {$IFDEF PROTOCOL_ICQ}
  if pr is TicqSession then
    TicqSession(pr).sendReqOfflineMsgs
+  else
   {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}
-  else
  if pr is TMRASession then
    TMRASession(pr).sendReqOfflineMsgs
  {$ENDIF PROTOCOL_MRA}
@@ -330,7 +335,7 @@ begin
   chatFrm.addEvent_openchat(cnt, ev);
 end;
 
-procedure Protos_DelCntFromSrv(cnt : TRnQContact);
+procedure Protos_DelCntFromSrv(cnt: TRnQContact);
 begin
   with cnt.fProto do
  {$IFNDEF ICQ_ONLY}
@@ -339,7 +344,7 @@ begin
  {$ENDIF ICQ_ONLY}
            begin
  {$IFDEF PROTOCOL_ICQ}
-             TICQSession(ProtoElem).SSIdeleteContact(clickedContact);
+             TICQSession(ProtoElem).SSIdeleteContact(cnt);
  {$ENDIF PROTOCOL_ICQ}
            end;
  {$IFNDEF ICQ_ONLY}
@@ -348,9 +353,17 @@ begin
  {$ENDIF ICQ_ONLY}
 end;
 
+procedure Protos_SendFilesTo(cnt: TRnQContact; const pFiles: String);
+begin
+ {$IFDEF PROTOCOL_ICQ}
+  if cnt is TICQcontact then
+    ICQsendfile(TICQcontact(cnt), pFiles);
+ {$ENDIF PROTOCOL_ICQ}
+end;
+
 function Proto_StsID2Name(Proto: TRnQProtocol; s: Byte; xs: byte): String;
 var
-  arr : TStatusArray;
+  arr: TStatusArray;
 begin
   arr := Proto.statuses;
   if (s >= Low(arr)) and (s <= High(arr)) then
@@ -359,6 +372,54 @@ begin
     Result := Str_unk;
 end;
 
+procedure Protos_EventExtraPics(Proto: TRnQProtocol; evKind: Integer;
+                                const evBody: RawByteString;
+                                var pic1, pic2: TPicName);
+var
+  st: Integer;
+  b: byte;
+begin
+  { TODO 3 -oRapid D : MUST add various protocols!!! }
+  pic1 := '';
+  pic2 := '';
+     case evKind of
+       EK_ONCOMING,
+       EK_STATUSCHANGE:
+         begin
+           if length(evBody) >= 4 then
+             begin
+ //            vPicName := status2imgName(Tstatus(str2int(s)), (length(s)>4) and boolean(s[5]));
+//            statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s)), (length(s)>4) and boolean(s[5]), infoToXStatus(s))
+              st := str2int(evBody);
+              if st in [byte(Low(Proto.statuses))..byte(High(Proto.statuses))] then
+              begin
+                b := infoToXStatus(evBody);
+  //              if (not XStatusAsMain) and (st <> SC_ONLINE)and (b>0) then
+                if (st <> byte(SC_ONLINE))or(not XStatusAsMain)or (b=0)  then
+                 begin
+                   pic1 := status2imgName(st, (length(evBody)>4) and boolean(evBody[5]))
+//                   pic1 := Proto.Statuses[st].ImageName;
+                 end;
+                if (b > 0) and (b <= high(XStatusArray)) then
+                 pic2 := XStatusArray[b].PicName;
+              end;
+             end;
+         end;
+       EK_XstatusMsg:
+         begin
+           if length(evBody) >= 1 then
+            if (byte(evBody[1]) <= High(XStatusArray)) then
+              pic1 := XStatusArray[byte(evBody[1])].PicName;
+//            statusDrawExt(cnv.Handle, x+2,y, SC_UNK, false, ord(s[1]));
+//            statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s), false, ord(s[1]));
+ //            vPicName := status2imgName(Tstatus(str2int(s)), (length(s)>4) and boolean(s[5]));
+         end;
+       EK_OFFGOING:
+         pic1 := status2imgName(byte(SC_OFFLINE));
+     end;
+end;
+
+
 function  status2imgName(//pr : TRnQProtocol;
                          s: byte; inv: boolean=FALSE): TPicName;
  {$IFDEF ICQ_ONLY}
@@ -366,7 +427,7 @@ begin
   result := protocol_icq.status2imgName(s, inv);
  {$ELSE ~ICQ_ONLY}
 var
-  st : TStatusArray;
+  st: TStatusArray;
 begin
   st := Account.AccProto.statuses;
  if s in [byte(LOW(st)).. byte(HIGH(st))] then
@@ -382,7 +443,7 @@ begin
  {$ENDIF ICQ_ONLY}
 end;
 
-//function  status2imgNameExt(pr : TRnQProtocol; s: byte; inv:boolean=FALSE; extSts : byte= 0):TPicName;
+//function  status2imgNameExt(pr : TRnQProtocol; s: byte; inv: boolean=FALSE; extSts: byte= 0): TPicName;
 function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts: byte= 0):TPicName;
 begin
 { if XStatusAsMain and (extSts > 0) and
@@ -425,7 +486,7 @@ begin
         imAwaySince := 0
       else
        if not (byte(lastStatus) = byte(mSC_away)) then
-        imAwaySince:=now;
+        imAwaySince := now;
     end
  {$ENDIF PROTOCOL_MRA}
    ;
@@ -442,7 +503,7 @@ begin
    end;
 end; // setStatus
 
-function setStatusFull(const proto: TRnQProtocol; st: byte; xSt: byte; xStStr: TXStatStr; isAuto : Boolean = False): byte;
+function setStatusFull(const proto: TRnQProtocol; st: byte; xSt: byte; xStStr: TXStatStr; isAuto: Boolean = False): byte;
 //var
 //  xStsD : TXStatStr;
 begin
@@ -579,7 +640,7 @@ begin
  {$ENDIF PROTOCOL_MRA}
    else
     ml := '';
-  result:=ml > '';
+  result := ml > '';
   if result then
     exec('mailto:'+ ml);
 end; // sendEmailTo
@@ -593,12 +654,6 @@ var
   d: RawByteString;
 //  c:TICQcontact;
   c: TRnQContact;
- {$IFDEF PROTOCOL_MRA}
-  cntMRA: TMRAContact;
- {$ENDIF PROTOCOL_MRA}
- {$IFDEF PROTOCOL_ICQ}
-  cntICQ : TICQContact;
- {$ENDIF PROTOCOL_ICQ}
   vUID: TUID;
 begin
   ok := FALSE;
@@ -753,7 +808,7 @@ end;
 
 function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer=0; const info: string=''): Toevent;
 //var
-//  pr : TRnQProtocol;
+//  pr: TRnQProtocol;
 begin
   if Assigned(dest) then
     begin
@@ -769,7 +824,7 @@ end;
 
 function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer; cl: TRnQCList): Toevent;
 //var
-//  pr : TRnQProtocol;
+//  pr: TRnQProtocol;
 begin
   if Assigned(dest) then
     begin
@@ -792,10 +847,10 @@ var
 //  s: string;
   MyInf: TRnQContact;
 begin
+  vPic := PIC_CLIENT_LOGO;
+  vTip := Application.Title;
   if BossMode.isBossKeyOn then
    begin
-     vPic := PIC_CLIENT_LOGO;
-     vTip := 'R&&&Q';
      Exit;
    end
   else
@@ -883,10 +938,11 @@ function addToRoster(c: TRnQContact; isLocal: Boolean = False): boolean;
 begin
   notInList.remove(c);
 //      c.CntIsLocal := isLocal;
-      if isLocal then
-        c.SSIID := 0;
-      result:= c.fProto.addContact(c, isLocal);
-  if not result then exit;
+  if isLocal then
+    c.SSIID := 0;
+  result:= c.fProto.addContact(c, isLocal);
+  if not result then
+    exit;
   roasterlib.update(c);
   roasterLib.focus(c);
   saveListsDelayed:=TRUE;

@@ -33,11 +33,12 @@ type
     themeToken, SmilesToken: Integer;
 
 //    destructor Destroy; override;
-    function  toString: RawByteString;
+    function  toString: RawByteString; reIntroduce;
     function  getAt(idx: integer): Thevent;
     function  getByID(pID: int64): Thevent;
     function  getByTime(time: TDateTime): Thevent;
     function  getIdxBeforeTime(time: TDateTime; inclusive: Boolean = True): Integer;
+    class function UIDHistoryFN(UID: TUID): String;
     procedure reset;
 //    function Clear;
     procedure deleteFromTo(const uid: TUID; st, en: integer);
@@ -54,8 +55,8 @@ type
 //    function  fromString(s: AnsiString; quite: Boolean = false): boolean;
    end; // Thistory
 
-  function  DelHistWith(uid: TUID) : Boolean;
-  function  ExistsHistWith(uid: TUID) : Boolean;
+  function  DelHistWith(uid: TUID): Boolean;
+  function  ExistsHistWith(uid: TUID): Boolean;
 
 procedure writeHistorySafely(ev: Thevent; other: TRnQContact=NIL);
 procedure flushHistoryWritingQ;
@@ -72,15 +73,19 @@ uses
   RQUtil, RnQLangs, RDUtils,
  {$IFDEF DB_ENABLED}
   RnQDB,
-  RnQ2SQL,
 //  SQLite3,
 //  SQLite3Commons, SynCommons,
-  ASGSQLite3Api,
+  RnQ2SQL, ASGSQLite3Api,
  {$ENDIF DB_ENABLED}
   utilLib, globalLib;
 
 const
   Max_Event_ID = 1000000;
+
+class function Thistory.UIDHistoryFN(UID: TUID): String;
+begin
+  Result := Account.ProtoPath + historyPath + UID;
+end;
 
 //function Thistory.load(uid:AnsiString; quite : Boolean = false):boolean;
 function Thistory.load(cnt: TRnQContact; const quiet: Boolean = false): boolean;
@@ -95,7 +100,7 @@ begin
     Result := True;
  {$ELSE ~DB_ENABLED}
 //  Result :=  fromString(loadFile(userPath+historyPath + uid), quite);
-  str := GetStream(Account.ProtoPath+historyPath + cnt.UID2cmp);
+  str := GetStream(UIDHistoryFN(cnt.UID2cmp));
   if Assigned(str)  then
    begin
     str.Position := 0;
@@ -185,7 +190,7 @@ begin
             ev.ID := Max_Event_ID;
           //  ev.fpos:=cur-1;
           //  ev.fpos:= str.Position;
-//            ev.fpos:= 0;
+//            ev.fpos := 0;
             ev.cryptMode := cryptMode;
 //            ev.when := Stmt.Column_Double(1);
 //            ev.kind := Stmt.Column_Bytes(6);
@@ -317,7 +322,7 @@ var
 
   function getString: RawByteString;
   var
-    i : Integer;
+    i: Integer;
   begin
     i := getInt;
     SetLength(Result, i);
@@ -572,7 +577,7 @@ procedure Thistory.reset;
 begin
   fLoaded := FALSE;
   loading := True;
-//  i:=0;
+//  i := 0;
   Clear;
 {  while i < count do
     begin
@@ -648,12 +653,15 @@ procedure Thistory.deleteFromTo(const uid: TUID; st, en: integer);
 var
   i: integer;
   hev: Thevent;
+  fn: String;
+  l: Integer;
 begin
  {$IFDEF DB_ENABLED}
  {$ELSE ~DB_ENABLED}
-  i:=st;
+  i := st;
   while (st>=en) and (getAt(en) <> NIL)and(getAt(en).fpos < 0) do
     dec(en);
+  fn := UIDHistoryFN(uid);
   while i <= en do
     begin
     if getAt(i).fpos < 0 then
@@ -661,7 +669,14 @@ begin
       if i > st then
       begin
         hev := getAt(i - 1);
-        utilLib.deleteFromTo(Account.ProtoPath+historyPath + uid, getAt(st).fpos, hev.fpos+length(hev.toString));
+        if (hev.fpos >= 0) then
+         begin
+           if hev.fLen > 0 then
+             l := hev.fLen
+            else
+             l := length(hev.toString);
+           utilLib.deleteFromTo(fn, getAt(st).fpos, hev.fpos + l);
+         end;
       end;
       st := i+1;
       end;
@@ -670,7 +685,14 @@ begin
   if st > en then
     exit;
   hev := getAt(en);
-  utilLib.deleteFromTo(Account.ProtoPath+historyPath + uid, getAt(st).fpos, hev.fpos+length(hev.toString));
+  if (hev.fpos >= 0) then
+   begin
+     if hev.fLen > 0 then
+       l := hev.fLen
+      else
+       l := length(hev.toString);
+     utilLib.deleteFromTo(fn, getAt(st).fpos, hev.fpos + l);
+   end;
 
   reset;
 //      Clear;
@@ -689,6 +711,8 @@ end; // deleteFromTo
 procedure Thistory.deleteFromToTime(const uid: TUID; const st, en: TDateTime);
 var
   hevst, heven: Thevent;
+  fn: String;
+  l: Integer;
 begin
 {$IFDEF DB_ENABLED}
 {$ELSE ~DB_ENABLED}
@@ -696,8 +720,17 @@ begin
   heven := getByTime(en);
   if (hevst = nil) or (heven = nil) then
     Exit;
+  fn := UIDHistoryFN(uid);
 
-  utilLib.deleteFromTo(Account.ProtoPath + historyPath + uid, hevst.fpos, heven.fpos + Length(heven.toString));
+  if (heven.fpos >= 0) then
+   begin
+     if heven.fLen > 0 then
+       l := heven.fLen
+      else
+       l := length(heven.toString);
+     utilLib.deleteFromTo(fn, hevst.fpos, heven.fpos + l);
+   end;
+
 
   Reset;
   Load(Account.AccProto.getContact(uid))
@@ -709,8 +742,8 @@ begin
  {$IFDEF DB_ENABLED}
     ExecSQL(protoDB, Format(SQLDeleteHistoryWith, [uid, uid]));
  {$ELSE ~DB_ENABLED}
-    if FileExists(Account.ProtoPath + historyPath + UID) then
-      Result := DeleteFile(Account.ProtoPath + historyPath + UID)
+    if FileExists(Thistory.UIDHistoryFN(UID)) then
+      Result := DeleteFile(Thistory.UIDHistoryFN(UID))
      else
  {$ENDIF ~DB_ENABLED}
       Result := False;
@@ -765,7 +798,7 @@ var
     case code of
       EI_flags:
         begin
-         ev.flags:=getInt;
+         ev.flags := getInt;
 //         inc(cur, 4);
         end;
       EI_UID:
@@ -1033,7 +1066,7 @@ begin
  {$IFDEF DB_ENABLED}
   result := True;
  {$ELSE ~DB_ENABLED}
-  Result := sizeoffile(Account.ProtoPath+historyPath+uid) > 0;
+  Result := sizeoffile(Thistory.UIDHistoryFN(uid)) > 0;
  {$ENDIF ~DB_ENABLED}
 end;
 

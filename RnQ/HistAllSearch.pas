@@ -57,7 +57,7 @@ implementation
     RegularExpressions,
  {$ENDIF ~DB_ENABLED}
     events, globalLib,
-    chatDlg, //ICQv9, icqConsts, //roasterLib,
+    chatDlg,
     themesLib;
 
 type
@@ -218,11 +218,11 @@ procedure TAllHistSrchForm.SchBtnClick(Sender: TObject);
   var
 //    re:Tregexpr;
     re: TRegEx;
-    l_RE_opt : TRegExOptions;
-    i : Integer;
+    l_RE_opt: TRegExOptions;
+    i: Integer;
   //  w2s,
-    s:string;
-    found:boolean;
+    s: string;
+    found: boolean;
   begin
     ParentNode := NIL;
     if reChk.Checked then
@@ -249,11 +249,11 @@ procedure TAllHistSrchForm.SchBtnClick(Sender: TObject);
       begin
         if stop2search then
          Break;
-//        s:=Thevent(hist[i]).decrittedInfo;
-        s:=Thevent(hist[i]).getBodyText;
+//        s := Thevent(hist[i]).decrittedInfo;
+        s := Thevent(hist[i]).getBodyText;
         if reChk.Checked then
 //          found:=re.exec(s)
-          found:=re.IsMatch(s)
+          found := re.IsMatch(s)
          else
           begin
           if not caseChk.checked then

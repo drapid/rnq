@@ -24,8 +24,12 @@ uses
   outboxLib, uinlistLib,
   RQThemes, RDGlobal,
   themesLib,
-  RnQMacros, RnQPrefsLib,
-  RnQZip
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLibs,
+ {$ELSE ~PREF_IN_DB}
+  RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
+  RnQMacros
   ;
 
 
@@ -51,7 +55,7 @@ const
 //  RnQversion:Longword = $000A00DB;  // remember: it's hex
   RQversion: Longword = $000A01FF;  // remember: it's hex
  {$IFDEF DB_ENABLED}
-  RnQBuild = 1200;
+  RnQBuild = 1300;
   PIC_CLIENT_LOGO = TPicName('rnq');
  {$ELSE ~DB_ENABLED}
   RnQBuild = 1126;
@@ -109,7 +113,7 @@ const
  {$IFNDEF UNICODE}
   ALPHANUMERIC    = ['a'..'z','A'..'Z','0'..'9','а'..'я','А'..'Я','Ё','ё'];
  {$ENDIF UNICODE}
-  WHITESPACES     = [#9,#10,#13,#32];
+  WHITESPACES     = [#9, #10, #13, #32];
   EMAILCHARS      = ['a'..'z','A'..'Z','0'..'9','-','_','.'];
 //  UID_CHARS       = ['a'..'z','A'..'Z','0','1'..'9','-','_','.', '@'];
   UID_CHARS       = ['a'..'z','A'..'Z','0','1'..'9','_','.','@'];
@@ -134,11 +138,6 @@ const
                  BE_popup, BE_flashchat, BE_BALLOON];
   allBehactionsButTip=allBehactions-[BE_tip];
   mtnBehactions = [BE_OPENCHAT, BE_tip, BE_SOUND, BE_HISTORY, BE_BALLOON];
-
-  RnQImageTag = AnsiString('<RnQImage>');
-  RnQImageUnTag = AnsiString('</RnQImage>');
-  RnQImageExTag = AnsiString('<RnQImageEx>');
-  RnQImageExUnTag = AnsiString('</RnQImageEx>');
 
 
   // additional flags start from the top, to not collide with ICQv9 flags
@@ -398,11 +397,11 @@ type
  {$ENDIF ICQ_ONLY}
      uin  : TUID;
      name, //uinStr,
-     SubPath, path, prefix:string;
-     SSI : Boolean;
-//     pwd : ShortString;
-     pwd : String;
-     encr : Boolean;
+     SubPath, path, prefix: string;
+     SSI: Boolean;
+//     pwd: ShortString;
+     pwd: String;
+     encr: Boolean;
    end;
 
 
@@ -413,11 +412,11 @@ type
  {$IFDEF ICQ_ONLY}
      AccProto : TicqSession;
  {$ELSE ~ICQ_ONLY}
-//     AccProto : IRnQProtocol;
-     AccProto : TRnQProtocol;
+//     AccProto: IRnQProtocol;
+     AccProto: TRnQProtocol;
  {$ENDIF ICQ_ONLY}
-     outbox :Toutbox;
-     acks   :Toutbox;
+     outbox : Toutbox;
+     acks   : Toutbox;
    end;
 
 const
@@ -431,27 +430,27 @@ var
 //  ICQ :TicqSession;
 //  MainProto : IRnQProtocol;
 //  MainProto : TRnQProtocol;
-  Account : TRnQAccount;
-  MainPrefs : TRnQPref;
+  Account: TRnQAccount;
+  MainPrefs: TRnQPref;
 
 //  userPath : String;
-  AccPath : String;
-  FileSavePath : String;
-  MakeBakups : Boolean;
+  AccPath: String;
+  FileSavePath: String;
+  MakeBackups: Boolean;
 
 //  gmtCodes,languageCodes,countryCodes,pastCodes,ageCodes,interestCodes,genderCodes :Tcodes;
   eventQ    : TeventQ;
   plugins   : Tplugins;
   progStart : double;
-  statusIcon :TstatusIcon;
+  statusIcon: TstatusIcon;
   hintMode  : (HM_null,HM_url,HM_comm);
   usertime  : integer;
   startTime : TdateTime;
-  WM_TASKBARCREATED : longword;
+  WM_TASKBARCREATED: longword;
 //  contactsPnl,
 //  freePnl :TstatusPanel;
   contactsPnlStr : String;
-  locked, startingLock : boolean;
+  locked, startingLock: boolean;
   hotkeysEnabled : boolean;
   CloseFTWndAuto : Boolean;
   outboxSbarRect : Trect;
@@ -464,42 +463,42 @@ var
 
   prefHeight      : integer;
   saveDBtimer2    : integer;
-//  loginServer  :string;
-  lastServerIP, lastserverAddr : string;
-  cmdLinePar : record
-     startUser : TUID;
+//  loginServer: string;
+  lastServerIP, lastserverAddr: string;
+  cmdLinePar: record
+     startUser: TUID;
      extraini,
      userPath,
      mainPath,
      logpath,
-     useproxy  : String;
-     ssi : Boolean;
-//     NoSound : Boolean;
+     useproxy: String;
+     ssi: Boolean;
+     Debug: Boolean;
+//     NoSound: Boolean;
     end;
-  lastOnTimer : Tdatetime;
-  showRosterTimer : integer;
-  removeTempVisibleTimer : integer;
-  removeTempVisibleContact : TRnQContact;
-  inactiveTime : integer;
-  noOncomingCounter : integer; // if > 0, IE_oncoming means people was here before (used in the login process)
-  childWindows : Tlist;
-  MustQuit : Boolean = False; // Вызывается из плагинов, чтобы их нормально завершить успеть.
+  lastOnTimer: Tdatetime;
+  showRosterTimer: integer;
+  removeTempVisibleTimer: integer;
+  removeTempVisibleContact: TRnQContact;
+  inactiveTime: integer;
+  noOncomingCounter: integer; // if > 0, IE_oncoming means people was here before (used in the login process)
+  childWindows: Tlist;
+  MustQuit: Boolean = False; // Вызывается из плагинов, чтобы их нормально завершить успеть.
 
-  docking :record
-    pos :(DP_right,DP_left);
-    bakOfs, bakSize :Tpoint;
+  docking: record
+    pos: (DP_right,DP_left);
+    bakOfs, bakSize: Tpoint;
     enabled,
     active,
     appbar,
     appbarFlag,
     tempOff,
     Dock2Chat,
-    Docked2chat : boolean;
+    Docked2chat: boolean;
     end;
   fantomWork,
   ShowUINDelimiter,
   XStatusAsMain,
-//  offlineMsgsChecked,
   blinkWithStatus,
   menuViaMacro,
   saveOutboxDelayed,
@@ -511,22 +510,22 @@ var
   autosizeDelayed,
   dbUpdateDelayed,
   rosterRepaintDelayed,          // requires a roasterLib.repaint
-  rosterRebuildDelayed :boolean; // requires a roasterLib.rebuild
-  stayConnected, running, resolving :boolean;
-  chatfrmXY :TformXY;
-  oldForeWindow   :Thandle;
-  bringForeground :Thandle;
-  groups :Tgroups;
+  rosterRebuildDelayed: boolean; // requires a roasterLib.rebuild
+  stayConnected, running, resolving: boolean;
+  chatfrmXY : TformXY;
+  oldForeWindow   : Thandle;
+  bringForeground : Thandle;
+  groups: Tgroups;
   searching      : string;
   usersPath      : string;
-  lastUser  : TUID;
-  userCharSet :integer;
-  imAwaySince :Tdatetime;
-  lastSearchTime :Tdatetime;
-  lastFilterEditTime :Tdatetime;
-  selectedColor :Tcolor;
-  dialogFrm :Tform;
-  uinlists : Tuinlists;
+  lastUser: TUID;
+  userCharSet: integer;
+  imAwaySince: Tdatetime;
+  lastSearchTime: Tdatetime;
+  lastFilterEditTime: Tdatetime;
+  selectedColor: Tcolor;
+  dialogFrm: Tform;
+  uinlists: Tuinlists;
 //  myStatus,
 
 //  visibleList, invisibleList,
@@ -645,9 +644,6 @@ var
   macros: Tmacros;
   splashFrm: Tform;
   splashImgElm: TRnQThemedElementDtls;
-//  splashPicTkn: Integer;
-//  splashPicIdx: Integer;
-//  splashPicLoc: TPicLocation;
   checkupdate: record
     autochecking,
     checking,
@@ -656,7 +652,7 @@ var
     every: integer;
     lastSerial: integer;
     last: Tdatetime;
-//    info : string;
+//    info: string;
     end;
   fontstylecodes: record
     enabled: boolean;
@@ -722,7 +718,7 @@ var
   texturizedWindows,
   showGroups,
   autoCopyHist,
-  bViewTextWrap,
+//  bViewTextWrap,
   indentRoster,
   showDisconnectedDlg,
   autoConnect,
@@ -731,7 +727,6 @@ var
   chatAlwaysOnTop,
   useLastStatus,
   useSmiles,
-  ShowAniSmlPanel,
   quitconfirmation,
   showOncomingDlg,
   showOnlyOnline,
@@ -760,11 +755,11 @@ var
 //  AutoCheckGoOfflineUsers : Boolean;
 
 //  haveToApplyTheme : Boolean;
-  NILdoWith : byte; // 0 - ask; 1 = clear all; 2 = save
-  typingInterval : Integer;
-  prefPages : array of TPrefPage;
-  Mutex:Cardinal;
-  portsListen : TPortList;
+  NILdoWith: byte; // 0 - ask; 1 = clear all; 2 = save
+  typingInterval: Integer;
+  prefPages: array of TPrefPage;
+  Mutex: Cardinal;
+  portsListen: TPortList;
   cache: String;
   imgCacheInfo: TMemIniFile;
 
@@ -797,7 +792,7 @@ implementation
 
 procedure ClearPrefPages;
 var
-  i : Integer;
+  i: Integer;
 begin
   if Length(prefPages) > 0 then
    for I := 0 to Length(prefPages) - 1 do
@@ -808,9 +803,10 @@ begin
    end;}
   SetLength(prefPages, 0);
 end;
+
 procedure AddPrefPage1(index: Byte; cl: TPrefFrameClass; Cpt: String);
 var
-  i : Integer;
+  i: Integer;
 begin
   I := length(prefPages);
   SetLength(prefPages, I+1);

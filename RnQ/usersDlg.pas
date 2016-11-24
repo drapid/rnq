@@ -66,7 +66,7 @@ type
     startIt: boolean;
     resAccPass: String;
     procedure refreshUsers;
-    function  doSelect:TUID;
+    function  doSelect: TUID;
     function  selectUIN(const uin: TUID): boolean;
     function  uinAt(idx: integer): TUID;
     procedure newuser(cls: TRnQProtoClass; const uin: TUID);
@@ -79,14 +79,14 @@ type
 
 var
   usersFrm: TusersFrm;
-  availableUsers : array of TRnQUser;
+  availableUsers: array of TRnQUser;
 
 implementation
 
 {$R *.DFM}
 
 uses
-  UxTheme, DwmApi, Themes, strutils,
+  UxTheme, DwmApi, Themes, strutils, UITypes,
   ShlObj,
    NewAccount,
    { $IFDEF RNQ_FULL}
@@ -496,7 +496,6 @@ var
 begin
   cnv := (Sender as TPaintBox).Canvas;
   R := (Sender as TPaintBox).ClientRect;
-//  SizeM :=
     PaintOnGlass := StyleServices.Enabled and DwmCompositionEnabled and
       not (csDesigning in ComponentState);
     if PaintOnGlass then
@@ -507,18 +506,18 @@ begin
   begin
     try
       TextRect := r;//rect(r.left,r.Top+2,r.Left+round((r.right-r.left)*progLogon),r.bottom-2);
-//      cnv.font.color:=clHighlightText;
+//      cnv.font.color := clHighlightText;
       if MouseOnLabel then
         begin
-         cnv.font.color:= clBlue;
+         cnv.font.color := clBlue;
          with cnv.font do
-           Style:=Style+[fsUnderline];
+           Style := Style+[fsUnderline];
         end
        else
         begin
-         cnv.font.color:= clInfoText;
+         cnv.font.color := clInfoText;
          with cnv.font do
-           Style:=Style-[fsUnderline];
+           Style := Style-[fsUnderline];
         end;
       if PaintOnGlass then
         begin
@@ -682,13 +681,13 @@ begin
          exit;
        end;
     if isOnlyDigits(onlyUID) then
-      tUserPath := tBasePath +  onlyUID + PathDelim
+      tUserPath := tBasePath + onlyUID + PathDelim
      else
 //      if prCl = TicqSession then
       if prCl._getProtoID = ICQProtoID then
-        tUserPath := tBasePath +  'AIM_'+ onlyUID + PathDelim
+        tUserPath := tBasePath + 'AIM_'+ onlyUID + PathDelim
        else
-        tUserPath := tBasePath +  prCl._GetProtoName +'_'+ onlyUID + PathDelim;
+        tUserPath := tBasePath + prCl._GetProtoName +'_'+ onlyUID + PathDelim;
 //    if i <> 0 then
 //     tUserPath := tUserPath + AIMprefix;
 //    tUserPath := tUserPath + String(uin) + PathDelim;
@@ -738,7 +737,6 @@ begin
 
    RnQVer0:= RnQVer;
    RnQVerT := '';
-
 
   if LiteVersion or PREVIEWversion then
     RnQVer:= RnQVer + crlf;
@@ -802,8 +800,8 @@ end;
 
 function TusersFrm.CheckPass : Boolean;
 var
-//  a : Boolean;
-  pt : String;
+//  a: Boolean;
+  pt: String;
 //  newAccPass : AnsiString;
 begin
   Result := True;

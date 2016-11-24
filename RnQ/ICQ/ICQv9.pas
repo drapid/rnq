@@ -53,7 +53,7 @@ type
     ItemType : Byte;
     FAuthorized: boolean;
     ItemID, GroupID: integer;
-    ItemName : AnsiString;
+    ItemName8: RawByteString;
 //    ItemNameU  : String;
     FInfoToken : RawByteString;
     FProto     : RawByteString; // may be "facebook" or "gtalk"
@@ -339,8 +339,8 @@ type
     procedure Failed;
 //    procedure ProcessSend;
     procedure DoneTransfer;
-//    procedure logMsg(err : Word; const msg : String);
-//    property ICQ : TicqSession read TicqSession(fproto);
+//    procedure logMsg(err: Word; const msg: String);
+//    property ICQ: TicqSession read TicqSession(fproto);
    end; // TICQdirect
 {$ENDIF usesDC}
 
@@ -409,10 +409,10 @@ type
 
     buzzedLastTime     : TDateTime;
 //    getAvatarFor       : Integer;
-    procedure setWebaware(value:boolean);
-    procedure setAuthNeeded(value:boolean);
-    procedure setDCmode(v:TicqDCmode);
-    procedure set_DCfakeIP(ip : TInAddr);
+    procedure setWebaware(value: boolean);
+    procedure setAuthNeeded(value: boolean);
+    procedure setDCmode(v: TicqDCmode);
+    procedure set_DCfakeIP(ip: TInAddr);
     procedure setDCfakePort(port: Word);
     procedure setVisibility(v: Tvisibility);
     procedure proxy_connected;
@@ -490,8 +490,8 @@ type
     saveMD5Pwd,
     AvatarsSupport,
     AvatarsAutoGet,
-    AvatarsAutoGetSWF : Boolean;
-    myAvatarHash : RawByteString;
+    AvatarsAutoGetSWF: Boolean;
+    myAvatarHash: RawByteString;
 
         class function NewInstance: TObject; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    class function GetId: Word; override;
@@ -513,6 +513,9 @@ type
 //    class function getICQContact(uin: Integer): TICQContact; OverLoad;
     function getICQContact(const uid: TUID): TICQContact; OverLoad;
     function getICQContact(uin: Integer): TICQContact; OverLoad;
+ {$IFNDEF UID_IS_UNICODE}
+    function getICQContact(const uid: String): TICQContact; OverLoad;
+ {$ENDIF ~UID_IS_UNICODE}
 
     function  getContact(const UID: TUID): TRnQContact; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  getContactClass: TRnQCntClass; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -533,7 +536,7 @@ type
 
 //    constructor Create; override;
 //    destructor Destroy; override;
-    constructor Create(const id: TUID; subType : TICQSessionSubType);
+    constructor Create(const id: TUID; subType: TICQSessionSubType);
     destructor Destroy; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure ResetPrefs; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure GetPrefs(var pp: TRnQPref); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -628,7 +631,7 @@ type
    public // ICQ Only
     procedure SSIdeleteContact(cnt: TRnQContact);
     procedure SSIAddContact(c: TICQContact);
-    procedure SSI_DeleteItem(gID, iID, Tp: word; const iName : AnsiString = ''; const pExtData : RawByteString = '');
+    procedure SSI_DeleteItem(gID, iID, Tp: word; const iName: RawByteString = ''; const pExtData: RawByteString = '');
     procedure SSI_UpdateContact(c: TICQContact);
     procedure SSI_UpdateGroup(c: TICQContact);
     procedure SSIdeleteGroup(gID: integer);
@@ -726,45 +729,45 @@ type
 
     procedure parseTYPING_NOTIFICATION(const pkt : RawByteString);
    {$IFDEF RNQ_AVATARS}
-    procedure parse0121(const pkt : RawByteString; flags : Word);
-    procedure iconUploadAck(const pkt : RawByteString);
-//    procedure RequestIcon(uin : Integer; hash : String);
+    procedure parse0121(const pkt: RawByteString; flags: Word);
+    procedure iconUploadAck(const pkt: RawByteString);
+//    procedure RequestIcon(uin: Integer; hash: String);
     procedure parseIcon(const pkt: RawByteString);
     procedure initAvatarSess;
    {$ENDIF RNQ_AVATARS}
-    procedure sendMyXStatus(cont : TICQContact; msgID : Int64);
+    procedure sendMyXStatus(cont: TICQContact; msgID: Int64);
 
     procedure SSIreqRoster;
-//    function  SSI_Item2packet(item : TOSSIItem) : String;
+//    function  SSI_Item2packet(item: TOSSIItem): String;
 
-//    procedure SSIUpdateGroup( grID : Integer);
-    procedure SSI_UpdateGroups(const args:array of integer);
-//    procedure SSIRenameGroup(gID:integer; gName:string);
-//    procedure renameSSIGroup(gID:integer; gName:string);
+//    procedure SSIUpdateGroup( grID: Integer);
+    procedure SSI_UpdateGroups(const args: array of integer);
+//    procedure SSIRenameGroup(gID: integer; gName: string);
+//    procedure renameSSIGroup(gID: integer; gName: string);
    private
-    function  add2visible(c:TICQContact):boolean; overload;
-    function  add2ignore(c:TICQContact):boolean; //overload;
-    function  remFromIgnore(c:TICQContact):boolean;
-    function  add2invisible(c:TICQContact):boolean; overload;
-    function  addTemporaryVisible(c:TICQContact):boolean; overload;
-    function  addTemporaryVisible(cl:TRnQCList):boolean; overload;
-    function  removeTemporaryVisible(c:TICQContact):boolean; overload;
-    function  removeTemporaryVisible(cl:TRnQCList):boolean; overload;
-    function  removeFromVisible(c:TICQContact):boolean; overload;
-    procedure removeFromVisible(const cl:TRnQCList); overload;
-    function  removeFromInvisible(c:TICQContact):boolean; overload;
-    procedure removeFromInvisible(const cl:TRnQCList); overload;
+    function  add2visible(c: TICQContact): boolean; overload;
+    function  add2ignore(c: TICQContact): boolean; //overload;
+    function  remFromIgnore(c: TICQContact): boolean;
+    function  add2invisible(c: TICQContact): boolean; overload;
+    function  addTemporaryVisible(c: TICQContact): boolean; overload;
+    function  addTemporaryVisible(cl: TRnQCList): boolean; overload;
+    function  removeTemporaryVisible(c: TICQContact): boolean; overload;
+    function  removeTemporaryVisible(cl: TRnQCList): boolean; overload;
+    function  removeFromVisible(c: TICQContact): boolean; overload;
+    procedure removeFromVisible(const cl: TRnQCList); overload;
+    function  removeFromInvisible(c: TICQContact): boolean; overload;
+    procedure removeFromInvisible(const cl: TRnQCList); overload;
 
-    procedure SSIsendAddTempVisible(const buid : AnsiString);
-    procedure SSIsendDelTempVisible(const buid : AnsiString);
+    procedure SSIsendAddTempVisible(const buid: AnsiString);
+    procedure SSIsendDelTempVisible(const buid: AnsiString);
 
-    procedure SSI_AddVisItem(const UID : TUID; iType : Word);
-    procedure SSI_DelVisItem(const UID : TUID; iType : Word);
+    procedure SSI_AddVisItem(const UID: TUID; iType: Word);
+    procedure SSI_DelVisItem(const UID: TUID; iType: Word);
 
-    procedure SSI_UpdateItem(const iName, iExtData : RawByteString; gID, iID, Tp : word);
-    Function  SSI_CreateItem(const iName, iExtData : RawByteString; gID, iID, Tp : word) : word;
-    procedure SSI_CreateItems(Items : array of TOSSIItem);
-    procedure SSI_DeleteItems(Items : array of TOSSIItem);
+    procedure SSI_UpdateItem(const iName, iExtData: RawByteString; gID, iID, Tp: word);
+    Function  SSI_CreateItem(const iName, iExtData: RawByteString; gID, iID, Tp: word): word;
+    procedure SSI_CreateItems(Items: array of TOSSIItem);
+    procedure SSI_DeleteItems(Items: array of TOSSIItem);
 
  {$IFDEF USE_REGUIN}
     procedure send170c;
@@ -772,69 +775,69 @@ type
  {$ENDIF USE_REGUIN}
 
     procedure sendChangePwd(const newPwd: RawByteString);
-    procedure parseGCdata(const snac:RawByteString; offline:boolean=FALSE);
+    procedure parseGCdata(const snac: RawByteString; offline: boolean=FALSE);
 //    procedure parseStatus(snac:string; ofs:integer);
-    procedure parseOnlineInfo(const snac: RawByteString; pOfs: Integer; cont : TICQContact; isSt : Boolean;
-                   isMsg : Boolean = True; ShowCntSts : Boolean = True);
-    procedure parseStatus(const snac: RawByteString; ofs:integer; cont : TICQContact;
-                  isInvis : Boolean = false; Status_changed : Boolean = False);
+    procedure parseOnlineInfo(const snac: RawByteString; pOfs: Integer; cont: TICQContact; isSt : Boolean;
+                   isMsg: Boolean = True; ShowCntSts : Boolean = True);
+    procedure parseStatus(const snac: RawByteString; ofs:integer; cont: TICQContact;
+                  isInvis: Boolean = false; Status_changed: Boolean = False);
  {$IFDEF USE_REGUIN}
     procedure parseNewUIN(const snac: RawByteString);
  {$ENDIF USE_REGUIN}
-    procedure parseCookie(const flap : RawByteString);
-    procedure parseREDIRECTxSERVICE(const pkt : RawByteString); // 0105
-    procedure parseOncomingUser(const snac : RawByteString);
-    procedure parseOffgoingUser(const snac : RawByteString);
-    procedure parseMsgError(const snac : RawByteString; ref: integer);
-    procedure parseServerAck(const snac : RawByteString; ref: integer);
+    procedure parseCookie(const flap: RawByteString);
+    procedure parseREDIRECTxSERVICE(const pkt: RawByteString); // 0105
+    procedure parseOncomingUser(const snac: RawByteString);
+    procedure parseOffgoingUser(const snac: RawByteString);
+    procedure parseMsgError(const snac: RawByteString; ref: integer);
+    procedure parseServerAck(const snac: RawByteString; ref: integer);
     procedure parseSRV_LOCATION_ERROR(const snac: RawByteString; ref: integer);
     procedure parseSRV_LOGIN_REPLY(const snac: RawByteString);
     procedure parseAuthKey(const snac: RawByteString);
-    procedure parse1503(const snac: RawByteString; ref:integer; flags : word);
+    procedure parse1503(const snac: RawByteString; ref: integer; flags: word);
     procedure parse040A(const snac: RawByteString);
     procedure parse040B(const snac: RawByteString);
     procedure parse010F(const snac: RawByteString);
-    procedure parse0206(snac : RawByteString);
-    procedure parse020C(const snac : RawByteString; ref : Integer);
-    procedure parseIncomingMsg(snac : RawByteString);
+    procedure parse0206(snac: RawByteString);
+    procedure parse020C(const snac: RawByteString; ref: Integer);
+    procedure parseIncomingMsg(snac: RawByteString);
     procedure goneOffline; // called going offline
 {$IFDEF usesDC}
     procedure dc_connected(Sender: TObject; Error: Word);
 {$ENDIF usesDC}
     procedure connected(Sender: TObject; Error: Word);
-    procedure OnProxyTalk(Sender : TObject; isReceive : Boolean; Data : RawByteString);
-    procedure OnProxyError(Sender : TObject; Error : Integer; Msg : String);
+    procedure OnProxyTalk(Sender: TObject; isReceive: Boolean; Data: RawByteString);
+    procedure OnProxyError(Sender: TObject; Error: Integer; Msg: String);
     procedure onDataAvailable(Sender: TObject; Error: Word);
-    procedure received(Sender: TObject; Error: Word; pkt : RawByteString);
+    procedure received(Sender: TObject; Error: Word; pkt: RawByteString);
     procedure disconnected(Sender: TObject; Error: Word);
     procedure parseContactsString(s: RawByteString);
     procedure parseAuthString(s: RawByteString);
     procedure parsePagerString(s: RawByteString);
 
-    procedure parseAuthReq(const pkt : RawByteString);
+    procedure parseAuthReq(const pkt: RawByteString);
 
     procedure newLogin;
     procedure SSIreqLimits;
     procedure SSIchkRoster;
     procedure SSIsendReady;
     procedure SSIstart();
-    procedure SSIstop(needSend : Boolean = false);
-//    procedure SSIUpdate(ID : String);
-    procedure SplitCL2SSI_DelItems(proc:TsplitSSIProc; cl:TRnQCList; Tp : word);
-//    procedure SSInewGroup(gID:integer; gName:string; iID : integer = 0);
+    procedure SSIstop(needSend: Boolean = false);
+//    procedure SSIUpdate(ID: String);
+    procedure SplitCL2SSI_DelItems(proc: TsplitSSIProc; cl: TRnQCList; Tp: word);
+//    procedure SSInewGroup(gID: integer; gName: string; iID: integer = 0);
 //    procedure SSIAddContact(vUIN, vName: String;
 //              vMail: String=''; vSMS: String=''; cmnt: String='');
-//    procedure SSInewContact(gID,cID:integer; nUIN,cName, vMail, vSMS, cmnt:string);
-    function SSI_sendAddContact(cnt : TICQContact; needAuth : Boolean = false; pItem : TOSSIItem = NIL) : Word;
-//    procedure SSInewContactauth(gID,cID:integer; nUIN,cName:string);
-//    procedure SSIdeleteContact(gID,cID:integer; nUIN,cName:string);
-    procedure parse131b(const pkt : RawByteString);
-    procedure parse131C(const pkt : RawByteString);
-    procedure parse1308090A(const snac:RawByteString; ref:integer; iType : Word);
-//    procedure parse1308(snac:string; ref:integer);
-//    procedure parse1309(snac:string; ref:integer);
-//    procedure parse130A(snac:string; ref:integer);
-    procedure parse130E(const snac: RawByteString; ref:integer);  //SSIackParse(Pkt: String); // #$13#$0E
+//    procedure SSInewContact(gID, cID: integer; nUIN, cName, vMail, vSMS, cmnt: string);
+    function SSI_sendAddContact(cnt: TICQContact; needAuth: Boolean = false; pItem: TOSSIItem = NIL) : Word;
+//    procedure SSInewContactauth(gID, cID: integer; nUIN, cName: string);
+//    procedure SSIdeleteContact(gID, cID: integer; nUIN, cName: string);
+    procedure parse131b(const pkt: RawByteString);
+    procedure parse131C(const pkt: RawByteString);
+    procedure parse1308090A(const snac: RawByteString; ref: integer; iType: Word);
+//    procedure parse1308(snac: string; ref: integer);
+//    procedure parse1309(snac: string; ref: integer);
+//    procedure parse130A(snac: string; ref: integer);
+    procedure parse130E(const snac: RawByteString; ref: integer);  //SSIackParse(Pkt: String); // #$13#$0E
     procedure ProcessSSIacks;
     procedure parse1311(const snac: RawByteString; ref: Integer); // SSI_Begin transaction
     procedure parse1312(const snac: RawByteString; ref: Integer); // SSI_END transaction
@@ -849,10 +852,10 @@ type
     function  addRef(k: TrefKind; const uin: TUID):integer;
     function  dontBotherStatus:boolean;
     function  myUINle: RawByteString;
-    function  getFullStatusCode:dword;
+    function  getFullStatusCode: dword;
 
    public // All
-    function  sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK:boolean):integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP} // returns handle
+    function  sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK: boolean): integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP} // returns handle
     procedure sendSMS2(dest, msg: String; ack: Boolean);
     function  sendBuzz(cnt: TRnQContact): Boolean;
     procedure SetListener(l: TProtoNotify); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -914,8 +917,8 @@ var
 
 
 var
-  ICQstatuses, icqVis : TStatusArray;
-  statMenu, icqVisMenu : TStatusMenu;
+  ICQstatuses, icqVis: TStatusArray;
+  statMenu, icqVisMenu: TStatusMenu;
 
 
 implementation
@@ -929,7 +932,7 @@ uses
    OverbyteIcsMD5, OverbyteIcsWSocket,
 //   ElAES,
    aes_type, aes_ecb,
-   RnQDialogs, RnQLangs, RDUtils, RnQBinUtils,
+   RnQDialogs, RnQLangs, RDUtils, RnQBinUtils, RnQGlobal,
    Base64, //ZLibEx,
    RDFileUtil, RnQCrypt,
 //   rtf2html,
@@ -1041,7 +1044,7 @@ function SSI_Item2packet(item: TOSSIItem): RawByteString;
 begin
   if Assigned(item) and (item is TOSSIItem) then
    with item do
-    Result := Length_BE(ItemName) + word_BEasStr(GroupID) +
+    Result := Length_BE(ItemName8) + word_BEasStr(GroupID) +
               word_BEasStr(ItemID) + word_BEasStr(ItemType) +
               Length_BE(ExtData)
   else
@@ -1080,7 +1083,7 @@ begin
          with arr[k] do
           begin
             ItemType := Tp;
-            ItemName := UID;
+            ItemName8 := UID;
             ItemID   := 0;
             ExtData  := '';
             Len1 := Length(SSI_Item2packet(arr[k]));
@@ -1200,16 +1203,21 @@ begin
   ]);
 end; // str2html
 }
+
 function str2html2(const s: AnsiString): AnsiString;
-begin
-  result := template(s, [
-    AnsiString('<'), AnsiString('&lt;'),
-    AnsiString('>'), AnsiString('&gt;')
-//    CRLF, '<br/>',
+const
+  t: array of AnsiString = ['<', '&lt;',
+                            '>', '&gt;'
+                            //    CRLF, '<br/>',
 //    #13, '<br/>',
 //    #10, '<br/>',
-//    '&', '&amp;'
-  ]);
+//                            '&', '&amp;',
+{                            '+', '%2B',
+                            '/', '%2F',
+                            '=', '%3D'}
+];
+begin
+  result := template(s, t);
 end; // str2html
 
 function xml_sms(me: TRnQcontact; const dest, msg: AnsiString; ack: boolean): AnsiString;
@@ -1426,11 +1434,11 @@ begin sock.close end;
 
 procedure TICQDirect.connected(Sender: TObject; Error: Word);
 var
-  icq:TicqSession;
-  a : Word;
+  icq: TicqSession;
+  a: Word;
 begin
-  icq:= TicqSession(directs.proto);
-  icq.eventDirect:=self;
+  icq := TicqSession(directs.proto);
+  icq.eventDirect := self;
 if error<>0 then
   begin
    icq.eventMsgA := '';
@@ -1440,15 +1448,15 @@ if error<>0 then
     error:= a;
     icq.eventMsgA := WSocketErrorDesc(error);
    end; 
-  icq.eventInt:=error;
-  icq.eventError:=EC_cantconnect_dc;
+  icq.eventInt := error;
+  icq.eventError := EC_cantconnect_dc;
   icq.notifyListeners(IE_error);
   exit;
   end;
   if imserver then
     sock.dup(sock.accept);
- P_host:=sock.GetPeerAddr;
- P_port:=sock.GetPeerPort;
+ P_host := sock.GetPeerAddr;
+ P_port := sock.GetPeerPort;
  icq.notifyListeners(IE_dcConnected);
  if mode = dm_bin_proxy then
   if (((stage=1)or(stage=3))and(not imSender))or
@@ -2086,7 +2094,7 @@ begin
   fPwdHash := '';
 //  fSessionTokenExpIn := 86400;
   fSession.tokenExpIn := 604800; // Week
-  fSession.DevId := ICQ_DEV_ID;
+  fSession.DevId := String(ICQ_DEV_ID);
   SNACref := 1;
 //  FLAPseq:=$6700+random($100);
 //  FLAPseq := Flap_start;
@@ -2121,7 +2129,7 @@ Q:=TflapQueue.create;
   if subType = SESS_IM then
    begin
     {$IFDEF usesDC}
-      directs:= Tdirects.create(self);
+      directs := Tdirects.create(self);
     {$ENDIF usesDC}
     DCmode := DC_none;
     showInfo := 2;
@@ -2160,7 +2168,7 @@ end; // create
 
 procedure TicqSession.ResetPrefs;
 var
-  i : Integer;
+  i: Integer;
 begin
 //  ICQ.readList(LT_VISIBLE).clear;
 //  ICQ.readList(LT_INVISIBLE).clear;
@@ -2370,13 +2378,13 @@ begin
 
 end;
 
-procedure TicqSession.SetPrefs(pp : TRnQPref);
+procedure TicqSession.SetPrefs(pp: TRnQPref);
 var
   i : Integer;
   sU, sU2 : String;
   st: Byte;
   l : RawByteString;
-  myInf : TRnQContact;
+//  myInf : TRnQContact;
 begin
   inherited SetPrefs(pp);
 
@@ -2433,7 +2441,7 @@ begin
       with onStatusDisable[byte(st)] do
        begin
 //        sU2 := status2Img[st];
-        sU2 := status2Img[st] + '-disable-';
+        sU2 := String(status2Img[st]) + '-disable-';
 //        sU := sU2+'-disable-blinking';
         sU := sU2+'blinking';
         pp.getPrefBool(sU, blinking);
@@ -2518,7 +2526,7 @@ begin
    with TICQcontact(getMyInfo) do
     begin
 //        status := ticqStatus(SC_OFFLINE);
-      ICQIcon.hash_safe := myAvatarHash;
+      Icon.hash_safe := myAvatarHash;
     end;
 
   applyBalloon();
@@ -2559,42 +2567,46 @@ begin
     freeAndNIL(avt_icq);
  {$ENDIF RNQ_AVATARS}
 
-Q.free;
-sock.free;
-fRoster.free;
-fVisibleList.free;
-fInvisibleList.free;
-{$IFDEF UseNotSSI}
-fIntVisibleList.free;
-fIntInvisibleList.free;
-{$ENDIF UseNotSSI}
-tempvisibleList.free;
-spamList.Free;
-SSIacks.Free;
+  Q.free;
+  sock.free;
+  fRoster.free;
+  fVisibleList.free;
+  fInvisibleList.free;
+  {$IFDEF UseNotSSI}
+  fIntVisibleList.free;
+  fIntInvisibleList.free;
+  {$ENDIF UseNotSSI}
+  tempvisibleList.free;
+  spamList.Free;
+  SSIacks.Free;
 
 //  imageStream.Free;
   inherited destroy;
 end; // destroy
 
 function TicqSession.myUINle: RawByteString;
-begin result:=dword_LEasStr(StrToIntDef(myAccount, 0)) end;
+begin
+  result := dword_LEasStr(StrToIntDef(myAccount, 0))
+end;
 
-function  TicqSession.getMyInfo : TRnQcontact;
+function  TicqSession.getMyInfo: TRnQcontact;
 begin
 //  result := MyInfo0;
   Result := contactsDB.add(Self, MyAccount);
 end;
-{procedure TicqSession.setMyInfo(cnt : TRnQContact);
+
+{procedure TicqSession.setMyInfo(cnt: TRnQContact);
 begin
   myInfo := TICQContact(cnt);
 end;}
-function TicqSession.isMyAcc(c : TRnQContact) : Boolean;
+
+function TicqSession.isMyAcc(c: TRnQContact): Boolean;
 begin
 //  result := MyInfo0.equals(c);
   Result := Assigned(c) and c.equals(MyAccount)
 end;
 
-function TicqSession.canAddCntOutOfGroup : Boolean;
+function TicqSession.canAddCntOutOfGroup: Boolean;
 begin
  {$IFDEF UseNotSSI}
     Result := not (UseSSI);
@@ -2603,12 +2615,12 @@ begin
  {$ENDIF UseNotSSI}
 end;
 
-function TicqSession.pwdEqual(const pass : String) : Boolean;
+function TicqSession.pwdEqual(const pass: String): Boolean;
 begin
   Result := ((pass<>'')and(pass = fPwd)) or (MD5Pass(pass) = fPwdHash);
 end;
 
-function  TicqSession.getPwd : String;
+function  TicqSession.getPwd: String;
 begin
   if saveMD5Pwd then
     Result := fPwdHash
@@ -2692,7 +2704,8 @@ var
   s: RawByteString;
 begin
   result := FALSE;
-  if sock.State <> wsConnected then exit;
+  if sock.State <> wsConnected then
+    exit;
   s := RawByteString('*')
     + AnsiChar(ch)
     + word_BEasStr(FLAPseq)
@@ -2713,7 +2726,8 @@ begin
    eventData := s;
    notifyListeners(IE_serverGot);
    inc(FLAPseq);
-   if FLAPseq >= $8000 then FLAPseq:=0;
+   if FLAPseq >= $8000 then
+     FLAPseq:=0;
   except
   end;
   s := '';
@@ -2829,15 +2843,15 @@ begin
   if error <> 0 then
   begin
     goneOffline;
-    eventInt:=WSocket_WSAGetLastError;
+    eventInt := WSocket_WSAGetLastError;
     if eventInt=0 then
-     eventInt:=error;
+     eventInt := error;
     eventMsgA := WSocketErrorDesc(eventInt);
-    eventError:=EC_cantconnect;
+    eventError := EC_cantconnect;
     notifyListeners(IE_error);
     exit;
   end;
-  eventAddress:=sock.Addr;
+  eventAddress := sock.Addr;
   if sock.SslEnable then
    eventAddress := eventAddress + '  '+ crlf + sock.SslVersion +'; '+ sock.SslCipher;
   notifyListeners(IE_serverConnected);
@@ -2935,7 +2949,7 @@ begin
 //            s := TLV($CA, Char(visibility2SSIcode[visibility]))+
 //                 TLV($D0, #1)+TLV($D1, #1)+TLV($D2, #1)+TLV($D3, #1)+
 //                 TLV($CB, #$FF#$FF#$FF#$FF);
-            SSI_UpdateItem(ItemName, s, GroupID, ItemID, FEEDBAG_CLASS_ID_PDINFO);
+            SSI_UpdateItem(ItemName8, s, GroupID, ItemID, FEEDBAG_CLASS_ID_PDINFO);
            end;
         end
       else
@@ -2950,7 +2964,8 @@ end;
 
 procedure TicqSession.resetStatusCode; //011E
 begin
-  if not isReady then Exit;
+  if not isReady then
+    Exit;
 
   sendSNAC(ICQ_SERVICE_FAMILY, $1E, TLV($06, dword_Zero));
 //  addRef(REF_status, '');
@@ -4072,15 +4087,16 @@ begin
   Result := True;
 end;
 
-function TicqSession.sendAutoMsgReq(const uin:TUID):integer;
+function TicqSession.sendAutoMsgReq(const uin: TUID): integer;
 var
   c: TICQContact;
-  msgtype:byte;
-  s:TICQstatus;
+  msgtype: byte;
+  s: TICQstatus;
 begin
-result:=-1;
-c:= getICQContact(uin);
-if c.status <> SC_ONLINE then s:=c.status
+  result:=-1;
+  c := getICQContact(uin);
+  if c.status <> SC_ONLINE then
+     s := c.status
 else s:=c.prevStatus;
 case s of
   SC_OCCUPIED: msgtype:=MTYPE_AUTOBUSY;
@@ -4095,9 +4111,9 @@ if not isReady then exit;
 result:=addRef(REF_msg,uin);
 end; // sendAutoMsgReq
 
-procedure TicqSession.sendAddedYou(const uin:TUID);
+procedure TicqSession.sendAddedYou(const uin: TUID);
 var
-  c:TICQcontact;
+  c: TICQcontact;
 begin
 if not isReady then exit;
 
@@ -4144,7 +4160,8 @@ procedure TicqSession.sendAuth(const uin: TUID);
 var
   c: TICQcontact;
 begin
-  if not isReady then exit;
+  if not isReady then
+    exit;
   c := getICQContact(uin);
   if not imVisibleTo(c) then
     if addTempVisMsg then
@@ -4159,7 +4176,8 @@ end; // sendAuth
 
 procedure TicqSession.sendAuthDenied(const uin: TUID; const msg: string);
 begin
-  if not isReady then exit;
+  if not isReady then
+    exit;
   sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
     + Length_B(uin)
     +TLV(5, myUINle+ AnsiChar(MTYPE_AUTHDENY)+#0+WNTS(StrToUTF8(msg)))
@@ -4169,9 +4187,10 @@ end; // sendAuth
 
 procedure TicqSession.sendNewQueryInfo(const uin: TUID);
 var
-  a : Integer;
+  a: Integer;
 begin
-  if not isReady then Exit;
+  if not isReady then
+    Exit;
   // new UIN info request 2502 with 2503 presponse (unparsed for now)
   a := StrToIntDef(uin, 0);
   if a > 0 then
@@ -4194,7 +4213,8 @@ procedure TicqSession.sendSimpleQueryInfo(const uin: TUID);
 var
   a: Integer;
 begin
-  if not isReady then exit;
+  if not isReady then
+    exit;
   a := StrToIntDef(uin, 0);
   if a > 0 then
    sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ, TLV(1, Length_LE( myUINle
@@ -4230,8 +4250,10 @@ var
   wpS: TwpSearch;
   cnt: TICQcontact;
 begin
-  if not isReady then exit;
-  if uin = 0 then Exit;
+  if not isReady then
+    exit;
+  if uin = 0 then
+    Exit;
 {
   sendSNAC(ICQ_EXTENSIONS_FAMILY, 2, TLV(1, Length_LE( myUINle
                       +#$D0#7#0#0+TAB[getMyInfo.equals(uin)]+#04
@@ -4304,13 +4326,13 @@ begin
   else}
    begin
      s := word_LEasStr(META_SEARCH_GENERIC)
-        + TLVIfNotNull(User_First, wp.first)
-        + TLVIfNotNull(User_Last, wp.last)
-        + TLVIfNotNull(User_Nick, wp.nick)
-        + TLVIfNotNull(User_email, wp.email)
-        + TLVIfNotNull(User_City, wp.city)
-        + TLVIfNotNull(User_State, wp.state)
-        + TLVIfINotNull(User_Inter, wp.wInterest, wp.keyword)
+        + TLVIfNotNull(User_First, AnsiString(wp.first))
+        + TLVIfNotNull(User_Last, AnsiString(wp.last))
+        + TLVIfNotNull(User_Nick, AnsiString(wp.nick))
+        + TLVIfNotNull(User_email, AnsiString(wp.email))
+        + TLVIfNotNull(User_City, AnsiString(wp.city))
+        + TLVIfNotNull(User_State, AnsiString(wp.state))
+        + TLVIfINotNull(User_Inter, wp.wInterest, AnsiString(wp.keyword))
         + TLVIfWNotNull(User_Lang, wp.lang)
         + TLVIfbNotNull(User_Gender, wp.gender)
         + TLVIfDWNotNull(User_Age, wp.age)
@@ -4560,7 +4582,7 @@ procedure TicqSession.sendsaveMyInfoNew(c: TICQcontact);
 //  tab2:array [boolean] of AnsiChar=(#0,#1);
 var
   sb: RawByteString;
-//  zi : Integer;
+//  zi: Integer;
 begin
   if c.birth > 1 then
     c.age := YearsBetween(now, c.birth);
@@ -5055,13 +5077,13 @@ RESUME	2	SSL is being used and SSL resume is supported if desired
   sock.WaitForClose;  // prevent to change properties while the socket is open
 {  if sock.http.enabled then
     begin
-    sock.addr:=sock.http.addr;
-    sock.port:=sock.http.port;
+    sock.addr := sock.http.addr;
+    sock.port := sock.http.port;
     end
   else}
     begin
-    sock.addr:=serviceServerAddr;
-    sock.port:=serviceServerPort;
+    sock.addr := serviceServerAddr;
+    sock.port := serviceServerPort;
     end;
   phase:=RECONNECTING_;
     eventAddress := sock.AddrPort;
@@ -5418,7 +5440,7 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
                      or (cont.ICQIcon.hash = BART_ID_EMPTY) then
                     cont.ICQIcon.hash := '';
                   if (Length(cont.ICQIcon.hash) = 16) and
-                     (cont.ICQIcon.hash <> cont.ICQIcon.hash_safe)then
+                     (cont.ICQIcon.hash <> cont.Icon.hash_safe)then
                     begin
                       eventContact := cont;
                       notifyListeners(IE_avatar_changed);
@@ -5846,7 +5868,7 @@ procedure TicqSession.notificationForMsg(msgtype: byte; flags: byte; urgent: boo
                               const msg: RawByteString{; offline:boolean = false});
 var
   mm: RawByteString;
-  strs : TAnsiStringDynArray;
+  strs: TAnsiStringDynArray;
 begin
   if msgtype in MTYPE_AUTOMSGS then
   begin
@@ -5923,7 +5945,7 @@ end; // notificationForMsg
 
 procedure TicqSession.parseGCdata(const snac: RawByteString; offline: boolean=FALSE);
 var
-  i, ll, ofs,v: integer;
+  i, ll, ofs, v: integer;
   s: AnsiString;
 begin
   if Length(snac) < 40 then
@@ -6047,8 +6069,8 @@ end; // parseServerAck
 
 procedure TicqSession.parseIncomingMsg(snac: RawByteString); // 0407
 var
-  t, i : Integer;
-  ofs, ofs2, l, l2 : integer;
+  t, i: Integer;
+  ofs, ofs2, l, l2: integer;
   isTzer: Boolean;
   isAutoMsg: Boolean;
   thisCnt : TICQcontact;
@@ -6763,11 +6785,11 @@ end; // parseincomingMsg
 
 procedure TicqSession.parsePagerString(s: RawByteString);
 begin
-  eventNameA := chop(#$FE,s);
-  chop(#$FE,s);
-  chop(#$FE,s);
-  eventAddress := chop(#$FE,s);
-  chop(#$FE,s);
+  eventNameA := chop(#$FE, s);
+  chop(#$FE, s);
+  chop(#$FE, s);
+  eventAddress := chop(#$FE, s);
+  chop(#$FE, s);
   eventMsgA := s;
 end; // parsePagerString
 
@@ -6841,11 +6863,12 @@ var
     Pkt1, Pkt2: RawByteString;
     isExstsTLV: Boolean;
     t, i, k, ofs1, code: Integer;
-    t64: Int64;
-    sU, PhoneNum, PhoneCnt: String;
-    cnt : TICQcontact;
+//    t64: Int64;
+    sU, PhoneNum: String;
+    PhoneCnt: RawByteString;
+    cnt: TICQcontact;
   begin
-    eventwp.uin    := getTLVSafe(META_COMPAD_UID, snac, ofs);
+    eventwp.uin := getTLVSafe(META_COMPAD_UID, snac, ofs);
     if eventwp.uin > '' then
     begin
       eventwp.nick   := unUTF( getTLVSafe(META_COMPAD_NICK, snac, ofs) );
@@ -6971,7 +6994,7 @@ var
            cellular := unUTF(getTLVSafe(META_COMPAD_MOBILE, snac, ofs));
          end;
 
-        homepage := getTLVSafe(META_COMPAD_HP, snac, ofs);
+        homepage := UnUTF(getTLVSafe(META_COMPAD_HP, snac, ofs));
 
         MarStatus := $00;
         s := getTLVSafe(META_COMPAD_MARITAL_STATUS, snac, ofs);
@@ -7073,7 +7096,7 @@ var
 
 var
   d, m: byte;
-  i: byte;
+//  i: byte;
   msgtype, msgflags: byte;
   ReplyType, replySubtype: Word;
   y: word;
@@ -7081,7 +7104,7 @@ var
 
   cont: TICQContact;
 //  msgU,
-  sU: String;
+//  sU: String;
   OldNick: String;
   cntUID: TUID;
 begin
@@ -8141,7 +8164,7 @@ end; // sendLogin
 
 procedure TicqSession.SendReqBuddy(Second: Boolean = False);
 var
-  vS : RawByteString;
+  vS: RawByteString;
 begin
   if Second then
     vS := ''
@@ -8197,7 +8220,7 @@ begin
       if useLSI3 and not useSSI or delLocSrv then
         sendRemoveContact(c.buin);
    {$ENDIF UseNotSSI}
-    c.status:= SC_UNK;
+    c.status := SC_UNK;
     c.SSIID := 0;
     eventInt:= TList(fRoster).count;
     notifyListeners(IE_numOfContactsChanged);
@@ -8355,32 +8378,48 @@ begin
   result := 'ICQ';
 end;
 
-class function TicqSession._getDefHost : Thostport;
+class function TicqSession._getDefHost: Thostport;
 begin
   Result.host := //'login.icq.com';
                  ICQServers[0];
   Result.Port := 5190;
 end;
 
-function TicqSession.getICQContact(const uid: TUID) : TICQContact;
+function TicqSession.getICQContact(const uid: TUID): TICQContact;
 begin
 //  result := TICQContact(contactsDB.get(TICQContact, uid));
   result := TICQContact(contactsDB.add(Self, uid));
 end;
 
+ {$IFNDEF UID_IS_UNICODE}
+function TicqSession.getICQContact(const uid: String): TICQContact;
+var
+  i: Int64;
+begin
+  if TryStrToInt64(uid, i) then
+    result := TICQContact(contactsDB.get(TICQContact, i))
+   else
+    result := TICQContact(contactsDB.add(Self, TUID(uid)));
+end;
+ {$ENDIF ~UID_IS_UNICODE}
+
 function TicqSession.getICQContact(uin: Integer): TICQContact;
 begin
 //  result := TICQContact(contactsDB.get(TICQContact, uin));
+ {$IFDEF UID_IS_UNICODE}
   result := TICQContact(contactsDB.add(Self, IntToStr(uin)));
+ {$ELSE ~UID_IS_UNICODE}
+  result := TICQContact(contactsDB.add(Self, IntToStrA(uin)));
+ {$ENDIF ~UID_IS_UNICODE}
 end;
 
 class function TicqSession._isProtoUid(var uin: TUID): boolean; //Static;
-//function TicqSession.isValidUid(var uin:TUID):boolean; //Static;
+//function TicqSession.isValidUid(var uin: TUID): boolean; //Static;
 var
-// i : Int64;
- k : Integer;
- fUIN : Int64;
- temp : TUID;
+// i: Int64;
+ k: Integer;
+ fUIN: Int64;
+ temp: TUID;
 begin
   Result := False;
   temp := TICQContact.trimUID(uin);
@@ -8405,10 +8444,10 @@ end;
 class function TicqSession._isValidUid1(const uin:TUID):boolean; //Static;
 //function TicqSession.isValidUid(var uin:TUID):boolean; //Static;
 var
-// i : Int64;
- k : Integer;
- fUIN : Int64;
- temp : TUID;
+// i: Int64;
+ k: Integer;
+ fUIN: Int64;
+ temp: TUID;
 begin
   Result := False;
   temp := TICQContact.trimUID(uin);
@@ -8421,7 +8460,8 @@ begin
 //      uin := unFakeUIN(fuin)
     end
    else
-     if not(temp[1] in ['0'..'9']) then Result := True;
+     if not(temp[1] in ['0'..'9']) then
+       Result := True;
     ;
 end;
 
@@ -8486,7 +8526,7 @@ begin
     end;
 //  if c.status = SC_OFFLINE then
 //    getUINStatus(c.UID);
-   eventInt:= TList(fRoster).count;
+   eventInt := TList(fRoster).count;
    notifyListeners(IE_numOfContactsChanged);
   end
  else
@@ -8910,9 +8950,10 @@ end;
 
 function TicqSession.addTemporaryVisible(c:TICQcontact):boolean;
 begin
-  result:=FALSE;
-  if not isReady then exit;
-  result:=TRUE;
+  result := FALSE;
+  if not isReady then
+    exit;
+  result := TRUE;
   tempvisibleList.add(c);
  {$IFDEF UseNotSSI}
   if not useSSI then
@@ -9102,11 +9143,12 @@ begin
        )
 end; // imVisibleTo
 
-function TicqSession.getLocalIPstr:string;
+function TicqSession.getLocalIPstr: string;
 begin
 //  try
-   Result:=sock.GetXaddr;
-   if compareText(result,'error')=0 then result:='';
+   Result := sock.GetXaddr;
+   if compareText(result,'error')=0 then
+     result := '';
 //  except
 //    result:='';
 //  end;
@@ -9115,14 +9157,14 @@ end; // getLocalIPstr
 function TicqSession.getLocalIP:integer;
 begin
  try
-  result:=WSocketResolveHost(getLocalIPstr).S_addr;
- except
-  result:=0;
+   result := WSocketResolveHost(getLocalIPstr).S_addr;
+  except
+   result := 0;
  end;
 end;
 
-procedure TicqSession.sendACK(cont : TICQContact; status:integer;
-                              const msg:string; DownCnt: word = $FFFF);
+procedure TicqSession.sendACK(cont: TICQContact; status: integer;
+                              const msg: string; DownCnt: word = $FFFF);
 var
 //  s,tlv:string;
 //  ofs:integer;
@@ -9506,22 +9548,22 @@ begin
  if i>0 then
  	with eventContact do
 	  begin
-     s:=getTLV(@snac[i]);
+     s := getTLV(@snac[i]);
      t := 0;
-       capabilitiesBig:=[];
-       capabilitiesSm:=[];
+       capabilitiesBig := [];
+       capabilitiesSm := [];
        capabilitiesXTraz := [];
-       extracapabilities:='';
+       extracapabilities := '';
       while s > '' do
         begin
-        cap:=copy(s,1,16);
-        delete(s,1,16);
-        found:=FALSE;
+        cap := copy(s, 1, 16);
+        delete(s, 1, 16);
+        found := FALSE;
         for i:=1 to length(BigCapability) do
           if cap = BigCapability[i].v then
             begin
-             include(capabilitiesBig,i);
-             found:=TRUE;
+             include(capabilitiesBig, i);
+             found := TRUE;
              break;
             end;
         if copy(cap, 1, 2) = CapsMakeBig1 then
@@ -9532,7 +9574,7 @@ begin
               if cap = CapsSmall[i].v then
               begin
                  include(capabilitiesSm,i);
-                 found:=TRUE;
+                 found := TRUE;
                  break;
               end;
            end;
@@ -9663,16 +9705,16 @@ begin
         inc(ofs, word_LEat(@snac[ofs])+2);
         inc(ofs, word_LEat(@snac[ofs])+2);
         msgtype := Byte(snac[ofs]);
-        msgflags:= Byte(snac[ofs+1]);
-        priority:= Byte(snac[ofs+4]);
+        msgflags := Byte(snac[ofs+1]);
+        priority := Byte(snac[ofs+4]);
         inc(ofs,6);
         eventMsgA := getWNTS(snac, ofs);
       end
      else
       begin
         msgtype := 0;
-        msgflags:= 0;
-        priority:= 0;
+        msgflags := 0;
+        priority := 0;
         eventMsgA := '';
       end;
       // here we can be bothered :P
@@ -9978,7 +10020,7 @@ begin
   // Need make asynchronized call
   sock.Connect
  except
-  on E:Exception do
+  on E: Exception do
    begin
      eventMsgA := E.Message;
      eventError := EC_cantconnect;
@@ -10015,9 +10057,9 @@ begin
 end;
 
 
-function Ticqsession.getFullStatusCode:dword;
+function Ticqsession.getFullStatusCode: dword;
 begin
-  result:=0;
+  result := 0;
   case DCmode of
     DC_roster: inc(result, flag_dcForRoster);
     DC_uponauth, DC_none : inc(result, flag_dcByRequest);
@@ -10318,7 +10360,7 @@ begin
       if i >= 0 then
        begin
          with TOSSIItem(serverSSI.items.Objects[i]) do
-          SSI_DeleteItem(GroupID, ItemID, ItemType, ItemName, ExtData);
+          SSI_DeleteItem(GroupID, ItemID, ItemType, ItemName8, ExtData);
 //         serverSSI.items.Delete(i);
          result := True;
        end;  
@@ -10345,7 +10387,7 @@ procedure TicqSession.parse0121(const pkt : RawByteString; flags : Word);
            else
 //           if hash = '' then
 //              SSI_DeleteItem(GroupID, ItemID, ItemType)
-              SSI_DeleteItem(GroupID, ItemID, ItemType, ItemName, ExtData);
+              SSI_DeleteItem(GroupID, ItemID, ItemType, ItemName8, ExtData);
 {            else
              begin
 //              if ItemName <> IntToStr(Byte(ch)) then
@@ -10589,10 +10631,10 @@ function TicqSession.uploadAvatar(const fn : String) : Boolean; // 1002
        SSI_CreateItem('1', s, 0, $5566, FEEDBAG_CLASS_ID_BART);
   end;}
 var
- buf : RawByteString;
-// hash : String;
- fs : Integer;
- ch : AnsiChar;
+ buf: RawByteString;
+// hash: String;
+ fs: Integer;
+ ch: AnsiChar;
 begin
   Result := False;
   if not Assigned(avt_icq) then
@@ -10686,7 +10728,7 @@ begin
     sendSNAC(ICQ_LISTS_FAMILY, $11, '')
 end;
 
-procedure TICQSession.SSIstop(needSend : Boolean);
+procedure TICQSession.SSIstop(needSend: Boolean);
 begin
 //  sendFLAP(SNAC_CHANNEL, SNAC($13, $12, 0, $00000012));
   if needSend or (SSI_InServerTransaction = 1) then
@@ -10695,7 +10737,7 @@ begin
 end;
 
 {
-procedure TICQSession.SSInewGroup(gID:integer; gName:string; iID : integer = 0);
+procedure TICQSession.SSInewGroup(gID: integer; gName: string; iID: integer = 0);
 begin
 //showmessage(inttostr(gid));
 //  sendSNAC(ICQ_LISTS_FAMILY, $8, Length_BE(gName)+word_LEasStr(gID)+#$00#$00+
@@ -10708,7 +10750,7 @@ begin
 //          word_BEasStr(FEEDBAG_CLASS_ID_GROUP)+ #$00#$00);
 end;
 
-procedure TICQSession.SSIUpdate(ID : String );
+procedure TICQSession.SSIUpdate(ID: String );
 begin
 //  sendSNAC(ICQ_LISTS_FAMILY,$8, Length_BE(nUIN)+word_LEasStr(gID)+
 //  word_LEasStr(random(65025))+#$00#$00+
@@ -10716,9 +10758,9 @@ begin
 end;
 }
 
-function TICQSession.GenSSID : Integer;
+function TICQSession.GenSSID: Integer;
 var
-  a : Word;
+  a: Word;
 begin
   repeat
    a := random($7FFF);
@@ -10728,8 +10770,8 @@ end;
 
 //procedure TICQSession.SSIAddContact(vUIN, vName: String;
 //              vMail: String=''; vSMS: String=''; cmnt: String='');
-procedure TICQSession.SSIAddContact(c : TICQcontact);
-//  var asd:integer;
+procedure TICQSession.SSIAddContact(c: TICQcontact);
+//  var asd: integer;
 begin
   if fRoster.exists(c) then
     begin
@@ -10750,10 +10792,10 @@ begin
 //  SSIstart;
 end;
 
-procedure TICQSession.SSI_UpdateContact(c : TICQcontact);
+procedure TICQSession.SSI_UpdateContact(c: TICQcontact);
 var
- i : integer;
-// s : AnsiString;
+ i: integer;
+// s: AnsiString;
 begin
 //  c.SSIID := GenSSID;
 //  i := FindSSIItemID(serverSSI, c.SSIID);
@@ -10815,12 +10857,12 @@ begin
     FMail := c.ssMail;
 //    ExtInfo  := ;
     SSIstart;
-    SSI_UpdateItem(ItemName, ExtData, GroupID, ItemID, ItemType);
+    SSI_UpdateItem(ItemName8, ExtData, GroupID, ItemID, ItemType);
     SSIstop;
    end;
 end;
 
-procedure TICQSession.UpdateGroupOf(cnt : TRnQContact);
+procedure TICQSession.UpdateGroupOf(cnt: TRnQContact);
 begin
   if cnt is TICQContact then
    if
@@ -10831,12 +10873,12 @@ begin
    SSI_UpdateGroup(TICQContact(cnt));
 end;
 
-procedure TICQSession.SSI_UpdateGroup(c : TICQcontact);
+procedure TICQSession.SSI_UpdateGroup(c: TICQcontact);
 var
-  i : integer;
-  gID : Integer;
-  na : Boolean;
-  pItem : TOSSIItem;
+  i: integer;
+  gID: Integer;
+//  na: Boolean;
+  pItem: TOSSIItem;
 begin
   i := FindSSIItemName(serverSSI, FEEDBAG_CLASS_ID_BUDDY, c.UID);
   if i >= 0 then // Just Change group
@@ -10850,7 +10892,7 @@ begin
       gID := groups.a[gID].ssiID;
       if (gID <> 0)and (gID <> GroupID) then
         begin
-         na := not c.Authorized;
+//         na := not c.Authorized;
          SSIstart;
 //         SSI_DeleteItem(GroupID, ItemID, ItemType, c.UID, ExtData);
          SSI_DeleteItem(GroupID, ItemID, ItemType);
@@ -10880,18 +10922,18 @@ begin
 end;
 
 
-procedure TICQSession.SSI_AddVisItem(const UID : TUID; iType : Word);
+procedure TICQSession.SSI_AddVisItem(const UID: TUID; iType: Word);
 //var
-//  asd:integer;
+//  asd: integer;
 begin
 //  asd := GenSSID;
   SSI_CreateItem(uid, '', 0, 0, iType);
 //  SSI_CreateItem(uid, TLV($0131, UID)+ TLV($0145, dword_BEasStr(DateTimeToUnix(now))), 0, 0, iType);
 end;
 
-procedure TICQSession.SSI_DelVisItem(const UID : TUID; iType : Word);
+procedure TICQSession.SSI_DelVisItem(const UID: TUID; iType: Word);
 var
-  i : integer;
+  i: integer;
 begin
 //  asd := GenSSID;
 //  SSI_CreateItem(uid, '', 0, asd, iType);
@@ -10899,15 +10941,15 @@ begin
   if i >= 0 then
     begin
      with TOSSIItem(serverSSI.items.Objects[i]) do
-      SSI_DeleteItem(0, ItemID, iType, ItemName);
+      SSI_DeleteItem(0, ItemID, iType, ItemName8);
     end;
 end;
 
-procedure TICQSession.SSI_UpdateGroups(const args:array of integer);
+procedure TICQSession.SSI_UpdateGroups(const args: array of integer);
 var
-  i, g, ll : Integer;
-  grID : Integer;
-  arr : array of integer;
+  i, g, ll: Integer;
+  grID: Integer;
+  arr: array of integer;
 begin
   SetLength(arr, 0);
   ll := 0;
@@ -10919,7 +10961,7 @@ begin
         if i >=0 then
          with TOSSIItem(serverSSI.items.Objects[i]) do
           begin
-            ItemName := '';
+            ItemName8 := '';
             ExtData  := TLV($C8, groups.getAllSSI);
 //            SSI_UpdateItem('RnQ', ExtData, 0, 0, FEEDBAG_CLASS_ID_GROUP);
             SSI_UpdateItem('', ExtData, 0, 0, FEEDBAG_CLASS_ID_GROUP);
@@ -10947,12 +10989,12 @@ begin
     SSIUpdateGroup(arr);
 end;
 
-procedure TICQSession.SSIUpdateGroup(const args:array of integer);
+procedure TICQSession.SSIUpdateGroup(const args: array of integer);
 var
-  i, g : Integer;
-//  grID : Integer;
-  UpdStr : RawByteString;
-  InTrans : Boolean;
+  i, g: Integer;
+//  grID: Integer;
+  UpdStr: RawByteString;
+  InTrans: Boolean;
 begin
   UpdStr := '';
   InTrans := False;
@@ -10998,9 +11040,9 @@ begin
         if i >=0 then
          with TOSSIItem(serverSSI.items.Objects[i]) do
           begin
-            ItemName := StrToUTF8(name);
+            ItemName8 := StrToUTF8(name);
             ExtData  := ICQCL_C8SSIByGrp(fRoster, args[g]);
-            UpdStr := UpdStr+Length_BE(ItemName)+word_BEasStr(ssiID)+word_BEasStr(0) +
+            UpdStr := UpdStr+Length_BE(ItemName8)+word_BEasStr(ssiID)+word_BEasStr(0) +
                 word_BEasStr(FEEDBAG_CLASS_ID_GROUP)+
                 Length_BE(ExtData);
           end
@@ -11016,10 +11058,10 @@ begin
     SSIstop;
   inc(SNACref);
   if SNACref > maxRefs then
-    SNACref:=1;
+    SNACref := 1;
 end;
 {
-procedure TICQSession.SSICreateGroup( grID : Integer);
+procedure TICQSession.SSICreateGroup(grID: Integer);
 begin
   if groups.exists(grID) then
   begin
@@ -11034,11 +11076,11 @@ begin
   end;
 end;
 }
-//procedure TICQSession.SSInewContact(gID,cID:integer; nUIN, cName, vMail, vSMS, cmnt:string);
-function TICQSession.SSI_sendAddContact(cnt : TICQcontact; needAuth : Boolean = false; pItem : TOSSIItem = NIL) : Word;
+//procedure TICQSession.SSInewContact(gID, cID: integer; nUIN, cName, vMail, vSMS, cmnt: string);
+function TICQSession.SSI_sendAddContact(cnt: TICQcontact; needAuth: Boolean = false; pItem: TOSSIItem = NIL): Word;
 var
-  s : RawByteString;
-//  item : TOSSIItem;
+  s: RawByteString;
+//  item: TOSSIItem;
 begin
 //sendSNAC(ICQ_LISTS_FAMILY, $8, Length_BE(nUIN)+word_LEasStr(gID)+
 //  word_LEasStr(random(65025))+#$00#$00+
@@ -11111,8 +11153,8 @@ begin
 //    );
 end;
 
-//procedure TICQSession.SSIdeleteContact(gID,cID:integer; nUIN,cName:string);
-procedure TICQSession.SSIdeleteContact(cnt : TRnQcontact);
+//procedure TICQSession.SSIdeleteContact(gID, cID: integer; nUIN, cName: string);
+procedure TICQSession.SSIdeleteContact(cnt: TRnQcontact);
 begin
   if cnt.SSIID = 0 then
     Exit;
@@ -11122,11 +11164,11 @@ begin
 //  SSIstop;
 end;
 
-procedure TICQSession.SSI_DeleteItem(gID, iID, Tp : word;
-             const iName : AnsiString = ''; const pExtData : RawByteString = '');
+procedure TICQSession.SSI_DeleteItem(gID, iID, Tp: word;
+             const iName: RawByteString = ''; const pExtData: RawByteString = '');
 var
-  i : Integer;
-  item : TOSSIItem;
+  i: Integer;
+  item: TOSSIItem;
 begin
   if (gID=0)and(iID=0)and (tp <> FEEDBAG_CLASS_ID_GROUP) then
     Exit;
@@ -11151,9 +11193,9 @@ begin
     end
 end;
 
-procedure TICQSession.SSI_UpdateItem(const iName, iExtData : RawByteString; gID, iID, Tp : word);
+procedure TICQSession.SSI_UpdateItem(const iName, iExtData: RawByteString; gID, iID, Tp: word);
 var
- i : Integer;
+ i: Integer;
 begin
   sendSNAC(ICQ_LISTS_FAMILY, SSI_OPERATION_CODES_UPDATE, //$9,
             Length_BE(iName)+word_BEasStr(gID)+word_BEasStr(iID) +
@@ -11166,17 +11208,17 @@ begin
   if i >=0 then
    with TOSSIItem(serverSSI.items.Objects[i]) do
     begin
-      ItemName := iName;
+      ItemName8 := iName;
       ExtData  := iExtData;
     end;
   inc(SNACref);
   if SNACref > maxRefs then
-    SNACref:=1;
+    SNACref := 1;
 end;
 
-function TICQSession.SSI_CreateItem(const iName, iExtData : RawByteString; gID, iID, Tp : word) : Word;
+function TICQSession.SSI_CreateItem(const iName, iExtData: RawByteString; gID, iID, Tp: word): Word;
 var
-  item : TOSSIItem;
+  item: TOSSIItem;
 begin
 //  SSIstart;
 
@@ -11189,7 +11231,7 @@ begin
     ItemType := Tp;
     ItemID   := iID;
     GroupID  := gID;
-    ItemName := iName;
+    ItemName8 := iName;
     ExtData  := iExtData;
    end;
 //  with item do
@@ -11204,10 +11246,10 @@ begin
   Result := iID;
 end;
 
-procedure TICQSession.SSI_CreateItems(Items : array of TOSSIItem);
+procedure TICQSession.SSI_CreateItems(Items: array of TOSSIItem);
 var
-  i : Integer;
-  s : RawByteString;
+  i: Integer;
+  s: RawByteString;
 begin
   if Length(Items) = 0 then
     Exit;
@@ -11230,10 +11272,10 @@ begin
 //  Result := iID;
 end;
 
-procedure TICQSession.SSI_DeleteItems(Items : array of TOSSIItem);
+procedure TICQSession.SSI_DeleteItems(Items: array of TOSSIItem);
 var
-  i : Integer;
-  s : RawByteString;
+  i: Integer;
+  s: RawByteString;
 begin
   if Length(Items) = 0 then
     Exit;
@@ -11257,7 +11299,7 @@ begin
 //       serverSSI.items.Delete(i);
 end;
 
-procedure TICQSession.SSIdeleteGroup(gID:integer);
+procedure TICQSession.SSIdeleteGroup(gID: integer);
 begin
 //showmessage(inttostr(gid));
 //  sendSNAC(ICQ_LISTS_FAMILY, $8, Length_BE(gName)+word_LEasStr(gID)+#$00#$00+
@@ -11267,17 +11309,17 @@ begin
   SSI_DeleteItem(gID, 0, FEEDBAG_CLASS_ID_GROUP);
 end;
 {
-procedure TICQSession.renameSSIGroup(gID:integer; gName:string);
+procedure TICQSession.renameSSIGroup(gID: integer; gName: string);
 begin
   SSIstart;
   SSIrenameGroup(gID, gName);
   SSIstop;
 end;
 {
-procedure TICQSession.SSIRenameGroup(gID:integer; gName:string);
+procedure TICQSession.SSIRenameGroup(gID: integer; gName: string);
 var
-  s : String;
-  i : Integer;
+  s: String;
+  i: Integer;
 begin
 //  sendSNAC(ICQ_LISTS_FAMILY, SSI_OPERATION_CODES_UPDATE, $9,
 //          Length_BE(gName)+word_BEasStr(gID)+ word_BEasStr(iID)+
@@ -11292,11 +11334,11 @@ begin
 end;
 }
 
-procedure TICQSession.RequestXStatus(const uin : TUID);
+procedure TICQSession.RequestXStatus(const uin: TUID);
 const
   i = 2;
 var
-  s : RawByteString;
+  s: RawByteString;
 begin
 //  if CAPS_sm_ICQSERVERRELAY in then
 
@@ -11327,9 +11369,9 @@ end;
 Procedure TICQSession.ProcessSSIacks;
 var
   i, t, j: Integer;
-  item1 : TSSIEvent;
-  item  : TOSSIItem;
-  cnt   : TICQcontact;
+  item1: TSSIEvent;
+  item: TOSSIItem;
+  cnt: TICQcontact;
 begin
   t := 0;
   while t < SSIacks.Count do
@@ -11356,7 +11398,7 @@ begin
           end;
           if item.ItemType = FEEDBAG_CLASS_ID_BUDDY then
            begin
-             cnt := getICQContact(item.ItemName);
+             cnt := getICQContact(unUTF(item.ItemName8));
              if Assigned(cnt) then
                begin
                 if (cnt.SSIID > 0) and (cnt.SSIID <> item.ItemID) and
@@ -11391,10 +11433,10 @@ begin
             begin
               TOSSIItem(serverSSI.items.Objects[i]).Free;
               serverSSI.items.Objects[i] := Item;
-              serverSSI.items.Strings[i] := item.ItemName;
+              serverSSI.items.Strings[i] := unUTF(item.ItemName8);
              if item.ItemType = FEEDBAG_CLASS_ID_BUDDY then
               begin
-               cnt := getICQContact(item.ItemName);
+               cnt := getICQContact(unUTF(item.ItemName8));
                if Assigned(cnt) then
 //               i := contactsDB.idxBySSID(item.ItemID);
 //               if i >= 0 then
@@ -11416,12 +11458,12 @@ begin
             end
            else
            begin
-            serverSSI.items.AddObject(item.ItemName, item);
+            serverSSI.items.AddObject(unUTF(item.ItemName8), item);
             Inc(serverSSI.itemCnt);
             case item.ItemType of
               FEEDBAG_CLASS_ID_BUDDY:
                 begin
-                 cnt := getICQContact(item.ItemName);
+                 cnt := getICQContact(unUTF(item.ItemName8));
                  if Assigned(cnt) then
                    begin
     //                cnt := contactsDB.getAt(i);
@@ -11434,7 +11476,7 @@ begin
                 end;
               FEEDBAG_CLASS_ID_GROUP:
                 begin
-                 groups.add(item.ItemName, item.ItemID);
+                 groups.add(unUTF(item.ItemName8), item.ItemID);
                 end;
             end;
 //            TOSSIItem(serverSSI.items.Objects[i]).Free;
@@ -11452,11 +11494,11 @@ begin
           begin
             TOSSIItem(serverSSI.items.Objects[i]).Free;
             serverSSI.items.Objects[i] := Item;
-            serverSSI.items.Strings[i] := item.ItemName;
+            serverSSI.items.Strings[i] := unUTF(item.ItemName8);
 //            serverSSI.items.Delete(i);
             if item.ItemType = FEEDBAG_CLASS_ID_BUDDY then
              begin
-               cnt := getICQContact(item.ItemName);
+               cnt := getICQContact(unUTF(item.ItemName8));
                if Assigned(cnt) then
 //               i := contactsDB.idxBySSID(item.ItemID);
 //               if i >= 0 then
@@ -11522,13 +11564,14 @@ begin
   SSI_InServerTransaction := 0;
   ProcessSSIacks;
 end;
+
 {This command is sent as what is perhaps an acknowledgement reply to at least CLI_ADDBUDDY and CLI_UPDATEGROUP.}
-procedure TicqSession.parse130E(const snac: RawByteString; ref:integer);
+procedure TicqSession.parse130E(const snac: RawByteString; ref: integer);
 var
-  ofs, i, l, t : Integer;
-  gID : Integer;
-  ack, n : Word;
-  cnt : TICQcontact;
+  ofs, i, l, t: Integer;
+  gID: Integer;
+  ack, n: Word;
+  cnt: TICQcontact;
 begin
   ofs := 1;
   l := Length(snac) - 1;
@@ -11553,7 +11596,7 @@ begin
          SSI_OPERATION_CODES_ADD:
         if (ack = $000E)and(item.ItemType = FEEDBAG_CLASS_ID_BUDDY) then //Can't add this contact because it requires authorization
          begin
-          cnt := getICQContact(Item.ItemName);
+          cnt := getICQContact(unUTF(Item.ItemName8));
           cnt.Authorized := false;
           if not existsTLV($66, item.ExtData) then
             begin
@@ -11582,12 +11625,12 @@ begin
              end;
          end
          else
-          if (ack = 0) and (Item.ItemName > '') then
+          if (ack = 0) and (Item.ItemName8 > '') then
           begin
            case Item.ItemType of
              FEEDBAG_CLASS_ID_BUDDY:
                begin
-                cnt := getICQContact(Item.ItemName);
+                cnt := getICQContact(unUTF(Item.ItemName8));
                 cnt.cntIsLocal := False;
                 cnt.SSIID := Item.ItemID;
                 cnt.Authorized := not existsTLV($66, item.ExtData);
@@ -11625,37 +11668,37 @@ begin
                end;
              FEEDBAG_CLASS_ID_PERMIT:
                begin
-                cnt := getICQContact(Item.ItemName);
+                cnt := getICQContact(unUTF(Item.ItemName8));
                 fVisibleList.add(cnt);
                 eventContact := cnt;
                 notifyListeners(IE_contactupdate);
                end;
              FEEDBAG_CLASS_ID_DENY:
                begin
-                cnt := getICQContact(Item.ItemName);
+                cnt := getICQContact(unUTF(Item.ItemName8));
                 fInVisibleList.add(cnt);
                 eventContact := cnt;
                 notifyListeners(IE_contactupdate);
                end;
              FEEDBAG_CLASS_ID_IGNORE_LIST:
                begin
-                cnt := getICQContact(Item.ItemName);
+                cnt := getICQContact(unUTF(Item.ItemName8));
                 ignoreList.add(cnt);
                 spamList.add(cnt);
                 eventContact := cnt;
                 notifyListeners(IE_contactupdate);
                end;
            end;
-           serverSSI.items.AddObject(Item.ItemName, item);
+           serverSSI.items.AddObject(unUTF(Item.ItemName8), item);
            Inc(serverSSI.itemCnt);
            item := NIL;
           end
           else
-           if (ack = $0A) and (Item.ItemName > '') then
+           if (ack = $0A) and (Item.ItemName8 > '') then
              case Item.ItemType of
               FEEDBAG_CLASS_ID_BUDDY:
                 begin
-                  cnt := getICQContact(Item.ItemName);
+                  cnt := getICQContact(unUTF(Item.ItemName8));
                   cnt.cntIsLocal := True;
                   cnt.SSIID := 0;
                 end;
@@ -11668,13 +11711,13 @@ begin
              end;
 
          SSI_OPERATION_CODES_REMOVE:
-          if (Item.ItemName > '') and
+          if (Item.ItemName8 > '') and
              ((ack = 0)or ((ack=02) and (Item.ItemType = FEEDBAG_CLASS_ID_BUDDY))) then
           begin
            case Item.ItemType of
              FEEDBAG_CLASS_ID_BUDDY:
                begin
-                cnt := getICQContact(Item.ItemName);
+                cnt := getICQContact(unUTF(Item.ItemName8));
                 eventContact := cnt;
 //                if SSI_InServerTransaction then
                 if SSI_InServerTransaction >1 then
@@ -11700,21 +11743,21 @@ begin
                end;
              FEEDBAG_CLASS_ID_PERMIT:
                begin
-                cnt := getICQContact(Item.ItemName);
+                cnt := getICQContact(unUTF(Item.ItemName8));
                 fVisibleList.remove(cnt);
                 eventContact := cnt;
                 notifyListeners(IE_contactupdate);
                end;
              FEEDBAG_CLASS_ID_DENY:
                begin
-                cnt := getICQContact(Item.ItemName);
+                cnt := getICQContact(unUTF(Item.ItemName8));
                 fInVisibleList.remove(cnt);
                 eventContact := cnt;
                 notifyListeners(IE_contactupdate);
                end;
              FEEDBAG_CLASS_ID_IGNORE_LIST:
                begin
-                cnt := getICQContact(Item.ItemName);
+                cnt := getICQContact(unUTF(Item.ItemName8));
                 ignoreList.remove(cnt);
                 spamList.remove(cnt);
                 eventContact := cnt;
@@ -11738,10 +11781,10 @@ begin
   until ofs >= l;
 end;
 
-procedure TicqSession.parse131b(const pkt : RawByteString);
+procedure TicqSession.parse131b(const pkt: RawByteString);
 var
-  ofs : Integer;
-  i : Integer;
+  ofs: Integer;
+  i: Integer;
 begin
   ofs := 1;
 {  if pkt[ofs] = #0 then
@@ -11858,8 +11901,8 @@ procedure TicqSession.SplitCL2SSI_DelItems(proc: TsplitSSIProc; cl: TRnQCList; T
 var
   i, len1, LenAll: integer;
   k, l: Integer;
-  arr : array of TOSSIItem;
-//  s:string;
+  arr: array of TOSSIItem;
+//  s: string;
 begin
   if TList(cl).count=0 then
     begin
@@ -11896,13 +11939,13 @@ begin
    end;
 end;
 
-function TOSSIItem.Clone : TOSSIItem;
+function TOSSIItem.Clone: TOSSIItem;
 begin
   result := TOSSIItem.Create;
   Result.ItemType := Self.ItemType;
   Result.ItemID := Self.ItemID;
   Result.GroupID := Self.GroupID;
-  Result.ItemName := Self.ItemName;
+  Result.ItemName8 := Self.ItemName8;
   Result.ExtData := Self.ExtData;
 //  Result.Debug := Self.Debug;
   Result.FAuthorized := Self.FAuthorized;
@@ -11937,7 +11980,8 @@ end;
 destructor TSSIEvent.Destroy;
 begin
 //  if Assigned(cl) then FreeAndNil(cl);
-  if Assigned(Item) then FreeAndNil(Item);
+  if Assigned(Item) then
+    FreeAndNil(Item);
   inherited;
 end;
 
@@ -11956,7 +12000,7 @@ begin
      Result.Item.FAuthorized := Self.Item.FAuthorized;
      Result.Item.ItemID := Self.Item.ItemID;
      Result.Item.GroupID := Self.Item.GroupID;
-     Result.Item.ItemName := Self.Item.ItemName;
+     Result.Item.ItemName8 := Self.Item.ItemName8;
      Result.Item.Caption := Self.Item.Caption;
      Result.Item.ExtData := Self.Item.ExtData;
 //     Result.Item.Debug := Self.Item.Debug;
@@ -11975,19 +12019,19 @@ begin
 end;
 
 {
-function TSSIacks.add(ref : Int64; Num : Integer; kind: Integer; dest:TUID):TSSIEvent;
+function TSSIacks.add(ref: Int64; Num: Integer; kind: Integer; dest: TUID): TSSIEvent;
 begin
-  result:=TSSIEvent.create;
+  result := TSSIEvent.create;
   add(result);
   result.ID := ref;
-  result.NUM:= Num;
-  result.kind:=kind;
-  result.uid:=dest;
+  result.NUM := Num;
+  result.kind := kind;
+  result.uid := dest;
 end;}
 
-function TSSIacks.add(ref : Int64; Num : Integer; kind: Integer; item : TOSSIItem):TSSIEvent;
+function TSSIacks.add(ref: Int64; Num: Integer; kind: Integer; item: TOSSIItem): TSSIEvent;
 begin
-  result:=TSSIEvent.create;
+  result := TSSIEvent.create;
   add(result);
   result.ID   := ref;
   result.NUM  := Num;
@@ -11995,49 +12039,51 @@ begin
   Result.Item := item;
 end;
 
-function TSSIacks.empty:boolean;
-begin result:=count=0 end;
+function TSSIacks.empty: boolean;
+begin
+  result := count=0
+end;
 
 procedure TSSIacks.Clear;
 var
-  i:integer;
-  e : TSSIEvent;
+  i: integer;
+  e: TSSIEvent;
 begin
-for i:=count-1 downto 0 do
- begin
-  e := getAt(i);
-  if e <> NIL then
-  with e do
-    try
-//     updateScreenFor(uid);
-     free;
-    except
-    end;
- end;
-inherited;
-//saveOutboxDelayed:=TRUE;
+  for i:=count-1 downto 0 do
+   begin
+    e := getAt(i);
+    if e <> NIL then
+    with e do
+      try
+  //     updateScreenFor(uid);
+       free;
+      except
+      end;
+   end;
+  inherited;
+  //saveOutboxDelayed := TRUE;
 end;
 
-function TSSIacks.getAt(const idx:integer):TSSIEvent;
+function TSSIacks.getAt(const idx: integer): TSSIEvent;
 begin
-if (idx>=0) and (idx<count) then
-  result:=list[idx]
-else
-  result:=NIL;
+  if (idx>=0) and (idx<count) then
+    result := list[idx]
+   else
+    result := NIL;
 end; // getAt
 
-function TSSIacks.findID(id:Integer; NUM:Integer = -1):integer;
+function TSSIacks.findID(id: Integer; NUM:Integer = -1): integer;
 var
- e : TSSIEvent;
+  e: TSSIEvent;
 begin
-for result:=count-1 downto 0 do
- begin
-  e := getAt(result);
-  if ( e<> NIL) AND (e.id = id) AND
-     ((NUM < 0) or (NUM = e.NUM) ) then
-    exit;
- end;
-result:=-1;
+  for result:=count-1 downto 0 do
+   begin
+    e := getAt(result);
+    if ( e<> NIL) AND (e.id = id) AND
+       ((NUM < 0) or (NUM = e.NUM) ) then
+      exit;
+   end;
+  result := -1;
 end; // findID
 
 // Set an implicit refcount so that refcounting
@@ -12048,24 +12094,25 @@ begin
   TicqSession( Result ).FRefCount := 1;
 end;
 
-class function TicqSession._getContactClass : TRnQCntClass;
+class function TicqSession._getContactClass: TRnQCntClass;
 begin
   Result := TICQContact;
 end;
-class function TicqSession._getProtoServers : String;
+
+class function TicqSession._getProtoServers: String;
 var
-  i : Integer;
+  i: Integer;
 begin
   Result := '';
   for I := 0 to Length(ICQServers) - 1 do
     Result := Result + ICQServers[i]+ CRLF;
 end;
-class function TicqSession._getProtoID : Byte;
+class function TicqSession._getProtoID: Byte;
 begin
   Result := ICQProtoID;
 end;
 
-function TicqSession.getContactClass : TRnQCntClass;
+function TicqSession.getContactClass: TRnQCntClass;
 begin
   Result := TICQContact;
 end;
@@ -12075,7 +12122,7 @@ begin
   Result := maxPwdLength;
 end;
 
-function TicqSession.getContact(const UID : TUID) : TRnQContact;
+function TicqSession.getContact(const UID: TUID): TRnQContact;
 begin
   result := getICQContact(uid);
 end;
@@ -12085,27 +12132,27 @@ begin
   Result := ICQstatuses;
 end;
 
-function TicqSession.getVisibilitis : TStatusArray;
+function TicqSession.getVisibilitis: TStatusArray;
 begin
   Result := icqVis;
 end;
 
-function TicqSession.getStatusMenu : TStatusMenu;
+function TicqSession.getStatusMenu: TStatusMenu;
 begin
   Result := statMenu;
 end;
 
-function TicqSession.getVisMenu : TStatusMenu;
+function TicqSession.getVisMenu: TStatusMenu;
 begin
   Result := icqVisMenu;
 end;
 
-function TicqSession.getStatusDisable : TOnStatusDisable;
+function TicqSession.getStatusDisable: TOnStatusDisable;
 begin
   result := onStatusDisable[byte(curStatus)];
 end;
 
-procedure TicqSession.InputChangedFor(cnt :TRnQcontact; InpIsEmpty : Boolean; timeOut : boolean = false);
+procedure TicqSession.InputChangedFor(cnt: TRnQcontact; InpIsEmpty: Boolean; timeOut: boolean = false);
 begin
   if (not SupportTypingNotif)or(not isSendTypingNotif) or not Assigned(cnt) then
     Exit;
@@ -12116,30 +12163,30 @@ begin
         begin
           if timeOut then
             begin
-              typing.bIamTyping:=false;
+              typing.bIamTyping := false;
               SendTYPING(cnt, MTN_TYPED);
             end
            else
             begin
              if not typing.bIamTyping then
               begin
-               typing.bIamTyping:=true;
+               typing.bIamTyping := true;
                SendTYPING(cnt, MTN_BEGUN);
               end;
-             typing.typingTime:=now;
+             typing.typingTime := now;
             end;
         end
       else if typing.bIamTyping then
         begin
           SendTYPING(cnt, MTN_FINISHED);
-          typing.bIamTyping:=false;
+          typing.bIamTyping := false;
         end
     end
 end;
 
 
 {
-function TicqSession.sendFileTest(msgID:TmsgID; c:Tcontact; fn:string; size:integer) : Integer;
+function TicqSession.sendFileTest(msgID: TmsgID; c: Tcontact; fn: string; size: integer): Integer;
 begin
 //if not isReady then exit;
 
@@ -12147,7 +12194,7 @@ begin
 // if addTempVisMsg then
 //   addTemporaryVisible(c);
    begin
-      eventDirect:=directTo(c);
+      eventDirect := directTo(c);
       eventDirect.kind := DK_file;
       eventDirect.eventID := msgID;
       eventDirect.imSender := True;
@@ -12160,7 +12207,7 @@ begin
 end; // sendFileOK
 }
 
-function TicqSession.compareStatusFor(cnt1, Cnt2 : TRnqContact) : Smallint;
+function TicqSession.compareStatusFor(cnt1, Cnt2: TRnqContact): Smallint;
 begin
   if StatusPriority[TICQContact(cnt1).status] < StatusPriority[TICQContact(Cnt2).status] then
     result := -1
@@ -12170,12 +12217,13 @@ begin
     Result := 0;
 end;
 
-procedure TicqSession.getClientPicAndDesc4(cnt:TRnQContact;
-              var pPic : TPicName; var CliDesc : String);
+procedure TicqSession.getClientPicAndDesc4(cnt: TRnQContact;
+              var pPic: TPicName; var CliDesc: String);
 var
-  c : TICQContact;
+  c: TICQContact;
 begin
-  if isOffline or (cnt=NIL) or cnt.isOffline then exit;
+  if isOffline or (cnt=NIL) or cnt.isOffline then
+    exit;
   if cnt is TICQContact then
     c := TICQContact(cnt)
    else
@@ -12184,21 +12232,21 @@ begin
   getICQClientPicAndDesc(c, pPic, CliDesc);
 end; // getClientPicAndDesc4
 
-function TicqSession.getPrefPage : TPrefFrameClass;
+function TicqSession.getPrefPage: TPrefFrameClass;
 begin
   result := TicqFr;
 end;
 
 procedure TicqSession.applyBalloon;
-  function sameMonthDay(d1,d2:Tdatetime):boolean;
+  function sameMonthDay(d1, d2: Tdatetime): boolean;
   begin
-    result:=(MonthOf(d1)=monthOf(d2)) and (dayOf(d1)=dayOf(d2))
+    result := (MonthOf(d1)=monthOf(d2)) and (dayOf(d1)=dayOf(d2))
   end;
 begin
 // Assert(1=1,'applyBalloon need to define');
   if getMyInfo=NIL then
-   raise Exception.create('applyBalloon: ICQ.myinfo is NIL');
-   self.birthdayFlag := (sendBalloonOn=BALLOON_BDAY) and
+    raise Exception.create('applyBalloon: ICQ.myinfo is NIL');
+  self.birthdayFlag := (sendBalloonOn=BALLOON_BDAY) and
                sameMonthDay(self.getMyInfo.birth,now)
                or (sendBalloonOn=BALLOON_DATE) and sameMonthDay(sendBalloonOnDate,now)
                or (sendBalloonOn=BALLOON_ALWAYS);
@@ -12207,7 +12255,7 @@ end; // applyBalloon
 
 procedure InitICQProto;
 var
-  b, b2 : Byte;
+  b, b2: Byte;
 begin
   SetLength(ICQstatuses, Byte(HIGH(tICQstatus))+1);
   for b := byte(LOW(tICQstatus)) to byte(HIGH(tICQstatus)) do

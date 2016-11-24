@@ -62,7 +62,7 @@ type
 
   procedure parseImgLinks2(var msg: RawByteString);
   function parseTzerTag(const sA: RawByteString): RawByteString;
-  function parseTzer2URL(const sA: RawByteString; var sMsg : RawByteString): RawByteString;
+  function parseTzer2URL(const sA: RawByteString; var sMsg: RawByteString): RawByteString;
   function DownloadAndCache(const lnk: String; checkType: Boolean = False): Boolean;
 
 var
@@ -96,19 +96,21 @@ uses
   UtilLib, roasterlib, mainDlg, GlobalLib, events,
   ICQConsts, ICQContacts, RnQStrings, RnQDialogs, groupsLib;
 
-Procedure ProcessSSIItem(curICQ : TicqSession; item : TOSSIItem);
+Procedure ProcessSSIItem(curICQ: TicqSession; item: TOSSIItem);
 var
 //  I: Integer;
 //  k: Integer;
-//  g_id : integer;
-  c : TICQcontact;
+//  g_id: integer;
+  c: TICQcontact;
 begin
   with item do
   if ItemType = FEEDBAG_CLASS_ID_BUDDY then
    begin
-     c:= curICQ.getICQContact(ItemName);
-     if (c=NIL) then exit;
-     if c.UID='' then exit;
+     c := curICQ.getICQContact(UnUTF(ItemName8));
+     if (c=NIL) then
+       exit;
+     if c.UID='' then
+       exit;
 {      if GroupID = 0 then
         c.group := 2000
        else
@@ -156,16 +158,11 @@ begin
   invCL := TRnQCList.Create;
   visCL := TRnQCList.Create;
 
-  with TRnQProtocol.ContactsDB do
+  for cnt in curICQ.contactsDB do
     begin
-      resetEnumeration;
-      while hasMore do
-        begin
-         cnt := getNext;
          cnt.CntIsLocal := True;
          cnt.SSIID := 0;
          cnt.Authorized := false;
-        end;
     end;
   for I := 0 to groups.count - 1 do
     groups.a[i].ssiID := 0;
@@ -195,15 +192,15 @@ begin
         begin
           if GroupID = 0 then
             Continue;
-          g_id:=groups.name2id(unUTF(ItemName));
+          g_id := groups.name2id(unUTF(ItemName8));
           if g_id < 0 then
             with groups do
              begin
-              g_id:=add(GroupID);
+              g_id := add(GroupID);
               with a[idxOf(g_id)] do
                begin
                 ssiID := GroupID;
-                name:=unUTF(ItemName);
+                name := unUTF(ItemName8);
                end;
              end
            else
@@ -216,7 +213,7 @@ begin
     FEEDBAG_CLASS_ID_IGNORE_LIST,
     FEEDBAG_CLASS_ID_BUDDY:
          BEGIN
-           c :=curICQ.getICQContact(ItemName);
+           c := curICQ.getICQContact(unUTF(ItemName8));
            if (c=NIL) then Continue;
            if c.UID='' then Continue;
            case ItemType of
@@ -334,7 +331,7 @@ end;
     Result  := TOSSIItem.Create;
     with Result do
     begin
-      ItemName := getBEWNTS(snac, ofs);         //The name of the group.
+      ItemName8 := getBEWNTS(snac, ofs);         //The name of the group.
     //This field seems to be a tag or marker associating different groups together into a larger group such as the Ignore List or 'General' contact list group, etc.
       GroupID := readBEWORD(snac, ofs);
     //This is a random number generated when the user is added to the contact list, or when the user is ignored.
@@ -503,7 +500,7 @@ begin
    for i := 0 to Count - 1 do
     begin
       item := ReadSSIChunk(snac, ofs);
-      ssiList.items.AddObject(Item.ItemName, Item);
+      ssiList.items.AddObject(unUTF(Item.ItemName8), Item);
       Item := nil;
       if ofs >= Length(snac)-4 then
        break;
@@ -597,14 +594,14 @@ end;
 
 
  {$IFDEF RNQ_AVATARS}
-procedure avt_icqEvent(thisICQ:TicqSession; ev:TicqEvent);
+procedure avt_icqEvent(thisICQ: TicqSession; ev: TicqEvent);
 //var
 //  s : string;
 //  i : Integer;
 //  PicFmt : TPAFormat;
 begin
 case ev of
-  TicqEvent(IE_online), TicqEvent(IE_offline):
+  TicqEvent.IE_online, TicqEvent.IE_offline:
        avtSessInit := False;
 //  IE_offline:logBox.text:= (getTranslation('Offline'));
 
@@ -636,6 +633,7 @@ case ev of
         if thisICQ.eventStream.size > 0 then
          begin
           avatars_save_and_load(thisICQ.eventContact, thisICQ.eventMsgA,
+                                thisICQ.eventContact.Icon.Hash_safe,
                                 thisICQ.eventStream);
           if Assigned(thisICQ.eventStream) then
             freeAndNil(thisICQ.eventStream);
@@ -660,7 +658,7 @@ case ev of
             0, $5566, FEEDBAG_CLASS_ID_BART);
     end;
 }
-  TicqEvent(IE_error):
+  TicqEvent.IE_error:
     begin
 //     {$IF PREVIEWversion}
 //      msgDlg('Avatars: '+getTranslation(icqerror2str[thisICQ.eventError], [thisICQ.eventInt, thisICQ.eventMsg]), mtError);
@@ -920,7 +918,7 @@ begin
     end;
 end;
 
-function  FindSSIItemName(si : Tssi; iType : Word; const iName : TUID) : Integer;
+function  FindSSIItemName(si: Tssi; iType: Word; const iName: TUID) : Integer;
 var
   i : Integer;
 begin
@@ -928,7 +926,7 @@ begin
   if Assigned(si.items) then
   for I := 0 to si.items.Count - 1 do
    with TOSSIItem(si.items.Objects[i]) do
-   if (ItemType = iType) and (ItemName = iName) then
+   if (ItemType = iType) and (unUTF(ItemName8) = iName) then
     begin
      Result := i;
      Break;
@@ -1211,7 +1209,7 @@ procedure parseImgLinks2(var msg: RawByteString);
 var
   msgTmp, sA, imgStr, mime, fileIdStr: RawByteString;
   buf: TMemoryStream;
-  strs : TAnsiStringDynArray;
+  strs: TAnsiStringDynArray;
   i, j, p: Integer;
   JSONObject, JSONObject2: TJSONObject;
 begin
@@ -1268,9 +1266,9 @@ begin
     msg := msgTmp;
 end;
 
-function parseTzer2URL(const sA: RawByteString; var sMsg : RawByteString): RawByteString;
+function parseTzer2URL(const sA: RawByteString; var sMsg: RawByteString): RawByteString;
 var
-  p : Integer;
+  p: Integer;
 begin
   p := PosEx(AnsiString('name="'), sA);
   sMsg := getTranslation('tZer') + ': ' + copy(sA, p + 6, PosEx(AnsiString('"'), sA, p + 7) - p - 6) + #13#10;
@@ -1283,7 +1281,7 @@ end;
 
 function parseTzerTag(const sA: RawByteString): RawByteString;
 var
-  p : Integer;
+  p: Integer;
   ext, imgStr: RawByteString;
   buf: TMemoryStream;
 begin

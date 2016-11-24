@@ -41,8 +41,8 @@ type
     procedure PrevExtExecute(Sender: TObject);
   private
     { Private declarations }
-    DrawLines, DrawStickers : Integer;
-    curHint: String;
+//    DrawLines, DrawStickers: Integer;
+//    curHint: String;
   public
     { Public declarations }
     procedure CreateParams( var Params: TCreateParams );override;
@@ -63,7 +63,7 @@ implementation
 
 uses
   ICQv9, ICQ.Stickers,
-  RnQLangs, RnQGlobal, RQUtil, RQThemes,
+  RnQLangs, RnQGlobal, RQUtil, RQThemes, RDUtils,
   events, history,
   chatDlg, globalLib;
 
@@ -118,8 +118,8 @@ begin
    var
     fs: TMemoryStream;
     png: TRnQBitmap;
-    stickerGrid: TAwImageGrid;
-    url, fn: String;
+//    stickerGrid: TAwImageGrid;
+//    url, fn: String;
   begin
     png := TRnQBitmap.Create;
     fs := TMemoryStream.Create;
@@ -289,7 +289,7 @@ procedure TFStickers.RecreateExtBtns();
 var
   i: Integer;
   extBtn: TRnQSpeedButton;
-  AlphaTask: ITask;
+//  AlphaTask: ITask;
 begin
   for i := exts.ComponentCount - 1 downto 0 do
     if exts.Components[i] is TRnQSpeedButton then
@@ -313,7 +313,7 @@ begin
     extBtn.Spacing := 0;
     extBtn.Transparent := True;
     extBtn.Width := 42;
-    extBtn.ImageName := 'sticker' + IntToStr(stickerExtNames[i]);
+    extBtn.ImageName := TPicName('sticker') + IntToStrA(stickerExtNames[i]);
     extBtn.Tag := i;
     extBtn.OnClick := OnExtBtnClick;
     extBtn.Cursor := crHandPoint;
@@ -375,7 +375,7 @@ begin
   for a in stickerExtNames do
    begin
 //     theme.AddPicResource('sticker' + IntToStr(a), 'STICKER' + IntToStr(a))
-     theme.AddPicResource('sticker' + IntToStr(a), 'sticker' + IntToStr(a))
+     theme.AddPicResource(TPicName('sticker') + IntToStrA(a), 'sticker' + IntToStr(a))
    end;
 end;
 

@@ -11,7 +11,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.StdCtrls, vcl.ComCtrls, Winapi.CommCtrl,
-  RnQGraphics32, Vcl.ExtCtrls, Vcl.Menus;
+  RnQGraphics32, Vcl.ExtCtrls, Vcl.Menus, rnqPrefsLib;
 
 type
    TImgRec = record
@@ -41,7 +41,7 @@ type
 
 //var
 //  Form1: TForm1;
-  function  viewTextWindow(const title, body: string; const bin: RawByteString = ''): Tform;
+  function  viewTextWindow(prefs: TRnQPref; const title, body: string; const bin: RawByteString = ''): Tform;
 
 implementation
 
@@ -52,9 +52,9 @@ uses
    AnsiStrings,
  {$ENDIF UNICODE}
    System.UITypes, StrUtils, RnQLangs, RnQSysUtils, RDFileUtil,
-   globalLib, utilLib, langLib;
+   RnQGlobal, utilLib, langLib;
 
-function viewTextWindow(const title, body: string; const bin: RawByteString = ''): Tform;
+function viewTextWindow(prefs: TRnQPref; const title, body: string; const bin: RawByteString = ''): Tform;
 var
   form: THEventFrm;
   memo: Tmemo;
@@ -75,18 +75,18 @@ var
   imgtag: RawByteString;
 }
   pagetab: TTabSheet;
-//  imgs : array of TImgRec;
-  img64 : RawByteString;
+//  imgs: array of TImgRec;
+  img64: RawByteString;
   imgcnt, pos1, pos2: integer;
-  ofs : Integer;
-  i,  j: integer;
+  ofs: Integer;
+  i, j: integer;
   scroll: TScrollBox;
   PIn, POut: Pointer;
   RnQPicStream: TMemoryStream;
   OutSize: Cardinal;
 //  img: TImage;
-  imgp : TPaintBox;
-  bmp : TRnQBitmap;
+  imgp: TPaintBox;
+  bmp: TRnQBitmap;
 begin
   form := THEventFrm.create(Application.MainForm);
   result := form;
@@ -105,7 +105,7 @@ begin
     memo.parent := pagetab;
     memo.text:=body;
     memo.align:=alClient;
-    memo.WordWrap:= bViewTextWrap;
+    memo.WordWrap:= prefs.getPrefBoolDef('hist-msg-view-wrap', True); // bViewTextWrap;
     memo.borderstyle := bsNone;
     if memo.WordWrap then
       memo.ScrollBars:=ssVertical
@@ -166,8 +166,8 @@ begin
 
       form.imgs[imgcnt].img := NIL;
       form.imgs[imgcnt].ff := DetectFileFormatStream(RnQPicStream);
-      RnQPicStream.Seek(0, soFromBeginning);
-
+      RnQPicStream.Seek(0, soBeginning);
+      bmp := NIL;
       if loadPic(TStream(RnQPicStream), bmp) then
       begin
         form.imgs[imgcnt].img := bmp;

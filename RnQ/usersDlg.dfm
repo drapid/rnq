@@ -32,7 +32,6 @@ object usersFrm: TusersFrm
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 1
-    ExplicitLeft = 176
     DesignSize = (
       130
       257)
@@ -156,7 +155,6 @@ object usersFrm: TusersFrm
     OnFreeNode = UsersBoxFreeNode
     OnKeyDown = FormKeyDown
     OnKeyPress = usersBoxKeyPress
-    ExplicitWidth = 176
     Columns = <>
   end
 end

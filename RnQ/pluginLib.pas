@@ -503,7 +503,7 @@ case _byte_at(data,1) of
                     i := _int_at(data,3);
 //                   tS := IntToStrA(_int_at(data,3));
 //                   outBuffer:=AnsiChar(PM_DATA)+_icontactinfo( Account.AccProto.getContact(tS) );
-                   resStr :=AnsiChar(PM_DATA)+_icontactinfo( Account.AccProto.getICQContact(i) );
+                   resStr := AnsiChar(PM_DATA)+_icontactinfo( Account.AccProto.getICQContact(i) );
                  end;
  {$ENDIF PROTOCOL_ICQ}
       PG_LIST: if minimum(3) then
@@ -650,7 +650,7 @@ case _byte_at(data,1) of
                          _istring(getXStatusMsgFor(nil));
  {$ENDIF PROTOCOL_ICQ}
           end;
-       else resStr :=AnsiChar(PM_ERROR)+AnsiChar(PERR_UNK_REQ);
+       else resStr := AnsiChar(PM_ERROR)+AnsiChar(PERR_UNK_REQ);
       end;//case
   else resStr := AnsiChar(PM_ERROR)+AnsiChar(PERR_UNK_REQ);
   end;//case
@@ -919,7 +919,7 @@ function Tplugins.castEV(ev_id: byte; const uin: TUID; flags: integer; when: Tda
 begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_dt(when)+_istring(s1) ) end;
 
 function Tplugins.castEv(ev_id: byte; const uin: TUID; flags: integer; when: Tdatetime; const s1, s2: AnsiString): RawByteString;
-begin result:=cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_dt(when)+_istring(s1)+_istring(s2) ) end;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_dt(when)+_istring(s1)+_istring(s2) ) end;
 
 function Tplugins.castEv(ev_id: byte; when: Tdatetime; const name, addr, text: AnsiString): RawByteString;
 begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_dt(when)+_istring(name)+_istring(addr)+_istring(text) ) end;
@@ -942,7 +942,8 @@ begin
  {$IFDEF PROTOCOL_ICQ}
         +AnsiChar(Status2OldStatus[TICQStatus(status)])+AnsiChar(Status2OldStatus[TICQStatus(oldstatus)])
  {$ELSE ~PROTOCOL_ICQ}
-        +AnsiChar(0)+AnsiChar(0)
+//        +AnsiChar(0)+AnsiChar(0)
+        +AnsiChar(status)+AnsiChar(oldstatus)
  {$ENDIF PROTOCOL_ICQ}
         +AnsiChar(inv)+AnsiChar(oldInv) )
 end;

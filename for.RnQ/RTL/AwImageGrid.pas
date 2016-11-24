@@ -427,7 +427,7 @@ type
 
 implementation
   uses
-    RDGlobal;
+    RDGlobal, RDUtils;
 
 function StrCmpLogicalW(const sz1, sz2: WideString): Integer; stdcall;
   external 'Shlwapi.dll';
@@ -436,10 +436,10 @@ procedure GetImageExtensions(List: TStrings);
 var
   Temp: TStringList;
   S: String;
-  Count: Cardinal;
-  Size: Cardinal;
+//  Count: Cardinal;
+//  Size: Cardinal;
 //  Decoders: array of TImageCodecInfo;
-  I: Integer;
+//  I: Integer;
 begin
   Temp := TStringList.Create;
   try
@@ -1619,7 +1619,7 @@ var
   ThumbWidth: Integer;
   ThumbHeight: Integer;
 begin
-  DrawParentBackGround := ParentBackground and (Parent <> nil) and ThemeServices.ThemesEnabled;
+  DrawParentBackGround := ParentBackground and (Parent <> nil) and StyleServices.Enabled;
 
   Canvas.Brush.Color := Color;
   Canvas.Brush.Style := bsSolid;

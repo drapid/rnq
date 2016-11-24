@@ -41,18 +41,20 @@ const
 
 // adding events remember to initialize supportedBehactions
 const
-  event2str:array [0..EK_last] of AnsiString=(
+  event2str: array [0..EK_last] of AnsiString=(
     '','msg','url','contacts','file','authreq','addedyou',
-    'incoming','outgoing','auth','authdenied','statuschange','automsgreq','gcard','automsg','begtyping', 'fintyping', 'xstatusmsg', 'xstatusreq', 'buzz'
+    'incoming', 'outgoing', 'auth', 'authdenied', 'statuschange',
+    'automsgreq', 'gcard', 'automsg', 'begtyping', 'fintyping',
+    'xstatusmsg', 'xstatusreq', 'buzz'
   );
-  event2ShowStr:array [0..EK_last] of string=(
+  event2ShowStr: array [0..EK_last] of string=(
     '',Str_message, 'URL', 'Contacts', 'File','Authorization request',
     'Added you', 'Oncoming', 'Offgoing', 'Authorization given',
     'Authorization denied', 'Status changed','Auto-message request',
     'Green-card', 'Auto-message', 'Begin typing', 'Finish typing',
     'XStatus message', 'XStatus request', 'Contact buzzing'
   );
-  trayEvent2str:array [0..EK_last] of string=(
+  trayEvent2str: array [0..EK_last] of string=(
     '','message from %s','URL from %s','contacts from %s','file',
     '%s requires authorization','%s added you','%s is online','%s is offline',
     '%s authorized you','%s denied authorization','%s changed status',
@@ -60,7 +62,7 @@ const
     'auto-message for %s','Begun typing', 'Finished typing', '%s changed status',
     'XStatus requested by %s', 'Tried to buzz by %s'
   );
-  tipevent2str:array [0..EK_last] of string=(
+  tipevent2str: array [0..EK_last] of string=(
     '',Str_message,'Sent you an URL','Sent you contacts','Sent you file',
     'Requires authorization','Added you','is online','is offline',
     'Authorized you','Denied authorization','Changed status',
@@ -112,12 +114,13 @@ Type
     fBin       : RawByteString;
     txt        : String;
  {$ELSE ~DB_ENABLED}
-    f_info     : RawByteString;
+    f_info: RawByteString;
     fpos: integer;
+    fLen: Integer;
  {$ENDIF ~DB_ENABLED}
 
     WID: RawByteString;
-    ID : int64;
+    ID: int64;
     kind,
     expires    : integer;  // tenths of second, negative if permanent
     when       : TdateTime;
@@ -130,11 +133,11 @@ Type
 //    themeTkn : Integer;
 //    picIdx   : Integer;
 //    picLoc   : TPicLocation;
-    HistoryToken : Cardinal;
-    PaintHeight : Integer;
-    otherpeer  : TRnQcontact; // used to keep track of other peer when "who" is us
-    class var hisFont : TFont;
-    class var myFont  : TFont;
+    HistoryToken: Cardinal;
+    PaintHeight: Integer;
+    otherpeer: TRnQcontact; // used to keep track of other peer when "who" is us
+    class var hisFont: TFont;
+    class var myFont: TFont;
     class var fntToken: Integer;
     class constructor Create;
     class destructor Destroy;
@@ -142,23 +145,26 @@ Type
     class function new(kind_: integer; who_: TRnQContact; when_: TdateTime;
              const info_: RawByteString;
  {$IFDEF DB_ENABLED}
-             const txt_ : String;
+             const txt_: String;
  {$ENDIF DB_ENABLED}
              flags_: integer; pID: integer = 0; GUID: RawByteString = ''): Thevent;
     destructor Destroy; override;
     function  pic: TPicName;
     function  PicSize(const PPI: Integer): TSize;
     function  Draw(DC: HDC; x, y: Integer; const PPI: Integer): TSize;
-//    function  GetImgElm : TRnQThemedElementDtls;
+//    function  GetImgElm: TRnQThemedElementDtls;
 //    function  font: Tfont;
     procedure applyFont(font: Tfont);
     function  getFont: Tfont;
-//    function  useFont : String;
+//    function  useFont: String;
     function  clone: Thevent;
-    function  toString: RawByteString;
+    function  toString: RawByteString; reIntroduce;
     function  urgent: boolean;
     function  isHasBody: Boolean;
- {$IFNDEF DB_ENABLED}
+    function  getFullBInfo: RawByteString;
+ {$IFDEF DB_ENABLED}
+    procedure parseInfo(const pStr: RawByteString);
+ {$ELSE ~DB_ENABLED}
     procedure setInfo(const info_: RawByteString);
     function  decrittedInfo: String;
     function  decrittedInfoOrg: RawByteString;
@@ -204,9 +210,9 @@ Type
     function  removeEvent(c: TRnQContact): boolean; overload;
     procedure Clear; override;
     procedure fromString(const Qs: RawByteString);
-    function  toString: RawByteString;
+    function  toString: RawByteString; reIntroduce;
     procedure removeExpiringEvents;
-    end; // TeventQ
+   end; // TeventQ
 
 var
   hasMsgOK :  Boolean;
@@ -216,7 +222,7 @@ var
 implementation
 
 uses
-  forms, strUtils,
+  forms, strUtils, Types,
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
@@ -244,10 +250,11 @@ begin
   Result.fIsMyEvent := fIsMyEvent;
    {$IFDEF DB_ENABLED}
   result.fBin := fBin;
-  result.txt:= txt;
+  result.txt := txt;
    {$ELSE ~DB_ENABLED}
-  result.f_info:= f_info;
+  result.f_info := f_info;
   result.fpos := fpos;
+  result.fLen:= fLen;
    {$ENDIF ~DB_ENABLED}
   result.flags := flags;
   result.cryptMode := cryptMode;
@@ -281,12 +288,15 @@ end;
 procedure Thevent.appendToHistoryFile(par: TUID='');
 var
   s: string;
+  r: RawByteString;
 begin
   if par='' then
     par := who.uid;
-  s := Account.ProtoPath+historyPath + par;
+  s := Thistory.UIDHistoryFN(par);
   fpos := sizeOfFile(s);
-  appendFile(s, toString);
+  r := toString;
+  fLen := Length(r);
+  appendFile(s, r);
 end; // appendToHistoryFile
  {$ENDIF ~DB_ENABLED}
 
@@ -373,7 +383,7 @@ begin
   Draw := theme.drawPic(dc, Point(x, y), fImgElm, PPI);
 end;
 {
-function Thevent.GetImgElm : TRnQThemedElementDtls;
+function Thevent.GetImgElm: TRnQThemedElementDtls;
 begin
   if fImgElm.ThemeToken <> theme.token then
    begin
@@ -386,7 +396,7 @@ end;}
 function Thevent.decrittedInfo: String;
 begin
   case cryptMode of
-   CRYPT_SIMPLE: result := unUTF(decritted(f_info, StrToIntDef(who.uid, 0)));
+   CRYPT_SIMPLE: result := unUTF(decritted(f_info, who.UIDasInt));
    CRYPT_KEY1: result := unUTF(decritted(f_info, histcrypt.pwdKey));
   end;
 //  result := UnWideStr(result);  // By Rapid D!
@@ -397,7 +407,7 @@ end; // decrittedInfo
 function Thevent.decrittedInfoOrg: RawByteString;
 begin
 case cryptMode of
-  CRYPT_SIMPLE: result := decritted(f_info, StrToIntDef(who.uid, 0));
+  CRYPT_SIMPLE: result := decritted(f_info, who.UIDasInt);
   CRYPT_KEY1: result := decritted(f_info, histcrypt.pwdKey);
   end;
 end; // decrittedInfo
@@ -413,7 +423,7 @@ else
   begin
   cryptMode := CRYPT_SIMPLE;
   if who<>NIL then
-    f_info := critted(info_, StrToIntDef(who.uid, 0))
+    f_info := critted(info_, who.UIDasInt)
    else
     f_info := critted(info_, 0);
   end;
@@ -456,6 +466,7 @@ begin
   result.txt := txt_;
  {$ELSE ~DB_ENABLED}
   result.fpos := -1;
+  result.fLen := -1;
   result.setInfo(info_);
  {$ENDIF ~DB_ENABLED}
   Result.HistoryToken := 0;
@@ -465,32 +476,45 @@ end; // new
 function Thevent.toString: RawByteString;
 
   function extraInfo: RawByteString;
+  var
+    u: RawByteString;
   begin
     result := TLV2(EI_flags, int2str(flags));
     if not isOnlyDigits(who.UID) then
-//
-//    if who.isAIM then
-      result:= Result + TLV2(EI_UID, int2str(length(who.UID))+who.UID);
-//      result:= Result + TLV2(EI_UID, who.UID);
+      begin
+      {$IFDEF UID_IS_UNICODE}
+            u := StrToUTF8(who.UID);
+      {$ELSE ansi}
+            u := who.UID;
+      {$ENDIF UID_IS_UNICODE}
+  //    if who.isAIM then
+        result := Result + TLV2(EI_UID, int2str(length(u)) + u);
+  //      result:= Result + TLV2(EI_UID, who.UID);
+      end;
     if wid > '' then
       result := Result + TLV2(EI_WID, wid);
     result := int2str(length(result))+result;
   end; // extrainfo
- {$IFDEF DB_ENABLED}
 var
+ {$IFDEF DB_ENABLED}
   sa: RawByteString;
  {$ENDIF DB_ENABLED}
+  i: Integer;
 begin
  {$IFDEF DB_ENABLED}
   sa := StrToUTF8(txt);
  {$ENDIF DB_ENABLED}
-  result := int2str(HI_event)+AnsiChar(kind)+int2str(StrToIntDef(who.uid, 0))
-       +dt2str(when)+extrainfo
+  if who<>NIL then
+    i := who.UIDasInt
+   else
+    i := 0;
+  result := int2str(HI_event)+AnsiChar(kind)+int2str(i)
+       + dt2str(when) + extrainfo
  {$IFDEF DB_ENABLED}
-       +int2str(length(fBin)) + fBin
-       +int2str(length(sa)) + sa
+       + int2str(length(fBin)) + fBin
+       + int2str(length(sa)) + sa
  {$ELSE ~DB_ENABLED}
-       +int2str(length(f_info)) + f_info
+       + int2str(length(f_info)) + f_info
  {$ENDIF ~DB_ENABLED}
        ;
 end; // toString
@@ -499,12 +523,12 @@ procedure Thevent.ParseMsgStr(const pMsg: RawByteString);
  {$IFDEF DB_ENABLED}
 var
   i, k: Integer;
-  msg : RawByteString;
+  msg: RawByteString;
  {$ENDIF DB_ENABLED}
 begin
  {$IFDEF DB_ENABLED}
   fBin := '';
-  txt  := '';
+  txt := '';
   msg := pMsg;
       i := Pos(RnQImageTag, msg);
       while i > 0 do
@@ -538,10 +562,182 @@ begin
  {$ENDIF ~DB_ENABLED}
 end;
 
-function Thevent.getHeaderText:string;
+ {$IFDEF DB_ENABLED}
+procedure Thevent.parseInfo(const pStr: RawByteString);
+    function decrittedInfoOrg: RawByteString;
+    begin
+      case cryptMode of
+       CRYPT_SIMPLE: result := decritted(pStr, who.UIDasInt);
+       CRYPT_KEY1: result := decritted(pStr, histcrypt.pwdKey);
+      end;
+    end; // decrittedInfo
+    function decrittedInfo: String;
+    begin
+      case cryptMode of
+       CRYPT_SIMPLE: result := unUTF(decritted(pStr, who.UIDasInt));
+       CRYPT_KEY1: result := unUTF(decritted(pStr, histcrypt.pwdKey));
+      end;
+    end; // decrittedInfo
+   var
+    sa: RawByteString;
+    i, k//, foundPicSize
+      : Integer;
+//    s, s2: string;
+begin
+    fBin := '';
+    txt := '';
+    case kind of
+      EK_oncoming,
+      EK_statuschange : //if flags and IF_XTended_EVENT > 0 then
+        begin
+          fBin := copy(pStr, 1, 6);
+        end;
+      EK_AUTOMSG:
+        begin
+          fBin := copy(decrittedInfoOrg, 1, 1);
+        end;
+      EK_XstatusMsg:
+        begin
+          fBin := copy(pStr, 1, 1);
+          if length(pStr) > 1+4 then
+            begin
+              i := _int_at(pStr, 2);
+              if (i > 0) and (length(pStr) > i+4) then
+                 fBin := copy(pStr, 1, 1+ 4 + i);
+            end;
+        end;
+      EK_FILE, EK_CONTACTS:
+        begin
+          fBin := decrittedInfoOrg;
+        end;
+      EK_MSG:
+        begin
+    //      sa := decrittedInfoAnsi;
+          sa := decrittedInfoOrg;
+          i := Pos(RnQImageTag, sa);
+          while i > 0 do
+           begin
+             k := PosEx(RnQImageUnTag, sa, i+10);
+             if k <= 0 then Break;
+    //         foundPicSize := k-i-10;
+    //         Result := Result + Copy(sa, i+10, k-i-10);
+             fBin := fBin + Copy(sa, i, k-i+11);
+             i := PosEx(RnQImageTag, sa, k+11);
+            ;
+           end;
+          i := pos(RnQImageExTag, sa);
+          while i > 0 do
+           begin
+             k := PosEx(RnQImageExUnTag, sa, i+12);
+             if k <= 0 then Break;
+    //         foundPicSize := k-i-10;
+    //         Result := Result + Copy(sa, i+12, k-i-12);
+             fBin := fBin + Copy(sa, i, k-i+13);
+             i := PosEx(RnQImageExTag, sa, k+10);
+            ;
+           end;
+        end;
+      end;
+//    ev.f_info      := pStr;
+///////////////////////////////////////
+// Getting Text
+    txt:='';
+    case kind of
+      EK_AUTHREQ,
+      EK_AUTHDENIED:
+        txt := decrittedInfo;
+      EK_statuschange : if flags and IF_XTended_EVENT > 0 then
+        begin
+          if Length(pStr) > 6+4 then
+            txt := unUTF(copy(pStr, 11, length(pStr)))
+           else
+            txt := '';
+        end;
+      EK_XstatusMsg:
+        begin
+          if length(pStr) > 1+4 then
+            begin
+              i := _int_at(pStr, 2) + 1 + 4 + 1;
+              if (i > 0) and (length(pStr) > i+4) then
+               begin
+                 k := _int_at(pStr, i);
+                 txt := unUTF(copy(pStr, i+4, k));
+               end;
+            end;
+        end;
+      EK_AUTOMSG:
+        begin
+          txt := unUTF(copy(decrittedInfoOrg, 2, length(pStr)));
+        end;
+      EK_FILE, EK_CONTACTS:
+        begin
+          txt := '';
+        end;
+      EK_URL:
+          txt := decrittedInfo;
+      EK_MSG:
+        begin
+          sa := decrittedInfoOrg;
+              i := AnsiPos(RnQImageExTag, sa);
+              while i > 0 do
+               begin
+                 k := PosEx(RnQImageExUnTag, sa, i+12);
+                 if k <= 0 then Break;
+                 System.Delete(sa, i, k-i+13);
+                 i := PosEx(RnQImageExTag, sa, i);
+                ;
+               end;
+          if (flags and IF_CODEPAGE_MASK) = IF_UTF8_TEXT then
+            txt := UTF8ToStr(sa)
+           else
+            begin
+              i := AnsiPos(RnQImageTag, sa);
+              while i > 0 do
+               begin
+                 k := PosEx(RnQImageUnTag, sa, i+10);
+                 if k <= 0 then Break;
+                 System.Delete(sa, i, k-i+11);
+                 i := PosEx(RnQImageTag, sa, i);
+                ;
+               end;
+              txt := UnUTF(sa);
+            end;
+        end;
+      end;
+    //  if pos('<RnQImage>', result) <= 0 then
+        convertAllNewlinesToCRLF(txt);
+end;
+
+function Thevent.getFullBInfo: RawByteString;
+ var
+  sa: RawByteString;
+begin
+//  Result := bInfo;
+  sa := StrToUTF8(txt);
+  if sa > '' then
+    flags := (flags and not IF_CODEPAGE_MASK) or IF_UTF8_TEXT;
+
+  if kind = EK_XstatusMsg then
+    Result := fBin + _istring(sa)
+  else if kind = EK_msg then
+    Result := fBin + sa
+  else
+    Result := fBin + sa;
+end;
+
+ {$ELSE ~DB_ENABLED}
+
+function Thevent.getFullBInfo: RawByteString;
+begin
+  Result := f_info;
+end;
+
+ {$ENDIF DB_ENABLED}
+
+function Thevent.getHeaderText: string;
 var
-  dsp : String;
-  sa  : RawByteString;
+  dsp: String;
+  sa: RawByteString;
 begin
  if not assigned(self) then
   begin
@@ -552,12 +748,12 @@ if kind in [EK_ONCOMING, EK_OFFGOING, EK_STATUSCHANGE] then
   begin
 //    if (flags and IF_XTended_EVENT)>0 then
  {$IFDEF DB_ENABLED}
-    result:= statusNameExt2(infoToStatus(fBin), infoToXStatus(fBin));
+    result := statusNameExt2(infoToStatus(fBin), infoToXStatus(fBin));
  {$ELSE ~DB_ENABLED}
   {$IFDEF PROTOCOL_ICQ}
-    result:= statusNameExt2(infoToStatus(f_info), infoToXStatus(f_info));
+    result := statusNameExt2(infoToStatus(f_info), infoToXStatus(f_info));
   {$ELSE ~PROTOCOL_ICQ}
-    result:= Proto_StsID2Name(Account.AccProto, infoToStatus(f_info), infoToXStatus(f_info));
+    result := Proto_StsID2Name(Account.AccProto, infoToStatus(f_info), infoToXStatus(f_info));
   {$ENDIF PROTOCOL_ICQ}
  {$ENDIF ~DB_ENABLED}
   end
@@ -672,119 +868,124 @@ end; // getHeader
 
 function Thevent.getBodyText: string;
 var
-  s, s2:string;
-  sa : RawByteString;
-  i, k : integer;
-  size : Int64;
-//  ofs : Integer;
+  s, s2: string;
+  sa: RawByteString;
+  i, k: integer;
+  size: Int64;
+//  ofs: Integer;
 begin
-result:='';
-case kind of
-  EK_AUTH,
-  EK_GCARD,
-  EK_ADDEDYOU: result:=getTranslation(histBodyEvent2str[kind]);
-  EK_AUTHREQ,
-  EK_AUTHDENIED:
+  result := '';
+  case kind of
+    EK_AUTH,
+    EK_GCARD,
+    EK_ADDEDYOU: result := getTranslation(histBodyEvent2str[kind]);
+    EK_AUTHREQ,
+    EK_AUTHDENIED:
  {$IFDEF DB_ENABLED}
-    result:=getTranslation(histBodyEvent2str[kind],[txt]);
+      result := getTranslation(histBodyEvent2str[kind],[txt]);
  {$ELSE ~DB_ENABLED}
-    result:=getTranslation(histBodyEvent2str[kind],[decrittedInfo]);
+      result := getTranslation(histBodyEvent2str[kind],[decrittedInfo]);
  {$ENDIF ~DB_ENABLED}
-  EK_statuschange : if flags and IF_XTended_EVENT > 0 then
-    begin
- {$IFDEF DB_ENABLED}
-      result:= txt;
- {$ELSE ~DB_ENABLED}
-      if Length(f_info) > 6+4 then
-        result:= unUTF(copy(f_info, 11, length(f_info)))
-       else
-        result := '';
- {$ENDIF ~DB_ENABLED}
-    end;
-  EK_XstatusMsg:
-    begin
- {$IFDEF DB_ENABLED}
-      result:= txt;
- {$ELSE ~DB_ENABLED}
-      if length(f_info) > 1+4 then
-        begin
-          i := _int_at(f_info, 2) + 1 + 4 + 1;
-          if (i > 0) and (length(f_info) > i+4) then
-           begin
-             k := _int_at(f_info, i);
-             result := unUTF(copy(f_info, i+4, k));
-           end;
-        end;
- {$ENDIF ~DB_ENABLED}
-    end;
-  EK_AUTOMSG:
-    begin
- {$IFDEF DB_ENABLED}
-      result:= txt;
- {$ELSE ~DB_ENABLED}
-//      result:= decrittedInfoOrg;
-//    result := UTF8ToStrSmart(result);
-//      delete(result,1,1);
-      result := unUTF(copy(decrittedInfoOrg, 2, length(f_info)));
- {$ENDIF ~DB_ENABLED}
-    end;
-  EK_FILE:
-    begin
- {$IFDEF DB_ENABLED}
-      sa := fBin;
- {$ELSE ~DB_ENABLED}
-      sa := decrittedInfoOrg;
- {$ENDIF ~DB_ENABLED}
-      s  := unUTF(getTLVSafe(1, sa)); // fileName;
-      s2 := unUTF(getTLVSafe(4, sa)); // Message
-      if s > '' then
-        begin
-         i := getTLVdwordBE(2, sa);// Count
-         size := getTLVqwordBE(3, sa);// Size
-        end
-       else
-        begin i := 0; size := 0; end;
-      result := getTranslation(histBodyEvent2str[kind],[s, i, size2str(size), s2]);
-      if existsTLV(5, sa) then
-        Result := Result +CRLF+ 'IP: '+ ip2str(getTLVdwordBE(5, sa));
-      if existsTLV(6, sa) then
-        Result := Result +CRLF+getTranslation('Internal IP')+ ': '+ ip2str(getTLVdwordBE(6, sa));
-    end;
-  EK_CONTACTS:
-    begin
- {$IFDEF DB_ENABLED}
-    sa := fBin;
- {$ELSE ~DB_ENABLED}
-    sa := decrittedInfoOrg;
- {$ENDIF ~DB_ENABLED}
-    // backward compatibility (converts old format)
-    i := length(sa);
-    if i>30 then i:=30;
-    while (i>0) and (sa[i]<>#2) do dec(i);
-    if i <= 0 then
+    EK_statuschange: if flags and IF_XTended_EVENT > 0 then
       begin
-        Result := sa;
-        exit;
-      end;
-//    s:=sa; result:='';
-    while sa > '' do
-     begin
-      chop(#2,sa);
-      result := result + chop(', ',sa)+CRLF;
-     end;
-    end;
-  EK_URL:
  {$IFDEF DB_ENABLED}
-    result := txt;
+        result := txt;
  {$ELSE ~DB_ENABLED}
-    result := decrittedInfo;
+        if Length(f_info) > 6+4 then
+          result := unUTF(copy(f_info, 11, length(f_info)))
+         else
+          result := '';
  {$ENDIF ~DB_ENABLED}
-  EK_MSG:
-    begin
+      end;
+    EK_XstatusMsg:
+      begin
  {$IFDEF DB_ENABLED}
-      Result := txt;
+        result := txt;
  {$ELSE ~DB_ENABLED}
-      sa := decrittedInfoOrg;
+        if length(f_info) > 1+4 then
+          begin
+            i := _int_at(f_info, 2) + 1 + 4 + 1;
+            if (i > 0) and (length(f_info) > i+4) then
+             begin
+               k := _int_at(f_info, i);
+               result := unUTF(copy(f_info, i+4, k));
+             end;
+          end;
+ {$ENDIF ~DB_ENABLED}
+      end;
+    EK_AUTOMSG:
+      begin
+ {$IFDEF DB_ENABLED}
+        result := txt;
+ {$ELSE ~DB_ENABLED}
+  //      result := decrittedInfoOrg;
+  //    result := UTF8ToStrSmart(result);
+  //      delete(result,1,1);
+        result := unUTF(copy(decrittedInfoOrg, 2, length(f_info)));
+ {$ENDIF ~DB_ENABLED}
+      end;
+    EK_FILE:
+      begin
+ {$IFDEF DB_ENABLED}
+        sa := fBin;
+ {$ELSE ~DB_ENABLED}
+        sa := decrittedInfoOrg;
+ {$ENDIF ~DB_ENABLED}
+        s := unUTF(getTLVSafe(1, sa)); // fileName;
+        s2 := unUTF(getTLVSafe(4, sa)); // Message
+        if s > '' then
+          begin
+           i := getTLVdwordBE(2, sa);// Count
+           size := getTLVqwordBE(3, sa);// Size
+          end
+         else
+          begin
+            i := 0;
+            size := 0;
+          end;
+        result := getTranslation(histBodyEvent2str[kind],[s, i, size2str(size), s2]);
+        if existsTLV(5, sa) then
+          Result := Result + CrLfS + 'IP: '+ ip2str(getTLVdwordBE(5, sa));
+        if existsTLV(6, sa) then
+          Result := Result + CrLfS +getTranslation('Internal IP')+ ': '+ ip2str(getTLVdwordBE(6, sa));
+      end;
+    EK_CONTACTS:
+      begin
+ {$IFDEF DB_ENABLED}
+        sa := fBin;
+ {$ELSE ~DB_ENABLED}
+        sa := decrittedInfoOrg;
+ {$ENDIF ~DB_ENABLED}
+        // backward compatibility (converts old format)
+        i := length(sa);
+        if i>30 then
+          i := 30;
+        while (i>0) and (sa[i]<>#2) do
+          dec(i);
+        if i <= 0 then
+          begin
+            Result := String(sa);
+            exit;
+          end;
+    //    s:=sa; result:='';
+        while sa > '' do
+          begin
+            chop(#2, sa);
+            result := result + String(chop(', ', sa)) + CrLfS;
+          end;
+      end;
+    EK_URL:
+ {$IFDEF DB_ENABLED}
+      result := txt;
+ {$ELSE ~DB_ENABLED}
+      result := decrittedInfo;
+ {$ENDIF ~DB_ENABLED}
+    EK_MSG:
+      begin
+ {$IFDEF DB_ENABLED}
+        Result := txt;
+ {$ELSE ~DB_ENABLED}
+        sa := decrittedInfoOrg;
           i := AnsiPos(RnQImageExTag, sa);
           while i > 0 do
            begin
@@ -794,34 +995,31 @@ case kind of
              i := PosEx(RnQImageExTag, sa, i);
             ;
            end;
-      if (f_flags and IF_CODEPAGE_MASK) = IF_UTF8_TEXT then
-        Result := UTF8ToStr(sa)
-       else
-        begin
-          i := AnsiPos(RnQImageTag, sa);
-          while i > 0 do
-           begin
-             k := PosEx(RnQImageUnTag, sa, i+10);
-             if k <= 0 then Break;
-             Delete(sa, i, k-i+11);
-             i := PosEx(RnQImageTag, sa, i);
-            ;
-           end;
-          Result := UnUTF(sa);
-        end;
+        if (f_flags and IF_CODEPAGE_MASK) = IF_UTF8_TEXT then
+          Result := UTF8ToStr(sa)
+         else
+          begin
+            i := AnsiPos(RnQImageTag, sa);
+            while i > 0 do
+             begin
+               k := PosEx(RnQImageUnTag, sa, i+10);
+               if k <= 0 then
+                 Break;
+               Delete(sa, i, k-i+11);
+               i := PosEx(RnQImageTag, sa, i);
+              ;
+             end;
+            Result := UnUTF(sa);
+          end;
  {$ENDIF ~DB_ENABLED}
-    end;
-  end;
+      end;
+   end;
 //  if pos('<RnQImage>', result) <= 0 then
     convertAllNewlinesToCRLF(result);
 end; // getBodyText
 
  {$IFDEF DB_ENABLED}
 function Thevent.getBodyBin: RawByteString;
-var
-  sa: RawByteString;
-  i, k//, foundPicSize
-    : Integer;
 begin
   if kind in [EK_oncoming, EK_statuschange, EK_AUTOMSG, EK_XstatusMsg, EK_MSG] then
     Result := fBin
@@ -941,6 +1139,8 @@ begin
       Result := c.equals(otherpeer)
      else
       Result := c.equals(who)
+   else
+    Result := False;
 end;
 
 //////////////////////////////////////////////////////////////
@@ -1066,22 +1266,21 @@ function TeventQ.firstEventFor(c: TRnQContact): Thevent;
 var
   i: integer;
 begin
+  result := NIL;
   i := 0;
   if Assigned(c) and (c is TRnQContact) then
 //result := NIL;
   while i < count do
-    begin
+   begin
      try
-      result := Thevent(items[i]);
-      if Result.isHis(c) then
-        Exit;
-     except
-       result := NIL;
+       if Thevent(items[i]).isHis(c) then
+         Exit(Thevent(items[i]));
+      except
+//       result := NIL;
        // May be need to remove bad item
      end;
-    inc(i);
-    end;
-  result := NIL;
+     inc(i);
+   end;
 end; // firstEventFor
 
 function TeventQ.getNextEventFor(c: TRnQContact; idx: Integer): Integer;
@@ -1089,7 +1288,7 @@ var
   i: integer;
 begin
   if idx >= 0 then
-    i:=idx
+    i := idx
    else
     i := 0;
   if Assigned(c) and (c is TRnQcontact) then
@@ -1099,14 +1298,14 @@ begin
      try
       result := i;
       if Thevent(items[i]).isHis(c) then
-       exit;
+        exit;
      except
        result := -1;
        exit;
      end;
     inc(i);
     end;
-  result:=-1;
+  result := -1;
 end; // firstEventFor
 
 function TeventQ.removeEvent(kind_: integer; c: TRnQContact): boolean;
@@ -1132,7 +1331,7 @@ begin
      dec(i);
      if Thevent(items[i]).isHis(c) then
       begin
-       result:=TRUE;
+       result := TRUE;
        removeAt(i)
       end
     end;
@@ -1149,7 +1348,7 @@ const
   FK_FLAGS   = 07;
 
   FK_WHO_STR = 12;
-  FK_TXT     = 16; // UTF8 text
+//  FK_TXT     = 16; // UTF8 text
 
 procedure TeventQ.fromString(const Qs: RawByteString);
 var
@@ -1158,22 +1357,24 @@ var
   uin: Integer;
   s: RawByteString;
   ofs: Integer;
+  u: String;
 begin
   roasterLib.building := True;
   ofs := 1;
   try
     clear;
-    e:=NIL;
+    e := NIL;
     while length(Qs) >= 8+ofs do
      begin
-      t:=integer((@Qs[ofs])^); // 1234
+      t := integer((@Qs[ofs])^); // 1234
       inc(ofs, 4);
-      l:=integer((@Qs[ofs])^); // 5678
+      l := integer((@Qs[ofs])^); // 5678
       inc(ofs, 4);
 
       if not within(0,l,1000000)
        or not within(0,t,100)
-       or (length(Qs)-ofs < 8+l) then break; // corrupted file
+       or (length(Qs)-ofs < 8+l) then
+        break; // corrupted file
 
       s := Copy(Qs, ofs, l);
       inc(ofs, l);
@@ -1185,40 +1386,51 @@ begin
                     begin
                      Remove(e);
                      e.Free;
-                     e := NIL;
+//                     e := NIL;
                     end;
                   except
                  end;
-                e:=add(integer((@s[1])^), Account.AccProto.getmyInfo, 0, 0);
+                e := add(integer((@s[1])^), Account.AccProto.getmyInfo, 0, 0);
              end;
-        FK_EXPIRES: e.expires:=integer((@s[1])^);
+        FK_EXPIRES: e.expires := integer((@s[1])^);
         FK_WHO:
       begin
         uin := integer((@s[1])^);
         if uin > 0 then
-          e.who:= Account.AccProto.getContact(IntToStr(uin))
+ {$IFDEF UID_IS_UNICODE}
+          e.who := Account.AccProto.getContact(IntToStr(uin))
+ {$ELSE UID_NOT_UNICODE}
+          e.who := Account.AccProto.getContact(IntToStrA(uin))
+ {$ENDIF UID_ and _UNICODE}
          else
-          e.who:= NIL;
+          e.who := NIL;
       if Assigned(e.who) then
              NILifNIL(e.who, True)
         else
-         e.who:= Account.AccProto.getMyInfo;
+         e.who := Account.AccProto.getMyInfo;
       end;
         FK_WHO_STR:
       begin
-        e.who := Account.AccProto.getContact(s);
+      {$IFDEF UID_IS_UNICODE}
+            u := UnUTF(s);
+      {$ELSE ansi}
+            u := s;
+      {$ENDIF UID_IS_UNICODE}
+            e.who := Account.AccProto.getContact(u);
         if Assigned(e.who) then
               NILifNIL(e.who, True)
          else
-          e.who:= Account.AccProto.getMyInfo;
+          e.who := Account.AccProto.getMyInfo;
       end;
         FK_WHEN: e.when := Tdatetime((@s[1])^);
         FK_FLAGS: e.flags := integer((@s[1])^);
      {$IFDEF DB_ENABLED}
-        FK_INFO: e.fBin:= s;
-        FK_TXT:  e.txt:= utf8tostr(s);
+        FK_INFO:
+//                 e.fBin := s;
+                 e.parseInfo(s);
+//        FK_TXT:  e.txt := utf8tostr(s);
      {$ELSE ~DB_ENABLED}
-        FK_INFO: e.f_info:= s;
+        FK_INFO: e.f_info := s;
      {$ENDIF ~DB_ENABLED}
         FK_CL:
           if l > 0 then
@@ -1242,31 +1454,34 @@ var
 begin
   result := '';
   i := 0;
-while i < count do
-  with Thevent(items[i]) do
-    begin
-     try
-      s:=TLV2(FK_KIND, int2str(kind))
-        +TLV2(FK_EXPIRES, int2str(expires))
-        +TLV2(FK_WHO, int2str(StrToIntDef(who.uid, 0)))
-        +TLV2(FK_WHEN, dt2str(when))
-        +TLV2(FK_FLAGS, int2str(flags))
- {$IFDEF DB_ENABLED}
-        +TLV2(FK_INFO, fBin)
-        +TLV2(FK_TXT, StrToUTF8(txt));
- {$ELSE ~DB_ENABLED}
-        +TLV2(FK_INFO, f_info);
- {$ENDIF ~DB_ENABLED}
-      if assigned(cl) then s:=s+TLV2(FK_cl, cl.toString);
-      if StrToIntDef(who.uid, 0) = 0 then
-        s := s+ TLV2(FK_WHO_STR, who.uid);
+  while i < count do
+    with Thevent(items[i]) do
+     begin
+        try
+          s := TLV2(FK_KIND, int2str(kind))
+            +TLV2(FK_EXPIRES, int2str(expires))
+            +TLV2(FK_WHO, int2str(who.UIDasInt))
+            +TLV2(FK_WHEN, dt2str(when))
+            +TLV2(FK_FLAGS, int2str(flags))
+            +TLV2(FK_INFO, getFullBInfo);
+          if assigned(cl) then
+            s := s + TLV2(FK_cl, cl.toString);
+          if who.UIDasInt = 0 then
+            begin
+              s := s +
+      {$IFDEF UID_IS_UNICODE}
+                 TLV2(FK_WHO_STR, StrToUTF8(who.uid));
+      {$ELSE ansi}
+                 TLV2(FK_WHO_STR, who.uid);
+      {$ENDIF UID_IS_UNICODE}
+            end;
 
-      result:=result+s;
-     except
-      s := '';
+          result := result+s;
+        except
+         s := '';
+       end;
+       inc(i);
      end;
-    inc(i);
-    end;
 end; // toString
 
 procedure TeventQ.removeExpiringEvents;

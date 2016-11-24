@@ -1602,7 +1602,7 @@ end;
 {Creates a new chunk of this class}
 function CreateClassChunk(Owner: TPngObject; Name: TChunkName): TChunk;
 var
-  i       : Integer;
+  i: Integer;
   thisChunk,
   NewChunk: TChunkClass;
 begin
@@ -1614,7 +1614,7 @@ begin
     FOR i := 0 TO ChunkClasses.Count - 1 DO
     begin
       thisChunk := pChunkClassInfo(ChunkClasses.Item[i])^.ClassName;
-      if thisChunk.GetName = Name then
+      if AnsiString(thisChunk.GetName) = Name then
       begin
         NewChunk := thisChunk;
         break;
@@ -2270,8 +2270,10 @@ begin
   {If it's a registered class, set the chunk name based on the class}
   {name. For instance, if the class name is TChunkgAMA, the GAMA part}
   {will become the chunk name}
-  ChunkName := System.Copy(ClassName, Length('TChunk') + 1, Length(ClassName));
-  if Length(ChunkName) = 4 then CopyMemory(@fName[0], @ChunkName[1], 4);
+//  ChunkName := System.Copy(ClassName, Length('TChunk') + 1, Length(ClassName));
+  ChunkName := AnsiString(GetName);
+  if Length(ChunkName) = 4 then
+    CopyMemory(@fName[0], @ChunkName[1], 4);
 
   {Initialize data holder}
   GetMem(fData, 1);
@@ -2760,7 +2762,7 @@ begin
   Fillchar(BitmapInfo, sizeof(TMaxBitmapInfo), #0);
   {Release old image data}
   FreeImageData();
-
+  bd := 24;
   {Obtain number of bits for each pixel}
   case ColorType of
     COLOR_GRAYSCALE, COLOR_PALETTE, COLOR_GRAYSCALEALPHA:
@@ -5490,7 +5492,7 @@ begin
     then
     begin
       Dec(ChunkCount);
-      Stream.Seek(ChunkLength + 4, soFromCurrent);
+      Stream.Seek(ChunkLength + 4, soCurrent);
       Continue;
     end;
 
@@ -5535,11 +5537,13 @@ procedure TPngObject.SetCurrentFrame(const Value: Integer);
 //  Frame: TPngFrame;
 begin
   apng.FCurrentFrame:= 0;
-  if (not Animated) or (apng.FNumFrames = 0) then Exit;
-  if not (Value in [0..apng.FNumFrames-1]) then Exit;
-  apng.FCurrentFrame:= Value;
+  if (not Animated) or (apng.FNumFrames = 0) then
+    Exit;
+  if not (Value in [0..apng.FNumFrames-1]) then
+    Exit;
+  apng.FCurrentFrame := Value;
 
-//  Frame:= apng.Frames.Item[FCurrentFrame];
+//  Frame := apng.Frames.Item[FCurrentFrame];
 //  Frame.AssignImageTo(Header.ImageData);
 //  Frame.AssignAlphaTo(Header.ImageAlpha);
 end;
@@ -6819,8 +6823,8 @@ procedure TPNGFrame.PrepareImageData();
     end {with BitmapInfo.bmiHeader}
   end;
 var
-  bd : byte;
-  h : TChunkIHDR;
+  bd: byte;
+  h: TChunkIHDR;
   vBytesPerRow : Integer;
 //  plt : HPALETTE;
 begin
@@ -6832,6 +6836,7 @@ begin
   h := Owner.Header;
   if h = NIL then
     Exit;
+  bd := 24;
   {Obtain number of bits for each pixel}
   case h.ColorType of
     COLOR_GRAYSCALE, COLOR_PALETTE, COLOR_GRAYSCALEALPHA:
@@ -6946,7 +6951,7 @@ var
   PB:PByte;
   PC:PColor32;
   r, C:Cardinal;
-  frmRect : TRect;
+//  frmRect : TRect;
 
 //  i, j : Integer;
   TransparencyChunk:TChunktRNS;

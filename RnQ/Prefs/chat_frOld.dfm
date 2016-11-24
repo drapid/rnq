@@ -185,10 +185,6 @@ object chatFr: TchatFr
     object SmileSheet: TTabSheet
       Caption = 'Smiles'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object SmlPnlChk: TCheckBox
         Left = 6
         Top = 6

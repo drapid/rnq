@@ -15,76 +15,76 @@ type
   TElemType = (ET_String = 0, ET_Integer, ET_Blob, ET_Blob64, ET_Double, ET_Date, ET_Time, ET_Bool);
   TPrefElem =  record
     case TElemType of
-      ET_String : (sVal : PChar);
-      ET_Integer: (iVal : Integer);
-      ET_Blob   : (bVal : PAnsiChar);
-      ET_Blob64 : (rVal : PAnsiChar);
-      ET_Double : (dVal : Double);
-      ET_Date   : (tVal : TDateTime);
-      ET_Bool   : (yVal : Boolean);
+      ET_String : (sVal: PChar);
+      ET_Integer: (iVal: Integer);
+      ET_Blob   : (bVal: PAnsiChar);
+      ET_Blob64 : (rVal: PAnsiChar);
+      ET_Double : (dVal: Double);
+      ET_Date   : (tVal: TDateTime);
+      ET_Bool   : (yVal: Boolean);
   end;
 
   TPrefElement =  Class(TObject) //record
    public
-    ElType : TElemType;
-    elem   : TPrefElem;
+    ElType: TElemType;
+    elem: TPrefElem;
     procedure Clear;
     Destructor Destroy; OverRide;
-    function AsBlob : RawByteString;
-    function Clone : TPrefElement;
+    function AsBlob: RawByteString;
+    function Clone: TPrefElement;
   end;
 
 type
    TRnQPref = class
      private
-       fPrefStr : THashedStringList;
-       fInUpdate : Boolean;
+       fPrefStr: THashedStringList;
+       fInUpdate: Boolean;
      public
       constructor Create;
       Destructor Destroy; OverRide;
-      procedure Load(const cfg : RawByteString);
+      procedure Load(const cfg: RawByteString);
       procedure resetPrefs;
-      procedure getPrefStr(const key:String; var Val : String);
-      procedure getPrefBool(const key:String; var Val : Boolean);
-      procedure getPrefBlob(const key:String; var Val : RawByteString);
-      procedure getPrefBlob64(const key:String; var Val : RawByteString);
-      procedure getPrefInt(const key:String; var Val : Integer);
-      procedure getPrefDate(const key:String; var Val : TDateTime);
-      procedure getPrefDateTime(const key:String; var Val : TDateTime);
-      procedure getPrefValue(const key:String; et : TElemType; var Val : TPrefElem);
-      function getPrefBoolDef(const key:String; const DefVal : Boolean): Boolean;
-      function getPrefBlobDef(const key:String; const DefVal : RawByteString = ''): RawByteString;
-      function getPrefBlob64Def(const key:String; const DefVal : RawByteString = ''): RawByteString;
-      function getPrefStrDef(const key:String; const DefVal : String = ''): String;
-      function getPrefIntDef(const key:String; const DefVal : Integer = -1) : Integer;
-      function getPrefVal(const key:String) : TPrefElement;
+      procedure getPrefStr(const key: String; var Val: String);
+      procedure getPrefBool(const key: String; var Val: Boolean);
+      procedure getPrefBlob(const key: String; var Val: RawByteString);
+      procedure getPrefBlob64(const key: String; var Val: RawByteString);
+      procedure getPrefInt(const key: String; var Val: Integer);
+      procedure getPrefDate(const key: String; var Val: TDateTime);
+      procedure getPrefDateTime(const key: String; var Val: TDateTime);
+      procedure getPrefValue(const key: String; et: TElemType; var Val : TPrefElem);
+      function getPrefBoolDef(const key: String; const DefVal: Boolean): Boolean;
+      function getPrefBlobDef(const key: String; const DefVal: RawByteString = ''): RawByteString;
+      function getPrefBlob64Def(const key: String; const DefVal: RawByteString = ''): RawByteString;
+      function getPrefStrDef(const key: String; const DefVal: String = ''): String;
+      function getPrefIntDef(const key: String; const DefVal: Integer = -1) : Integer;
+      function getPrefVal(const key: String): TPrefElement;
 
-      function getAllPrefs : RawByteString;
+      function getAllPrefs: RawByteString;
 
-      procedure DeletePref(const key:String);
-      function prefExists(const key:String) : Boolean;
+      procedure DeletePref(const key: String);
+      function prefExists(const key: String) : Boolean;
 
-      procedure addPrefBlobOld(const key : String; const Val : RawByteString);
-      procedure addPrefBlob64(const key : String; const Val : RawByteString);
-      procedure addPrefInt(const key : String; const Val : Integer);
-      procedure addPrefBool(const key : String; const Val : Boolean);
-      procedure addPrefStr(const key : String; const Val : String);
-      procedure addPrefTime(const key : String; const Val : TDateTime);
+      procedure addPrefBlobOld(const key: String; const Val: RawByteString);
+      procedure addPrefBlob64(const key: String; const Val: RawByteString);
+      procedure addPrefInt(const key: String; const Val: Integer);
+      procedure addPrefBool(const key: String; const Val: Boolean);
+      procedure addPrefStr(const key: String; const Val: String);
+      procedure addPrefTime(const key: String; const Val: TDateTime);
  {$IFDEF DELPHI9_UP}
-      procedure addPrefDate(const key : String; const Val : TDate);
+      procedure addPrefDate(const key: String; const Val: TDate);
  {$ENDIF DELPHI9_UP}
-      procedure addPrefParam(param : TObject);
-      procedure addPrefArrParam(param : array of TObject);
-      procedure getPrefArrParam(param : array of TObject);
+      procedure addPrefParam(param: TObject);
+      procedure addPrefArrParam(param: array of TObject);
+      procedure getPrefArrParam(param: array of TObject);
 
-      procedure initPrefBool(const key : String; const Val : Boolean);
-      procedure initPrefInt(const key : String; const Val : Integer);
-      procedure initPrefStr(const key : String; const Val : String);
+      procedure initPrefBool(const key: String; const Val: Boolean);
+      procedure initPrefInt(const key: String; const Val: Integer);
+      procedure initPrefStr(const key: String; const Val: String);
 
       procedure BeginUpdate;
       procedure EndUpdate;
 
-      property  isUpdating : Boolean read fInUpdate;
+      property  isUpdating: Boolean read fInUpdate;
    end;
 
 
@@ -146,17 +146,17 @@ type
 type
   TPortElement =  Class(TObject) //record
    public
-    Count : Integer;
-    lPort, rPort : Integer;
+    Count: Integer;
+    lPort, rPort: Integer;
   end;
 
   TPortList = class(TStringList)
     public
-     PortsCount : Integer;
-     procedure AddPorts(pLPort : Integer; pRPort : Integer = 0);
-     procedure parseString(const s : String);
-     function getString : String;
-     function getRandomPort : Integer;
+     PortsCount: Integer;
+     procedure AddPorts(pLPort: Integer; pRPort: Integer = 0);
+     procedure parseString(const s: String);
+     function getString: String;
+     function getRandomPort: Integer;
   end;
 
 implementation
@@ -312,8 +312,8 @@ begin
 //  StrCopy(PAnsiChar(el.elem.bVal), PAnsiChar(Val));
 //{$ENDIF UNICODE}
   if i<0 then
-    i := fPrefStr.AddObject(key, el);
-//  Result := i;
+//  Result :=
+    fPrefStr.AddObject(key, el);
 end;
 
 
@@ -338,8 +338,8 @@ begin
 //  CopyMemory(el.elem.bVal, @Val[1], Length(Val));
   CopyMemory(el.elem.rVal, Pointer(Val), Length(Val));
   if i<0 then
-    i := fPrefStr.AddObject(key, el);
-//  Result := i;
+//  Result :=
+    fPrefStr.AddObject(key, el);
 end;
 
 procedure TRnQPref.addPrefBool(const key: String; const Val: Boolean);
@@ -360,8 +360,8 @@ begin
   el.ElType := ET_Bool;
   el.elem.yVal := Val;
   if i<0 then
-    i := fPrefStr.AddObject(key, el);
-//  Result := i;
+//  Result :=
+    fPrefStr.AddObject(key, el);
 end;
 
  {$IFDEF DELPHI9_UP}
@@ -383,8 +383,8 @@ begin
   el.ElType := ET_Date;
   el.elem.tVal := Val;
   if i<0 then
-    i := fPrefStr.AddObject(key, el);
-//  Result := i;
+//  Result :=
+    fPrefStr.AddObject(key, el);
 end;
  {$ENDIF DELPHI9_UP}
 
@@ -406,8 +406,8 @@ begin
   el.ElType := ET_Integer;
   el.elem.iVal := Val;
   if i<0 then
-    i := fPrefStr.AddObject(key, el);
-//  Result := i;
+//  Result :=
+    fPrefStr.AddObject(key, el);
 end;
 
 procedure TRnQPref.addPrefParam(param: TObject);
@@ -514,9 +514,9 @@ end;
 
 procedure TRnQPref.addPrefStr(const key, Val: String);
 var
-//  so : TPUStrObj;
-  El : TPrefElement;
-  i : Integer;
+//  so: TPUStrObj;
+  El: TPrefElement;
+  i: Integer;
 begin
   if key = '' then
     Exit;
@@ -547,14 +547,14 @@ begin
 //  StrCopy(PChar(el.elem.sVal), PChar(Val));
 //{$ENDIF UNICODE}
   if i<0 then
-    i := fPrefStr.AddObject(key, el);
-//  Result := i;
+//  Result :=
+    fPrefStr.AddObject(key, el);
 end;
 
 procedure TRnQPref.addPrefTime(const key: String; const Val: TDateTime);
 var
-  El : TPrefElement;
-  i : Integer;
+  El: TPrefElement;
+  i: Integer;
 begin
   if key = '' then
     Exit;
@@ -569,8 +569,8 @@ begin
   el.ElType := ET_Time;
   el.elem.tVal := Val;
   if i<0 then
-    i := fPrefStr.AddObject(key, el);
-//  Result := i;
+//  Result :=
+    fPrefStr.AddObject(key, el);
 end;
 
 constructor TRnQPref.Create;
@@ -678,7 +678,7 @@ begin
     delete(l, 1, m);
 
     pp := PAnsiChar(hhh);
-    key := pp;
+    key := String(pp);
 //    PrefAddVal(key, l, fPrefStr);
     addPrefBlobOld(key, l);
   end;
@@ -926,11 +926,11 @@ end;
 procedure TRnQPref.getPrefInt(const key: String; var Val: Integer);
   function int(l: PAnsiChar): Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
   var
-    bb : Integer;
-//    ss : AnsiString;
-    ss : String;
+    bb: Integer;
+//    ss: AnsiString;
+    ss: String;
   begin
-    ss := l;
+    ss := String(l);
     System.Val(ss, Result, bb);
     if bb <> 0 then
      Result := 0;
@@ -967,7 +967,7 @@ function TRnQPref.getPrefIntDef(const key: String; const DefVal: Integer): Integ
 //    ss : AnsiString;
     ss: String;
   begin
-    ss := l;
+    ss := String(l);
     System.Val(ss, Result, bb);
     if bb <> 0 then
      Result := 0;
@@ -1009,7 +1009,7 @@ procedure TRnQPref.getPrefDate(const key: String; var Val: TDateTime);
     df := TFormatSettings.Create('');
     df.ShortDateFormat := 'dd.mm.yyyy';
     df.DateSeparator := '.';
-    s := Copy(l, 1, 10);
+    s := String(Copy(l, 1, 10));
     result := StrToDate(s, df);
    except
     result := 0;
@@ -1043,7 +1043,8 @@ end;
 procedure TRnQPref.getPrefDateTime(const key: String; var Val: TDateTime);
   function dtt(l: PAnsiChar): TDateTime; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
   var
-    df : TFormatSettings;
+    df: TFormatSettings;
+    s: String;
   begin
 //    GetLocaleFormatSettings(0, df);
     df := TFormatSettings.Create('');
@@ -1053,7 +1054,8 @@ procedure TRnQPref.getPrefDateTime(const key: String; var Val: TDateTime);
     df.LongTimeFormat := 'hh:mm:ss';
     df.ShortTimeFormat := 'hh:mm:ss';
     df.TimeSeparator := ':';
-    result:=StrToDateTime(l, df);
+    s := String(l);
+    result := StrToDateTime(s, df);
   end;
 var
   i: Integer;
@@ -1269,7 +1271,7 @@ begin
   SetLength(Self.Caption, 0);
 end;
 
-function TPrefPage.Clone : TPrefPage;
+function TPrefPage.Clone: TPrefPage;
 begin
   Result := TPrefPage.Create;
   Result.idx := Self.idx;
@@ -1427,7 +1429,7 @@ end;
 
 function TPortList.getRandomPort: Integer;
 var
-  r, i, a, p : Integer;
+  r, i, a, p: Integer;
 begin
   p := 0;
   if PortsCount > 0 then
@@ -1451,9 +1453,9 @@ end;
 function TPortList.getString: String;
 var
   I: Integer;
-  pe : TPortElement;
-  res : String;
-  s : String;
+  pe: TPortElement;
+  res: String;
+  s: String;
 begin
   res := '';
   for I := 1 to Self.Count do
@@ -1492,7 +1494,7 @@ begin
       if I <= Length(s) then
         begin
           ch := s[i];
-          if IsDigit(ch) then
+          if ch.IsDigit then
               st := LS_numberL
            else
             if ch = '-' then

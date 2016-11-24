@@ -282,7 +282,7 @@ type
     eventStream         : TMemoryStream;
     eventContact        : TMRAContact;
     eventContacts       : TRnQCList;
-    eventWP             :TwpResult;
+    eventWP             : TwpResult;
 
         procedure AfterConstruction; override;
         procedure BeforeDestruction; override;
@@ -296,7 +296,7 @@ type
     class function _getProtoServers : String; OverRide;
 //    function isValidUid(var uin:TUID):boolean;
 //    function getContact(uid : TUID) : TRnQContact;
-    class function getMRAContact(const uid : TUID) : TMRAContact;
+    class function getMRAContact(const uid: TUID): TMRAContact;
 
     function ProtoName : String;
     function ProtoElem : TRnQProtocol;

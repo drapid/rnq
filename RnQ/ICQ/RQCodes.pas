@@ -23,24 +23,24 @@ function StrToOrganizationI(const Value: String): Word;
 function StrToGMTI(const Value: String): SmallInt;
 function StrToMarStI(const Value: String): Word;
 
-function AgesToStr : String;
-function GendersToStr : String;
-function LanguagesToStr : String;
-function InterestsToStr : String;
+function AgesToStr: String;
+function GendersToStr: String;
+function LanguagesToStr: String;
+function InterestsToStr: String;
 //function CountrysToStr : String;
-function GMTsToStr : String;
-function MarStsToStr : String;
+function GMTsToStr: String;
+function MarStsToStr: String;
 
-procedure CountrysToCB(cb : TComboBox);
+procedure CountrysToCB(cb: TComboBox);
 
-function GendersByID(ID : Byte) : String;
-function CountriesByID(ID : Word) : String;
-function LanguagesByID(ID : Byte) : String;
-function InterestsByID(ID : Word) : String;
-function MarStsByID(ID : Byte) : String;
+function GendersByID(ID: Byte): String;
+function CountriesByID(ID: Word): String;
+function LanguagesByID(ID: Byte): String;
+function InterestsByID(ID: Word): String;
+function MarStsByID(ID: Byte): String;
 
 
-function CB2ID(cb : TComboBox) : Integer;
+function CB2ID(cb: TComboBox): Integer;
 
 implementation
 uses
@@ -577,9 +577,9 @@ const
 function StrToAgeI(const Value: String): LongWord;
 var
   i: Word;
-  val : TValType;
+  val: TValType;
 begin
-  val := Value;
+  val := TValType(Value);
   if Length(val)> 0 then
    for i := Low(Ages) to High(Ages) do
     if Ages[i].Value = val then
@@ -647,9 +647,9 @@ end;
 function StrToOccupationI(const Value: String): Word;
 var
   i: Word;
-  val : TValType;
+  val: TValType;
 begin
-  val := Value;
+  val := TValType(Value);
   if Length(val)> 0 then
   for i := Low(Occupations) to High(Occupations) do
     if Occupations[i].Value = val then
@@ -663,9 +663,9 @@ end;
 function StrToPastI(const Value: String): Word;
 var
   i: Word;
-  val : TValType;
+  val: TValType;
 begin
-  val := Value;
+  val := TValType(Value);
   if Length(val)> 0 then
   for i := Low(Pasts) to High(Pasts) do
     if Pasts[i].Value = val then
@@ -693,9 +693,9 @@ end;
 function StrToOrganizationI(const Value: String): Word;
 var
   i: Word;
-  val : TValType;
+  val: TValType;
 begin
-  val := Value;
+  val := TValType(Value);
   if Length(val)> 0 then
   for i := Low(Organizations) to High(Organizations) do
     if Organizations[i].Value = val then
@@ -706,27 +706,27 @@ begin
   Result := 0;
 end;
 
-function AgesToStr : String;
+function AgesToStr: String;
 var
   i: Word;
-  val : TValType;
+  val: TValType;
 begin
   val := '';
   for i := Low(Ages) to High(Ages) do
     val := val +Ages[i].Value+CRLF;
-  Result := val;
+  Result := String(val);
 end;
 
-function GendersToStr : String;
+function GendersToStr: String;
 var
   i: Word;
 begin
   result:='';
   for i := Low(Genders) to High(Genders) do
-    result:=result+getTranslation(Genders[i].Value)+CRLF;
+    result := result+getTranslation(Genders[i].Value)+CrLfS;
 end;
 
-function MarStsToStr : String;
+function MarStsToStr: String;
 var
   i: Word;
 begin
@@ -772,8 +772,8 @@ begin
     result:=result+getTranslation(Countries[i].Value)+CRLF;
 end;
 
-function GMTsToStr : String;
-{  function GMTc(i : Smallint): string;
+function GMTsToStr: String;
+{  function GMTc(i: Smallint): string;
   begin
     if i > 0 then
       result := '-'
@@ -793,20 +793,21 @@ begin
     result := 'GMT ' + GMTc(i);}
 var
   i: Word;
-  val : TValType;
+  val: TValType;
 begin
-  val :='' + CRLF;
+  val := '' + CrLfS;
   for i := Low(GMTs)+1 to High(GMTs) do
 //    result:=result+'GMT ' + GMTs[i].Value+CRLF;
-    val := val + GMTs[i].Value+CRLF;
-  Result := val;
+    val := val + GMTs[i].Value + CrLf;
+  Result := String(val);
 end;
+
 function StrToGMTI(const Value: String): SmallInt;
 var
   i: Word;
-  val : TValType;
+  val: TValType;
 begin
-  val := Value;
+  val := TValType(Value);
   if GMTs[0].Value= val then
     begin
       Result := GMTs[0].ID;
@@ -822,15 +823,16 @@ begin
   Result := 0;
 end;
 
-function GendersByID(ID : Byte) : String;
+function GendersByID(ID: Byte): String;
 var
   i: Word;
+  v: TValType;
 begin
   for i := Low(Genders) to High(Genders) do
     if Genders[i].ID = ID then
     begin
-      Result := Genders[i].Value;
-      Result := getTranslation(Result);
+      v := Genders[i].Value;
+      Result := getTranslation(v);
       Exit;
     end;
   Result := '';
@@ -839,12 +841,13 @@ end;
 function MarStsByID(ID : Byte) : String;
 var
   i: Word;
+  v: TValType;
 begin
   for i := Low(MarSts) to High(MarSts) do
     if MarSts[i].ID = ID then
     begin
-      Result := MarSts[i].Value;
-      Result := getTranslation(Result);
+      v := MarSts[i].Value;
+      Result := getTranslation(v);
       Exit;
     end;
   Result := '';
@@ -853,40 +856,43 @@ end;
 function CountriesByID(ID : Word) : String;
 var
   i: Word;
+  v: TValType;
 begin
   for i := Low(Countries) to High(Countries) do
     if Countries[i].ID = ID then
     begin
-      Result := Countries[i].Value;
-      Result := getTranslation(Result);
+      v := Countries[i].Value;
+      Result := getTranslation(v);
       Exit;
     end;
   Result := '';
 end;
 
-function LanguagesByID(ID : Byte) : String;
+function LanguagesByID(ID: Byte): String;
 var
   i: Byte;
+  v: TValType;
 begin
   for i := Low(Languages) to High(Languages) do
     if Languages[i].ID = ID then
     begin
-      Result := Languages[i].Value;
-      Result := getTranslation(Result);
+      v := Languages[i].Value;
+      Result := getTranslation(v);
       Exit;
     end;
   Result := '';
 end;
 
-function InterestsByID(ID : Word) : String;
+function InterestsByID(ID: Word): String;
 var
   i: Word;
+  v: TValType;
 begin
   for i := Low(arrInterests) to High(arrInterests) do
     if arrInterests[i].ID = ID then
     begin
-      Result := arrInterests[i].Value;
-      Result := getTranslation(Result);
+      v := arrInterests[i].Value;
+      Result := getTranslation(v);
       Exit;
     end;
   Result := '';

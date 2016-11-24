@@ -140,10 +140,10 @@ type
     xStatus: byte;
 //    xStatusOld : byte;
      ICQIcon: record
-//       Hash_safe : String[16];
-//       Hash : String[16];
-       Hash_safe : RawByteString;
-       Hash : RawByteString;
+//       Hash_safe: String[16];
+//       Hash: String[16];
+//       Hash_safe: RawByteString;
+       Hash: RawByteString;
       end;
     interests: Tinterests; // By Shyr
 //    data : tce;
@@ -193,14 +193,18 @@ type
     end;}
 
 IMPLEMENTATION
-  uses
-    GlobalLib, RQUtil, RnQLangs, RDUtils, RnQBinUtils,
-    ICQv9, viewInfoDlg, mainDlg, utilLib, RnQDialogs,
+
+uses
+  {$IFDEF UNICODE}
+    Character, AnsiStrings,
+  {$ENDIF UNICODE}
+    RQUtil, RnQLangs, RDUtils, RnQBinUtils, RnQDialogs,
+    GlobalLib, ICQv9, viewInfoDlg, mainDlg, utilLib,
     Protocol_ICQ;
 
 ///////////////////////////////////////////////////////////////////////////
 
-constructor TICQcontact.create(pProto : TRnQProtocol; const uin_: TUID);
+constructor TICQcontact.create(pProto: TRnQProtocol; const uin_: TUID);
 begin
   inherited create(pProto, uin_);
   clear;
@@ -211,12 +215,14 @@ begin
   if isAIM then
     uinINT := 0
    else
-    uinINT := StrToIntDef(UID2cmp, 0);
+//    uinINT := StrToIntDef(UID2cmp, 0);
+    uinINT := inherited UIDasInt; // StrToIntDef(UID2cmp, 0);
    {$IFDEF RNQ_AVATARS}
   icon.Bmp := NIL;
-  icon.cash := NIL;
+  icon.cache := NIL;
    {$ENDIF RNQ_AVATARS}
-  if assigned(onContactCreation) then onContactCreation(self);
+  if assigned(onContactCreation) then
+    onContactCreation(self);
 end; // create
 
 destructor TICQcontact.Destroy;
@@ -228,56 +234,56 @@ begin
 end; // destroy
 
 procedure TICQcontact.clear;
-var
-  i: Byte;
+//var
+//  i: Byte;
 begin
-//uid:='';
-//nick:='';
-//first:='';
-//last:='';
+  //uid := '';
+  //nick := '';
+  //first := '';
+  //last := '';
    {$IFDEF RNQ_AVATARS}
- if Assigned(icon.Bmp) then
-  try
-   icon.Bmp.Free;
-  except
-    msgDlg(getTranslation('Error on destroying avatar of contact: %s', [uid]), False, mtError, uid);
-  end;
- icon.Bmp := NIL;
- icon.ToShow := 0;
- if Assigned(icon.cash) then
-  icon.cash.Free;
- icon.cash := NIL;
- ICQicon.Hash_safe := '';
+  if Assigned(icon.Bmp) then
+   try
+     icon.Bmp.Free;
+    except
+     msgDlg(getTranslation('Error on destroying avatar of contact: %s', [uid]), False, mtError, uid);
+   end;
+  icon.Bmp := NIL;
+  icon.ToShow := 0;
+  if Assigned(icon.cache) then
+    icon.cache.Free;
+  icon.cache := NIL;
+  icon.Hash_safe := '';
    {$ENDIF RNQ_AVATARS}
-status:= ICQConsts.SC_UNK;
-gender:=0;
-age:=0;
-connection.ip:=0;
-connection.internal_ip:=0;
-connection.port:=0;
-GMThalfs:=100;
-country:=0;
-group:=0;
-birth:=0;
-birthFlag := False;
-infoUpdatedTo:=0;
-lastTimeSeenOnline:=0;
-fillChar(lang,sizeOf(lang),0);
-homepage:='';
-regular:='';
-cellular:='';
-SMSable:=FALSE;
-proto:=0;
-MarStatus := 0;
-crypt.qippwd := 0;
-crypt.supportCryptMsg := False;
-nodb:=FALSE;
-icq2go:=FALSE;
-isMobile := False;
-capabilitiesBig:=[];
-capabilitiesSm:=[];
-capabilitiesXTraz := [];
-extracapabilities:='';
+  status := ICQConsts.SC_UNK;
+  gender := 0;
+  age := 0;
+  connection.ip := 0;
+  connection.internal_ip := 0;
+  connection.port := 0;
+  GMThalfs := 100;
+  country := 0;
+  group := 0;
+  birth := 0;
+  birthFlag := False;
+  infoUpdatedTo := 0;
+  lastTimeSeenOnline := 0;
+  fillChar(lang, sizeOf(lang), 0);
+  homepage := '';
+  regular := '';
+  cellular := '';
+  SMSable := FALSE;
+  proto := 0;
+  MarStatus := 0;
+  crypt.qippwd := 0;
+  crypt.supportCryptMsg := False;
+  nodb := FALSE;
+  icq2go := FALSE;
+  isMobile := False;
+  capabilitiesBig := [];
+  capabilitiesSm := [];
+  capabilitiesXTraz := [];
+  extracapabilities := '';
 //  SetLength(about, 0);
   SetLength(ssImportant, 0);
   SetLength(lclImportant, 0);
@@ -287,12 +293,12 @@ extracapabilities:='';
   SetLength(ssCell3, 0);
   SetLength(ssMail, 0);
 
-  fDisplay:='';
-  email:='';
-  city:='';
-  state:='';
-  about:='';
-  zip:='';
+  fDisplay := '';
+  email := '';
+  city := '';
+  state := '';
+  about := '';
+  zip := '';
   homepage := '';
   // work
   workcity := '';
@@ -312,7 +318,7 @@ end; // clear
 
 procedure TICQcontact.clearInterests;
 var
-  i : Integer;
+  i: Integer;
 begin
   for i := Low(interests.InterestBlock) to High(interests.InterestBlock) do
    begin
@@ -349,10 +355,10 @@ begin
   IdleTime := 0;
 end;
 
-function TICQcontact.getGMT:TdateTime;
+function TICQcontact.getGMT: TdateTime;
 begin result := -GMThalfs/48 end;
 
-function TICQcontact.GMTavailable:boolean;
+function TICQcontact.GMTavailable: boolean;
 begin result := abs(GMThalfs)<>100 end;
 
 function TICQcontact.isOnline: Boolean;
@@ -370,19 +376,19 @@ begin
  {$ENDIF  usesDC}
 end;
 
-function TICQcontact.isInvisible : Boolean;
+function TICQcontact.isInvisible: Boolean;
 begin
   result := //(status in [SC_OFFLINE, SC_UNK])
 //   and
    (invisibleState > 0);
 end;
 
-function TICQcontact.isOffline : Boolean;
+function TICQcontact.isOffline: Boolean;
 begin
   result := status = ICQConsts.SC_OFFLINE;
 end;
 
-function TICQcontact.canEdit : Boolean;
+function TICQcontact.canEdit: Boolean;
 begin
   result := CntIsLocal or
  {$IFDEF UseNotSSI}
@@ -393,7 +399,7 @@ begin
      fProto.isOnline;
 end;
 
-procedure TICQcontact.SetDisplay(const s : String);
+procedure TICQcontact.SetDisplay(const s: String);
 begin
   Inherited;
 //  fDisplay := s;  // This in inherited
@@ -419,16 +425,18 @@ begin
   end;
 end;
 
-function TICQcontact.uinAsStr:string;
-begin result:= uid end;
-
-function TICQcontact.uin2Show:string;
-var
-  i, m, n, l : byte;
-  s : String;
+function TICQcontact.uinAsStr: string;
 begin
- s := uid;
- if (not isAIM) and ShowUINDelimiter then
+  result := String(uid)
+end;
+
+function TICQcontact.uin2Show: string;
+var
+  i, m, n, l: byte;
+  s: String;
+begin
+  s := uinAsStr;
+  if (not isAIM) and ShowUINDelimiter then
    begin
 //     s := UnDelimiter(uid);
      l := length(s);
@@ -451,7 +459,7 @@ begin
    result := s
 end;
 
-function TICQcontact.getStatusName : String;
+function TICQcontact.getStatusName: String;
 var
   s1 : String;
 begin
@@ -476,7 +484,7 @@ begin
     result := getTranslation(status2ShowStr[status]);
 end;
 
-function TICQcontact.statusImg : TPicName;
+function TICQcontact.statusImg: TPicName;
 begin
 //  result := status2ImgName(byte(status), invisible);
   if XStatusAsMain and (xStatus > 0) then
@@ -487,23 +495,23 @@ begin
     end;
 end;
 
-function TICQcontact.getStatus : byte;
+function TICQcontact.getStatus: byte;
 begin
   result := byte(status);
 end;
 
-class function TICQcontact.trimUID(const sUID : TUID) : TUID;
+class function TICQcontact.trimUID(const sUID: TUID): TUID;
 var
-  i : word;
-  t : word;
-//  pp : PAnsiChar;
+  i: word;
+  t: word;
+//  pp: PAnsiChar;
  {$IFDEF ICQ_ONLY}
-  ch : AnsiChar;
+  ch: AnsiChar;
  {$ELSE ~ICQ_ONLY}
-  ch : Char;
+  ch: Char;
  {$ENDIF ~ICQ_ONLY}
-  s1, s2 : TUID;
-  isAIM : Boolean;
+  s1, s2: TUID;
+  isAIM: Boolean;
 begin
   result := '';
 //  i := 1;
@@ -568,8 +576,8 @@ begin
 //                 Interests.InterestBlock[i].Count:=int.Count+1;
 end;
 
-function  TICQcontact.GetDBrow : RawByteString;
-  function languages2str(l:Tlanguages):RawByteString;
+function  TICQcontact.GetDBrow: RawByteString;
+  function languages2str(l: Tlanguages): RawByteString;
   begin
     if (l[1] > 0)or(l[2] > 0)or(l[3] > 0) then
      begin
@@ -580,13 +588,13 @@ function  TICQcontact.GetDBrow : RawByteString;
       setLength(result, 0);
   end;
 
-  Function interests2str(int:Tinterests):RawByteString;  // By Shyr
+  Function interests2str(int: Tinterests): RawByteString;  // By Shyr
   var
-   i,j:integer;
+   i, j: integer;
    s: RawByteString;
-   present : Boolean;
+   present: Boolean;
   begin
-   s:='';
+   s := '';
    present := False;
 //   p := '';
    for i:=0 to int.Count-1 do
@@ -606,19 +614,19 @@ function  TICQcontact.GetDBrow : RawByteString;
      s := '';
     end;
 //     s:=s+int.interestBlock[i].Str;
-    s:=s+#0;
+    s := s+#0;
    end;
    if present then
-     Result:=s
+     Result := s
     else
-     Result:='';
+     Result := '';
 //   p := '';
   end;
 
 var
-  tuin : Integer;
+  tuin: Integer;
 begin
-  if not TryStrToInt(UID2cmp, tuin) then
+  if not TryStrToInt(String(UID2cmp), tuin) then
     tuin := 0;
   with TCE(data^) do
     Result := //TLV2(DBFK_OLDUIN, int2str(tuin))
@@ -675,7 +683,7 @@ begin
       +TLV2U_IFNN(DBFK_ssCell3, ssCell3)
 //      +TLV2(DBFK_ICONSHOW, int2str(icon.ToShow))
       +TLV2(DBFK_ICONSHOW, integer(icon.ToShow))
-      +TLV2_IFNN(DBFK_ICONMD5, ICQIcon.hash_safe)
+      +TLV2_IFNN(DBFK_ICONMD5, Icon.hash_safe)
       +TLV2U_IFNN(DBFK_WORKPAGE, workpage)
       +TLV2U_IFNN(DBFK_WORKSTNT, workPos) // Должность
       +TLV2U_IFNN(DBFK_WORKDEPT, workDep) // Департамент
@@ -768,7 +776,7 @@ begin
           DBFK_ssCell:      self.ssCell := UnUTF(item);
           DBFK_ssCell2:     self.ssCell2 := UnUTF(item);
           DBFK_ssCell3:     self.ssCell3 := UnUTF(item);
-          DBFK_ICONMD5:     self.ICQIcon.hash_safe := item;
+          DBFK_ICONMD5:     self.Icon.hash_safe := item;
           DBFK_MARSTATUS:   self.MarStatus := str2int(item);
           DBFK_qippwd:      self.crypt.qippwd := str2int(item);
          else

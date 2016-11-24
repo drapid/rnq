@@ -400,7 +400,8 @@ begin
 end;
 
 procedure ShowEmojiMenu(t: tpoint);
-var
+begin
+{var
   ar: array[1..4] of TRect;
   scr, intr, a: Trect;
   i, p1, p2: integer;

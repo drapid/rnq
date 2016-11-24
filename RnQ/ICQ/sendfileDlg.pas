@@ -15,12 +15,12 @@ uses
 
 type
   TCalcTime = record
-          startTime : TDateTime;
-          curBT : byte;
-          prevRcvd : Int64;
-          bt : array[0..19] of record
-            bytes : Int64;
-            startTime : TDateTime;
+          startTime: TDateTime;
+          curBT: byte;
+          prevRcvd: Int64;
+          bt: array[0..19] of record
+            bytes: Int64;
+            startTime: TDateTime;
            end;
         end;
 
@@ -61,49 +61,49 @@ type
     procedure FormCreate(Sender: TObject);
     procedure ClsWinChkClick(Sender: TObject);
   private
-    times : TCalcTime;
-    function FillFilesTree(files : TstringList) : Integer;
+    times: TCalcTime;
+    function FillFilesTree(files: TstringList): Integer;
   public
-    contact:TICQContact;
-//    files:string;
-    fileList : TstringList;
+    contact: TICQContact;
+//    files: string;
+    fileList: TstringList;
     ID: Int64;
-    current : Integer;
-    fp : TFilePacket;
-    fstr  : TFileStream;
-    dirct : TICQdirect;
-    fSize : Int64;
-    sendedSize : Int64;
-    Closing : Boolean;
-    constructor doAll(owner_ :Tcomponent; contact_:TICQcontact; files_:string);
-    procedure doTransfer(dr : TICQdirect);
+    current: Integer;
+    fp: TFilePacket;
+    fstr: TFileStream;
+    dirct: TICQdirect;
+    fSize: Int64;
+    sendedSize: Int64;
+    Closing: Boolean;
+    constructor doAll(owner_: Tcomponent; contact_: TICQcontact; files_: string);
+    procedure doTransfer(dr: TICQdirect);
     procedure doDoneTransfer;
-    procedure someData(Sender: TObject; var Data : RawByteString; var IsLast : Boolean);
-    procedure senddata(sender:Tobject; bytes:integer);
+    procedure someData(Sender: TObject; var Data: RawByteString; var IsLast: Boolean);
+    procedure senddata(sender: Tobject; bytes: integer);
     procedure CancelTrasfer;
     procedure EndTrasfer;
     procedure Disconnected(Sender: TObject; ErrCode: Word);
-    procedure notifFunc(Sender: TObject; ErrCode: Word; msg : String);
-    procedure SetPrgrsPos(pos : Integer);
+    procedure notifFunc(Sender: TObject; ErrCode: Word; msg: String);
+    procedure SetPrgrsPos(pos: Integer);
   end;
 
 implementation
 
 {$R *.dfm}
 uses
-  math, OverbyteIcsWSocket,
+  math, Types, OverbyteIcsWSocket,
   RnQSysUtils, RDFileUtil, RQUtil, RDGlobal, RDUtils,
   RQThemes, RnQLangs, RnQPics,
   globalLib, utilLib, langLib, themesLib,
   Protocol_ICQ;
 
 const
-   BufSize = 8192;
+  BufSize = 8192;
 type
   PfiItem = ^TfiItem;
   TfiItem = record
-     path, fn : String;
-     fs : Int64;
+     path, fn: String;
+     fs: Int64;
   end;
 
 procedure TsendFileFrm.SetPrgrsPos(pos : Integer);
@@ -118,16 +118,16 @@ begin
     end;
 end;
 
-function TsendFileFrm.FillFilesTree(files : TstringList) : Integer;
+function TsendFileFrm.FillFilesTree(files: TstringList): Integer;
 var
-//  ss:Tstrings;
-  i : integer;
-  fiItem : PfiItem;
-  n : PVirtualNode;
+//  ss: Tstrings;
+  i: integer;
+  fiItem: PfiItem;
+  n: PVirtualNode;
 begin
   Result := 0;
-//  ss:=TstringList.create;
-//  ss.Text:=files;
+//  ss := TstringList.create;
+//  ss.Text := files;
   tree.Clear;
   tree.BeginUpdate;
   for i:=0 to files.Count-1 do
@@ -144,11 +144,11 @@ begin
   tree.EndUpdate;  
 end;
 
-constructor TsendFileFrm.doAll(owner_ :Tcomponent; contact_:TICQcontact; files_:string);
+constructor TsendFileFrm.doAll(owner_ :Tcomponent; contact_: TICQcontact; files_: string);
 begin
   inherited create(owner_);
-  position:=poDefaultPosOnly;
-  contact:=contact_;
+  position := poDefaultPosOnly;
+  contact := contact_;
 ///////////// TEST!!!!!!!!!!!!!!!!
 ///
 //  contact.connection.ft_port := 20000;
@@ -159,7 +159,7 @@ begin
   caption:= getTranslation('File transfer to %s', [contact.displayed + ' ('+contact.uin2Show+')']);
   fileList := TstringList.create;
   fp := TFilePacket.Create;
-  fileList.Text:=files_;
+  fileList.Text := files_;
   if fileList.Count = 1 then
     begin
       FilesCnt.EditLabel.Caption := getTranslation('File');
@@ -187,29 +187,29 @@ begin
   translateWindow(self);
   showForm(self);
   bringForeground:=handle;
-  ID:=-1;
+  ID := -1;
   current := 0;
 end; // doAll
 
 procedure TsendfileFrm.FormResize(Sender: TObject);
 begin
-  tree.top:=0;
-  tree.left:=msgBox.boundsrect.right+2;
-  tree.width:=clientwidth-tree.left;
-  tree.height:=clientHeight-tree.top;
+  tree.top := 0;
+  tree.left := msgBox.boundsrect.right+2;
+  tree.width := clientwidth-tree.left;
+  tree.height := clientHeight-tree.top;
 end;
 
 procedure TsendfileFrm.sendBtnClick(Sender: TObject);
 var
   I: Integer;
-  s : String;
+  s: String;
 begin
 //  if not OnlFeature then
 //    Exit;
  fstr  := NIL;
  fSize := 0;
   s := msgBox.Text;
-  sBtn.enabled:=FALSE;
+  sBtn.enabled := FALSE;
   if fp.FileList.Count < fileList.Count then
    begin
      for I := 0 to fileList.Count - 1 do
@@ -218,7 +218,7 @@ begin
        end;
    end;
 //  msgBox.Lines.Add('ChkSum = ' + IntToHex(fp.CheckSum, 2));
-//  ID:=sendICQfiles(contact.uid, fileList.Text, msgBox.Text);
+//  ID := sendICQfiles(contact.uid, fileList.Text, msgBox.Text);
   sendedSize := 0;
   current := 0;
   times.curBT := 0;
@@ -226,13 +226,13 @@ begin
   for I := Low(times.bt) to High(times.bt) do
     times.bt[i].bytes := 0;
 
-  ID:=sendICQfiles(contact, fp, s, LocProxyChk.Checked, SrvChk.Checked, dirct);
+  ID := sendICQfiles(contact, fp, s, LocProxyChk.Checked, SrvChk.Checked, dirct);
 
   SrvChk.Enabled := false;
   LocProxyChk.Enabled := False;
 
-//ani.visible:=TRUE;
-//ani.active:=TRUE;
+//ani.visible := TRUE;
+//ani.active := TRUE;
 //ModalResult := mrOk;
 //close;
 end;
@@ -242,8 +242,8 @@ procedure TsendfileFrm.treeDrawNode(Sender: TBaseVirtualTree;
 var
   x //,y
    : Integer;
-  fiItem : PfiItem;
-  oldMode : Integer;
+  fiItem: PfiItem;
+  oldMode: Integer;
 begin
   begin
      if vsSelected in PaintInfo.Node^.States then
@@ -275,10 +275,10 @@ procedure TsendfileFrm.treeGetNodeWidth(Sender: TBaseVirtualTree;
   HintCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
   var NodeWidth: Integer);
 var
-  k : Integer;
-  s : string;
-  r : TRect;
-  res : Tsize;
+  k: Integer;
+  s: string;
+  r: TRect;
+  res: Tsize;
 begin
   k := DT_CALCRECT;
   s := TfiItem(PfiItem(Sender.getnodedata(Node))^).fn;
@@ -295,7 +295,7 @@ begin
   CancelTrasfer;
 //ani.active:=FALSE;
   FreeAndNil(fp);
-  action:=caFree;
+  action := caFree;
   destroyHandle;
 end;
 
@@ -308,7 +308,7 @@ end;
 
 procedure TsendfileFrm.FormShow(Sender: TObject);
 begin
- if  contact.displayed = contact.UID then
+ if contact.displayed = contact.UID then
    toBox.Text := contact.uin2Show
   else
    toBox.Text := contact.displayed + ' (' +contact.uin2Show + ')';
@@ -516,7 +516,7 @@ begin
   EndTrasfer;
 end;
 
-procedure TsendfileFrm.doTransfer(dr : TICQdirect);
+procedure TsendfileFrm.doTransfer(dr: TICQdirect);
 //var
 //  i : Integer;
 begin

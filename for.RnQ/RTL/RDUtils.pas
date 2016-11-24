@@ -7,7 +7,7 @@ unit RDUtils;
 {$I NoRTTI.inc}
 
 interface
-  uses
+uses
     Windows, sysutils, classes, graphics, forms, types, RDGlobal;
 
 function  IfThen(AValue: Boolean; const ATrue: Integer; const AFalse: Integer = 0): Integer; overload;
@@ -52,13 +52,14 @@ procedure swap4(var a, b: Integer); overload;
 procedure swap4(var src, dest; count: dword; cond: Boolean); overload;
 // Convert
 function  ip2str(ip: Integer): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-function  str2ip(s: RawByteString): Integer;
+function  str2ip(const s: RawByteString): Integer;
 function  qword_BE2verU(d: UInt64): String;
 function  qword_LE2verU(d: UInt64): String;
 function  bool2str(const b: Boolean): RawByteString;
   function ABCD_ADCB(d: dword): dword; assembler;
   function str2color(const s: AnsiString): Tcolor;
   function color2str(color: Tcolor): AnsiString;
+  function color2strU(color: Tcolor): String;
   function IntToHexA(Value: Integer; Digits: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}
   function IntToStrA(Value: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}  overload;
   function intToStrA(i, d: Integer): AnsiString; overload;
@@ -141,9 +142,8 @@ function  bool2str(const b: Boolean): RawByteString;
   function str2hex(const s: RawByteString): AnsiString; overload;
   function str2hexU(const s: AnsiString): String; overload;
   function str2hex(const s: RawByteString; const Delim : AnsiChar) : AnsiString; overload;
-  function  str2fontstyle(const s: AnsiString): Tfontstyles;
-  function  fontstyle2str(fs: Tfontstyles): AnsiString;
-  function  hexToInt(const s: RawByteString): Cardinal;
+  function  hexToInt(const s: RawByteString): Cardinal; overload;
+  function  hexToInt(const s: String): Cardinal; overload;
   function  strings2str(const split: string; ss: Tstrings): string; overload;
   function  strings2str(const split: string; const ss: array of string):string; overload;
   procedure str2strings(const split: String; src: string; var ss: Tstrings); deprecated;
@@ -168,7 +168,7 @@ implementation
   uses
     StrUtils, Math,
   {$IFDEF UNICODE}
-    Character,
+    Character, AnsiStrings,
   {$ENDIF UNICODE}
     RnQBinUtils;
 
@@ -586,7 +586,7 @@ begin
   while i < length(table) do
    begin
 //    result:=AnsiReplaceText(result, table[i], table[i+1]);
-    result:=AnsiReplaceStr(result, table[i], table[i+1]);
+    result := AnsiReplaceStr(result, table[i], table[i+1]);
     inc(i,2);
    end;
 end; // template
@@ -596,13 +596,13 @@ function  template(const src: AnsiString; table: array of AnsiString): AnsiStrin
 var
   i: Integer;
 begin
-  result:=src;
-  i:=0;
+  result := src;
+  i := 0;
   while i < length(table) do
    begin
 //    result:=AnsiReplaceText(result, table[i], table[i+1]);
-    result:=AnsiReplaceStr(result, table[i], table[i+1]);
-    inc(i,2);
+    result := AnsiReplaceStr(result, table[i], table[i+1]);
+    inc(i, 2);
    end;
 end; // template
  {$ENDIF UNICODE}
@@ -758,42 +758,53 @@ function ABCD_ADCB(d: dword): dword; assembler;
   rol EAX, 8
 end; // ABCD_ADCB
 
+ {$IFDEF UNICODE}
+function color2strU(color: Tcolor): UnicodeString;
+begin
+  if not ColorToIdent(Color, Result) then
+    begin
+      color := ABCD_ADCB(ColorToRGB(color));
+      result := intToHex(color, 6);
+    end;
+end;
+ {$ENDIF UNICODE}
+
 function color2str(color: Tcolor): AnsiString;
  {$IFDEF UNICODE}
 var
-  res : String;
+  res: String;
 begin
 //color:=ABCD_ADCB(ColorToRGB(color));
   if ColorToIdent(Color, Res) then
-    Result := res
+    Result := AnsiString(res)
    else
     begin
-      color:=ABCD_ADCB(ColorToRGB(color));
-      result:=IntToHexA(color,6);
+      color := ABCD_ADCB(ColorToRGB(color));
+      result := IntToHexA(color,6);
     end;
  {$ELSE nonUNICODE}
 begin
 //color:=ABCD_ADCB(ColorToRGB(color));
   if not ColorToIdent(Color, Result) then
     begin
-      color:=ABCD_ADCB(ColorToRGB(color));
-      result:=intToHex(color,6);
+      color := ABCD_ADCB(ColorToRGB(color));
+      result := intToHex(color,6);
     end;
  {$ENDIF UNICODE}
 end; // color2str
 
 function str2color(const s: AnsiString): Tcolor;
 begin
-if length(s) = 0 then
-  result:=-1
-else
-  if s[1]='$' then
-    result:=ABCD_ADCB(stringToColor(s))
-  else
-    if (length(s) > 2) and (upcase(s[1])='C') and (upcase(s[2])='L') then
-      result:=stringToColor(s)
-    else
-      result:=ABCD_ADCB(stringToColor('$'+s))
+  if length(s) = 0 then
+    result := -1
+   else
+    if s[1]='$' then
+      result := ABCD_ADCB(stringToColor(String(s)))
+     else
+      if (length(s) > 2) and (upcase(s[1])='C') and (upcase(s[2])='L') then
+        result := stringToColor(String(s))
+       else
+        result := ABCD_ADCB(stringToColor('$' + String(s)))
 end; // str2color
 
 
@@ -917,37 +928,38 @@ end;
   begin
     Result := IntToHex(Value, Digits);
   end;
-  function IntToStrA(Value : Integer) : AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+  function IntToStrA(Value: Integer): AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   begin
     Result := intToStr(Value);
   end;
 // {$ENDIF UNICODE}
  {$ENDIF UNICODE}
  {$ENDIF win64}
-function intToStr(i,d:Integer):string; overload;
+function intToStr(i, d: Integer): string; overload;
 begin
-result:=intToStr(i);
-while length(result) < d do
-  result:='0'+result;
+  result := intToStr(i);
+  while length(result) < d do
+    result := '0'+result;
 end; // intToStr
-function intToStrA(i,d:Integer): AnsiString; overload;
+function intToStrA(i, d: Integer): AnsiString; overload;
 begin
-result:=intToStrA(i);
-while length(result) < d do
-  result:='0'+result;
+  result := intToStrA(i);
+  while length(result) < d do
+    result := '0'+result;
 end; // intToStr
 
 
-function excludeTrailingCRLF(const s:string):string;
+function excludeTrailingCRLF(const s: string): string;
 var
-  i : Integer;
+  i: Integer;
 begin
-  result:='';
+  result := '';
   i := length(s);
 //  if s='' then
   if i = 0 then
     exit;
-  while (i > 0) and (s[i] in [#10, #13]) do
+//  while (i > 0) and (s[i] in [#10, #13]) do
+  while (i > 0) and CharInSet(s[i], [#10, #13]) do
     dec(i);
 //  setLength(s,i);
 //if s[length(s)]=#10 then setLength(s,length(s)-1);
@@ -956,20 +968,20 @@ begin
   result:= copy(s, 1, i);
 end; // excludeTrailingCRLF
 
-function dupAmperstand(const s:string):string;
+function dupAmperstand(const s: string): string;
 var
-  i,last:Integer;
+  i, last: Integer;
 begin
-  result:='';
-  last:=1;
+  result := '';
+  last := 1;
   for i:=1 to length(s) do
     if s[i]='&' then
       begin
-      result:=result+copy(s,last,i-last+1)+'&';
-      last:=i+1;
+        result := result + copy(s,last,i-last+1) + '&';
+        last := i+1;
       end;
   if last<=length(s) then
-    result:=result+copy(s,last,length(s)-last+1);
+    result := result+copy(s,last,length(s)-last+1);
 end; // dupAmperstand
 
 {function max(a,b:double):double;
@@ -1021,38 +1033,44 @@ end;
  {$ELSE nonUNICODE}
 function ip2str(ip: Integer): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
-  result:=dword_LE2ip(ip)
+  result := dword_LE2ip(ip)
 end;
  {$ENDIF UNICODE}
 
-function str2ip(s: RawByteString): Integer;
+function str2ip(const s: RawByteString): Integer;
 var
-  i, v, cd : Integer;
+  i, v: Integer;
+//  cd: Integer;
+  p: Integer;
+  s1: String;
 begin
-result:=0;
- try
-  repeat
-    result := result shl 8;
-    i := pos(AnsiString('.'),s);
-    if i > 0 then
-     begin
-      v := strToInt(copy(s,1,i-1));
-//      Val(copy(s,1,i-1), v, cd);
-//      if cd <> 0 then
-//        v := 0;
-
-      inc(result, v);
-      delete(s, 1, i);
-     end;
-  until i = 0;
-  // BY Rapid
-  if s <> '' then
-   inc(result, strToInt(s))
-  else
+  result := 0;
+  p := 1;
+  try
+    repeat
+      result := result shl 8;
+      i := pos(AnsiString('.'), s, p);
+      if i > 0 then
+       begin
+        s1 := String(copy(s, p, i-p));
+        v := StrToInt(s1);
+  //      Val(copy(s,1,i-1), v, cd);
+  //      if cd <> 0 then
+  //        v := 0;
+        inc(result, v);
+        p := i+1;
+//        delete(s, 1, i);
+       end;
+    until i = 0;
+    // BY Rapid
+    if (p>1) and (p <= length(s)) then
+//      if s <> '' then
+     inc(result, strToInt(String(copy(s, p, length(s)))))
+    else
+      result := 0;
+   except
     result := 0;
- except
-  result:=0;
- end;
+  end;
 end; // str2ip
 
 function qword_BE2verU(d: UInt64): String;
@@ -1668,7 +1686,7 @@ end;
  {$IFDEF UNICODE}
 function WideBEToStr(const Value: RawByteString): UnicodeString;
 var
-  str : RawByteString;
+  str: RawByteString;
 begin
   if Value='' then
    begin
@@ -1712,7 +1730,7 @@ var
 //  buffer: Pointer;
   BufLen: LongWord;
 //  lpBuf: Pointer;
-  str : WideString;
+  str: WideString;
 begin
   if Value='' then
     exit('');
@@ -1776,40 +1794,40 @@ end;
 
 function findInStrings(const s: string; ss: Tstrings): Integer;
 begin
-result:=0;
-while result < ss.count do
-  if ss[result] = s then
-    exit
-  else
-    inc(result);
-result:=-1;
+  result := 0;
+  while result < ss.count do
+    if ss[result] = s then
+      exit
+    else
+      inc(result);
+  result := -1;
 end; // findInStrings
 
  {$IFDEF UNICODE}
-function findInStrings(const s: AnsiString;ss: Tstrings): Integer;
+function findInStrings(const s: AnsiString; ss: Tstrings): Integer;
 var
-  sU : UnicodeString;
+  sU: UnicodeString;
 begin
- sU := s;
- result:=0;
- while result < ss.count do
-  if ss[result] = sU then
-    exit
-   else
-    inc(result);
- result:=-1;
+  sU := UnicodeString(s);
+  result := 0;
+  while result < ss.count do
+    if ss[result] = sU then
+      exit
+     else
+      inc(result);
+  result:=-1;
 end; // findInStrings
  {$ENDIF UNICODE}
 
 function findInStrings(const s: AnsiString; ss: array of AnsiString): Integer;
 begin
-result:=0;
-while result < length(ss) do
-  if ss[result] = s then
-    exit
-  else
-    inc(result);
-result:=-1;
+  result := 0;
+  while result < length(ss) do
+    if ss[result] = s then
+      exit
+    else
+      inc(result);
+  result := -1;
 end; // findInStrings
 
 function findInStrings(const s: AnsiString; ss, separator: RawByteString): Integer;
@@ -1826,119 +1844,150 @@ end; // findInStrings
 
 function hexToInt(const s: RawByteString): Cardinal;
 var
-  i,v,c: Cardinal;
+  i, v, c: Cardinal;
 begin
-result:=0;
-c:=0;
-i:=length(s);
-while i > 0 do
-  begin
-  if s[i] >= 'a' then
-    v:=byte(s[i])-byte('a')+10
-   else
-    if s[i] >= 'A' then
-      v:=byte(s[i])-byte('A')+10
-     else
-      v:=byte(s[i])-byte('0');
-  inc(result, v shl c);
-  inc(c,4);
-  dec(i);
-  end;
+  result := 0;
+  c := 0;
+  i := length(s);
+  while i > 0 do
+    begin
+      if s[i] >= 'a' then
+        v := byte(s[i])-byte('a')+10
+       else
+        if s[i] >= 'A' then
+          v := byte(s[i])-byte('A')+10
+         else
+          v := byte(s[i])-byte('0');
+      inc(result, v shl c);
+      inc(c, 4);
+      dec(i);
+    end;
 end; // hexToInt
+
+function hexToInt(const s: String): Cardinal;
+var
+  i, v, c: Cardinal;
+begin
+  result := 0;
+  c := 0;
+  i := length(s);
+  while i > 0 do
+    begin
+      if s[i] >= 'a' then
+        v := byte(s[i])-byte('a')+10
+       else
+        if s[i] >= 'A' then
+          v := byte(s[i])-byte('A')+10
+         else
+          v := byte(s[i])-byte('0');
+      inc(result, v shl c);
+      inc(c, 4);
+      dec(i);
+    end;
+end; // hexToInt
+
 function str2valor(const s: AnsiString): Int64;
 var
-  cd : Integer;
+  cd: Integer;
 begin
-if s = '' then
-  result:=-1
-else
-  if s[length(s)]='h' then
-    result:=hexToInt(copy(s,1,length(s)-1))
-  else
-    try
-      Val(s, Result, cd);
-      if cd <> 0 then
+  if s = '' then
+    result := -1
+   else
+    if s[length(s)]='h' then
+      result := hexToInt(copy(s,1,length(s)-1))
+    else
+      try
+        Val(String(s), Result, cd);
+        if cd <> 0 then
+          result := 0
+      except
         result := 0
-    except
-      result:=0
-    end
+      end
 end; // str2valor
 
 function hex2Str(const s: RawByteString): RawByteString;
 var
-  i:Integer;
+  i: Integer;
 begin
-result:='';
-//c:=0;
-//i:=length(s);
-i := 1;
-while i < length(s) do
-  begin
-    result := result + AnsiChar(hexToInt(copy(s,i,2)));
-{  if s[i] >= 'a' then v:=byte(s[i])-byte('a')+10 else
-    if s[i] >= 'A' then v:=byte(s[i])-byte('A')+10 else
-      v:=byte(s[i])-byte('0');
-  result := result + IntToStr(v);
-//  inc(result, v shl c);
-//  inc(c,4);
-  dec(i); }
-   inc(i, 2);
-  end;
-end; // hexToInt
-function hex2StrSafe(const s: RawByteString): RawByteString;
-var
-  i:Integer;
-  ch : AnsiChar;
-begin
-result:='';
-//c:=0;
-//i:=length(s);
-i := 1;
-while i < length(s) do
-  begin
-    if (s[i] in hexChars)and
-       (s[i+1] in hexChars) then
-      ch := AnsiChar(hexToInt(copy(s,i,2)))
-     else
-      ch := ' ';
-    result := result + Ch;
-{  if s[i] >= 'a' then v:=byte(s[i])-byte('a')+10 else
-    if s[i] >= 'A' then v:=byte(s[i])-byte('A')+10 else
-      v:=byte(s[i])-byte('0');
-  result := result + IntToStr(v);
-//  inc(result, v shl c);
-//  inc(c,4);
-  dec(i); }
-   inc(i, 2);
-  end;
+  result := '';
+  //c := 0;
+  //i := length(s);
+  i := 1;
+  while i < length(s) do
+    begin
+      result := result + AnsiChar(hexToInt(copy(s,i,2)));
+  {  if s[i] >= 'a' then v:=byte(s[i])-byte('a')+10 else
+      if s[i] >= 'A' then v:=byte(s[i])-byte('A')+10 else
+        v:=byte(s[i])-byte('0');
+    result := result + IntToStr(v);
+  //  inc(result, v shl c);
+  //  inc(c,4);
+    dec(i); }
+     inc(i, 2);
+    end;
 end; // hexToInt
 
-function hex2StrU(const s: String) : RawByteString;
+function hex2StrSafe(const s: RawByteString): RawByteString;
 var
   i: Integer;
   ch: AnsiChar;
 begin
-result:='';
-//c:=0;
-//i:=length(s);
-i := 1;
-while i < length(s) do
-  begin
-    if (s[i] in hexChars)and
-       (s[i+1] in hexChars) then
-      ch := AnsiChar(hexToInt(copy(s,i,2)))
-     else
-      ch := ' ';
-    result := result + Ch;
-{  if s[i] >= 'a' then v:=byte(s[i])-byte('a')+10 else
-    if s[i] >= 'A' then v:=byte(s[i])-byte('A')+10 else
-      v:=byte(s[i])-byte('0');
-  result := result + IntToStr(v);
-//  inc(result, v shl c);
-//  inc(c,4);
-  dec(i); }
-   inc(i, 2);
-  end;
+  result := '';
+  //c := 0;
+  //i := length(s);
+  i := 1;
+  while i < length(s) do
+    begin
+      if (s[i] in hexChars)and
+         (s[i+1] in hexChars) then
+        ch := AnsiChar(hexToInt(copy(s,i,2)))
+       else
+        ch := ' ';
+      result := result + Ch;
+  {  if s[i] >= 'a' then
+       v:=byte(s[i])-byte('a')+10
+      else
+       if s[i] >= 'A' then
+         v:=byte(s[i])-byte('A')+10
+        else
+         v:=byte(s[i])-byte('0');
+     result := result + IntToStr(v);
+   //  inc(result, v shl c);
+   //  inc(c,4);
+     dec(i); }
+     inc(i, 2);
+    end;
+end; // hexToInt
+
+function hex2StrU(const s: String): RawByteString;
+var
+  i: Integer;
+  ch: AnsiChar;
+begin
+  result := '';
+  //c := 0;
+  //i := length(s);
+  i := 1;
+  while i < (length(s)-1) do
+    begin
+//      if (s[i] in hexChars)and
+//         (s[i+1] in hexChars) then
+
+      if CharInSet(s[i], hexChars) and
+         CharInSet(s[i+1], hexChars) then
+        ch := AnsiChar(hexToInt(copy(s,i,2)))
+       else
+        ch := ' ';
+      result := result + Ch;
+  {  if s[i] >= 'a' then v:=byte(s[i])-byte('a')+10 else
+      if s[i] >= 'A' then v:=byte(s[i])-byte('A')+10 else
+        v := byte(s[i])-byte('0');
+    result := result + IntToStr(v);
+  //  inc(result, v shl c);
+  //  inc(c,4);
+    dec(i); }
+     inc(i, 2);
+    end;
 end; // hexToInt
 
 function PacketToHex(Buffer: Pointer; BufLen: Word): AnsiString;
@@ -1958,24 +2007,25 @@ function str2hex(const s: RawByteString): AnsiString;
 var
 //  ofs,
   i: Integer;
-//  s2:string;
+//  s2: string;
 begin
-  result:='';
-//  ofs:=0;
+  result := '';
+//  ofs := 0;
   for i:=1 to length(s) do
     begin
       result := result+
               intToHexA(byte(s[i]),2);
-//      result:=result+' ';
+//      result := result+' ';
     end;
 end; // Str2hex
+
 function str2hexU(const s: AnsiString): String;
 var
 //  ofs,
   i: Integer;
-//  s2:string;
+//  s2: string;
 begin
-  result:='';
+  result := '';
 //  ofs:=0;
   for i:=1 to length(s) do
     begin
@@ -1984,21 +2034,22 @@ begin
 //      result:=result+' ';
     end;
 end; // Str2hex
+
 function str2hex(const s: RawByteString; const Delim: AnsiChar): AnsiString;
 var
 //  ofs,
   i: Integer;
-//  s2:string;
+//  s2: string;
 begin
-  result:='';
+  result := '';
 //  ofs:=0;
   for i:=1 to length(s) do
     begin
       if i > 1 then
-        result:= result+delim;
-      result:=result+
+        result := result+delim;
+      result := result+
               intToHexA(byte(s[i]),2);
-//      result:=result+' ';
+//      result := result+' ';
     end;
 end; // Str2hex
 
@@ -2006,45 +2057,45 @@ function strings2str(const split: string; ss: Tstrings): string;
 var
   i: Integer;
 begin
-  result:='';
+  result := '';
   if ss = nil then
    exit;
   i:=0;
   while i < ss.count-1 do
     begin
-    result:=result+ss[i]+split;
+    result := result+ss[i]+split;
     inc(i);
     end;
   // the last one without split
   if ss.count > 0 then
-    result:=result+ss[ss.count-1]
+    result := result+ss[ss.count-1]
 end; // strings2str
 
 function strings2str(const split: string; const ss: array of string): string;
 var
-  i:Integer;
+  i: Integer;
 begin
-  result:='';
+  result := '';
   if length(ss)=0 then
     exit;
   for i:=0 to length(ss)-2 do
-    result:=result+ss[i]+split;
-  result:=result+ss[length(ss)-1];
+    result := result+ss[i]+split;
+  result := result+ss[length(ss)-1];
 end;
 
 procedure str2strings(const split: String; src: string; var ss: Tstrings);
 var
-  i:Integer;
+  i: Integer;
 begin
-ss.clear;
-while src > '' do
-  begin
-  i:=pos(split,src);
-  if i=0 then
-    i:=length(src)+1;
-  ss.add( copy(src,1,i-1) );
-  delete(src, 1, i+length(split)-1);
-  end;
+  ss.clear;
+  while src > '' do
+    begin
+      i := pos(split, src);
+      if i=0 then
+        i := length(src)+1;
+      ss.add( copy(src,1,i-1) );
+      delete(src, 1, i+length(split)-1);
+    end;
 end; // strings2str
 
 function hexDump(const data: RawByteString): AnsiString;
@@ -2054,28 +2105,28 @@ var
   ofs, i: Integer;
   s, s2: AnsiString;
 begin
- result:='';
- ofs:=0;
+ result := '';
+ ofs := 0;
  while ofs < length(data) do
   begin
-    s:='';
-    s2:='';
+    s := '';
+    s2 := '';
     for i:=1 to cols do
       if ofs+i <= length(data) then
         begin
-        s:=s+intToHexA(byte(data[ofs+i]),2);
+        s := s+intToHexA(byte(data[ofs+i]),2);
         if i=8 then
-          s:=s+'  '
+          s := s+'  '
          else
-          s:=s+' ';
+          s := s+' ';
         if data[ofs+i] < #32 then
-          s2:=s2+'.'
+          s2 := s2+'.'
          else
-          s2:=s2+data[ofs+i];
+          s2 := s2+data[ofs+i];
         end;
-    s:=s+stringOfChar(AnsiChar(' '),cols*3+4-length(s));
-    result:=result+s+s2+CRLF;
-    inc(ofs,cols);
+    s := s+stringOfChar(AnsiChar(' '),cols*3+4-length(s));
+    result := result+s+s2+CRLF;
+    inc(ofs, cols);
   end;
 end; // hexDump
 
@@ -2097,23 +2148,23 @@ begin
         begin
           s := s+IntToHex(byte(data[ofs+i]),2);
           if i=8 then
-            s:=s+'  '
+            s := s+'  '
            else
-            s:=s+' ';
+            s := s+' ';
         if data[ofs+i] < #32 then
-          s2:=s2+'.'
+          s2 := s2+'.'
          else
-          s2:=s2+ String( data[ofs+i] );
+          s2 := s2+ String( data[ofs+i] );
         end;
-    s:=s+stringOfChar(' ',cols*3+4-length(s));
-    result:=result+s+s2+CRLF;
-    inc(ofs,cols);
+    s := s+stringOfChar(' ',cols*3+4-length(s));
+    result := result+s+s2+CRLF;
+    inc(ofs, cols);
   end;
 end; // hexDump
 
-function isOnlyDigits(const s: AnsiString):boolean;
+function isOnlyDigits(const s: AnsiString): boolean;
 var
-  i:Integer;
+  i: Integer;
 begin
   result := FALSE;
   i := 1;
@@ -2123,46 +2174,26 @@ begin
      else
       exit;
   if i > 1 then
-   result:=TRUE;
+    result := TRUE;
 end; // isOnlyDigits
 
 {$IFDEF UNICODE}
 function  isOnlyDigits(const s: UnicodeString): boolean;
 var
-  i:Integer;
+  i: Integer;
 begin
-result:=FALSE;
-i:=1;
-while i <= length(s) do
-  if s[i] in ['0'..'9'] then
-    inc(i)
-  else
-    exit;
-if i > 1 then result:=TRUE;
+  result := FALSE;
+  i := 1;
+  while i <= length(s) do
+//    if s[i] in ['0'..'9'] then
+    if s[i].IsDigit then
+      inc(i)
+    else
+      exit;
+  if i > 1 then
+    result := TRUE;
 end; // isOnlyDigits
 {$ENDIF UNICODE}
-
-function str2fontstyle(const s: AnsiString): Tfontstyles;
-begin
-  result:=[];
-  if ansipos(Ansichar('b'),s) > 0 then
-    include(result, fsBold);
-  if ansipos(Ansichar('i'),s) > 0 then
-    include(result, fsItalic);
-  if ansipos(Ansichar('u'),s) > 0 then
-    include(result, fsUnderline);
-end; // str2fontstyle
-
-function fontstyle2str(fs: Tfontstyles): AnsiString;
-begin
-  result:='';
-  if fsBold in fs then
-    result:=result+'b';
-  if fsItalic in fs then
-    result:=result+'i';
-  if fsUnderline in fs then
-    result:=result+'u';
-end; // str2fontstyle
 
 function size2str(sz: Int64): String;
 begin
@@ -2178,48 +2209,54 @@ begin
         result := intToStr(sz) + ' Byte'
 end;
 
-function chop(const ss: RawByteString; var s: RawByteString):RawByteString;
-begin result:=chop(pos(ss,s),length(ss),s) end;
+function chop(const ss: RawByteString; var s: RawByteString): RawByteString;
+begin
+  result := chop(pos(ss,s), length(ss), s)
+end;
 
 function chop(i: Integer; var s: RawByteString): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-begin result:=chop(i,1,s) end;
-
-function chop(i,l: Integer; var s: RawByteString): RawByteString;
 begin
-if i=0 then
-  begin
-  result:=s;
-  s:='';
-  exit;
-  end;
-result:=copy(s,1,i-1);
-delete(s,1,i-1+l);
+  result := chop(i, 1, s)
+end;
+
+function chop(i, l: Integer; var s: RawByteString): RawByteString;
+begin
+  if i=0 then
+    begin
+      result := s;
+      s := '';
+      exit;
+    end;
+  result := copy(s,1,i-1);
+  delete(s, 1, i-1+l);
 end; // chop
 
 
-function chopline(var s:RawByteString):RawByteString;
+function chopline(var s: RawByteString): RawByteString;
 var
-  i:Integer;
+  i: Integer;
 begin
-for i:=1 to length(s) do
-  case s[i] of
-    #10:
-      begin
-      result:=chop(i,s);
-      exit;
+  for i:=1 to length(s) do
+    case s[i] of
+      #10:
+        begin
+          result := chop(i,s);
+          exit;
+        end;
+      #13:
+        begin
+          if (i < length(s)) and (s[i+1]=#10) then
+            result := chop(i, 2, s)
+           else
+            result:= chop(i,s);
+          exit;
+        end;
       end;
-    #13:
-      begin
-      if (i < length(s)) and (s[i+1]=#10) then result:=chop(i,2,s)
-      else result:= chop(i,s);
-      exit;
-      end;
-    end;
-result:=chop(0,0,s);
+  result := chop(0,0,s);
 end; // chopline
 
  {$IFDEF UNICODE}
-function chop(i, l: Integer; var s:String): String;
+function chop(i, l: Integer; var s: String): String;
 begin
   if i=0 then
     begin
@@ -2227,8 +2264,8 @@ begin
       s:='';
       exit;
     end;
-  result:=copy(s,1,i-1);
-  delete(s,1,i-1+l);
+  result := copy(s, 1, i-1);
+  delete(s, 1, i-1+l);
 end; // chop
 
 function chop(i: Integer; var s: String): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
@@ -2238,39 +2275,39 @@ end;
 
 function chop(const ss: String; var s: String): String;
 begin
-  result := chop(pos(ss,s),length(ss),s)
+  result := chop(pos(ss,s), length(ss), s)
 end;
 
 
 function chopline(var s: String): String;
 var
-  i:Integer;
+  i: Integer;
 begin
-for i:=1 to length(s) do
-  case s[i] of
-    #10:
-      begin
-        result:=chop(i,s);
-        exit;
+  for i:=1 to length(s) do
+    case s[i] of
+      #10:
+        begin
+          result:=chop(i,s);
+          exit;
+        end;
+      #13:
+        begin
+          if (i < length(s)) and (s[i+1]=#10) then
+            result := chop(i,2,s)
+           else
+            result := chop(i,s);
+          exit;
+        end;
       end;
-    #13:
-      begin
-        if (i < length(s)) and (s[i+1]=#10) then
-          result := chop(i,2,s)
-         else
-          result := chop(i,s);
-        exit;
-      end;
-    end;
-result:=chop(0,0,s);
+  result := chop(0,0,s);
 end; // chopline
 
  {$ENDIF UNICODE}
 
 {
-function  UnDelimiter(s : String) :String;
+function  UnDelimiter(s: String): String;
 var
-  i : Integer;
+  i: Integer;
 begin
   result := '';
   for I := 1 to length(s) do

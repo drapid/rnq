@@ -93,7 +93,7 @@ const
       0;
 
 
-  cUsedProtos : array[0..cProtocolsCount-1] of byte =
+  cUsedProtos: array[0..cProtocolsCount-1] of byte =
  {$IFDEF ICQ_ONLY}
    (ICQProtoID
  {$ELSE ~ICQ_ONLY}
@@ -140,12 +140,12 @@ type
 {$IFDEF usesDC}
   TProtoDirect=class;
 
-  Tdirects=class(Tlist)
-    proto : TRnQProtocol;
+  Tdirects = class(Tlist)
+    proto: TRnQProtocol;
     constructor create(sess_ : TRnQProtocol);
     destructor Destroy; override;
-    function  newFor(c:TRnQContact): TProtoDirect;
-    function  findID(id : UInt64): TProtoDirect;
+    function  newFor(c: TRnQContact): TProtoDirect;
+    function  findID(id: UInt64): TProtoDirect;
    end; // Tdirects
 
 //  TDirectMode = (dm_init, dm_bin_direct, dm_bin_proxy_init, dm_bin_proxy);
@@ -164,31 +164,31 @@ type
     eventID : UInt64;
     contact : TRnQContact;
     directs : Tdirects;
-    imserver : boolean;
-    imSender : Boolean;
-    needResume : Boolean;
-    Directed : Boolean;
-    UseLocProxy : Boolean;
-    mode : TDirectMode;
-    stage : byte;
-    kind :(DK_none, DK_file);
-    fileDesc : String;
-//    fileName :string;
-//    fileData :string;
-    buf : RawByteString;
-    fileCntReceived, fileCntTotal:integer;
+    imserver: boolean;
+    imSender: Boolean;
+    needResume: Boolean;
+    Directed: Boolean;
+    UseLocProxy: Boolean;
+    mode: TDirectMode;
+    stage: byte;
+    kind:(DK_none, DK_file);
+    fileDesc: String;
+//    fileName: string;
+//    fileData: string;
+    buf: RawByteString;
+    fileCntReceived, fileCntTotal: integer;
     fileSizeReceived, fileSizeTotal: Int64;
-    transferChkSum, fileChkSum : Cardinal;
-    receivedChkSum : Cardinal;
-//    Received : Int64;
-    fileName : String;
-    myspeed  : integer;
-    hisVer   : integer;
+    transferChkSum, fileChkSum: Cardinal;
+    receivedChkSum: Cardinal;
+//    Received: Int64;
+    fileName: String;
+    myspeed: integer;
+    hisVer: integer;
     AOLProxy : record
                  ip   : Cardinal;
                  port : word;
                end;
-    data :pointer;
+    data: pointer;
     constructor Create; Virtual;
     destructor Destroy; override;
    protected
@@ -300,60 +300,60 @@ type
     procedure AddToList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad;
     procedure RemFromList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad;
 
-    function  addContact(c:TRnQContact; isLocal : Boolean = false):boolean;
-    function  removeContact(c:TRnQContact):boolean;
+    function  addContact(c: TRnQContact; isLocal: Boolean = false):boolean;
+    function  removeContact(c: TRnQContact): boolean;
 
-    function  validUid1(const uin:TUID):boolean;
-//    function  getContact(uid : TUID) : TRnQContact;
+    function  validUid1(const uin: TUID): boolean;
+//    function  getContact(uid: TUID): TRnQContact;
 
-    function  sendMsg(cnt : TRnQContact; var flags:dword; const msg:string; var requiredACK:boolean):integer; // returns handle
-    procedure UpdateGroupOf(cnt : TRnQContact);
+    function  sendMsg(cnt: TRnQContact; var flags: dword; const msg:string; var requiredACK:boolean):integer; // returns handle
+    procedure UpdateGroupOf(cnt: TRnQContact);
 
     // event managing
 
-    procedure InputChangedFor(cnt :TRnQContact; InpIsEmpty : Boolean; timeOut : boolean = false);
-    function  compareStatusFor(cnt1, Cnt2 : TRnqContact) : Smallint;
+    procedure InputChangedFor(cnt: TRnQContact; InpIsEmpty: Boolean; timeOut: boolean = false);
+    function  compareStatusFor(cnt1, Cnt2: TRnqContact): Smallint;
 
     procedure sendkeepalive;
-//    procedure notifyListeners(ev:TicqEvent);
+//    procedure notifyListeners(ev: TicqEvent);
     // send packets
 {
-//    function  sendFLAP(ch:word; data:string):boolean;
-//    function  sendSNAC(fam,sub:word; data:string):boolean;
+//    function  sendFLAP(ch: word; data: string): boolean;
+//    function  sendSNAC(fam, sub: word; data: string):boolean;
 //    procedure sendKeepalive;
-//    function  sendMsg(uin,flags:dword; msg:string; var requiredACK:boolean):integer; // returns handle
-//    procedure sendSMS(dest, msg:string; ack:boolean);
-    function  sendAutoMsgReq(uin:integer):integer;
-    procedure sendContacts(uin,flags:dword; cl:TcontactList);
-    procedure sendQueryInfo(uin:integer);
-    procedure sendAddedYou(uin:integer);
-    function  sendFileReq(uin:integer; msg,fn:string; size:integer):integer; // returns handle
-    procedure sendFileOk(msgID:TmsgID; c:Tcontact);
-    procedure sendFileAck(msgID:TmsgID);
-    procedure sendFileAbort(msgID:TmsgID);
+//    function  sendMsg(uin, flags: dword; msg:string; var requiredACK:boolean):integer; // returns handle
+//    procedure sendSMS(dest, msg: string; ack: boolean);
+    function  sendAutoMsgReq(uin: integer): integer;
+    procedure sendContacts(uin, flags: dword; cl: TcontactList);
+    procedure sendQueryInfo(uin: integer);
+    procedure sendAddedYou(uin: integer);
+    function  sendFileReq(uin: integer; msg, fn: string; size:integer):integer; // returns handle
+    procedure sendFileOk(msgID: TmsgID; c: Tcontact);
+    procedure sendFileAck(msgID: TmsgID);
+    procedure sendFileAbort(msgID: TmsgID);
 
-    procedure sendACK(status:integer; msg, snac:string);
+    procedure sendACK(status: integer; msg, snac: string);
     procedure sendStatusCode;
     procedure sendCreateUIN;
     procedure sendDeleteUIN;
-    procedure sendSaveMyInfoAs(c:Tcontact);
+    procedure sendSaveMyInfoAs(c: Tcontact);
     procedure sendReqOfflineMsgs;
     procedure sendDeleteOfflineMsgs;
 
-    procedure RemoveMeFromHisCL(uin : Integer);
+    procedure RemoveMeFromHisCL(uin: Integer);
 }
-    procedure SetListener(l : TProtoNotify);
-    procedure AuthGrant(Cnt : TRnQContact);
-    procedure AuthRequest(cnt : TRnQContact; const reason : String);
-    function  getPwd : String;
-    procedure setPwd(const pPWD : String);
-    function  pwdEqual(const pass : String) : Boolean;
-//    procedure setMyInfo(cnt : TRnQContact);
-    function  getStatusDisable : TOnStatusDisable;
-    function  getPrefPage : TPrefFrameClass;
+    procedure SetListener(l: TProtoNotify);
+    procedure AuthGrant(Cnt: TRnQContact);
+    procedure AuthRequest(cnt: TRnQContact; const reason : String);
+    function  getPwd: String;
+    procedure setPwd(const pPWD: String);
+    function  pwdEqual(const pass: String): Boolean;
+//    procedure setMyInfo(cnt: TRnQContact);
+    function  getStatusDisable: TOnStatusDisable;
+    function  getPrefPage: TPrefFrameClass;
     property  pwd:String read getPwd write setPwd;
-//    property  MyInfo :TRnQContact read getMyInfo write setMyInfo;
-    property  statuses : TStatusArray read getStatuses;
+//    property  MyInfo: TRnQContact read getMyInfo write setMyInfo;
+    property  statuses: TStatusArray read getStatuses;
    end; // IRnQProtocol
 *)
 
@@ -364,12 +364,12 @@ type
 //    const ContactType : TRnQContactType =  TICQContact;
 //    class function GetId: Word; virtual; abstract;
    protected
-       FRefCount : Integer;
-       MyAccount : TUID;
-       listener  : TProtoNotify;
+       FRefCount: Integer;
+       MyAccount: TUID;
+       listener: TProtoNotify;
    public
-    fContactClass : TRnQCntClass;
-    progLogon : double;
+    fContactClass: TRnQCntClass;
+    progLogon: double;
     loginServerAddr     : String;
     loginServerPort     : AnsiString;
     sock                : TRnQSocket;
@@ -382,7 +382,7 @@ type
     SupportTypingNotif,
     isSendTypingNotif   : Boolean;
     class var contactsDB: TRnQCList;
-//    contactsDB          : TRnQCList;
+//    contactsDB: TRnQCList;
     class constructor Create;
     class destructor Destroy;
     class function _GetProtoName: string; virtual; abstract;
@@ -426,9 +426,9 @@ type
     function  getStatus: byte; Virtual; Abstract;
     procedure setStatus(st: Byte); Virtual; Abstract;
     function  getVisibility: byte; Virtual; Abstract;
-    function  IsInvisible  : Boolean; Virtual; Abstract;
+    function  IsInvisible: Boolean; Virtual; Abstract;
     function  getStatusName: String; Virtual; Abstract;
-    function  getStatusImg : TPicName; Virtual; Abstract;
+    function  getStatusImg: TPicName; Virtual; Abstract;
     function  getXStatus: byte; Virtual; Abstract;
 
     function  imVisibleTo(c: TRnQContact): boolean; Virtual; Abstract;
@@ -452,9 +452,9 @@ type
 
     function  validUid1(const uin: TUID): boolean; inline;
 //    function  getContact(uid: TUID): TRnQContact;
-    function  ContactExists(const UID: TUID) : Boolean;
+    function  ContactExists(const UID: TUID): Boolean;
 
-    function  sendMsg(cnt: TRnQContact; var flags:dword; const msg:string; var requiredACK:boolean):integer; Virtual; Abstract; // returns handle
+    function  sendMsg(cnt: TRnQContact; var flags: dword; const msg:string; var requiredACK:boolean):integer; Virtual; Abstract; // returns handle
     procedure UpdateGroupOf(cnt: TRnQContact); Virtual; Abstract;
 {$IFDEF usesDC}
     function getNewDirect: TProtoDirect; Virtual; Abstract;
@@ -484,7 +484,7 @@ type
         procedure BeforeDestruction; override; final;
     function getShowStr: String;
 
-    property  ProtoID: byte read _getProtoID;
+    property ProtoID: byte read _getProtoID;
 //    class function getProtoByUID(uid : TUID) : TRnQProtoClass;
     property MyAccNum: TUID read MyAccount;
     property RefCount: Integer read FRefCount;
@@ -528,36 +528,37 @@ type
     lclImportant: String;
 //    iProto: IRnQProtocol;
     fProto: TRnQProtocol;
-    antispam : record
-       Tryes : Byte;
-       lastQuests : array of String;
+    antispam: record
+       Tryes: Byte;
+       lastQuests: array of String;
      end;
     CntIsLocal: Boolean;
     Authorized,
     SendTransl: Boolean; // By Rapid D
     typing: packed record
-      typingTime : TDateTime;
+      typingTime: TDateTime;
       bSupport,
       bIsTyping,
-      bIAmTyping : Boolean;
+      bIAmTyping: Boolean;
      end;
-    group : Integer;
+    group: Integer;
     birth,
     birthL,       // Local Birthdate
     LastBDInform,
-    lastTimeSeenOnline:TdateTime;   // local time
+    lastTimeSeenOnline: TdateTime;   // local time
      {$IFDEF RNQ_AVATARS}
-     Icon_Path : String;
+     Icon_Path: String;
 //     icon : packed record
-     icon : packed record
-       Bmp  : TRnQBitmap;
-       cash : TRnQBitmap;
-       ToShow : Byte;
-       Flags : byte;
-       HL : byte;
+     icon: packed record
+       Bmp: TRnQBitmap;
+       cache: TRnQBitmap;
+       ToShow: Byte;
+       Flags: byte;
+       HL: byte;
 //    icon_ShowPh : Boolean;
-       IsBmp : Boolean;
-       ID : Word;
+       IsBmp: Boolean;
+       ID: Word;
+       Hash_safe: RawByteString;
 //    icon : Tbitmap;
       end;
       {$ENDIF RNQ_AVATARS}
@@ -596,12 +597,24 @@ type
 //    function  GetProto : IRnQProtocol;
     procedure SetGroupName(const pName: String);
     function  buin: RawByteString;
+    function  UIDasInt: Integer;
     property  Display: string read fDisplay write SetDisplay;
     property  ProtoID: byte read _getProtoID;
     property  Status: byte read getStatus;
   end;
 
-  TcontactProc=procedure(c:TRnQContact);
+  TCListEnumerator = class
+  private
+    FIndex: Integer;
+    FCL: TRnQCList;
+  public
+    constructor Create(pCL: TRnQCList);
+    function GetCurrent: TRnQContact; inline;
+    function MoveNext: Boolean;
+    property Current: TRnQContact read GetCurrent;
+  end;
+
+  TcontactProc=procedure(c: TRnQContact);
 {$IFDEF DELPHI9_UP}
   TRnQContactType = type of TRnQContact;
 {$ELSE DELPHI_9_DOWN}
@@ -611,6 +624,7 @@ type
    protected
     enumIdx: integer;
    public
+    function  GetEnumerator: TCListEnumerator;
     procedure resetEnumeration;
     function  hasMore: boolean;
     function  getNext: TRnQContact;
@@ -654,9 +668,9 @@ type
 
 
 var
-//  protocols : array of IRnQProtocol;
+//  protocols: array of IRnQProtocol;
   RnQProtos: array of TRnQProtoClass;
-//  RnQProtos : array of TRnQProtoHelper;
+//  RnQProtos: array of TRnQProtoHelper;
 //  contactsDB: TRnQCList;
   onContactCreation, onContactDestroying: TcontactProc;
   onStatusDisable: array [0..15] of TOnStatusDisable;
@@ -703,20 +717,21 @@ uses
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
-   RQLog, RnQFileUtil, RQUtil, RDUtils, RnQGlobal, RnQCrypt, RnQPics,
+   RnQFileUtil, RDUtils,
+   RQLog, RQUtil, RnQGlobal, RnQCrypt, RnQPics,
    globalLib, mainDlg, utilLib,
    ThemesLib;
 
 const
-  LogPics : array[TwhatLog] of TPicName = (PIC_CONNECTING, PIC_OFFGOING,
+  LogPics: array[TwhatLog] of TPicName = (PIC_CONNECTING, PIC_OFFGOING,
             PIC_LEFT, PIC_RIGHT,
             PIC_RIGHT, PIC_LEFT, PIC_CONNECTING,
             PIC_LEFT, PIC_RIGHT );
 var
-  logPktFileData : AnsiString;
-//  ActProto : Integer;
+  logPktFileData: AnsiString;
+//  ActProto: Integer;
 
-{function ActiveProto : IRnQProtocol; inline;
+{function ActiveProto: IRnQProtocol; inline;
 begin
 //  if (ActProto >=0) and (ActProto < Length(protocols)) then
 //    Result := protocols[ActProto]
@@ -725,9 +740,9 @@ begin
   result := ICQ;
 end;
 }
-{function trimUID(uid : TUID) : TUID;
+{function trimUID(uid: TUID): TUID;
 var
-  i : word;
+  i: word;
 begin
   result := '';
 //  i := 1;
@@ -822,7 +837,7 @@ begin
   if Assigned(mi) then
     Result := getMyInfo.displayed
    else
-    Result := MyAccNum;
+    Result := String(MyAccNum);
   Result := '(' + _GetProtoName + ') ' + Result;
 end;
 
@@ -851,7 +866,7 @@ begin
   if pp.prefExists('crypted-password64') then
     pwd := UnUTF(passDecrypt(pp.getPrefBlob64Def('crypted-password64')))
    else
-    pwd := passDecrypt(pp.getPrefBlobDef('crypted-password'));
+    pwd := String(passDecrypt(AnsiString(pp.getPrefBlobDef('crypted-password'))));
 
   pp.getPrefStr('last-server-ip', lastserverIP);
   pp.getPrefStr('last-server-addr', lastserverAddr);
@@ -885,7 +900,7 @@ end; // create
 
 destructor TRnQcontact.Destroy;
 //var
-//  i : Byte;
+//  i: Byte;
 begin
  if assigned(onContactDestroying) then onContactDestroying(self);
   SetLength(UID2cmp, 0);
@@ -893,7 +908,7 @@ begin
  inherited Destroy;
 end;
 
-function TRnQContact._getProtoID : Byte;
+function TRnQContact._getProtoID: Byte;
 begin
   Result := fProto.ProtoID;
 end;
@@ -908,7 +923,7 @@ begin
     result := first else
   if last > '' then
     result := last else
-   result := uid;
+   result := String(uid);
   if Length(result) > MaxDispayedLen then
     SetLength(result, MaxDispayedLen);
 end;
@@ -921,14 +936,26 @@ begin
     result := first else
   if last > '' then
     result := last else
-   result := uid;
+   result := String(uid);
   if Length(result) > MaxDispayedLen then
     SetLength(result, MaxDispayedLen);
 end;
 
 function TRnQcontact.getFN: String;
+ {$IFNDEF ICQ_ONLY}
+var
+  s: String;
+ {$ENDIF ~ICQ_ONLY}
 begin
-  Result := Self.fProto.ProtoName + '_' + UID2cmp;
+ {$IFNDEF ICQ_ONLY}
+  s := Self.fProto.ProtoName;
+  if s='ICQ' then
+ {$ENDIF ~ICQ_ONLY}
+    Result := String(UID2cmp)
+ {$IFNDEF ICQ_ONLY}
+   else
+    Result := s + '_' + UID2cmp;
+ {$ENDIF ~ICQ_ONLY}
 end;
 
 // destroy
@@ -951,7 +978,7 @@ begin
   CntIsLocal := True;
   antispam.Tryes := 0;
   icon.Bmp := NIL;
-  icon.cash :=NIL;
+  icon.cache :=NIL;
 //  antispam.lastQuests
 //nodb:=FALSE;
 end; // clear
@@ -1063,11 +1090,20 @@ end;
 
 function TRnQcontact.buin: RawByteString;
 begin
-// result:=intToStr(uin);
+// result := intToStr(uin);
 // result := uid;
 // Result := uinAsStr;
- result := AnsiChar(length(UID2cmp))+ AnsiString( UID2cmp ); // !!!!!!!!!
+  result := AnsiChar(length(UID2cmp))+ AnsiString( UID2cmp ); // !!!!!!!!!
 end; // buin
+
+function TRnQcontact.UIDasInt: Integer;
+begin
+ {$IFDEF UID_IS_UNICODE}
+  result := StrToIntDef(uid2cmp, 0); // !!!!!!!!!
+ {$ELSE UID_IS_UNICODE}
+  result := StrToIntDef(String(uid2cmp), 0); // !!!!!!!!!
+ {$ENDIF UID_IS_UNICODE}
+end;
 
 function TRnQcontact.imVisibleTo: Boolean;
 begin
@@ -1153,6 +1189,26 @@ begin
   self.group := gID;
 end;
 
+{ TCListEnumerator }
+
+constructor TCListEnumerator.Create(pCL: TRnQCList);
+begin
+  inherited Create;
+  FIndex := -1;
+  FCL := pCL;
+end;
+
+function TCListEnumerator.GetCurrent: TRnQContact;
+begin
+  Result := FCL.getAt(FIndex);
+end;
+
+function TCListEnumerator.MoveNext: Boolean;
+begin
+  Result := FIndex < FCL.Count - 1;
+  if Result then
+    Inc(FIndex);
+end;
 
 /////////////// TRnQCList  ///////////////////////////////////////////////
 
@@ -1451,18 +1507,18 @@ begin
  while ofs<Len do
   begin
   //  i:=pos(#10,s);
-    i:=posEx(AnsiString(#10),s, ofs);
+    i := posEx(AnsiString(#10), s, ofs);
     if (i>1) and (s[i-1]=#13) then
       dec(i);
     if i=0 then
-      i:= Len+1;
+      i := Len+1;
   //  s1 := copy(s,1,i-1);
     s1 := copy(s, ofs, i-ofs);
     try
 //      add(db.get(cls, UTF8ToStr(s1)))
-      add(db.add(pr, UTF8ToStr(s1)))
+      add(db.add(pr, TUID(UTF8ToStr(s1))))
      except
-      result:=FALSE
+      result := FALSE
     end;
     if s[i]=#13 then
       inc(i);
@@ -1479,6 +1535,11 @@ begin
   for i:=0 to count-1 do
     result.add(getAt(i))
 end; // clone
+
+function TRnQCList.GetEnumerator: TCListEnumerator;
+begin
+  Result := TCListEnumerator.Create(Self);
+end;
 
 procedure TRnQCList.resetEnumeration;
 begin enumIdx := 0 end;
@@ -1535,10 +1596,10 @@ var
 begin
   setlength(result, count);
   for i:=0 to count-1 do
-//    result[i]:=StrToIntDef(PRnQContact(items[i]).uid, 0);
+//    result[i] := StrToIntDef(PRnQContact(items[i]).uid, 0);
 {$IFDEF  UID_IS_UNICODE}
 {$ENDIF  UID_IS_UNICODE}
-    result[i] := StrToIntDef(TRnQContact(items[i]).uid, 0);
+    result[i] :=  TRnQContact(items[i]).UIDasInt;
 end; // toIntArray
 
 function TRnQCList.getCount(group: integer; OnlyOnline: Boolean = false): integer;

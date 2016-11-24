@@ -87,6 +87,7 @@ implementation
 {$R *.dfm}
 
 uses
+  Types,
   globalLib, mainDlg, langLib,
   RDGlobal, RDFileUtil, RDUtils, RnQNet,
   rqUtil, RQThemes, RnQSysUtils, RnQDialogs, RnQPics,

@@ -20,9 +20,6 @@ uses
 //    RnQAni,
   {$ENDIF USE_GDIPLUS}
    RDGlobal,
- {$IFDEF PROTOCOL_ICQ}
-  ICQContacts,
- {$ENDIF PROTOCOL_ICQ}
   RnQProtocol;//, HttpProt;
 
 //const
@@ -41,20 +38,21 @@ function GetDomain(url : String) : String;
 //function get_flashFile_from_xml(const fn : String; const uin : AnsiString) : String;
 //function get_flashFile_from_xml(str: TStream; const uin : AnsiString) : String;
 procedure avatars_save_and_load(cnt : TRnQContact; const hash : RawByteString;
+                                var hash_safe : RawByteString;
                                 var str : TMemoryStream);
 
-procedure loadAvatars(const proto : TRnQProtocol; path : String);
-procedure updateAvatarFor(c : TRnQContact);
-procedure Check_my_avatar(const proto : TRnQProtocol);
-procedure ClearAvatar(var cnt : TRnQContact);
- {$IFDEF PROTOCOL_ICQ}
-function  try_load_avatar(c : TICQContact; const hash : RawByteString) :Boolean;
- {$ENDIF PROTOCOL_ICQ}
-//function try_load_avatar2(bmp:TBitmap; hash : String) :Boolean ;
-//function try_load_avatar3(var bmp:TRnQBitmap; const hash : AnsiString) :Boolean;
-function LoadAvtByHash(const hash : RawByteString; var bmp : TRnQBitmap;
-                       var hasAvatar : Boolean; var pPicFile : String) : Boolean;
-procedure updateAvatar(c : TRnQContact{; pWriteLog : boolean = false});
+procedure loadAvatars(const proto: TRnQProtocol; path: String);
+procedure updateAvatarFor(c: TRnQContact);
+procedure Check_my_avatar(const proto: TRnQProtocol);
+procedure ClearAvatar(var cnt: TRnQContact);
+function  try_load_avatar(cnt: TRnQContact;
+                   const hash: RawByteString;
+                   var hash_safe: RawByteString): Boolean;
+//function try_load_avatar2(bmp: TBitmap; hash: String): Boolean ;
+//function try_load_avatar3(var bmp: TRnQBitmap; const hash: AnsiString) :Boolean;
+function LoadAvtByHash(const hash: RawByteString; var bmp: TRnQBitmap;
+                       var hasAvatar: Boolean; var pPicFile: String) : Boolean;
+procedure updateAvatar(c: TRnQContact; var hash_safe: RawByteString{; pWriteLog : boolean = false});
 
  {$IFDEF PROTOCOL_MRA}
 const
@@ -70,22 +68,22 @@ const
   ICQ_PHOTO_AVATAR = 'http://c.icq.com/people/img/show_photo.phpc?uin=%s&th_type=1&gender=%d';
   ICQ_PHOTO_USER_URL = 'http://www.icq.com/img/whitepages/show_user_photo.php?uin=';
 type
-//  TOnDownloadedProc = Procedure(fn : String; size : Int64; proto : TRnQProtocol; uid : TUID);
-  TOnDownloadedProc = Procedure(fn : String; size : Int64; cnt : TRnQContact);
+//  TOnDownloadedProc = Procedure(fn: String; size: Int64; proto: TRnQProtocol; uid: TUID);
+  TOnDownloadedProc = Procedure(fn: String; size: Int64; cnt: TRnQContact);
   TLoadURLParams = record
-    URL:String;
-    fn : String;
-    Treshold : LongInt;
-    ExtByContent : Boolean;
-//    UID : TUID;
-//    fProto : TRnQProtocol;
-    cnt : TRnQContact;
-    Proc : TOnDownloadedProc;
+    URL: String;
+    fn: String;
+    Treshold: LongInt;
+    ExtByContent: Boolean;
+//    UID: TUID;
+//    fProto: TRnQProtocol;
+    cnt: TRnQContact;
+    Proc: TOnDownloadedProc;
   end;
 
-  function LoadFromURL2(params : TLoadURLParams) : Boolean;
-  procedure OnPhotoDownLoaded(fn : String; size : Int64; cnt : TRnQContact);
-//  procedure OnPhotoDownLoaded(fn : String; size : Int64; uid : AnsiString);
+  function LoadFromURL2(params: TLoadURLParams): Boolean;
+  procedure OnPhotoDownLoaded(fn: String; size: Int64; cnt: TRnQContact);
+//  procedure OnPhotoDownLoaded(fn: String; size: Int64; uid: AnsiString);
  {$ENDIF PROTOCOL_ICQ}
 
 var
@@ -96,10 +94,11 @@ implementation
  uses
    StrUtils, math,
    RQUtil, RnQLangs, RnQDialogs, RnQNet, RnQFileUtil, RDUtils, RnQGlobal,
-//   RQlog,
    utilLib, globalLib,
  {$IFDEF PROTOCOL_ICQ}
-   ICQConsts, ICQv9, Protocol_ICQ,
+   ICQConsts, ICQv9,
+// Protocol_ICQ,
+   ICQContacts,
  {$ENDIF PROTOCOL_ICQ}
  {$IFDEF UNICODE}
    AnsiStrings,
@@ -117,17 +116,17 @@ implementation
  {$ENDIF PROTOCOL_ICQ}
    chatDlg;
 
-procedure SaveAvatar(const hash : RawByteString; picFmt : TPAFormat;
-                     picType : Integer; const str : TMemoryStream);
+procedure SaveAvatar(const hash: RawByteString; picFmt: TPAFormat;
+                     picType: Integer; const str: TMemoryStream);
 var
  {$IFDEF AVT_IN_DB}
-//  i : Integer;
-//    bType : Integer;
-//    hash : RawByteString;
-    InsAVTStmt : sqlite3_stmt_ptr;
-    Tail : PAnsiChar;
+//  i: Integer;
+//    bType: Integer;
+//    hash: RawByteString;
+    InsAVTStmt: sqlite3_stmt_ptr;
+    Tail: PAnsiChar;
  {$ELSE ~AVT_IN_DB}
-  s : String;
+  s: String;
  {$ENDIF ~AVT_IN_DB}
 begin
   if str.Size = 0 then
@@ -227,12 +226,12 @@ end;
 
  {$IFDEF PROTOCOL_ICQ}
 //function get_flashFile_from_xml(const fn : String; const uin : AnsiString) : String;
-function get_flashFile_from_xml(str: TStream; const hash : RawByteString;
-                    const uin : TUID) : String;
+function get_flashFile_from_xml(str: TStream; const hash: RawByteString;
+                    const uin: TUID): String;
 var
- i, k : Integer;
- url, u1 : String;
- s   : RawByteString;
+ i, k: Integer;
+ url, u1: String;
+ s: RawByteString;
 begin
  result := '';
 // s := loadFileA(fn);
@@ -274,6 +273,7 @@ end;
  {$ENDIF PROTOCOL_ICQ}
 
 procedure avatars_save_and_load(cnt : TRnQContact; const hash : RawByteString;
+                                var hash_safe : RawByteString;
                                 var str : TMemoryStream);
 var
   s : string;
@@ -291,14 +291,15 @@ begin
  {$ENDIF AVT_IN_DB}
 //  s := AccPath + avtPath + str2hexU(hash) + PAFormat[PicFmt];
   SaveAvatar(hash, picFmt, bb, str);
- {$IFDEF PROTOCOL_ICQ}
-  if cnt is TICQcontact then
+
+  hash_safe := hash;
+  if Assigned(cnt) then
     begin
-      TICQcontact(cnt).ICQIcon.hash_safe := hash;
          if PicFmt <> PA_FORMAT_UNK then
           if PicFmt = PA_FORMAT_XML then
            begin
-            if TicqSession(cnt.fProto).AvatarsAutoGetSWF then
+ {$IFDEF PROTOCOL_ICQ}
+            if (cnt is TICQcontact) and TicqSession(cnt.fProto).AvatarsAutoGetSWF then
              begin
 //               s := get_flashFile_from_xml(s, cnt.UID);
                str.Position := 0;
@@ -335,14 +336,12 @@ begin
                 msgDlg(getTranslation('%s has flash avatar, but it not auto-loaded',
                             [cnt.displayed]), False, mtInformation);
              end;
+ {$ENDIF PROTOCOL_ICQ}
           end
-         else
+         else // not PA_FORMAT_XML
            begin
             if cnt.icon.ToShow = IS_AVATAR then
              begin
-//             if not Assigned(thisICQ.eventContact.icon) then
-//               thisICQ.eventContact.icon := graphics.TBitmap.Create;
-//              loadPic2(s, cnt.icon.Bmp);
               str.Position := 0;
               if loadPic(TStream(str), cnt.icon.Bmp, 0, PicFmt) then
                 begin
@@ -352,9 +351,6 @@ begin
               cnt.icon.IsBmp := True;
               if cnt.icon.Bmp.Animated then
                 cnt.icon_Path := '';
-//             if (thisICQ.eventContact.icon.Height = 0)or
-//                (thisICQ.eventContact.icon.Width = 0) then
-//               FreeAndNil(thisICQ.eventContact.icon);
              end;
            end
           else
@@ -366,10 +362,7 @@ begin
             msgDlg(getTranslation('%s has avatar of unsupported type',
                           [cnt.displayed]), False, mtError);
            end;
-//         find
-//        thisICQ.eventContact.icon.LoadFromStream(thisICQ.imageStream);
     end;
- {$ENDIF PROTOCOL_ICQ}
 end;
 
 function LoadAvtByHash(const hash : RawByteString; var bmp : TRnQBitmap;
@@ -488,33 +481,33 @@ begin
      findClose(sr);
 end;
 
- {$IFDEF PROTOCOL_ICQ}
-function try_load_avatar(c : TICQcontact; const hash : RawByteString) :Boolean ;
+function try_load_avatar(cnt: TRnQContact; const hash: RawByteString;
+                         var hash_safe: RawByteString): Boolean ;
 var
- path : String;
+  path: String;
 //  sr:TsearchRec;
-  hasAvatar, b : Boolean;
+  hasAvatar, b: Boolean;
 begin
   result := false;
   if not Account.AccProto.AvatarsSupport then
     Exit;
-  hasAvatar := c.icon.ToShow <> IS_AVATAR;
+  hasAvatar := cnt.icon.ToShow <> IS_AVATAR;
 
   if not hasAvatar then
   begin
    if (hash > '') then
    begin
-    b := LoadAvtByHash(hash, c.icon.Bmp, hasAvatar, path);
+    b := LoadAvtByHash(hash, cnt.icon.Bmp, hasAvatar, path);
     if b then
       begin
-        if Assigned(c.icon.Bmp) then
-          c.icon.IsBmp := c.icon.Bmp.fFormat <> PA_FORMAT_SWF
+        if Assigned(cnt.icon.Bmp) then
+          cnt.icon.IsBmp := cnt.icon.Bmp.fFormat <> PA_FORMAT_SWF
          else
-          c.icon.IsBmp := False;
-        if not c.icon.IsBmp then
-          c.icon_Path := path
+          cnt.icon.IsBmp := False;
+        if not cnt.icon.IsBmp then
+          cnt.icon_Path := path
          else
-          c.Icon_Path := '';
+          cnt.Icon_Path := '';
       end
 {     else
      begin
@@ -584,14 +577,15 @@ begin
      end;}
    end;
   end;
-   if not hasAvatar then
-      c.ICQIcon.hash_safe := ''
-     else
-      c.ICQIcon.hash_safe := hash;
-  updateAvatarFor(c);
+  if not hasAvatar then
+    hash_safe := ''
+   else
+    hash_safe := hash;
+  if hash_safe='' then
+    ClearAvatar(cnt);
+  updateAvatarFor(cnt);
   result := (hash = '') or hasAvatar;
 end;
- {$ENDIF PROTOCOL_ICQ}
 
 {function try_load_avatar2(bmp:TBitmap; hash : String) :Boolean ;
 var
@@ -715,35 +709,30 @@ end;
 }
 
 
-procedure updateAvatar(c : TRnQcontact{; pWriteLog : boolean = false});
+procedure updateAvatar(c: TRnQcontact; var hash_safe: RawByteString{; pWriteLog : boolean = false});
 var
-  sr:TsearchRec;
+  sr: TsearchRec;
 //  path,
 //  uinStr : String;
 //  uin, code : Integer;
 //  c : Tcontact;
-  PicFile : String;
+  PicFile: String;
 //  b,
-  hasAvatar, loaded : Boolean;
+  hasAvatar, loaded: Boolean;
 begin
    if Assigned(c.icon.Bmp) then
     FreeAndNil(c.icon.Bmp);
- {$IFDEF PROTOCOL_ICQ}
-   if (c is TICQcontact) and (c.icon.ToShow = IS_AVATAR) and (TICQcontact(c).ICQIcon.hash_safe > '') then
+   if (c.icon.ToShow = IS_AVATAR) and
+      (hash_safe > '') then
    begin
     hasAvatar := False;
     loaded    := False;
 //    hsh := TICQcontact(c).ICQIcon.hash_safe;
-    if TICQcontact(c).ICQIcon.hash_safe <> z+z+z+z then
+    if hash_safe <> z+z+z+z then
     begin
      loaded := False;
      if (c.icon.ToShow = IS_AVATAR) then
-      begin
-{       if pWriteLog then
-        loggaEvt('Avatars: loading for '+ c.UID + ', hash = '+
-                 str2hex(TICQcontact(c).ICQIcon.hash_safe), '', True);}
-       loaded := LoadAvtByHash(TICQcontact(c).ICQIcon.hash_safe, c.icon.Bmp, hasAvatar, PicFile);
-      end;
+       loaded := LoadAvtByHash(hash_safe, c.icon.Bmp, hasAvatar, PicFile);
      if hasAvatar and not loaded then
        msgDlg(getTranslation('Couldn''t load avatar for %s', [c.UID]), False, mtError, c.UID);
 //     hasAvatar := loaded;
@@ -762,18 +751,17 @@ begin
       end;
     end;
     if not hasAvatar or not loaded then
-      TICQcontact(c).ICQIcon.hash_safe := '';
+      hash_safe := '';
    end
    else
     if c.icon.ToShow = IS_PHOTO then
      begin
-       if findFirst(AccPath + avtPath+c.UID+'.photo.*', faAnyFile, sr) = 0 then
+//       if findFirst(AccPath + avtPath+c.UID+'.photo.*', faAnyFile, sr) = 0 then
+       if findFirst(AccPath + avtPath + c.getFN + '.photo.*', faAnyFile, sr) = 0 then
         begin
          PicFile := AccPath + avtPath + sr.name;
          if isSupportedPicFile(PicFile) then
           begin
-{            if pWriteLog then
-              loggaEvt('Avatars: loading photo for '+ c.UID + ', file = '+ PicFile, '', True);}
              if loadPic2(PicFile, c.icon.Bmp) then
 //             if Assigned(c.iconBmp) then
                StretchPic(c.icon.Bmp, maxPICAVTH, maxPICAVTW);
@@ -793,18 +781,17 @@ begin
             if not loadPic2(path+sr.name, c.icon.Bmp) then
 }
      end;
- {$ENDIF PROTOCOL_ICQ}
 end;
 
-procedure loadAvatars(const proto : TRnQProtocol; path : String);
+procedure loadAvatars(const proto: TRnQProtocol; path: String);
 var
-//  sr:TsearchRec;
+//  sr: TsearchRec;
 //  path,
-//  uinStr : String;
-//  uin, code : Integer;
-  cnt : TRnQContact;
-//  c : TICQcontact;
-//  b, hasAvatar, loaded : Boolean;
+//  uinStr: String;
+//  uin, code: Integer;
+  cnt: TRnQContact;
+//  c: TICQcontact;
+//  b, hasAvatar, loaded: Boolean;
 begin
  {$IFDEF PROTOCOL_ICQ}
 //  path := userPath + avtPath;
@@ -813,7 +800,12 @@ begin
   if (path='') or not directoryExists(path) then
     exit;
 
-  path:=includeTrailingPathDelimiter(path);
+  path := includeTrailingPathDelimiter(path);
+  for cnt in proto.readList(LT_ROSTER) do
+   begin
+     cnt.icon.Bmp := NIL;
+     updateAvatar(cnt, cnt.icon.Hash_safe{, True});
+   end;
  with proto.readList(LT_ROSTER) do
  begin
   resetEnumeration;
@@ -824,7 +816,7 @@ begin
     begin
 //     c := TICQContact(cnt);
      cnt.icon.Bmp := NIL;
-     updateAvatar(cnt{, True});
+     updateAvatar(cnt, cnt.icon.Hash_safe{, True});
 //     Application.ProcessMessages;
     end;
   end;
@@ -833,25 +825,18 @@ begin
 end;
 
 
-procedure updateAvatarFor(c : TRnQcontact);
+procedure updateAvatarFor(c: TRnQcontact);
 var
- frm  : TRnQViewInfoForm;
- ci   : TchatInfo;
- i    : integer;
- pnl  : TPanel;
- ctrl : TWinControl;
-// gr   : TGPGraphics;
- fn : String;
-// cnt  : TICQContact;
- w, h : Double;
- b1, b : Boolean;
+ frm: TRnQViewInfoForm;
+ ci: TchatInfo;
+ i: integer;
+ pnl: TPanel;
+ ctrl: TWinControl;
+// gr: TGPGraphics;
+ fn: String;
+ w, h: Double;
+ b1, b: Boolean;
 begin
-{
-  if c is TICQcontact then
-    cnt := TICQcontact(c)
-   else
-    cnt := NIL;
-}
   if Assigned(c) then
   begin
     frm := findViewInfo(c);
@@ -1065,11 +1050,11 @@ begin
    roasterLib.redraw(c);
 end;
 
-procedure ClearAvatar(var cnt : TRnQcontact);
+procedure ClearAvatar(var cnt: TRnQcontact);
 var
- frm : TRnQViewInfoForm;
- ci : TchatInfo;
- i : integer;
+ frm: TRnQViewInfoForm;
+ ci: TchatInfo;
+ i: integer;
 // pnl : TPanel;
  ctrl : TWinControl;
 begin
@@ -1109,7 +1094,7 @@ end;
 
 procedure Check_my_avatar(const proto: TRnQProtocol);
 var
-  path : String;
+  path: String;
   sr: TsearchRec;
 begin
  {$IFDEF PROTOCOL_ICQ}
@@ -1124,13 +1109,13 @@ begin
   path := AccPath + avtPath;
   if (path='') or not directoryExists(path) then
     exit;
-  if length(TICQContact(proto.getMyInfo).ICQIcon.hash_safe) < 16 then
+  if length(proto.getMyInfo.Icon.hash_safe) < 16 then
     exit;
 
 
   path:=includeTrailingPathDelimiter(path);
 
-   if FindFirst(path+ str2hexU(TICQContact(proto.getMyInfo).ICQIcon.hash_safe)+'.*', faAnyFile, sr) = 0 then
+   if FindFirst(path+ str2hexU(proto.getMyInfo.Icon.hash_safe)+'.*', faAnyFile, sr) = 0 then
     repeat
     if (sr.name<>'.') and (sr.name<>'..') then
 //      if sr.Attr and faDirectory > 0 then
@@ -1142,18 +1127,18 @@ begin
         Continue;
 
       ToUploadAvatarFN := path+sr.name;
-      ToUploadAvatarHash := TICQContact(proto.getMyInfo).ICQIcon.hash_safe;
+      ToUploadAvatarHash := proto.getMyInfo.Icon.hash_safe;
     until findNext(sr) <> 0;
     findClose(sr);
  {$ENDIF PROTOCOL_ICQ}
 end;
 
  {$IFDEF PROTOCOL_ICQ}
-procedure OnPhotoDownLoaded(fn : String; size : Int64; cnt : TRnQContact);
+procedure OnPhotoDownLoaded(fn: String; size: Int64; cnt: TRnQContact);
 // This function is of type TOnDownloadedProc
 var
- frm  : TviewInfoFrm;
-// cnt  : TICQcontact;
+ frm: TviewInfoFrm;
+// cnt: TICQcontact;
 begin
 //  cnt := TICQcontact(proto.getContact(uid));
   if cnt = NIL then
@@ -1173,13 +1158,12 @@ begin
        frm.PhotoPBox.Invalidate;
    end;
   if cnt.icon.ToShow = IS_PHOTO then
-//    updateAvatar(cnt, TICQcontact(cnt).ICQIcon.Hash_safe);
-    updateAvatar(cnt);
+    updateAvatar(cnt, cnt.Icon.Hash_safe);
 end;
 
-function LoadFromURL2(params : TLoadURLParams) : Boolean;
+function LoadFromURL2(params: TLoadURLParams): Boolean;
 var
-  fn : String;
+  fn: String;
 begin
   fn := params.fn;
   Result := LoadFromURL(params.URL, fn, params.Treshold, params.ExtByContent);

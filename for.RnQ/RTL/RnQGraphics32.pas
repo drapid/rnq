@@ -698,10 +698,10 @@ var
   swf : TShockwaveFlash;
 //  swf : TTransparentFlashPlayerControl;
 //  swf : TFlashPlayerControl;
-   {$ENDIF USE_FLASH}
-//  pnl : TPanel;
   frm: TForm;
   w, h: Double;
+   {$ENDIF USE_FLASH}
+//  pnl : TPanel;
   ff: TPAFormat;
   pic: TPicture;
 begin
@@ -1943,20 +1943,20 @@ end;
  {$ENDIF NO_WIN98}
 
 
-//procedure TRnQBitmap.Draw(DC: HDC; DestR : TRect; SrcX, SrcY, SrcW, SrcH : Integer; pEnabled : Boolean= True; isCopy : Boolean= false);
-procedure TRnQBitmap.Draw(DC: HDC; DestBnd, SrcBnd : TGPRect; pEnabled : Boolean= True; isCopy32 : Boolean= false);
+//procedure TRnQBitmap.Draw(DC: HDC; DestR: TRect; SrcX, SrcY, SrcW, SrcH: Integer; pEnabled: Boolean= True; isCopy: Boolean= false);
+procedure TRnQBitmap.Draw(DC: HDC; DestBnd, SrcBnd: TGPRect; pEnabled: Boolean= True; isCopy32: Boolean= false);
 var
     blend: BLENDFUNCTION;
-    hBMP : HDC;
-    ico : HICON;
+    hBMP: HDC;
+    ico: HICON;
   {$IFNDEF NO_WIN98}
-    tBMP : TRnQBitmap;
-    tempBitmap : TBitmap;
+    tBMP: TRnQBitmap;
+    tempBitmap: TBitmap;
   {$ENDIF NO_WIN98}
-    LeftTop : TGPPoint;
-//    p : TPoint;
+    LeftTop: TGPPoint;
+//    p: TPoint;
  {$IFNDEF NO_WIN98}
-    sz : TSize;
+    sz: TSize;
  {$ENDIF NO_WIN98}
 begin
   if fAnimated then
@@ -3114,12 +3114,14 @@ end; // isSupportedPicFile
 
 function DetectFileFormatStream(str: TStream): TPAFormat;
 var
-//  s : String;
+//  s: String;
   s: array[0..3] of AnsiChar;
 begin
-  str.Seek(0, soFromBeginning);
+  str.Seek(0, soBeginning);
 //  str.Position := 0;
-  if str.Read(s, 4) < 4 then Result := PA_FORMAT_UNK
+  Result := PA_FORMAT_UNK;
+  if str.Read(s, 4) < 4 then
+    Result := PA_FORMAT_UNK
   else
 //  s := Copy(pBuffer, 1, 4);
   if s = 'GIF8' then
@@ -3140,14 +3142,16 @@ begin
     Result := PA_FORMAT_TIF
   else if (s= 'RIFF') then
     begin
-      if str.Read(s, 4) < 4 then Result := PA_FORMAT_UNK
+      if str.Read(s, 4) < 4 then
+        Result := PA_FORMAT_UNK
       else
-      if str.Read(s, 4) < 4 then Result := PA_FORMAT_UNK
+        if str.Read(s, 4) < 4 then
+          Result := PA_FORMAT_UNK
       else if s = 'WEBP' then
          Result := PA_FORMAT_WEBP;
     end
-  else
-    Result:= PA_FORMAT_UNK;
+//  else
+//    Result := PA_FORMAT_UNK;
 end;
 
 procedure  StretchPic(var bmp: TBitmap; maxH, maxW: Integer);
@@ -3284,7 +3288,7 @@ begin
   bmp.Draw(DC, DestRect, SrcX, SrcY, SrcW, SrcH, pEnabled);
 end;}
 
-procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; DestR, SrcR : TGPRect; pEnabled : Boolean= True; isCopy : Boolean = false);
+procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR, SrcR: TGPRect; pEnabled: Boolean= True; isCopy: Boolean = false);
 var
   Pt: TPoint;
 begin

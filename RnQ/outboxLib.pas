@@ -29,13 +29,13 @@ type
   POEvent = ^TOEvent;
   TOEvent=class
    public
-    kind:integer;
-//    uin:integer;
-    flags : Cardinal;
-    whom  : TRnQContact; 
+    kind: integer;
+//    uin: integer;
+    flags: Cardinal;
+    whom: TRnQContact;
 //    UID   : TUID;
-    email : string;
-    info  : string;
+    email: string;
+    info: string;
     cl: TRnQCList;
     wrote, lastmodify: Tdatetime;
     // ack fields
@@ -46,7 +46,7 @@ type
     constructor Create;// override;
     destructor Destroy; override;
     function   toString: RawByteString;
-    function   fromString(const s: RawByteString) : Boolean;
+    function   fromString(const s: RawByteString): Boolean;
     function   Clone: TOEvent;
     end; // TOEvent
 
@@ -80,7 +80,6 @@ implementation
 
 uses
   globalLib, mainDlg, utilLib, chatDlg,
-//  RnQProtocol,
   roasterLib, RnQCrypt,
   RQUtil, RnQDialogs, RDUtils, RnQBinUtils;
 
@@ -94,7 +93,7 @@ end; // destroy
 function Toutbox.toString: RawByteString;
 var
   s: RawByteString;
-  res : RawByteString;
+  res: RawByteString;
   i: integer;
 begin
   res := '';  // file version
@@ -105,7 +104,8 @@ begin
       s := getAt(i).toString;
       res := res + int2str(length(s))+s;
      end;
-    critt(res, StrToIntDef(Account.AccProto.ProtoElem.MyAccNum, 0));
+    i := StrToIntDef(String(Account.AccProto.getContactClass.trimUID(Account.AccProto.ProtoElem.MyAccNum)), 0);
+    critt(res, i);
    end;
   result := 'VER'+int2str(1)+res;
 end; // toString
@@ -115,7 +115,8 @@ var
   i, l: integer;
   ev: Toevent;
 begin
-  s := decritted(copy(s,8,length(s)), StrToIntDef(Account.AccProto.ProtoElem.MyAccNum, 0));
+  i := StrToIntDef(String(Account.AccProto.getContactClass.trimUID(Account.AccProto.ProtoElem.MyAccNum)), 0);
+  s := decritted(copy(s, 8, length(s)), i);
   clearU;
   i := 1;
   if length(s) < 4 then
@@ -123,14 +124,14 @@ begin
   try
    while i < length(s) do
     begin
-      l:=integer((@s[i])^);
+      l := integer((@s[i])^);
       inc(i,4);
-      ev:=TOevent.create;
+      ev := TOevent.create;
       if ev.fromString( copy(s,i,l) ) then
         add(ev)
        else
         ev.Free;
-      inc(i,l);
+      inc(i, l);
     end;
   except
    msgDlg('Error on load outbox', True, mtError);
@@ -139,8 +140,8 @@ end; // fromString
 
 procedure Toutbox.clear;
 //var
-//  i:integer;
-//  oe : TOEvent;
+//  i: integer;
+//  oe: TOEvent;
 begin
 {for i:=count-1 downto 0 do
  begin
@@ -188,7 +189,7 @@ begin
   result.cl.assign(cl);
 end; // add
 
-function Toutbox.add(kind: Integer; dest: TRnQContact; flags: integer=0; const info: string=''):TOevent;
+function Toutbox.add(kind: Integer; dest: TRnQContact; flags: integer=0; const info: string=''): TOevent;
 var
   found: boolean;
   i: integer;
@@ -221,12 +222,12 @@ begin
   saveOutboxDelayed:=TRUE;
 end; // add
 
-function Toutbox.getAt(idx:integer):TOevent;
+function Toutbox.getAt(idx: integer): TOevent;
 begin
-if (idx>=0) and (idx<count) then
-  result:=list[idx]
-else
-  result:=NIL;
+  if (idx>=0) and (idx<count) then
+    result := list[idx]
+   else
+    result := NIL;
 end;
 // getAt
 
@@ -238,9 +239,9 @@ begin
     TOevent(Ptr).Free;
 end;
 
-function Toutbox.remove(ev:TOevent):boolean;
+function Toutbox.remove(ev: TOevent): boolean;
 var
-  i : Integer;
+  i: Integer;
 begin
 //   Result := inherited remove(ev)>=0;
   i := IndexOf(ev);
@@ -256,44 +257,44 @@ begin
     Result := False;
 end; // remove
 
-function Toutbox.popVisible:TOevent;
+function Toutbox.popVisible: TOevent;
 var
-  i:integer;
+  i: integer;
 begin
-i:=0;
-while i < count do
-  begin
-  result:=getAt(i);
-  if (result.flags and IF_sendWhenImVisible=0)
-  or result.whom.imVisibleTo then
+  i := 0;
+  while i < count do
     begin
-     list[i] := NIL;
-     delete(i);
-     saveOutboxDelayed:=TRUE;
-     updateScreenFor(result.whom);
-    exit;
+    result := getAt(i);
+    if (result.flags and IF_sendWhenImVisible=0)
+    or result.whom.imVisibleTo then
+      begin
+       list[i] := NIL;
+       delete(i);
+       saveOutboxDelayed := TRUE;
+       updateScreenFor(result.whom);
+      exit;
+      end;
+    inc(i);
     end;
-  inc(i);
-  end;
-result:=NIL;
+  result := NIL;
 end; // popVisible
 
-function Toutbox.pop:TOevent;
+function Toutbox.pop: TOevent;
 begin
-  result:=NIL;
+  result := NIL;
   if count>0 then
   begin
-   result:=getAt(0);
+   result := getAt(0);
    list[0] := NIL;
    delete(0);
    updateScreenFor(result.whom);
   end;
-  saveOutboxDelayed:=TRUE;
+  saveOutboxDelayed := TRUE;
 end; // pop
 
 function Toutbox.empty: boolean;
 begin
-  result:=count=0
+  result := count=0
 end;
 
 function Toutbox.stFor(who: TRnQContact): boolean;
@@ -429,7 +430,7 @@ begin
   end;
 end; // fromString
 
-function  TOevent.Clone : TOEvent;
+function  TOevent.Clone: TOEvent;
 begin
   Result := TOEvent.Create;
   Result.kind  := Self.kind;
@@ -464,9 +465,9 @@ end;
 constructor TOEvent.Create;
 begin
   inherited;
-  kind:= OE_msg;
+  kind := OE_msg;
 //    uin:integer;
-  flags:= 0;
+  flags := 0;
 //  UID   := '';
   whom  := NIL;
   email := '';

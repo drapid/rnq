@@ -14,7 +14,7 @@ uses
 
 type
   TstartFr = class(TPrefFrame)
-    PageControl1: TPageControl;
+    Pages: TPageControl;
     MainTab: TTabSheet;
     autoconnectChk: TCheckBox;
     splashChk: TCheckBox;
@@ -55,12 +55,10 @@ type
 implementation
 
 uses
-//  ICQConsts,
   RnQProtocol,
   utilLib, RQUtil, menusUnit, RnQLangs,
   math, globalLib,
   RnQGraphics32, RQThemes;
-//  ICQv9,Protocol_ICQ;
 
 {$R *.dfm}
 
@@ -73,13 +71,13 @@ begin autostart1.text := Account.AccProto.ProtoElem.MyAccNum end;
 procedure TstartFr.startingStatusBoxDrawItem(Control: TWinControl;
   Index: Integer; Rect: TRect; State: TOwnerDrawState);
 var
-  cnv:Tcanvas;
+  cnv: Tcanvas;
   st: Int8;
-  gR : TGPRect;
-  s, s1 : String;
-  ch : Char;
+  gR: TGPRect;
+  s, s1: String;
+  ch: Char;
 begin
-  cnv:= startingstatusbox.canvas;
+  cnv := startingstatusbox.canvas;
   cnv.fillrect(rect);
   gr.x := 2+rect.left;
   gr.y := rect.top;
@@ -123,7 +121,7 @@ procedure TstartFr.startingStatusBoxMeasureItem(Control: TWinControl;
   Index: Integer; var Height: Integer);
 var
   st: Int8;
-  ch : Char;
+  ch: Char;
 begin
   Height := 20;
   if (index >=0) and (startingstatusBox.items.Count >= index) then
@@ -146,11 +144,11 @@ procedure TstartFr.startingVisibilityBoxDrawItem(Control: TWinControl;
 var
   cnv:Tcanvas;
   st: byte;
-  gR : TGPRect;
-  s : String;
-  visArr : TStatusArray;
+  gR: TGPRect;
+  s: String;
+  visArr: TStatusArray;
 begin
-  cnv:=startingvisibilitybox.canvas;
+  cnv := startingvisibilitybox.canvas;
   gr.x := 2+rect.left;
   gr.y := rect.top;
   st := byte(TComboBox(Control).items.objects[index]);
@@ -180,7 +178,7 @@ procedure TstartFr.startingVisibilityBoxMeasureItem(Control: TWinControl;
   Index: Integer; var Height: Integer);
 var
   st: byte;
-  visArr : TStatusArray;
+  visArr: TStatusArray;
 begin
   if (index >=0) and (TComboBox(Control).items.Count >= index) then
    begin
@@ -197,9 +195,9 @@ end;
 procedure TstartFr.initPage;
 var
 //  st: byte;
-  b : Byte;
-  ch : Char;
-//  vi:Tvisibility;
+  b: Byte;
+  ch: Char;
+//  vi: Tvisibility;
 begin
   startingStatusBox.Items.Add(' '); // Last used status
   for b in Account.AccProto.getStatusMenu do
@@ -218,39 +216,39 @@ begin
    end;
 //  startingVisibilityBox.DropDownCount := 16;
 
-  autostart1.top:=  reopenchatsChk.boundsrect.bottom + GAP_SIZE;
-  Label13.top:= autostart1.top + 4;
-  CurUINBtn.top:= autostart1.top - 2;
-  CurUINBtn.left:= MainTab.Width - GAP_SIZE - CurUINBtn.width;
-  autostart1.width:= CurUINBtn.left - autostart1.left - GAP_SIZE;
+  autostart1.top :=  reopenchatsChk.boundsrect.bottom + GAP_SIZE;
+  Label13.top := autostart1.top + 4;
+  CurUINBtn.top := autostart1.top - 2;
+  CurUINBtn.left := MainTab.Width - GAP_SIZE - CurUINBtn.width;
+  autostart1.width := CurUINBtn.left - autostart1.left - GAP_SIZE;
 
-  startingStatusBox.top:=  autostart1.boundsrect.bottom + GAP_SIZE2;
-  startingStatusBox.width:= MainTab.Width - GAP_SIZE - startingStatusBox.left;
+  startingStatusBox.top :=  autostart1.boundsrect.bottom + GAP_SIZE2;
+  startingStatusBox.width := MainTab.Width - GAP_SIZE - startingStatusBox.left;
 
-  Label24.top:= startingStatusBox.top + 4;
-  laststatus1.top:=  startingStatusBox.boundsrect.bottom + GAP_SIZE;
+  Label24.top := startingStatusBox.top + 4;
+  laststatus1.top :=  startingStatusBox.boundsrect.bottom + GAP_SIZE;
 
-  startingVisibilityBox.top:=  laststatus1.boundsrect.bottom + GAP_SIZE;
-  startingVisibilityBox.width:= startingStatusBox.width;
+  startingVisibilityBox.top :=  laststatus1.boundsrect.bottom + GAP_SIZE;
+  startingVisibilityBox.width := startingStatusBox.width;
 
-  Label25.top:= startingVisibilityBox.top + 4;
+  Label25.top := startingVisibilityBox.top + 4;
 
-  userspathBox.top:=  startingVisibilityBox.boundsrect.bottom + GAP_SIZE2 + userspathBox.editlabel.height;
-  userspathBox.left:= GAP_SIZE;
-  userspathBox.width:= MainTab.Width - GAP_SIZE2;
+  userspathBox.top :=  startingVisibilityBox.boundsrect.bottom + GAP_SIZE2 + userspathBox.editlabel.height;
+  userspathBox.left := GAP_SIZE;
+  userspathBox.width := MainTab.Width - GAP_SIZE2;
 end;
 
 procedure TstartFr.applyPage;
 var
-  ch : Char;
-//  i,code : integer;
+  ch: Char;
+//  i, code: integer;
 begin
-  userspath:=userspathBox.text;
-  reopenchats:=reopenchatsChk.checked;
-  getofflinemsgs:=getofflinemsgsChk.checked;
-  delofflinemsgs:=delofflinemsgsChk.checked;
-  check4readonly:=readonlyChk.checked;
-  autostartUIN:=autostart1.text;
+  userspath := userspathBox.text;
+  reopenchats := reopenchatsChk.checked;
+  getofflinemsgs := getofflinemsgsChk.checked;
+  delofflinemsgs := delofflinemsgsChk.checked;
+  check4readonly := readonlyChk.checked;
+  autostartUIN := autostart1.text;
 {  if Assigned(Account.AccProto) then
 //   if not Account.AccProto.ProtoElem._isValidUid(autostartUIN) then
    if not Account.AccProto.ValidUid1(autostartUIN) then
@@ -262,9 +260,9 @@ begin
 //  else
     autostartUIN := '';
 }
-  startMinimized:=minimizedChk.checked;
-  skipSplash:=splashChk.checked;
-  autoconnect:=autoconnectChk.checked;
+  startMinimized := minimizedChk.checked;
+  skipSplash := splashChk.checked;
+  autoconnect := autoconnectChk.checked;
   with startingstatusBox do
    begin
     if itemIndex = 0  then
@@ -281,47 +279,47 @@ begin
    end;
   with startingVisibilityBox do
    if itemIndex >= 0 then
-    RnQstartingVisibility:=Byte(items.objects[itemIndex]);
-  uselastStatus:=laststatus1.checked;
-  lockOnStart:=lockOnStartChk.checked;
+     RnQstartingVisibility := Byte(items.objects[itemIndex]);
+  uselastStatus := laststatus1.checked;
+  lockOnStart := lockOnStartChk.checked;
 end;
 
 
 procedure TstartFr.resetPage;
-  procedure placeComboBox(cb:TcomboBox; val: Int8);
+  procedure placeComboBox(cb: TcomboBox; val: Int8);
   var
-    i:integer;
+    i: integer;
   begin
    for i:=0 to cb.items.count-1 do
 //    if cb.items.objects[i] = obj then
     if ((val >=0) and (cb.items[i] >= '0') and ((Word(cb.items[i][1]) - Word('0')) = val))
        or ((val <0) and (cb.items[i] < '0')) then
      begin
-      cb.itemindex:=i;
+      cb.itemindex := i;
       exit;
      end;
-   cb.itemIndex:=-1;
+   cb.itemIndex := -1;
   end; // placeComboBox
 begin
 
-  userspathBox.text:=userspath;
-  reopenchatsChk.checked:=reopenchats;
-  getofflinemsgsChk.checked:=getofflinemsgs;
-  delofflinemsgsChk.checked:=delofflinemsgs;
-  readonlyChk.checked:=check4readonly;
+  userspathBox.text := userspath;
+  reopenchatsChk.checked := reopenchats;
+  getofflinemsgsChk.checked := getofflinemsgs;
+  delofflinemsgsChk.checked := delofflinemsgs;
+  readonlyChk.checked := check4readonly;
   if autostartUIN = '' then
-    autostart1.text:=''
+    autostart1.text := ''
   else
     autostart1.text := autostartUIN;
-  minimizedChk.checked:=startMinimized;
-  autoconnectChk.checked:=autoconnect;
+  minimizedChk.checked := startMinimized;
+  autoconnectChk.checked := autoconnect;
 //  placeComboBox(startingStatusBox, Tobject(RnQstartingstatus));
 //  placeComboBox(startingvisibilityBox, Tobject(RnQstartingvisibility));
   placeComboBox(startingStatusBox, RnQstartingstatus);
   placeComboBox(startingvisibilityBox, RnQstartingvisibility);
-  lastStatus1.checked:=uselaststatus;
-  splashChk.checked:=skipSplash;
-  lockOnStartChk.checked:=lockOnStart;
+  lastStatus1.checked := uselaststatus;
+  splashChk.checked := skipSplash;
+  lockOnStartChk.checked := lockOnStart;
 end;
 
 end.

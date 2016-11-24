@@ -183,7 +183,6 @@ function  openSaveDlg(parent: Tform; const Cptn: String; IsOpen: Boolean;
 function  str2sortby(const s: AnsiString): TsortBy;
 procedure CheckBDays;
 function  GetWidth(chk: TCheckBox): integer;
-procedure parseMsgImages(const imgStr: RawByteString; var imgList: TAnsiStringList);
 function  CacheImage(var mem: TMemoryStream; const url, ext: RawByteString): Boolean;
 procedure CacheType(const url, mime, ctype: RawByteString);
 function  CheckType(const lnk: String; var sA: RawByteString; var ext: String): Boolean; overload;
@@ -408,7 +407,8 @@ renamefile(uPath + 'uin.list', uPath + uinlistFilename);
   else
 //   s := loadNewOrOldVersionContactList(rosterFileName1);
    s := loadFileA(uPath + rosterFileName1);
- pr.readList(LT_ROSTER).fromString(pr, s, TRnQProtocol.contactsDB);
+// pr.readList(LT_ROSTER).fromString(pr, s, TRnQProtocol.contactsDB);
+ pr.readList(LT_ROSTER).fromString(pr, s, pr.contactsDB );
 
 
 { if zipLists then
@@ -456,7 +456,7 @@ end; // saveLists
 procedure loadExtSts(zp: TZipFile);
 var
   k, line, s: RawByteString;
-  i : Integer;
+  i: Integer;
 begin
 //  clear;
 //  s := loadFile(userPath + extstatusesFilename);
@@ -615,7 +615,7 @@ begin
       if h='proxy-ver5' then
          if yesno then
            pProxys[i].proto:=PP_SOCKS5
-         else
+          else
            pProxys[i].proto:=PP_SOCKS4
 //      else if h='proxy' then pProxys[i].enabled:=yesno
       else if h='proxy-auth' then pProxys[i].auth:=yesno
@@ -719,7 +719,7 @@ begin
               lFileOld := uPath + dbFileName + '5';
               lFileNew := uPath + dbFileName + '5.new';
               lFileBak := uPath + dbFileName + '5.bak';
-              if MakeBakups then
+              if MakeBackups then
                 begin
                   ReplaceFile(PChar(lFileOld), PChar(lFileNew), PChar(lFileBak), REPLACEFILE_IGNORE_MERGE_ERRORS, NIL, NIL)
                 end
@@ -1139,7 +1139,7 @@ var
 //  b0: TBitmap;
 //  b1: TGPBitmap;
 //  gr: TGPGraphics;
-//  p:TGPPointF;
+//  p: TGPPointF;
 //  gp: TGPGraphicsPath;
 //  fnt: TGPFont;
 //  br: TGPBrush;
@@ -1289,7 +1289,7 @@ begin
   result := NIL;
   if ev=NIL then
     exit;
-  result := viewTextWindow(ev.getHeaderText, ev.getBodyText, ev.getBodyBin);
+  result := viewTextWindow(MainPrefs, ev.getHeaderText, ev.getBodyText, ev.getBodyBin);
 //theme.GetIco2(ev.pic, result.icon);
   theme.pic2ico(RQteFormIcon, ev.pic, result.icon);
 end; // viewHeventWindow
@@ -1803,14 +1803,15 @@ var
 begin
   if not Assigned(dest) then
     Exit;
-  wnd := TselectCntsFrm.doAll2( RnQmain,
+  wnd := TselectCntsFrm.doAll( RnQmain,
                               getTranslation('To %s',[dest.displayed]),
                               getTranslation('Send selected contacts'),
                               dest.fProto,
                               notInList.clone.add(dest.fProto.readList(LT_ROSTER)),
                               RnQmain.sendContactsAction,
-                              [sco_multi,sco_groups,sco_predefined],
-                              @wnd
+                              [sco_multi, sco_groups, sco_predefined],
+                              @wnd,
+                              false, false
                               );
 //  Theme.getIco2(PIC_CONTACTS, wnd.icon);
   Theme.pic2ico(RQteFormIcon, PIC_CONTACTS, wnd.icon);
@@ -2129,7 +2130,7 @@ function deltree(path: String): Boolean;
 var
   sr: TsearchRec;
 begin
-  result:=FALSE;
+  result := FALSE;
   if (path='') or not directoryExists(path) then
     exit;
   path := includeTrailingPathDelimiter(path);
@@ -2170,7 +2171,7 @@ begin
   result := RemoveDir(path);
 end; // deltree
 
-function rosterImgNameFor(c:TRnQContact): AnsiString;
+function rosterImgNameFor(c: TRnQContact): AnsiString;
 begin
 if notinlist.exists(c) then
   result:=status2imgName(byte(SC_UNK), FALSE)
@@ -2179,13 +2180,6 @@ else
   result:= c.fProto.Statuses[c.getStatus].ImageName;
 //  Result := c.statusImg;
 end; // rosterImgIdxFor
-
-{
-function statusDraw(cnv: Tcanvas; x, y: integer; s: Tstatus; inv: boolean=FALSE): TSize;
-begin
-  result := theme.drawPic(cnv, x, y, status2imgName(s, inv),
-   statusPics[s, inv].tkn, statusPics[s, inv].Loc, statusPics[s, inv].idx)
-end;}
 
 function statusDrawExt(const DC: HDC; const x, y: integer; const s: byte;
                        const inv: boolean = FALSE; const ExtSts: Byte = 0;
@@ -2231,16 +2225,12 @@ end; // showAuthreq
 
 function countContactsIn(proto: TRnQProtocol; const st: byte): integer;
 var
-  cl: TRnQCList;
-  i: integer;
-//  c: TRnQContact;
+  cnt: TRnQContact;
 begin
   result := 0;
-  cl := TRnQCList(proto.readList(LT_ROSTER));
-//  for c in cl do
-//    if byte(c.status) = st then
-  for i:=0 to TList(cl).count-1 do
-    if byte(TRnQContact(cl[i]).status) = st then
+
+  for cnt in proto.readList(LT_ROSTER) do
+   if cnt.getStatus = st then
       inc(result);
 end; // countContactsIn
 
@@ -2663,7 +2653,7 @@ begin
              mtInformation, c.UID);
     exit;
   end;
-  result:=enableIgnoreList and ignorelist.exists(c);
+  result := enableIgnoreList and ignorelist.exists(c);
 end; // filterRefuse
 
 function db2strU(db: TRnQCList): RawByteString;
@@ -2686,19 +2676,14 @@ var
     end;
   end; // addStr
 var
-  i: integer;
   cnt: TRnQContact;
 begin
   result := '';
   dim := 0;
-  i := 0;
-  while i < TList(db).count do
-   begin
-    cnt := db.getAt(i);
+  for cnt in db do
     if Assigned(cnt) then
       addStr(cnt.GetDBrow);
-    inc(i);
-   end;
+
   setLength(result, dim);
 end; // db2str
 
@@ -2868,7 +2853,7 @@ begin
      try
 //       spamCnt := contactsDB.get(spamsFilename);
        spmHist := Thistory.Create;
-       fn := Account.ProtoPath + historyPath + spamsFilename;
+       fn := Thistory.UIDHistoryFN(spamsFilename);
        spmHist.load(vProto.getContact(spamsFilename));
 //       chatFrm.closeChatWith(spamCnt);
        foundInSpam := false;
@@ -2893,9 +2878,9 @@ begin
             chatFrm.addEvent(ev0.who, ev0.clone);
           // TRAY
           if (ev0.kind = EK_CONTACTS) and chatFrm.isVisible and (ev0.who=chatFrm.thisChat.who) then
-            TselectCntsFrm.doAll2( RnQmain,getTranslation('from %s',[ev0.who.displayed]),
+            TselectCntsFrm.doAll( RnQmain,getTranslation('from %s',[ev0.who.displayed]),
                 getTranslation('Add selected contacts'), vProto,
-                ev0.cl.clone, RnQmain.addContactsAction, [sco_multi], @wnd)
+                ev0.cl.clone, RnQmain.addContactsAction, [sco_multi], @wnd, false, false)
           else
             if BE_tray in behaviour[ev0.kind].trig then
               eventQ.add(ev0.clone);
@@ -2919,8 +2904,7 @@ begin
      except
      end;
  {$ENDIF ~DB_ENABLED}
-//     utilLib.deleteFromTo(fn, getAt(st).fpos, getAt(en).fpos+length(getAt(en).toString));
-//     history.deleteFromTo(userPath+historyPath + spamCnt.uid, st,en);
+//     history.deleteFromTo(spamCnt.uid, st,en);
      Proto_Outbox_add(OE_msg, vCnt, SpamBotMsgFlags,
                       getTranslation(AntiSpamMsgs[2]))
     end
@@ -3017,7 +3001,7 @@ if minOnOff then
                 EK_automsgreq, EK_automsg, EK_typingBeg, EK_typingFin,
                 EK_XstatusMsg, EK_Xstatusreq]) then
    begin
-//     gr := ev.who.group;
+//     gr := vCnt.group;
      gr := groups.get(vCnt.group);
      if OnlOfflInOne then
        dd := d_contacts
@@ -3074,9 +3058,9 @@ if minOnOff then
  {$ENDIF Use_Baloons}
 // TRAY
 if (ev.kind = EK_CONTACTS) and chatFrm.isVisible and (ev.who=chatFrm.thisChat.who) then
-  TselectCntsFrm.doAll2( RnQmain,getTranslation('from %s',[ev.who.displayed]),
+  TselectCntsFrm.doAll( RnQmain,getTranslation('from %s',[ev.who.displayed]),
       getTranslation('Add selected contacts'), vProto,
-      ev.cl.clone, RnQmain.addContactsAction, [sco_multi], @wnd)
+      ev.cl.clone, RnQmain.addContactsAction, [sco_multi], @wnd, false, false)
 else
   if (BE_tray in behaviour[ev.kind].trig)
      and not SkipEvent then
@@ -3281,7 +3265,7 @@ end; // saveRetrieveQ
 
 procedure addToignorelist(c: TRnQcontact; const Local_only: Boolean = false);
 //var
-//  i : Byte;
+//  i: Byte;
 begin
   if (c=NIL) or ignoreList.exists(c) then
     exit;
@@ -3343,8 +3327,6 @@ begin
 //  c.iProto.removeContact(c);
   if WithHistory then
     DelHistWith(c.UID2cmp);
-//    if FileExists(userPath + historyPath + c.UID) then
-//     DeleteFile(userPath + historyPath + c.UID);
 
   if (grp>0) and (TRnQCList(c.fProto.readList(LT_ROSTER)).getCount(grp) = 0) then
     if messageDlg(getTranslation('This group (%s) is empty! Do you want to delete it?',[groups.id2name(grp)]),mtConfirmation, [mbYes,mbNo], 0) = mrYes then
@@ -3447,9 +3429,9 @@ begin
 //           end;
         end;
     EK_CONTACTS:
-      TselectCntsFrm.doAll2(RnQmain, getTranslation('from %s', [ev.who.displayed]),
+      TselectCntsFrm.doAll(RnQmain, getTranslation('from %s', [ev.who.displayed]),
             getTranslation('Add selected contacts'), ev.who.fProto,
-            ev.cl.clone, RnQmain.addContactsAction, [sco_multi, sco_selected], @wnd)
+            ev.cl.clone, RnQmain.addContactsAction, [sco_multi, sco_selected], @wnd, false, false)
   end;
   try
 //    FreeAndNil(ev);
@@ -3770,7 +3752,7 @@ end;
 
 function unexistant(const uin: TUID): boolean;
 begin
-  result:=not (Account.AccProto.getMyInfo.equals(uin))
+  result := not (Account.AccProto.getMyInfo.equals(uin))
     and not Account.AccProto.readList(LT_ROSTER).exists(Account.AccProto, uin)
     and not notInlist.exists(Account.AccProto, uin)
 end; // unexistant
@@ -4498,41 +4480,6 @@ begin
   finally
     c.Free;
   end;
-end;
-
-procedure parseMsgImages(const imgStr: RawByteString; var imgList: TAnsiStringList);
-var
-  pos1, pos2: integer;
-  image: RawByteString;
-begin
-  if not Assigned(imgList) then
-    exit;
-
-  image := imgStr;
-  repeat
-    pos1 := PosEx(RnQImageTag, image);
-    if (pos1 > 0) then
-    begin
-      pos2 := PosEx(RnQImageUnTag, image, pos1 + length(RnQImageTag));
-      imgList.Add(Copy(image, pos1 + length(RnQImageTag), pos2 - (pos1 + length(RnQImageTag))));
-      image := Copy(image, pos2 + length(RnQImageUnTag), length(image));
-    end
-    else
-      Break;
-  until pos1 <= 0;
-
-  image := imgStr;
-  repeat
-    pos1 := PosEx(RnQImageExTag, image);
-    if (pos1 > 0) then
-    begin
-      pos2 := PosEx(RnQImageExUnTag, image, pos1 + length(RnQImageExTag));
-      imgList.Add(Copy(image, pos1 + length(RnQImageExTag), pos2 - (pos1 + length(RnQImageExTag))));
-      image := Copy(image, pos2 + length(RnQImageExUnTag), length(image));
-    end
-    else
-      Break;
-  until pos1 <= 0;
 end;
 
 procedure CacheType(const url, mime, ctype: RawByteString);

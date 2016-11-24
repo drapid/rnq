@@ -14,9 +14,8 @@ interface
      filetransferDlg,
      sendfileDlg,
   {$ENDIF usesDC}
-   RQ_ICQ,
-   RnQProtocol,
-   ICQcontacts, ICQv9, ICQConsts,
+   RDGlobal, RnQProtocol,
+   RQ_ICQ, ICQcontacts, ICQv9, ICQConsts,
    globalLib, viewinfoDlg;
 
 
@@ -47,15 +46,15 @@ interface
 
 
   //function  statusName(s:Tstatus):string;
-  function  statusNameExt2(s: byte; extSts : byte = 0; const Xsts: String = ''; const sts6: String = ''):string;
-  function  status2imgName(s: byte; inv: boolean=FALSE): AnsiString;
-  function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts : byte= 0): AnsiString;
+  function  statusNameExt2(s: byte; extSts : byte = 0; const Xsts: String = ''; const sts6: String = ''): string;
+  function  status2imgName(s: byte; inv: boolean=FALSE): TPicName;
+  function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts: byte= 0): TPicName;
 //  function  visibility2imgName(vi:Tvisibility):String;
   function  visibilityName(vi: Tvisibility): string;
   function  contactlist2clb(cl: TRnQCList): AnsiString;
   function  clb2contactlist(data: RawByteString): TRnQCList;
-  function  str2status(const s: AnsiString): byte;
-  function  str2visibility(const s: AnsiString): Tvisibility;
+  function  str2status(const s: RawByteString): byte;
+  function  str2visibility(const s: RawByteString): Tvisibility;
 
   function  getRnQVerFor(c: TRnQContact): Integer;
 
@@ -74,7 +73,7 @@ implementation
    RnQBinUtils, RnQNet, RQUtil, RnQDialogs, RQlog,
 //   RnQProtocol,
    rnqLangs, RnQStrings, RQThemes, RnQFileUtil, RDUtils,
-   RnQTips, RDtrayLib, RDGlobal, RnQGlobal, RnQPics,
+   RnQTips, RDtrayLib, RnQGlobal, RnQPics,
    NetEncoding, cHash, Base64,
  {$IFDEF RNQ_AVATARS}
   RnQ_Avatars,
@@ -90,15 +89,15 @@ implementation
 
 
 
-function enterICQpwd(const thisICQ : TRnQProtocol):boolean;
+function enterICQpwd(const thisICQ: TRnQProtocol): boolean;
 var
 //  s: AnsiString;
-  s : String;
-  res:boolean;
-  myInf : TRnQContact;
-//    i : Integer;
+  s: String;
+  res: boolean;
+  myInf: TRnQContact;
+//    i: Integer;
 begin
-  result:=FALSE;
+  result := FALSE;
   if enteringICQpwd then exit;
   enteringICQpwd:=TRUE;
   if not Assigned(thisICQ) or
@@ -138,7 +137,7 @@ begin
 //  saveCFG;
   if not dontSavePwd then
     saveCfgDelayed := True;
-  result:=TRUE;
+  result := TRUE;
 end; // enterICQpwd
 
 procedure sendICQaddedYou(cnt: TRnQContact);
@@ -165,7 +164,7 @@ begin
 //  c:=Tcontact(contactsDB.get(TICQContact, uin));
   plugins.castEv( PE_CONTACTS_SENT, cnt.uid, flags, cl);
   TicqSession(cnt.fProto).sendContacts(cnt, flags, cl);
-  ev:=Thevent.new(EK_CONTACTS, cnt.fProto.getMyInfo, now,
+  ev := Thevent.new(EK_CONTACTS, cnt.fProto.getMyInfo, now,
                   cl.tostring{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, flags);
   ev.fIsMyEvent := True;
   if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
@@ -226,7 +225,7 @@ begin
        else
        drct.mode := dm_bin_direct;
       drct.eventID := UInt64(-1);
-      result:= TICQSession(cnt.fProto).sendFileReqPro(drct)
+      result := TICQSession(cnt.fProto).sendFileReqPro(drct)
    end
   else
    begin
@@ -604,7 +603,7 @@ end; // clb2contactlist
 function contactlist2clb(cl: TRnQCList): AnsiString;
 var
   i: integer;
-//  s:string;
+//  s: string;
 begin
   result := '';
   for i:=0 to TList(cl).count-1 do
@@ -616,7 +615,7 @@ begin
    end;
 end; // contactlist2clb
 
-function str2status(const s: AnsiString): byte;
+function str2status(const s: RawByteString): byte;
 var
   ss: TPicName;
 begin
@@ -628,7 +627,7 @@ begin
  result := byte(SC_ONLINE); // shut up compiler warning
 end; // str2status
 
-function str2visibility(const s: AnsiString): Tvisibility;
+function str2visibility(const s: RawByteString): Tvisibility;
 var
   ss: TPicName;
 begin
@@ -644,21 +643,21 @@ function findICQViewInfo(c: TRnQcontact): TviewInfoFrm;
 var
   i: integer;
 begin
-with childWindows do
-  begin
-  i:=0;
-  while i < count do
+  with childWindows do
     begin
-    if Tobject(items[i]) is TviewInfoFrm then
-      begin
-      result := TviewInfoFrm(items[i]);
-      if result.contact.equals(c) then
-        exit;
-      end;
-    inc(i);
+      i := 0;
+      while i < count do
+       begin
+        if Tobject(items[i]) is TviewInfoFrm then
+          begin
+            result := TviewInfoFrm(items[i]);
+            if result.contact.equals(c) then
+              exit;
+          end;
+        inc(i);
+       end;
     end;
-  end;
-result:=NIL;
+  result := NIL;
 end; // findViewInfo
 
   {$IFDEF usesDC}
@@ -724,6 +723,7 @@ var
  {$ENDIF usesDC}
 begin
   c := thisICQ.eventContact;
+  thisICQ.eventContact := NIL;
   if Assigned(c) then
     cuid := c.uid2cmp
    else
@@ -731,7 +731,7 @@ begin
 // these icqevents are associated with hevents
 if ev in [TicqEvent(IE_msg),IE_url,IE_contacts,IE_authReq,IE_addedyou,
       TicqEvent(IE_oncoming), TicqEvent(IE_offgoing),IE_auth,IE_authDenied,
-      IE_automsgreq, IE_statuschanged, IE_gcard,IE_ack,
+      IE_automsgreq, IE_statuschanged, IE_gcard, IE_ack,
    {$IFDEF usesDC} IE_filereq, {$ENDIF usesDC}
       IE_email, IE_webpager, IE_fromMirabilis, IE_TYPING, IE_ackXStatus, IE_XStatusReq,
       IE_StickerMsg, IE_MultiChat] then
@@ -788,7 +788,7 @@ case ev of
               end;
 
             {$IFDEF CHECK_INVIS}
-        //	    c:=contactsDB.get(acks.getAt(i).uid);
+        //	    c := contactsDB.get(acks.getAt(i).uid);
         //       c := thisICQ.eventContact;
               if not c.isOnline then
 //                if acks.getAt(i).kind = OE_MSG then
@@ -819,7 +819,7 @@ case ev of
     end;
   IE_srvSomeInfo:
     begin
-      i:= Account.acks.findID(thisICQ.eventMsgID);
+      i := Account.acks.findID(thisICQ.eventMsgID);
       if i>=0 then
       	with Account.acks.getAt(i) do
         begin
@@ -1114,7 +1114,7 @@ case ev of
       end;
   IE_ack:
     begin
-    i:= Account.acks.findID(thisICQ.eventInt);
+    i := Account.acks.findID(thisICQ.eventInt);
     if i >= 0 then
      begin
 //      sU := thisICQ.eventMsg;
@@ -1122,7 +1122,7 @@ case ev of
       if Account.acks.getAt(i).kind = OE_AUTOMSGREQ then
         begin
         if thisICQ.eventAccept <> AC_ok then
-          c.lastAccept:=thisICQ.eventAccept;
+          c.lastAccept := thisICQ.eventAccept;
 
         pTCE(c.data).lastAutoMsg := sU;
         plugins.castEv( PE_AUTOMSG_GOT, cuid, sU);
@@ -1162,7 +1162,7 @@ case ev of
               end;}
             end;
           end;
-        pTCE(c.data).lastPriority:= Account.acks.getAt(i).flags and (IF_urgent+IF_noblink);
+        pTCE(c.data).lastPriority := Account.acks.getAt(i).flags and (IF_urgent+IF_noblink);
         pTCE(c.data).lastAutoMsg := sU;//thisICQ.eventMsg;
         c.lastAccept  := thisICQ.eventAccept;
        end;
@@ -1435,7 +1435,7 @@ case ev of
   IE_avatar_changed:
     if thisICQ.AvatarsSupport then
      begin
-      if not try_load_avatar(c, c.ICQIcon.hash) then
+      if not try_load_avatar(c, c.ICQIcon.hash, c.Icon.Hash_safe) then
        if thisICQ.AvatarsAutoGet then
           reqAvatarsQ.add(c)
         else
@@ -1454,15 +1454,15 @@ case ev of
       if c.xStatus > 0 then
         begin
           e.fBin := AnsiChar(c.xStatus) + _istring(StrToUTF8(c.xStatusStr));
-          e.txt   := c.xStatusDesc;
         end
        else
-        e.fBin := AnsiChar(#00);
+        e.fBin := AnsiChar(#00) + _istring(StrToUTF8(c.xStatusStr));
+      e.txt   := c.xStatusDesc;
  {$ELSE ~DB_ENABLED}
       if c.xStatus > 0 then
         e.f_info := AnsiChar(c.xStatus) + _istring(StrToUTF8(c.xStatusStr)) + _istring(StrToUTF8(c.xStatusDesc))
        else
-        e.f_info := #00;
+        e.f_info := #00 + _istring(StrToUTF8(c.xStatusStr));
  {$ENDIF ~DB_ENABLED}
       behave(e, EK_XstatusMsg);
       updateViewInfo(c);
@@ -1799,6 +1799,9 @@ case ev of
            thisICQ.eventMsgA := _istring_at(vS, 2);
            e.flags := e.flags and not IF_CODEPAGE_MASK;
          end;
+        if e.flags and IF_CODEPAGE_MASK = 0 then
+         if IsUTF8String(thisICQ.eventMsgA) then
+          e.flags := e.flags or IF_UTF8_TEXT;
         e.ParseMsgStr(thisICQ.eventMsgA);
         if behave(e, EK_msg) then
           NILifNIL(c);
@@ -1925,22 +1928,16 @@ if CAPS_big_SecIM in c.capabilitiesBig then
 }
 end; // getRnQVerFor
 
-procedure updateClients(pr : TRnQProtocol);
+procedure updateClients(pr: TRnQProtocol);
 var
-  cl : TRnQCList;
-  cnt : TRnQContact;
+  cnt: TRnQContact;
 begin
   if Assigned(Account.AccProto) then
     if Account.AccProto is TicqSession then
       begin
-        cl:= Account.AccProto.readList(LT_ROSTER).clone;
-        cl.resetEnumeration;
-        while cl.hasMore do
-         begin
-          cnt := cl.getNext;
-          Account.AccProto.getClientPicAndDesc4(cnt, cnt.ClientPic, cnt.ClientDesc);
-         end;
-        cl.free;
+        for cnt in Account.AccProto.readList(LT_ROSTER) do
+          Account.AccProto.getClientPicAndDesc4(cnt, cnt.ClientPic, cnt.ClientDesc)
+
       end;
 end;
 

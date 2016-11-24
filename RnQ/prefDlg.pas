@@ -11,7 +11,12 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Forms,
   Controls, ExtCtrls,
-  RnQPrefsLib, RnQButtons, RnQDialogs, VirtualTrees, StdCtrls;
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
+  RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
+  RnQButtons, RnQDialogs, VirtualTrees, StdCtrls;
 
 type
 
@@ -70,9 +75,8 @@ implementation
 
 uses
   Themes, Dwmapi,
-//  RnQPrefsLib,
   RQUtil, RDGlobal, RQThemes, RnQLangs, LangLib,
-  RnQSysUtils, RnQGlobal,
+  RnQSysUtils, RnQGlobal, RnQPics,
   iniLib, globalLib, utilLib, mainDlg,
   connection_fr,
   antispam_fr,
@@ -141,7 +145,7 @@ var
   pp: TPrefPage;
   {$ELSE}
   i: byte;
-  {$IFEND DELPHI9_UP}
+  {$ENDIF DELPHI9_UP}
 begin
 
  SetBtnEnable(false);
@@ -152,7 +156,7 @@ begin
   {$ELSE not DELPHI9_UP}
   for i := 0 to Length(arrPages)-1 do
    if Assigned( arrPages[i].frame ) then
-  {$IFEND DELPHI9_UP}
+  {$ENDIF DELPHI9_UP}
   try
   {$IFDEF DELPHI9_UP}
    pp.frame.resetPage;
@@ -160,15 +164,15 @@ begin
   {$ELSE not DELPHI9_UP}
    arrPages[i].frame.resetPage;
    arrPages[i].frame.updateVisPage;
-  {$IFEND DELPHI9_UP}
+  {$ENDIF DELPHI9_UP}
    Application.ProcessMessages;
   except
     msgDlg(getTranslation('Error on reset page')+' "' +
-  {$IFDEF DELPHI9_UP}
+        {$IFDEF DELPHI9_UP}
            getTranslation(pp.Caption) + '"!', False, mtError);
-       {$ELSE}
+        {$ELSE DELPHI9_UP}
            getTranslation(arrPages[i].Caption) + '"!', mtError);
-      {$ENDIF}
+        {$ENDIF DELPHI9_UP}
   end;
  finally
    SetBtnEnable(True);
@@ -179,19 +183,19 @@ procedure TprefFrm.apply;
 var
   {$IFDEF DELPHI9_UP}
   pp: TPrefPage;
-  {$ELSE}
+  {$ELSE DELPHI9_UP}
   i: byte;
-  {$IFEND DELPHI9_UP}
+  {$ENDIF DELPHI9_UP}
 begin
  SetBtnEnable(false);
  try
   {$IFDEF DELPHI9_UP}
   for pp in arrPages do
    if Assigned( pp.frame ) then
-  {$ELSE not DELPHI9_UP}
+  {$ELSE DELPHI9_UP}
   for i := 0 to Length(arrPages)-1 do
    if Assigned( arrPages[i].frame ) then
-  {$IFEND DELPHI9_UP}
+  {$ENDIF DELPHI9_UP}
     try
   {$IFDEF DELPHI9_UP}
      pp.frame.applyPage;
@@ -334,10 +338,18 @@ begin
   else}
     PaintInfo.Canvas.Font.Color := clWindowText;
   x := PaintInfo.ContentRect.Left;
+  if vsHasChildren in PaintInfo.Node.States then
+    if vsExpanded in PaintInfo.Node.States then
+      inc(x, theme.drawPic(PaintInfo.Canvas.Handle, x + 2, 1, PIC_OPEN_GROUP).cx + 2)
+     else
+      inc(x, theme.drawPic(PaintInfo.Canvas.Handle, x + 2, 1, PIC_CLOSE_GROUP).cx + 2)
+   else
+    inc(x, 6);
+
 //  inc(x, theme.drawPic(PaintInfo.Canvas, PaintInfo.ContentRect.Left +3, 0,
 //         TlogItem(PLogItem(LogList.getnodedata(PaintInfo.Node)^)^).Img).cx+6);
-    SetBkMode(PaintInfo.Canvas.Handle, TRANSPARENT);
-    PaintInfo.Canvas.textout(x + 2, 2, s);
+  SetBkMode(PaintInfo.Canvas.Handle, TRANSPARENT);
+  PaintInfo.Canvas.textout(x + 2, 2, s);
 end;
 
 procedure TprefFrm.PrefListFreeNode(Sender: TBaseVirtualTree;
@@ -435,6 +447,7 @@ var
   protoPages: TPrefPagesArr;
   FRM_H_Scaled, FRM_W_Scaled: Integer;
 //  FrameClass: TClass;
+  n: PVirtualNode;
 begin
   FRM_H_Scaled := MulDiv(FRM_HEIGHT, self.Monitor.PixelsPerInch, PixelsPerInch);
   FRM_W_Scaled := MulDiv(FRM_WIDTH, self.Monitor.PixelsPerInch, PixelsPerInch);
@@ -549,17 +562,14 @@ begin
 //     pagesBox.items.objects[i] := arrPages[i].frame;
      with arrPages[i].frame do
       begin
+        Name := 'Page' + IntToStr(i);
         align := alClient;
         Parent := framePnl;
       end;
      PrefList.BeginUpdate;
-     pg := PrefList.GetNodeData(PrefList.AddChild(nil));
-     pg^ := TPrefPage.Create;
-     pg.idx := arrPages[i].idx;
-     pg.frame := arrPages[i].frame;
-     pg.frameClass := arrPages[i].frameClass;
-     pg.Name := arrPages[i].Name;
-     pg.Caption := arrPages[i].Caption;
+     n := PrefList.AddChild(nil);
+     pg := PrefList.GetNodeData(n);
+     pg^ := arrPages[i].Clone;
      PrefList.EndUpdate;
 //     pg := nil;
      Application.ProcessMessages;

@@ -10,7 +10,10 @@ unit RQUtil;
 interface
  uses
    Windows, Graphics, Classes, //ExtCtrls,
-   Controls,
+   Controls, UITypes,
+ {$IFDEF UNICODE}
+   AnsiStrings, AnsiClasses,
+ {$ENDIF UNICODE}
   {$IFNDEF NOT_USE_GDIPLUS}
     RnQGraphics,
   {$ELSE}
@@ -41,6 +44,9 @@ function FillGradient2(DC: HDC; ARect: TRect; ColorCount: Integer;
 
   function  str2html(const s: String): String;
   function  strFromHTML(const s: String): String;
+
+  function  str2fontstyle(const s: AnsiString): Tfontstyles;
+  function  fontstyle2str(fs: Tfontstyles): AnsiString;
 
   function  dateTocoolstr(d: Tdatetime): String;
   function  datetimeToStrMinMax(dt: Tdatetime; min: Tdatetime; max: Tdatetime): String;
@@ -87,6 +93,7 @@ function FillGradient2(DC: HDC; ARect: TRect; ColorCount: Integer;
   procedure assignImgBmp(img: Timage; bmp: Tbitmap);
 }
 //  procedure assignImgPic(img: Timage; picName: String);
+  procedure parseMsgImages(const imgStr: RawByteString; var imgList: TAnsiStringList);
 
 type
   Pmsg = ^Tmsg;
@@ -112,9 +119,6 @@ uses
   Themes,
   CommCtrl,
   MMSystem, ActiveX, //ShockwaveFlashObjects_TLB,
- {$IFDEF UNICODE}
-   AnsiStrings,
- {$ENDIF UNICODE}
   RnQBinUtils, RDUtils, RnQGlobal,
   RDFileUtil,
 //  RnQFileUtil,
@@ -153,9 +157,31 @@ begin
     Result := Copy(fn, I + 1, MaxInt);
 end;
 
+function str2fontstyle(const s: AnsiString): Tfontstyles;
+begin
+  result := [];
+  if ansipos(Ansichar('b'),s) > 0 then
+    include(result, fsBold);
+  if ansipos(Ansichar('i'),s) > 0 then
+    include(result, fsItalic);
+  if ansipos(Ansichar('u'),s) > 0 then
+    include(result, fsUnderline);
+end; // str2fontstyle
+
+function fontstyle2str(fs: Tfontstyles): AnsiString;
+begin
+  result := '';
+  if fsBold in fs then
+    result := result+'b';
+  if fsItalic in fs then
+    result := result+'i';
+  if fsUnderline in fs then
+    result := result+'u';
+end; // str2fontstyle
+
 function str2html(const s: string): string;
 begin
-result:=template(s, [
+result := template(s, [
   '&', '&amp;',
   '"', '&quot;',
   '<', '&lt;',
@@ -168,7 +194,7 @@ end; // str2html
 
 function strFromHTML(const s: string): string;
 begin
-result:=template(s, [
+  result := template(s, [
   '&amp;', '&',
   '&quot;', '"',
   '&lt;', '<',
@@ -274,18 +300,18 @@ var
 begin
   TranslitList := TStringList.create;
   TranslitList.Sorted := false;
-  txt:= loadfileA(myPath+ 'translit.txt');
+  txt := loadfileA(myPath+ 'translit.txt');
   while txt>'' do
    try
-    v:=chopline(txt);
-    v:=trim(chop('#',v));
+    v := chopline(txt);
+    v := trim(chop('#',v));
     if v='' then
       Continue;
     k := trim(chop('-', v));
     v := trim(v);
     if (k='') or (v = '') then
       Continue;
-    so :=TStrObj.Create;
+    so := TStrObj.Create;
     so.str := v;
     TranslitList.AddObject(k, so)
    except;
@@ -767,5 +793,41 @@ begin
   img.height := ico.height*2;
 end; // assignImgIco
 *)
+
+procedure parseMsgImages(const imgStr: RawByteString; var imgList: TAnsiStringList);
+var
+  pos1, pos2: integer;
+  image: RawByteString;
+begin
+  if not Assigned(imgList) then
+    exit;
+
+  image := imgStr;
+  repeat
+    pos1 := PosEx(RnQImageTag, image);
+    if (pos1 > 0) then
+    begin
+      pos2 := PosEx(RnQImageUnTag, image, pos1 + length(RnQImageTag));
+      imgList.Add(Copy(image, pos1 + length(RnQImageTag), pos2 - (pos1 + length(RnQImageTag))));
+      image := Copy(image, pos2 + length(RnQImageUnTag), length(image));
+    end
+    else
+      Break;
+  until pos1 <= 0;
+
+  image := imgStr;
+  repeat
+    pos1 := PosEx(RnQImageExTag, image);
+    if (pos1 > 0) then
+    begin
+      pos2 := PosEx(RnQImageExUnTag, image, pos1 + length(RnQImageExTag));
+      imgList.Add(Copy(image, pos1 + length(RnQImageExTag), pos2 - (pos1 + length(RnQImageExTag))));
+      image := Copy(image, pos2 + length(RnQImageExUnTag), length(image));
+    end
+    else
+      Break;
+  until pos1 <= 0;
+end;
+
 
 end.

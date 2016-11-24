@@ -8,10 +8,10 @@ unit menusUnit;
 
 interface
  uses
-   Classes, Menus, RQThemes, RQMenuItem, RnQMenu;
+   Classes, Menus, RQThemes, RQMenuItem, RnQMenu, RnQProtocol;
 
   procedure InitMenu;
-  procedure InitProtoMenus;
+  procedure InitProtoMenus(pProto: TRnQProtocol);
   procedure InitMenuChats;
   procedure createMenusExt;
 
@@ -24,9 +24,9 @@ interface
 
 var
   aMainMenuUpd, aMainMenuUpd2,
-  aStatusMenuUpd, aVisMenuUpd : aTaMenuItemUpd;
+  aStatusMenuUpd, aVisMenuUpd: aTaMenuItemUpd;
 
-  aChatMenuUpd : aTaMenuItemUpd;
+  aChatMenuUpd: aTaMenuItemUpd;
 
   aSendMenu     : aTaMenuItem; // Menu of button "Send" in chat
   aCloseMenu    : aTaMenuItem; // Menu of button "Close" in chat
@@ -40,9 +40,8 @@ implementation
   uses
     mainDlg, globalLib, themesLib, chatDlg,
     SysUtils, RDGlobal, RDUtils, RnQSysUtils, RnQGlobal,
-    RnQProtocol, RnQLangs, utilLib, RnQPics,
+    RnQLangs, utilLib, RnQPics,
     shlObj,
-//    ICQConsts,
     iniLib;
 
 var
@@ -127,19 +126,20 @@ begin
       PIC_QUIT, RnQmain.Exit1Click, nil);
 end;
 
-procedure InitProtoMenus;
+procedure InitProtoMenus(pProto: TRnQProtocol);
+
 var
   I: Integer;
-  b : Byte;
+  b: Byte;
 //  vis1 : Tvisibility;
 //  st : TStatusProp;
-  stArr, visArr : TStatusArray;
+  stArr, visArr: TStatusArray;
 begin
 ////////////// Status Menu \\\\\\\\\\\\\\\\\
- ClearMenuMass(aStsMenu);
- i := 1;
- stArr := Account.AccProto.statuses;
- for b in Account.AccProto.getStatusMenu do
+  ClearMenuMass(aStsMenu);
+  i := 1;
+  stArr := pProto.statuses;
+  for b in pProto.getStatusMenu do
   begin
    addToMenuMass(aStsMenu, i, stArr[b].ShortName, stArr[b].Cptn, '',
       stArr[b].ImageName, RnQmain.StatusMenuClick, nil);
@@ -158,11 +158,11 @@ begin
 ////////////// Vis Menu \\\\\\\\\\\\\\\\\
   ClearMenuMass(aVisMenu);
   i := 1;
-  visArr := Account.AccProto.getVisibilitis;
+  visArr := pProto.getVisibilitis;
   if Assigned(visArr) then
     begin
      RnQmain.visibilityBtn.Visible := True;
-     for b in Account.AccProto.getVisMenu do
+     for b in pProto.getVisMenu do
       begin
        addToMenuMass(aVisMenu, i, visArr[b].ShortName, visArr[b].Cptn, '',
           visArr[b].ImageName, RnQmain.VisMenuClick, nil);
@@ -249,8 +249,8 @@ end;
 
 procedure createMenusExt;
 var
-  i : Integer;
-//  mi : TRQMenuItem;
+  i: Integer;
+//  mi: TRQMenuItem;
 begin
   RnQmain.menu.Items.OnAdvancedDrawItem := RnQmain.menuDrawItem;
   for i := 0 to Length(aMainMenu)-1 do
@@ -311,7 +311,8 @@ begin
 //applyCommonSettings(own);
 end; // addSmilesToMenu
 
-procedure addGroupsToMenu(own: Tcomponent; mi: Tmenuitem; action: TnotifyEvent; pAddOut: Boolean);
+procedure addGroupsToMenu(own: Tcomponent; mi: Tmenuitem;
+                          action: TnotifyEvent; pAddOut: Boolean);
 var
   i: integer;
   ss: Tstringlist;

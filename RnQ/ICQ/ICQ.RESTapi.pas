@@ -12,24 +12,44 @@ interface
    RnQProtocol;
 
 
-  procedure ICQREST_loginAndCreateSession(const pAcc, pPwd: String; var pSession: TSessionParams);
-  procedure ICQREST_refreshSessionSecret(const pAcc, pPwd: String; var pSession: TSessionParams);
+  procedure ICQREST_loginAndCreateSession(const pAcc: TUID; pPwd: String; var pSession: TSessionParams);
+  procedure ICQREST_refreshSessionSecret(const pAcc: TUID; pPwd: String; var pSession: TSessionParams);
   procedure ICQREST_openICQURL(const pURL: String);
   procedure ICQREST_checkServerHistory(ICQ: TicqSession; uid: TUID);
   procedure ICQREST_getServerHistory(ICQ: TicqSession; uid: TUID);
   procedure ICQREST_checkOrGetServerHistory(ICQ: TicqSession; uid: TUID; retrieve: Boolean = False);
 
 implementation
+
 uses
-  DateUtils, ansistrings, AnsiClasses,
   math, Types, StrUtils, System.Threading, NetEncoding,
+  DateUtils, JSON,
+ {$IFDEF UNICODE}
+   AnsiStrings, AnsiClasses,
+ {$ENDIF UNICODE}
   RDGlobal, RnQBinUtils, RDFileUtil, RDUtils, Base64,
-  RnQGlobal, JSON, cHash,
+  RnQGlobal, cHash,
   RnQNet, RQUtil, RnQLangs,
   Protocol_ICQ,
   menusUnit,
   UtilLib, roasterlib, mainDlg, GlobalLib, events,
   ICQConsts, ICQContacts, RnQStrings, RnQDialogs, groupsLib;
+
+function base64to_url(const s: AnsiString): AnsiString;
+const
+  t: array of AnsiString = ['<', '&lt;',
+                            '>', '&gt;',
+                            //    CRLF, '<br/>',
+//    #13, '<br/>',
+//    #10, '<br/>',
+//                            '&', '&amp;',
+                            '+', '%2B',
+                            '/', '%2F',
+                            '=', '%3D'
+];
+begin
+  result := template(s, t);
+end; // str2html
 
 
 procedure ICQREST_openICQURL(const pURL: String);
@@ -40,7 +60,8 @@ var
   digest: T256BitDigest;
   icq: TICQSession;
 begin
-  icq := TICQSession(Account.AccProto.getContact(Account.AccProto.ProtoElem.MyAccNum).fProto);
+//  icq := TICQSession(Account.AccProto.getContact(Account.AccProto.ProtoElem.MyAccNum).fProto);
+  icq := TICQSession(Account.AccProto);
   session := icq.getSession;
 
   if (icq.getPwdOnly = '') or ((session.secret = '') and (session.secretenc64 = '')) or (session.token = '') then
@@ -60,13 +81,13 @@ begin
   redirectUrl := TNetEncoding.url.Encode(pURL);
   unixTime := IntToStr(DateTimeToUnix(Now, False));
 
-  query := 'a=' + sToken + '&d=' + redirectUrl + '&k=' + session.devid + '&owner=' + Account.AccProto.ProtoElem.MyAccNum + '&ts=' + unixTime;
+  query := 'a=' + sToken + '&d=' + redirectUrl + '&k=' + session.devid + '&owner=' + String(Account.AccProto.ProtoElem.MyAccNum) + '&ts=' + unixTime;
 
   hash := 'GET&' + TNetEncoding.url.Encode(baseUrl) + '&' + TNetEncoding.url.Encode(query);
   digest := CalcHMAC_SHA256(sSecret, StrToUTF8(hash));
   hashStr := Base64EncodeString(SHA256DigestToStrA(digest));
 
-  openURL(StrToUTF8(baseUrl + '?' + query + '&sig_sha256=' + TNetEncoding.url.Encode(hashStr)));
+  openURL(baseUrl + '?' + query + '&sig_sha256=' + TNetEncoding.url.Encode(String(hashStr)));
 end;
 
 procedure ICQREST_checkServerHistory(ICQ: TicqSession; uid: TUID);
@@ -313,23 +334,24 @@ begin
 *)
 end;
 
-procedure ICQREST_loginAndCreateSession(const pAcc, pPwd: String; var pSession: TSessionParams);
+procedure ICQREST_loginAndCreateSession(const pAcc: TUID; pPwd: String; var pSession: TSessionParams);
 var
-  query, hash, baseUrl, unixTime, sToken: String;
+  baseUrl, hash: String;
+  unixTime, query, sToken: RawByteString;
   sSecret, hashStr, respStr: RawByteString;
   digest: T256BitDigest;
   fs: TMemoryStream;
   session: RawByteString;
   JSONObject: TJSONObject;
-  i: Integer;
+//  i: Integer;
 begin
   if (pAcc = '') or (pPwd = '') then
     Exit;
 
-  query := 'https://wlogin.icq.com/siteim/icqbar/php/proxy_jsonp.php?sk=0.36625886284782827&username=' + String(pAcc) + '&password=' + pPwd + '&time=' + IntToStr(DateTimeToUnix(Now, False)) + '&remember=1';
+  query := RawByteString('https://wlogin.icq.com/siteim/icqbar/php/proxy_jsonp.php?sk=0.36625886284782827&username=') + RawByteString(pAcc) + '&password=' + RawByteString(pPwd) + '&time=' + IntToStrA(DateTimeToUnix(Now, False)) + '&remember=1';
   loggaICQPkt('[GET] Login and create session', WL_sent_text, query);
   fs := TMemoryStream.Create;
-  LoadFromUrl(query, fs);
+  LoadFromUrl(String(query), fs);
   if fs.Size = 0 then
    begin
     fs.Free;
@@ -363,7 +385,7 @@ begin
       Exit;
     end;
 
-    sToken := TNetEncoding.url.Encode(pSession.Token);
+    sToken := RawByteString(TNetEncoding.url.Encode(pSession.Token));
     if pSession.SecretEnc64 = '' then
     begin
       digest := CalcHMAC_SHA256(StrToUTF8(pPwd), StrToUTF8(pSession.Secret));
@@ -393,14 +415,14 @@ begin
 }
     // REST token
     baseUrl := 'https://rapi.icq.net/genToken';
-    unixTime := IntToStr(DateTimeToUnix(Now, False) - pSession.HostOffset);
-    query := 'a=' + sToken + '&k=' + pSession.DevId + '&ts=' + unixTime;
+    unixTime := IntToStrA(DateTimeToUnix(Now, False) - pSession.HostOffset);
+    query := 'a=' + sToken + '&k=' + RawByteString(pSession.DevId) + '&ts=' + unixTime;
 
-    hash := 'POST&' + TNetEncoding.url.Encode(baseUrl) + '&' + TNetEncoding.url.Encode(query);
+    hash := 'POST&' + TNetEncoding.url.Encode(baseUrl) + '&' + TNetEncoding.url.Encode(String(query));
     digest := CalcHMAC_SHA256(sSecret, StrToUTF8(hash));
     hashStr := Base64EncodeString(SHA256DigestToStrA(digest));
-    query := query + '&sig_sha256=' + TNetEncoding.url.Encode(hashStr);
-    loggaICQPkt('[POST] REST auth token', WL_sent_text, baseUrl + '?' + query);
+    query := query + '&sig_sha256=' + base64to_url(hashStr);
+    loggaICQPkt('[POST] REST auth token', WL_sent_text, RawByteString(baseUrl) + '?' + query);
 
     LoadFromURL(baseUrl, fs, 0, False, True, query, True);
     fs.Seek(0, soBeginning);
@@ -423,8 +445,8 @@ begin
 
     // REST client id
     baseUrl := 'https://rapi.icq.net/';
-    unixTime := IntToStr(DateTimeToUnix(Now, False) - pSession.HostOffset);
-    query := '{"method": "addClient", "reqId": "1-' + unixTime + '", "authToken": "' + pSession.RESTToken + '", "params": ""}';
+    unixTime := IntToStrA(DateTimeToUnix(Now, False) - pSession.HostOffset);
+    query := RawByteString('{"method": "addClient", "reqId": "1-') + unixTime + '", "authToken": "' + RawByteString(pSession.RESTToken) + '", "params": ""}';
     loggaICQPkt('[POST] REST client id', WL_sent_text, query);
     LoadFromURL(baseUrl, fs, 0, False, True, query, True);
 
@@ -449,7 +471,7 @@ begin
   end;
 end;
 
-procedure ICQREST_refreshSessionSecret(const pAcc, pPwd: String; var pSession: TSessionParams);
+procedure ICQREST_refreshSessionSecret(const pAcc: TUID; pPwd: String; var pSession: TSessionParams);
 var
   fs: TMemoryStream;
   session: RawByteString;
@@ -460,7 +482,7 @@ begin
   begin
     fs := TMemoryStream.Create;
     LoadFromUrl('https://api.login.icq.net/auth/clientLogin', fs, 0, false, true,
-                'devId=' + ICQ_DEV_ID +'&f=qs&s=' + String(pAcc) + '&pwd=' + pPwd, false);
+                AnsiString('devId=') + (ICQ_DEV_ID) +'&f=qs&s=' + pAcc + '&pwd=' + AnsiString(pPwd), false);
     SetLength(session, fs.Size);
     if fs.Size > 0 then
       fs.ReadBuffer(session[1], fs.Size);
@@ -479,13 +501,15 @@ begin
       for i := 0 to Params.Count -1 do
       begin
         KeyValPair.Clear;
-        KeyValPair.DelimitedText := UTF8ToStr(StringReplace(Params.Strings[i], '+', ' ', [rfReplaceAll]));
+        KeyValPair.DelimitedText := StringReplace(Params.Strings[i], '+', ' ', [rfReplaceAll]);
         if KeyValPair.Count >= 2 then
         begin
           if (KeyValPair.Strings[0] = 'statusCode') then
-            if not ((KeyValPair.Strings[1] = '200') or (KeyValPair.Strings[1] = '304')) then Break;
+            if not ((KeyValPair.Strings[1] = '200') or (KeyValPair.Strings[1] = '304')) then
+              Break;
           if (KeyValPair.Strings[0] = 'statusText') then
-            if not (KeyValPair.Strings[1] = 'OK') then Break;
+            if not (KeyValPair.Strings[1] = 'OK') then
+              Break;
 
           if (KeyValPair.Strings[0] = 'token_a') then
             pSession.Token := KeyValPair.Strings[1];

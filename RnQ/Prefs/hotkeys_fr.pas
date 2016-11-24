@@ -11,7 +11,13 @@ interface
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ComCtrls, StdCtrls, VirtualTrees,
-  RnQButtons, RnQMacros, RDGlobal, RnQPrefsLib;
+  RnQButtons,
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
+  RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
+  RnQMacros, RDGlobal;
 
 type
   ThotkeysFr = class(TPrefFrame)

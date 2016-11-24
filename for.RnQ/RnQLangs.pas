@@ -116,10 +116,10 @@ var
 
 //  PrefStr : THashedStringList;
 {
-Procedure LangAddStr(const k, v : AnsiString; Mas : THashedStringList);
+Procedure LangAddStr(const k, v: AnsiString; Mas: THashedStringList);
 var
-  so : TPUStrObj;
-  i : Integer;
+  so: TPUStrObj;
+  i: Integer;
 begin
   i := Mas.IndexOf(k);
   if i>=0 then
@@ -137,7 +137,7 @@ begin
 //    Mas.Names
 end;
 
-constructor TRnQLang.LoadLang(p_fn : String; p_isUTFLang : Boolean);
+constructor TRnQLang.LoadLang(p_fn: String; p_isUTFLang: Boolean);
 begin
   LangsStr := THashedStringList.Create;
   loadLanguageFile(p_fn, p_isUTFLang);
@@ -157,11 +157,13 @@ begin
 end; // resetLanguage
 
 procedure TRnQLang.ClearLanguage;
+  {$IFDEF LANGDEBUG}
 var
-//  sr:TsearchRec;
-//  ls : String;
-  i : Integer;
-  so : TPUStrObj;
+//  sr: TsearchRec;
+//  ls: String;
+  i: Integer;
+  so: TPUStrObj;
+  {$ENDIF LANGDEBUG}
 begin
 //  useLang := False;
   {$IFDEF LANGDEBUG}
@@ -196,10 +198,10 @@ begin
     end;
 end;
 
-Procedure TRnQLang.loadLanguageFile2(fn:string; ts : TThemeSourcePath; isUTFLang : Boolean);
-  function fullpath(const fn:string):string;
+Procedure TRnQLang.loadLanguageFile2(fn: string; ts: TThemeSourcePath; isUTFLang: Boolean);
+  function fullpath(const fn: string): string;
    var
-    s1 : String;
+    s1: String;
   begin
     if RnQMainPath > '' then
       s1 := RnQMainPath +fn
@@ -211,12 +213,12 @@ Procedure TRnQLang.loadLanguageFile2(fn:string; ts : TThemeSourcePath; isUTFLang
       result:= s1
   end;
 var
-  k,v: RawByteString;
-  vv : String;
-  i, j : Integer;
-  txt : RawByteString;
+  k, v: RawByteString;
+  vv: String;
+  i, j: Integer;
+  txt: RawByteString;
 begin
- ts.path :=  ts.path + ExtractFilePath(fn);
+ ts.path := ts.path + ExtractFilePath(fn);
  ts.path := includeTrailingPathDelimiter(ts.path);
  if IsPathDelimiter(ts.path, 1) then
    Delete(ts.path, 1, 1);
@@ -224,7 +226,7 @@ begin
  if fn = '' then
   Exit;
 
- txt:=loadfile(ts, fn);
+ txt := loadfile(ts, fn);
  while txt>'' do
   begin
     k :=chopline(txt);
@@ -284,14 +286,14 @@ begin
 end;
 
 (*
-Procedure TRnQLang.loadLanguageFile(fn : String; isUTFLang : Boolean);
-  function fullpath(fn:string):string;
+Procedure TRnQLang.loadLanguageFile(fn: String; isUTFLang: Boolean);
+  function fullpath(fn: string): string;
   begin if ansipos(':',fn)=0 then result:=myPath+fn else result:=fn end;
 var
-  f:text;
+  f: text;
   k,v: RawByteString;
-  vv : String;
-  i, j : Integer;
+  vv: String;
+  i, j: Integer;
 begin
   assignfile(f, fn);
   reset(f);
@@ -449,7 +451,10 @@ end;
 
 procedure TRnQLang.loadLanguage2(f: ToLangInfo);
 var
-  i, k: Integer;
+   {$IFDEF LANGDEBUG}
+  k: Integer;
+   {$ENDIF LANGDEBUG}
+  i: Integer;
   pt: TThemeSourcePath;
   fn: String;
   isUTF: Boolean;
@@ -746,11 +751,11 @@ end; // getTranslation
  {$ENDIF UNICODE}
 
 
-procedure refreshLangList(pOnlyFileNames : Boolean);
- procedure ProcessFile(Const fn, subfile : String; s : RawByteString; isUTF : Boolean);
+procedure refreshLangList(pOnlyFileNames: Boolean);
+ procedure ProcessFile(Const fn, subfile: String; s: RawByteString; isUTF: Boolean);
  var
-  line,k,v,section : RawByteString;
-  procedure InternalprocessTheme(var ati : aLangInfo);
+  line, k, v, section: RawByteString;
+  procedure InternalprocessTheme(var ati: aLangInfo);
   var
     n:integer;
   begin
@@ -890,10 +895,10 @@ begin
 end; // refreshLangList
 
 procedure ClearLangList;
-  procedure Clear1LangList(var tl : aLangInfo);
+  procedure Clear1LangList(var tl: aLangInfo);
   var
-   t : ToLangInfo;
-   i : Integer;
+   t: ToLangInfo;
+//   i: Integer;
   begin
  {$IFDEF DELPHI9_UP}
    for t in tl do begin

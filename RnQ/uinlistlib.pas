@@ -21,7 +21,7 @@ type
 
   TuinLists=class(Tlist)
    private
-    enumidx : integer;
+    enumidx: integer;
    public
     destructor Destroy; override;
     function  exists(const name: string): boolean;
@@ -30,7 +30,7 @@ type
     function  put(const name: string): PuinList;
 		function  remove(ul: PuinList): boolean; overload;
     procedure fromString(pr: TRnQProtocol; s: RawByteString);
-    function  toString: RawByteString;
+    function  toString: RawByteString; reIntroduce;
     procedure Clear; override;
     function  names: string;
     function  get(const name: string): PuinList;
@@ -42,60 +42,60 @@ type
 implementation
 
 uses
-  sysutils, utilLib, RQUtil, RDUtils, RnQBinUtils;
+  sysutils, Types, utilLib, RQUtil, RDUtils, RnQBinUtils;
 
 function TuinLists.exists(const name: string): boolean;
 begin
-  result:=idxOf(name)>=0
+  result := idxOf(name)>=0
 end;
 
 function TuinLists.idxOf(const name: string): integer;
 begin
-  result:=count-1;
+  result := count-1;
   while (result>=0) and (compareText(getAt(result).name,name)<>0) do
     dec(result);
 end; // idxof
 
 function TuinLists.getAt(idx: integer): PuinList;
 begin
-  result:=PuinList(items[idx])
+  result := PuinList(items[idx])
 end;
 
-function TuinLists.put(const name:string):PuinList;
+function TuinLists.put(const name: string): PuinList;
 var
-  idx:integer;
+  idx: integer;
 begin
-  idx:=idxOf(name);
+  idx := idxOf(name);
   if idx>=0 then
    begin
-    result:=getAt(idx);
+    result := getAt(idx);
     exit;
    end;
   new(result);
-  result.name:=name;
-  result.desc:='';
-  result.cl:=TRnQCList.create;
+  result.name := name;
+  result.desc := '';
+  result.cl := TRnQCList.create;
   add(result);
 end;
 
-function TuinLists.remove(ul:PuinList):boolean;
+function TuinLists.remove(ul: PuinList): boolean;
 var
-  i:integer;
+  i: integer;
 begin
-  result:=FALSE;
+  result := FALSE;
   for i:=0 to count-1 do
    if items[i] = ul then
     begin
      dispose(ul);
      inherited remove(ul);
-     result:=TRUE;
+     result := TRUE;
      exit;
     end;
 end; // remove
 
 procedure Tuinlists.clear;
 var
-  i:integer;
+  i: integer;
 begin
   for i:=0 to count-1 do
     dispose(PuinList(items[i]));
@@ -112,21 +112,40 @@ const
   FK_NAME=1;
   FK_DESC=2;
   FK_UIN=3;
+  FK_UID=4;
 
 procedure Tuinlists.fromString(pr: TRnQProtocol; s: RawByteString);
 var
-  l, t: integer;
+  l, t, n: integer;
+  u: TUID;
 begin
  clear;
- while s > '' do
+ while Length(s) >= 8 do
   begin
    l := integer((@s[1])^);
    t := integer((@s[5])^);
    case t of
     FK_NAME: put(UnUTF(copy(s,9,l)));
     FK_DESC: PuinList(last)^.desc := UnUTF(copy(s,9,l));
-//    FK_UIN: PuinList(last)^.cl.add(contactsDB.get(IntToStr(integer((@s[9])^))));
-    FK_UIN: PuinList(last)^.cl.add(pr.contactsDB.add(pr, IntToStrA(integer((@s[9])^))));
+    FK_UIN:
+       begin
+         n :=  integer((@s[9])^);
+//         PuinList(last)^.cl.add(contactsDB.get(IntToStr(n)));
+   {$IFDEF UID_IS_UNICODE}
+         PuinList(last)^.cl.add(pr.contactsDB.add(pr, IntToStr(n)));
+   {$else ansi}
+         PuinList(last)^.cl.add(pr.contactsDB.add(pr, IntToStrA(n)));
+   {$ENDIF UID_IS_UNICODE}
+       end;
+    FK_UID:
+       begin
+   {$IFDEF UID_IS_UNICODE}
+         U := UnUTF(copy(s,9,l));
+   {$else ansi}
+         U := copy(s,9,l);
+   {$ENDIF UID_IS_UNICODE}
+         PuinList(last)^.cl.add(pr.contactsDB.add(pr, u));
+       end;
    end;
    system.delete(s,1,8+l);
   end;
@@ -140,43 +159,52 @@ function Tuinlists.toString: RawByteString;
   end;
 
 var
-  i,j:integer;
+  i: integer;
+  c: TRnQContact;
 begin
-  result:='';
+  result := '';
   for i:=0 to count-1 do
    with getAt(i)^ do
     begin
      writedown(FK_NAME, StrToUTF8(name));
      writedown(FK_DESC, StrToUTF8(desc));
-     for j:=0 to TList(cl).count-1 do
-      writedown(FK_UIN, int2str(StrToIntDef(cl.getAt(j).uid, 0)));
+     for c in cl do
+      if c.UIDasInt <> 0 then
+        writedown(FK_UIN, int2str(c.UIDasInt))
+       else
+   {$IFDEF UID_IS_UNICODE}
+        writedown(FK_UID, StrToUTF8(c.UID))
+   {$else ansi}
+        writedown(FK_UID, c.UID)
+   {$ENDIF UID_IS_UNICODE}
+       ;
     end;
 end; // tostring
 
-function Tuinlists.names:string;
+function Tuinlists.names: string;
 var
-  i:integer;
+  i: integer;
 begin
-result:='';
+  result := '';
   try
    for i:=0 to count-1 do
-     result:=result+getAt(i)^.name+#13;
+     result := result+getAt(i)^.name+#13;
    if result > '' then
-     setLength(result,length(result)-1);
+     setLength(result, length(result)-1);
   except
     result := '';
   end;
 end; // names
 
-function Tuinlists.get(const name:string):PuinList;
+function Tuinlists.get(const name: string): PuinList;
 var
-  i:integer;
+  i: integer;
 begin
-i:=idxOf(name);
-if i<0 then
-  result:=NIL
-else
-  result:=getAt(i);
+  i := idxOf(name);
+  if i<0 then
+    result := NIL
+   else
+    result := getAt(i);
 end; // get
 
 procedure Tuinlists.resetEnumeration;

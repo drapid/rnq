@@ -234,7 +234,7 @@ type
 implementation
 
 uses
-  clipbrd,
+  clipbrd, Types,
   RQCodes, RDGlobal, RDUtils, RnQLangs, RnQStrings,
   RQUtil, RQThemes, RnQBinUtils,
   RnQSysUtils, RnQGlobal, RnQPics,
@@ -256,7 +256,7 @@ procedure TviewinfoFrm.removeAllPhotos();
 var
   sr: TSearchRec;
 begin
-  if FindFirst(AccPath + avtPath + contact.uid2Cmp + '.photo.*', faAnyFile, sr) = 0 then
+  if FindFirst(AccPath + avtPath + contact.getFN + '.photo.*', faAnyFile, sr) = 0 then
     repeat
       if (sr.name <> '.') and (sr.name <> '..') then
         if isSupportedPicFile(sr.name) then
@@ -304,7 +304,7 @@ begin
     1: contact.icon.ToShow := IS_PHOTO;
     2: contact.icon.ToShow := IS_NONE;
    end;
-   updateAvatar(contact);
+   updateAvatar(contact, TICQcontact(contact).Icon.Hash_safe);
    updateAvatarFor(contact);
   end;
   addmenu.Free;
@@ -351,14 +351,14 @@ procedure TviewinfoFrm.updateInfo;
   halfs:=round(gmt*48);
   if halfs = 100 then
     begin
-    result:='';
-    exit;
+      result := '';
+      exit;
     end;
-  result:=result+intToStr(halfs div 2);
+  result := result+intToStr(halfs div 2);
   if odd(halfs) then
-    result:=result+':30'
+    result := result+':30'
   else
-    result:=result+':00';
+    result := result+':00';
   end; // gmt2str
 
   function datetime2str(dt: Tdatetime): string; overload;
@@ -366,12 +366,12 @@ procedure TviewinfoFrm.updateInfo;
     result := datetimeTostrMinMax(dt,{1980}80*365,now)
   end;
 var
-  i : Byte;
-  sr:TsearchRec;
-  b : Boolean;
-  fn : String;
+  i: Byte;
+  sr: TsearchRec;
+  b: Boolean;
+  fn: String;
 begin
-pagectrl.visible:=FALSE;
+  pagectrl.visible := FALSE;
 with TICQcontact(contact) do
   begin
   caption:=getTranslation('%s',[displayed]);
@@ -426,7 +426,7 @@ with TICQcontact(contact) do
  {$ENDIF}
   if zip='' then
     zipbox.text:=''
-  else
+   else
     zipBox.text := zip;
   cellularBox.text:=cellular;
   regularBox.text := regular;
@@ -451,13 +451,13 @@ with TICQcontact(contact) do
   if interests.Count > 0 then
    begin
     with Inter1Box do
-      itemIndex:=findInStrings(InterestsByID(interests.InterestBlock[0].Code), Items);
+      itemIndex := findInStrings(InterestsByID(interests.InterestBlock[0].Code), Items);
     with Inter2Box do
-      itemIndex:=findInStrings(InterestsByID(interests.InterestBlock[1].Code), Items);
+      itemIndex := findInStrings(InterestsByID(interests.InterestBlock[1].Code), Items);
     with Inter3Box do
-      itemIndex:=findInStrings(InterestsByID(interests.InterestBlock[2].Code), Items);
+      itemIndex := findInStrings(InterestsByID(interests.InterestBlock[2].Code), Items);
     with Inter4Box do
-      itemIndex:=findInStrings(InterestsByID(interests.InterestBlock[3].Code), Items);
+      itemIndex := findInStrings(InterestsByID(interests.InterestBlock[3].Code), Items);
     Inter1.Text := strings2str(', ', interests.InterestBlock[0].Names);
     Inter2.Text := strings2str(', ', interests.InterestBlock[1].Names);
     Inter3.Text := strings2str(', ', interests.InterestBlock[2].Names);
@@ -585,7 +585,7 @@ with TICQcontact(contact) do
   workCityEdt.Text  := workcity;
   workStateEdt.Text := workstate;
   with WorkCntryBox do
-    itemIndex:=findInStrings(CountriesByID(workCountry), Items);
+    itemIndex := findInStrings(CountriesByID(workCountry), Items);
   workZipEdt.Text   := workzip;
   WorkCellEdit.Text := workphone;
   WorkCompanyEdit.Text := workCompany;
@@ -599,7 +599,7 @@ with TICQcontact(contact) do
    {$IFDEF RNQ_AVATARS}
 
  b := False;
- if FindFirst(AccPath + avtPath + contact.uid2Cmp + '.photo.*', faAnyFile, sr) = 0 then
+ if FindFirst(AccPath + avtPath + contact.getFN + '.photo.*', faAnyFile, sr) = 0 then
  repeat
      b := False;
      if (sr.name<>'.') and (sr.name<>'..') then
@@ -639,7 +639,7 @@ with TICQcontact(contact) do
 }
 // PhotoImg.Height := 10;
 // try_load_avatar3(contactAvt, ICQIcon.hash_safe);
- if not LoadAvtByHash(ICQIcon.hash_safe, contactAvt, b, fn) then
+ if not LoadAvtByHash(Icon.hash_safe, contactAvt, b, fn) then
    if Assigned(contactAvt) then
      FreeAndNil(contactAvt);
  avtLoadBtn.Enabled := ICQIcon.hash > '';
@@ -718,14 +718,14 @@ begin
 //WorkCntryBox.Items.text:=countryBox.Items.text;
   CountrysToCB(WorkCntryBox);
   CountrysToCB(birthCountryBox);
-  genderBox.Items.text:=CRLF+GendersToStr;
-  lang1Box.Items.text:=CRLF+LanguagesToStr;
+  genderBox.Items.text := CRLF+GendersToStr;
+  lang1Box.Items.text := CRLF+LanguagesToStr;
   lang2Box.Items.text := lang1Box.Items.text;
   lang3Box.Items.text := lang1Box.Items.text;
-  Inter1Box.Items.text:=CRLF+InterestsToStr;
-  Inter2Box.Items.text:=Inter1Box.Items.text;
-  Inter3Box.Items.text:=Inter1Box.Items.text;
-  Inter4Box.Items.text:=Inter1Box.Items.text;
+  Inter1Box.Items.text := CRLF+InterestsToStr;
+  Inter2Box.Items.text := Inter1Box.Items.text;
+  Inter3Box.Items.text := Inter1Box.Items.text;
+  Inter4Box.Items.text := Inter1Box.Items.text;
   gmtBox.Items.text:=gmtsToStr;
   MarStsBox.Items.Text := MarStsToStr;
   if TICQcontact(contact).infoUpdatedTo = 0 then
@@ -808,7 +808,7 @@ else
   avtSaveBtn.Visible := itsme;
   avtTS.TabVisible := TICQSession(contact.fProto).AvatarsSupport;
   ClrAvtBtn.Enabled := (itsme and (TICQSession(contact.fProto).myAvatarHash > '')) or
-     (not itsme and (TICQContact(contact).ICQIcon.Hash_safe > '')and(TICQContact(contact).ICQIcon.hash = ''));
+     (not itsme and (contact.Icon.Hash_safe > '')and(TICQContact(contact).ICQIcon.hash = ''));
   ClrAvtLbl.Visible := itsme and ClrAvtBtn.Enabled;
    {$ENDIF RNQ_AVATARS}
   LUPDDATEEdt.ReadOnly := True;
@@ -843,48 +843,48 @@ end;
 
 procedure TviewinfoFrm.saveBtnClick(Sender: TObject);
 var
-  c : TICQcontact;
-  i, j : Integer;
+  c: TICQcontact;
+  i, j: Integer;
 begin
 if not contact.fProto.isMyAcc(contact) then
   begin
-  addGroupsToMenu(self,addmenu.items, addcontactAction, True);
+  addGroupsToMenu(self, addmenu.items, addcontactAction, True);
   with topPnl.clientToScreen(saveBtn.BoundsRect.bottomRight) do
     addmenu.popup(x,y);
   end
 else
   if OnlFeature(contact.fProto) then
     begin
-//    c:=Tcontact.create(0);
+//    c := Tcontact.create(0);
     c := TICQcontact(contact.fProto.getMyInfo);
-    c.uid:=contact.uid;
-    c.nick:=nickBox.text;
-    c.first:=firstbox.Text;
-    c.last:=lastbox.text;
-    c.email:=emailbox.text;
+    c.uid := contact.uid;
+    c.nick := nickBox.text;
+    c.first := firstbox.Text;
+    c.last := lastbox.text;
+    c.email := emailbox.text;
     c.address := addressBox.text;
-    c.city:=citybox.text;
-    c.state:=statebox.text;
+    c.city := citybox.text;
+    c.state := statebox.text;
     // if TryStrToInt(zipBox.text, i) then
     c.zip := zipBox.text;
     // else
     // c.zip := '';
-    c.age:=0;
-    c.birth:=0;
+    c.age := 0;
+    c.birth := 0;
     case birthageBox.itemindex of
-      1: c.birth:=birthBox.date;
-      2: c.age:=round(ageSpin.value);
+      1: c.birth := birthBox.date;
+      2: c.age := round(ageSpin.value);
       end;
-    c.cellular:=cellularBox.text;
+    c.cellular := cellularBox.text;
     c.regular := regularBox.text;
-    c.homepage:=homepageBox.text;
-    c.about:=aboutBox.text;
-    c.gender:=StrToGenderI(genderBox.text);
-//    c.country:=StrToCountryI(countryBox.text);
-    c.country:= CB2ID(countryBox);
-    c.lang[1]:=StrToLanguageI(lang1Box.text);
-    c.lang[2]:=StrToLanguageI(lang2Box.text);
-    c.lang[3]:=StrToLanguageI(lang3Box.text);
+    c.homepage := homepageBox.text;
+    c.about := aboutBox.text;
+    c.gender := StrToGenderI(genderBox.text);
+//    c.country := StrToCountryI(countryBox.text);
+    c.country := CB2ID(countryBox);
+    c.lang[1] := StrToLanguageI(lang1Box.text);
+    c.lang[2] := StrToLanguageI(lang2Box.text);
+    c.lang[3] := StrToLanguageI(lang3Box.text);
     c.MarStatus := StrToMarStI(MarStsBox.Text);
     c.interests.InterestBlock[0].Code := StrToInterestI(Inter1Box.text);
     c.interests.InterestBlock[1].Code := StrToInterestI(Inter2Box.text);
@@ -892,36 +892,36 @@ else
     c.interests.InterestBlock[3].Code := StrToInterestI(Inter4Box.text);
     for i := Low(c.Interests.InterestBlock) to High(c.Interests.InterestBlock) do
      if not Assigned(c.Interests.InterestBlock[i].Names) then
-       c.Interests.InterestBlock[i].Names:=TStringList.Create
+       c.Interests.InterestBlock[i].Names := TStringList.Create
      else
       c.Interests.InterestBlock[i].Names.Clear;
     c.interests.Count := 0;
     if c.interests.InterestBlock[0].Code > 0 then
      begin
-      str2strings(',',Inter1.Text, c.interests.InterestBlock[0].Names);
+      str2strings(',', Inter1.Text, c.interests.InterestBlock[0].Names);
       inc(c.interests.Count);
      end;
     if c.interests.InterestBlock[1].Code > 0 then
      begin
-      str2strings(',',Inter2.Text, c.interests.InterestBlock[1].Names);
+      str2strings(',', Inter2.Text, c.interests.InterestBlock[1].Names);
       inc(c.interests.Count);
      end;
     if c.interests.InterestBlock[2].Code > 0 then
      begin
-      str2strings(',',Inter3.Text, c.interests.InterestBlock[2].Names);
+      str2strings(',', Inter3.Text, c.interests.InterestBlock[2].Names);
       inc(c.interests.Count);
      end;
     if c.interests.InterestBlock[3].Code > 0 then
      begin
-      str2strings(',',Inter4.Text, c.interests.InterestBlock[3].Names);
+      str2strings(',', Inter4.Text, c.interests.InterestBlock[3].Names);
       inc(c.interests.Count);
      end;
     for i := Low(c.Interests.InterestBlock) to High(c.Interests.InterestBlock) do
       for j := 0 to c.interests.InterestBlock[i].Names.Count-1 do
         c.interests.InterestBlock[i].Names[j] := Trim(c.interests.InterestBlock[i].Names[j]);
-    c.GMThalfs:=StrToGMTI(gmtBox.text);
+    c.GMThalfs := StrToGMTI(gmtBox.text);
 //    c.xStatusStr := xstatusBox.Text;
-    TICQSession(c.fProto).pPublicEmail:=publicChk.checked;
+    TICQSession(c.fProto).pPublicEmail := publicChk.checked;
 
     c.workpage := WkpgEdt.Text;
     c.workPos := workPosEdit.Text;
@@ -930,7 +930,7 @@ else
     c.workcity := workCityEdt.Text;
     c.workstate := workStateEdt.Text;
 //    c.workCountry := StrToCountryI(WorkCntryBox.text);
-     c.workCountry:= CB2ID(WorkCntryBox);
+     c.workCountry := CB2ID(WorkCntryBox);
     c.workzip := workZipEdt.Text;
     c.workphone := WorkCellEdit.Text;
     c.ICQ6Status :=  StsMsgEdit.Text;
@@ -964,15 +964,15 @@ begin
   if trim(s)='' then
     exit;
   if not Imatches(s, 1, 'http://') and not Imatches(s, 1, 'https://') then
-    s:='http://'+s;
+    s := 'http://'+s;
   openURL(s);
 end;
 
 procedure TviewinfoFrm.GoWkPgBtnClick(Sender: TObject);
 var
-  s:string;
+  s: string;
 begin
-  s:=WkpgEdt.text;
+  s := WkpgEdt.text;
   if trim(s)='' then
     exit;
   if not Imatches(s, 1, 'http://') and not Imatches(s, 1, 'https://') then
@@ -1038,10 +1038,10 @@ end;
 
 procedure TviewinfoFrm.PhtBigLoadBtnClick(Sender: TObject);
 var
- s : String;
+ s: String;
 begin
    {$IFDEF RNQ_AVATARS}
- s := AccPath + avtPath + contact.UID2cmp + '.photo.jpeg';
+ s := AccPath + avtPath + contact.getFN + '.photo.jpeg';
  SetPhtBtnEnb(False);
   if Assigned(contactPhoto) then
     contactPhoto.Free;
@@ -1062,7 +1062,7 @@ var
  s : String;
 begin
    {$IFDEF RNQ_AVATARS}
- s := AccPath + avtPath +contact.UID2cmp + '.photo.jpeg';
+ s := AccPath + avtPath + contact.getFN + '.photo.jpeg';
   if Assigned(contactPhoto) then
     contactPhoto.Free;
   contactPhoto := NIL;
@@ -1080,12 +1080,12 @@ end;
 
 procedure TviewinfoFrm.PhtLoadBtn3Click(Sender: TObject);
 var
-// s : String;
- prm : TLoadURLParams;
+// s: String;
+ prm: TLoadURLParams;
 // Dir3: IAsyncCall;
 begin
    {$IFDEF RNQ_AVATARS}
- prm.fn := AccPath + avtPath +contact.UID2cmp + '.photo.jpeg';
+  prm.fn := AccPath + avtPath + contact.getFN + '.photo.jpeg';
 //  if Assigned(contactPhoto) then
 //    contactPhoto.Free;
 //  contactPhoto := NIL;
@@ -1110,10 +1110,10 @@ end;
 
 procedure TviewinfoFrm.PhtLoadBtnClick(Sender: TObject);
 var
- s : String;
+ s: String;
 begin
    {$IFDEF RNQ_AVATARS}
- s := AccPath + avtPath +contact.UID2cmp + '.photo.jpeg';
+ s := AccPath + avtPath + contact.getFN + '.photo.jpeg';
   if Assigned(contactPhoto) then
     contactPhoto.Free;
  contactPhoto := NIL;
@@ -1170,8 +1170,8 @@ end; // dnslookup
 
 procedure TviewinfoFrm.copyBtnClick(Sender: TObject);
 begin
-if ipbox2.Lines.Count > 1 then
-  clipboard.astext := ipbox2.lines[1];
+  if ipbox2.Lines.Count > 1 then
+    clipboard.astext := ipbox2.lines[1];
 end;
 
 procedure TviewinfoFrm.addcontactAction(sender: Tobject);
@@ -1393,7 +1393,7 @@ begin
     if Assigned(contact) then
     with TICQcontact(contact) do
      begin
-       ICQicon.Hash_safe := '';
+       icon.Hash_safe := '';
        if Assigned(icon.Bmp) then
          try
            icon.Bmp.Free;
@@ -1408,7 +1408,7 @@ begin
      end;
   AvtPBox.Repaint;
   ClrAvtBtn.Enabled := (itsme and (TicqSession(contact.fProto).myAvatarHash > '')) or
-     (not itsme and (TICQcontact(contact).ICQIcon.Hash_safe > '')and(TICQcontact(contact).ICQIcon.hash = ''));
+     (not itsme and (contact.Icon.Hash_safe > '')and(TICQcontact(contact).ICQIcon.hash = ''));
   ClrAvtLbl.Visible := itsme and ClrAvtBtn.Enabled;
    {$ENDIF RNQ_AVATARS}
 end;
@@ -1476,7 +1476,7 @@ begin
       begin
   //      frm.AvtImg.Picture.Assign(cnt.icon);
         avtLoadBtn.Enabled := TICQcontact(contact).ICQIcon.hash > '';
-        h := TICQcontact(contact).ICQIcon.Hash_safe;
+        h := contact.Icon.Hash_safe;
         b := false;
         if h > '' then
           b := LoadAvtByHash(h, contactAvt, b1, fn);

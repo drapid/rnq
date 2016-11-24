@@ -185,9 +185,9 @@ const
     xStatusButtons[k] := curBtn;
   end;
 var
-  x : integer;
+  x: integer;
  {$IFDEF ICQ_OLD_STATUS}
-  nf : TNotifyEvent;
+  nf: TNotifyEvent;
  {$ENDIF ICQ_OLD_STATUS}
 begin
 //  childWindows.Add(self);
@@ -264,9 +264,9 @@ end;
 procedure TxStatusForm.OldxStChkClick(Sender: TObject);
  {$IFDEF ICQ_OLD_STATUS}
 var
-  x : integer;
-  btn : TStsBtn;
-  b : Boolean;
+  x: integer;
+  btn: TStsBtn;
+  b: Boolean;
  {$ENDIF ICQ_OLD_STATUS}
 begin
  {$IFDEF ICQ_OLD_STATUS}

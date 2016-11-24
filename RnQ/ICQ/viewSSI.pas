@@ -48,8 +48,8 @@ type
     { Public declarations }
 //    procedure parse1306(snac: string; ref: integer);
     //    procedure HSnac1306(Pkt: PRawPkt);
-    loadedServerSSI : Boolean;
-    procedure FillTree(vSSI : Tssi);
+    loadedServerSSI: Boolean;
+    procedure FillTree(vSSI: Tssi);
   end;
 
 var
@@ -290,7 +290,7 @@ end;
 
 procedure TSSIForm.DelBtnClick(Sender: TObject);
 var
-  n : PVirtualNode;
+  n: PVirtualNode;
 begin
   if not OnlFeature(Account.AccProto) then
     Exit;
@@ -337,7 +337,7 @@ begin
     n  := CLTree.AddChild(fn);
     nd := CLTree.GetNodeData(n);
     nd.ItemType := TOSSIItem(vSSI.items.Objects[i]).ItemType;
-    nd.Name := unUTF(TOSSIItem(vSSI.items.Objects[i]).ItemName);
+    nd.Name := unUTF(TOSSIItem(vSSI.items.Objects[i]).ItemName8);
     nd.Caption := unUTF(TOSSIItem(vSSI.items.Objects[i]).Caption);
     nd.ItemID := TOSSIItem(vSSI.items.Objects[i]).ItemID;
     nd.FAuthorized := TOSSIItem(vSSI.items.Objects[i]).FAuthorized;

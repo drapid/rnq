@@ -214,7 +214,7 @@ type
   TRQtheme = class
    private
     curToken : Integer;
-    fDPI: Integer;
+    fThemeDPI: Integer;
     FBigPics, FSmileBigPics: TBigPicsArr;
     FThemePics,
     FSmilePics,
@@ -333,20 +333,20 @@ type
   {$ENDIF USE_GDIPLUS}
     function  pic2ico(pTE: TRnQThemedElement; const picName: TPicName; ico: Ticon): Boolean;
     function  pic2hIcon(const picName: TPicName; var ico: HICON): Boolean;
-//    function  drawPic(cnv: Tcanvas; x,y: integer; pic: TRnQBitmap): Tsize; overload;
+//    function  drawPic(cnv: Tcanvas; x, y: integer; pic: TRnQBitmap): Tsize; overload;
     function  drawPic(DC: HDC; pX, pY: integer; const picName: TPicName;
-                      pEnabled: Boolean = true; pDPI: Integer = 0):Tsize; overload;
+                      pEnabled: Boolean = true; pDPI: Integer = 0): Tsize; overload;
 //    function  drawPic(DC: HDC; x,y: integer; picName: string; var ThemeToken: Integer;
 //        var picLoc: TPicLocation; var picIdx: Integer; pEnabled: Boolean = true): Tsize; overload;
 //    function  drawPic(DC: HDC; x,y:integer; var picElm : TRnQThemedElementDtls): Tsize; overload;
     function  drawPic(DC: HDC; pR: TGPRect; const picName: TPicName; pEnabled: Boolean = true; const DPI: Integer = 0): Tsize; overload;
     function  drawPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls; const DPI: Integer): Tsize; overload;
     function  drawPic(DC: HDC; pR: TGPRect; var picElm: TRnQThemedElementDtls; const DPI: Integer): Tsize; overload;
-    function  getPic(DC: HDC; p : TPoint; var picElm: TRnQThemedElementDtls; var is32Alpha : Boolean): Tsize; overload;
+    function  getPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls; const DPI: Integer; var is32Alpha: Boolean): Tsize; overload;
   {$IFDEF USE_GDIPLUS}
     function  drawPic(gr: TGPGraphics; x, y: integer; picName: string; pEnabled: Boolean = true): Tsize; overload;
     function  drawPic(gr: TGPGraphics; x, y: integer; picName: string; var ThemeToken: Integer;
-        var picLoc: TPicLocation; var picIdx : Integer; pEnabled : Boolean = true): Tsize; overload;
+        var picLoc: TPicLocation; var picIdx: Integer; pEnabled: Boolean = true): Tsize; overload;
     function  drawPic(gr: TGPGraphics; x, y: integer; picElm: Prnq): Tsize; overload;
   {$ENDIF USE_GDIPLUS}
 //    function  GetPicRGN(picName:string; var ThemeToken : Integer;
@@ -366,20 +366,20 @@ type
     function  GetAniPic(idx: integer): TRnQAni;
    {$ENDIF RNQ_FULL}
 
-    Property SmilesCount : Integer read GetSmlCnt;
-    Property token : Integer read curToken;
+    Property SmilesCount: Integer read GetSmlCnt;
+    Property token: Integer read curToken;
  {$IFNDEF RNQ_LITE}
-    procedure getprops(var PropList : aTthemeProperty);
+    procedure getprops(var PropList: aTthemeProperty);
  {$ENDIF RNQ_LITE}
 
     procedure initThemeIcons;
   {$IFDEF USE_GDIPLUS}
-    procedure drawTiled(gr:TGPGraphics; r: TGPRectF; const picName : TPicName); overload;
-    procedure drawStratch(gr:TGPGraphics; r : TGPRectF; const picName : TPicName); overload;
-    procedure drawStratch(gr:TGPGraphics; x, y, w, h : Integer; const picName : TPicName); overload;
+    procedure drawTiled(gr: TGPGraphics; r: TGPRectF; const picName: TPicName); overload;
+    procedure drawStratch(gr: TGPGraphics; r : TGPRectF; const picName: TPicName); overload;
+    procedure drawStratch(gr: TGPGraphics; x, y, w, h: Integer; const picName: TPicName); overload;
   {$ENDIF USE_GDIPLUS}
-    procedure drawTiled(canvas: Tcanvas; const picName : TPicName); overload;
-    procedure drawTiled(dc: HDC; ClipRect: TRect; const picName : TPicName); overload;
+    procedure drawTiled(canvas: Tcanvas; const picName: TPicName); overload;
+    procedure drawTiled(dc: HDC; ClipRect: TRect; const picName: TPicName); overload;
     procedure Draw_wallpaper(DC: HDC; r: TRect); //{$IFDEF HAS_INLINE } inline; {$ENDIF HAS_INLINE}
     procedure refreshThemeList;
   //  procedure refreshSmilesList;
@@ -619,7 +619,7 @@ end;
 constructor TRQtheme.Create;
 begin
   curToken := 101;
-  fDPI := cdefaultDPI;
+  fThemeDPI := cdefaultDPI;
  {$IFDEF SMILES_ANI_ENGINE}
   FAniTimer := NIL;
   FdrawCS := TCriticalSection.Create;
@@ -883,7 +883,7 @@ begin
 end;
 procedure TRQtheme.FreeResource;
 var
-  I, k: Integer;
+  I: Integer;
   po: TPicObj;
   bigArr: PBigPicsArr;
 //var
@@ -1546,9 +1546,11 @@ end;
   {$ENDIF NOT USE_GDIPLUS}
 
 function TRQtheme.GetBigPic(const picName: TPicName; var mem: TMemoryStream): Boolean;
+ {$IFDEF PRESERVE_BIG_FILE}
 var
   i: integer;
   s: TPicName;
+ {$ENDIF PRESERVE_BIG_FILE}
 begin
   if picName = '' then
   begin
@@ -1567,7 +1569,7 @@ begin
     if Assigned(FBigPics[picIdx].pic) then
     begin
       mem := TMemoryStream.Create;
-      FBigPics[picIdx].pic.Seek(0, soFromBeginning);
+      FBigPics[picIdx].pic.Seek(0, soBeginning);
       mem.LoadFromStream(FBigPics[picIdx].pic);
       Result := True;
     end
@@ -1576,9 +1578,11 @@ begin
 end;
 
 function TRQtheme.GetBigSmile(const picName: TPicName; var mem: TMemoryStream): Boolean;
+ {$IFDEF PRESERVE_BIG_FILE}
 var
   i: integer;
   s: TPicName;
+ {$ENDIF PRESERVE_BIG_FILE}
 begin
   if picName = '' then
   begin
@@ -1626,7 +1630,7 @@ begin
   s1 := AnsiLowerCase(name);
   s := TE2Str[pTE] + s1;
   i := FThemePics.IndexOf(s);
-  lPicDPI := fDPI;
+  lPicDPI := fThemeDPI;
   if i < 0 then
    i := FThemePics.IndexOf(s1);
   if i >= 0 then
@@ -1797,10 +1801,11 @@ end;
 
 function TRQtheme.GetPicSize(var PicElm: TRnQThemedElementDtls; minSize: Integer = 0;
                              const DPI: Integer = cDefaultDPI):Tsize;
-//var
-//  i : Integer;
+var
+  lPicDPI: Integer;
 begin
-   initPic(PicElm);
+  initPic(PicElm);
+  lPicDPI := fThemeDPI;
 
   if PicElm.picIdx < 0 then
           begin
@@ -1814,6 +1819,8 @@ begin
 //      result.cx := r.Width;
 //      result.cy := r.Height;
       result := Tsize(r.size);
+      if picDPI>20 then
+        lPicDPI := picDPI;
     end;
    PL_int:
         begin
@@ -1827,12 +1834,16 @@ begin
           begin
             Result.cx := Width;
             Result.cy := Height;
+            if fDPI>20 then
+              lPicDPI := fDPI;
           end;
    PL_Smile: with TThemePic(FSmilePics.Objects[PicElm.picIdx]) do
         begin
 //          result.cx := r.Width;
 //          result.cy := r.Height;
           result := Tsize(r.size);
+          if picDPI>20 then
+            lPicDPI := picDPI;
         end;
    else
           begin
@@ -1841,10 +1852,10 @@ begin
           end;
   end;
 
-  if (dpi <> fDPI) and (DPI > 36) then
+  if (dpi <> lPicDPI) and (DPI > 36) and (lPicDPI > 36) then
    begin
-     result.cx := MulDiv(result.cx, dpi, fDPI);
-     result.cy := MulDiv(result.cy, dpi, fDPI);
+     result.cx := MulDiv(result.cx, dpi, lPicDPI);
+     result.cy := MulDiv(result.cy, dpi, lPicDPI);
    end;
 end;
 
@@ -2341,9 +2352,9 @@ begin
   if Assigned(origPic) then
    begin
     picsArr^[Result].pic := TMemoryStream.Create;
-    origPic.Seek(0, soFromBeginning);
+    origPic.Seek(0, soBeginning);
     picsArr^[Result].pic.LoadFromStream(origPic);
-    picsArr^[Result].pic.Seek(0, soFromBeginning);
+    picsArr^[Result].pic.Seek(0, soBeginning);
    end;
  {$ENDIF PRESERVE_BIG_FILE}
   picsArr^[Result].ref := 0;
@@ -2563,7 +2574,7 @@ begin
     exit;
   end;
   bmp := TRnQBitmap.Create;
-  Result := loadPic(TStream(str), bmp, 0, PA_FORMAT_UNK, name, false);
+  Result := loadPic(TStream(str), bmp, 0, PA_FORMAT_UNK, String(name), false);
   if not Result then
     begin
       if Assigned(str) then
@@ -3200,7 +3211,7 @@ var
 (*  var
     s: RawByteString;
     fn: AnsiString;
-    x,y,dx,dy, idx:integer;
+    x,y,dx,dy, idx: integer;
     w, h: Integer;
     tempFont: RawByteString;
     hnd: THandle;
@@ -3241,16 +3252,16 @@ var
   Parsed: Boolean;
 //  loadedFontProp : TFontProps;
 begin
- ts.path :=  ts.path + ExtractFilePath(fn);
- ts.path := includeTrailingPathDelimiter(ts.path);
- if IsPathDelimiter(ts.path, 1) then
-   Delete(ts.path, 1, 1);
- fn := ExtractFileName(fn);
- if fn = '' then
-  Exit;
+  ts.path :=  ts.path + ExtractFilePath(fn);
+  ts.path := includeTrailingPathDelimiter(ts.path);
+  if IsPathDelimiter(ts.path, 1) then
+    Delete(ts.path, 1, 1);
+  fn := ExtractFileName(fn);
+  if fn = '' then
+    Exit;
 // path:=ExtractFilePath(fn);
- inc(curToken);
- CurrentPPI := cDefaultDPI;
+  inc(curToken);
+  CurrentPPI := cDefaultDPI;
  // Adding one empty image
     {$IFDEF USE_GDIPLUS}
    loadedpic := TRnQBitmap.Create(icon_size, icon_size, PixelFormat32bppARGB);
@@ -3262,16 +3273,16 @@ begin
     {$ENDIF NOT USE_GDIPLUS}
    addProp(PIC_EMPTY, TP_ico, loadedpic);
    loadedpic.Free;
- loadedpic := NIL;
- loadedAniPic := NIL;
- origPic := nil;
- NonAnimated := True;
- themePic := NIL;
- LastPicIDX := -1;
- hasSmilePic := false;
- section := _null;
- SetLength(prefix, 0);
- txt := loadfile(ts, fn);
+  loadedpic := NIL;
+  loadedAniPic := NIL;
+  origPic := nil;
+  NonAnimated := True;
+  themePic := NIL;
+  LastPicIDX := -1;
+  hasSmilePic := false;
+  section := _null;
+  SetLength(prefix, 0);
+  txt := loadfile(ts, fn);
  while txt>'' do
   try
    line := chopline(txt);
@@ -3358,6 +3369,7 @@ begin
                loadedAniPic.CurrentFrame := i;
                loadedpic := loadedAniPic.CloneFrame(-1);
               end;
+              loadedpic.fDPI := CurrentPPI;
             end
             else
              begin
@@ -3380,7 +3392,10 @@ begin
        NonAnimated := True;
        themePic := parsePic(True, line);
        if assigned(themePic) then
-        hasSmilePic := True;
+        begin
+          hasSmilePic := True;
+          themePic.picDPI := CurrentPPI;
+        end;
 //       loadedPic := TRnQBitmap.Create;
 //       hasSmilePic := loadPic(ts, line, loadedpic, i);
 //       addSmile(
@@ -3426,6 +3441,8 @@ begin
   begin
     FreeAndNil(themePic);
     themePic := parsePic(false, v);
+    if Assigned(themePic) then
+      themePic.picDPI := CurrentPPI;
     addProp(prefix + k, TP_pic, themePic);
     FreeAndNil(themePic);
   end
@@ -3551,19 +3568,20 @@ begin
 //  FreeAndNil(LastLoadedPic);
 end; // loadThemeScript
 
-function TRQtheme.drawPic(DC: HDC; pX, pY: integer; const picName:TPicName;
-                          pEnabled : Boolean = true; pDPI: Integer = 0): Tsize;
+function TRQtheme.drawPic(DC: HDC; pX, pY: integer; const picName: TPicName;
+                          pEnabled: Boolean = true; pDPI: Integer = 0): Tsize;
 var
-  i : Integer;
-//  gr : TGPGraphics;
-//  ia : timage
-//  pic : TRnQBitmap;
-
+  i: Integer;
+//  gr: TGPGraphics;
+//  ia: timage
+//  pic: TRnQBitmap;
+  lPicDPI: Integer;
 begin
 {  pic := TRnQBitmap.Create;
   GetPic(picName, pic);
-  result:=drawPic(cnv,x,y, pic);
+  result := drawPic(cnv,x,y, pic);
   pic.Free;}
+  lPicDPI := fThemeDPI;
   i := FThemePics.IndexOf(AnsiLowerCase(picName));
   if i >= 0 then
    begin
@@ -3572,7 +3590,9 @@ begin
      begin
        result.cx := r.Width;
        result.cy := r.Height;
-       if (pDPI <> cDefaultDPI)and (pDPI > 36) then
+       if picDPI>20 then
+         lPicDPI := picDPI;
+       if (pDPI <> lPicDPI)and (pDPI > 36) then
          begin
            result.cx := MulDiv(result.cx, pDPI, cDefaultDPI);
            result.cy := MulDiv(result.cy, pDPI, cDefaultDPI);
@@ -3607,6 +3627,13 @@ begin
            begin
              result.cx := r.Width;
              result.cy := r.Height;
+             if picDPI>20 then
+               lPicDPI := picDPI;
+             if (pDPI <> lPicDPI)and (pDPI > 36)and (lPicDPI > 36) then
+               begin
+                 result.cx := MulDiv(result.cx, pDPI, lPicDPI);
+                 result.cy := MulDiv(result.cy, pDPI, lPicDPI);
+               end;
              if PicType = PT_SMILE then
                DrawRbmp(DC, TPicObj(FSmileBigPics[PicIDX]).bmp,
                   MakeRectI(pX, pY, result.cx, result.cy), r, pEnabled)
@@ -3616,8 +3643,8 @@ begin
            end
           else
              begin
-               result.cx:=0;
-               result.cy:=0;
+               result.cx := 0;
+               result.cy := 0;
     //          pic := TRnQBitmap.Create;
     //          pic.Height := 0;
     //          pic.Width  := 0;
@@ -3631,8 +3658,8 @@ end;
 function TRQtheme.drawPic(DC: HDC; pR: TGPRect; const picName: TPicName;
                           pEnabled: Boolean = true; const DPI: Integer = 0): Tsize;
 var
-  i : Integer;
-  r1 : TGPRect;
+  i: Integer;
+  r1: TGPRect;
 begin
   if Length(picName)=0 then
              begin
@@ -3691,8 +3718,8 @@ begin
            end
           else
              begin
-               result.cx:=0;
-               result.cy:=0;
+               result.cx := 0;
+               result.cy := 0;
     //          pic := TRnQBitmap.Create;
     //          pic.Height := 0;
     //          pic.Width  := 0;
@@ -3706,7 +3733,7 @@ end;
   {$IFDEF USE_GDIPLUS}
 function TRQtheme.drawPic(gr: TGPGraphics; x,y: integer; const picName: String; pEnabled: Boolean = true): Tsize;
 var
-  i : Integer;
+  i: Integer;
 //  pic : TRnQBitmap;
 begin
 {  pic := TRnQBitmap.Create;
@@ -3766,11 +3793,13 @@ end;
 //function TRQtheme.drawPic(DC: HDC; x,y:integer; var picElm : TRnQThemedElementDtls):Tsize;
 function TRQtheme.drawPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls; const DPI: Integer): Tsize;
 var
-  po : TPicObj;
-  crd : Cardinal;
-  rS  : TGPSize; // Scaled Image Size
+  po: TPicObj;
+  crd: Cardinal;
+  rS: TGPSize; // Scaled Image Size
+  lPicDPI: Integer;
 begin
-   initPic(picElm);
+  initPic(picElm);
+  lPicDPI := fThemeDPI;
 
   if picElm.picIdx = -1 then
           begin
@@ -3784,10 +3813,12 @@ begin
 //     TRnQBitmap(FGPpics.Objects[picIdx]).SetResolution(
      with TThemePic(FThemePics.Objects[picElm.picIdx]) do
       begin
-       if (fDPI <> DPI) and (DPI > 36) then
+       if picDPI>20 then
+         lPicDPI := picDPI;
+       if (lPicDPI <> DPI) and (DPI > 36) and (lPicDPI > 36) then
          begin
-          rS.Width  := MulDiv(r.Width, DPI, fDPI);
-          rS.Height := MulDiv(r.Height, DPI, fDPI);
+          rS.Width  := MulDiv(r.Width, DPI, lPicDPI);
+          rS.Height := MulDiv(r.Height, DPI, lPicDPI);
          end
         else
          rS := r.size;
@@ -3843,6 +3874,14 @@ begin
       begin
        result.cx := r.Width;
        result.cy := r.Height;
+       if picDPI>20 then
+         lPicDPI := picDPI;
+       if (lPicDPI <> DPI) and (DPI > 36) and (lPicDPI > 36) then
+         begin
+          result.cx  := MulDiv(result.cx, DPI, lPicDPI);
+          result.cy := MulDiv(result.cy, DPI, lPicDPI);
+         end;
+
        if PicType = PT_SMILE then
          po := FSmileBigPics[PicIDX]
         else
@@ -3850,8 +3889,8 @@ begin
        if Assigned(po) then
         begin
          DrawRbmp(DC, po.bmp,
-//                 MakeRect(p.X, p.Y, result.cx, result.cy),
-                 MakeRect(MakePoint(p), r.size),
+                 MakeRect(p.X, p.Y, result.cx, result.cy),
+//                 MakeRect(MakePoint(p), r.size),
                  R,
                  picElm.pEnabled);
         end;
@@ -3866,13 +3905,15 @@ end;
 
 function TRQtheme.drawPic(DC: HDC; pR: TGPRect; var picElm: TRnQThemedElementDtls; const DPI: Integer): Tsize;
 var
-//  i : Integer;
-  r1  : TGPRect;
-  rS  : TGPSize; // Scaled Image Size
-  po  : TPicObj;
-  crd : Cardinal;
+//  i: Integer;
+  r1: TGPRect;
+  rS: TGPSize; // Scaled Image Size
+  po: TPicObj;
+  crd: Cardinal;
+  lPicDPI: Integer;
 begin
   initPic(picElm);
+  lPicDPI := fThemeDPI;
 
   if picElm.picIdx = -1 then
     begin
@@ -3888,10 +3929,12 @@ begin
      begin
   //     result.cx := r.Width;
   //     result.cy := r.Height;
-       if (fDPI <> DPI) and (DPI > 36) then
+       if picDPI>20 then
+         lPicDPI := picDPI;
+       if (lPicDPI <> DPI) and (DPI > 36) and (lPicDPI > 36) then
          begin
-          rS.Width  := MulDiv(r.Width, DPI, fDPI);
-          rS.Height := MulDiv(r.Height, DPI, fDPI);
+          rS.Width  := MulDiv(r.Width, DPI, lPicDPI);
+          rS.Height := MulDiv(r.Height, DPI, lPicDPI);
          end
         else
          rS := r.size;
@@ -3979,9 +4022,9 @@ begin
 end;
 
 // To Get pic with Alpha channel
-function TRQtheme.getPic(DC: HDC; p :TPoint; var picElm : TRnQThemedElementDtls; var is32Alpha : Boolean):Tsize;
+function TRQtheme.getPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls; const DPI: Integer; var is32Alpha: Boolean): Tsize;
 var
-  po : TPicObj;
+  po: TPicObj;
 begin
    initPic(picElm);
 
@@ -3999,6 +4042,13 @@ begin
       begin
        result.cx := r.Width;
        result.cy := r.Height;
+
+       if (DPI <> cDefaultDPI)and (DPI > 36) then
+         begin
+           result.cx := MulDiv(result.cx, DPI, cDefaultDPI);
+           result.cy := MulDiv(result.cy, DPI, cDefaultDPI);
+         end;
+
        po := FBigPics[PicIDX];
        if Assigned(po) then
 //       if po is TPicObj then
@@ -4006,8 +4056,8 @@ begin
          is32Alpha := po.bmp.f32Alpha;
 //         GetBmp32(DC, po.bmp,
          DrawRbmp(DC, po.bmp,
-//                 MakeRect(p.X, p.Y, result.cx, result.cy),
-                 MakeRect(MakePoint(p), r.size),
+                 MakeRect(p.X, p.Y, result.cx, result.cy),
+//                 MakeRect(MakePoint(p), r.size),
                  R, picElm.pEnabled, True);
         end;
       end;
@@ -4026,10 +4076,10 @@ end;
 function TRQtheme.drawPic(gr: TGPGraphics; x, y: integer; picName: string; var ThemeToken: Integer;
        var picLoc: TPicLocation; var picIdx: Integer; pEnabled: Boolean = true): Tsize;
 var
- dc : HDC;
-  ia : TGPImageAttributes;
-// tb  : TRnQBitmap;
-// tgr : TGPGraphics;
+ dc: HDC;
+  ia: TGPImageAttributes;
+// tb: TRnQBitmap;
+// tgr: TGPGraphics;
 begin
    initPic(picName, ThemeToken, picLoc, picIdx);
 

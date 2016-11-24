@@ -3,15 +3,15 @@
   Under same license
 }
 unit ViewPicDimmedDlg;
-{$I RnQConfig.inc}
+{$I forRnQConfig.inc}
 {$I NoRTTI.inc}
 
 interface
 
 uses
   Windows, SysUtils, Graphics, Classes, ExtCtrls,
-  Forms, StdCtrls, Controls, Menus,
-  ComCtrls, Messages, RnQGraphics32;
+  Forms, StdCtrls, Controls, ComCtrls, Menus,
+  Messages, Generics.Collections, RnQGraphics32;
 
 const
   WM_FADEOUT = WM_USER + 1;
@@ -26,6 +26,8 @@ type
 
   TFormEx = class(TForm)
   private
+    class var TimerList: TDictionary<UINT_PTR, TOnTimerProc>;
+
     AnimTimer: TTimer;
     AniTimer: TTimer;
     AlphaValue: Integer;
@@ -45,32 +47,31 @@ type
     procedure FadeOutMsg(var Msg: TMessage); message WM_FADEOUT;
     procedure FadeOut;
     procedure WMAppCommand(var msg: TMessage); message WM_APPCOMMAND;
+    class constructor Create;
+    class destructor Destroy;
   public
     otherForm: HWND;
+    fParentForm: TWinControl;
     procedure ShowWithFade();
     procedure startTimer();
     procedure stopTimer();
     procedure updateWindow();
     procedure CreateParams(var Params: TCreateParams); override;
-    constructor CreateNew(AOwner: TComponent; DimmedParam: Boolean = False);
+    constructor CreateNew(AOwner: TComponent; ParentForm: TWinControl; DimmedParam: Boolean = False);
   end;
 
-function viewImageDimmed(const evimage: RawByteString; evoffset: Integer): Tform;
+function viewImageDimmed(chatFrm: TWinControl; const evimage: RawByteString; evoffset: Integer): Tform;
 
 procedure SetTimeout(AProc: TOnTimerProc; ATimeout: Cardinal);
 
 implementation
 uses
-  Types, Generics.Collections,
-  strutils, Themes,
-  RnQNet, RDGlobal, RDUtils, Base64, AnsiClasses,
-  chatDlg, globalLib, RnQProtocol, utilLib,
-//  roasterLib,
-//  events, ICQConsts,
-  dateutils, ActiveX;
+  Types, strutils, Themes, dateutils, ActiveX,
+  AnsiClasses,
+  RDGlobal, RDUtils, Base64,
+  RnQNet, RnQGlobal, RQUtil
+  ;
 
-var
-  TimerList: TDictionary<UINT_PTR, TOnTimerProc>;
 
 (*
 procedure TImageEx.OnMouseDownImg(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -323,18 +324,29 @@ procedure TimerProc(hwnd: HWND; uMsg: UINT; idEvent: UINT_PTR; dwTime: DWORD); s
 var
   Proc: TOnTimerProc;
 begin
-  if TimerList.TryGetValue(idEvent, Proc) then
+  if TFormEx.TimerList.TryGetValue(idEvent, Proc) then
   try
     KillTimer(0, idEvent);
     Proc();
   finally
-    TimerList.Remove(idEvent);
+    TFormEx.TimerList.Remove(idEvent);
   end;
 end;
 
 procedure SetTimeout(AProc: TOnTimerProc; ATimeout: Cardinal);
 begin
-  TimerList.Add(SetTimer(0, 0, ATimeout, @TimerProc), AProc);
+  TFormEx.TimerList.Add(SetTimer(0, 0, ATimeout, @TimerProc), AProc);
+end;
+
+class constructor TFormEx.Create;
+begin
+  TimerList := TDictionary<UINT_PTR, TOnTimerProc>.Create;
+end;
+
+class destructor TFormEx.Destroy;
+begin
+  TimerList.Free;
+  TimerList := NIL;
 end;
 
 procedure TFormEx.ShowWithFade();
@@ -398,7 +410,7 @@ begin
   Params.ExStyle := Params.ExStyle or WS_EX_NOACTIVATE;
 end;
 
-constructor TFormEx.CreateNew(AOwner: TComponent; DimmedParam: Boolean = False);
+constructor TFormEx.CreateNew(AOwner: TComponent; ParentForm: TWinControl; DimmedParam: Boolean = False);
 begin
   inherited CreateNew(AOwner);
   Dimmed := DimmedParam;
@@ -472,8 +484,8 @@ begin
 end;
 
 procedure TFormEx.ShowHideImages();
-var
-  i: integer;
+//var
+//  i: integer;
 begin
   if images[ShownImage].Animated then
    begin
@@ -539,8 +551,8 @@ begin
   if (Length(images)= 0) or not Assigned(Images[ShownImage]) then
     Exit;
 
-  if Assigned(chatFrm) then
-    bRect := Screen.MonitorFromWindow(chatFrm.Handle).BoundsRect
+  if Assigned(fParentForm) then
+    bRect := Screen.MonitorFromWindow(fParentForm.Handle).BoundsRect
   else
     bRect := Screen.Monitors[0].BoundsRect;
 
@@ -586,12 +598,12 @@ end;
 
 procedure TFormEx.OnCloseImg(Sender: TObject; var Action: TCloseAction);
 begin
-  if Assigned(chatFrm) then
-    chatFrm.SetFocus;
+  if Assigned(fParentForm) then
+    fParentForm.SetFocus;
   Action := caFree;
 end;
 
-function viewImageDimmed(const evimage: RawByteString; evoffset: Integer): Tform;
+function viewImageDimmed(chatFrm: TWinControl; const evimage: RawByteString; evoffset: Integer): Tform;
 var
   formDim, formImg: TFormEx;
 //  img: TImageEx;
@@ -602,10 +614,10 @@ var
   imgcnt: integer;
   imgtag: RawByteString;
   bRect: TRect;
-  i, offset: integer;
+  offset: integer;
 begin
-  formDim := TFormEx.CreateNew(chatFrm, True);
-  formImg := TFormEx.CreateNew(chatFrm);
+  formDim := TFormEx.CreateNew(chatFrm, chatFrm, True);
+  formImg := TFormEx.CreateNew(chatFrm, chatFrm);
   formImg.otherForm := formDim.Handle;
   formDim.otherForm := formImg.Handle;
 
@@ -669,15 +681,5 @@ begin
   formImg.ShowWithFade;
   Result := formImg;
 end;
-
-
-initialization
-
-TimerList := TDictionary<UINT_PTR, TOnTimerProc>.Create;
-
-finalization
-
-TimerList.Free;
-TimerList := NIL;
 
 end.

@@ -72,10 +72,10 @@ implementation  uses
     SysUtils,
     RnQLangs, RQUtil;
 
-var
-  aMainMenu : aTaMenuItem;
-//  aStsMenu : aTaMenuItem;
-//  aVisMenu : aTaMenuItem;
+//var
+//  aMainMenu: aTaMenuItem;
+//  aStsMenu: aTaMenuItem;
+//  aVisMenu: aTaMenuItem;
 
 //const
 //  aMainMenu: array[0..1] of TaMenuItem =
@@ -84,7 +84,7 @@ var
 
 procedure ClearMenuMass(var mass: aTaMenuItem);
 var
-  i : Byte;
+  i: Byte;
 begin
   if Length(mass) > 0 then
   begin

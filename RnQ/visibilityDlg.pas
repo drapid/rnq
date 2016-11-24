@@ -30,6 +30,8 @@ type
     move2inv: TRnQButton;
     move2normal: TRnQButton;
     move2vis: TRnQButton;
+//    constructor
+    class procedure ShowVis(owner_: TWinControl; const proto: TRnQProtocol);
     procedure InvisBoxDrawNode(Sender: TBaseVirtualTree;
       const PaintInfo: TVTPaintInfo);
     procedure FormCreate(Sender: TObject);
@@ -62,27 +64,25 @@ type
     procedure DestroyHandle; Override;
   end;
 
-var
-  visibilityFrm: TvisibilityFrm;
 
 implementation
 
 {$R *.DFM}
 
 uses
-  RQUtil, RDGlobal, RQThemes,
-  RnQSysUtils, RnQPics,
-  globalLib, mainDlg, utilLib, themesLib,
-//  ICQConsts, ICQv9,
+  RQUtil, RDGlobal, RQThemes, RnQSysUtils, RnQPics, RnQLangs,
+  globalLib, mainDlg, utilLib, themesLib, langLib,
   roasterLib;
 
 type
   PVisRec = ^TVisRec;
   TVisRec = record
-    s   : string;  
-    cnt : TRnQcontact;
+    s: string;
+    cnt: TRnQcontact;
   end;
 
+var
+  visibilityFrm: TvisibilityFrm;
 
 function what2display(c: TRnQContact): string;
 begin
@@ -112,6 +112,20 @@ begin
   fillUp(invisBox,   thisProto.readList(LT_INVISIBLE));
 end; // setUpBoxes
 
+class procedure TvisibilityFrm.ShowVis(owner_: TWinControl;
+  const proto: TRnQProtocol);
+begin
+   if Assigned(visibilityFrm) then
+     visibilityFrm.BringToFront
+    else
+     begin
+      visibilityFrm := TvisibilityFrm.Create(owner_);
+      visibilityFrm.thisProto := proto;
+      translateWindow(visibilityFrm);
+      showForm(visibilityFrm)
+     end;
+end;
+
 procedure TvisibilityFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   normal.free;
@@ -128,11 +142,11 @@ begin
   VisibleBox.NodeDataSize := SizeOf(TVisRec);
 end;
 
-function clFromBox(lb:TBaseVirtualTree):TRnQCList;
+function clFromBox(lb: TBaseVirtualTree): TRnQCList;
 var
-  n : PVirtualNode;
+  n: PVirtualNode;
 begin
-  result:=TRnQCList.create;
+  result := TRnQCList.create;
   n := lb.GetFirst;
   while n <> NIL do
   begin
@@ -242,9 +256,9 @@ end; // normal2inv
 
 procedure TvisibilityFrm.vis2normal;
 var
-  cl:TRnQCList;
+  cl: TRnQCList;
 begin
-  cl:=clFromBox(visibleBox);
+  cl := clFromBox(visibleBox);
  {$IFDEF UseNotSSI}
   if (thisProto.ProtoElem is TicqSession) and  not TicqSession(thisProto.ProtoElem).useSSI then
 //    thisICQ.readVisible.remove(cl)
@@ -259,9 +273,9 @@ end; // vis2normal
 
 procedure TvisibilityFrm.vis2inv;
 var
-  cl:TRnQCList;
+  cl: TRnQCList;
 begin
-  cl:=clFromBox(visibleBox);
+  cl := clFromBox(visibleBox);
  {$IFDEF UseNotSSI}
   if (thisProto.ProtoElem is TicqSession) and  not TicqSession(thisProto.ProtoElem).useSSI then
     begin
@@ -284,11 +298,12 @@ begin
   theme.pic2ico(RQteFormIcon, PIC_VISIBILITY, icon);
   applyTaskButton(self);
 //  thisProto := ActiveProto;
-  thisProto := Account.AccProto;
+//  thisProto := Account.AccProto;
+  Caption := getTranslation('Visibility') + ' ' + thisProto.getShowStr;
 {  move2inv.Enabled := not useSSI;
   move2normal.Enabled := not useSSI;
   move2vis.Enabled := not useSSI;}
-  normal:=thisProto.readList(LT_ROSTER).clone.remove(thisProto.readList(LT_INVISIBLE)).remove(thisProto.readList(LT_VISIBLE));
+  normal := thisProto.readList(LT_ROSTER).clone.remove(thisProto.readList(LT_INVISIBLE)).remove(thisProto.readList(LT_VISIBLE));
   setUpBoxes;
 end; // formshow
 

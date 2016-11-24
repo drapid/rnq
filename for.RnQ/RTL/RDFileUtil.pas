@@ -80,7 +80,8 @@ type
   function  loadFileA(const fn: string): RawByteString; overload;
   function  loadFile(fs: TStream; const StreamName: String): AnsiString; overload;
   function  saveFile2(const fn: string; const data: RawByteString;
-               needSafe: Boolean = false; MakeBakups: Boolean = false): boolean;
+               needSafe: Boolean = false; MakeBackups: Boolean = false): boolean;
+  function  saveTextFile(const fn: String; const s: String): Boolean;
   function  fileIsWritible(const fn: String): boolean;
   function  sizeOfFile(const fn: string):int64;
   function  partDeleteFile(fn: string; from, length: integer): boolean;
@@ -224,7 +225,7 @@ begin
         ResStream.Size := 0;
         ResStream.CopyFrom(tStr, tStr.Size);
         tStr.Free;
-        tStr := NIL;
+//        tStr := NIL;
         Result := True;
        end;
      end;
@@ -614,25 +615,28 @@ begin
 end; // loadFile
 
 function saveFile2(const fn: string; const data: RawByteString;
-                  needSafe: Boolean = false; MakeBakups: Boolean = false): boolean;
+                  needSafe: Boolean = false; MakeBackups: Boolean = false): boolean;
 {var
-  f:file;
+  f: file;
 begin
-result:=FALSE;
-if fn='' then exit;
-IOresult;
-assignFile(f,fn);
-rewrite(f,1);
-if IOresult <> 0 then exit;
-blockWrite(f, data[1], length(data));
-if IOresult <> 0 then exit;
-closeFile(f);
-result:=TRUE;}
+  result := FALSE;
+  if fn='' then
+    exit;
+  IOresult;
+  assignFile(f,fn);
+  rewrite(f,1);
+  if IOresult <> 0 then
+    exit;
+  blockWrite(f, data[1], length(data));
+  if IOresult <> 0 then
+    exit;
+  closeFile(f);
+  result := TRUE;}
 var
- fs : TFileStream;
- md : Word;
-// ff, bs : PAnsiChar;
-// ff, bs : String;
+ fs: TFileStream;
+ md: Word;
+// ff, bs: PAnsiChar;
+// ff, bs: String;
 begin
   result := false;
   if fn = '' then
@@ -643,7 +647,7 @@ begin
   md := fmCreate;
   fs := NIL;
   try
-    if needSafe and MakeBakups then
+    if needSafe and MakeBackups then
      try
 {       ff := fn + #0;
        bs := fn + '.bak'#0;
@@ -670,6 +674,43 @@ begin
     result := false;
   end;
 end; // saveFile
+
+function saveTextFile(const fn: String; const s: String): Boolean;
+const
+  UTF8_BOM: RawByteString = RawByteString(#$EF#$BB#$BF);
+var
+ fs: TFileStream;
+ md: Word;
+ data: RawByteString;
+begin
+  result := false;
+  if fn = '' then
+   exit;
+  md := fmCreate;
+  fs := NIL;
+  try
+{    if needSafe and MakeBackups then
+     try
+       RenameFile(fn, fn + '.bak');
+     except
+     end;}
+    fs := NIL;
+    fs := TFileStream.Create(fn, md);
+    data := UTF8Encode(s);
+    if length(data) > 0 then
+      begin
+        fs.Write(UTF8_BOM[1], 3);
+        fs.Write(data[1], length(data));
+      end;
+    result := True;
+    if Assigned(fs) then
+     FreeAndNil(fs);
+  except
+    if Assigned(fs) then
+     FreeAndNil(fs);
+    result := false;
+  end;
+end;
 
 function fileIsWritible(const fn: String): boolean;
 var

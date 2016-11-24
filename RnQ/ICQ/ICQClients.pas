@@ -124,7 +124,8 @@ var
           Delete(pCaps, 1, i-1);
           inc(idx);
           SetLength(pArr, idx+1);
-          pArr[idx] := hex2StrSafe(s);
+//          pArr[idx] := hex2StrSafe(s);
+          pArr[idx] := hex2StrU(s);
         end;
      end;
 
@@ -218,6 +219,7 @@ begin
 
     lPos := 1;
     lCfgL := Length(lCfg);
+    lastIDX := -1;
 
     while lPos < lCfgL do
      begin
@@ -230,6 +232,8 @@ begin
           SetLength(CliDefs, lastIDX + 1);
           continue;
         end;
+      if lastIDX < 0 then
+        continue;
       v := line;
       k := AnsiLowerCase(trim(chop('=',v)));
       v := trim(v);
@@ -282,9 +286,7 @@ begin
         CliDefs[lastIDX].Version := v
        else
       if k = 'pic' then
-        CliDefs[lastIDX].PicName := v
-
-
+        CliDefs[lastIDX].PicName := TPicName(v)
       ;
      end;
     loggaEvtS('ICQClients: pics loading');
@@ -397,6 +399,7 @@ procedure getClientPicAndDescExt(cnt: TICQContact; var pPic: TPicName; var CliDe
                begin
                  par := copy(Res, i + Length(l), j-i - Length(l));
                  p := pos('#', par);
+                 parCh := #00;
                  if p > 0 then
                    parCh := par[p]
                   else
@@ -440,10 +443,10 @@ procedure getClientPicAndDescExt(cnt: TICQContact; var pPic: TPicName; var CliDe
         end;
         procedure ProcessCaps();
         var
-          i, j, p, a, d : Integer;
-          l, par, par2 : String;
-          p2, l2 : RawByteString;
-          parCh : Char;
+          i, j, p, a, d: Integer;
+          l, par, par2: String;
+          p2, l2: RawByteString;
+          parCh: Char;
         begin
           i := Pos('cap(', Res);
           if i > 0 then
@@ -475,7 +478,7 @@ procedure getClientPicAndDescExt(cnt: TICQContact; var pPic: TPicName; var CliDe
                       else
                        d := 4;
                     par2 := Copy(par, 1, p-1);
-                    p2 := hex2StrSafe(par2);
+                    p2 := hex2StrU(par2);
                     l2 := '';
                     for a := low(CapsArr) to high(CapsArr) do
                      begin
@@ -493,7 +496,7 @@ procedure getClientPicAndDescExt(cnt: TICQContact; var pPic: TPicName; var CliDe
                           l := '';
                           for a := 1 to Length(l2) do
                            if Byte(l2[a]) > 30 then
-                             l := l + AnsiChar(Byte(l2[a]))
+                             l := l + Char(Byte(l2[a]))
                             else
                              break;
                          end
@@ -562,7 +565,7 @@ end;
 
 procedure getClientPicAndDescInt(c:TICQContact;
               var pPic: TPicName; var CliDesc: String);
-//function getClientPicFor(c:Tcontact):string;
+//function getClientPicFor(c: Tcontact): string;
 var
   s, capa: RawByteString;
   i: integer;
@@ -579,13 +582,13 @@ begin
     YSMclientID: begin pPic := 'ysm'; CliDesc := 'YSM'; end;
     ANDRQclientID: begin
                      pPic := PIC_CLI_NRQ;
-                     CliDesc  := '&RQ ' +ip2str(C.lastinfoupdate_dw);
+                     CliDesc  := '&RQ ' + ip2str(C.lastinfoupdate_dw);
                    end;
     RnQclientID: begin
                    pPic   := PIC_CLI_RNQ;
                   CliDesc    := 'R&Q ';
                   if C.lastinfoupdate_dw and $40000000 <> 0 then
-                   CliDesc    := CliDesc + 'Lite ';
+                    CliDesc    := CliDesc + 'Lite ';
                   CliDesc    := CliDesc + intToStr(C.lastinfoupdate_dw and ($FFFFFF)); // Rapid D
                   if C.lastinfoupdate_dw and $80000000 <> 0 then
                    CliDesc    := CliDesc + ' Test';
@@ -664,14 +667,14 @@ begin
     if pos(AnsiString('mChat icq'),capa) > 0 then
     begin
      pPic := PIC_CLI_mchat;
-     CliDesc := 'mChat (' + copy(capa, 11, 6) + ')';
+     CliDesc := 'mChat (' + String(copy(capa, 11, 6)) + ')';
      exit;
     end else
 //     if pos('Smaper v',capa) > 0 then
      if AnsiStartsText(AnsiString('Smaper '),capa) then
       begin
        pPic := PIC_CLI_smaper;
-       CliDesc := 'Smaper (' + copy(capa, 9, 5) + ')';
+       CliDesc := 'Smaper (' + String(copy(capa, 9, 5)) + ')';
        exit;
       end else
      if AnsiStartsText(AnsiString('PIGEON!'), capa) then
@@ -683,7 +686,7 @@ begin
      if AnsiStartsText(AnsiString(#$DE#$AD#$BE#$EF#$01),capa) then
       begin
        pPic := PIC_CLI_MAGENT;
-       CliDesc := 'Mail.ru agent Symbian (' + Trim(copy(capa, 6, 4)) + ')';
+       CliDesc := 'Mail.ru agent Symbian (' + Trim(String(copy(capa, 6, 4))) + ')';
        exit;
       end else
      if AnsiStartsText(AnsiString('J2ME m@agent'),capa) then
@@ -926,13 +929,13 @@ else
       if CAPS_big_qipWM in c.capabilitiesBig then
         begin
           pPic := PIC_CLI_QIPPDA;
-          CliDesc := BigCapability[CAPS_big_qipWM].s
+          CliDesc := String(BigCapability[CAPS_big_qipWM].s)
         end
        else
       if CAPS_big_qipSym in c.capabilitiesBig then
         begin
           pPic := PIC_CLI_QIPPDA;
-          CliDesc := BigCapability[CAPS_big_qipSym].s
+          CliDesc := String(BigCapability[CAPS_big_qipSym].s)
         end
       else;
     else

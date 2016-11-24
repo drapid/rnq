@@ -168,10 +168,10 @@ type
 function AddAuthorizationHeader(var Str : AnsiString; const Scheme : string; const AuthData : RawByteString;
   const UserName : string; const Password : string; var NeedMoreData : boolean; ForProxy: boolean; aSeq : PAUTH_SEQ):boolean;
 
-procedure ValidateSecPacks(ls : TStringList);
+procedure ValidateSecPacks(ls: TStringList);
 
-procedure AuthInit(pAS : PAUTH_SEQ);
-procedure AuthTerm(pAS : PAUTH_SEQ);
+procedure AuthInit(pAS: PAUTH_SEQ);
+procedure AuthTerm(pAS: PAUTH_SEQ);
 
 var
   secDLL  : string = '';
@@ -226,16 +226,16 @@ const
   SEC_I_COMPLETE_AND_CONTINUE     = $90314;
 
   
-procedure ValidateSecPacks(ls : TStringList);
+procedure ValidateSecPacks(ls: TStringList);
 type
-  ASecPkgInfo=array[0..0] of SecPkgInfoA;
-  PASecPkgInfo=^ASecPkgInfo;
+  ASecPkgInfo = array[0..0] of SecPkgInfoA;
+  PASecPkgInfo = ^ASecPkgInfo;
 var
-  pSec : PSecPkgInfoA;
-  zSec : PASecPkgInfo;
+  pSec: PSecPkgInfoA;
+  zSec: PASecPkgInfo;
   cSec, i, j: LongWord;
-  ss : Integer;
-  found : boolean;
+  ss: Integer;
+  found: boolean;
 begin
   pSec := nil;
   ss := sfProcs.pEnumerateSecurityPackages(@cSec, @pSec);
@@ -292,18 +292,18 @@ begin
 end;
 
 const
-  six2pr:array[0..63] of char = (
+  six2pr: array[0..63] of char = (
     'A','B','C','D','E','F','G','H','I','J','K','L','M',
     'N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
     'a','b','c','d','e','f','g','h','i','j','k','l','m',
     'n','o','p','q','r','s','t','u','v','w','x','y','z',
     '0','1','2','3','4','5','6','7','8','9','+','/');
 
-function UUencode(const s : string):string;
+function UUencode(const s: string):string;
 var
-  x : Integer;
-  i : Integer;
-  o : Integer;
+  x: Integer;
+  i: Integer;
+  o: Integer;
 begin
   SetLength(result, Length(s) + ((Length(s) + 3) div 3) + 4);
 
@@ -337,7 +337,7 @@ begin
 end;
 
 const
-  pr2six:array[AnsiChar] of byte=(
+  pr2six: array[AnsiChar] of byte=(
     64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,
     64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,62,64,64,64,63,
     52,53,54,55,56,57,58,59,60,61,64,64,64,64,64,64,64,0,1,2,3,4,5,6,7,8,9,
@@ -350,12 +350,12 @@ const
     64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,
     64,64,64,64,64,64,64,64,64,64,64,64,64);
 
-function UUdecode(const s : AnsiString) : string;
+function UUdecode(const s: AnsiString) : string;
 var
-  nbytesdecoded : Integer;
-  x : Integer;
-  y : Integer;
-  nprbytes : Integer;
+  nbytesdecoded: Integer;
+  x: Integer;
+  y: Integer;
+  nprbytes: Integer;
 begin
   x := 1;
   while (x <= Length(s)) and (pr2six[s[x]] <= 63) do
@@ -391,10 +391,10 @@ end;
 
 procedure CrackUserAndDomain(const DomainAndUser : AnsiString; var User : AnsiString; var Domain : AnsiString);
 const
-  DefaultDomain : string = '';
+  DefaultDomain: string = '';
 var
-  x : Integer;
-  n : LongWord;
+  x: Integer;
+  n: LongWord;
 begin
   x := pos('/', DomainAndUser);
   if x <= 0 then
@@ -418,9 +418,9 @@ begin
   end;
 end;
 
-function AuthConverse(pAS : PAUTH_SEQ; BuffIn : AnsiString; var BuffOut : AnsiString;
-  var NeedMoreData : boolean; const Package : RawByteString;
-  User : AnsiString; const Password : AnsiString):boolean;
+function AuthConverse(pAS: PAUTH_SEQ; BuffIn: AnsiString; var BuffOut: AnsiString;
+  var NeedMoreData: boolean; const Package: RawByteString;
+  User: AnsiString; const Password: AnsiString): boolean;
 var
   ss                : integer;
   Domain            : AnsiString;

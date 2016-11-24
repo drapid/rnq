@@ -19,7 +19,7 @@ type
            );
 const
   SC_Last = SC_Lunch;
-  StatusPriority : array[TICQStatus] of byte= (0,8,9, 1,2,3,4,5,6,7, 101, 102, 103);
+  StatusPriority: array[TICQStatus] of byte= (0,8,9, 1,2,3,4,5,6,7, 101, 102, 103);
 
 Type
   Tvisibility=(VI_normal, VI_invisible, VI_privacy, VI_all, VI_CL);
@@ -74,8 +74,8 @@ const
   My_proto_ver = 9;
   ICQ_TCP_VERSION = My_proto_ver;
   maxPwdLength = 16;
-  AIM_MD5_STRING : AnsiString = 'AOL Instant Messenger (SM)';
-  ICQ_DEV_ID : AnsiString = 'ic1nmMjqg7Yu-0hL';
+  AIM_MD5_STRING: AnsiString = 'AOL Instant Messenger (SM)';
+  ICQ_DEV_ID: AnsiString = 'ic1nmMjqg7Yu-0hL';
   uinToUpdate    =  223223181;
   AIMprefix = 'AIM_';
   ICQMaxAvatarSize = 7800;
@@ -106,7 +106,7 @@ const
   word_Zero = AnsiString(#00#00);
   dword_Zero = AnsiString(#00#00#00#00);
   Z = AnsiString(#0#0#0#0);
-  BigCapability:array [1..32] of record v : String[16]; s : AnsiString; end=(
+  BigCapability: array [1..32] of record v: String[16]; s: AnsiString; end=(
 //  BigCapability:array [1..28] of record v : AnsiString; s : AnsiString; end=(
     (V: #$97#$B1#$27#$51#$24#$3C#$43#$34#$AD#$22#$D6#$AB#$F7#$3F#$14#$92; s: 'RTF messages'),// RTF
     (V: #$2E#$7A#$64#$75#$FA#$DF#$4D#$C8#$88#$6F#$EA#$35#$95#$FD#$B6#$DF; s: 'ICQ 2001'), // AIM_CAPS_2001 or OLD_UTF
@@ -178,7 +178,7 @@ const
 #define kAccCap_SmartCaps   OLESTR( "{094601FF-4C7F-11D1-8222-444553540000}")
 *)
 
-  CapsSmall: array[1..29] of record v : RawByteString; s : AnsiString; Desc : AnsiString; end = (
+  CapsSmall: array[1..29] of record v: RawByteString; s: AnsiString; Desc: AnsiString; end = (
     (V: #$01#$00; s: 'Video'; Desc: ''),           // = Video
     (V: #$01#$01; s: 'SIP/RTP video'; Desc: 'Can do live video streaming, using SIP/RTP'),       //2 = RtpVideo
     (V: #$01#$02; s: 'Has camera'; Desc: 'Has a video camera connected'),      // = HasCamera
@@ -188,8 +188,8 @@ const
     (V: #$01#$06; s: 'Aca'),             // = Aca
     (V: #$01#$07; s: 'Audio conferences'; Desc: 'Can participate in centralized audio conferences'),     //8 = MultiAudio
     (V: #$01#$08; s: 'Video conferences'; Desc: 'Can participate in centralized video conferences'),     // = MultiVideo
-    (V: #$01#$FF; s: 'Smart caps'; Desc: 'Whether caps reflect opt-in features vs. features the software supports'),    //10 = SmartCaps
-    (V: #$F0#$04; s: 'Viceroy'),         // = Viceroy
+    (V: RawByteString(#$01#$FF); s: 'Smart caps'; Desc: 'Whether caps reflect opt-in features vs. features the software supports'),    //10 = SmartCaps
+    (V: RawByteString(#$F0#$04); s: 'Viceroy'),         // = Viceroy
     (V: #$13#$49; s: 'ICQ Server Relay'), // 12  AIM_CAPS_ICQSERVERRELAY
     (V: #$13#$44; s: 'is ICQ'),              // AIM_CAPS_ICQ
     (V: #$13#$4E; s: 'UTF-8 Messages'),  // 14 UTF-8
@@ -216,7 +216,7 @@ const
     );
 //    #$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00  // Anti-invischeck
   MsgCapabilities : array [1..1] of RawByteString=(
-      #$3B#$60#$B3#$EF#$D8#$2A#$6C#$45#$A4#$E0#$9C#$5A#$5E#$67#$E8#$65 // XStatus
+      RawByteString(#$3B#$60#$B3#$EF#$D8#$2A#$6C#$45#$A4#$E0#$9C#$5A#$5E#$67#$E8#$65) // XStatus
 //      #$09#$46#$13#$43#$4C#$7F#$11#$D1#$82#$22#$44#$45#$53#$54#$00#$00 // file transfer (Send)
 //      D9122DF0-9130-11D3-8DD7-00104B06462E //File transfer plugin.
 //      #$09#$46#$13#$48#$4C#$7F#$11#$D1#$82#$22#$44#$45#$53#$54#$00#$00 // file transfer (Recieve)
@@ -749,7 +749,7 @@ const
   );
 
 
- ICQauthErrors : array[1..$2A] of string = (
+ ICQauthErrors: array[1..$2A] of string = (
 
 'Invalid nick or password',
 'Service temporarily unavailable',
@@ -796,9 +796,9 @@ const
 
 {
 const
-  OldXStatus : array[0..36] of record pid : String[16];
-                                PicName : AnsiString;
-                                Caption : String;
+  OldXStatus: array[0..36] of record pid: String[16];
+                                PicName: AnsiString;
+                                Caption: String;
                         end =
     ((pid: '';
       PicName: 'st_custom.none'; Caption: 'None'),
@@ -952,110 +952,110 @@ type
  XStatusFlags = (xsf_Old, xsf_6);
  XStatusFlagsSet = set of XStatusFlags;
 const
-  XStatusArray : array[0..43] of record flags : XStatusFlagsSet;
-                                pidOld : RawByteString;
-                                pid6 : RawByteString;
-                                PicName : TPicName;
-                                Caption : String;
+  XStatusArray : array[0..43] of record flags: XStatusFlagsSet;
+                                pidOld: RawByteString;
+                                pid6: RawByteString;
+                                PicName: TPicName;
+                                Caption: String;
                         end =
     ((flags: [xsf_Old, xsf_6]; pidOld: ''; pid6: '';
       PicName: 'st_custom.none'; Caption: 'None'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$01#$D8#$D7#$EE#$AC#$3B#$49#$2A#$A5#$8D#$D3#$D8#$77#$E6#$6B#$92;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$01#$D8#$D7#$EE#$AC#$3B#$49#$2A#$A5#$8D#$D3#$D8#$77#$E6#$6B#$92);
       pid6: 'icqmood23'; PicName: 'st_custom.angry'; Caption: 'Angry'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$5A#$58#$1E#$A1#$E5#$80#$43#$0C#$A0#$6F#$61#$22#$98#$B7#$E4#$C7;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$5A#$58#$1E#$A1#$E5#$80#$43#$0C#$A0#$6F#$61#$22#$98#$B7#$E4#$C7);
       pid6: 'icqmood1';  PicName: 'st_custom.duck';  Caption: 'Duck'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$83#$c9#$b7#$8e#$77#$e7#$43#$78#$b2#$c5#$fb#$6c#$fc#$c3#$5b#$ec;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$83#$c9#$b7#$8e#$77#$e7#$43#$78#$b2#$c5#$fb#$6c#$fc#$c3#$5b#$ec);
       pid6: 'icqmood2';  PicName: 'st_custom.tired'; Caption: 'Tired'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$e6#$01#$e4#$1c#$33#$73#$4b#$d1#$bc#$06#$81#$1d#$6c#$32#$3d#$81;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$e6#$01#$e4#$1c#$33#$73#$4b#$d1#$bc#$06#$81#$1d#$6c#$32#$3d#$81);
       pid6: 'icqmood3';  PicName: 'st_custom.party'; Caption: 'Party'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$8c#$50#$db#$ae#$81#$ed#$47#$86#$ac#$ca#$16#$cc#$32#$13#$c7#$b7;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$8c#$50#$db#$ae#$81#$ed#$47#$86#$ac#$ca#$16#$cc#$32#$13#$c7#$b7);
       pid6: 'icqmood4';  PicName: 'st_custom.beer';  Caption: 'Beer'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$3f#$b0#$bd#$36#$af#$3b#$4a#$60#$9e#$ef#$cf#$19#$0f#$6a#$5a#$7f;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$3f#$b0#$bd#$36#$af#$3b#$4a#$60#$9e#$ef#$cf#$19#$0f#$6a#$5a#$7f);
       pid6: 'icqmood5';  PicName: 'st_custom.thinking'; Caption: 'Thinking'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$f8#$e8#$d7#$b2#$82#$c4#$41#$42#$90#$f8#$10#$c6#$ce#$0a#$89#$a6;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$f8#$e8#$d7#$b2#$82#$c4#$41#$42#$90#$f8#$10#$c6#$ce#$0a#$89#$a6);
       pid6: 'icqmood6';  PicName: 'st_custom.eating'; Caption: 'Eating'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$80#$53#$7d#$e2#$a4#$67#$4a#$76#$b3#$54#$6d#$fd#$07#$5f#$5e#$c6;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$80#$53#$7d#$e2#$a4#$67#$4a#$76#$b3#$54#$6d#$fd#$07#$5f#$5e#$c6);
       pid6: 'icqmood7';  PicName: 'st_custom.tv'; Caption: 'TV'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$f1#$8a#$b5#$2e#$dc#$57#$49#$1d#$99#$dc#$64#$44#$50#$24#$57#$af;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$f1#$8a#$b5#$2e#$dc#$57#$49#$1d#$99#$dc#$64#$44#$50#$24#$57#$af);
       pid6: 'icqmood8';  PicName: 'st_custom.friends'; Caption: 'Friends'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$1b#$78#$ae#$31#$fa#$0b#$4d#$38#$93#$d1#$99#$7e#$ee#$af#$b2#$18;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$1b#$78#$ae#$31#$fa#$0b#$4d#$38#$93#$d1#$99#$7e#$ee#$af#$b2#$18);
       pid6: 'icqmood9';  PicName: 'st_custom.coffee'; Caption: 'Coffee'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$61#$BE#$E0#$DD#$8B#$DD#$47#$5D#$8D#$EE#$5F#$4B#$AA#$CF#$19#$A7;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$61#$BE#$E0#$DD#$8B#$DD#$47#$5D#$8D#$EE#$5F#$4B#$AA#$CF#$19#$A7);
       pid6: 'icqmood10'; PicName: 'st_custom.music'; Caption: 'Music'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$48#$8e#$14#$89#$8a#$ca#$4a#$08#$82#$aa#$77#$ce#$7a#$16#$52#$08;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$48#$8e#$14#$89#$8a#$ca#$4a#$08#$82#$aa#$77#$ce#$7a#$16#$52#$08);
       pid6: 'icqmood11'; PicName: 'st_custom.business'; Caption: 'Business'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$10#$7a#$9a#$18#$12#$32#$4d#$a4#$b6#$cd#$08#$79#$db#$78#$0f#$09;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$10#$7a#$9a#$18#$12#$32#$4d#$a4#$b6#$cd#$08#$79#$db#$78#$0f#$09);
       pid6: 'icqmood12'; PicName: 'st_custom.camera'; Caption: 'Camera'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$6f#$49#$30#$98#$4f#$7c#$4a#$ff#$a2#$76#$34#$a0#$3b#$ce#$ae#$a7;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$6f#$49#$30#$98#$4f#$7c#$4a#$ff#$a2#$76#$34#$a0#$3b#$ce#$ae#$a7);
       pid6: 'icqmood13'; PicName: 'st_custom.funny'; Caption: 'Funny'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$12#$92#$e5#$50#$1b#$64#$4f#$66#$b2#$06#$b2#$9a#$f3#$78#$e4#$8d;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$12#$92#$e5#$50#$1b#$64#$4f#$66#$b2#$06#$b2#$9a#$f3#$78#$e4#$8d);
       pid6: 'icqmood14'; PicName: 'st_custom.phone'; Caption: 'Phone'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$d4#$a6#$11#$d0#$8f#$01#$4e#$c0#$92#$23#$c5#$b6#$be#$c6#$cc#$f0;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$d4#$a6#$11#$d0#$8f#$01#$4e#$c0#$92#$23#$c5#$b6#$be#$c6#$cc#$f0);
       pid6: 'icqmood15'; PicName: 'st_custom.games'; Caption: 'Games'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$60#$9d#$52#$f8#$a2#$9a#$49#$a6#$b2#$a0#$25#$24#$c5#$e9#$d2#$60;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$60#$9d#$52#$f8#$a2#$9a#$49#$a6#$b2#$a0#$25#$24#$c5#$e9#$d2#$60);
       pid6: 'icqmood16'; PicName: 'st_custom.college'; Caption: 'College'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$63#$62#$73#$37#$a0#$3f#$49#$ff#$80#$e5#$f7#$09#$cd#$e0#$a4#$ee;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$63#$62#$73#$37#$a0#$3f#$49#$ff#$80#$e5#$f7#$09#$cd#$e0#$a4#$ee);
       pid6: 'icqmood0';  PicName: 'st_custom.shopping'; Caption: 'Shopping'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$1f#$7a#$40#$71#$bf#$3b#$4e#$60#$bc#$32#$4c#$57#$87#$b0#$4c#$f1;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$1f#$7a#$40#$71#$bf#$3b#$4e#$60#$bc#$32#$4c#$57#$87#$b0#$4c#$f1);
       pid6: 'icqmood17'; PicName: 'st_custom.sick'; Caption: 'Sick'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$78#$5e#$8c#$48#$40#$d3#$4c#$65#$88#$6f#$04#$cf#$3f#$3f#$43#$df;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$78#$5e#$8c#$48#$40#$d3#$4c#$65#$88#$6f#$04#$cf#$3f#$3f#$43#$df);
       pid6: 'icqmood18'; PicName: 'st_custom.sleeping'; Caption: 'Sleeping'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$a6#$ed#$55#$7e#$6b#$f7#$44#$d4#$a5#$d4#$d2#$e7#$d9#$5c#$e8#$1f;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$a6#$ed#$55#$7e#$6b#$f7#$44#$d4#$a5#$d4#$d2#$e7#$d9#$5c#$e8#$1f);
       pid6: 'icqmood19'; PicName: 'st_custom.surfing'; Caption: 'Surfing'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$12#$d0#$7e#$3e#$f8#$85#$48#$9e#$8e#$97#$a7#$2a#$65#$51#$e5#$8d;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$12#$d0#$7e#$3e#$f8#$85#$48#$9e#$8e#$97#$a7#$2a#$65#$51#$e5#$8d);
       pid6: 'icqmood20'; PicName: 'st_custom.internet'; Caption: 'Internet'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$ba#$74#$db#$3e#$9e#$24#$43#$4b#$87#$b6#$2f#$6b#$8d#$fe#$e5#$0f;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$ba#$74#$db#$3e#$9e#$24#$43#$4b#$87#$b6#$2f#$6b#$8d#$fe#$e5#$0f);
       pid6: 'icqmood21'; PicName: 'st_custom.engineering'; Caption: 'Engineering'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$63#$4f#$6b#$d8#$ad#$d2#$4a#$a1#$aa#$b9#$11#$5b#$c2#$6d#$05#$a1;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$63#$4f#$6b#$d8#$ad#$d2#$4a#$a1#$aa#$b9#$11#$5b#$c2#$6d#$05#$a1);
       pid6: 'icqmood22'; PicName: 'st_custom.typing'; Caption: 'Typing'),
 //25
-     (flags: [xsf_Old];        pidOld: #$2C#$E0#$E4#$E5#$7C#$64#$43#$70#$9C#$3A#$7A#$1C#$E8#$78#$A7#$DC;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$2C#$E0#$E4#$E5#$7C#$64#$43#$70#$9C#$3A#$7A#$1C#$E8#$78#$A7#$DC);
                          PicName: 'st_custom.unk'; Caption: 'Barbecue'),
-     (flags: [xsf_Old];        pidOld: #$10#$11#$17#$C9#$A3#$B0#$40#$f9#$81#$AC#$49#$E1#$59#$FB#$D5#$D4;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$10#$11#$17#$C9#$A3#$B0#$40#$f9#$81#$AC#$49#$E1#$59#$FB#$D5#$D4);
                          PicName: 'st_custom.ppc'; Caption: 'PPC'),
-     (flags: [xsf_Old];        pidOld: #$16#$0C#$60#$BB#$DD#$44#$43#$f3#$91#$40#$05#$0F#$00#$E6#$C0#$09;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$16#$0C#$60#$BB#$DD#$44#$43#$f3#$91#$40#$05#$0F#$00#$E6#$C0#$09);
                          PicName: 'st_custom.mobile'; Caption: 'Mobile'),
-     (flags: [xsf_Old];        pidOld: #$64#$43#$C6#$AF#$22#$60#$45#$17#$B5#$8C#$D7#$DF#$8E#$29#$03#$52;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$64#$43#$C6#$AF#$22#$60#$45#$17#$B5#$8C#$D7#$DF#$8E#$29#$03#$52);
                          PicName: 'st_custom.man'; Caption: 'Man'),
-     (flags: [xsf_Old];        pidOld: #$16#$F5#$B7#$6F#$A9#$D2#$40#$35#$8C#$C5#$C0#$84#$70#$3C#$98#$FA;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$16#$F5#$B7#$6F#$A9#$D2#$40#$35#$8C#$C5#$C0#$84#$70#$3C#$98#$FA);
                          PicName: 'st_custom.wc'; Caption: 'WC'),
 
   //QIP
  //30
-     (flags: [xsf_Old];        pidOld: #$63#$14#$36#$FF#$3F#$8A#$40#$D0#$A5#$CB#$7B#$66#$E0#$51#$B3#$64;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$63#$14#$36#$FF#$3F#$8A#$40#$D0#$A5#$CB#$7B#$66#$E0#$51#$B3#$64);
                          PicName: 'st_custom.quest'; Caption: 'Quest'),
-     (flags: [xsf_Old];        pidOld: #$B7#$08#$67#$F5#$38#$25#$43#$27#$A1#$FF#$CF#$4C#$C1#$93#$97#$97;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$B7#$08#$67#$F5#$38#$25#$43#$27#$A1#$FF#$CF#$4C#$C1#$93#$97#$97);
                          PicName: 'st_custom.geometry'; Caption: ''),
-     (flags: [xsf_Old];        pidOld: #$DD#$CF#$0E#$A9#$71#$95#$40#$48#$A9#$C6#$41#$32#$06#$D6#$F2#$80;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$DD#$CF#$0E#$A9#$71#$95#$40#$48#$A9#$C6#$41#$32#$06#$D6#$F2#$80);
                          PicName: 'st_custom.love'; Caption: 'Love'),
 
   // In R&Q added :)))
 //33
-     (flags: [xsf_Old, xsf_6]; pidOld: #$3f#$b0#$bd#$36#$af#$3b#$4a#$60#$9e#$ef#$cf#$19#$0f#$6a#$5a#$7E;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$3f#$b0#$bd#$36#$af#$3b#$4a#$60#$9e#$ef#$cf#$19#$0f#$6a#$5a#$7E);
       pid6: 'icqmood32'; PicName: 'st_custom.cigarette'; Caption: 'Smoking'),
-     (flags: [xsf_Old, xsf_6]; pidOld: #$e6#$01#$e4#$1c#$33#$73#$4b#$d1#$bc#$06#$81#$1d#$6c#$32#$3d#$82;
+     (flags: [xsf_Old, xsf_6]; pidOld: RawByteString(#$e6#$01#$e4#$1c#$33#$73#$4b#$d1#$bc#$06#$81#$1d#$6c#$32#$3d#$82);
       pid6: 'icqmood33'; PicName: 'st_custom.sex'; Caption: 'Sex'),
 //      pid: #$3E#$DD#$CF#$0E#$A9#$71#$95#$40#$48#$A9#$C6#$41#$32#$06#$D6#$F2;
 //      PicName: 'st_custom.'; Caption:
-     (flags: [xsf_Old];        pidOld: #$D4#$E2#$B0#$BA#$33#$4E#$4F#$A5#$98#$D0#$11#$7D#$BF#$4D#$3C#$C8;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$D4#$E2#$B0#$BA#$33#$4E#$4F#$A5#$98#$D0#$11#$7D#$BF#$4D#$3C#$C8);
                          PicName: 'st_custom.search'; Caption:'In search'),
-     (flags: [xsf_Old];        pidOld: #$00#$72#$D9#$08#$4A#$D1#$43#$DD#$91#$99#$6F#$02#$69#$66#$02#$6F;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$00#$72#$D9#$08#$4A#$D1#$43#$DD#$91#$99#$6F#$02#$69#$66#$02#$6F);
                          PicName: 'st_custom.diary'; Caption:'Diary'),
  // Added in Agent
-     (flags: [];               pidOld: #$CD#$56#$43#$A2#$C9#$4C#$47#$24#$B5#$2C#$DC#$01#$24#$A1#$D0#$CD;
+     (flags: [];               pidOld: RawByteString(#$CD#$56#$43#$A2#$C9#$4C#$47#$24#$B5#$2C#$DC#$01#$24#$A1#$D0#$CD);
                          PicName: 'st_custom.sex'; Caption: 'Sex'),
 
-     (flags: [xsf_Old];        pidOld: #$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$70;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$70);
                          PicName: 'status.depression'; Caption: 'Depression'),
-     (flags: [xsf_Old];        pidOld: #$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$75;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$75);
                          PicName: 'status.f4c'; Caption: 'Free for chat'),
-     (flags: [xsf_Old];        pidOld: #$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$76;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$76);
                          PicName: 'status.home'; Caption: 'At home'),
-     (flags: [xsf_Old];        pidOld: #$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$77;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$77);
                          PicName: 'status.work'; Caption: 'At work'),
-     (flags: [xsf_Old];        pidOld: #$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$78;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$78);
                          PicName: 'status.lunch'; Caption: 'Lunch'),
-     (flags: [xsf_Old];        pidOld: #$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$79;
+     (flags: [xsf_Old];        pidOld: RawByteString(#$B7#$07#$43#$78#$F5#$0C#$77#$77#$97#$77#$57#$78#$50#$2D#$05#$79);
                          PicName: 'status.evil'; Caption: 'Evil')
 
     );

@@ -55,10 +55,10 @@ function  formVisible(frm:Tform):boolean;
   procedure setAppBarSize(const hnd: HWND; const R: TRect;
                           const pCallbackMessage : Integer;
                           const pIsLeft : Boolean);
-  function  IsCanShowNotifications : Boolean;
-  function  GetScaleFactor(hnd : HWND) : Integer;
+  function  IsCanShowNotifications: Boolean;
+  function  GetScaleFactor(hnd: HWND): Integer; deprecated 'Need to add support for scaled monitors';
 
-  procedure applyTaskButton(frm:Tform);
+  procedure applyTaskButton(frm: Tform);
 
 implementation
 
@@ -70,24 +70,24 @@ uses
  {$ENDIF RNQ}
   RDUtils, RDGlobal, RnQGlobal;
 
-function connectionAvailable:boolean;
+function connectionAvailable: boolean;
 var
-  d : dword;
+  d: dword;
 begin
-  result:=InternetGetConnectedState(@d,0);
+  result := InternetGetConnectedState(@d, 0);
 end; // connectionAvailable
 
 
-function getDefaultBrowser(const proto:string='http'):string;
+function getDefaultBrowser(const proto: string='http'): string;
 var
-  reg:Tregistry;
+  reg: Tregistry;
 begin
-  result:='';
-  reg:=Tregistry.create;
-  reg.RootKey:=HKEY_CLASSES_ROOT;
+  result := '';
+  reg := Tregistry.create;
+  reg.RootKey := HKEY_CLASSES_ROOT;
   if reg.openKey(proto+'\shell\open\command', FALSE) then
     begin
-     result:=reg.readString('');
+     result := reg.readString('');
      reg.closeKey;
     end;
   reg.free;
@@ -98,7 +98,7 @@ end; // getDefaultBrowser
   var
     processInfo: TProcessInformation;
     startupInfo: TStartupInfo;
-    useWorkDir : string;
+    useWorkDir: string;
   begin
     if workDir = '' then
       GetDir(0, useWorkDir)
@@ -348,9 +348,10 @@ const
   keyName='Software\Microsoft\Windows\CurrentVersion\Internet Settings';
 var
   reg: Tregistry;
-  prox : String;
+  prox: String;
 begin
-  reg:=Tregistry.create;
+  Result := False;
+  reg := Tregistry.create;
   if reg.openKey(keyName, FALSE) then
    begin
      prox := reg.ReadString('ProxyServer');
@@ -907,10 +908,10 @@ begin
 end;
 
 
-function  GetScaleFactor(hnd : HWND) : Integer;
-var
-  hm : HMONITOR;
-  Scale : Integer;
+function  GetScaleFactor(hnd: HWND): Integer;
+//var
+//  hm: HMONITOR;
+//  Scale: Integer;
 begin
       {TODO -oRapid D -cGeneral : Add support for scaled monitors}
   result := 100;

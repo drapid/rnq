@@ -369,7 +369,8 @@ begin
     try
       ZlibDCheck(inflateBack(strm, @Strm_in_func, BackObj, @Strm_out_func, BackObj));
       //seek back when unused data
-      InStream.Seek(-strm.avail_in, soFromCurrent);
+//      InStream.Seek(-strm.avail_in, soFromCurrent);
+      InStream.Seek(-strm.avail_in, soCurrent);
       //now trailer can be checked
     finally
       ZlibDCheck(inflateBackEnd(strm));
@@ -423,7 +424,8 @@ var
     else
     begin
       if (strm.avail_out = 0) then ExpandStream(OutStream, OutStream.Size + BufSize);
-      OutStream.Seek(LastOutCount - strm.avail_out, soFromCurrent);
+//      OutStream.Seek(LastOutCount - strm.avail_out, soFromCurrent);
+      OutStream.Seek(LastOutCount - strm.avail_out, soCurrent);
       strm.next_out  := DMAOfStream(OutStream, strm.avail_out);
       //because we can't really know how much resize is increasing!
     end;
@@ -485,10 +487,12 @@ begin
     //adjust position of the input stream
     if UseInBuf then
       //seek back when unused data
-      InStream.Seek(-strm.avail_in, soFromCurrent)
+//      InStream.Seek(-strm.avail_in, soFromCurrent)
+      InStream.Seek(-strm.avail_in, soCurrent)
     else
       //simple seek
-      InStream.Seek(strm.total_in, soFromCurrent);
+//      InStream.Seek(strm.total_in, soFromCurrent);
+      InStream.Seek(strm.total_in, soCurrent);
 
     ZlibCCheck(deflateEnd(strm));
   finally

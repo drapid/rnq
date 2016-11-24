@@ -15,9 +15,9 @@ uses
 
 type
  {$IFDEF CHECK_INVIS}
-  Tdivisor=(d_online,d_invis,d_offline,d_contacts,d_nil);
+  Tdivisor = (d_online,d_invis,d_offline,d_contacts,d_nil);
  {$ELSE}
-  Tdivisor=(d_online,d_offline,d_contacts,d_nil);
+  Tdivisor = (d_online,d_offline,d_contacts,d_nil);
  {$ENDIF}
 const
  {$IFDEF CHECK_INVIS}
@@ -472,7 +472,7 @@ begin
     case node2.kind of
       NODE_DIV: result := +1;
       NODE_GROUP: result := -1;
-      NODE_CONTACT: result := compareContacts(node1.contact,node2.contact);
+      NODE_CONTACT: result := compareContacts(node1.contact, node2.contact);
       end;
   end;
 end; // compareNodes
@@ -711,7 +711,7 @@ begin
   d := GetContactDiv(c);
 //  if d in [d_online..d_nil] then
   if d in [Low(Tdivisor).. High(Tdivisor)] then
-    result :=insertNode(c, d)
+    result := insertNode(c, d)
    else
     Result := nil;
 end; // insertNode
@@ -778,7 +778,7 @@ var
   d: Tdivisor;
   c: TRnQContact;
   oldFocusedContact: TRnQContact;
-//  oldtopnode : PVirtualNode;
+//  oldtopnode: PVirtualNode;
 begin
   if building then
     Exit;
@@ -1048,7 +1048,7 @@ begin
   if divs[d_online]=NIL then
     result := -1
    else
-    result :=nodeBottomSide( lowestVisibleNodeFrom(divs[d_online].treenode) );
+    result := nodeBottomSide( lowestVisibleNodeFrom(divs[d_online].treenode) );
  {$IFDEF CHECK_INVIS}
   if divs[d_invis]=NIL then
     exit //result := -1
@@ -1093,13 +1093,9 @@ begin
   if not result then
     exit;
   cl := Account.AccProto.readList(LT_ROSTER).clone;
-  cl.resetEnumeration;
-  while cl.hasMore do
-    begin
-    c := cl.getNext;
+  for c in cl do
     if c.group = id then
       remove(c);
-    end;
   cl.free;
   with groups.a[groups.idxOf(id)] do
    begin
@@ -1161,7 +1157,7 @@ begin
 with RnQmain.roster do
   if focusedNode=NIL then
     result := NIL
-  else
+   else
     result := getNode(focusednode)
 end; // focused
 
@@ -1411,7 +1407,7 @@ var
               if pIsRight then
                 with theme.GetPicSize(po, 0, PPI) do
                   dec(p.X, cx);
-            Result:= theme.drawPic(DC, p, po, PPI);
+            Result := theme.drawPic(DC, p, po, PPI);
            end;
          end;
  {$ENDIF PROTOCOL_ICQ}
@@ -1709,7 +1705,8 @@ case n.kind of
     // S@x=-
      // -=S@x
         s := dupAmperstand(n.contact.displayed);
-{        TextLen := Length(s);
+{
+        TextLen := Length(s);
         TextFlags := DT_CENTER or DT_VCENTER;
 //        TextFlags := DT_LEFT or DT_SINGLELINE or DT_VCENTER or DT_END_ELLIPSIS;
         TextRect := cntTxt;
@@ -1747,7 +1744,7 @@ case n.kind of
         vPicName := PIC_OPEN_GROUP
        else
         vPicName := PIC_CLOSE_GROUP;
-      inc(x, theme.drawPic(cnv.Handle, x+2,y, vPicName).cx+4);
+      inc(x, theme.drawPic(cnv.Handle, x+2,y, vPicName, True, PPI).cx+4);
       n.outboxRect := rect(2,2,x-2,r.bottom-1);
 
       n.textOfs := x;

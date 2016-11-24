@@ -400,15 +400,15 @@ const
   addict = 5;
 //  Pidiv =
 var
-  ico : HICON;
-//  i : Integer;
-//  err : Integer;
+  ico: HICON;
+//  i: Integer;
+//  err: Integer;
 {  XForm: TXForm;
   S, C: Single;
   Degrees: Single;}
-  bmp : TBitmap;
-  bmp2 : TBitmap;
-  DC : HDC;
+  bmp: TBitmap;
+  bmp2: TBitmap;
+  DC: HDC;
   cntr, cntr1: Integer;
 
   SizeMScaled: Integer;

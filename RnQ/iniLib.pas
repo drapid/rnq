@@ -41,10 +41,13 @@ uses
   controls, types, strutils, SysConst, iniFiles,
   ThemesLib,
   RnQDialogs, RnQLangs, RnQNet, RDtrayLib, RnQGlobal,
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
   RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
   RDUtils, RnQMacros, RnQStrings, RnQCrypt,
   RQUtil, RDGlobal, RQThemes, RDFileUtil,
-
   roasterlib, usersDlg,
   utilLib, events, chatDlg, globalLib,
   RQlog, pluginLib, outboxLib,
@@ -261,7 +264,7 @@ NILdoWith := 0;
 dontSavePwd := FALSE;
 clearPwdOnDSNCT := FALSE;
 askPassOnBossKeyOn := False;
-MakeBakups := FALSE;
+MakeBackups := FALSE;
 startMinimized := FALSE;
 autoReconnect := TRUE;
 autoReconnectStop := false;
@@ -271,24 +274,19 @@ minimizeRoster := TRUE;
 
 ShowHintsInChat := True;
 {$IFDEF CHAT_USE_LSB}
-chatFrm.showLSB:=TRUE;
-chatFrm.popupLSB:=TRUE;
+chatFrm.showLSB := TRUE;
+chatFrm.popupLSB := TRUE;
 {$ENDIF CHAT_USE_LSB}
 closeChatOnSend := True;
 ClosePageOnSingle := False;
 
 getOfflineMsgs := TRUE;
-delOfflineMsgs:=TRUE;
-lockOnStart:=FALSE;
-autocopyhist:=TRUE;
-bViewTextWrap := True;
+delOfflineMsgs := TRUE;
+lockOnStart := FALSE;
+autocopyhist := TRUE;
+//bViewTextWrap := True;
   useSmiles := TRUE;
   ShowSmileCaption := FALSE;
-  ShowAniSmlPanel := True;
-  prefSmlAutoSize := True;
-  DrawSmileGrid := false;
-  prefBtnWidth := Btn_Max_Width;
-  prefBtnHeight := Btn_Max_Height;
 
 MenuHeightPerm := True;
 MenuDrawExt := True;
@@ -514,7 +512,7 @@ begin
   pp.addPrefBool('dont-save-password', dontSavePwd);
   pp.addPrefBool('clear-password-on-disconnect', clearPwdOnDSNCT);
   pp.addPrefBool('ask-password-after-bossmode', askPassOnBossKeyOn);
-  pp.addPrefBool('make-bakups-on-save', MakeBakups);
+  pp.addPrefBool('make-bakups-on-save', MakeBackups);
   pp.addPrefBool('oncoming-on-away', oncomingOnAway);
 
   pp.addPrefInt('last-update-info', checkupdate.lastSerial);
@@ -587,11 +585,6 @@ begin
 
   pp.addPrefBool('use-smiles', useSmiles);
   pp.addPrefBool('smiles-captions', ShowSmileCaption);
-  pp.addPrefBool('smiles-show-panel', ShowAniSmlPanel);
-  pp.addPrefBool('smiles-panel-btn-autosize', prefSmlAutoSize);
-  pp.addPrefBool('smiles-panel-draw-grid', DrawSmileGrid);
-  pp.addPrefInt('smiles-panel-btn-width', prefBtnWidth);
-  pp.addPrefInt('smiles-panel-btn-height', prefBtnHeight);
   pp.addPrefBool('menu-height-perm', MenuHeightPerm);
   pp.addPrefBool('menu-draw-ext', MenuDrawExt);
   pp.addPrefInt('send-on-enter', sendOnEnter);
@@ -602,7 +595,7 @@ begin
   pp.addPrefBool('auto-deselect', autoDeselect);
   pp.addPrefBool('single-message-by-default', singledefault);
   pp.addPrefBool('auto-copy', autocopyhist);
-  pp.addPrefBool('hist-msg-view-wrap', bViewTextWrap);
+//  pp.addPrefBool('hist-msg-view-wrap', bViewTextWrap);
   pp.addPrefBool('indent-contact-list', indentRoster);
   pp.addPrefBool('auto-consume-events', autoConsumeEvents);
   pp.addPrefBool('disable-events-on-closed-groups', DsblEvnt4ClsdGrp);
@@ -760,14 +753,14 @@ var
 begin
   if cfg = '' then
     exit;
-  docking.pos:=DP_right;
+  docking.pos := DP_right;
 
 while cfg > '' do
   begin
 //  l:=chop(CRLF,cfg);
 //  h:=chop('=',l);
-    l:=chop(CRLF,cfg);
-    h:=LowerCase(Trim(chop(AnsiString('='),l)));
+    l := chop(CRLF,cfg);
+    h := LowerCase(Trim(chop(AnsiString('='),l)));
     v := trim(l);
     l := LowerCase(v);
   try
@@ -816,7 +809,7 @@ begin
   gLangSubFile := '';
 end; // resetCommonCFG
 
-procedure setCFG(pp : TRnQPref);
+procedure setCFG(pp: TRnQPref);
 var
   l//,h
   : AnsiString;
@@ -950,7 +943,7 @@ begin
   pp.getPrefBool('dont-save-password', dontSavePwd);
   pp.getPrefBool('clear-password-on-disconnect', clearPwdOnDSNCT);
   pp.getPrefBool('ask-password-after-bossmode', askPassOnBossKeyOn);
-  pp.getPrefBool('make-bakups-on-save', MakeBakups);
+  pp.getPrefBool('make-bakups-on-save', MakeBackups);
   pp.getPrefBool('always-on-top', alwaysOnTop);
   pp.getPrefBool('chat-always-on-top', chatAlwaysOnTop);
   pp.getPrefBool('chat-show-avatars-chat', avatarShowInChat);
@@ -992,17 +985,12 @@ begin
   RnQmain.FilterBar.visible := pp.getPrefBoolDef('show-filterbar', False);
   pp.getPrefBool('use-smiles', useSmiles);
   pp.getPrefBool('smiles-captions', ShowSmileCaption);
-  pp.getPrefBool('smiles-show-panel', ShowAniSmlPanel);
-  pp.getPrefBool('smiles-panel-btn-autosize', prefSmlAutoSize);
-  pp.getPrefBool('smiles-panel-draw-grid', DrawSmileGrid);
-  pp.getPrefInt('smiles-panel-btn-width', prefBtnWidth);
-  pp.getPrefInt('smiles-panel-btn-height', prefBtnHeight);
   pp.getPrefBool('menu-height-perm', MenuHeightPerm);
   pp.getPrefBool('menu-draw-ext', MenuDrawExt);
   NILdoWith := pp.getPrefIntDef('not-in-list-do', 0);
   pp.getPrefInt('italic-mode', rosterItalic);
   pp.getPrefBool('auto-copy', autocopyhist);
-  pp.getPrefBool('hist-msg-view-wrap', bViewTextWrap);
+//  pp.getPrefBool('hist-msg-view-wrap', bViewTextWrap);
 
   for I := 0 to Byte(High(TRnQCLIconsSet)) do
    if TRnQCLIconsSet(i) <> CNT_TEXT then
@@ -1189,7 +1177,7 @@ boundInt(transparency.inactive, 0,255);
 //   RnQmain.sbar.Repaint;
   if Assigned(RnQmain) and Assigned(RnQmain.PntBar) then
     RnQmain.PntBar.Repaint;
-histcrypt.pwdKey:=calculate_KEY1(histcrypt.pwd);
+histcrypt.pwdKey := calculate_KEY1(histcrypt.pwd);
 
 setVisibility(Account.AccProto, byte(RnQstartingVisibility));
 
@@ -1239,7 +1227,7 @@ end;
 
 procedure saveCommonCFG;
 begin
-  savefile2(myPath+commonFileName, getCommonCFG, True, MakeBakups)
+  savefile2(myPath+commonFileName, getCommonCFG, True, MakeBackups)
 end;
 
 function readOnlyFiles:boolean;
@@ -1322,12 +1310,13 @@ procedure beforeWindowsCreation;
     UIN: TUID;
     prCl: TRnQProtoClass;
   begin
-    myPath:=ExtractFilePath(paramStr(0));
-    cmdlinepar.extraini := '';
-    cmdlinepar.startUser:= '';
-    cmdLinePar.mainPath := '';
-    cmdLinePar.userPath := '';
-    cmdLinePar.logpath  := '';
+    myPath := ExtractFilePath(paramStr(0));
+    cmdlinepar.extraini  := '';
+    cmdlinepar.startUser := '';
+    cmdLinePar.mainPath  := '';
+    cmdLinePar.userPath  := '';
+    cmdLinePar.logpath   := '';
+    cmdLinePar.Debug := False;
     logPath := myPath;
     cmdLinePar.useproxy := '';
     cmdLinePar.ssi := False;
@@ -1372,11 +1361,14 @@ procedure beforeWindowsCreation;
             masterMute := True;
           end
         else
+         if s='--debug' then
+          begin
+            cmdLinePar.Debug := True;
       {$IFDEF LANGDEBUG}
-         if s='--lang' then
-          lang_debug := True
-        else
+            lang_debug := True
       {$ENDIF}
+          end
+        else
          if s='--xxx' then
            xxx := True
   //      else
@@ -1443,7 +1435,7 @@ procedure beforeWindowsCreation;
            uin := s;
   //         if prCl._isValidUid(uin) then
            if prCl._isProtoUid(uin) then
-            cmdlinepar.startUser:=uin;
+            cmdlinepar.startUser := uin;
            end;
          except
         end;
@@ -1452,17 +1444,20 @@ procedure beforeWindowsCreation;
   end; // parseCmdLinePar
 
 var
-  s : String;
-//  needCheckPass : Boolean;
-  i : Integer;
-//  l : RawByteString;
-//  A, B : Integer;
-//  Control : TControl;
-//  d : Double;
-//  aI : Int64;
-//  sA : AnsiString;
-//  dd : TDate;
+  s: String;
+//  needCheckPass: Boolean;
+  i: Integer;
+//  l: RawByteString;
+//  A, B: Integer;
+//  Control: TControl;
+//  d: Double;
+//  aI: Int64;
+//  sA: AnsiString;
+//  dd: TDate;
 begin
+//  a := str2ip('123.122.123.11');
+//  s := IntToHex(a, 2);
+//  msgDlg(s, False, mtInformation);
 // msgDlg(UnixToDateTime(getTLVdwordBE(2, snac,ofs));
 // msgDlg(DateToStr(UnixToDateTime($40E2D73A)), mtInformation);
 //msgDlg(DateToStr(UnixToDateTime($40E2D73A)), mtInformation);
@@ -1522,8 +1517,8 @@ begin
    begin
     exit;
    end;
-  initOnce:=TRUE;
-  startTime:=now;
+  initOnce := TRUE;
+  startTime := now;
   Application.Initialize;
   Application.ShowMainForm := False;
   application.HintHidePause:=60000;
@@ -1532,15 +1527,15 @@ begin
 
   parseCmdLinePar;
 
-  WM_TASKBARCREATED:=RegisterWindowMessage('TaskbarCreated');
+  WM_TASKBARCREATED := RegisterWindowMessage('TaskbarCreated');
 
   {/$IFDEF usesDC}
   {/$ENDIF usesDC}
-  timeformat.chat:= FormatSettings.shortdateformat+' hh:nn:ss';
-  timeformat.info:= FormatSettings.shortdateformat+' hh:nn';
-  timeformat.clock:='hh:nn';
-  timeformat.log:= FormatSettings.shortdateformat+' hh:nn:ss.zzz';
-  timeformat.automsg:='hh:nn';
+  timeformat.chat := FormatSettings.ShortDateFormat+' hh:nn:ss';
+  timeformat.info := FormatSettings.shortdateformat+' hh:nn';
+  timeformat.clock := 'hh:nn';
+  timeformat.log := FormatSettings.shortdateformat+' hh:nn:ss.zzz';
+  timeformat.automsg := 'hh:nn';
 
   supportedBehactions[EK_msg] := allBehactions;
   supportedBehactions[EK_url] := allBehactions;
@@ -1568,8 +1563,6 @@ begin
   loadCommonCFG;
 
   LoadSomeLanguage;
-//  LangVar := TRnQLang.Create;
-//  LangVar.loadLanguage;
 
   if check4readonly and readOnlyFiles then
    begin
@@ -1599,7 +1592,6 @@ begin
       uin2Bstarted := showUsers(AccPass);
       if uin2Bstarted='' then
         halt(0);
-  //    Halt(0);
     end;
   until Mutex=0;
 
@@ -1613,25 +1605,25 @@ begin
 
   Account.acks   := Toutbox.create;
   Account.outbox := Toutbox.create;
-//  visibleList:=TRnQContactList.create;
-//  invisibleList:=TRnQContactList.create;
-  notinlist:=TRnQCList.create;
-  ignoreList:=TRnQCList.create;
-  autoMessages:=TstringList.create;
-  updateViewInfoQ:=TRnQCList.create;
+//  visibleList := TRnQContactList.create;
+//  invisibleList := TRnQContactList.create;
+  notinlist := TRnQCList.create;
+  ignoreList := TRnQCList.create;
+  autoMessages := TstringList.create;
+  updateViewInfoQ := TRnQCList.create;
 
    {$IFDEF CHECK_INVIS}
-    CheckInvis.CList:=TRnQCList.create;
+    CheckInvis.CList := TRnQCList.create;
    {$ENDIF}
-  groups:=Tgroups.create;
-  //theme.smiles.root:=myPath;
-  uinlists:=Tuinlists.create;
-  retrieveQ:=TRnQCList.create;
-  reqAvatarsQ:=TRnQCList.create;
-  reqXStatusQ:=TRnQCList.create;
+  groups := Tgroups.create;
+  //theme.smiles.root := myPath;
+  uinlists := Tuinlists.create;
+  retrieveQ := TRnQCList.create;
+  reqAvatarsQ := TRnQCList.create;
+  reqXStatusQ := TRnQCList.create;
    {$IFDEF CHECK_INVIS}
-  checkInvQ:=TRnQCList.create;
-  autoCheckInvQ:=TRnQCList.create;
+  checkInvQ := TRnQCList.create;
+  autoCheckInvQ := TRnQCList.create;
    {$ENDIF CHECK_INVIS}
   LoadTranslit;
 
@@ -1647,12 +1639,12 @@ begin
   hotkeysEnabled:=TRUE;
   plugins:=Tplugins.create;
   portsListen := TPortList.Create;
+  GSSL_DLL_DIR := modulesPath;
+
   cache := myPath + 'Cache\';
   if not DirectoryExists(cache) then
     ForceDirectories(cache);
   imgCacheInfo := TMemIniFile.Create(cache + 'Images.ini');
-  GSSL_DLL_DIR := modulesPath;
-
 {$IFDEF CHAT_CEF}
    if not InitRnQCEFLibrary then
      begin
@@ -1664,10 +1656,10 @@ begin
 end; // beforeWindowsCreation
 
 procedure startUser(const UID: TUID = '');
-  procedure ParseAbout(zp : TZipFile; var UID : TUID);
+  procedure ParseAbout(zp: TZipFile; var UID: TUID);
   var
-    i : Integer;
-    cfg, l, h : RawByteString;
+    i: Integer;
+    cfg, l, h: RawByteString;
   begin
     cfg := '';
     if Assigned(zp) then
@@ -1700,15 +1692,15 @@ const
 var
   i //, k
     :integer;
-  thisUser : TRnQUser;
-//  useProxy : Integer;
-//  v_proxyes : TarrProxy;
-  s  : String;
-//  pr : TRnQProtocol;
-  dbZip : TZipFile;
-  zipPrefs : Boolean;
-  MyInf : TRnQContact;
-  AccUID : TUID;
+  thisUser: TRnQUser;
+//  useProxy: Integer;
+//  v_proxyes: TarrProxy;
+  s: String;
+//  pr: TRnQProtocol;
+  dbZip: TZipFile;
+  zipPrefs: Boolean;
+  MyInf: TRnQContact;
+  AccUID: TUID;
 begin
   if UID > '' then
     uin2Bstarted := UID;
@@ -1823,13 +1815,13 @@ begin
 
 //mainfrm.setProgBar(2/maxProg);     // все равно лишнее, т.к. диалог
 
-  keepalive.timer:=0;
-  stayconnected:=FALSE;
+  keepalive.timer := 0;
+  stayconnected := FALSE;
 
 //  MainProto.ProtoElem.listener:= RnQmain.ProtoEvent;
   Account.AccProto.SetListener(RnQmain.ProtoEvent);
   Account.AccProto.ProtoElem.sock.OnDnsLookupDone := RnQmain.dnslookup;
-  InitProtoMenus;
+  InitProtoMenus(Account.AccProto);
   resetCFG;
 
   setCFG(MainPrefs);
@@ -1853,26 +1845,51 @@ begin
 
   loggaEvtS('R&Q: '+intToStrA(RnQBuild) +' starting');
 
-  LoadProxies(dbZip, AllProxies);
   loggaEvtS('theme: loading');
   reloadCurrentTheme;
   picDrawFirstLtr := theme.ThemePath.fn = '';
   loggaEvtS('theme: loaded');
 
+  if not skipsplash then
+    showSplash;
+  if not skipsplash then
+    theme.PlaySound('start');
+
+  setProgBar(nil, 3/maxProg);     // показывается только после loadCfg
+
+  if not startMinimized then
+    showForm(RnQmain);
+
+  toggleMainfrmBorder(True, showMainBorder);
+   {$IFDEF USE_SMILE_MENU}
+  chatFrm.SetSmilePopup(not ShowAniSmlPanel);
+   {$ELSE NOT USE_SMILE_MENU}
+  chatFrm.SetSmilePopup(false);
+   {$ENDIF NOT USE_SMILE_MENU}
+
+  setProgBar(nil, 4/maxProg);
+
+  LoadProxies(dbZip, AllProxies);
+
+  setProgBar(nil, 5/maxProg);
+
+  loggaEvtS('hotkeys: loading');
+  loadMacros(dbZip);
+  updateSWhotkeys;
+  loggaEvtS('hotkeys: loaded');
 
   loggaEvtS('DB: loading');
   groups.fromString(loadFromZipOrFile(dbZip, Account.ProtoPath, groupsFilename));
   loadDB(dbZip, True);
   loggaEvtS('DB: loaded');
 
-//mainfrm.setProgBar(3/maxProg);     // показывается только после loadCfg
+  setProgBar(nil, 6/maxProg);
 
   if Assigned(Account.AccProto) then
     Account.AccProto.SetPrefs(MainPrefs);
 
-//mainfrm.setProgBar(4/maxProg);
-
   startTimer;
+  setProgBar(nil, 7/maxProg);
 
   if cmdLinePar.useproxy > '' then
    begin
@@ -1890,21 +1907,9 @@ begin
   if MainProxy.serv.host = '' then
     MainProxy.serv := Account.AccProto.ProtoElem._getDefHost;
 //showForm(mainfrm);
-  setProgBar(nil, 5/maxProg);
 
-  if not startMinimized then
-    showForm(RnQmain);
-  setProgBar(nil, 7/maxProg);
-  toggleMainfrmBorder(True, showMainBorder);
-  chatFrm.SetSmilePopup(not ShowAniSmlPanel);
-  loggaEvtS('hotkeys: loading');
-  loadMacros(dbZip);
   setProgBar(nil, 8/maxProg);
-  updateSWhotkeys;
-  loggaEvtS('hotkeys: loaded');
 
-  if not skipsplash then
-    showSplash;
   lastUser  := uin2Bstarted;
   if RnQStartingStatus < 0 then
     lastStatus := lastStatusUserSet
@@ -1925,7 +1930,7 @@ if PREVIEWversion and (Account.AccProto.ProtoElem is TicqSession) then
  end;
  {$ENDIF PROTOCOL_ICQ}
 //  MainProto.MyInfo := MainProto.getContact(lastUser);
-//ICQ.myinfo:= TicqSession.getICQContact(lastUser);
+//ICQ.myinfo := TicqSession.getICQContact(lastUser);
 {
   if MainProto.ProtoName = 'ICQ' then
    begin
@@ -1958,9 +1963,6 @@ mainDlg.RnQmain.SetFocusedControl(mainDlg.RnQmain.roster);
   if Assigned(MyInf) then
     RnQUser := MyInf.displayed;
 
-  if not skipsplash then
-    theme.PlaySound('start');
-
 loggaEvtS('Various lists: loading');
   setProgBar(nil, 11/maxProg);
 // load tables
@@ -1982,11 +1984,11 @@ loggaEvtS('Various lists: loaded');
   loggaEvtS('Lang: Translating');
    translateWindows;
   loggaEvtS('Lang: Translated');
- rosterRebuildDelayed:=TRUE;
+ rosterRebuildDelayed := TRUE;
 { $I-}
  {$IFNDEF DB_ENABLED}
   if not DirectoryExists(Account.ProtoPath+historyPath) then
-   mkdir(Account.ProtoPath+historyPath);
+   mkdir(Account.ProtoPath + historyPath);
  {$ENDIF DB_ENABLED}
 { $I+}
    {$IFDEF RNQ_AVATARS}
@@ -2091,11 +2093,11 @@ end; // startUser
 
 procedure quitUser;
 var
-  pr : TRnQProtocol;
+  pr: TRnQProtocol;
 begin
   if userTime < 0 then
     exit;
-  userTime:=-1;
+  userTime := -1;
 
   loggaEvtS('Quit user');
   stopMainTimer;
@@ -2163,7 +2165,13 @@ else
 //freeandnil();
   RnQmain.closeAllChildWindows;
 
- plugins.unload;
+ if Assigned(plugins) then
+ try
+   plugins.unload;
+  except
+ end;
+
+
  Account.AccProto.clear;
 
  notinlist.clear;
@@ -2396,11 +2404,11 @@ procedure afterWindowsCreation;
 var
   i: integer;
 begin
-  hintMode:=HM_null;
+  hintMode := HM_null;
   application.OnHint := RnQmain.displayHint;
 
   RnQmain.roster.NodeDataSize := SizeOf(Pointer);
-  running:=TRUE;
+  running := TRUE;
   mainfrmHandleUpdate;
 
   applyDocking;
@@ -2413,7 +2421,7 @@ end; // afterWindowsCreation
 
 
 begin
- initOnce:=FALSE;
- onContactCreation:=ContactCreation;
- onContactDestroying:=contactDestroying;
+ initOnce := FALSE;
+ onContactCreation := ContactCreation;
+ onContactDestroying := contactDestroying;
 end.

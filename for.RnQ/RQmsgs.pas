@@ -321,10 +321,10 @@ begin
 end;
 
 procedure TmsgsFrm.menuPopup(Sender: TObject);
-var
-  b : Boolean;
+//var
+//  b: Boolean;
 begin
-  b := False;
+//  b := False;
 {  if Assigned(MainProto) then
    begin
     with msgList do

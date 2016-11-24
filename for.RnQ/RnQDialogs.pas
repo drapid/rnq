@@ -12,7 +12,7 @@ interface
 {$IFDEF usesVCL}
  uses
    Windows, Forms, StdCtrls, Graphics, Classes, Consts, Math, ExtCtrls, CommDlg,
-   RDGlobal, RnQStrings;
+   UITypes, RDGlobal, RnQStrings;
 {$ELSE}
  uses Windows;
 {$ENDIF}
@@ -79,8 +79,8 @@ resourcestring
  function ChooseFontDlg(ParentHandle: THandle; Title: String; var Font: TFont): boolean;
 
 implementation
- uses ShlObj,
-//  UITypes,
+uses
+  ShlObj,
 //   ShellAPI, ShlObj,
   {$IFDEF usesVCL}
    Controls,

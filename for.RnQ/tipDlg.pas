@@ -89,7 +89,8 @@ type
 *)
     property onPaintTip : DoPaintTip read fonPaintTip write fonPaintTip;
     property onToShow : DoToShow read fOnToShow write fOnToShow;
-    property OnTipDestroy : DoTipDestroy read fOnTipDestroy write fOnTipDestroy;
+    property OnTipDestroy: DoTipDestroy read fOnTipDestroy write fOnTipDestroy;
+    property currentPPI: Integer read GetParentCurrentDpi;
   end;
 
 

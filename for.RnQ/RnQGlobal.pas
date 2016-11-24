@@ -38,6 +38,10 @@ const
   maxSWFAVTW = 100;
   maxSWFAVTH = 100;
 
+  RnQImageTag = AnsiString('<RnQImage>');
+  RnQImageUnTag = AnsiString('</RnQImage>');
+  RnQImageExTag = AnsiString('<RnQImageEx>');
+  RnQImageExUnTag = AnsiString('</RnQImageEx>');
 
 
 var
@@ -66,7 +70,7 @@ var
  {$ENDIF LANGDEBUG}
   disableSounds,
   playSounds,
-  showBalloons : Boolean;
+  showBalloons: Boolean;
   audioPresent     : Boolean = false;
   picDrawFirstLtr  : boolean = false;
   TranslitList     : TStringList;

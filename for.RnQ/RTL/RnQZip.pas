@@ -1024,22 +1024,22 @@ begin
 end;
 
 function TZipFile.AddFile(const name: string; FAttribute: DWord = 0; const pPass: AnsiString = '';
-                             const pData : RawByteString = '') : Integer;
+                             const pData: RawByteString = ''): Integer;
 var
-  h : Integer;
+  h: Integer;
  {$IFDEF ZIP_AES}
-  isEncr : Boolean;
-  vAES_DATA : TAESExtraData;
-//  salt2 : RawByteString;
-//  pwd_ver : RawByteString;
-//  cx : fcrypt_ctx;
-//  cx : T_fcrypt_ctx;
-//  pwd_verW : Word;
-//  s1 : RawByteString;
-//  ofs : Integer;
-//  l : Integer;
-//  dataLen : Integer;
-//  Cont_Size : Integer;
+  isEncr: Boolean;
+  vAES_DATA: TAESExtraData;
+//  salt2: RawByteString;
+//  pwd_ver: RawByteString;
+//  cx: fcrypt_ctx;
+//  cx: T_fcrypt_ctx;
+//  pwd_verW: Word;
+//  s1: RawByteString;
+//  ofs: Integer;
+//  l: Integer;
+//  dataLen: Integer;
+//  Cont_Size: Integer;
  {$ENDIF ZIP_AES}
 begin
   Result := -1;

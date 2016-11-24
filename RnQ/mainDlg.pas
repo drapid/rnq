@@ -474,69 +474,70 @@ type
    {$ENDIF}
     procedure CreateMenus;
   public
-    clickedOnAcontact:boolean;
-    vismenuExt    : TPopupMenu;
-//    vismenuNEW    : TPopupMenu;
-    statusMenuNEW : TPopupMenu;
-    oldHandle     : THandle;
+    clickedOnAcontact: boolean;
+    vismenuExt: TPopupMenu;
+//    vismenuNEW: TPopupMenu;
+    statusMenuNEW: TPopupMenu;
+    oldHandle: THandle;
    { $IFDEF RNQ_FULL
-//    xStatusMenu   : TPopupMenu;
+//    xStatusMenu: TPopupMenu;
    {$ENDIF}
-//    contactMenuNEW : TPopupMenu;
+//    contactMenuNEW: TPopupMenu;
 //    PntBar: TPaintBox;
     PntBar: TRnQPntBox;
     procedure ReStart(Sender: TObject);
     procedure splashPaint(Sender: TObject);
-    procedure ProtoEvent(Sender:TRnQProtocol; event:Integer);
-    procedure WndProc(var msg:TMessage); override;
+    procedure ProtoEvent(Sender: TRnQProtocol; event: Integer);
+    procedure WndProc(var msg: TMessage); override;
     procedure updateCaption;
-    function  clickedGroupList:TRnQCList;
+    function  clickedGroupList: TRnQCList;
     procedure addContactsAction(Sender: TObject);
     procedure sendContactsAction(Sender: TObject);
     procedure toggleVisible;
     procedure doAutosize;
     procedure closeAllChildWindows;
     procedure doSearch;
-    procedure dnslookup(sender:Tobject; error:word);
+    procedure dnslookup(sender: Tobject; error: word);
     procedure updateStatusGlyphs;
     procedure roasterKeyEditing(Sender: TObject; var Key: Char);
-    procedure roasterStopEditing(sender:Tobject);
+    procedure roasterStopEditing(sender: Tobject);
     procedure pwdBoxKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 //    procedure CreateParams(var Params: TCreateParams); override;
      PROCEDURE wmNCHitTest(VAR Msg: TWMNCHitTest); message WM_NCHITTEST;
 //    function AddMainMenuItem(wPar: WPARAM; lPar: LPARAM): Integer; cdecl;
-    function AddContactMenuItem(pMI : PCLISTMENUITEM ): Integer;// cdecl;
-{    function  AddContactMenuItem(pPluginProc : Pointer; menuIcon: hIcon; menuCaption:String;
-              menuHint:string; //procIdx : Integer;
-              position : Integer;
-              PopupName : String; popupPosition : Integer;
-              hotKey : DWORD; PicName : String = ''):integer;}
-//    function  UpdateContactMenuItem(menuHandle: hmenu; pMI : PCLISTMENUITEM): Integer;// cdecl;
-    procedure UpdateContactMenuItem(menuHandle: hmenu; pMI : PCLISTMENUITEM);// cdecl;
+    function AddContactMenuItem(pMI: PCLISTMENUITEM ): Integer;// cdecl;
+{    function  AddContactMenuItem(pPluginProc: Pointer; menuIcon: hIcon; menuCaption: String;
+              menuHint: string; //procIdx: Integer;
+              position: Integer;
+              PopupName: String; popupPosition: Integer;
+              hotKey: DWORD; PicName: String = ''): integer;}
+//    function  UpdateContactMenuItem(menuHandle: hmenu; pMI: PCLISTMENUITEM): Integer;// cdecl;
+    procedure UpdateContactMenuItem(menuHandle: hmenu; pMI: PCLISTMENUITEM);// cdecl;
     procedure DelContactMenuItem(menuHandle: hmenu);
     procedure OnPluginMenuClick(Sender: TObject);
+    property  currentPPI: Integer read GetParentCurrentDpi;
   end; // TmainFrm
 
 var
-  RnQmain : TRnQmain;
+  RnQmain: TRnQmain;
 
 implementation
 
 uses
-  Themes, UxTheme, DwmApi,
+  Themes, UxTheme, DwmApi, Types,
+  Clipbrd, ShellAPI, strutils, math,
   addContactDlg, chatDlg,
    {$IFDEF RNQ_FULL2}
 //     importDlg,
    {$ENDIF}
   aboutDlg, selectContactsDlg,
   incapsulate, visibilityDlg, usersDlg, changePwdDlg,// dbDlg,
-  outboxDlg, automsgDlg, Types, globalLib, authreqDlg,
+  outboxDlg, automsgDlg, globalLib, authreqDlg,
   utilLib, events, roasterLib,
   themesLib,
-  history, iniLib, //flap,
+  history, iniLib,
   //smsDlg,
-  Clipbrd, ShellAPI, strutils, math, langLib, outboxLib, uinlistLib,
-  RDtrayLib, RnQGlobal, RnQPics,
+  langLib, outboxLib, uinlistLib,
   pluginutil,
 // {$IFNDEF RNQ_LITE}
   prefDlg, RnQPrefsLib,
@@ -548,16 +549,17 @@ uses
  {$ENDIF}
   hook,
   OverbyteIcsWSocket,
-  RDFileUtil, RDUtils, RnQSysUtils,
-  RnQFileUtil, RQUtil, RQLog, RQThemes, RnQdbDlg,
-  RnQTips, tipDlg, RnQMenu,
+  RnQFileUtil, RDFileUtil, RDUtils, RnQSysUtils, RDtrayLib, tipDlg,
+  RQUtil, RQLog, RQThemes, RnQMenu, RnQPics,
+  RnQLangs, RnQStrings, RnQNet, RnQGlobal,
+  RnQdbDlg, RnQTips, RnQMacros,
 
   Protocols_all, // ICQ, MRA
   {$IFDEF usesDC}
     sendfileDlg,
   {$ENDIF usesDC}
  {$IFDEF PROTOCOL_ICQ}
-  viewinfoDlg,
+//  viewinfoDlg,
   ICQv9,
   ICQConsts, //RQ_ICQ,
   Protocol_icq,
@@ -565,7 +567,6 @@ uses
   viewSSI,
  {$ENDIF PROTOCOL_ICQ}
 
-  RnQLangs, RnQMacros, RnQStrings, RnQNet,
   {$IFDEF USE_GDIPLUS}
     RnQGraphics,
   {$ELSE}
@@ -994,14 +995,7 @@ end;
 
 procedure TRnQmain.in_visiblelist1Click(Sender: TObject);
 begin
- if Assigned(visibilityFrm) then
-   visibilityFrm.BringToFront
-  else
-   begin
-    visibilityFrm := TvisibilityFrm.Create(Application);
-    translateWindow(visibilityFrm);
-    showForm(visibilityFrm)
-   end;
+  TvisibilityFrm.ShowVis(self, Account.AccProto);
 end;
 
 procedure TRnQmain.Showlogwindow1Click(Sender: TObject);
@@ -1112,7 +1106,7 @@ else
     else
 //     if Assigned(MainProto) then
      begin
-      outboxSbarRect:=rect(-1,-1,-1,-1);
+      outboxSbarRect := rect(-1,-1,-1,-1);
       vImgElm.picName := Protos_getXstsPic(nil, True);
       if vImgElm.picName  > '' then
         begin
@@ -1192,13 +1186,13 @@ begin
     exit;
   repeat
     s := 'R&Q' + uin2Start;
-    vMutex:=OpenMutex(MUTEX_MODIFY_STATE, false, PChar(s));
+    vMutex := OpenMutex(MUTEX_MODIFY_STATE, false, PChar(s));
     if vMutex<>0 then
     begin
       CloseHandle(vMutex);
 //      mutex := 0;
       msgDlg(Str_already_run, True, mtWarning);
-      uin2Start:=showUsers(usePass);
+      uin2Start := showUsers(usePass);
       if (uin2Start = '')or
         (Assigned(Account.AccProto) and Account.AccProto.getMyInfo.equals(uin2Start)) then
         Exit;
@@ -1418,9 +1412,9 @@ end;
 
 procedure TRnQmain.Rename1Click(Sender: TObject);
 begin
-if not childParent(getFocus, self.handle) then
-  roasterlib.focus(chatFrm.thisChat.who);
-roasterlib.edit(roasterlib.focused)
+  if not childParent(getFocus, self.handle) then
+    roasterlib.focus(chatFrm.thisChat.who);
+  roasterlib.edit(roasterlib.focused)
 end;
 
 procedure TRnQmain.Renamegroup1Click(Sender: TObject);
@@ -2018,7 +2012,7 @@ begin
 //    FillMemory(m_pBits, 4 * nWidth*nHeight, $00);
 //    theme.drawPic(hdcMem, p, splashImgElm);
 
-    theme.getPic(hdcMem, p, splashImgElm, is32);
+    theme.getPic(hdcMem, p, splashImgElm, splashFrm.PixelsPerInch, is32);
     if is32 then
       blend_function.AlphaFormat := AC_SRC_ALPHA
      else
@@ -2106,7 +2100,7 @@ procedure TRnQmain.menuBtnClick(Sender: TObject);
 begin
   with bar.boundsrect do
     with ClientToScreen(point(left,bottom)) do
-  		menu.Popup(X,Y)
+      menu.Popup(X,Y)
 end;
 
 procedure TRnQmain.sbarDblClick(Sender: TObject);
@@ -2721,13 +2715,17 @@ if usertime mod 20=0 then
  {$IFDEF PROTOCOL_ICQ}
     {$IFDEF RNQ_AVATARS}
     if assigned(reqAvatarsQ) and Account.AccProto.AvatarsSupport and Account.AccProto.isOnline and not reqAvatarsQ.empty then
-     if try_load_avatar(TICQContact(reqAvatarsQ.getAt(0)), TICQContact(reqAvatarsQ.getAt(0)).ICQIcon.hash) then
-       reqAvatarsQ.delete(0)
-     else
-      begin
-       if TicqSession(Account.AccProto.ProtoElem).RequestIcon(TICQContact(reqAvatarsQ.getAt(0))) then
-         reqAvatarsQ.delete(0);
-      end;
+     begin
+       cnt1 := reqAvatarsQ.getAt(0);
+       if try_load_avatar(cnt1, TICQContact(cnt1).ICQIcon.hash,
+                          cnt1.Icon.hash_safe) then
+         reqAvatarsQ.delete(0)
+        else
+         begin
+          if TicqSession(Account.AccProto.ProtoElem).RequestIcon(TICQContact(cnt1)) then
+            reqAvatarsQ.delete(0);
+         end;
+     end;
     {$ENDIF RNQ_AVATARS}
     if assigned(reqXStatusQ) and not reqXStatusQ.empty and Assigned(Account.AccProto)
        and Account.AccProto.isOnline then
@@ -3223,7 +3221,7 @@ begin openURL('http://RnQ.ru/whatsnew.html') end;}
 
 procedure TRnQmain.rosterKeyPress(Sender: TObject; var Key: Char);
 var
-  k:char;
+  k: char;
 begin
   k := upcase(key);
   //k :=AnsiUpperCase(key)[1];
@@ -3252,7 +3250,7 @@ procedure TRnQmain.rosterMouseUp(Sender: TObject; Button: TMouseButton;
 var
   focused: Tnode;
 begin
-focused := roasterLib.focused;
+  focused := roasterLib.focused;
 if (button = mbLeft) and (clickedNode<>NIL) then
   case clickedNode.kind of
     NODE_CONTACT:
@@ -3333,7 +3331,7 @@ end;
 
 procedure TRnQmain.roasterKeyEditing(Sender: TObject; var Key: Char);
 begin
-case key of
+ case key of
   #27:
     begin
      key := #0;
@@ -3528,7 +3526,7 @@ procedure TRnQmain.rosterDragDrop(Sender: TBaseVirtualTree;
   Source: TObject; DataObject: IDataObject; Formats: TFormatArray;
   Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
 var
-  grpOrDiv,n: Tnode;
+  grpOrDiv, n: Tnode;
   o: integer;
 begin
   if not Sender.Equals(Source) then
@@ -3989,7 +3987,7 @@ begin
     TAction(Sender).visible := Account.AccProto.AvatarsSupport and //avt_icq.isOnline and
          (clickedContact is TICQContact) and
          (length(TICQContact(clickedContact).ICQIcon.hash) = 16)
-         and (TICQContact(clickedContact).ICQIcon.hash <> TICQContact(clickedContact).ICQIcon.hash_safe);
+         and (TICQContact(clickedContact).ICQIcon.hash <> clickedContact.Icon.hash_safe);
   {$ELSE RNQ_AVATARS}
   TAction(Sender).visible := false;
   {$ENDIF RNQ_AVATARS}
@@ -4394,7 +4392,8 @@ begin
      end;
     if Assigned(clickedContact) then
 //      TsendFileFrm.doAll(self, TICQContact(clickedContact), fn);
-      ICQsendfile(TICQContact(clickedContact), fn);
+//      ICQsendfile(TICQContact(clickedContact), fn);
+      Protos_SendFilesTo(clickedContact, fn);
   end;
  {$ENDIF usesDC}
 end;

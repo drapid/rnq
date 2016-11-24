@@ -40,7 +40,7 @@ type
     procedure nameBoxKeyPress(Sender: TObject; var Key: Char);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   public
-    lastKey:char;
+    lastKey: char;
     procedure saveautomsg;
 //  public procedure destroyHandle;
   end;
@@ -65,17 +65,17 @@ type
 
 procedure TautomsgFrm.FormShow(Sender: TObject);
 var
-  i:integer;
-  s : PAutMsg;
+  i: integer;
+  s: PAutMsg;
 begin
-applyTaskButton(self);
-msgBox.text:=automessages[0];
-popupChk.checked:=popupAutomsg;
-ok2enterChk.checked:=okOn2enter_autoMsg;
-msgBox.setFocus;
-msgBox.SelectAll;
+  applyTaskButton(self);
+  msgBox.text := automessages[0];
+  popupChk.checked := popupAutomsg;
+  ok2enterChk.checked := okOn2enter_autoMsg;
+  msgBox.setFocus;
+  msgBox.SelectAll;
 
-predBox.clear;
+  predBox.clear;
 for i:=1 to automessages.count-1 do
   if odd(i) then
    begin
@@ -89,8 +89,8 @@ end;
 
 procedure TautomsgFrm.okBtnClick(Sender: TObject);
 begin
- autoaway.bakmsg:='';
- popupAutomsg:=popupChk.checked;
+ autoaway.bakmsg := '';
+ popupAutomsg := popupChk.checked;
  setAutomsg(msgBox.text);
  ModalResult := mrOk;
  close;
@@ -111,20 +111,20 @@ end;
 
 procedure TautomsgFrm.saveautomsg;
 var
-  i:integer;
-  s : PAutMsg;
+  i: integer;
+  s: PAutMsg;
 begin
-if trim(nameBox.text)='' then
-  exit;
-nameBox.visible:=FALSE;
-deleteBtn.enabled:=TRUE;
-i:=1;
-while i < automessages.count do
-  begin
-  if compareText(automessages[i], nameBox.text)=0 then
-    break;
-  inc(i,2);
-  end;
+  if trim(nameBox.text)='' then
+    exit;
+  nameBox.visible := FALSE;
+  deleteBtn.enabled := TRUE;
+  i := 1;
+  while i < automessages.count do
+   begin
+    if compareText(automessages[i], nameBox.text)=0 then
+      break;
+    inc(i,2);
+   end;
 if i >= automessages.count then
   begin
     PredBox.BeginUpdate;
@@ -136,25 +136,25 @@ if i >= automessages.count then
   automessages.add(nameBox.text);
   automessages.add('');
   end;
-automessages[i+1]:=msgBox.text;
+automessages[i+1] := msgBox.text;
 end; // saveAutomsg
 
 procedure TautomsgFrm.saveBtnClick(Sender: TObject);
 begin
-if nameBox.visible then
-  saveAutomsg
-else
-  begin
-  deleteBtn.enabled:=FALSE;
-  nameBox.visible:=TRUE;
-  nameBox.setFocus;
-  end
+  if nameBox.visible then
+    saveAutomsg
+   else
+    begin
+     deleteBtn.enabled:=FALSE;
+     nameBox.visible:=TRUE;
+     nameBox.setFocus;
+    end
 end;
 
 procedure TautomsgFrm.deleteBtnClick(Sender: TObject);
 var
-  i:integer;
-  name:string;
+  i: integer;
+  name: string;
 begin
   if predBox.FocusedNode = NIL then
    exit;
@@ -178,15 +178,15 @@ end;
 
 procedure TautomsgFrm.predBoxClick(Sender: TObject);
 begin
-msgBox.text:= TAutMsg(PAutMsg(predBox.getnodedata(predBox.FocusedNode))^).Str;
-//automessages[succ(predBox.itemIndex)*2]
+  msgBox.text:= TAutMsg(PAutMsg(predBox.getnodedata(predBox.FocusedNode))^).Str;
+  //automessages[succ(predBox.itemIndex)*2]
 end;
 
 procedure TautomsgFrm.PredBoxDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-  s : String;
-  x : Integer;
+  s: String;
+  x: Integer;
 begin
   s := TAutMsg(PAutMsg(predBox.getnodedata(PaintInfo.Node))^).Name;
   if vsSelected in PaintInfo.Node.States then
@@ -207,17 +207,17 @@ end;
 
 procedure TautomsgFrm.msgBoxKeyPress(Sender: TObject; var Key: Char);
 begin
-if (key=#13) and (lastKey=#13) and okOn2enter_automsg then
-  begin
-  key:=#0;
-  okBtnClick(sender);
-  end;
-lastKey:=key;
+  if (key=#13) and (lastKey=#13) and okOn2enter_automsg then
+   begin
+    key := #0;
+    okBtnClick(sender);
+   end;
+  lastKey := key;
 end;
 
 procedure TautomsgFrm.ok2enterChkClick(Sender: TObject);
 begin
-okOn2enter_autoMsg:=ok2enterChk.checked;
+  okOn2enter_autoMsg := ok2enterChk.checked;
 end;
 
 procedure TautomsgFrm.nameBoxKeyPress(Sender: TObject; var Key: Char);

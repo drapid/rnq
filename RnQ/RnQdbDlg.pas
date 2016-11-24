@@ -42,10 +42,10 @@ type
     procedure VTHPMenuPopup(Sender: TObject);
   private
     { Private declarations }
-    menu : TRnQPopupMenu;
-    AddAllToCL, AddToCL : TRQMenuItem;
-    panelexpanded : boolean;
-    report:string;
+    menu: TRnQPopupMenu;
+    AddAllToCL, AddToCL: TRQMenuItem;
+    panelexpanded: boolean;
+    report: string;
     procedure menuPopup(Sender: TObject);
     procedure ViewinfoClick(Sender: TObject);
     procedure addContactActn(sender:Tobject);
@@ -71,12 +71,8 @@ uses
   RnQLangs, RnQStrings, RDUtils,
   RnQSysUtils, RnQPics,
   RQUtil, RDGlobal, RQThemes, RnQMenu, menusUnit,
-  RnQProtocol, protocols_all,
   globalLib, chatDlg, utilLib, themesLib,
- {$IFDEF PROTOCOL_ICQ}
-  icqv9, ICQcontacts,
-  Protocol_ICQ, icqConsts,
- {$ENDIF PROTOCOL_ICQ}
+  RnQProtocol, protocols_all,
   ViewHEventDlg
   ;
 
@@ -96,9 +92,9 @@ begin
     exit;
   resizeBtn.width := theme.getPicSize(RQteButton, PIC_DOWN, 0, getParentCurrentDPI).cx+4;
   resizeBtn.Repaint;
-  panel.visible:=FALSE;
+  panel.visible := FALSE;
   height := height-panel.height;
-  panelExpanded:=FALSE;
+  panelExpanded := FALSE;
 end; // minimizePanel
 
 procedure TRnQdbFrm.restorePanel;
@@ -109,34 +105,24 @@ begin
   resizeBtn.width:= theme.getPicSize(RQteButton, PIC_UP, 0, getParentCurrentDPI).cx+4;
   resizeBtn.Repaint;
   height := height+panel.height;
-  barPnl.visible:=FALSE;
-  panel.visible:=TRUE;
-  barPnl.visible:=TRUE;
-  panelExpanded:=TRUE;
+  barPnl.visible := FALSE;
+  panel.visible := TRUE;
+  barPnl.visible := TRUE;
+  panelExpanded := TRUE;
 end; // minimizePanel
 
 procedure TRnQdbFrm.updateList;
 var
-//  i,j:integer;
   c: TRnQContact;
-//  cl:TcontactList;
 begin
   if not visible then
     exit;
   dbTree.Clear;
   dbTree.BeginUpdate;
-  with TRnQProtocol.contactsDB, TList(TRnQProtocol.contactsDB) do
-   begin
-//   dbTree.
-    resetEnumeration;
-    while hasMore do
-      begin
-       c := TRnQContact(getNext);
-       dbTree.AddChild(nil, c);
-      end;
-    sbar.simpleText := getTranslation('contacts in db: %d', [count]);
-   end;
+  for c in TRnQProtocol.contactsDB do
+    dbTree.AddChild(nil, c);
   dbTree.EndUpdate;
+  sbar.simpleText := getTranslation('contacts in db: %d', [TList(TRnQProtocol.contactsDB).count]);
 
   dbTree.SortTree(dbTree.Header.SortColumn, dbTree.Header.SortDirection);
 end; // updatelist
@@ -155,18 +141,18 @@ procedure TRnQdbFrm.purgeBtnClick(Sender: TObject);
    {$IFNDEF DB_ENABLED}
     path := Account.ProtoPath + historyPath;
     if findFirst( path+'*', faAnyfile, sr ) = 0 then
-      repeat
+     repeat
       if sr.attr and faDirectory <> 0 then
         continue;
       try
-  //      uin:=strToInt(sr.name);
+  //      uin := strToInt(sr.name);
         if unexistant(sr.name) then
           if DeleteFile(path+sr.name) then
             report := report + getTranslation('history %s deleted',[sr.name])+CRLF
           else
             report := report+getTranslation(Str_Error)+getTranslation(': cannot delete file ')+sr.name+CRLF;
-      except end;
-      until findNext(sr) <> 0;
+       except end;
+     until findNext(sr) <> 0;
     findClose(SR);
    {$ENDIF ~DB_ENABLED}
   end; // purgeHistories
@@ -199,17 +185,17 @@ procedure TRnQdbFrm.purgeBtnClick(Sender: TObject);
   end; // purgeContacts
 
 begin
-report:=report+'---'+getTranslation('Start')+' '+datetimeToStr(now)+CRLF;
-purgeContacts;
-updateList;
-purgeHistories;
-report:=report+'---'+getTranslation('End')+' '+datetimeToStr(now)+CRLF;
-reportBtn.Visible:=TRUE;
+  report := report+'---'+getTranslation('Start')+' '+datetimeToStr(now)+CRLF;
+  purgeContacts;
+  updateList;
+  purgeHistories;
+  report := report+'---'+getTranslation('End')+' '+datetimeToStr(now)+CRLF;
+  reportBtn.Visible := TRUE;
 end;
 
 procedure TRnQdbFrm.reportBtnClick(Sender: TObject);
 begin
-  viewTextWindow(getTranslation('Report'), report)
+  viewTextWindow(MainPrefs, getTranslation('Report'), report)
 end;
 
 procedure TRnQdbFrm.resizeBtnClick(Sender: TObject);
@@ -232,15 +218,11 @@ end;
 procedure TRnQdbFrm.dbTreeCompareNodes(Sender: TBaseVirtualTree; Node1,
   Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
 var
- i : Int64;
- c1, c2 : TRnQContact;
- isICQ : Boolean;
+ i: Int64;
+ c1, c2: TRnQContact;
 begin
  c1 := TRnQcontact(sender.getnodedata(Node1)^);
  c2 := TRnQContact(sender.getnodedata(Node2)^);
- {$IFDEF PROTOCOL_ICQ}
- isICQ := (c1 is ticqContact)and(c2 is ticqContact);
- {$ENDIF PROTOCOL_ICQ}
 
  case Column of
    COLUMN_UID:
@@ -254,12 +236,7 @@ begin
    COLUMN_IMP :
         result:= CompareText(c1.lclImportant, c2.lclImportant);
    COLUMN_AVTMD5 :
- {$IFDEF PROTOCOL_ICQ}
-       if isICQ then
-         result:= CompareText(TICQContact(c1).ICQicon.Hash_safe, TICQContact(c2).ICQicon.Hash_safe)
-        else
- {$ENDIF PROTOCOL_ICQ}
-         result := 0;
+         result := CompareText(c1.icon.Hash_safe, c2.icon.Hash_safe);
    COLUMN_BIRTHDAY :
      Result := CompareDate(c1.GetBDay, c2.GetBDay);
    COLUMN_DAYS2BD  :
@@ -272,22 +249,22 @@ end;
 procedure TRnQdbFrm.dbTreeDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-  cnv : TCanvas;
-  c   : TRnQcontact;
-  dd  : tdate;
-  i   : SmallInt;
+  cnv: TCanvas;
+  c: TRnQcontact;
+  dd: tdate;
+  i: SmallInt;
 //  x   : Integer;
 begin
-cnv:=paintinfo.canvas;
-c:=TRnQcontact(sender.getnodedata(paintinfo.node)^);
-         if vsSelected in PaintInfo.Node^.States then
-          cnv.Font.Color :=clHighlightText
-         else
-          cnv.Font.Color := clWindowText;
-if c.fProto.readList(LT_ROSTER).exists(c) then
-  cnv.Font.Style := [fsBold]
- else
-  cnv.Font.Style := [];
+  cnv := paintinfo.canvas;
+  c := TRnQcontact(sender.getnodedata(paintinfo.node)^);
+  if vsSelected in PaintInfo.Node^.States then
+    cnv.Font.Color :=clHighlightText
+   else
+    cnv.Font.Color := clWindowText;
+  if c.fProto.readList(LT_ROSTER).exists(c) then
+    cnv.Font.Style := [fsBold]
+   else
+    cnv.Font.Style := [];
   case PaintInfo.Column of
    COLUMN_UID: // UIN
     cnv.textout(PaintInfo.ContentRect.Left ,2, c.uid);
@@ -295,11 +272,8 @@ if c.fProto.readList(LT_ROSTER).exists(c) then
     cnv.textout(PaintInfo.ContentRect.Left,2, c.displayed);
    COLUMN_IMP: // Important string
     cnv.textout(PaintInfo.ContentRect.Left,2, c.lclImportant);
- {$IFDEF PROTOCOL_ICQ}
    COLUMN_AVTMD5: // Avatar MD5
-       if c is TICQContact then
-         cnv.textout(PaintInfo.ContentRect.Left,2, str2hexU(TICQContact(c).ICQicon.Hash_safe));
- {$ENDIF PROTOCOL_ICQ}
+         cnv.textout(PaintInfo.ContentRect.Left,2, str2hexU(c.icon.Hash_safe));
    COLUMN_BIRTHDAY:
      begin
        dd := c.GetBDay;
@@ -329,9 +303,9 @@ begin
   begin
     if HitInfo.Column = Sender.SortColumn then
      if Sender.SortDirection = sdAscending then
-      Sender.SortDirection := sdDescending
-     else
-      Sender.SortDirection := sdAscending
+       Sender.SortDirection := sdDescending
+      else
+       Sender.SortDirection := sdAscending
     else
      Sender.SortColumn := HitInfo.Column;
   end;
@@ -345,7 +319,7 @@ end;
 
 procedure TRnQdbFrm.ViewinfoClick(Sender: TObject);
 var
-  cnt : TRnQContact;
+  cnt: TRnQContact;
 begin
   with dbTree do
   if focusedNode<>NIL then
@@ -405,13 +379,12 @@ end;
 
 procedure TRnQdbFrm.AddALLcontactsToList(Sender: TObject);
 var
-  i: integer;
+  cnt: TRnQContact;
 begin
   if messageDlg(getTranslation('Are you sure?'), mtConfirmation,[mbYes,mbNo],0)=mrNo then
     exit;
-  with TRnQProtocol.contactsDB, TList(TRnQProtocol.contactsDB) do
-    for i:=0 to count-1 do
-      addToRoster(TRnQcontact(getAt(i)));
+  for cnt in TRnQProtocol.contactsDB do
+    addToRoster(cnt);
 end;
 
 procedure TRnQdbFrm.openChat(Sender: TObject);
@@ -445,8 +418,8 @@ end;
 
 procedure TRnQdbFrm.FormCreate(Sender: TObject);
 var
-// mi : TRQMenuItem;
- i : Integer;
+// mi: TRQMenuItem;
+ i: Integer;
 begin
   dbTree.NodeDataSize := SizeOf(TRnQContact);
   menu := TRnQPopupMenu.Create(Self);

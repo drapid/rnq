@@ -28,29 +28,22 @@ unit groupsLib;
 interface
 
 uses
-//  roasterlib, contacts;
-  roasterlib, RnQprotocol, RDGlobal;
+  roasterlib, RDGlobal;
 
 type
-  Pgroup=^Tgroup;
-  Tgroup=record
-    id:integer;
-    ssiID : Integer;
-    name  : string;
-    order : integer;
-    node    :array [Tdivisor] of Tnode;
-    expanded:array [Tdivisor] of boolean;
-{$IFDEF DELPHI9_UP}
+  Pgroup = ^Tgroup;
+  Tgroup = record
+    id: integer;
+    ssiID: Integer;
+    name: string;
+    order: integer;
+    node: array [Tdivisor] of Tnode;
+    expanded: array [Tdivisor] of boolean;
     procedure ServerUpdate;
-{$ENDIF DELPHI9_UP}
    end;
 
-{$IFNDEF DELPHI9_UP}
-  procedure ServerUpdate(grp: Integer);
-{$ENDIF DELPHI_9_DOWN}
-
 type
-  Tgroups=class
+  Tgroups = class
    public
     a: array of Tgroup;
     procedure clear;
@@ -66,12 +59,12 @@ type
     function  count: integer;
     procedure rename(id: integer; const newname: string);
     function  delete(id: integer): boolean;
-    procedure changeId(oldId, newId: integer; db: TRnQCList);
+//    procedure changeId(oldId, newId: integer; db: TRnQCList);
     function  name2id(const name_: string): integer;
     function  ssi2id(ssiN: integer): integer;
     function  id2ssi(id: integer): Integer;
     function  id2name(id: integer): string;
-    function  getAllSSI : RawByteString;
+    function  getAllSSI: RawByteString;
     function  freeID: integer;
     function  last: Pgroup;
    end; // Tgroups
@@ -83,86 +76,87 @@ uses
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
+  RnQprotocol,
  {$IFDEF PROTOCOL_ICQ}
    ICQv9,
  {$ENDIF PROTOCOL_ICQ}
   RQUtil, RDUtils, RnQFileUtil;
 
-function Tgroups.get(id:integer):Pgroup;
-begin result:=@a[idxOf(id)] end;
+function Tgroups.get(id: integer): Pgroup;
+begin result := @a[idxOf(id)] end;
 
 //procedure Tgroups.save;
 //begin saveFile(userPath+groupsFilename, toString) end;
 
-//procedure Tgroups.load(s : AnsiSring);
+//procedure Tgroups.load(s: AnsiSring);
 //begin fromString(s) end;
 
 const
-  string_separator=';';
+  string_separator = ';';
 
 procedure Tgroups.fromString(s: RawByteString);
 var
-  k,line:RawByteString;
+  k, line: RawByteString;
 begin
-clear;
-while s>'' do
-  begin
-  line:=chopLine(s);
-  k:=trim(chop(AnsiString('='),line));
-  line:=trim(line);
-  if isOnlyDigits(k) then
-    try
-      add;
-      last.id:=strToInt(k);
-      last.name:= UnUTF(line);
-    except
-      setlength(a,length(a)-1);
-    end
-  else
-    if k='collapsed' then
-      while line > '' do
-        try
-          last.expanded[str2divisor(chop(string_separator,line))]:=FALSE;
-         except
-        end
-    else
-      if k='order' then
-        try
-          last.order := strToInt(line)
-         except
-        end
-    else
-      if k='ssi' then
-        try
-          last.ssiID := strToInt(line)
-         except
-        end;
+  clear;
+  while s>'' do
+   begin
+    line:=chopLine(s);
+    k:=trim(chop(AnsiString('='),line));
+    line:=trim(line);
+    if isOnlyDigits(k) then
+      try
+        add;
+        last.id:=strToInt(k);
+        last.name:= UnUTF(line);
+       except
+        setlength(a,length(a)-1);
+      end
+     else
+      if k='collapsed' then
+        while line > '' do
+         try
+           last.expanded[str2divisor(chop(string_separator,line))]:=FALSE;
+          except
+         end
+       else
+        if k='order' then
+          try
+            last.order := strToInt(line)
+           except
+          end
+         else
+          if k='ssi' then
+            try
+              last.ssiID := strToInt(line)
+             except
+            end;
   end;
 end; // fromString
 
 function Tgroups.toString: RawByteString;
 var
-  i:integer;
-  d:Tdivisor;
+  i: integer;
+  d: Tdivisor;
 begin
-result:='';
-for i:=0 to count-1 do
+  result := '';
+  for i:=0 to count-1 do
   begin
-  result := result+format(AnsiString('%d=%s'+CRLF+'order=%d'
-           +CRLF+'collapsed='), [
-    a[i].id, StrToUTF8(a[i].name), a[i].order]);
-  for d:=low(d) to high(d) do
-    if not a[i].expanded[d] then
-      result:=result+divisor2str[d]+string_separator;
-  result := result+format(AnsiString(CRLF+'ssi=%d'), [a[i].ssiID]);
-  result:=result+CRLF;
+    result := result+format(AnsiString('%d=%s'+CRLF+'order=%d'
+             +CRLF+'collapsed='), [
+      a[i].id, StrToUTF8(a[i].name), a[i].order]);
+    for d:=low(d) to high(d) do
+      if not a[i].expanded[d] then
+        result := result+divisor2str[d]+string_separator;
+    result := result+format(AnsiString(CRLF+'ssi=%d'), [a[i].ssiID]);
+    result := result+CRLF;
   end;
 end; // toString
 
 procedure Tgroups.clear;
 var
   I: Integer;
-  d:Tdivisor;
+  d: Tdivisor;
 begin
  for I := 0 to Length(a) - 1 do
   begin
@@ -179,20 +173,20 @@ end;
 
 function Tgroups.idxOf(id: integer): integer;
 begin
-for result:=0 to count-1 do
-  if a[result].id = id then
-    exit;
-result:=-1;
+  for result:=0 to count-1 do
+    if a[result].id = id then
+      exit;
+  result := -1;
 end; // idxOf
 
-function Tgroups.freeID:integer;
+function Tgroups.freeID: integer;
 var
-  i:integer;
+  i: integer;
 begin
-result:=1000;
-for i:=0 to count-1 do
-  if a[i].id >= result then
-    result:=a[i].id+1;
+  result := 1000;
+  for i:=0 to count-1 do
+    if a[i].id >= result then
+      result := a[i].id+1;
 end; // freeID
 
 function Tgroups.add(id_: integer=0): integer;
@@ -201,19 +195,19 @@ var
   p: Pgroup;
 begin
   setlength(a, length(a)+1);
-  p:=last;
+  p := last;
   if id_=0 then
-    p.id:=freeID
+    p.id := freeID
    else
-    p.id:=id_;
-  p.name:='';
-  p.order:=0;
+    p.id := id_;
+  p.name := '';
+  p.order := 0;
   for d:=low(d) to high(d) do
     begin
-      p.node[d]:=NIL;
-      p.expanded[d]:=TRUE;
+      p.node[d] := NIL;
+      p.expanded[d] := TRUE;
     end;
-  result:=p.id;
+  result := p.id;
 end; // add
 
 function Tgroups.add(const name: String; ssid: Integer = -1): integer;
@@ -245,10 +239,10 @@ end;
 
 function Tgroups.delete(id: integer): boolean;
 var
-  i : Integer;
+  i: Integer;
 begin
-  id:=idxOf(id);
-  result:=id >= 0;
+  id := idxOf(id);
+  result := id >= 0;
   if not result then
     exit;
   i := a[id].ssiID;
@@ -313,9 +307,9 @@ begin
     result:=a[id].ssiID;
 end;
 
-function Tgroups.getAllSSI : RawByteString;
+function Tgroups.getAllSSI: RawByteString;
 var
-  i:integer;
+  i: integer;
 begin
   Result := '';
   for i:=0 to count-1 do
@@ -324,21 +318,22 @@ begin
 end;
 
 
+{
 procedure Tgroups.changeId(oldId, newId: integer; db: TRnQCList);
 var
   i: integer;
 begin
-if exists(newId) then
-  delete(oldId)
-else
-  a[idxOf(oldId)].id:=newId;
+  if exists(newId) then
+    delete(oldId)
+   else
+    a[idxOf(oldId)].id := newId;
 
-for i:=0 to TList(db).count-1 do
-  with TRnQcontact(db.getAt(i)) do
-    if group = oldId then
-      group:=newId;
+  for i:=0 to TList(db).count-1 do
+    with TRnQcontact(db.getAt(i)) do
+      if group = oldId then
+        group := newId;
 end; // changeId
-
+}
 function Tgroups.count: integer;
 begin result := length(a) end;
 
@@ -347,7 +342,6 @@ begin result := @a[length(a)-1] end;
 
 { Tgroup }
 
-{$IFDEF DELPHI9_UP}
 procedure Tgroup.ServerUpdate;
 begin
 //               ICQ.SSIRenameGroup(ssiID, name);
@@ -360,16 +354,5 @@ begin
     TicqSession(Account.AccProto.ProtoElem).SSIUpdateGroup(id);
  {$ENDIF PROTOCOL_ICQ}
 end;
-
-{$ELSE DELPHI_9_DOWN}
-procedure ServerUpdate(grp: Integer);
-begin
-  if Account.AccProto is TicqSession then
- {$IFDEF UseNotSSI}
-   if TicqSession(Account.AccProto).useSSI then
- {$ENDIF UseNotSSI}
-    TicqSession(Account.AccProto).SSIUpdateGroup(grp);
-end;
-{$ENDIF DELPHI_9_DOWN}
 
 end.

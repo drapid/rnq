@@ -7,39 +7,39 @@ interface
      windows, graphics, types, Menus, classes,
      RDGlobal;
 type
-  Tmacro=record
-    hk :Tshortcut;
-    sw :boolean;
-    opcode :integer;
-    data :RawByteString;
+  Tmacro = record
+    hk: Tshortcut;
+    sw: boolean;
+    opcode: integer;
+    data: RawByteString;
    end;
-  Tmacros=array of Tmacro;
+  Tmacros = array of Tmacro;
   TRnQMACROS = record
-    Name : String;
-    Cptn : String;
-    DefShortCut : String;
-    ev   : procedure;
+    Name: String;
+    Cptn: String;
+    DefShortCut: String;
+    ev: procedure;
   end;
 
   TRnQbtn = record
     Name,
     Cptn,
-    Hint : String;
-    ImageName : TPicName;
-//    DefShortCut : String;
-    ev   : procedure;
+    Hint: String;
+    ImageName: TPicName;
+//    DefShortCut: String;
+    ev: procedure;
   end;
 
 
-  function  InitMacroses : Boolean;
+  function  InitMacroses: Boolean;
 
-  function  removeMacro(i:integer):boolean;
-  function  findHK(hk:Tshortcut):integer;
-  function  addMacro(hk:Tshortcut; sw:boolean; op:integer):boolean;
-  procedure executeMacro(m:integer);
+  function  removeMacro(i: integer): boolean;
+  function  findHK(hk: Tshortcut): integer;
+  function  addMacro(hk: Tshortcut; sw: boolean; op: integer): boolean;
+  procedure executeMacro(m: integer);
 // convert
-  procedure str2macros(s:RawByteString; var m:Tmacros);
-  function  str2macro(s: RawByteString):Tmacro;
+  procedure str2macros(s: RawByteString; var m: Tmacros);
+  function  str2macro(s: RawByteString): Tmacro;
   function  macros2str(m:Tmacros):RawByteString;
 
   procedure popupMenu(m:Tpopupmenu);
@@ -59,12 +59,13 @@ implementation
   uses
    forms,
    RQUtil, RDUtils, RnQSysUtils, RnQBinUtils, RnQLangs, RnQGlobal,
-   RnQGraphics32,
+   RnQGraphics32, tipDlg,
    roasterLib, utilLib, globalLib, iniLib, themesLib,
  {$IFDEF RNQ_PLAYER}
    uSimplePlayer,
  {$ENDIF RNQ_PLAYER}
-   mainDlg, RnQTips, tipDlg, chatDlg, addContactDlg,
+   mainDlg, RnQTips, chatDlg, addContactDlg,
+   Protocols_all,
    RnQProtocol;
 {const
   macroses : array[0..34] of TRnQMACROS = (
@@ -108,10 +109,10 @@ implementation
    );
 }
 
-procedure executeMacro(m:integer);
+procedure executeMacro(m: integer);
 var
 //  s:string;
-  c:TRnQContact;
+  c: TRnQContact;
 begin
   if BossMode.isBossKeyOn and askPassOnBossKeyOn
       and Assigned(Account.AccProto) and (Length(Account.AccProto.pwd) > 0)
@@ -182,7 +183,7 @@ case m of
            clickedContact.ViewInfo
        end;
   OP_ADDBYUIN: RnQmain.byUIN1Click(NIL);//showForm(addContactFrm);
-  OP_WP: showForm(WF_WP);
+  OP_WP: Protos_ShowWP();
   OP_TOGGLEBORDER: toggleMainfrmBorder;
   OP_PREFERENCES: showForm(WF_PREF);
   OP_LOCK: doLock;
@@ -196,14 +197,15 @@ case m of
   OP_RELOADLANG: reloadCurrentLang();
   OP_VISIBLE_TO:
     begin
-      c:=focusedContact;
-      if (c=NIL) or c.imVisibleTo then exit;
+      c := focusedContact;
+      if (c=NIL) or c.imVisibleTo then
+        exit;
       c.fProto.AddToList(LT_TEMPVIS, c);
       roasterLib.redraw(c);
     end;
   OP_TOGGLE_SOUND:
     begin
-    playSounds:=not playSounds;
+    playSounds := not playSounds;
 //    saveCFG;
     saveCfgDelayed := True;
     end;
@@ -310,67 +312,68 @@ end; // macro2str
 
 function str2macro(s: RawByteString):Tmacro;
 var
-  t,l:integer;
-  d:AnsiString;
+  t, l: integer;
+  d: AnsiString;
 begin
-while s > '' do
-  begin
-  t:=dword_LEat(@s[1]); // 1234
-  l:=dword_LEat(@s[5]); // 5678
-  d:=copy(s,9,l);
-  case t of
-    MFK_HK: result.hk := str2int(d);
-    MFK_SW: result.sw := boolean(d[1]);
-    MFK_OP: result.opcode:=str2int(d);
-    end;
-  delete(s,1,8+l);
-  end;
+  while s > '' do
+   begin
+    t := dword_LEat(@s[1]); // 1234
+    l := dword_LEat(@s[5]); // 5678
+    d := copy(s,9,l);
+    case t of
+      MFK_HK: result.hk := str2int(d);
+      MFK_SW: result.sw := boolean(d[1]);
+      MFK_OP: result.opcode := str2int(d);
+      end;
+    delete(s,1,8+l);
+   end;
 end; // str2macro
 
-function macros2str(m:Tmacros):RawByteString;
+function macros2str(m: Tmacros): RawByteString;
 var
-  i:integer;
+  i: integer;
   s: RawByteString;
 begin
- result:='';
+ result := '';
  for i:=0 to length(m)-1 do
   begin
-  s:=macro2str(m[i]);
-  result:=result+int2str(length(s))+s;
+   s := macro2str(m[i]);
+   result := result+int2str(length(s))+s;
   end;
 end; // macros2str
 
-procedure str2macros(s: RawByteString; var m:Tmacros);
+procedure str2macros(s: RawByteString; var m: Tmacros);
 var
-  l,n:integer;
+  l, n: integer;
 begin
-n:=0;
-while length(s) > 0 do
-  begin
-  l:=str2int(s);
-  inc(n);
-  setLength(m, n);
-  m[n-1]:=str2macro( copy(s,5,l) );
-  delete(s, 1, 4+l);
-  end;
+  n := 0;
+  while length(s) > 0 do
+    begin
+      l := str2int(s);
+      inc(n);
+      setLength(m, n);
+      m[n-1] := str2macro( copy(s,5,l) );
+      delete(s, 1, 4+l);
+    end;
 end; // str2macros
 
 
 procedure popupHintByMacro();
 var
-  bmp  : Tbitmap;
-  r    : Trect;
-  node : Tnode;
-  pt   : Tpoint;
+  bmp: Tbitmap;
+  r: Trect;
+  node: Tnode;
+  pt: Tpoint;
 begin
   bmp := createBitmap(1,1);
   pt := RnQmain.roster.ScreenToClient(mousepos);
   if within(0, pt.x, RnQmain.roster.width)
   and within(0, pt.y, RnQmain.roster.height) then
-    node:=roasterLib.nodeAt(pt.x,pt.y)
+    node := roasterLib.nodeAt(pt.x, pt.y)
   else
-    node:=NIL;
-  if node=NIL then node:=clickedNode;
+    node := NIL;
+  if node=NIL then
+    node := clickedNode;
   if node<>NIL then
     begin
 //    drawNodeHint(bmp.canvas, node.treenode, r);
@@ -386,20 +389,20 @@ begin
   bmp.free;
 end; // popupHintByMacro
 
-procedure popupMenu(m:Tpopupmenu);
+procedure popupMenu(m: Tpopupmenu);
 begin
  if docking.Dock2Chat and docking.Docked2chat then
-   bringForeground:= chatFrm.Handle
+   bringForeground := chatFrm.Handle
   else
-   bringForeground:=RnQmain.handle;
+   bringForeground := RnQmain.handle;
   m.Popup(Screen.Width div 2, screen.Height div 2);
 end; // popupMenu
 
 procedure toggleAutosize;
 begin
-  autosizeRoster:=not autosizeRoster;
+  autosizeRoster := not autosizeRoster;
 //  design_fr.resetAutosize();
-  autosizeDelayed:=TRUE;
+  autosizeDelayed := TRUE;
 end; // toggleAutosize
 
 procedure toggleShowGroups;
@@ -407,13 +410,13 @@ begin
   showGroups:=not showGroups;
   saveCfgDelayed := True;
 //design_fr.prefToggleShowGroups;
-  rosterRebuildDelayed:=TRUE;
+  rosterRebuildDelayed := TRUE;
 end;
 
 procedure startMenuViaMacro;
 begin
- menuViaMacro:=TRUE;
- ShowWindow(application.handle,SW_SHOW);
+ menuViaMacro := TRUE;
+ ShowWindow(application.handle, SW_SHOW);
  application.bringtofront;
 end; // startMenuViaMacro
 
@@ -424,8 +427,8 @@ end;
 
 procedure MacroBossMode;
 var
-  pass : String;
-  s : String;
+  pass: String;
+  s: String;
 begin
    if BossMode.isBossKeyOn and askPassOnBossKeyOn then
     begin

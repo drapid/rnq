@@ -119,7 +119,7 @@ type
     //------------------------------------------------------------------------//
     procedure Draw(DC: HDC; DX, DY: Integer; Index: Integer; AlphaMode: Integer = 1);
 
-    function getBestFrameIdx : Integer;
+    function getBestFrameIdx: Integer; deprecated  'Not done yet';
   end;
 implementation
 
@@ -355,7 +355,7 @@ begin
   if FData.Size = 0 then Exit;
 
   Offset:= SizeOf(TIconHeader) + SizeOf(TIconDirEntry)* Index;
-  FData.Seek(Offset,soFromBeginning);
+  FData.Seek(Offset, soBeginning);
   FData.Read(IE, SizeOf(TIconDirEntry));
 
   Result:= IE;
@@ -368,7 +368,7 @@ var
 begin
   Offset:= GetFrame(Index).dwImageOffset;
 
-  FData.Seek(Offset,soFromBeginning);
+  FData.Seek(Offset, soBeginning);
   FData.Read(BI, SizeOf(TBitmapInfoHeader));
 
   Result:= BI;
@@ -587,9 +587,9 @@ end;
 // By Rapid D. Try to get icon
 function TIconStream.getBestFrameIdx: Integer;
 var
-  de : PIconDirEntry;
-  lprd : LPRESDIR;
-  frm : TIconDirEntry;
+  de: PIconDirEntry;
+  lprd: LPRESDIR;
+  frm: TIconDirEntry;
   I, cnt: Integer;
 begin
   cnt := GetCount;
@@ -609,6 +609,7 @@ begin
       inc(lprd, sizeof(RESDIR));
     end;
   FreeMemory(de);
+  Result := 0;
 end;
 
 //----------------------------------------------------------------------------//

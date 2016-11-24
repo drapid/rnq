@@ -10,7 +10,13 @@ interface
 
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, RnQButtons, RDGlobal, RnQPrefsLib, ExtCtrls;
+  StdCtrls, RnQButtons,
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
+  RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
+  RDGlobal, ExtCtrls;
 
 type
   TsecurityFr = class(TPrefFrame)
@@ -85,7 +91,7 @@ begin
   dontSavePwd        := dontsavepwdChk.checked;
   clearPwdOnDSNCT    := CplPwdChk.Checked and dontsavepwdChk.checked;
   askPassOnBossKeyOn := AskPassOnBossChk.Checked;
-  MakeBakups     := MakeBakChk.Checked;
+  MakeBackups     := MakeBakChk.Checked;
  {$IFDEF PROTOCOL_ICQ}
   addTempVisMsg  := AddTempVisMsgChk.Checked;
  {$ENDIF PROTOCOL_ICQ}
@@ -122,7 +128,7 @@ begin
   dontsavepwdChk.checked      := dontSavePwd;
   CplPwdChk.Checked           := clearPwdOnDSNCT;
   AskPassOnBossChk.Checked    := askPassOnBossKeyOn;
-  MakeBakChk.Checked          := MakeBakups;
+  MakeBakChk.Checked          := MakeBackups;
  {$IFDEF PROTOCOL_ICQ}
   AddTempVisMsgChk.Checked    := addTempVisMsg;
  {$ENDIF PROTOCOL_ICQ}
@@ -146,10 +152,11 @@ end;
 
 procedure TsecurityFr.HistCryptBtnClick(Sender: TObject);
 var
-  hp : string;
+  hp: string;
 begin
  {$IFDEF DB_ENABLED}
-  enterPwdDlg(hp, getTranslation('History password'), 16);
+  hp := '';
+  enterPwdDlg(hp, getTranslation('History password'), 16, True);
   SetDBPass(hp);
  {$ENDIF DB_ENABLED}
 end;

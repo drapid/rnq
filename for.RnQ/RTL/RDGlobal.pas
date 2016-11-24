@@ -65,16 +65,16 @@ type
 
   TStrObj = class(TObject)
    public
-    str : String;
+    str: String;
   end;
   TPStrObj = Class(TObject)
    public
-    Str : PAnsiChar;
+    Str: PAnsiChar;
   end;
 
   TPUStrObj = Class(TObject)
    public
-    Str : PChar;
+    Str: PChar;
   end;
 
   TRnQPntBox = class(TPaintBox)
@@ -137,10 +137,10 @@ type
 const
   CrLf           = AnsiString(#13#10);
   CrLfS          = #13#10;
-//  CRLFA : AnsiString = AnsiString(#13#10);
+//  CRLFA: AnsiString = AnsiString(#13#10);
   CRLFCRLF  = AnsiString(CRLF+CRLF);
-//  CRLFCRLF : AnsiString =AnsiString(CRLF+CRLF);
-//  CRLFCRLF : AnsiString = AnsiString(#13#10#13#10);
+//  CRLFCRLF: AnsiString = AnsiString(CRLF+CRLF);
+//  CRLFCRLF: AnsiString = AnsiString(#13#10#13#10);
   NL = #10;
   HexChars = ['A'..'F', 'a'..'f', '0'..'9'];
   yesno: array [boolean] of AnsiString=('No','Yes');
@@ -157,7 +157,7 @@ const
   cDefaultDPI = 96;
 
 var
-//  myPath           : String;
+//  myPath: String;
   ShellVersion: Cardinal;
 
 const
@@ -166,6 +166,8 @@ const
   PIC_HAND                        = TPicName('hand');
   PIC_ASTERISK                    = TPicName('asterisk');
   PIC_QUEST                       = TPicName('question');
+
+  function  PicName2Str(val: TPicName): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 
 implementation
    uses
@@ -235,5 +237,10 @@ end;
     Result.Height:= Rect.Bottom-Rect.Top;
   end;
 
+function  PicName2Str(val: TPicName): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+begin
+//  if TPicName is AnsiString then
+    Result := String(val);
+end;
 
 end.

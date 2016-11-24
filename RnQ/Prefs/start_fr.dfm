@@ -13,7 +13,7 @@ object startFr: TstartFr
   OldCreateOrder = True
   PixelsPerInch = 96
   TextHeight = 13
-  object PageControl1: TPageControl
+  object Pages: TPageControl
     Left = 6
     Top = 6
     Width = 402
@@ -26,10 +26,6 @@ object startFr: TstartFr
     TabStop = False
     object MainTab: TTabSheet
       Caption = 'Common'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         394
         340)
