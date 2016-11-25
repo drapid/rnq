@@ -24,17 +24,17 @@ type
     Proc: TOnTimerProc;
   end;
 
-  TFormEx = class(TForm)
+  TFormDimImg = class(TForm)
   private
     class var TimerList: TDictionary<UINT_PTR, TOnTimerProc>;
-
+  private
     AnimTimer: TTimer;
     AniTimer: TTimer;
     AlphaValue: Integer;
     Dimmed: Boolean;
     LastImage: Integer;
     ShownImage: Integer;
-    images:   Array of TRnQBitmap;
+    images: Array of TRnQBitmap;
     procedure onAnimTimer(Sender: TObject);
     procedure onAniTimer(Sender: TObject);
     procedure OnCloseImg(Sender: TObject; var Action: TCloseAction);
@@ -57,7 +57,7 @@ type
     procedure stopTimer();
     procedure updateWindow();
     procedure CreateParams(var Params: TCreateParams); override;
-    constructor CreateNew(AOwner: TComponent; ParentForm: TWinControl; DimmedParam: Boolean = False);
+    constructor CreateDim(AOwner: TComponent; ParentForm: TWinControl; DimmedParam: Boolean = False);
   end;
 
 function viewImageDimmed(chatFrm: TWinControl; const evimage: RawByteString; evoffset: Integer): Tform;
@@ -76,8 +76,8 @@ uses
 (*
 procedure TImageEx.OnMouseDownImg(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  PostMessage((Parent as TFormEx).otherForm, WM_FADEOUT, 0, 0);
-  (Parent as TFormEx).FadeOut;
+  PostMessage((Parent as TFormDimImg).otherForm, WM_FADEOUT, 0, 0);
+  (Parent as TFormDimImg).FadeOut;
 end;
 
 constructor TImageEx.Create(AOwner: TComponent);
@@ -281,7 +281,7 @@ end;
 
 
 
-procedure TFormEx.onAnimTimer(Sender: TObject);
+procedure TFormDimImg.onAnimTimer(Sender: TObject);
 begin
   if AnimTimer.Tag = 1 then
   begin
@@ -310,7 +310,7 @@ begin
   end;
 end;
 
-procedure TFormEx.onAniTimer(Sender: TObject);
+procedure TFormDimImg.onAniTimer(Sender: TObject);
 begin
   if Assigned(images[ShownImage]) and
      Assigned(images[ShownImage].fBmp) and
@@ -324,51 +324,54 @@ procedure TimerProc(hwnd: HWND; uMsg: UINT; idEvent: UINT_PTR; dwTime: DWORD); s
 var
   Proc: TOnTimerProc;
 begin
-  if TFormEx.TimerList.TryGetValue(idEvent, Proc) then
+  if TFormDimImg.TimerList.TryGetValue(idEvent, Proc) then
   try
     KillTimer(0, idEvent);
     Proc();
   finally
-    TFormEx.TimerList.Remove(idEvent);
+    TFormDimImg.TimerList.Remove(idEvent);
   end;
 end;
 
 procedure SetTimeout(AProc: TOnTimerProc; ATimeout: Cardinal);
 begin
-  TFormEx.TimerList.Add(SetTimer(0, 0, ATimeout, @TimerProc), AProc);
+  TFormDimImg.TimerList.Add(SetTimer(0, 0, ATimeout, @TimerProc), AProc);
 end;
 
-class constructor TFormEx.Create;
+class constructor TFormDimImg.Create;
 begin
   TimerList := TDictionary<UINT_PTR, TOnTimerProc>.Create;
 end;
 
-class destructor TFormEx.Destroy;
+class destructor TFormDimImg.Destroy;
 begin
   TimerList.Free;
   TimerList := NIL;
 end;
 
-procedure TFormEx.ShowWithFade();
+procedure TFormDimImg.ShowWithFade();
 begin
   try
     Show;
     Invalidate;
     if Dimmed then
       startTimer()
-    else
-      SetTimeout(procedure begin startTimer(); end, 100);
+     else
+      SetTimeout(procedure
+                 begin
+                   startTimer();
+                 end, 100);
   except
   end;
 end;
 
-procedure TFormEx.startTimer();
+procedure TFormDimImg.startTimer();
 begin
   if (Assigned(AnimTimer)) then
     AnimTimer.Enabled := true;
 end;
 
-procedure TFormEx.stopTimer();
+procedure TFormDimImg.stopTimer();
 begin
   if (Assigned(AnimTimer)) then
     AnimTimer.Enabled := false;
@@ -379,7 +382,7 @@ begin
     AlphaValue := 255;
 end;
 
-procedure TFormEx.updateWindow();
+procedure TFormDimImg.updateWindow();
 var
   Bitmap: TBitmap;
   BitmapPos: TPoint;
@@ -404,16 +407,17 @@ begin
   Bitmap.Free;
 end;
 
-procedure TFormEx.CreateParams(var Params: TCreateParams);
+procedure TFormDimImg.CreateParams(var Params: TCreateParams);
 begin
   inherited;
   Params.ExStyle := Params.ExStyle or WS_EX_NOACTIVATE;
 end;
 
-constructor TFormEx.CreateNew(AOwner: TComponent; ParentForm: TWinControl; DimmedParam: Boolean = False);
+constructor TFormDimImg.CreateDim(AOwner: TComponent; ParentForm: TWinControl; DimmedParam: Boolean = False);
 begin
   inherited CreateNew(AOwner);
-  Dimmed := DimmedParam;
+// If Dimmed - it's black background
+  self.Dimmed := DimmedParam;
 
   if StyleServices.Enabled and Assigned(self) then
   begin
@@ -427,10 +431,16 @@ begin
   OnClose := OnCloseImg;
   OnKeyDown := OnKeyDownImg;
   OnMouseDown := OnMouseDownImg;
-  if not Dimmed then
+  if not self.Dimmed then
   begin
     FormStyle := fsStayOnTop;
     SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE or SWP_NOMOVE or SWP_NOACTIVATE);
+
+    aniTimer := TTimer.Create(Self);
+    aniTimer.Enabled := false;
+    aniTimer.OnTimer := onAniTimer;
+    aniTimer.Interval := 20;
+    aniTimer.Tag := 0;
   end;
 
   alphaValue := 0;
@@ -440,26 +450,21 @@ begin
   animTimer.Interval := 10;
   animTimer.Tag := 0;
 
-  aniTimer := TTimer.Create(Self);
-  aniTimer.Enabled := false;
-  aniTimer.OnTimer := onAniTimer;
-  aniTimer.Interval := 20;
-  aniTimer.Tag := 0;
 end;
 
-procedure TFormEx.FadeOut();
+procedure TFormDimImg.FadeOut();
 begin
   animTimer.Tag := 1;
   animTimer.Interval := 10;
   animTimer.Enabled := true;
 end;
 
-procedure TFormEx.FadeOutMsg(var Msg: TMessage);
+procedure TFormDimImg.FadeOutMsg(var Msg: TMessage);
 begin
   FadeOut;
 end;
 
-procedure TFormEx.WMAppCommand(var msg: TMessage);
+procedure TFormDimImg.WMAppCommand(var msg: TMessage);
 begin
   if Dimmed then
     PostMessage(otherForm, WM_APPCOMMAND, msg.WParam, msg.LParam)
@@ -468,7 +473,8 @@ begin
     APPCOMMAND_BROWSER_BACKWARD:
       begin
         dec(ShownImage);
-        if ShownImage < 0 then ShownImage := LastImage;
+        if ShownImage < 0 then
+          ShownImage := LastImage;
         UpdateShownImage;
         msg.Result := 1;
       end;
@@ -476,14 +482,15 @@ begin
     APPCOMMAND_BROWSER_FORWARD:
       begin
         inc(ShownImage);
-        if ShownImage > LastImage then ShownImage := 0;
+        if ShownImage > LastImage then
+          ShownImage := 0;
         UpdateShownImage;
         msg.Result := 1;
       end;
   end;
 end;
 
-procedure TFormEx.ShowHideImages();
+procedure TFormDimImg.ShowHideImages();
 //var
 //  i: integer;
 begin
@@ -518,13 +525,13 @@ begin
 }
 end;
 
-procedure TFormEx.PaintPic(Sender: TObject);
+procedure TFormDimImg.PaintPic(Sender: TObject);
 begin
   images[ShownImage].Draw(Self.Canvas.Handle,
      DestRect(images[ShownImage].Width, images[ShownImage].Height, Self.Width, Self.Height ));
 end;
 
-procedure TFormEx.UpdateShownImage();
+procedure TFormDimImg.UpdateShownImage();
 begin
   if Dimmed or (ControlCount = 1) then
     Exit;
@@ -535,9 +542,9 @@ begin
   AnimateWindow(Handle, 150, AW_BLEND);
 end;
 
-procedure TFormEx.UpdateFormSize();
+procedure TFormDimImg.UpdateFormSize();
 const
-  gap : Integer = 50;
+  gap: Integer = 50;
 var
 //  aspect: single;
 //  offset: integer;
@@ -565,7 +572,7 @@ begin
 
 end;
 
-procedure TFormEx.OnKeyDownImg(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure TFormDimImg.OnKeyDownImg(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if Dimmed then
     PostMessage(otherForm, WM_KEYDOWN, Key, 0)
@@ -590,13 +597,13 @@ begin
   end;
 end;
 
-procedure TFormEx.OnMouseDownImg(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TFormDimImg.OnMouseDownImg(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   PostMessage(otherForm, WM_FADEOUT, 0, 0);
   FadeOut;
 end;
 
-procedure TFormEx.OnCloseImg(Sender: TObject; var Action: TCloseAction);
+procedure TFormDimImg.OnCloseImg(Sender: TObject; var Action: TCloseAction);
 begin
   if Assigned(fParentForm) then
     fParentForm.SetFocus;
@@ -605,7 +612,7 @@ end;
 
 function viewImageDimmed(chatFrm: TWinControl; const evimage: RawByteString; evoffset: Integer): Tform;
 var
-  formDim, formImg: TFormEx;
+  formDim, formImg: TFormDimImg;
 //  img: TImageEx;
   PIn, POut: Pointer;
   RnQPicStream: TMemoryStream;
@@ -616,8 +623,8 @@ var
   bRect: TRect;
   offset: integer;
 begin
-  formDim := TFormEx.CreateNew(chatFrm, chatFrm, True);
-  formImg := TFormEx.CreateNew(chatFrm, chatFrm);
+  formDim := TFormDimImg.CreateDim(chatFrm, chatFrm, True);
+  formImg := TFormDimImg.CreateDim(chatFrm, chatFrm);
   formImg.otherForm := formDim.Handle;
   formDim.otherForm := formImg.Handle;
 

@@ -641,6 +641,7 @@ begin
 //  gr.MeasureString(s, length(s), fnt, MakePoint(gpR.X, gpR.Y), gfmt, resR);
 //  gr.MeasureString(cname, Length(cname), fnt, gpR, resR);
 
+  days2BD := -1;
   if Assigned(ev) then
     p := event2imgName(ev.kind)
    else
@@ -756,6 +757,7 @@ begin
 //  font := Screen.HintFont;
   font.Assign(Screen.HintFont);
   theme.ApplyFont('tip', font);
+  drawAvt := false;
 {   begin
      h := FontStyleRegular;
     if fsBold in font.Style then

@@ -29,17 +29,17 @@ uses
 //  TPAFormat = (PA_FORMAT_UNK, PA_FORMAT_BMP, PA_FORMAT_JPEG,
 //               PA_FORMAT_GIF, PA_FORMAT_PNG, PA_FORMAT_XML);
 
-function FormatAvatarFileName(const APath : String;const AUIN: AnsiString; AFormat: TPAFormat): String;
+function FormatAvatarFileName(const APath: String; const AUIN: AnsiString; AFormat: TPAFormat): String;
 //function DetectAvatarFormatBuffer(pBuffer: String): TPAFormat;
   {$IFDEF USE_GDIPLUS}
 function DetectAvatarFormatGUID(fmt: TGUID): TPAFormat;
   {$ENDIF USE_GDIPLUS}
-function GetDomain(url : String) : String;
-//function get_flashFile_from_xml(const fn : String; const uin : AnsiString) : String;
-//function get_flashFile_from_xml(str: TStream; const uin : AnsiString) : String;
-procedure avatars_save_and_load(cnt : TRnQContact; const hash : RawByteString;
-                                var hash_safe : RawByteString;
-                                var str : TMemoryStream);
+function GetDomain(url: String): String;
+//function get_flashFile_from_xml(const fn: String; const uin: AnsiString): String;
+//function get_flashFile_from_xml(str: TStream; const uin: AnsiString): String;
+procedure avatars_save_and_load(cnt: TRnQContact; const hash: RawByteString;
+                                var hash_safe: RawByteString;
+                                var str: TMemoryStream);
 
 procedure loadAvatars(const proto: TRnQProtocol; path: String);
 procedure updateAvatarFor(c: TRnQContact);
@@ -785,18 +785,14 @@ end;
 
 procedure loadAvatars(const proto: TRnQProtocol; path: String);
 var
-//  sr: TsearchRec;
-//  path,
-//  uinStr: String;
-//  uin, code: Integer;
   cnt: TRnQContact;
-//  c: TICQcontact;
-//  b, hasAvatar, loaded: Boolean;
 begin
  {$IFDEF PROTOCOL_ICQ}
 //  path := userPath + avtPath;
   if not Account.AccProto.AvatarsSupport then
     Exit;
+ {$ENDIF PROTOCOL_ICQ}
+
   if (path='') or not directoryExists(path) then
     exit;
 
@@ -806,22 +802,6 @@ begin
      cnt.icon.Bmp := NIL;
      updateAvatar(cnt, cnt.icon.Hash_safe{, True});
    end;
- with proto.readList(LT_ROSTER) do
- begin
-  resetEnumeration;
-  while hasMore do
-  begin
-   cnt := getNext;
-//   if cnt is TICQContact then
-    begin
-//     c := TICQContact(cnt);
-     cnt.icon.Bmp := NIL;
-     updateAvatar(cnt, cnt.icon.Hash_safe{, True});
-//     Application.ProcessMessages;
-    end;
-  end;
- end;
- {$ENDIF PROTOCOL_ICQ}
 end;
 
 

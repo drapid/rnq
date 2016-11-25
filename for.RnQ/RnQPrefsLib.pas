@@ -45,10 +45,10 @@ type
       procedure Load(const cfg: RawByteString);
       procedure resetPrefs;
       procedure getPrefStr(const key: String; var Val: String);
-      procedure getPrefBool(const key: String; var Val: Boolean);
+      function  getPrefBool(const key: String; var Val: Boolean): Boolean;
       procedure getPrefBlob(const key: String; var Val: RawByteString);
       procedure getPrefBlob64(const key: String; var Val: RawByteString);
-      procedure getPrefInt(const key: String; var Val: Integer);
+      function  getPrefInt(const key: String; var Val: Integer): Boolean;
       procedure getPrefDate(const key: String; var Val: TDateTime);
       procedure getPrefDateTime(const key: String; var Val: TDateTime);
       procedure getPrefValue(const key: String; et: TElemType; var Val : TPrefElem);
@@ -863,23 +863,25 @@ end;
     result := AnsiStrings.StrIComp(l, PAnsiChar(yyy)) = 0
   end;
 
-procedure TRnQPref.getPrefBool(const key: String; var Val: Boolean);
+function TRnQPref.getPrefBool(const key: String; var Val: Boolean): Boolean;
 var
   i: Integer;
   el: TPrefElement;
 begin
+  Result := false;
    begin
      i := fPrefStr.IndexOf(key);
      if i >= 0 then
       begin
+       Result := True;
        el := TPrefElement(fPrefStr.Objects[i]);
        if el.ElType = ET_Blob then
          Val := yesnof(el.elem.bVal)
         else
        if el.ElType = ET_Bool then
          Val := el.elem.yVal
-//        else
-//         Result := DefVal;
+        else
+         Result := false;
       end
 {     else
       begin
@@ -923,7 +925,7 @@ begin
    end;
 end;
 
-procedure TRnQPref.getPrefInt(const key: String; var Val: Integer);
+function TRnQPref.getPrefInt(const key: String; var Val: Integer): Boolean;
   function int(l: PAnsiChar): Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
   var
     bb: Integer;
@@ -936,21 +938,23 @@ procedure TRnQPref.getPrefInt(const key: String; var Val: Integer);
      Result := 0;
   end;
 var
-  i : Integer;
-  el : TPrefElement;
+  i: Integer;
+  el: TPrefElement;
 begin
+  Result := false;
    begin
      i := fPrefStr.IndexOf(key);
      if i >= 0 then
       begin
+       Result := True;
        el := TPrefElement(fPrefStr.Objects[i]);
        if el.ElType = ET_Blob then
          Val := int(el.elem.bVal)
         else
        if el.ElType = ET_Integer then
          Val := el.elem.iVal
-//        else
-//         Result := DefVal;
+        else
+         Result := false;
       end
 {     else
       begin

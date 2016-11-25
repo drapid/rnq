@@ -209,11 +209,11 @@ type
 
 // Color
 type
-  Thls=record h,l,s: double; end; // H=[0,6] L=[0,1] S=[0,1]
+  Thls = record h,l,s: double; end; // H=[0,6] L=[0,1] S=[0,1]
 
 //  function GPtranspPColor(cl : Cardinal): Cardinal;
 //  function transpColor(cl : TColor; alpha : Byte): TColor;
-  function gpColorFromAlphaColor(Alpha: Byte; Color: TColor): Cardinal;
+  function  gpColorFromAlphaColor(Alpha: Byte; Color: TColor): Cardinal;
   function  color2hls(clr: Tcolor): Thls;
   function  hls2color(hls: Thls):  Tcolor;
   function  addLuminosity(clr: Tcolor; q:real): Tcolor;
@@ -3144,11 +3144,11 @@ begin
     begin
       if str.Read(s, 4) < 4 then
         Result := PA_FORMAT_UNK
-      else
+       else
         if str.Read(s, 4) < 4 then
           Result := PA_FORMAT_UNK
-      else if s = 'WEBP' then
-         Result := PA_FORMAT_WEBP;
+         else if s = 'WEBP' then
+          Result := PA_FORMAT_WEBP;
     end
 //  else
 //    Result := PA_FORMAT_UNK;

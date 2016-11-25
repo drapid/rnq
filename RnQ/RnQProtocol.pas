@@ -12,15 +12,15 @@ uses
    RnQNet, RDGlobal,
 //   globalLib,
    RnQPrefsLib,
-   RnQGraphics32
+   RnQGraphics32, RDUtils
    ;
 //    contacts;
 
 type
-  TwhatLog=(WL_connected, WL_disconnected,
-            WL_serverGot, WL_serverSent,
-            WL_heSent, WL_meSent, WL_connecting,
-            WL_sent_text, WL_rcvd_text);
+  TwhatLog = (WL_connected, WL_disconnected,
+              WL_serverGot, WL_serverSent,
+              WL_heSent, WL_meSent, WL_connecting,
+              WL_sent_text, WL_rcvd_text);
   Tstatus = (SC_ONLINE = 0, SC_OFFLINE, SC_UNK);
 type
   TXStatStr = record
@@ -690,7 +690,7 @@ var
 
   function  Int2UID(const i: Integer): TUID; Inline;
 const
-  LogWhatNames:array [TwhatLog] of string=('CONNECTED','DISCONNECTED','CLIENT','SERVER','DC RCVD','DC SENT',
+  LogWhatNames: array [TwhatLog] of string=('CONNECTED','DISCONNECTED','CLIENT','SERVER','DC RCVD','DC SENT',
                                      'CONNECTING',
                                      'CLIENT', 'SERVER');
  // Flags for messages                                    
@@ -717,7 +717,7 @@ uses
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
-   RnQFileUtil, RDUtils,
+   RnQFileUtil,
    RQLog, RQUtil, RnQGlobal, RnQCrypt, RnQPics,
    globalLib, mainDlg, utilLib,
    ThemesLib;

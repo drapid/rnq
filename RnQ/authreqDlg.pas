@@ -65,13 +65,14 @@ implementation
 {$R *.DFM}
 
 uses
+  Types,
   RnQLangs, RQUtil, RDGlobal, RQThemes,
   RnQSysUtils, RnQPics,
   globalLib, utilLib, outboxLib, mainDlg, langLib, chatDlg,
   Protocols_all,
   themesLib, menusUnit;
 
-constructor TauthreqFrm.doAll(owner_ :Tcomponent; c:TRnQContact; reason:string);
+constructor TauthreqFrm.doAll(owner_ : Tcomponent; c: TRnQContact; reason: string);
 begin
   inherited create(owner_);
   position := poDefaultPosOnly;

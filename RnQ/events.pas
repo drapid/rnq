@@ -128,7 +128,12 @@ Type
     cryptMode  : byte;
     cl         : TRnQCList;
     fImgElm    : TRnQThemedElementDtls;
-//   class var
+   public
+    class var hisFont: TFont;
+    class var myFont: TFont;
+    class var fntToken: Integer;
+    class constructor Create;
+    class destructor Destroy;
    public
 //    themeTkn : Integer;
 //    picIdx   : Integer;
@@ -136,11 +141,6 @@ Type
     HistoryToken: Cardinal;
     PaintHeight: Integer;
     otherpeer: TRnQcontact; // used to keep track of other peer when "who" is us
-    class var hisFont: TFont;
-    class var myFont: TFont;
-    class var fntToken: Integer;
-    class constructor Create;
-    class destructor Destroy;
 
     class function new(kind_: integer; who_: TRnQContact; when_: TdateTime;
              const info_: RawByteString;
@@ -1357,7 +1357,7 @@ var
   uin: Integer;
   s: RawByteString;
   ofs: Integer;
-  u: String;
+  u: TUID;
 begin
   roasterLib.building := True;
   ofs := 1;
@@ -1397,11 +1397,7 @@ begin
       begin
         uin := integer((@s[1])^);
         if uin > 0 then
- {$IFDEF UID_IS_UNICODE}
-          e.who := Account.AccProto.getContact(IntToStr(uin))
- {$ELSE UID_NOT_UNICODE}
-          e.who := Account.AccProto.getContact(IntToStrA(uin))
- {$ENDIF UID_ and _UNICODE}
+          e.who := Account.AccProto.getContact(uin)
          else
           e.who := NIL;
       if Assigned(e.who) then

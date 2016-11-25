@@ -293,15 +293,15 @@ MenuDrawExt := True;
 sendTheAddedYou:=FALSE;
 texturizedWindows:=TRUE;
 showOncomingDlg:=FALSE;
-autoSizeRoster:=FALSE;
-autosizeFullRoster:=FALSE;
+autoSizeRoster := FALSE;
+autosizeFullRoster := FALSE;
 autosizeUp := False;
-showDisconnectedDlg:=TRUE;
-//showDisconnectedDlg:=FALSE;
-fontstylecodes.enabled:=TRUE;
-playSounds:=TRUE;
+showDisconnectedDlg := TRUE;
+//showDisconnectedDlg := FALSE;
+fontstylecodes.enabled := TRUE;
+playSounds := TRUE;
 SoundReset;
-autoconnect:=FALSE;
+autoconnect := FALSE;
 showGroups:=TRUE;
 alwaysOnTop:=TRUE;
 chatAlwaysOnTop:=FALSE;
@@ -459,6 +459,11 @@ begin
   pp.addPrefInt('window-height'+sU, mainRect.Bottom - mainRect.Top);
   pp.addPrefInt('window-left'+sU, mainRect.left);
   pp.addPrefInt('window-width'+sU, mainRect.Right - mainRect.Left);
+  pp.addPrefInt('chat-top'+sU, chatfrmXY.Top);
+  pp.addPrefInt('chat-height'+sU, chatfrmXY.height);
+  pp.addPrefInt('chat-left'+sU, chatfrmXY.left);
+  pp.addPrefInt('chat-width'+sU, chatfrmXY.width);
+  pp.addPrefBool('chat-maximized'+sU, chatfrmXY.maximized);
 
   pp.addPrefInt('window-top', mainRect.Top);
   pp.addPrefInt('window-height', mainRect.Bottom - mainRect.Top);
@@ -864,10 +869,10 @@ var
 }
 var
 //  pp : TRnQPref;
-  sU : String;
-  sR : RawByteString;
-  WinRect : TRect;
-  mainRect2 : TGPRect;
+  sU: String;
+  sR: RawByteString;
+  WinRect: TRect;
+  mainRect2: TGPRect;
 //  sU2
 begin
 //if cfg = '' then exit;
@@ -1080,11 +1085,35 @@ begin
     docking.pos := DP_left;
   pp.getPrefBool('docking-Dock2Chat', docking.Dock2Chat);
   pp.getPrefBool('docking-Docked2chat', docking.Docked2chat);
+
+  MainRect2.y := pp.getPrefIntDef('chat-top'+sU);
+  MainRect2.x := pp.getPrefIntDef('chat-left'+sU);
+  MainRect2.width := pp.getPrefIntDef('chat-width'+sU);
+  MainRect2.height := pp.getPrefIntDef('chat-height'+sU);
+
+  if (MainRect2.Y = -1)or (MainRect2.X = -1) then
+    begin
+     MainRect2.Y := pp.getPrefIntDef('chat-top', chatfrmXY.top);
+     MainRect2.X := pp.getPrefIntDef('chat-left', chatfrmXY.left);
+    end;
+  if (MainRect2.width = -1)or (MainRect2.height = -1) then
+    begin
+     MainRect2.width  := pp.getPrefIntDef('chat-width', chatfrmXY.width);
+     MainRect2.height := pp.getPrefIntDef('chat-height', chatfrmXY.height);
+    end;
+
+  chatfrmXY.top    := MainRect2.Y;
+  chatfrmXY.left   := MainRect2.X;
+  chatfrmXY.width  := MainRect2.width;
+  chatfrmXY.height := MainRect2.height;
+{
   pp.getPrefInt('chat-top', chatfrmXY.top);
   pp.getPrefInt('chat-height', chatfrmXY.height);
   pp.getPrefInt('chat-left', chatfrmXY.left);
   pp.getPrefInt('chat-width', chatfrmXY.width);
-  pp.getPrefBool('chat-maximized', chatfrmXY.maximized);
+}
+  if not pp.getPrefBool('chat-maximized'+sU, chatfrmXY.maximized) then
+     pp.getPrefBool('chat-maximized', chatfrmXY.maximized);
   pp.getPrefBool('auto-connect', autoconnect);
   pp.getPrefBool('play-sounds', playSounds);
   pp.getPrefInt('sound-volume', Soundvolume);

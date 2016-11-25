@@ -512,12 +512,13 @@ type
 //    class function getICQContact(const uid: TUID): TICQContact; OverLoad;
 //    class function getICQContact(uin: Integer): TICQContact; OverLoad;
     function getICQContact(const uid: TUID): TICQContact; OverLoad;
-    function getICQContact(uin: Integer): TICQContact; OverLoad;
+    function getICQContact(const uin: Integer): TICQContact; OverLoad;
  {$IFNDEF UID_IS_UNICODE}
     function getICQContact(const uid: String): TICQContact; OverLoad;
  {$ENDIF ~UID_IS_UNICODE}
 
-    function  getContact(const UID: TUID): TRnQContact; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getContact(const UID: TUID): TRnQContact; OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getContact(const UIN: Integer): TRnQContact; OverLoad;
     function  getContactClass: TRnQCntClass; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
     function pwdEqual(const pass: String): Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -592,7 +593,7 @@ type
     procedure getClientPicAndDesc4(cnt: TRnQContact; var pPic: TPicName; var CliDesc: String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  maxCharsFor(const c: TRnQContact; isBin: Boolean = false): integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  compareStatusFor(cnt1, Cnt2: TRnqContact) : Smallint; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure sendKeepalive; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure sendkeepalive; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  canAddCntOutOfGroup: Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
     function  getNewDirect: TProtoDirect; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -6362,7 +6363,7 @@ case Byte(snac[10]) of // msg format
                eventDirect.fileName := UTF8ToStr(CrptMsg)
               else
              if sA = 'us-ascii' then
-               eventDirect.fileName := CrptMsg
+               eventDirect.fileName := String(CrptMsg)
               else // unknown codepage
                eventDirect.fileName := unUTF(CrptMsg)
 //               eventDirect.fileName := CrptMsg
@@ -7538,19 +7539,19 @@ begin
  if error <> 0 then
   begin
     goneOffline;
-//    eventInt:=WSocket_WSAGetLastError;
+//    eventInt := WSocket_WSAGetLastError;
 //    if eventInt=0 then
-     eventInt:=error;
+     eventInt := error;
     eventMsgA := msg;
-    eventError:=EC_cantconnect;
+    eventError := EC_cantconnect;
     notifyListeners(IE_error);
 //  exit;
   end;
 end;
 
-procedure TicqSession.OnProxyTalk(Sender : TObject; isReceive : Boolean; Data : RawByteString);
+procedure TicqSession.OnProxyTalk(Sender: TObject; isReceive: Boolean; Data: RawByteString);
 begin
-  eventData:= Data;
+  eventData := Data;
   if isReceive then
     notifyListeners(IE_serverSent)
    else
@@ -8403,7 +8404,7 @@ begin
 end;
  {$ENDIF ~UID_IS_UNICODE}
 
-function TicqSession.getICQContact(uin: Integer): TICQContact;
+function TicqSession.getICQContact(const uin: Integer): TICQContact;
 begin
 //  result := TICQContact(contactsDB.get(TICQContact, uin));
  {$IFDEF UID_IS_UNICODE}
@@ -12125,6 +12126,11 @@ end;
 function TicqSession.getContact(const UID: TUID): TRnQContact;
 begin
   result := getICQContact(uid);
+end;
+
+function TicqSession.getContact(const UIN: Integer): TRnQContact;
+begin
+  result := getICQContact(uin);
 end;
 
 function TicqSession.getStatuses: TStatusArray;

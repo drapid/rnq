@@ -354,7 +354,6 @@ type
     procedure inputChange(Sender: TObject);
     procedure inputPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure inputKeydown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure searchFrom(const start: Integer);
 {$IFDEF CHAT_CEF}
     procedure preKeyEvent(Sender: TObject; const browser: ICefBrowser; const event: PCefKeyEvent;
                           osEvent: TCefEventHandle; out isKeyboardShortcut: Boolean; out Result: Boolean);
@@ -474,10 +473,6 @@ uses
   outboxlib, utilLib, outboxDlg, RnQTips, RnQPics,
   langLib, roasterLib, ViewHEventDlg, ViewPicDimmedDlg,
   RnQNet.Uploads,
- {$IFNDEF DB_ENABLED}
-//    RegExpr,
-    RegularExpressions,
- {$ENDIF ~DB_ENABLED}
 //  prefDlg,
  {$IFDEF RNQ_AVATARS}
   RnQ_Avatars, UxTheme,
@@ -3145,6 +3140,8 @@ begin
 
          end;
  {$ENDIF PROTOCOL_ICQ}
+  4:
+       DrawText(StatusBar.Canvas.Handle, StatusBar.SimpleText, 4, ARect, DT_CENTER or DT_SINGLELINE or DT_VCENTER);
 
  end;
 
@@ -3616,6 +3613,7 @@ procedure TchatFrm.loadPages(const s: RawByteString);
 var
   i: integer;
   s1: RawByteString;
+  u: TUID;
   ofs: Integer;
   len: Integer;
 begin
@@ -3631,7 +3629,12 @@ begin
       i := Len+1;
     s1 := copy(s, ofs, i-ofs);
     try
-      openOn(Account.AccProto.contactsDB.add(Account.AccProto, UTF8ToStr(s1)), True, False);
+ {$IFDEF UID_IS_UNICODE}
+      u := UTF8ToStr(s1);
+ {$else ansi}
+      u := s1;
+ {$ENDIF ~UID_IS_UNICODE}
+      openOn(Account.AccProto.getContact(u), True, False);
      except
 //      result:=FALSE
     end;
@@ -4910,7 +4913,8 @@ begin
     fs.Free;
     s2 := Base64EncodeString(s);
     s := '';
-    Proto_Outbox_add(OE_msg, thisChat.who, IF_Bin, RnQImageExTag+ s2 + RnQImageExUnTag);
+    sU := String( RnQImageExTag + s2 + RnQImageExUnTag );
+    Proto_Outbox_add(OE_msg, thisChat.who, IF_Bin, sU);
     s2 := '';
 
   end;
@@ -4978,109 +4982,43 @@ begin
  {$ENDIF PROTOCOL_ICQ}
 end;
 
-procedure TchatFrm.searchFrom(const start: integer);
+procedure TchatFrm.SBSearchClick(Sender: TObject);
 var
-  i: integer;
-  w2s, s: string;
- {$IFNDEF DB_ENABLED}
-//  re:Tregexpr;
-  re: TRegEx;
-  l_RE_opt: TRegExOptions;
- {$ENDIF ~DB_ENABLED}
-  use_re, found: boolean;
+  dir: THistSearchDirection;
+  found: Boolean;
 begin
-  use_re := reChk.checked;
-  w2s := trim(w2sBox.text);
-  if not use_re and not caseChk.checked then
-    w2s := uppercase(w2s);
-  if w2s = '' then
+  if w2sBox.text = '' then
     begin
       sbar.simpletext := getTranslation('Type what you want to search...!');
       if w2sBox.Enabled and w2sBox.Visible then
         w2sBox.setFocus;
       exit;
     end;
-  if thisChat<>NIL then
-   with thisChat do
+
+  case directionGrp.itemIndex of
+    0: dir := hsdFromBegin;
+    1: dir := hsdFromEnd;
+    2: dir := hsdBack;
+    3: dir := hsdAhead;
+   else
+    dir := hsdFromBegin;
+  end;
+  found := false;
+
+ if (thisChat<>NIL)and(thisChat.chatType = CT_IM) then
+   found := thisChat.historyBox.search(w2sBox.text, dir, caseChk.checked, reChk.checked);
+
+  if found then
     begin
-    if use_re then
-      begin
-   {$IFNDEF DB_ENABLED}
-  {    re:=TRegExpr.Create;
-      re.ModifierI:=not caseChk.checked;
-      re.Expression := w2s;
-        try
-          re.Compile
-        except
-          FreeAndNIL(re);
-          exit;
-        end;}
-        l_RE_opt := [roCompiled];
-        if not caseChk.Checked then
-          Include(l_RE_opt, roIgnoreCase)
-         else
-          Exclude(l_RE_opt, roIgnoreCase)
-        ;
-        re := TRegEx.Create(w2s, l_RE_opt);
-   {$ENDIF ~DB_ENABLED}
-      end;
-  i := start;
-  while (i >= historyBox.historyNowOffset) and (i < historyBox.history.Count) do
-//    while (i >= historyBox.topVisible) and (i < historyBox.history.count) do
-    begin
-    s := Thevent(historyBox.history[i]).getBodyText;
- {$IFNDEF DB_ENABLED}
-    if use_re then
-//     	found:=re.exec(s)
-      found := re.IsMatch(s)
-    else
- {$ENDIF ~DB_ENABLED}
-      begin
-      if not caseChk.checked then
-        found := AnsiContainsText(s, w2s)
-       else
-//        s:=uppercase(s);
-        found := pos(w2s,s) > 0;
-//      found := AnsiPos(w2s,s) > 0;
-      end;
-    if found then
-      begin
-//      historyBox.rsb_position := i-historyBox.offset;
-//      historyBox.topVisible := i;
-//      historyBox.topOfs := 0;
-       historyBox.w2s := w2s;
-       historyBox.updateRSB(true, i - historyBox.offset, True);
-       historyBox.topVisible := historyBox.offset + historyBox.rsb_position;
-       historyBox.topOfs := 0;
-       chatFrm.autoscrollBtn.down := historyBox.autoScrollVal;
-//      historyBox.repaint;
-       sbar.simpletext := getTranslation('Found!');
-       case directionGrp.itemIndex of
+      sbar.simpletext := getTranslation('Found!');
+      case directionGrp.itemIndex of
         0: directionGrp.itemIndex := 3;
         1: directionGrp.itemIndex := 2;
-        end;
-       exit;
-      end;
-    case directionGrp.itemIndex of
-      0,3: inc(i);
-      1,2: dec(i);
-      end;
+       end;
+      exit;
     end;
-  end;
   sbar.simpletext := getTranslation('Nothing found, sorry');
   w2sBox.setFocus;
-end; // searchFrom
-
-procedure TchatFrm.SBSearchClick(Sender: TObject);
-begin
- if (thisChat<>NIL)and(thisChat.chatType = CT_IM)
- then with thisChat do
-  case directionGrp.itemIndex of
-    0: searchFrom(historyBox.historyNowOffset);
-    1: searchFrom(historyBox.history.count-1);
-    2: searchFrom(historyBox.topVisible-1);
-    3: searchFrom(historyBox.topVisible+1);
-    end;
 end;
 
 procedure TchatFrm.w2sBoxKeyDown(Sender: TObject; var Key: Word;
@@ -5785,7 +5723,7 @@ begin
 
   if enterPwdDlg(s, getTranslation('Enter password for %s', [ch.who.displayed]), 32, True) then
     begin
-      sA := s;
+      sA := AnsiString(s);
       TICQcontact(ch.who).crypt.qippwd := qip_str2pass(sA);
     end;
 
@@ -5797,7 +5735,6 @@ end;
 procedure TchatFrm.EncryptClearPWD(Sender: TObject);
 var
   ch: TchatInfo;
-//  s: AnsiString;
 begin
  {$IFDEF PROTOCOL_ICQ}
   ch := thisChat;

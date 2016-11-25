@@ -84,7 +84,7 @@ const
 
 class function Thistory.UIDHistoryFN(UID: TUID): String;
 begin
-  Result := Account.ProtoPath + historyPath + UID;
+  Result := Account.ProtoPath + historyPath + String(UID);
 end;
 
 //function Thistory.load(uid:AnsiString; quite : Boolean = false):boolean;
@@ -486,13 +486,13 @@ begin
                     (Assigned(thisCnt2) and (Cnt2I > Cnt1I)) then
                    begin
                     Cnt1I := 0;
-                    thisCnt := Account.AccProto.getContact(IntToStr(i));
+                    thisCnt := Account.AccProto.getContact(i);
                     ev.who  := thisCnt;
                    end
                   else
                    begin
                     Cnt2I := 0;
-                    thisCnt2 := Account.AccProto.getContact(IntToStr(i));
+                    thisCnt2 := Account.AccProto.getContact(i);
                     ev.who  := thisCnt2;
                    end
                 end

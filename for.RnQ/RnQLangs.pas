@@ -922,8 +922,8 @@ end;
 
 procedure LoadSomeLanguage;
 var
-  i : Integer;
-  lv : ToLangInfo;
+  i: Integer;
+  lv: ToLangInfo;
 begin
   if gLangFile = c_Int_Lang_FN then
     Exit;

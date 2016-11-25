@@ -15,7 +15,7 @@ uses
   windows, controls, classes,
   sysutils, graphics, forms, stdctrls, ExtCtrls,
   messages, strutils, Menus,
-  RDGlobal, RnQMenu, RQMenuItem,
+  RDGlobal, RnQMenu, RQMenuItem, RQThemes,
   history, RnQProtocol, events;
 
 type
@@ -24,6 +24,7 @@ const
   linksToUnderline: set of TlinkKind = [LK_FTP, LK_EMAIL, LK_WWW, LK_ED];
 type
 
+  THistSearchDirection = (hsdFromBegin, hsdAhead, hsdBack, hsdFromEnd);
   TDrawStyle = (dsNone, dsBuffer, dsGlobalBuffer, dsMemory, dsGlobalBuffer2);
   TAutoScrollState = (ASS_FULLSCROLL,       // fAutoscroll = True, not2go2end = false
                       ASS_ENABLENOTSCROLL,  // fAutoscroll = True, not2go2end = True
@@ -44,6 +45,7 @@ type
     const Sender: TObject;
     const LinkHref: String;
     const LinkText: String) of object;
+
   ThistoryItem = record
     kind: TitemKind;   // PK_NONE for null items
     ev: Thevent;
@@ -51,6 +53,7 @@ type
     r: Trect;
     link: ThistoryLink;
    end;
+
   ThistoryPos = record
     ev: Thevent;    // NIL for null positions
     evIdx: integer; // -1 for void positions
@@ -60,6 +63,14 @@ type
   ThistoryBox = class(TcustomControl)
     popMenu: TRnQPopupMenu;
    private
+     class var lastBGCnt: TRnQContact;
+     class var lastBGToken: Integer;
+     class var vKeyPicElm: TRnQThemedElementDtls;
+     class var globalBuffer: TBitmap;
+     class constructor Create;
+     class destructor Destroy;
+   private
+
    // For History at all
     items: array of ThistoryItem;
     P_lastEventIsFullyVisible: boolean;
@@ -154,6 +165,7 @@ type
     procedure move2start();
     procedure move2end(animate: Boolean = False);
     function  moveToTime(time: TDateTime; NeedOpen: Boolean): Boolean;
+    function  search(text: String; dir: THistSearchDirection; caseSens: Boolean; useRE: Boolean): Boolean;
     function  getSelText(): string;
     function  copySel2Clpb(): Boolean;
     function  getSelBin(): AnsiString;
@@ -231,8 +243,12 @@ uses
    AnsiStrings,
    Character,
  {$ENDIF UNICODE}
+ {$IFNDEF DB_ENABLED}
+//    RegExpr,
+    RegularExpressions,
+ {$ENDIF ~DB_ENABLED}
   RnQSysUtils, RnQLangs, RnQFileUtil, RDUtils, RnQBinUtils,
-  RQUtil, RQThemes, RnQButtons, RnQGlobal, RnQCrypt, RnQPics,
+  RQUtil, RnQButtons, RnQGlobal, RnQCrypt, RnQPics,
   globalLib, mainDlg, chatDlg, utilLib, ViewPicDimmedDlg,
   roasterLib,
   {$IFDEF USE_GDIPLUS}
@@ -250,12 +266,6 @@ uses
     RnQGraphics32,
   {$ENDIF USE_GDIPLUS}
   themesLib, menusUnit;
-
-var
-  lastBGCnt: TRnQContact;
-  lastBGToken: Integer;
-  vKeyPicElm: TRnQThemedElementDtls;
-  globalBuffer: TBitmap;
 
 function minor(const a, b: ThistoryPos): boolean; overload;
 begin
@@ -306,6 +316,33 @@ begin
     result.ofs := a.ofs;
   end
 end;
+
+class constructor ThistoryBox.Create;
+begin
+  if dStyle = dsGlobalBuffer then
+  begin
+    globalBuffer:= createBitmap(Screen.DesktopWidth, Screen.DesktopHeight);
+  end;
+
+  if dStyle = dsGlobalBuffer2 then
+  begin
+    globalBuffer:= createBitmap(0, 0);
+    globalBuffer.PixelFormat := pf32bit;
+  end;
+
+  vKeyPicElm.ThemeToken := -1;
+  vKeyPicElm.picName := PIC_KEY;
+  vKeyPicElm.Element := RQteDefault;
+  vKeyPicElm.pEnabled := True;
+end;
+
+class destructor ThistoryBox.Destroy;
+begin
+  if (dStyle = dsGlobalBuffer) or (dStyle = dsGlobalBuffer2) then
+    if globalBuffer <> nil then
+      globalBuffer.Free;
+end;
+
 
 constructor ThistoryBox.Create(owner_: Tcomponent; cnt: TRnQContact);
 begin
@@ -2713,27 +2750,116 @@ begin
   DoOnScroll;
 end;
 
-function ThistoryBox.offsetPos():integer;
+function ThistoryBox.search(text: String; dir: THistSearchDirection; caseSens: Boolean; useRE: Boolean): Boolean;
+var
+  start: integer;
+  i: integer;
+  s: string;
+ {$IFNDEF DB_ENABLED}
+//  re:Tregexpr;
+  re: TRegEx;
+  l_RE_opt: TRegExOptions;
+ {$ENDIF ~DB_ENABLED}
+  found: boolean;
+begin
+  if not useRE and not caseSens then
+    text := uppercase(text);
+  if text = '' then
+    begin
+      exit(false);
+    end;
+  if useRE then
+    begin
+   {$IFNDEF DB_ENABLED}
+  {    re:=TRegExpr.Create;
+      re.ModifierI:=not caseChk.checked;
+      re.Expression := w2s;
+        try
+          re.Compile
+        except
+          FreeAndNIL(re);
+          exit;
+        end;}
+        l_RE_opt := [roCompiled];
+        if not caseSens then
+          Include(l_RE_opt, roIgnoreCase)
+         else
+          Exclude(l_RE_opt, roIgnoreCase)
+        ;
+        re := TRegEx.Create(text, l_RE_opt);
+   {$ENDIF ~DB_ENABLED}
+    end;
+  case dir of
+    hsdFromBegin: start := historyNowOffset;
+    hsdAhead:     start := topVisible+1;
+    hsdBack:      start := topVisible-1;
+    hsdFromEnd:   start := history.count-1;
+  end;
+  i := start;
+  while (i >= historyNowOffset) and (i < history.Count) do
+//    while (i >= historyBox.topVisible) and (i < historyBox.history.count) do
+    begin
+      s := Thevent(history[i]).getBodyText;
+   {$IFNDEF DB_ENABLED}
+      if useRE then
+  //     	found := re.exec(s)
+        found := re.IsMatch(s)
+      else
+   {$ENDIF ~DB_ENABLED}
+        begin
+        if not caseSens then
+          found := AnsiContainsText(s, text)
+         else
+  //        s := uppercase(s);
+          found := pos(text, s) > 0;
+  //      found := AnsiPos(w2s, s) > 0;
+        end;
+      if found then
+        begin
+  //      historyBox.rsb_position := i-historyBox.offset;
+  //      historyBox.topVisible := i;
+  //      historyBox.topOfs := 0;
+         self.w2s := w2s;
+         updateRSB(true, i - offset, True);
+         topVisible := offset + rsb_position;
+         topOfs := 0;
+         chatFrm.autoscrollBtn.down := autoScrollVal;
+         repaint;
+         DoOnScroll;
+  //      historyBox.repaint;
+         exit(True);
+        end;
+      case dir of
+        hsdFromBegin,
+        hsdAhead: inc(i);
+        hsdBack,
+        hsdFromEnd: dec(i);
+      end;
+    end;
+  result := False;
+end;
+
+function ThistoryBox.offsetPos(): integer;
 begin
   result := topVisible-offset
 end;
 
-function ThistoryBox.wholeEventsAreSelected():boolean;
+function ThistoryBox.wholeEventsAreSelected(): boolean;
 begin
   result := (startSel.ev<>NIL) and (startSel.ofs<0)
 end;
 
-function ThistoryBox.nothingIsSelected():boolean;
+function ThistoryBox.nothingIsSelected(): boolean;
 begin
   result := startSel.ev=NIL
 end;
 
-function ThistoryBox.somethingIsSelected():boolean;
+function ThistoryBox.somethingIsSelected(): boolean;
 begin
   result := startSel.ev<>NIL
 end;
 
-function ThistoryBox.partialTextIsSelected():boolean;
+function ThistoryBox.partialTextIsSelected(): boolean;
 begin
   result := (startSel.ev<>NIL) and (startSel.ofs>=0)
 end;
@@ -3328,10 +3454,10 @@ begin
   end;
 end;
 
-procedure ThistoryBox.updateRSB(setPos : Boolean; pos : Integer = 0; doRedraw : Boolean = true);
+procedure ThistoryBox.updateRSB(setPos: Boolean; pos: Integer = 0; doRedraw: Boolean = true);
 var
   ScrollInfo: TScrollInfo;
-//  vSBI : TScrollBarInfo;
+//  vSBI: TScrollBarInfo;
 begin
   if historyNowCount<2 then
     begin
@@ -3381,7 +3507,7 @@ begin
     end;
 end; // updateRSB
 
-procedure ThistoryBox.addEvent(ev : Thevent);
+procedure ThistoryBox.addEvent(ev: Thevent);
 var
   i: Integer;
 begin
@@ -3405,7 +3531,7 @@ begin
 //  Repaint;
 end;
 
-function ThistoryBox.getAutoScroll : Boolean;
+function ThistoryBox.getAutoScroll: Boolean;
 begin
 //  result := fAutoScrollState < ASS_FULLDISABLED;
 //  result := fAutoScrollState = ASS_FULLSCROLL;
@@ -3429,9 +3555,9 @@ begin
    end
 end;}
 
-procedure ThistoryBox.setAutoScrollForce(vAS : Boolean);
+procedure ThistoryBox.setAutoScrollForce(vAS: Boolean);
 var
-  changed : boolean;
+  changed: boolean;
 begin
 {//  if fAutoscroll <> vAS then
   if (fAutoScrollState < ASS_FULLDISABLED)  <> vAS then
@@ -3637,7 +3763,7 @@ begin
   or ((rsb_position=0) and (d<0))
   or ((rsb_position = historyNowCount-1) and (d>0)) then
     exit;
-  startWithLastLine:=FALSE;
+  startWithLastLine := FALSE;
   topVisible := historyNowOffset + min(max(rsb_position+d, 0),  historyNowCount-1);
   updateRSB(False, rsb_position+d, True);
   topOfs := 0;
@@ -3786,7 +3912,7 @@ begin
 //    clipboard.asText := pointedItem.link.str;
 //with thisChat.historyBox.pointedItem do
   with ClickedItem do
-  if kind=PK_LINK then
+  if kind = PK_LINK then
     clipboard.asText := link.str;
 end;
 
@@ -3795,29 +3921,5 @@ begin
   copySel2Clpb;
 end;
 
-initialization
-
-  if dStyle = dsGlobalBuffer then
-  begin
-    globalBuffer:= createBitmap(Screen.DesktopWidth, Screen.DesktopHeight);
-  end;
-
-  if dStyle = dsGlobalBuffer2 then
-  begin
-    globalBuffer:= createBitmap(0, 0);
-    globalBuffer.PixelFormat := pf32bit;
-  end;
-
-  vKeyPicElm.ThemeToken := -1;
-  vKeyPicElm.picName := PIC_KEY;
-  vKeyPicElm.Element := RQteDefault;
-  vKeyPicElm.pEnabled := True;
-
-
-finalization
-
-  if (dStyle = dsGlobalBuffer) or (dStyle = dsGlobalBuffer2) then
-    if globalBuffer <> nil then
-      globalBuffer.Free;
 
 end.

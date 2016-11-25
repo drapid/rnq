@@ -258,7 +258,7 @@ type
     procedure SetSorted(Value: Boolean);
     procedure SetStretch(Value: Boolean);
     procedure SetThumb(Index: Integer; Value: TRnQBitmap);
-    procedure ThumbsUpdated(Sender: TObject);
+//    procedure ThumbsUpdated(Sender: TObject);
     procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
     procedure CMEnter(var Message: TCMEnter); message CM_ENTER;
@@ -1616,8 +1616,8 @@ var
   Index: Integer;
 //  TempThumb: TRnQBitmap;
   Thumb: TRnQBitmap;
-  ThumbWidth: Integer;
-  ThumbHeight: Integer;
+//  ThumbWidth: Integer;
+//  ThumbHeight: Integer;
 begin
   DrawParentBackGround := ParentBackground and (Parent <> nil) and StyleServices.Enabled;
 
@@ -1659,8 +1659,8 @@ begin
           Canvas.Rectangle(R)
         else
         begin
-          ThumbWidth := Min(Thumb.Width, CellWidth);
-          ThumbHeight := Min(Thumb.Height, CellHeight);
+//          ThumbWidth := Min(Thumb.Width, CellWidth);
+//          ThumbHeight := Min(Thumb.Height, CellHeight);
 
           (*
           TempThumb := TRnQBitmap.Create;
@@ -1968,12 +1968,13 @@ begin
   FItems.Thumbs[Index] := Value;
 end;
 
+{
 procedure TCustomImageGrid.ThumbsUpdated(Sender: TObject);
 begin
   if not FRetainUnresolvedItems then
     DeleteUnresolvedItems;
 end;
-
+}
 procedure TCustomImageGrid.WMEraseBkgnd(var Message: TWMEraseBkgnd);
 begin
   Message.Result := 1;
