@@ -2794,6 +2794,8 @@ begin
     hsdAhead:     start := topVisible+1;
     hsdBack:      start := topVisible-1;
     hsdFromEnd:   start := history.count-1;
+   else
+    start := historyNowOffset;
   end;
   i := start;
   while (i >= historyNowOffset) and (i < history.Count) do

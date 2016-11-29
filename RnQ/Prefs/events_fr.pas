@@ -617,15 +617,15 @@ end;
 
 procedure TeventsFr.RnQSpeedButton1Click(Sender: TObject);
 var
-  e : Thevent;
-  i : Integer;
-  s : AnsiString;
-//  sR : RawByteString;
+  e: Thevent;
+  i: Integer;
+  s: AnsiString;
+//  sR: RawByteString;
 begin
   i := eventBox.itemIndex + 1;
   s := '';
   if i = EK_AUTOMSG then
-   s := #00;
+    s := #00;
   if (i = EK_statuschange)or(i = EK_oncoming) then
     e := Thevent.new(i, Account.AccProto.getMyInfo,
             now, int2str(integer(SC_ONLINE))+AnsiChar(True) +AnsiChar(20)

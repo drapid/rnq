@@ -690,9 +690,9 @@ var
 
   function  Int2UID(const i: Integer): TUID; Inline;
 const
-  LogWhatNames: array [TwhatLog] of string=('CONNECTED','DISCONNECTED','CLIENT','SERVER','DC RCVD','DC SENT',
-                                     'CONNECTING',
-                                     'CLIENT', 'SERVER');
+  LogWhatNames: array [TwhatLog] of string=('CONNECTED', 'DISCONNECTED',
+                                            'CLIENT', 'SERVER', 'DC RCVD', 'DC SENT',
+                                            'CONNECTING', 'CLIENT', 'SERVER');
  // Flags for messages                                    
   IF_multiple = 1 shl 0;      // multiple recipients
   IF_offline  = 1 shl 1;      // sent while you were offline

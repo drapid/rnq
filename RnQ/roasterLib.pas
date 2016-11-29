@@ -811,10 +811,8 @@ begin
    {$ENDIF}
     insertNode(d_offline);
     end;
-  rosterList.resetEnumeration;
-  while rosterList.hasMore do
+  for c in rosterList do
    begin
-    c := rosterList.getNext;
     if Filtered(c) then
      Continue;
     d := GetContactDiv(c, True);

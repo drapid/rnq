@@ -21,9 +21,9 @@ const
   OE_email      = 7;
   OE_automsgreq = 8;
 
-  OEvent2ShowStr:array [OE_msg..OE_automsgreq] of string=(
-    Str_message,'Contacts','Added you', 'Authorization given','Authorization denied',
-    'File','E-Mail','Auto-message'
+  OEvent2ShowStr: array [OE_msg..OE_automsgreq] of string=(
+    Str_message, 'Contacts', 'Added you', 'Authorization given',
+    'Authorization denied', 'File', 'E-Mail', 'Auto-message'
   );
 type
   POEvent = ^TOEvent;
@@ -45,7 +45,7 @@ type
 //    constructor Create;// override;
     constructor Create;// override;
     destructor Destroy; override;
-    function   toString: RawByteString;
+    function   toString: RawByteString; reIntroduce;
     function   fromString(const s: RawByteString): Boolean;
     function   Clone: TOEvent;
     end; // TOEvent
@@ -54,7 +54,7 @@ type
    public
 //    destructor Destroy; override;
 
-    function  toString: RawByteString;
+    function  toString: RawByteString; reIntroduce;
     procedure fromString(s: RawByteString);
 
     function empty: boolean;

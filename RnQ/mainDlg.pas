@@ -585,7 +585,7 @@ uses
 procedure TRnQmain.FormShow(Sender: TObject);
 begin
   utilLib.dockSet;
-  autosizeDelayed:=TRUE;
+  autosizeDelayed := TRUE;
   mainfrmHandleUpdate;
 end;
 
@@ -1046,7 +1046,7 @@ begin
 //  cnv.Lock;
   y := r.top+(r.bottom-r.top-cnv.TextHeight('1')) div 2;
 
-    PaintOnGlass := ThemeServices.ThemesEnabled and DwmCompositionEnabled and
+    PaintOnGlass := StyleServices.Enabled and DwmCompositionEnabled and
       not (csDesigning in ComponentState);
     if PaintOnGlass then
     begin
@@ -1063,7 +1063,7 @@ begin
   begin
     try
       TextRect := rect(r.left,r.Top+2,r.Left+round((r.right-r.left)*progress),r.bottom-2);
-      cnv.font.color:=clHighlightText;
+      cnv.font.color := clHighlightText;
       if PaintOnGlass then
        begin
         PaintBuffer := BeginBufferedPaint(cnv.Handle, TextRect, BPBF_TOPDOWNDIB, nil, MemDC);
@@ -1098,9 +1098,9 @@ else
         vImgElm.ThemeToken := -1;
         vImgElm.Element := RQteDefault;
         vImgElm.pEnabled := True;
-        with theme.getPicSize(vImgElm) do
+        with theme.getPicSize(vImgElm, 0, currentPPI) do
 //         outboxSbarRect:=rect(r.left+3,r.top+1 + (r.Bottom-r.Top - cy)div 2,r.Left+cx, r.Top+cy);
-         outboxSbarRect:=rect(r.left+3, 1 + (r.top+r.Bottom - cy)div 2, r.Left+cx, r.Top+cy);
+          outboxSbarRect := rect(r.left+3, 1 + (r.top+r.Bottom - cy)div 2, r.Left+cx, r.Top+cy);
         theme.drawPic(cnv.Handle, outboxSbarRect.TopLeft, vImgElm, GetParentCurrentDpi);
       end
     else
@@ -1113,13 +1113,13 @@ else
           vImgElm.ThemeToken := -1;
           vImgElm.Element := RQteDefault;
           vImgElm.pEnabled := True;
-          with theme.getPicSize(vImgElm) do
+          with theme.getPicSize(vImgElm, 0, currentPPI) do
   //         theme.drawPic(cnv.Handle, Point(r.left+3,r.top+1 + (r.Bottom-r.Top - cy)div 2), vImgElm);
-           theme.drawPic(cnv.Handle, Point(r.left+3, 1 + (r.top+r.Bottom - cy)div 2), vImgElm, GetParentCurrentDpi);
+            theme.drawPic(cnv.Handle, Point(r.left+3, 1 + (r.top+r.Bottom - cy)div 2), vImgElm, GetParentCurrentDpi);
         end
      end;
 //    TextOut(cnv.Handle, r.Right-cnv.textWidth(contactsPnlStr)-4,y, pansiChar(contactsPnlStr), Length(contactsPnlStr));
-    x :=  cnv.textWidth(contactsPnlStr);
+    x := cnv.textWidth(contactsPnlStr);
 //    bmp := createBitmap(x, r.Bottom - r.Top);
 //  if ThemeControl(Self) then
 //  begin
@@ -1161,7 +1161,7 @@ else
     else
      begin
       oldMode := SetBkMode(cnv.handle, TRANSPARENT);
-      cnv.textOut(r.Right-x-4,y, contactsPnlStr);
+      cnv.textOut(r.Right-x-4, y, contactsPnlStr);
       SetBkMode(cnv.handle, oldMode);
      end;
   end;
@@ -1550,7 +1550,7 @@ begin
   end;
 end;
 
-procedure TRnQmain.movecontactsAction(sender:Tobject);
+procedure TRnQmain.movecontactsAction(sender: Tobject);
 var
   oldID, newID: integer;
   c: TRnQcontact;
@@ -1559,25 +1559,18 @@ begin
     exit;
   with roasterlib.focused do
    if kind = NODE_GROUP then
-     oldID:=groupID
+     oldID := groupID
     else
      exit;
   newID := (sender as Tmenuitem).tag;
   if newID = 2000 then
-    newID:=0; // 2000 means no group
+    newID := 0; // 2000 means no group
 //roster.hide;
   roster.BeginUpdate;
   try
-   with Account.AccProto.readList(LT_ROSTER) do
-    begin
-    resetEnumeration;
-    while hasMore do
-      begin
-      c := getNext;
+    for c in Account.AccProto.readList(LT_ROSTER) do
       if c.group=oldID then
         setNewGroupFor(c, newID);
-      end;
-    end;
    finally
 //    roster.show;
     roster.EndUpdate;
@@ -1606,7 +1599,7 @@ procedure TRnQmain.doSearch;
   begin
     result := TRUE;
     if length(s) < 2 then
-      result:=FALSE
+      result := FALSE
      else
       for i:=1 to length(s) do
        if s[i]<>s[1] then
@@ -1676,16 +1669,9 @@ var
   c: TRnQcontact;
 begin
   result := TRnQCList.create;
-  with Account.AccProto.readList(LT_ROSTER) do
-  begin
-    resetEnumeration;
-    while hasMore do
-     begin
-      c := getNext;
+  for c in Account.AccProto.readList(LT_ROSTER) do
       if c.group = clickedGroup then
         result.add(c);
-     end;
-  end;
 end; // clickedGroupList
 
 procedure TRnQmain.tovisiblelist1Click(Sender: TObject);
@@ -1838,12 +1824,12 @@ var
   buffer: array[0..2000] of char;
 begin
   with roster.ScreenToClient(mousePos) do
-    node:=roasterLib.nodeAt(x,y);
+    node := roasterLib.nodeAt(x,y);
   if (node=NIL) or (node.kind<>NODE_CONTACT) then
     exit;
 //  if node.contact.status in [SC_OFFLINE,SC_UNK] then exit;
   ss := '';
-  n := DragQueryFile(Message.Drop,cardinal(-1),NIL,0);
+  n := DragQueryFile(Message.Drop, cardinal(-1), NIL, 0);
   for i:=0 to n-1 do
     begin
      DragQueryFile(Message.Drop, i, @buffer, sizeof(buffer));
@@ -3173,9 +3159,9 @@ begin
 end;
 
 procedure TRnQmain.mainmenuimportclbClick(Sender: TObject);
-var
-  fn: string;
-  cl: TRnQCList;
+//var
+//  fn: string;
+//  cl: TRnQCList;
 begin
 {  fn:=openSavedlg(self, '', True, 'clb');
   if fn = '' then exit;
@@ -3192,8 +3178,8 @@ begin
 end;
 
 procedure TRnQmain.mainmenuexportclbClick(Sender: TObject);
-var
-  fn: string;
+//var
+//  fn: string;
 begin
 {fn := openSavedlg(self, '', False, 'clb');
 if fn = '' then exit;
@@ -3794,12 +3780,15 @@ var
   i: integer;
   s, sub: string;
 begin
-if key=VK_RETURN then
-  begin
-  sub := '';
-  if shift=[SSctrl] then sub := CRLF;
-  if shift=[SSshift] then sub := #13;
-  if shift=[SSalt] then sub := #10;
+  if key=VK_RETURN then
+    begin
+      sub := '';
+      if shift=[SSctrl] then
+        sub := CRLF;
+      if shift=[SSshift] then
+        sub := #13;
+      if shift=[SSalt] then
+        sub := #10;
   with sender as Tedit do
     begin
     i := selstart;
@@ -3827,7 +3816,7 @@ var
 begin
  {$IFNDEF NO_WIN98}
 // if Win32MajorVersion < 5 then
-//   p:=drawmenuitemR98(ACanvas, TmenuItem(sender).GetParentMenu, TmenuItem(sender), rect(0,0,width,height), TRUE)
+//   p := drawmenuitemR98(ACanvas, TmenuItem(sender).GetParentMenu, TmenuItem(sender), rect(0,0,width,height), TRUE)
 //  else
  {$ENDIF WIN98}
    p := GPdrawmenuitemR7(ACanvas, TmenuItem(sender).GetParentMenu, TmenuItem(sender), rect(0,0,width,height), TRUE);
@@ -4753,6 +4742,7 @@ begin
   for ev in aMainMenuUpd do
     ev.amiuEv(ev.amiuMenu);
   for ev in aMainMenuUpd2 do
+   if Assigned(ev.amiuMenu) then
     ev.amiuEv(ev.amiuMenu);
 //  for i := Low(aMainMenuUpd2) to High(aMainMenuUpd2) do
 //   with aMainMenuUpd2[i]
@@ -4774,6 +4764,7 @@ begin
 //  for i := Low(aStatusMenuUpd) to High(aStatusMenuUpd) do
 //    aStatusMenuUpd[i].amiuEv(aStatusMenuUpd[i].amiuMenu);
   for ev in aStatusMenuUpd do
+   if Assigned(ev.amiuMenu) then
     ev.amiuEv(ev.amiuMenu);
 end;
 

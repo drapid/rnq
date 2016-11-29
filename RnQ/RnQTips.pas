@@ -329,8 +329,8 @@ end;
 
 procedure TipRemove(ev: Thevent);
 var
-  i : Integer;
-  rt : TRnQTip;
+  i: Integer;
+  rt: TRnQTip;
 begin
   If Assigned(tipsList) then
   begin
@@ -357,8 +357,8 @@ end;
 
 procedure TipRemove(cnt: TRnQcontact);
 var
-  i : Integer;
-  rt : TRnQTip;
+  i: Integer;
+  rt: TRnQTip;
 begin
   if not Assigned(cnt) then
     Exit;
@@ -413,9 +413,9 @@ end;
 procedure TipsProced;
 var
   I: Integer;
-  tipFrm : TtipFrm;
-  cur_ev : Thevent;
-  rt : TRnQTip;
+  tipFrm: TtipFrm;
+  cur_ev: Thevent;
+  rt: TRnQTip;
   vCnt: TRnQContact;
 begin
   If Assigned(tipsList) then
@@ -480,7 +480,7 @@ begin
               end;
             TA_rclick: eventQ.removeEvent(cur_ev.who);
           end;
-          action:=TA_null;
+          action := TA_null;
           cur_ev.Free;
         end;
       end;
@@ -551,6 +551,8 @@ var
 //  picN: TPicName;
   r2: TGPRect;
   ms: Integer;
+  recalcPPI: Boolean;
+  GAP: Integer;
 begin
 //inherited;
   if calcOnly then
@@ -561,6 +563,16 @@ begin
 
   if (pCnt= NIL) and ((ev = nil) or (ev.who =NIL)) then
     exit;
+
+  if (PPI > 30) and (PPI <> cDefaultDPI) then
+    begin
+      recalcPPI := True;
+    end
+   else
+    begin
+      recalcPPI := false;
+      PPI := cDefaultDPI;
+    end;
 
   fullR.Left := 0;
   fullR.Top := 0;
@@ -612,12 +624,21 @@ begin
      s := s + ' (' +ev.who.displayed + ')';
 
 
-//cname:=contact.displayed;
+//cname := contact.displayed;
   work := desktopWorkArea(Application.MainFormHandle);
 
-  x := 4;
+  if recalcPPI then
+    begin
+      GAP := MulDiv(2, PPI, cDefaultDPI);
+      x := MulDiv(4, PPI, cDefaultDPI);
+    end
+   else
+    begin
+      GAP := 2;
+      x := 4;
+    end;
+  y := GAP;
 //  R.left:=x;
-  y := 2;
   if calcOnly then
    begin
     maxX := x;
@@ -692,9 +713,12 @@ begin
 
     // Info BG
       Rcap.Left := 1;
-      Rcap.Top  := 21;
       Rcap.Right := maxX-1;
       Rcap.Bottom := maxY-1;
+      if recalcPPI then
+        Rcap.Top  := MulDiv(21, PPI, cDefaultDPI)
+       else
+        Rcap.Top  := 21;
 //      Clr2 := theme.GetAColor('tip.info', ClrBg);
       Clr2 := theme.GetAColor('tip.info.' + p, theme.GetColor('tip.info', ClrBg));
    {$IFDEF USE_GDIPLUS}
@@ -709,7 +733,7 @@ begin
     vSize := theme.drawPic(DC, x,y, p, true, PPI)
 ;
   p := '';
-  inc(x, vSize.cx+2);
+  inc(x, vSize.cx + GAP);
 //  gpR.X := x;
   r := fullR;
   r.Left := x;
@@ -721,7 +745,7 @@ begin
    SetTextColor(DC, ColorToRGB(Font.Color));
 //  DrawText(DC, PChar(s), -1, R, DT_CALCRECT or DT_SINGLELINE);// or DT_VCENTER);
   DrawText(DC, PChar(s), length(s), R, DT_CALCRECT or DT_SINGLELINE);// or DT_VCENTER);
-  GetTextExtentPoint32(DC,pchar(s), length(s), res);
+  GetTextExtentPoint32(DC, pchar(s), length(s), res);
 
 //  inc(x, cnv.textWidth(cname)+3);
   inc(x, res.cx + 3);
@@ -806,10 +830,10 @@ begin
 //         SetBKMode(DC, oldMode);
     end;
 
-//cnv.textOut(x,y+2, s);
+//cnv.textOut(x, y+2, s);
 //inc(x, cnv.textWidth(s)+2);
 //  inc(x, round(resR.Width)+2);
-  inc(x, res.cx+2);
+  inc(x, res.cx + GAP);
 
   if Assigned(ev) then
    if ev.kind in [EK_ONCOMING, EK_STATUSCHANGE] then
@@ -855,10 +879,10 @@ begin
              end;
          end;
          end;
-  inc(x, 4);
+  inc(x, GAP * 2);
 //inc(y, h);
 //  inc(y, max(round(resR.Height), vSize.cy) + 2);
-  inc(y, max(res.cy, vSize.cy) + 2);
+  inc(y, max(res.cy, vSize.cy) + GAP);
   if calcOnly then
    begin
     maxX := x;
@@ -995,8 +1019,8 @@ begin
 //         maxX := max(maxX, round(resR.Width)) + 3;
 //         maxY := R.Top + res.cy + 5;
 //         maxX := max(maxX, res.cx) + 5;
-         maxY := max(maxY, R.Bottom) + 5;
-         maxX := max(maxX, r.Right) + 5;
+         maxY := max(maxY, R.Bottom) + GAP*3;
+         maxX := max(maxX, r.Right) + GAP*3;
         end;
       end;
 
@@ -1037,12 +1061,12 @@ begin
         if not calcOnly then
           DrawRbmp(DC, icon.Bmp, R2);
     //    cnv.Draw(5, y+3,  contact.icon);
-        inc(y, 10 + R2.Height);
+        inc(y, GAP*5 + R2.Height);
         if calcOnly then
          begin
           maxY := Y;
-          if r2.X+ R2.Width + 8 > maxX then
-            maxX := r2.X + R2.Width + 8;
+          if (r2.X+ R2.Width + GAP*4) > maxX then
+            maxX := r2.X + R2.Width + GAP*4;
          end;
       end;
    {$ENDIF RNQ_AVATARS}

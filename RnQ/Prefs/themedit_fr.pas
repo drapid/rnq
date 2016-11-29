@@ -115,16 +115,16 @@ begin
          colorBtn.SelectionColor:= fontBox.Font.color;
          fontBox.Text := fontBox.Font.name;//findInStrings(name, fontBox.items);
   //      fontBox.Font := f;
-         sizeSpin.Value:=fontBox.Font.size;
+         sizeSpin.Value := fontBox.Font.size;
         end; end;
     TP_pic, TP_ico:
        begin
          fImgElm.picName := p.name;
-         with theme.GetPicSize(fImgElm) do
+         with theme.GetPicSize(fImgElm, 0, GetParentCurrentDpi) do
           begin
             fImgElm.ThemeToken := -1;
-           ImgPBox.Width := cx;
-           ImgPBox.Height := cy;
+            ImgPBox.Width := cx;
+            ImgPBox.Height := cy;
           end;
          ImgPBox.Repaint;
   //       img.Refresh;
@@ -277,7 +277,7 @@ end;
 
 procedure TthemeditFr.fnBoxButtonClick(Sender: TObject);
 var
-  fn : String;
+  fn: String;
 begin
   fn := openSavedlg(prefFrm, '', True, '', '', fnBox.Text);
   if fn > '' then
@@ -286,24 +286,26 @@ end;
 
 procedure TthemeditFr.ImgPBoxPaint(Sender: TObject);
 var
-  p:^Tthemeproperty;
+  p: ^Tthemeproperty;
 begin
-  if propsBox.itemIndex<0 then Exit;
-  p:=@themeprops[propsBox.itemIndex];
+  if propsBox.itemIndex<0 then
+    Exit;
+  p := @themeprops[propsBox.itemIndex];
   if p.kind in [TP_pic, TP_ico, TP_smile] then
-   theme.drawPic(TPaintBox(Sender).Canvas.Handle, 0,0, p.name);
+    theme.drawPic(TPaintBox(Sender).Canvas.Handle, 0,0, p.name, True, Self.GetParentCurrentDpi);
 end;
 
 procedure TthemeditFr.InitPage;
 var
-  i:integer;
+  i: integer;
 begin
+  textBox.Width := Self.Width - textBox.Left * 2;
   propsBox.items.clear();
   Theme.getprops(themeprops);
   for i:=0 to length(themeprops)-1 do
     propsBox.items.add(format('[%s] %s',[themeprops[i].section,themeprops[i].name]));
 
- propsBox.itemIndex:=0;
+ propsBox.itemIndex := 0;
  propsBoxChange(self);
 end;
 procedure TthemeditFr.unInitPage;
@@ -318,7 +320,7 @@ begin
 // if prefPages[thisPrefIdx].frame = NIL then exit;
   if textBox.Modified then
     begin
-      savefile2(AccPath+userthemeFilename, StrToUTF8( textBox.text));
+      saveTextFile(AccPath+userthemeFilename, textBox.text);
       reloadCurrentTheme;
     end;
 end;

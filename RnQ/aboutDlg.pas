@@ -295,7 +295,7 @@ begin
   finally
   end;
 
-  gr :=TGPGraphics.Create(DC);
+  gr := TGPGraphics.Create(DC);
   gr.Clear(gpColorFromAlphaColor($FF, Self.Brush.Color));
 {  s := 'R&Q';
   D := min(AboutPBox.Width, AboutPBox.Height); 
