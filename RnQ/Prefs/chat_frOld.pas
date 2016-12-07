@@ -132,14 +132,14 @@ begin
    begin
 //    prefSmlAutoSize := not SmlUseSizeChk.Checked;
     MainPrefs.addPrefBool(SmlUseSizeChk.HelpKeyword, not SmlUseSizeChk.Checked);
-    SmileToken := -1;
+//    SmileToken := -1;
    end;
 //
 
   if prefSmlAutoSize <> not SmlUseSizeChk.Checked then
    begin
     prefSmlAutoSize := not SmlUseSizeChk.Checked;
-    SmileToken := -1;
+//    SmileToken := -1;
    end;
   MainPrefs.addPrefInt(SmlBtnWidthTrk.HelpKeyword, SmlBtnWidthTrk.Position);
   MainPrefs.addPrefInt(SmlBtnHeightTrk.HelpKeyword, SmlBtnHeightTrk.Position);
@@ -147,15 +147,15 @@ end;
 
 procedure TchatFr.resetPage;
 begin
-  stylecodesChk.checked:=fontstylecodes.enabled;
-  autocopyChk.checked:=autoCopyHist;
-  autodeselectChk.checked:=autodeselect;
-  singleChk.checked:=singleDefault;
-  statusontabChk.checked:=showStatusOnTabs;
-  cursorbelowChk.checked:=quoting.cursorBelow;
-  sendOnEnterTmp      :=sendonenter;
-  quoteselectedChk.checked:=quoting.quoteselected;
-  chatOnTopChk.Checked:=chatAlwaysOnTop;
+  stylecodesChk.checked := fontstylecodes.enabled;
+  autocopyChk.checked := autoCopyHist;
+  autodeselectChk.checked := autodeselect;
+  singleChk.checked := singleDefault;
+  statusontabChk.checked := showStatusOnTabs;
+  cursorbelowChk.checked := quoting.cursorBelow;
+  sendOnEnterTmp      := sendonenter;
+  quoteselectedChk.checked := quoting.quoteselected;
+  chatOnTopChk.Checked := chatAlwaysOnTop;
   ChkDefCP.Checked    := useSystemCodePage;
   PlugPanelChk.Checked := usePlugPanel;
   HintsShowChk.Checked := showHintsInChat;
@@ -166,7 +166,7 @@ begin
   MainPrefs.getPrefArrParam([msgWrapBox, SmlGridChk]);
 
   SmlBtnWidthTrk.Position  := MainPrefs.getPrefIntDef(SmlBtnWidthTrk.HelpKeyword, Btn_Max_Width);;
-  SmlBtnHeightTrk.Position  := MainPrefs.getPrefIntDef(SmlBtnHeightTrk.HelpKeyword, Btn_Max_Width);;
+  SmlBtnHeightTrk.Position := MainPrefs.getPrefIntDef(SmlBtnHeightTrk.HelpKeyword, Btn_Max_Height);
   SmlUseSizeChk.Checked := not MainPrefs.getPrefBoolDef(SmlUseSizeChk.HelpKeyword, True);
 
   SmlPnlChk.Checked  := MainPrefs.getPrefBoolDef('smiles-show-panel', True); //ShowAniSmlPanel

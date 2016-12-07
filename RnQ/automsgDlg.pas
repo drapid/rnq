@@ -59,7 +59,7 @@ uses
 type
   PAutMsg = ^TAutMsg;
   TAutMsg = record
-     Name, Str : String;
+     Name, Str: String;
   end;  
 //procedure TautomsgFrm.destroyHandle; begin inherited end;
 

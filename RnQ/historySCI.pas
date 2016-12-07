@@ -79,8 +79,8 @@ type
     //template: TStringList;
     // For History at all
     items: array of ThistoryItem;
-    P_lastEventIsFullyVisible: boolean;
-    P_topEventNrows, P_bottomEvent: integer;
+//    P_lastEventIsFullyVisible: boolean;
+//    P_topEventNrows, P_bottomEvent: integer;
     fAutoScrollState: TAutoScrollState; // auto scrolls along messages
     FOnScroll: TNotifyEvent;
 
@@ -103,9 +103,9 @@ type
     procedure setAutoScrollForce(vAS: boolean);
   public
     selectedText: String;
-    topVisible: TDateTime;
-    topOfs: integer;
-    offset, offsetAll: integer; // can't show hevents before this
+//    topVisible: TDateTime;
+//    topOfs: integer;
+//    offset, offsetAll: integer; // can't show hevents before this
     startSel, endSel: ThistoryPos;
     hasEvents, isWholeEvents: Boolean;
     who: TRnQContact;
@@ -120,7 +120,7 @@ type
     //templateLoaded: Boolean;
     embeddedImgs: TDictionary<LongWord, RawByteString>;
 
-    property lastEventIsFullyVisible: boolean read P_lastEventIsFullyVisible;
+//    property lastEventIsFullyVisible: boolean read P_lastEventIsFullyVisible;
     property pointedItem: ThistoryItem read P_pointedItem;
     property clickedItem: ThistoryItem read lastClickedItem;
     property pointedSpace: ThistoryItem read P_pointedSpace;
@@ -159,7 +159,7 @@ type
     procedure HideLoadingScreen;
     procedure HideHistory;
     procedure ShowLimitWarning;
-    procedure ViewInWindow(const title, body: String; const images: TParams; const formicon: String = '');
+    procedure ViewInWindow(const title, body: String; const when: String; const formicon: String = '');
     procedure ShowDebug;
 
 //    constructor Create(AOwner: Tcomponent; cnt: TRnQContact); override;
@@ -309,7 +309,7 @@ begin
     color := ABCD_ADCB(ColorToRGB(color));
     result := '#' + IntToHexA(color, 6);
   end;
-end; // color2str
+end; // color2html
 
 function ThistoryBox.getSelHtml(smiles: boolean): RawByteString;
 const
@@ -1628,6 +1628,8 @@ begin
     args[16] := 36;
   end;
 
+  args[17] := bViewTextWrap;
+
   try
     Call('initSettings', [args]);
   except
@@ -1674,7 +1676,7 @@ var
   smileObj: TSmlObj;
   smiles, content: String;
   smileRect: TGPRect;
-  pic : TPicName;
+  pic: TPicName;
 begin
   smiles := '{ ';
   if useSmiles then
@@ -1911,7 +1913,7 @@ begin
     params[pos][9] := False;
 
   params[pos][10] := animate;
-  params[pos][11] := last;
+//  params[pos][11] := last;
 end;
 
 procedure ThistoryBox.SendChatItems(params: TParams; prepend: Boolean = False);
@@ -1944,9 +1946,9 @@ begin
   Call('showLimitWarning', []);
 end;
 
-procedure ThistoryBox.ViewInWindow(const title, body: String; const images: TParams; const formicon: String = '');
+procedure ThistoryBox.ViewInWindow(const title, body: String; const when: String; const formicon: String = '');
 begin
-  Call('viewInWindow', [title, body, images, formicon]);
+  Call('viewInWindow', [title, body, when, formicon]);
 end;
 
 procedure ThistoryBox.ReloadLast;

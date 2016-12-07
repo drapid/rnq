@@ -197,6 +197,7 @@ end;
 
 procedure TlogFrm.FormDestroy(Sender: TObject);
 begin
+  Clear1Click(Self);
   logFrm := nil;
 end;
 
@@ -265,6 +266,7 @@ begin
    SetLength(Cpt, 0);
    SetLength(Text, 0);
    SetLength(Img, 0);
+   SetLength(PktData, 0);
   end;
 end;
 
@@ -282,7 +284,7 @@ end;
 
 procedure TlogFrm.Clear1Click(Sender: TObject);
 //var
-//  i:integer;
+//  i: integer;
 begin
   LogList.Clear;
   dumpBox.Clear;

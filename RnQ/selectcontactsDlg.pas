@@ -163,7 +163,7 @@ function TselectCntsFrm.findGroupNode(id : Integer) : PVirtualNode;
 var
 //  i: integer;
   ligrp: Plistitem;
-  n : PVirtualNode;
+  n: PVirtualNode;
 begin
   if id = 0 then
    begin
@@ -202,14 +202,14 @@ end;
 
 procedure TselectCntsFrm.updateList;
 var
-  li : Plistitem;
-  g, n  : PVirtualNode;
+  li: Plistitem;
+  g, n: PVirtualNode;
 //  grp: integer;
-  C  : TRnQcontact;
-//  chk : TchkState;
+  C: TRnQcontact;
+//  chk: TchkState;
 begin
- uinlistBox.Items.text:=uinlists.names;
- uinlistBox.text:='';
+  uinlistBox.Items.text := uinlists.names;
+  uinlistBox.text := '';
 
  clearList;
  if SCO_groups in options then
@@ -361,11 +361,11 @@ begin
    end;
 end; // selectedList
 
-function TselectCntsFrm.unselectedList:TRnQCList;
+function TselectCntsFrm.unselectedList: TRnQCList;
 var
-  n : PVirtualNode;
+  n: PVirtualNode;
 begin
- result:=TRnQCList.create;
+  result := TRnQCList.create;
   n := list.GetFirst;
   while n <> NIL do
    begin
@@ -391,11 +391,11 @@ end;
 procedure TselectCntsFrm.listDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-  x,y:integer;
-//  cnv:Tcanvas;
+  x, y: integer;
+//  cnv: Tcanvas;
   oldMode: Integer;
-  s : string;
-  cnt : TRnQContact;
+  s: string;
+  cnt: TRnQContact;
 begin
 //  cnv := PaintInfo.Canvas;
 //  if sender.Selected[PaintInfo.Node] then

@@ -56,7 +56,7 @@ function FillGradient2(DC: HDC; ARect: TRect; ColorCount: Integer;
   function absPath(const fn: String): boolean;
   function ExtractFileNameOnly(const fn : String) : String;
 
-  procedure msgDlg(msg: String; NeedTransl: Boolean; kind: TMsgDlgType; const uid: AnsiString = '');
+  procedure msgDlg(msg: String; NeedTransl: Boolean; kind: TMsgDlgType; const uid: String = '');
   function logTimestamp: String;
 
   procedure drawTxt(hnd: Thandle; x, y: integer; const s: String);
@@ -95,20 +95,8 @@ function FillGradient2(DC: HDC; ARect: TRect; ColorCount: Integer;
 //  procedure assignImgPic(img: Timage; picName: String);
   procedure parseMsgImages(const imgStr: RawByteString; var imgList: TAnsiStringList);
 
-type
-  Pmsg = ^Tmsg;
-  Tmsg = record
-     text: String;
-     UID : AnsiString;
-     kind: TMsgDlgType;
-     time: Tdatetime;
-//     cnt : tcontact;
-    end;
-
-
 var
-  masterMute : Boolean = false;
-//  msgs :array of Tmsg;
+  masterMute: Boolean = false;
 
 implementation
 uses
@@ -206,7 +194,7 @@ begin
 end; // str2html
 
 
-procedure msgDlg(msg: String; NeedTransl: Boolean; kind: TMsgDlgType; const uid: AnsiString = '');
+procedure msgDlg(msg: String; NeedTransl: Boolean; kind: TMsgDlgType; const uid: String = '');
 const
   kind2str: array [TmsgDlgType] of string=('WARNING', 'ERROR', 'INFO', '', '');
 begin
@@ -312,7 +300,7 @@ begin
     if (k='') or (v = '') then
       Continue;
     so := TStrObj.Create;
-    so.str := v;
+    so.str := UnUTF(v);
     TranslitList.AddObject(k, so)
    except;
    end;

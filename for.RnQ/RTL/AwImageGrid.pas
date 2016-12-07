@@ -1605,9 +1605,9 @@ end;
 
 procedure TCustomImageGrid.Paint;
 var
-  DrawParentBackGround: Boolean;
-  MouseOverThumb: Boolean;
-  MouseOverStickers: Boolean;
+//  DrawParentBackGround: Boolean;
+//  MouseOverThumb: Boolean;
+//  MouseOverStickers: Boolean;
   UpdateCoords: TGridRect;
   Offset: TPoint;
   R: TRect;
@@ -1619,7 +1619,7 @@ var
 //  ThumbWidth: Integer;
 //  ThumbHeight: Integer;
 begin
-  DrawParentBackGround := ParentBackground and (Parent <> nil) and StyleServices.Enabled;
+//  DrawParentBackGround := ParentBackground and (Parent <> nil) and StyleServices.Enabled;
 
   Canvas.Brush.Color := Color;
   Canvas.Brush.Style := bsSolid;

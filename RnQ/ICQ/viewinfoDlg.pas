@@ -537,9 +537,9 @@ with TICQcontact(contact) do
   membersinceBox.ReadOnly := True;
   LastChgInfoBox.ReadOnly := True;
   if contact.group=0 then
-    groupBox.text:='('+getTranslation('Noone')+')'
+    groupBox.text := '('+getTranslation('Noone')+')'
   else
-    groupBox.text:=groups.id2name(contact.group);
+    groupBox.text := groups.id2name(contact.group);
 // end; // end with
   groupBox.ReadOnly := True;
   uinlistsBox.text:='';
@@ -639,14 +639,7 @@ with TICQcontact(contact) do
 }
 // PhotoImg.Height := 10;
 // try_load_avatar3(contactAvt, ICQIcon.hash_safe);
- if not LoadAvtByHash(Icon.hash_safe, contactAvt, b, fn) then
-   if Assigned(contactAvt) then
-     FreeAndNil(contactAvt);
- avtLoadBtn.Enabled := ICQIcon.hash > '';
-      if Assigned(contactAvt) and contactAvt.Animated then
-        FAniTimer.Enabled := True
-       else
-        FAniTimer.Enabled := false;
+  UpdateCntAvatar;
    {$ENDIF RNQ_AVATARS}
 
 // avtSaveBtn.Enabled := ism;
@@ -1469,9 +1462,9 @@ end;
 
 procedure TviewinfoFrm.UpdateCntAvatar;
 var
- fn : String;
- h : RawByteString;
- b1, b : Boolean;
+  fn: String;
+  h: RawByteString;
+  b1, b: Boolean;
 begin
       begin
   //      frm.AvtImg.Picture.Assign(cnt.icon);

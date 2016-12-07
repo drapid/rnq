@@ -895,6 +895,7 @@ begin
   uid := trimUID(uin_);
   UID2cmp := LowerCase(uid);
   fProto := pProto;
+  icon.Bmp := NIL;
 //  if assigned(onContactCreation) then onContactCreation(self);
 end; // create
 

@@ -49,12 +49,12 @@ interface
 type
   TFilePacket = class(TObject)
    public
-    CheckSum : Cardinal;
-    FileList : TStringList;
+    CheckSum: Cardinal;
+    FileList: TStringList;
     constructor Create;
     Destructor Destroy; Override;
-    function AddFile(fn : String) : Integer;
-    function Count : Integer; Inline;
+    function AddFile(fn: String): Integer;
+    function Count: Integer; Inline;
   end;
 
  function peer_oft_checksum_file(fn : String; InitChkSum : Cardinal = $ffff0000) : Cardinal;

@@ -573,15 +573,15 @@ function RnQButtonDraw(//Canvas: TCanvas;
       const DropDownWidth: Integer=0; PaintOnGlass: Boolean = False; pDPI: Integer = 0): TRect;
 
 procedure RnQDrawButtonGlyph(DC: HDC; //const GlyphPos: TPoint;
-      const PicRect : TGPRect;
+      const PicRect: TGPRect;
       State: TButtonState; Transparent: Boolean;
  {$IFDEF RNQ}
-      var ImgElm : TRnQThemedElementDtls;
+      var ImgElm: TRnQThemedElementDtls;
  {$ENDIF RNQ}
 //      ImageName : String;
-      const PaintOnGlass : Boolean = false; pDPI : Integer = 0);
+      const PaintOnGlass: Boolean = false; pDPI: Integer = 0);
 procedure RnQDrawButtonText(//Canvas: TCanvas;
-            CanvasHnd : HDC; pColor : TColor;
+            CanvasHnd: HDC; pColor : TColor;
             const Caption: string; thmBtn : TThemedButton;
             TextBounds: TRect; State: TButtonState; BiDiFlags: Longint;
             PaintOnGlass: Boolean = false);
@@ -772,39 +772,52 @@ begin
 end;
     
 procedure TRnQSpeedButton.Paint;
+  function DoGlassPaint: Boolean;
+  var
+    LParent: TWinControl;
+  begin
+    Result := csGlassPaint in ControlState;
+    if Result then
+    begin
+      LParent := Parent;
+      while (LParent <> nil) and not LParent.DoubleBuffered do
+        LParent := LParent.Parent;
+      Result := (LParent = nil) or not LParent.DoubleBuffered or (LParent is TCustomForm);
+    end;
+  end;
+
 const
   DownStyles: array[Boolean] of Integer = (BDR_RAISEDINNER, BDR_SUNKENOUTER);
   FillStyles: array[Boolean] of Integer = (BF_MIDDLE, 0);
 
- {$IFNDEF DELPHI9_UP}
-  PaintOnGlass = False;
- {$ENDIF DELPHI9_UP}
 var
   PaintRect: TRect;
   DrawFlags: Integer;
   Offset: TPoint;
+ {$IFDEF DELPHI9_UP}
+  LGlassPaint: Boolean;
+//  PaintOnGlass: Boolean;
+  PaintBuffer: HPAINTBUFFER;
+ {$ENDIF DELPHI9_UP}
   Button: TThemedButton;
   ToolButton: TThemedToolBar;
   Details: TThemedElementDetails;
- {$IFDEF DELPHI9_UP}
-  PaintOnGlass: Boolean;
-  PaintBuffer: HPAINTBUFFER;
- {$ENDIF DELPHI9_UP}
+  LStyle: TCustomStyleServices;
  {$IFNDEF 1=2 and COMPILER12_UP}
   LForm: TCustomForm;
  {$ENDIF COMPILER12_UP}
-//  cnv : TCanvas;
+//  cnv: TCanvas;
 //    saveDC,
     MemDC: HDC;
-  brF : HBRUSH;
-  PatternBMP : TBitmap;
-//   vImgElm : TRnQThemedElementDtls;
-//  FTempCanvas : TCanvas;
+  brF: HBRUSH;
+  PatternBMP: TBitmap;
+//   vImgElm: TRnQThemedElementDtls;
+//  FTempCanvas: TCanvas;
 begin
   if not Assigned(self) then
     exit;
  {$IFDEF DELPHI9_UP}
-  PaintOnGlass := False;
+  LGlassPaint := False;
   PaintBuffer := 0;
  {$ENDIF DELPHI9_UP}
   if not Enabled then
@@ -817,7 +830,6 @@ begin
       FState := bsExclusive
     else
       FState := bsUp;
-//  FTempCanvas.Font := Self.Font;
   Canvas.Font := Self.Font;
   MemDC := Canvas.Handle;
    //FTempCanvas := NIL;
@@ -825,24 +837,9 @@ begin
   try
   if ThemeControl(Self) then
   begin
- {$IFDEF DELPHI9_UP}
-    PaintOnGlass := StyleServices.Enabled and DwmCompositionEnabled and
-      not (csDesigning in ComponentState);
-    if PaintOnGlass then
-    begin
-     {$IFDEF 1=2 and COMPILER_12_UP}
-      PaintOnGlass := csGlassPaint in ControlState;
-     {$ELSE not COMPILER_12_UP}
-      LForm := GetParentForm(Self);
-      PaintOnGlass := (LForm <> nil) and LForm.GlassFrame.FrameExtended and
-        LForm.GlassFrame.IntersectsControl(Self);
-     {$ENDIF COMPILER_12_UP}
-    end;
- {$ENDIF DELPHI9_UP}
-
-    if not PaintOnGlass then
+    LGlassPaint := DoGlassPaint;
+    if not LGlassPaint then
       if Transparent then
-//        ThemeServices.DrawParentBackground(Parent.Handle, Canvas.Handle, nil, False)
         StyleServices.DrawParentBackground(0, MemDC, nil, False)
       else
         PerformEraseBackground(Self, MemDC)
@@ -881,7 +878,7 @@ begin
 
     PaintRect := ClientRect;
  {$IFDEF DELPHI9_UP}
-     if PaintOnGlass then
+     if LGlassPaint then
      begin
 //      cnv := TCanvas.Create;
 //      cnv := Canvas;
@@ -894,13 +891,6 @@ begin
 //        cnv.
 //        cnv.Handle := Canvas.Handle;
 //        saveDC := Cnv.Handle;
-{
-        FTempCanvas := TCanvas.Create;
-        FTempCanvas.Handle := MemDC;
-//        cnv.Lock;
-
-        FTempCanvas.Font := Self.Font;
-}
 //       oldFont := SelectObject(MemDC, Self.Font.Handle);
      end
 //     else
@@ -912,27 +902,43 @@ begin
     begin
       Details := StyleServices.GetElementDetails(Button);
       StyleServices.DrawElement(MemDC, Details, PaintRect);
-      PaintRect := StyleServices.ContentRect(MemDC, Details, PaintRect);
+      StyleServices.GetElementContentRect(MemDC, Details, PaintRect, PaintRect);
     end
     else
     begin
       Details := StyleServices.GetElementDetails(ToolButton);
-      StyleServices.DrawElement(MemDC, Details, PaintRect);
-      PaintRect := StyleServices.ContentRect(MemDC, Details, PaintRect);
+      if not TStyleManager.IsCustomStyleActive then
+      begin
+        StyleServices.DrawElement(MemDC, Details, PaintRect);
+        // Windows theme services doesn't paint disabled toolbuttons
+        // with grayed text (as it appears in an actual toolbar). To workaround,
+        // retrieve Details for a disabled button for drawing the caption.
+        if (ToolButton = ttbButtonDisabled) then
+          Details := StyleServices.GetElementDetails(Button);
+      end
+      else
+      begin
+        // Special case for flat speedbuttons with custom styles. The assumptions
+        // made about the look of ToolBar buttons may not apply, so only paint
+        // the hot and pressed states , leaving normal/disabled to appear flat.
+        if not FFlat or ((Button = tbPushButtonPressed) or (Button = tbPushButtonHot)) then
+          StyleServices.DrawElement(MemDC, Details, PaintRect);
+      end;
+      StyleServices.GetElementContentRect(MemDC, Details, PaintRect, PaintRect);
     end;
 
+    Offset := Point(0, 0);
     if Button = tbPushButtonPressed then
     begin
-      // A pressed speed button has a white text. This applies however only to flat buttons.
-      if ToolButton <> ttbToolbarDontCare then
-        begin
-//          FTempCanvas.Font.Color := clHighlightText;
-          SetTextColor(MemDC, ColorToRGB(clHighlightText));
+      // A pressed "flat" speed button has white text in XP, but the Themes
+      // API won't render it as such, so we need to hack it.
+      if (ToolButton <> ttbToolbarDontCare) and not CheckWin32Version(6) then
+//        Canvas.Font.Color := clHighlightText
+          SetTextColor(MemDC, ColorToRGB(clHighlightText))
+      else
+        if FFlat then
+          Offset := Point(1, 0);
         end;
-      Offset := Point(1, 0);
-    end
-    else
-      Offset := Point(0, 0);
 //    if ImageName <> '' then
 //      theme.drawPic(Canvas, PaintRect.Left, PaintRect.Top, ImageName, FState<>bsDisabled)
 //    else
@@ -948,8 +954,6 @@ begin
       DrawFlags := DFCS_BUTTONPUSH or DFCS_ADJUSTRECT;
       if FState in [bsDown, bsExclusive] then
         DrawFlags := DrawFlags or DFCS_PUSHED;
-//      if FState  = bsDisabled then
-//        DrawFlags := DrawFlags or DFCS_INACTIVE;
       DrawFrameControl(MemDC, PaintRect, DFC_BUTTON, DrawFlags);
     end
     else
@@ -1007,11 +1011,11 @@ begin
  {$IFDEF RNQ}
       fImgElm,
  {$ENDIF RNQ}
-      0, PaintOnGlass, GetParentCurrentDpi);
+      0, LGlassPaint, GetParentCurrentDpi);
 
   finally
  {$IFDEF DELPHI9_UP}
-      if PaintOnGlass then
+      if LGlassPaint then
        begin
 //         cnv.Handle := saveDC;
 //         cnv.Free;
@@ -4731,10 +4735,10 @@ end;
     
 function RnQButtonDrawFull(Canvas: TCanvas; const Client: TRect; //const Offset: TPoint;
       const Caption: string; Layout: TButtonLayout; Margin, Spacing: Integer;
-      State: TButtonState; MouseInControl : Boolean; Transparent: Boolean;
+      State: TButtonState; MouseInControl: Boolean; Transparent: Boolean;
       BiDiFlags: Longint;
  {$IFDEF RNQ}
-      var ImgElm : TRnQThemedElementDtls;
+      var ImgElm: TRnQThemedElementDtls;
  {$ENDIF RNQ}
 //      ImageName : String;
       const DropDownWidth: Integer=0; const pDPI: Integer = 0): TRect;
@@ -4882,19 +4886,19 @@ begin
 end;
 
 function RnQButtonDraw(//Canvas: TCanvas;
-  CanvasHnd : HDC; pFontColor : TColor;
+  CanvasHnd: HDC; pFontColor: TColor;
   const Client: TRect; const Offset: TPoint;
   const Caption: string; Layout: TButtonLayout; Margin, Spacing: Integer;
-  thmBtn : TThemedButton; State: TButtonState; Transparent: Boolean;
+  thmBtn: TThemedButton; State: TButtonState; Transparent: Boolean;
   BiDiFlags: LongInt;
  {$IFDEF RNQ}
-  var ImgElm : TRnQThemedElementDtls;
+  var ImgElm: TRnQThemedElementDtls;
  {$ENDIF RNQ}
 //  ImageName : String;
   const DropDownWidth: Integer = 0; PaintOnGlass: Boolean = false; pDPI: Integer = 0): TRect;
 var
 //  GlyphPos: TPoint;
-  GlyphRect : TGPRect;
+  GlyphRect: TGPRect;
 begin
   RnQCalcButtonLayout(CanvasHnd, Client, Offset, Caption, Layout, Margin, Spacing,
     GlyphRect, Result, BiDiFlags,

@@ -139,7 +139,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <VerInfo_Build>0</VerInfo_Build>
         <DCC_UsePackage>vcl;ExceptionExpert16;$(DCC_UsePackage)</DCC_UsePackage>
         <DCC_Namespace>System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(ModuleName);FileDescription=$(ModuleName);ProductName=$(ModuleName)</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
@@ -156,7 +156,6 @@ $(PreBuildEvent)]]></PreBuildEvent>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_AssertionsAtRuntime>false</DCC_AssertionsAtRuntime>
-        <VerInfo_Build>1125</VerInfo_Build>
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1125;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q x64;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
         <DCC_DebugInformation>0</DCC_DebugInformation>
@@ -170,9 +169,6 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1125;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_MapFile>3</DCC_MapFile>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
-        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_3)'!=''">
         <DCC_Define>CHAT_CEF;$(DCC_Define)</DCC_Define>

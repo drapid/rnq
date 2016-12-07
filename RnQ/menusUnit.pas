@@ -131,8 +131,8 @@ procedure InitProtoMenus(pProto: TRnQProtocol);
 var
   I: Integer;
   b: Byte;
-//  vis1 : Tvisibility;
-//  st : TStatusProp;
+//  vis1: Tvisibility;
+//  st: TStatusProp;
   stArr, visArr: TStatusArray;
 begin
 ////////////// Status Menu \\\\\\\\\\\\\\\\\

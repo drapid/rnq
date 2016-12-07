@@ -30,7 +30,9 @@ object usersFrm: TusersFrm
     Height = 257
     Align = alRight
     BevelOuter = bvNone
+    DoubleBuffered = False
     ParentColor = True
+    ParentDoubleBuffered = False
     TabOrder = 1
     DesignSize = (
       130

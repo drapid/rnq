@@ -304,8 +304,7 @@ uses
   pluginLib, authreqDlg,
   lockDlg, langLib, groupsLib, outboxDlg, pwdDlg, //msgsDlg,
   history,
-  addContactDlg,
-  RnQMacros,
+  addContactDlg, RnQMacros,
   usersDlg, visibilityDlg,
   changepwdDlg, ThemesLib, RnQStrings,
   Protocols_all,
@@ -352,18 +351,18 @@ procedure onlyDigits(obj: Tobject);
 var
   i: integer;
 begin
-if obj is Tcustomedit then
-  with (obj as Tcustomedit) do
+  if obj is Tcustomedit then
+   with (obj as Tcustomedit) do
     begin
-    i := selstart;
-    text := onlyDigits(text);
-    if i>length(text) then
-      i := length(text);
-    selStart := i;
+      i := selstart;
+      text := onlyDigits(text);
+      if i>length(text) then
+        i := length(text);
+      selStart := i;
     end;
 end; // onlyDigits
 
-procedure loadLists(const pr: TRnQProtocol; zp: TZipFile; const uPath : String);
+procedure loadLists(const pr: TRnQProtocol; zp: TZipFile; const uPath: String);
 var
   zipLists: Boolean;
   function LoadZorF(const fn: String): RawByteString;
@@ -387,7 +386,7 @@ var
   i: Integer;
 begin
 // backward compatibility
-renamefile(uPath + 'uin.list', uPath + uinlistFilename);
+  renamefile(uPath + 'uin.list', uPath + uinlistFilename);
 
   i := -1;
   zipLists := false;
@@ -517,10 +516,10 @@ begin
  saveFile(userPath + extstatusesFilename, f);
 end;
 }
-procedure loadSpamQuests(zp : TZipFile);
+procedure loadSpamQuests(zp: TZipFile);
 var
   k, line, s: RawByteString;
-  i, j : Integer;
+  i, j: Integer;
 begin
 //  clear;
   s := loadFromZipOrFile(zp, Account.ProtoPath, SpamQuestsFilename);
@@ -1503,7 +1502,7 @@ begin
 //    if FileExists(userPath+dbFileName + '2') then
 //      s := ZDecompressStrEx(loadFile(userPath+dbFileName + '2'))
 //     else
-//  contactsDB:=str2db(Account.AccProto.getContactClass, s, result)
+//  contactsDB := str2db(Account.AccProto.getContactClass, s, result)
   TRnQProtocol.contactsDB := str2db(Account.AccProto, s, result, pCheckGroups);
   TRnQProtocol.contactsDB.add(Account.AccProto, Account.AccProto.ProtoElem.MyAccNum)
 end; // loadDB
@@ -2173,11 +2172,11 @@ end; // deltree
 
 function rosterImgNameFor(c: TRnQContact): AnsiString;
 begin
-if notinlist.exists(c) then
-  result:=status2imgName(byte(SC_UNK), FALSE)
-else
+  if notinlist.exists(c) then
+    result := status2imgName(byte(SC_UNK), FALSE)
+   else
 //  result:=status2imgName(tstatus(c.status), c.invisible)
-  result:= c.fProto.Statuses[c.getStatus].ImageName;
+    result:= c.fProto.Statuses[c.getStatus].ImageName;
 //  Result := c.statusImg;
 end; // rosterImgIdxFor
 
@@ -2637,8 +2636,8 @@ begin
    if spamfilter.addToHist then
     if (msg > '')and(Assigned(ev)) then
       begin
-//        spamCnt:= contactsDB.get(TICQContact, spamsFilename);
-        spamCnt:= c.fProto.contactsDB.Add(c.fProto, spamsFilename);
+//        spamCnt := contactsDB.get(TICQContact, spamsFilename);
+        spamCnt := c.fProto.getContact(spamsFilename);
         writeHistorySafely(ev, spamCnt);
 //        if chatFrm.chats.idxOfUIN(spamsFilename) >= 0 then
           chatFrm.addEvent(spamCnt, ev.clone);
@@ -2913,10 +2912,10 @@ begin
       Answers0(ev.who.antispam.lastQuests);
       SetLength(ev.who.antispam.lastQuests, 0);
       if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
-       writeHistorySafely(ev, vProto.contactsDB.Add(vProto, spamsFilename));
+       writeHistorySafely(ev, vProto.getContact(spamsFilename));
       if (BE_HISTORY in behaviour[ev.kind].trig) then
 //        if chatFrm.chats.idxOfUIN(spamsFilename) >= 0 then
-          chatFrm.addEvent(vProto.contactsDB.Add(vProto, spamsFilename), ev.clone);
+          chatFrm.addEvent(vProto.getContact(spamsFilename), ev.clone);
       if ev.who.antispam.Tryes = spamfilter.BotTryesCount then
        begin
         inc(ev.who.antispam.Tryes);
@@ -2983,7 +2982,7 @@ if minOnOff then
 
   result := TRUE;
   if ev.kind in [EK_msg..EK_automsg] then
-    TCE(ev.who.data^).lastEventTime := now;
+    TCE(vCnt.data^).lastEventTime := now;
   if ev.kind in [EK_MSG, EK_URL, EK_CONTACTS, EK_auth, EK_authDenied, EK_AUTHREQ] then
     TCE(vCnt.data^).lastMsgTime := ev.when;
 
@@ -3392,18 +3391,18 @@ begin
   case ev.kind of
     EK_ADDEDYOU:
       if ev.who.isInList(LT_ROSTER) then
-        msgDlg(getTranslation('%s added you to his/her contact list.',[ev.who.displayed]), False, mtInformation)
+        msgDlg(getTranslation('%s added you to his/her contact list.', [vCnt.displayed]), False, mtInformation)
       else
-        if messageDlg(getTranslation('%s added you to his/her contact list.\nDo you want to add him/her to your contact list?',[ev.who.displayed]), mtConfirmation, [mbYes,mbNo], 0) = mrYes then
-          addToRoster((ev.who));
-    EK_AUTHREQ: showAuthreq((ev.who), ev.getBodyText);
+        if messageDlg(getTranslation('%s added you to his/her contact list.\nDo you want to add him/her to your contact list?',[vCnt.displayed]), mtConfirmation, [mbYes,mbNo], 0) = mrYes then
+          addToRoster((vCnt));
+    EK_AUTHREQ: showAuthreq((vCnt), ev.getBodyText);
     EK_ONCOMING:
       if showOncomingDlg then
         msgDlg(getTranslation('%s is online', [vCnt.displayed]), False, mtInformation);
     EK_file:
       begin
  {$IFDEF PROTOCOL_ICQ}
-        dd := TicqSession(ev.who.fProto).directs.findID(ev.ID);
+        dd := TicqSession(vCnt.fProto).directs.findID(ev.ID);
         if Assigned(dd) then
           receiveFile(dd);
  {$ENDIF PROTOCOL_ICQ}
@@ -3416,7 +3415,7 @@ begin
          openOn(vCnt);
 //         moveToTimeOrEnd(ev.who, ev.when);
 
-//         ev0:=eventQ.firstEventFor(ev.who);
+//         ev0 := eventQ.firstEventFor(ev.who);
 //         if (ev0 = nil)or(ev = ev0)  then
            begin
 //            if not chatFrm.moveToTimeOrEnd(ev.who, ev.when) then
@@ -3429,8 +3428,8 @@ begin
 //           end;
         end;
     EK_CONTACTS:
-      TselectCntsFrm.doAll(RnQmain, getTranslation('from %s', [ev.who.displayed]),
-            getTranslation('Add selected contacts'), ev.who.fProto,
+      TselectCntsFrm.doAll(RnQmain, getTranslation('from %s', [vCnt.displayed]),
+            getTranslation('Add selected contacts'), vCnt.fProto,
             ev.cl.clone, RnQmain.addContactsAction, [sco_multi, sco_selected], @wnd, false, false)
   end;
   try
@@ -3675,6 +3674,8 @@ procedure setupChatButtons;
 { button }
 var
   h: integer;
+  PPI: Integer;
+  gap, tbHeight: Integer;
 {
   procedure setupChatButton(newBtn:TspeedButton; pic:Tbitmap); overload;
   begin
@@ -3690,29 +3691,40 @@ var
 begin
   if not assigned(chatFrm) then
     exit;
+  PPI := chatFrm.currentPPI;
+  if PPI > cDefaultDPI then
+    begin
+      gap := MulDiv(5, PPI, cDefaultDPI);
+      tbHeight := MulDiv(18, PPI, cDefaultDPI);
+    end
+   else
+    begin
+      gap := 5;
+      tbHeight := 18;
+    end;
 //h:=0;
-  chatFrm.sendBtn.Width := 5 + theme.getPicSize(RQteButton, status2imgName(byte(SC_ONLINE))).cx + 5
-      + chatFrm.Canvas.TextWidth(chatFrm.sendBtn.Caption) + 5
-      + chatFrm.sendBtn.DropDownWidth + 5;
-  chatFrm.closeBtn.Width := 5 + theme.getPicSize(RQteButton, PIC_CLOSE).cx + 5
-      + chatFrm.Canvas.TextWidth(chatFrm.closeBtn.Caption) + 5
-      + chatFrm.closeBtn.DropDownWidth + 5;
-  h := theme.getPicSize(RQteDefault, status2imgName(byte(SC_ONLINE)), 16).cy+6;
+  chatFrm.sendBtn.Width := gap + theme.getPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), 0, PPI).cx + gap
+      + chatFrm.Canvas.TextWidth(chatFrm.sendBtn.Caption) + gap
+      + chatFrm.sendBtn.DropDownWidth + gap;
+  chatFrm.closeBtn.Width := gap + theme.getPicSize(RQteButton, PIC_CLOSE, 0, PPI).cx + gap
+      + chatFrm.Canvas.TextWidth(chatFrm.closeBtn.Caption) + gap
+      + chatFrm.closeBtn.DropDownWidth + gap;
+  h := theme.getPicSize(RQteDefault, status2imgName(byte(SC_ONLINE)), 16, PPI).cy + gap + 1;
   if StyleServices.enabled then
     inc(h, 2);
   chatFrm.pagectrl.tabHeight := h;
-  chatFrm.closeBtn.left := chatFrm.SendBtn.boundsrect.right+10;
+  chatFrm.closeBtn.left := chatFrm.SendBtn.boundsrect.right + gap + gap;
   chatFrm.closeBtn.top := chatFrm.SendBtn.top;
 // applyCommonSettings(chatFrm);
 
-  chatfrm.toolbar.left := chatFrm.closeBtn.boundsrect.right+10;
-  chatFrm.tb0.Width := chatFrm.toolbar.Left - 30;
-//  chatfrm.toolbar.Height:=18+theme.GetPicSize(PIC_HISTORY).cy;
-  chatfrm.panel.Height := 18+theme.getPicSize(RQteButton, PIC_HISTORY, 16).cy;
-  h := chatfrm.panel.Height - 18;
+  chatfrm.toolbar.left := chatFrm.closeBtn.boundsrect.right + gap + gap;
+  chatFrm.tb0.Width := chatFrm.toolbar.Left - gap * 6;
+//  chatfrm.toolbar.Height := 18+theme.GetPicSize(PIC_HISTORY).cy;
+  chatfrm.panel.Height := tbHeight + theme.getPicSize(RQteButton, PIC_HISTORY, 16, PPI).cy;
+  h := chatfrm.panel.Height - tbHeight;
   with chatFrm.toolbar do
     top := (chatfrm.panel.ClientHeight-height) div 2;
-  chatFrm.toolbar.buttonheight := h + 5;
+  chatFrm.toolbar.buttonheight := h + gap;
 end; // setupChatButtons
 
 procedure toggleMainfrmBorder(setBrdr: Boolean = false; IsBrdr: Boolean = True);
@@ -3793,7 +3805,7 @@ var
   rr.Right := maxWidth;
   rr.Bottom := y;// + 100;
   s := dupAmperstand(s);
-//  rr.Right := r.Left + 10;
+  //  rr.Right := r.Left + 10;
   {$IFDEF DELPHI9_UP}
    cnv.TextRect(rr, s, [tfCalcRect, tfBottom, tfLeft, tfWordBreak, tfEndEllipsis, tfEditControl]);
   {$ENDIF DELPHI9_UP} 
@@ -3891,9 +3903,10 @@ var
   end;
 
 var
-  i,
+//  i,
   a, a2, a3: integer;
   cl: TRnQCList;
+  cnt1: TRnQcontact;
   ty: Integer;
   pic: TPicName;
  {$IFDEF PROTOCOL_ICQ}
@@ -3906,6 +3919,7 @@ var
 //  region: HRGN;
   tS: String;
   tR: TGPRect;
+  maxPicY: Integer;
 begin
   if (kind = NODE_CONTACT) and (c=NIL) then
     exit;
@@ -3922,7 +3936,14 @@ begin
       border := MulDiv(border, PPI, cDefaultDPI);
       roundsize := MulDiv(roundsize, PPI, cDefaultDPI);
       maxWidth  := MulDiv(maxWidth, PPI, cDefaultDPI);
+      maxPicY := MulDiv(20, PPI, cDefaultDPI);
+      cnv.Font.PixelsPerInch := PPI;
     end
+   else
+    begin
+      PPI := cDefaultDPI;
+      maxPicY := 20;
+    end;
    ;
 
 //  n:=getNode(node);
@@ -3992,7 +4013,7 @@ case kind of
            end;
  {$ENDIF PROTOCOL_ICQ}
        end;
-     ty := Max(ty, 16);
+     ty := Max(ty, maxPicY);
      inc(y, ty-dy);
 //     i := y;
      fieldOut(getTranslation('UIN')+'# ', c.uin2Show);
@@ -4067,10 +4088,10 @@ case kind of
     fieldOutDP('First name', c.first);
     fieldOutDP('Last name', c.last);
     if c.birthL <> 0 then
-     fieldOutDP('Birthday',DateToStr(c.birthL))
+     fieldOutDP('Birthday', DateToStr(c.birthL))
     else
      if c.birth <> 0 then
-      fieldOutDP('Birthday',DateToStr(c.birth));
+      fieldOutDP('Birthday', DateToStr(c.birth));
     fieldOutDP('Group', groups.id2name(c.group));
  {$IFDEF PROTOCOL_ICQ}
     if Assigned(cnt) then
@@ -4151,6 +4172,8 @@ case kind of
           tR.X := 10;
           tR.Y := y;
 
+          inc(y, tR.Height);
+
           DrawRbmp(cnv.Handle, c.icon.Bmp, tR, false);
          end
       else
@@ -4181,13 +4204,12 @@ case kind of
       a := 0;
       a2 := 0;
       a3 := 0;
-      for i:=0 to TList(cl).count-1 do
-        with TRnQcontact(cl.getAt(i)) do
-          if group = groupid then
-            if isOffline then
-              inc(a)
-            else
-             if isOnline then
+      for cnt1 in cl do
+        if cnt1.group = groupid then
+          if cnt1.isOffline then
+            inc(a)
+           else
+            if cnt1.isOnline then
                inc(a2)
               else
                inc(a3);
@@ -4207,7 +4229,7 @@ case kind of
 // cnv.Rectangle(r);
 // SetWindowRgn(cnv.Handle, region, TRUE);
 
-// r:=rect(0,0,100,400);
+// r := rect(0,0,100,400);
 end; // drawHint
 
 function infoToStatus(const info: RawByteString): byte;

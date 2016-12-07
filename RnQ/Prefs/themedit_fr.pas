@@ -101,7 +101,7 @@ begin
     MPlayerBar.Visible := false;
     exit;
    end;
-  p:=@themeprops[propsBox.itemIndex];
+  p := @themeprops[propsBox.itemIndex];
   //f := TFont
   case p.kind of
     TP_color: colorBtn.SelectionColor:=theme.GetColor(copy(p.name, 1, length(p.name)-6));

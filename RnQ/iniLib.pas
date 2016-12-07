@@ -45,7 +45,7 @@ uses
   DBPrefsLib,
  {$ELSE ~PREF_IN_DB}
   RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
+ {$ENDIF ~PREF_IN_DB}
   RDUtils, RnQMacros, RnQStrings, RnQCrypt,
   RQUtil, RDGlobal, RQThemes, RDFileUtil,
   roasterlib, usersDlg,
@@ -62,9 +62,6 @@ uses
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
-//                                             DateUtils,
-//                                             EBase64,
-    RnQBinUtils,
  {$IFDEF CHAT_CEF} // Chromium
   historyCEF,
  {$ENDIF CHAT_CEF} // Chromium
@@ -741,7 +738,7 @@ var
 
   function yesno: boolean;
   begin
-    result:=l='yes'
+    result := l='yes'
   end;
 
   function int: integer;
@@ -1216,7 +1213,7 @@ dockSet;
 
 end; // setcfg
 
-procedure loadCFG(zp : TZipFile);
+procedure loadCFG(zp: TZipFile);
 var
  fn : String;
  s : RawByteString;
@@ -1646,6 +1643,7 @@ begin
    {$ENDIF}
   groups := Tgroups.create;
   //theme.smiles.root := myPath;
+  theme.fBasePath := RnQMainPath;
   uinlists := Tuinlists.create;
   retrieveQ := TRnQCList.create;
   reqAvatarsQ := TRnQCList.create;

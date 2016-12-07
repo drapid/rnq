@@ -17,14 +17,18 @@ uses
   {$ELSE}
     RnQGraphics32,
   {$ENDIF USE_GDIPLUS}
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
    RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
    Types;
 
 type
    Tmodes = (TM_EVENT, TM_PIC, TM_PIC_EX, TM_BDay);
    TTipInfo = record
       mode: Tmodes;
-      obj : Pointer;
+      obj: Pointer;
 (*      case Tmodes of
          TM_EVENT  : (ev  : Thevent);
          TM_PIC    : (pic : Tbitmap);
@@ -41,9 +45,9 @@ type
 
 type
   TtipFrm = class;
-  DoPaintTip = procedure(Sender: TtipFrm; mode : Tmodes; info : Pointer; pMaxX, pMaxY : Integer; calcOnly : Boolean);
-  DoToShow = function() : Boolean;
-  DoTipDestroy = procedure(Sender : TTipFrm);
+  DoPaintTip = procedure(Sender: TtipFrm; mode: Tmodes; info: Pointer; pMaxX, pMaxY: Integer; calcOnly: Boolean);
+  DoToShow = function(): Boolean;
+  DoTipDestroy = procedure(Sender: TTipFrm);
 
   TtipFrm = class(TForm)
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);

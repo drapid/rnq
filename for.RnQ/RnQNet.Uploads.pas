@@ -17,7 +17,7 @@ type
   protected
     pos, cachedTotal: int64;
     cur: integer;
-    aHTTPHeader : RawByteString;
+    aHTTPHeader: RawByteString;
     procedure invalidate();
     procedure calculate(); virtual; abstract;
     function getTotal(): int64;
@@ -49,7 +49,7 @@ type
     block: TStringStream;
     lastSeekFake: int64;
     where: TtarStreamWhere;
-    function fsInit(): boolean;
+    function  fsInit(): boolean;
     procedure headerInit(); // fill block with header
     procedure padInit(full: boolean=FALSE); // fill block with pad
     function  headerLengthForFilename(fn: string):integer;
@@ -79,7 +79,7 @@ type
 
   TCallbacks = class
   public
-    class procedure OnBeforeHeaderSend(Sender: TObject; const Method : String; Headers: TStrings);
+    class procedure OnBeforeHeaderSend(Sender: TObject; const Method: String; Headers: TStrings);
   end;
 
 
@@ -93,7 +93,11 @@ uses
   Windows, SysUtils, StrUtils, DateUtils, math,
   Base64, RDFileUtil, RDUtils,
 //  iniLib, utilLib, globalLib,
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
   RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
 {$IFDEF UNICODE}
   AnsiStrings,
 {$ENDIF UNICODE}
@@ -124,7 +128,7 @@ end;
 
 function InputText(Boundry, Name, Value: RawByteString): RawByteString;
 begin
-  result := format('%s' + CRLF + 'Content-Disposition: form-data; name="%s"' + CRLF + CRLF + '%s' + CRLF,
+  result := format(RawByteString('%s') + CRLF + 'Content-Disposition: form-data; name="%s"' + CRLF + CRLF + '%s' + CRLF,
             ['--' + boundry, name, value]);
 end;
 
@@ -132,7 +136,8 @@ function UploadFileRGhost(const Filename: String; pOnSendData: TDocDataEvent): S
 var
   AvStream, FileStream, TokenStream: TMemoryStream;
   httpCli: TSslHttpCli;
-  Host, Token, Buf, Boundry, TokenStr, FilePage: RawByteString;
+  Host: String;
+  Token, Buf, Boundry, TokenStr, FilePage: RawByteString;
   JSONObject: TJSONObject;
   i, p, ULimit: Integer;
   Cookie, DownloadLink: String;
@@ -191,7 +196,7 @@ begin
 
   try
     httpCli.URL := 'http://' + Host + '/files';
-    httpCli.ContentTypePost := 'multipart/form-data; boundary=' + Boundry;
+    httpCli.ContentTypePost := 'multipart/form-data; boundary=' + String(Boundry);
     httpCli.SendStream := TMemoryStream.Create;
 
     Buf := InputText(Boundry, 'authenticity_token', Token)
@@ -237,12 +242,12 @@ begin
         SetLength(FilePage, AvStream.Size);
         AvStream.ReadBuffer(FilePage[1], AvStream.Size);
 
-        p := Pos('window.rgh.fileurl = ''', FilePage) + 22;
-        DownloadLink := Copy(FilePage, p, Pos('''', FilePage, p) - p);
+        p := Pos(RawByteString('window.rgh.fileurl = '''), FilePage) + 22;
+        DownloadLink := UnUTF(Copy(FilePage, p, Pos(RawByteString(''''), FilePage, p) - p));
         OutputDebugString(PChar(DownloadLink));
 
-        p := Pos('name="direct_link"', FilePage) + 83;
-        Result := Copy(FilePage, p, Pos('"', FilePage, p) - p);
+        p := Pos(RawByteString('name="direct_link"'), FilePage) + 83;
+        Result := UnUTF(Copy(FilePage, p, Pos(RawByteString('"'), FilePage, p) - p));
         OutputDebugString(PChar(Result));
 
         if not StartsText('http://', Result) then
@@ -287,7 +292,7 @@ begin
 
   try
     httpCli.URL := 'http://RnQ.ru/file_upload.php';
-    httpCli.ContentTypePost := 'multipart/form-data; boundary=' + Boundry;
+    httpCli.ContentTypePost := 'multipart/form-data; boundary=' + String(Boundry);
 
     httpCli.SendStream := TMemoryStream.Create;
 
@@ -326,7 +331,7 @@ begin
       SetLength(UploadedName, AvStream.Size);
       AvStream.ReadBuffer(UploadedName[1], AvStream.Size);
 
-      Result := UploadedName;
+      Result := UnUTF(UploadedName);
     except
       msgDlg(getTranslation(UploadError) + ': ' + #13#10 + httpCli.RcvdHeader.Text, true, mtError);
     end;
@@ -394,7 +399,7 @@ begin
 
   try
     httpCli.URL := 'http://RnQ.ru/file_upload.php';
-    httpCli.ContentTypePost := 'multipart/form-data; boundary=' + Boundry;
+    httpCli.ContentTypePost := 'multipart/form-data; boundary=' + String(Boundry);
 
     Buf := InputText(Boundry, 'fname', 'archive.tar')
          + '--' + Boundry + CRLF + 'Content-Disposition: form-data; name="file"; filename="' + ('archive.tar') + '"' + CRLF
@@ -441,7 +446,7 @@ begin
       SetLength(UploadedName, AvStream.Size);
       AvStream.ReadBuffer(UploadedName[1], AvStream.Size);
 
-      Result := UploadedName;
+      Result := UnUTF(UploadedName);
     except
       msgDlg(getTranslation(UploadError) + ': ' + #13#10 + httpCli.RcvdHeader.Text, true, mtError);
     end;
@@ -552,16 +557,16 @@ function TtarStream.fsInit(): boolean;
 begin
   if assigned(fs) and (fs.FileName = flist[cur].src) then
     begin
-      result:=TRUE;
+      result := TRUE;
       exit;
     end;
   result:=FALSE;
   try
     freeAndNIL(fs);
     fs := TfileStream.Create(flist[cur].src, fmOpenRead+fmShareDenyWrite);
-    result:=TRUE;
+    result := TRUE;
    except
-    fs:=NIL;
+    fs := NIL;
   end;
 end; // fsInit
 
@@ -569,17 +574,17 @@ procedure TtarStream.headerInit();
 
   function num(i: int64; fieldLength: integer): RawByteString;
   const
-    CHARS : array [0..7] of AnsiChar = '01234567';
+    CHARS: array [0..7] of AnsiChar = '01234567';
   var
     d: integer;
   begin
-    result:=dupeString(' ', fieldLength);
-    d:=fieldLength-1;
+    result := dupeString(RawByteString(' '), fieldLength);
+    d := fieldLength-1;
     while d > 0 do
       begin
-        result[d]:=CHARS[i and 7];
+        result[d] := CHARS[i and 7];
         dec(d);
-        i:=i shr 3;
+        i := i shr 3;
         if i = 0 then
           break;
       end;
@@ -595,7 +600,7 @@ procedure TtarStream.headerInit();
   var
     i: integer;
   begin
-    result:=0;
+    result := 0;
     for i:=1 to length(s) do
       inc(result, ord(s[i]));
   end; // sum
@@ -604,8 +609,8 @@ procedure TtarStream.headerInit();
   var
     chk: RawByteString;
   begin
-    chk:=num(sum(s), 7)+' ';
-    chk[7]:=#0;
+    chk := num(sum(s), 7)+' ';
+    chk[7] := #0;
     move(chk[1], s[100+24+12+12+1], length(chk));
   end; // applyChecksum
 
@@ -615,16 +620,16 @@ var
   fn: string;
   pre, s: RawByteString;
 begin
-  fn:=replaceStr(flist[cur].dst,'\','/');
-  pre:='';
+  fn := replaceStr(flist[cur].dst, '\', '/');
+  pre := '';
   if length(fn) >= 100 then
     begin
-      pre:=str('././@LongLink', 124)+num(length(fn)+1, 12)+num(0, 12)
+      pre := str('././@LongLink', 124)+num(length(fn)+1, 12)+num(0, 12)
         +FAKE_CHECKSUM+'L';
       applyChecksum(pre);
-      pre:=str(pre, 512)+str(fn, 512);
+      pre := str(pre, 512)+str(StrToUTF8(fn), 512);
     end;
-  s:=str(fn, 100)
+  s := str(StrToUTF8(fn), 100)
     +'100666 '#0'     0 '#0'     0 '#0 // file mode, uid, gid
     +num(flist[cur].size, 12) // file size
     +num(flist[cur].mtime, 12)  // mtime
@@ -632,9 +637,13 @@ begin
     +'0'+str('', 100)       // link properties
     +'ustar  '#0+str('user',32) + str('group',32);    // not actually used
   applyChecksum(s);
-  s:=str(s, 512); // pad
-  block.Size:=0;
-  block.WriteString(pre+s);
+  s := str(s, 512); // pad
+  block.Size := 0;
+//  block.WriteString(pre+s);
+  if Length(pre) > 0 then
+    block.WriteData(@pre[1], Length(pre));
+  if Length(s) > 0 then
+    block.WriteData(@s[1], Length(s));
   block.seek(0, soBeginning);
 end; // headerInit
 

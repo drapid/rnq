@@ -39,8 +39,8 @@ type
     procedure SetAccPassBtnClick(Sender: TObject);
     procedure HistCryptBtnClick(Sender: TObject);
    protected
-    newHistPwd : String;
-//    newAccPass : AnsiString;
+    newHistPwd: String;
+//    newAccPass: AnsiString;
    public
 //    procedure initProps;
     procedure applyPage; Override;

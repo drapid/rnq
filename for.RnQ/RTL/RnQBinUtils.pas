@@ -35,7 +35,7 @@ function qword_BEasStr(d: Int64): RawByteString;
 function dword_LEasStr(d: dword): RawByteString;
 function dword_BEasStr(d: dword): RawByteString;
 function word_BEasStr(w: word): RawByteString; inline;
-function word_LEasStr(w: word): RawByteString;
+function word_LEasStr(w: word): RawByteString; inline;
 function TLV(t: word; v: dword): RawByteString; overload;
 function TLV(t: word; v: word): RawByteString; overload;
 function TLV(t: word; v: Integer): RawByteString; overload;
@@ -106,8 +106,8 @@ function getTLV3Safe(const idx:integer; const s:RawByteString; const ofs:integer
 function getTLV3dwordBE(p:pointer):dword;
 function getTLV3wordBE(p:pointer):dword;
 
-function getwTLD(const s:RawByteString; var ofs:integer): RawByteString;
-function getwTLD_DWORD(const s:RawByteString; var ofs:integer): LongWord;
+function getwTLD(const s: RawByteString; var ofs: integer): RawByteString;
+function getwTLD_DWORD(const s: RawByteString; var ofs: integer): LongWord;
 /////----------------------------
 
 
@@ -115,8 +115,8 @@ function getwTLD_DWORD(const s:RawByteString; var ofs:integer): LongWord;
   function  int2str64(i: Int64): RawByteString;
   function  dt2str(dt: Tdatetime): RawByteString;
 
-  function  str2int(const s:RawByteString):integer; overload;
-  function  str2int(p:pointer):integer; overload; inline;
+  function  str2int(const s: RawByteString): integer; overload;
+  function  str2int(p: pointer): integer; overload; inline;
 
 implementation
   uses
@@ -132,7 +132,7 @@ implementation
 
 {$IFDEF Linux}    // Äëÿ Lazarus
 //Function Swap (X : Integer) : Integer;{$ifdef SYSTEMINLINE}inline;{$endif}
-Function Swap (X : word) : word;{$ifdef SYSTEMINLINE}inline;{$endif}
+Function Swap (X: word): word; {$ifdef SYSTEMINLINE}inline;{$endif}
 Begin
   { the extra 'and $ff' in the right term is necessary because the  }
   { 'X shr 8' is turned into "longint(X) shr 8", so if x < 0 then   }
@@ -926,18 +926,18 @@ end;
  {$IFDEF UNICODE}
 function dword_LE2ipU(d: dword): UnicodeString;
 begin
-  result:=format('%d.%d.%d.%d',[byte(d shr 24),byte(d shr 16),byte(d shr 8),byte(d)])
+  result := format('%d.%d.%d.%d',[byte(d shr 24),byte(d shr 16),byte(d shr 8),byte(d)])
 end;
  {$ENDIF UNICODE}
 
 function word_LEasStr(w: word): RawByteString;
 begin
-  result:=AnsiChar(w)+AnsiChar(w shr 8)
+  result := AnsiChar(w)+AnsiChar(w shr 8)
 end;
 
 function word_BEasStr(w: word): RawByteString;
 begin
-  result:=AnsiChar(w shr 8)+AnsiChar(w)
+  result := AnsiChar(w shr 8)+AnsiChar(w)
 end;
 
 function dword_BEasStr(d: dword): RawByteString;

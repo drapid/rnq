@@ -70,9 +70,6 @@ implementation
 
 uses
   prefDlg, utilLib, mainDlg, RQUtil,
- {$IFDEF PROTOCOL_ICQ}
-  //ICQv9,
- {$ENDIF PROTOCOL_ICQ}
   globalLib
   ;
 
@@ -219,14 +216,14 @@ begin
                   + GAP_SIZE + GAP_SIZE2 + GAP_SIZE2;
 
   LEProxyName.left := ServerCBox.left;
-  LEProxyName.Width:= ServerCBox.Width;// - GAP_SIZE;
+  LEProxyName.Width := ServerCBox.Width;// - GAP_SIZE;
 
   proxyhostBox.left := ServerCBox.left - 3;
-  proxyhostBox.Width:= ServerCBox.Width;// - GAP_SIZE;
+  proxyhostBox.Width := ServerCBox.Width;// - GAP_SIZE;
 
   proxyportBox.left := portBox.left - 3;
-//  proxyportBox.Width:= proxyGroup.Width - 320 - GAP_SIZE2;
-  proxyportBox.Width:= portBox.Width;
+//  proxyportBox.Width := proxyGroup.Width - 320 - GAP_SIZE2;
+  proxyportBox.Width := portBox.Width;
 
   proxyproto.left:=  GAP_SIZE2;
 

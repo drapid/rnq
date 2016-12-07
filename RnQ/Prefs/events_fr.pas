@@ -316,10 +316,10 @@ procedure TeventsFr.eventBoxDrawItem(Control: TWinControl; Index: Integer;
 var
   cnv: Tcanvas;
 //  x, y: integer;
-  i : NativeInt;
-  gR : TGPRect;
-  picElm : TRnQThemedElementDtls;
-  s : String;
+  i: NativeInt;
+  gR: TGPRect;
+  picElm: TRnQThemedElementDtls;
+  s: String;
 begin
   gR.X := 2 + rect.left;
   gR.Y := rect.top;

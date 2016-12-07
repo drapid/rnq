@@ -116,7 +116,7 @@ function  focus(c: TRnQContact): boolean; overload;
 function  focus(n: Tnode): boolean; overload;
 function  focus(tn: Pvirtualnode): boolean; overload;
 function  focusTemp(n: Tnode): boolean;
-//function  remove(c:Tcontact): boolean;
+//function  remove(c: Tcontact): boolean;
 function  remove(c: TRnQContact): boolean;
 procedure sort(c: TRnQContact); overload;
 procedure sort(n: Tnode); overload;

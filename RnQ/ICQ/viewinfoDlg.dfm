@@ -29,6 +29,10 @@ object viewinfoFrm: TviewinfoFrm
     OnChange = pagectrlChange
     object mainSheet: TTabSheet
       Caption = '&Main'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label7: TLabel
         Left = 3
         Top = 264

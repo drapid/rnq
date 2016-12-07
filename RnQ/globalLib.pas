@@ -391,11 +391,11 @@ type
   PRnQUser = ^TRnQUser;
   TRnQUser = record
  {$IFDEF ICQ_ONLY}
-     proto : TICQProtoClass;
+     proto: TICQProtoClass;
  {$ELSE ~ICQ_ONLY}
-     proto : TRnQProtoClass;
+     proto: TRnQProtoClass;
  {$ENDIF ICQ_ONLY}
-     uin  : TUID;
+     uin: TUID;
      name, //uinStr,
      SubPath, path, prefix: string;
      SSI: Boolean;
@@ -407,16 +407,16 @@ type
 
 type
   TRnQAccount = record
-     ProtoPath : String;
-//     db : TZipFile;
+     ProtoPath: String;
+//     db: TZipFile;
  {$IFDEF ICQ_ONLY}
-     AccProto : TicqSession;
+     AccProto: TicqSession;
  {$ELSE ~ICQ_ONLY}
 //     AccProto: IRnQProtocol;
      AccProto: TRnQProtocol;
  {$ENDIF ICQ_ONLY}
-     outbox : Toutbox;
-     acks   : Toutbox;
+     outbox: Toutbox;
+     acks: Toutbox;
    end;
 
 const
@@ -462,7 +462,7 @@ var
   clickedNode : Tnode;
 
   prefHeight      : integer;
-  saveDBtimer2    : integer;
+  saveDBtimer2: integer;
 //  loginServer: string;
   lastServerIP, lastserverAddr: string;
   cmdLinePar: record
@@ -486,7 +486,7 @@ var
   MustQuit: Boolean = False; // Вызывается из плагинов, чтобы их нормально завершить успеть.
 
   docking: record
-    pos: (DP_right,DP_left);
+    pos: (DP_right, DP_left);
     bakOfs, bakSize: Tpoint;
     enabled,
     active,
@@ -512,7 +512,7 @@ var
   rosterRepaintDelayed,          // requires a roasterLib.repaint
   rosterRebuildDelayed: boolean; // requires a roasterLib.rebuild
   stayConnected, running, resolving: boolean;
-  chatfrmXY : TformXY;
+  chatfrmXY: TformXY;
   oldForeWindow   : Thandle;
   bringForeground : Thandle;
   groups: Tgroups;
@@ -570,11 +570,11 @@ var
     badwords     :string;
 //    quests : array of record q : String; ans : String; end;
     quests : array of record
-        q : String;
-        ans : array of String;
+       q: String;
+       ans: array of String;
      end;
    end;
-  histCrypt :record
+  histCrypt: record
     enabled : boolean;
     savePwd : boolean;
     pwdKey  : integer;

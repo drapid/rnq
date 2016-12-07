@@ -106,7 +106,7 @@ type
     htMask  : TBitmap;
     htTransparent: boolean; // is Has Mask
     fTransparentColor: COLORREF;
-    f32Alpha : Boolean;
+    f32Alpha: Boolean;
     fFormat : TPAFormat;
     fWidth  : Integer;
     fHeight : Integer;
@@ -118,7 +118,7 @@ type
     procedure NextFrame(OldFrame: Integer);
    public
     constructor Create; overload;
-    constructor Create(Width, Heigth : Integer); Overload;
+    constructor Create(Width, Heigth: Integer); Overload;
     constructor Create(fn: String); Overload;
     constructor Create(hi: HICON); Overload;
     destructor  Destroy; override;
@@ -131,24 +131,26 @@ type
     procedure MaskDraw(DC: HDC; const DestBnd, SrcBnd: TGPRect); Overload;
     procedure MaskDraw(DC: HDC; const DX, DY: Integer); Overload;
     procedure Draw(DC: HDC; DX, DY: Integer); Overload;
-//    procedure Draw(DC: HDC; DestR : TRect; SrcX, SrcY, SrcW, SrcH : Integer; pEnabled : Boolean= True; isCopy : Boolean= false); Overload;
-    procedure Draw(DC: HDC; DestBnd, SrcBnd: TGPRect; pEnabled : Boolean= True; isCopy32: Boolean = false); Overload;
+//    procedure Draw(DC: HDC; DestR: TRect; SrcX, SrcY, SrcW, SrcH: Integer; pEnabled: Boolean= True; isCopy : Boolean= false); Overload;
+    procedure Draw(DC: HDC; DestBnd, SrcBnd: TGPRect; pEnabled: Boolean= True; isCopy32: Boolean = false); Overload;
 //    procedure Draw(DC: HDC; DestR, SrcR: TRect); Overload;
     procedure Draw(DC: HDC; DestR: TGPRect); Overload;
 //    function  Clone(x, y, pWidth, pHeight: Integer): TRnQBitmap;
     function  Clone(bnd: TGPRect): TRnQBitmap;
     function  CloneFrame(frame: Integer): TRnQBitmap;
-    procedure SetTransparentColor(clr : cardinal);
+    procedure SetTransparentColor(clr: cardinal);
     function  bmp2ico32: HIcon;
-    procedure GetHICON(var hi : HICON);
-    function  GetWidth  : Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-    function  GetHeight : Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+    procedure GetHICON(var hi: HICON);
+    function  GetWidth: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+    function  GetHeight: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+    function  GetSize(PPI: Integer): TSize;
     function  RnQCheckTime: Boolean;
     property  Animated: Boolean read fAnimated;
     property  NumFrames: Integer read FNumFrames;
     property  Width: integer read fWidth;
     property  Height: integer read FHeight;
     property  CurrentFrame: Integer read FCurrentFrame write SetCurrentFrame;
+    property  picDPI: Integer read fDPI;
   end;
 
    procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR, SrcR: TGPRect); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
@@ -204,7 +206,7 @@ type
 
   function wbmp2bmp(Stream: TStream; var pic: TBitmap; CalcOnly: Boolean = False): TSize;
 
-  function  createBitmap(dx, dy: integer): Tbitmap; overload;
+  function  createBitmap(dx, dy: integer; PPI: Integer = cDefaultDPI): Tbitmap; overload;
   function  createBitmap(cnv: Tcanvas): Tbitmap; overload;
 
 // Color
@@ -416,7 +418,7 @@ begin
 //  fBMP32 := NIL;
   f32Alpha := False;
   fFormat := PA_FORMAT_UNK;
-  fDPI  := 0;
+  fDPI  := cDefaultDPI;
 
   fAnimated := False;
   FCurrentFrame := 1;
@@ -482,6 +484,31 @@ end;
 function  TRnQBitmap.GetHeight: Integer;
 begin
   Result := fHeight;
+end;
+
+function TRnQBitmap.GetSize(PPI: Integer): TSize;
+var
+  lPicDPI: Integer;
+begin
+  if PicDPI < 20 then
+    lPicDPI := cDefaultDPI
+   else
+    lPicDPI := picDPI;
+  if (PPI <> lPicDPI)and (PPI > 30) then
+      begin
+        Result.cx := MulDiv(fWidth, PPI, lPicDPI);
+        Result.cy := MulDiv(fHeight, PPI, lPicDPI);
+      end
+  else if (PPI > 30) and (lPicDPI <> cDefaultDPI) then
+      begin
+        Result.cx := MulDiv(fWidth, cDefaultDPI, lPicDPI);
+        Result.cy := MulDiv(fHeight, cDefaultDPI, lPicDPI);
+      end
+  else
+      begin
+        Result.cx := fWidth;
+        Result.cy := fHeight;
+      end
 end;
 
 procedure InitTransAlpha(bmp: TBitmap);
@@ -3011,28 +3038,30 @@ begin
 end;
 *)
 
-function createBitmap(dx,dy:integer):Tbitmap;
+function createBitmap(dx, dy: integer; PPI: Integer = cDefaultDPI): Tbitmap;
 begin
- result:=Tbitmap.create;
- Result.PixelFormat := pf24bit;
+  result := Tbitmap.create;
+  Result.PixelFormat := pf24bit;
+  Result.Canvas.Font.PixelsPerInch := PPI;
  {$IFDEF DELPHI9_UP}
   Result.SetSize(dx, dy);
  {$ELSE DELPHI9_UP}
-  result.width:=dx;
-  result.height:=dy;
+  result.width := dx;
+  result.height := dy;
  {$ENDIF DELPHI9_UP}
 end;
 
-function createBitmap(cnv:Tcanvas):Tbitmap;
+function createBitmap(cnv: Tcanvas): Tbitmap;
 begin
   with cnv.cliprect do
-   result:=createBitmap(right-left+1, bottom-top+1);
+    result := createBitmap(right-left+1, bottom-top+1);
+  Result.Canvas.Font.PixelsPerInch := cnv.Font.PixelsPerInch;
 end;
 
 procedure checkWICCodecs;
 var
-  FImagingFactory : IWICImagingFactory;
-  ctInfo : IWICComponentInfo;
+  FImagingFactory: IWICImagingFactory;
+  ctInfo: IWICComponentInfo;
 begin
   isTIFFSupport := false;
   isWEBPSupport := false;
@@ -3187,12 +3216,12 @@ begin
  end;
 end;
 
-procedure  StretchPic(var bmp:TRnQBitmap; maxH, maxW : Integer);
+procedure  StretchPic(var bmp: TRnQBitmap; maxH, maxW: Integer);
 //var
-//  bmp1 : TBitmap;
+//  bmp1: TBitmap;
 //  newBmp: TRnQBitmap;
-//  w, h : Integer;
-//  gr : TGPGraphics;
+//  w, h: Integer;
+//  gr: TGPGraphics;
 begin
   if not Assigned(bmp) or
      (bmp.fAnimated and (bmp.FNumFrames > 1)) then

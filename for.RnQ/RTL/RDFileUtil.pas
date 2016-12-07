@@ -74,6 +74,7 @@ type
  {$ENDIF USE_RAR}
 
   function  loadFile(pt: TThemeSourcePath; fn: string): RawByteString; overload;
+  function  ExistsFile(pt: TThemeSourcePath; fn: string): Boolean;
   function  loadFile(pt: TThemeSourcePath; fn: string; var ResStream: TStream): Boolean; overload;
   function  GetStream(const fn: String): TStream;
 //  function  loadFile(fn:string): RawByteString; overload;
@@ -116,12 +117,168 @@ implementation
     SysUtils
     ;
 
+function  ExistsFile(pt: TThemeSourcePath; fn: string): Boolean;
+  function fullpath(const fn: string): string;
+  begin if ansipos(':',fn)=0 then result:=pt.path+fn else result:=fn end;
+   {$IFDEF USE_RAR}
+var
+  hArcData: THandle;
+  RHCode, PFCode: Integer;
+  CmtBuf: array[0..Pred(16384)] of Char;
+//  HeaderData: RARHeaderData;
+  HeaderDataEx: RARHeaderDataEx;
+  OpenArchiveData: RAROpenArchiveDataEx;
+  Operation: Integer;
+  WeLoadedDLL : Boolean;
+//  Mode: Integer;
+  s: String;
+   {$ENDIF USE_RAR}
+begin
+  Result := False;
+  case pt.pathType of
+    pt_path:
+     begin
+       result := FileExists(fullpath(fn))
+     end;
+   {$IFDEF USE_ZIP}
+    pt_zip:
+          if Assigned(pt.zp) then
+           begin
+    //          i := pt.zp.Entries.IndexOf(pt.path+ fn);
+              result := pt.zp.IndexOf(pt.path+ fn) >= 0;
+           end;
+   {$ENDIF USE_ZIP}
+   {$IFDEF USE_7Z}
+    pt_7z:
+          if Assigned(pt.z7) then
+           begin
+           //  ZipFile.CentralDirectory
+//              i := pt.z7.GetIndexByFilename(pt.path+ fn);
+             s := pt.path + fn;
+             isFound := False;
+              for I := 0 to pt.z7.NumberOfItems - 1 do
+//              if (pt.z7.getItemPath(i) =pt.path) and
+//                 (pt.z7.GetItemName(i) = fn) then
+               if (pt.z7.getItemPath(i) = s) then
+                begin
+                  Result := True;
+                  Exit;
+                end;
+           end
+         else
+           result := false;
+   {$ENDIF USE_7Z}
+    {$IFDEF USE_RAR}
+     pt_rar:
+//      if Assigned(ts.rr) then
+       if aRARGetDllVersion > 0 then
+       begin
+         if not IsRARDLLLoaded then
+           begin
+            LoadRarLibrary;
+            WeLoadedDLL := IsRARDLLLoaded;
+           end
+          else
+            WeLoadedDLL := false;
+         if IsRARDLLLoaded then
+//          i := ts.zp.Entries.IndexOf(ts.path+ fn);
+//          if i >=0 then
+           begin
+             Result := False;
+            if pt.RarHnd = 0 then
+              begin
+ {$IFDEF UNICODE}
+                OpenArchiveData.ArcName := '';
+                OpenArchiveData.ArcNameW := PWideChar(pt.ArcFile);
+ {$ELSE nonUNICODE}
+                OpenArchiveData.ArcName := PAnsiChar(pt.ArcFile);
+                OpenArchiveData.ArcNameW := '';
+ {$ENDIF UNICODE}
+                OpenArchiveData.CmtBuf := @CmtBuf;
+                OpenArchiveData.CmtBufSize := SizeOf(CmtBuf);
+                OpenArchiveData.OpenMode := RAR_OM_EXTRACT;
+                hArcData := RAROpenArchiveEx(OpenArchiveData);
+                if (OpenArchiveData.OpenResult <> 0) then
+                begin
+          //        OutOpenArchiveError(OpenArchiveData.OpenResult, ArcName);
+                  Exit;
+                end;
+//                pt.RarHnd := hArcData;
+              end
+             else
+              hArcData := pt.RarHnd;
+
+      //      ShowArcInfo(OpenArchiveData.Flags, ArcName);
+
+      //      if (OpenArchiveData.CmtState = 1) then
+      //        ShowComment(CmtBuf);
+
+//            mode := EM_PRINT;
+//            RARSetCallback (hArcData, RARCallbackProc, NIL);
+
+//            HeaderData.CmtBuf := nil;
+            HeaderDataEx.CmtBuf := nil;
+
+            repeat
+//              RHCode := RARReadHeader(hArcData, HeaderData);
+              RHCode := RARReadHeaderEx(hArcData, HeaderDataEx);
+              if RHCode <> 0 then
+                Break;
+
+      {        case Mode of
+                EM_EXTRACT: Write(CR, 'Extracting ', SFmt(HeaderData.FileName, 45));
+                EM_TEST:    Write(CR, 'Testing ', SFmt(HeaderData.FileName, 45));
+                EM_PRINT:   Write(CR, 'Printing ', SFmt(HeaderData.FileName, 45), CR);
+              end;
+      }
+  {$IFDEF UNICODE}
+              s := LowerCase(StrPas(HeaderDataEx.FileNameW));
+  {$ELSE nonUNICODE}
+              s := LowerCase(StrPas(HeaderDataEx.FileName));
+  {$ENDIF UNICODE}
+              if {( and faDirectory = 0) and} (s = LowerCase(pt.path+fn)) then
+                Operation := RAR_TEST
+               else
+                Operation := RAR_SKIP;
+//              PFCode := RARProcessFile(hArcData, Operation, nil, nil);
+              if Operation <> RAR_SKIP then
+                begin
+                 Result := True;
+                 Break;
+                end;
+              if (PFCode = 0) then
+      //          Write(' Ok')
+              else begin
+      //          OutProcessFileError(PFCode);
+                Break;
+              end;
+            until False;
+
+      //      if (RHCode = ERAR_BAD_DATA) then
+      //        Write(CR, 'File header broken');
+            if hArcData <> pt.RarHnd then
+             RARCloseArchive(hArcData);
+//            result := loadFile(ZipStream);
+//            result := CreateAni(ZipStream, b);
+//            ResStream.Free;
+//             Result := True;
+           end;
+         if WeLoadedDLL then
+           UnLoadRarLibrary;
+       end
+      else
+     Result := False;
+    {$ENDIF USE_RAR}
+//    else
+//     Result := False;
+  end;
+end;
 
 function loadFile(pt: TThemeSourcePath; fn: string): RawByteString;
-  function fullpath(const fn:string):string;
+  function fullpath(const fn: string): string;
   begin if ansipos(':',fn)=0 then result:=pt.path+fn else result:=fn end;
 var
-  ZipStream : TMemoryStream;
+  ZipStream: TMemoryStream;
 begin
   if pt.pathType = pt_path then
    result := loadFileA(fullpath(fn))
@@ -396,7 +553,7 @@ begin
   end;
 end;
 
-function NeedPassForFile(pt: TThemeSourcePath; fn : string):Boolean;
+function NeedPassForFile(pt: TThemeSourcePath; fn: string):Boolean;
 var
   i : Integer;
    {$IFDEF USE_RAR}

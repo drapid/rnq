@@ -64,7 +64,7 @@ uses
 
 procedure applyTheme;
 //var
-// bmp : TBitmap;
+// bmp: TBitmap;
 begin
 
  {$IFDEF PROTOCOL_ICQ}
@@ -94,11 +94,11 @@ mainFrm.roaster.background.bitmap.ReleaseHandle;}
        if (roster.background.bitmap.Width > 0)
           and (roster.background.bitmap.Height > 0) then
        begin
-         paintoptions:=paintoptions+[toShowBackground];
+        paintoptions := paintoptions + [toShowBackground];
         end
    end
      else
-        paintoptions:=paintoptions-[toShowBackground];
+        paintoptions := paintoptions - [toShowBackground];
 //   RnQmain.roaster.TreeOptions.PaintOptions
 //  bmp.Free;
     {with mainfrm.roaster.treeoptions do
@@ -107,18 +107,18 @@ mainFrm.roaster.background.bitmap.ReleaseHandle;}
       else
         paintoptions:=paintoptions-[toShowBackground];}
 
-    roster.color:=theme.GetColor(PIC_RSTR_BG, clWindow); //roster.bgcolor;
-    bar.color:= theme.GetColor('roaster.bar', clBtnFace); //roster.barcolor;
+    roster.color := theme.GetColor(PIC_RSTR_BG, clWindow); // roster.bgcolor;
+    bar.color := theme.GetColor('roaster.bar', clBtnFace); // roster.barcolor;
     color := bar.color;
 
     {  mainfrm.color := $FFFFccFF;
       mainfrm.TransparentColorValue := mainfrm.color;
-      mainfrm.TransparentColor := True;}
+      mainfrm.TransparentColor := True; }
 {    sbar.color := bar.color;
     sbar.BorderWidth := 0;
-    sbar.Brush.Color := sbar.color;}
+    sbar.Brush.Color := sbar.color; }
 //    PntBar.Color := bar.color;
-    roster.colors.focusedselectioncolor:= theme.GetColor('roaster.selection', clHighlight); //roaster.selectioncolor;
+    roster.colors.focusedselectioncolor := theme.GetColor('roaster.selection', clHighlight); //roaster.selectioncolor;
     roster.colors.focusedselectionbordercolor   := roster.colors.focusedselectioncolor;
     roster.colors.unfocusedselectioncolor       := roster.colors.focusedselectioncolor;
     roster.colors.unfocusedselectionbordercolor := roster.colors.focusedselectioncolor;
@@ -142,8 +142,8 @@ mainFrm.roaster.background.bitmap.ReleaseHandle;}
      visibilityBtn.Invalidate;}
     FormResize(NIL);
   end;
-statusIcon.ReDraw;
-repaintAllWindows;
+  statusIcon.ReDraw;
+  repaintAllWindows;
 end; // applyTheme
 
 procedure applySizes(const OldDPI, NewDPI: Integer);
@@ -154,12 +154,12 @@ begin
   begin
      with theme.getPicSize(RQteButton, PIC_CLIENT_LOGO, icon_size, NewDPI) do
       begin
-        bar.Height := cy+7;
-        menuBtn.height := cy+5;
-        menuBtn.width := cx+6;
+        bar.Height := cy + MulDiv(7, NewDPI, cDefaultDPI);
+        menuBtn.height := cy + MulDiv(5, NewDPI, cDefaultDPI);
+        menuBtn.width := cx + MulDiv(6, NewDPI, cDefaultDPI);
       end;
-//     with theme.getPicSize(PIC_STATUS_ONLINE, 16) do
      szScaled := MulDiv(icon_size, NewDPI, oldDPI);
+//     with theme.getPicSize(PIC_STATUS_ONLINE, 16) do
      with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size, NewDPI) do
       begin
         statusBtn.height := max(cy+5, szScaled);
@@ -187,22 +187,22 @@ end; // resetTheme
 
 procedure ResetThemePaths;
 begin
-  theme.ThemePath.pathType:= pt_zip;
-  theme.ThemePath.fn:= 'RnQ.theme.rtz';
+  theme.ThemePath.pathType := pt_zip;
+  theme.ThemePath.fn := 'RnQ.theme.rtz';
   theme.ThemePath.subfn := defaultThemePrefix + defaultThemePostfix;
   RQSmilesPath.pathType := pt_path;
-  RQSmilesPath.fn:= '';
+  RQSmilesPath.fn := '';
   RQSmilesPath.subfn := '';
   RQSoundsPath.pathType := pt_path;
-  RQSoundsPath.fn:= '';
+  RQSoundsPath.fn := '';
   RQSoundsPath.subfn := '';
 end;
 
 
-procedure ApplyThemeComponent(c : Tcontrol);
+procedure ApplyThemeComponent(c: Tcontrol);
 var
-  btnDPI, szScaled: Integer;
-// pe : TRnQThemedElementDtls;
+  btnDPI, szScaled, gap: Integer;
+// pe: TRnQThemedElementDtls;
 begin
 {if c is TSpeedButton then
   with TSpeedButton(c) do
@@ -223,13 +223,14 @@ if c is TRnQSpeedButton then
         begin
          btnDPI := TRnQSpeedButton(c).parentDPI;
          szScaled := MulDiv(icon_size, btnDPI, cDefaultDPI);
+         gap := MulDiv(5, btnDPI, cDefaultDPI);
 
          with theme.getPicSize(RQteButton, ImageName, szScaled, btnDPI) do
 //         pe := ImageElm;
 //         with theme.getPicSize(pe, 16) do
           begin
-           TRnQSpeedButton(c).Height := max(cy, szScaled)+5;
-           TRnQSpeedButton(c).width  := max(cx, szScaled)+6;
+           TRnQSpeedButton(c).Height := max(cy, szScaled) + gap;
+           TRnQSpeedButton(c).width  := max(cx, szScaled) + gap + 1;
           end;
         end;
       end;
@@ -271,7 +272,7 @@ begin
     begin
      menuItem.Items[StartIDX].Destroy;
     end;
-  old:=theme.ThemePath.fn;
+  old := theme.ThemePath.fn;
   oldSub := theme.ThemePath.subfn;
   for i:=0 to length(theme.themelist2)-1 do
   begin
@@ -301,7 +302,7 @@ begin
     end;
   if length(theme.smileList) = 0 then
    Exit;
-  old:=RQSmilesPath.fn;
+  old := RQSmilesPath.fn;
   oldSub := RQSmilesPath.subfn;
 {  with AddToMenu(menuItem, 'From theme',
       StrUtils.IfThen((('' = old)), PIC_CHECKED, PIC_UNCHECKED),

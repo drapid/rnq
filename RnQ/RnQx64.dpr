@@ -107,11 +107,10 @@ uses
   viewinfoDlg in 'ICQ\viewinfoDlg.pas' {viewinfoFrm},
   viewSSI in 'ICQ\viewSSI.pas' {SSIForm},
   wpDlg in 'ICQ\wpDlg.pas' {wpFrm},
-  ICQ.RESTapi in 'ICQ\ICQ.RESTapi.pas',
   ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm},
   MenuSmiles in '..\for.RnQ\MenuSmiles.pas' {FSmiles};
 
-{ $R *.RES}
+{$R *.RES}
 
 //The UnicodeString in Delphi can contain Unicode or ANSI data at any given time,
 //  and in order to ensure that C++Builder code can correctly index the items,

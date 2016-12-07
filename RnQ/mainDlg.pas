@@ -3735,9 +3735,9 @@ begin
   if n = nil then
     Exit;
 
-  bmp := createBitmap(1,1);
+  bmp := createBitmap(1, 1, currentPPI);
   bmp.Canvas.Font := Screen.HintFont;
-  drawHint(bmp.canvas, n.kind, n.groupId, n.contact, r, True, GetParentCurrentDpi);
+  drawHint(bmp.canvas, n.kind, n.groupId, n.contact, r, True, currentPPI);
 //  drawNodeHint(bmp.canvas, node, r);
   bmp.free;
 end;

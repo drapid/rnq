@@ -26,6 +26,7 @@
 
  {$IFDEF RNQ2}
    {$DEFINE DB_ENABLED}   // Enable SQLite use
+   {$DEFINE PREF_IN_DB}   // Preferences in db
  {$ENDIF RNQ2}
 
 

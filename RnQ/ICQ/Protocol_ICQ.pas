@@ -9,12 +9,12 @@ unit Protocol_ICQ;
 interface
  uses
    Windows, Classes,
-   outboxlib, events,
+   outboxlib, events, RDGlobal,
   {$IFDEF usesDC}
      filetransferDlg,
      sendfileDlg,
   {$ENDIF usesDC}
-   RDGlobal, RnQProtocol,
+   RnQProtocol,
    RQ_ICQ, ICQcontacts, ICQv9, ICQConsts,
    globalLib, viewinfoDlg;
 
@@ -493,7 +493,7 @@ case what of
         end;
   end;
 
-  head:=logtimestamp+s;
+  head := logtimestamp+s;
   logProtoPkt(what, head, data)
 end; // loggaPkt
 
@@ -781,9 +781,11 @@ case ev of
     //            TempCh.historyBox.history.
                  TempEv := TempCh.historyBox.history.getByID(thisICQ.eventMsgID);
                  if TempEv <> NIL then
-                  TempEv.flags := TempEv.flags OR IF_SERVER_ACCEPT;// IF_MSG_SERVER;
-                  TempEv.writeWID(thisICQ.eventMsgID, thisICQ.eventWID);
-//                 TempEv := NIL;
+                  begin
+                    TempEv.flags := TempEv.flags OR IF_SERVER_ACCEPT;// IF_MSG_SERVER;
+                    TempEv.writeWID(thisICQ.eventMsgID, thisICQ.eventWID);
+  //                 TempEv := NIL;
+                  end;
                  TempCh.repaint();
               end;
 
@@ -1221,13 +1223,13 @@ case ev of
 {$IFDEF usesDC}
   IE_dcConnected: loggaICQPkt('Direct', WL_connected, thisICQ.eventDirect.host);
   IE_dcDisconnected: loggaICQPkt('Direct', WL_disconnected, thisICQ.eventDirect.host);
-  IE_dcSent: loggaICQPkt('Direct', WL_meSent,thisICQ.eventData);
-  IE_dcGot: loggaICQPkt('Direct', WL_heSent,thisICQ.eventData);
+  IE_dcSent: loggaICQPkt('Direct', WL_meSent, thisICQ.eventData);
+  IE_dcGot: loggaICQPkt('Direct', WL_heSent, thisICQ.eventData);
 {$ENDIF usesDC}
-  IE_serverSent: loggaICQPkt('', WL_serverSent,thisICQ.eventData);
-  IE_serverGot: loggaICQPkt('', WL_serverGot,thisICQ.eventData);
-  IE_ProxySent: loggaICQPkt('Proxy', WL_serverSent,thisICQ.eventData);
-  IE_ProxyGot: loggaICQPkt('Proxy', WL_serverGot,thisICQ.eventData);
+  IE_serverSent: loggaICQPkt('', WL_serverSent, thisICQ.eventData);
+  IE_serverGot: loggaICQPkt('', WL_serverGot, thisICQ.eventData);
+  IE_ProxySent: loggaICQPkt('Proxy', WL_serverSent, thisICQ.eventData);
+  IE_ProxyGot: loggaICQPkt('Proxy', WL_serverGot, thisICQ.eventData);
   IE_serverConnected: loggaICQPkt('', WL_connected, thisICQ.eventAddress);
   IE_serverDisconnected: loggaICQPkt('', WL_disconnected, thisICQ.eventAddress);
 //  IE_serverConnecting: loggaICQPkt(WL_connecting, thisICQ.eventAddress);
@@ -1521,8 +1523,10 @@ case ev of
         Check_my_avatar(thisICQ);
       {$ENDIF RNQ_AVATARS}
  {$ENDIF UseNotSSI}
+  {$IFDEF ICQ_REST_API}
           if thisICQ.useWebProtocol then
             thisICQ.getSession;
+  {$ENDIF ICQ_REST_API}
      end
     else
       begin
@@ -1553,6 +1557,7 @@ case ev of
         Account.acks.Clear;
       plugins.castEv(PE_DISCONNECTED);
 
+  {$IFDEF ICQ_REST_API}
         if thisICQ.useWebProtocol then
         begin
           session := thisICQ.getSession(False);
@@ -1563,6 +1568,7 @@ case ev of
             loggaEvtS('AIM session ' + session.aimsid + ' closed');
           end;
         end;
+  {$ENDIF ICQ_REST_API}
       end;
     noOncomingCounter:=150;
     with chatFrm do
@@ -1941,41 +1947,13 @@ begin
       end;
 end;
 
-procedure openICQURL(pr : TRnQProtocol; const pURL: String);
-var
-  hash, query, baseUrl, redirectUrl, unixTime, devId, sToken: String;
-  url, hashStr, sSecret: RawByteString;
-  session: TSessionParams;
-  digest: T256BitDigest;
-  icq: TICQSession;
+procedure openICQURL(pr: TRnQProtocol; const pURL: String);
 begin
-  icq := TICQSession(pr);
-  session := icq.getSession;
-
-  if (icq.getPwdOnly = '') or (session.secret = '') or (session.token = '') then
-  begin
-    openURL(pURL);
-    exit;
-  end;
-
-  baseUrl := 'http://www.icq.com/karma_api/karma_client2web_login.php';
-  sToken := TNetEncoding.url.Encode(session.token);
-  digest := CalcHMAC_SHA256(StrToUTF8(icq.getPwdOnly), StrToUTF8(session.secret));
-  sSecret := Base64EncodeString(SHA256DigestToStrA(digest));
-  devId := 'ic1nmMjqg7Yu-0hL';
-  redirectUrl := TNetEncoding.url.Encode(pURL);
-  unixTime := IntToStr(DateTimeToUnix(Now, False));
-
-  query := 'a=' + sToken + '&d=' + redirectUrl + '&k=' + devId + '&owner=' + Account.AccProto.ProtoElem.MyAccNum + '&ts='
-    + unixTime;
-
-  hash := 'GET&' + TNetEncoding.url.Encode(baseUrl) + '&' + TNetEncoding.url.Encode(query);
-  digest := CalcHMAC_SHA256(sSecret, StrToUTF8(hash));
-  hashStr := Base64EncodeString(SHA256DigestToStrA(digest));
-
-  url := StrToUTF8(baseUrl + '?' + query + '&sig_sha256=' + TNetEncoding.url.Encode(hashStr));
-
-  openURL(url);
+  {$IFDEF ICQ_REST_API}
+  ICQREST_openICQURL(pURL);
+  {$ELSE ~ICQ_REST_API}
+  openURL(pURL);
+  {$ENDIF ~ICQ_REST_API}
 end;
 
 end.

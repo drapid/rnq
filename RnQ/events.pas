@@ -59,7 +59,7 @@ const
     '%s requires authorization','%s added you','%s is online','%s is offline',
     '%s authorized you','%s denied authorization','%s changed status',
     'auto-message requested by %s','greeting card from %s',
-    'auto-message for %s','Begun typing', 'Finished typing', '%s changed status',
+    'auto-message for %s', 'Started typing', 'Finished typing', '%s changed status',
     'XStatus requested by %s', 'Tried to buzz by %s'
   );
   tipevent2str: array [0..EK_last] of string=(
@@ -67,7 +67,7 @@ const
     'Requires authorization','Added you','is online','is offline',
     'Authorized you','Denied authorization','Changed status',
     'Requested your auto-message','Sent you a greeting card',
-    'Auto-message','Begun typing', 'Finished typing', 'Changed status',
+    'Auto-message', 'Started typing', 'Finished typing', 'Changed status',
     'Requested your XStatus', 'Tried to buzz you!'
   );
   tipBirth2str: array[0..2] of string=(
@@ -77,7 +77,7 @@ const
     histHeadevent2str:array [0..EK_last] of string=(
     '','','','',' sent file',' Request authorization','',
     ' is online',' is offline',' Authorized',' Denied authorization',' - status %3:s',
-    ' requested your auto-message',' Greeting Card',' auto-message', ' begun typing',
+    ' requested your auto-message',' Greeting Card',' auto-message', ' started typing',
     ' finished typing', ' - status %3:s', ' requested your XStatus', '%3:s'
   );
      histBodyEvent2str:array [EK_null..EK_last] of string=(

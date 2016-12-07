@@ -104,13 +104,14 @@ type
 type
   PGPSize = ^TGPSize;
   TGPSize = packed record
-    Width  : Integer;
-    Height : Integer;
+    Width: Integer;
+    Height: Integer;
     constructor create(Width, Height: Integer);
+    function asTSize: TSize;
   end;
 
   function MakeSize(sz2: TSize): TGPSize; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-  function GetSize(sz1: TGPSize): TSize; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+//  function GetSize(sz1: TGPSize): TSize; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 //  function MakeSize(Width, Height: Integer): TGPSize; overload;
 
 type
@@ -198,17 +199,23 @@ end;
     Result.Width := sz2.cx;
     Result.Height := sz2.cy;
   end;
-
+{
   function GetSize(sz1: TGPSize): TSize;
   begin
     Result.cx := sz1.Width;
     Result.cy := sz1.Height;
   end;
-
+}
   constructor TGPSize.create(Width, Height: Integer);
   begin
     Self.Width := Width;
     Self.Height := Height;
+  end;
+
+  function TGPSize.asTSize: TSize;
+  begin
+    Result.cx := Width;
+    Result.cy := Height;
   end;
 
   function MakeRect(x, y, width, height: Integer): TGPRect; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}

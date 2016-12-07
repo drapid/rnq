@@ -33,17 +33,17 @@ type
 //    function kind2iconIndex(kind:TMsgDlgType):integer;
    protected
     OkBtn: TRnQButton;
-    FTimer : TTimer;
-    menu : TRnQPopupMenu;
-    OpenChatM : TRQMenuItem;
+    FTimer: TTimer;
+    menu: TRnQPopupMenu;
+    OpenChatM: TRQMenuItem;
     procedure onTimer(Sender: TObject);
     procedure menuPopup(Sender: TObject);
     procedure openChat(Sender: TObject);
     procedure CopyText(Sender: TObject);
    public
     msgList: TVirtualDrawTree;
-    FSeconds : Integer;
-    procedure AddMsg(msg:string; kind:TMsgDlgType; vTime : TDateTime; const uid : AnsiString = '');
+    FSeconds: Integer;
+    procedure AddMsg(msg: string; kind: TMsgDlgType; vTime: TDateTime; const uid: String = '');
   end;
 
 var
@@ -58,6 +58,16 @@ uses
   RDUtils, RQUtil, RnQlangs, RQThemes, RnQMenu, RnQDialogs,
   RnQSysUtils, RnQGlobal
 ;
+
+type
+  Pmsg = ^Tmsg;
+  Tmsg = record
+     text: String;
+     UID: String;
+     kind: TMsgDlgType;
+     time: Tdatetime;
+//     cnt : tcontact;
+    end;
 
 const
   GAP_X=3;
@@ -92,12 +102,12 @@ end;
 procedure TmsgsFrm.msgListDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-  s, ic:string;
-  isFirst, selected:boolean;
-  r : TRect;
-  clr : TColor;
+  s, ic: string;
+  isFirst, selected: boolean;
+  r: TRect;
+  clr: TColor;
 begin
-  selected:= vsSelected in PaintInfo.Node^.States;
+  selected := vsSelected in PaintInfo.Node^.States;
   isFirst := PaintInfo.Node = msgList.GetFirst;
   r := PaintInfo.CellRect;
 //  PaintInfo.Canvas.fillrect(r);
@@ -106,7 +116,7 @@ begin
   inc(r.Top, GAP_Y shl 1);
 
   if (isFirst) then
-    clr:=clWindowText
+    clr := clWindowText
    else
     if not selected then
       clr := clGrayText
@@ -120,7 +130,7 @@ begin
            IconNames[ kind ], isFirst) do
 //    with theme.getPicSize(RQteDefault, IconNames[kind], 16) do
      begin
-      s:=datetimeToStr( time )+CRLF;
+      s := datetimeToStr( time )+CRLF;
       if cy > 32 then
         inc(r.Left, 2 + cx)
        else
@@ -142,7 +152,7 @@ end;
 procedure TmsgsFrm.msgListFreeNode(Sender: TBaseVirtualTree;
   Node: PVirtualNode);
 var
-  m : Pmsg;
+  m: Pmsg;
 begin
   m := Pmsg(sender.getnodedata(node));
   if m <> NIL then
@@ -338,8 +348,8 @@ end;
 
 procedure TmsgsFrm.openChat(Sender: TObject);
 var
-//  cnt : TRnQContact;
-  s : String;
+//  cnt: TRnQContact;
+  s: String;
 begin
 {  cnt := NIL;
   if Assigned(MainProto) then
@@ -352,14 +362,14 @@ begin
   with msgList do
   if focusedNode<>NIL then
    begin
-    s := Pmsg(getnodedata(focusednode)).UID;
+    s := String(Pmsg(getnodedata(focusednode)).UID);
     convertAllNewlinesToCRLF(s);
     clipboard.asText := s;
    end;
 end;
 
 procedure TmsgsFrm.AddMsg(msg: string; kind: TMsgDlgType; vTime: TDateTime;
-  const uid: AnsiString);
+  const uid: String);
 var
   vmsg : Pmsg;
   n : PVirtualNode;

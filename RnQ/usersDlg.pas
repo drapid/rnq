@@ -198,7 +198,7 @@ begin
  {$IFNDEF ICQ_ONLY}
         '('+proto._GetProtoName+') ' +
  {$ENDIF ICQ_ONLY}
-        prefix+ uin + ' ' + name;
+        prefix + String(uin) + ' ' + name;
     if encr then
      s := s + '  *KEY*'
    end;
@@ -289,9 +289,9 @@ begin
   NewAccDlg := TNewAccFrm.Create(Application);
   translateWindow(NewAccDlg);
   if NewAccDlg.ShowModal = mrOk then
-    newuser(NewAccDlg.getProto, NewAccDlg.AccEdit.Text);
+    newuser(NewAccDlg.getProto, TUID(NewAccDlg.AccEdit.Text));
   NewAccDlg.Free;
-//  if enterUINdlg(NIL, uin,'New user UIN') then
+//  if enterUINdlg(NIL, uin, 'New user UIN') then
 //    newUser(uin);
   if okBtn.Enabled then
     okBtn.SetFocus;
@@ -474,12 +474,12 @@ procedure TusersFrm.PntBoxPaint(Sender: TObject);
 const
   sizeM: Integer = 48;
 var
-//  vImgElm : TRnQThemedElementDtls;
-//  thmTkn : Integer;
-//  picLoc : TPicLocation;
-//  picIdx : Integer;
+//  vImgElm: TRnQThemedElementDtls;
+//  thmTkn: Integer;
+//  picLoc: TPicLocation;
+//  picIdx: Integer;
   cnv: Tcanvas;
-  oldMode: Integer;
+//  oldMode: Integer;
 //  bmp : TBitmap;
    TextLen: Integer;
    TextRect, R: TRect;
@@ -488,15 +488,15 @@ var
    PaintOnGlass: Boolean;
   MemDC: HDC;
   PaintBuffer: HPAINTBUFFER;
-//  br : HBRUSH;
-  oldF : HFONT;
-  ico : HICON;
-  sz : TSize;
+//  br: HBRUSH;
+  oldF: HFONT;
+  ico: HICON;
+  sz: TSize;
   SizeMScaled: Integer;
 begin
   cnv := (Sender as TPaintBox).Canvas;
   R := (Sender as TPaintBox).ClientRect;
-    PaintOnGlass := StyleServices.Enabled and DwmCompositionEnabled and
+  PaintOnGlass := StyleServices.Enabled and DwmCompositionEnabled and
       not (csDesigning in ComponentState);
     if PaintOnGlass then
     begin
@@ -559,7 +559,8 @@ begin
         end
        else
         begin
-          oldMode := SetBkMode(MemDC, TRANSPARENT);
+//          oldMode :=
+           SetBkMode(MemDC, TRANSPARENT);
           oldF := SelectObject(MemDC, cnv.Font.Handle);
           SetTextAlign (MemDC, GetTextAlign(MemDC) or (TA_CENTER) or VTA_CENTER);
 //          SetTextAlign (MemDC, (TA_CENTER));
@@ -576,8 +577,11 @@ begin
           SelectObject(MemDC, oldF);
         end;
 
+//      br := CreateSolidBrush(ColorToRGB(clBlack));
+//      br := GetSysColorBrush(COLOR_HIGHLIGHT);
+//      FillRect(MemDC, TextRect, br);
+
 //      br := 0;
-//      DeleteObject(br);
 //      s := intToStr(round(progLogon*100))+'%';
      SizeMScaled := MulDiv(sizeM, self.Monitor.PixelsPerInch, PixelsPerInch);
 
@@ -585,10 +589,13 @@ begin
 //     DrawIcon(AboutPBox.Canvas.Handle, 0, 0, ico);
 //     DrawIconEx(AboutPBox.Canvas.Handle, 0, 0, ico, sizeM, sizeM, 0, 0, DI_NORMAL);
 
-     DrawIconEx(MemDC, (r.Left + r.Right- SizeMScaled) shr 1, r.Bottom - SizeMScaled - 5, ico,
+     DrawIconEx(MemDC, (r.Left + r.Right - SizeMScaled) shr 1, r.Bottom - SizeMScaled - 5, ico,
                 SizeMScaled, SizeMScaled, 0, 0, DI_NORMAL);
 //     DeleteObject(ico);
      DestroyIcon(ico);
+
+//     if br <> 0 then
+//       DeleteObject(br);
 
 //      TextOut(MemDC, r.left+2,y, PAnsiChar(s), Length(s));
 //      SetBkMode(MemDC, oldMode);
@@ -605,32 +612,32 @@ end;
 
 procedure TusersFrm.usersBoxClick(Sender: TObject);
 begin
-OKbtn.enabled:= usersBox.FocusedNode <> NIL
-//usersBox.itemIndex >= 0;
+  OKbtn.enabled := usersBox.FocusedNode <> NIL
+  //usersBox.itemIndex >= 0;
 end;
 
 procedure TusersFrm.UsersBoxCompareNodes(Sender: TBaseVirtualTree; Node1,
   Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
 var
- i : Int64;
- u1, u2 : TUID;
+ i: Int64;
+ u1, u2: String;
 begin
-  u1 := TRnQUser(PRnQUser(Sender.getnodedata(Node1))^).uin;
-  u2 := TRnQUser(PRnQUser(Sender.getnodedata(Node2))^).uin;
+  u1 := String(TRnQUser(PRnQUser(Sender.getnodedata(Node1))^).uin);
+  u2 := String(TRnQUser(PRnQUser(Sender.getnodedata(Node2))^).uin);
 // if Column = 0 then
    if TryStrToInt64(u1, i) or TryStrToInt64(u2, i) then
      result := compareInt(StrToIntDef(u1, MaxInt), StrToIntDef(u2, MaxInt))
     else
-     result:= CompareText(u1, u2)
+     result := CompareText(u1, u2)
 //  else
-//   result:= -CompareText(Tcontact(sender.getnodedata(Node1)^).displayed,
+//   result := -CompareText(Tcontact(sender.getnodedata(Node1)^).displayed,
 //      Tcontact(Sender.getnodedata(Node2)^).displayed);
 end;
 
 procedure TusersFrm.newuser(cls: TRnQProtoClass; const uin: TUID);
 var
-//  s:string;
-//  i, k:integer;
+//  s: string;
+//  i, k: integer;
   tBasePath: String;
   tUserPath: String;
   b: Boolean;
@@ -639,17 +646,17 @@ var
   onlyUID: TUID;
   prCl: TRnQProtoClass;
 begin
-//  s:= uin;
-    if cmdLinePar.userPath > '' then
-      tBasePath := cmdLinePar.userPath
-     else
-      tBasePath := myPath + accountsPath;
+//  s := uin;
+  if cmdLinePar.userPath > '' then
+    tBasePath := cmdLinePar.userPath
+   else
+    tBasePath := myPath + accountsPath;
 //   prCl := NIL;
-   prCl := cls;
+  prCl := cls;
 //   if cls = NIL then
-   begin
-     onlyUID := uin;
-     b := false;
+  begin
+    onlyUID := uin;
+    b := false;
     if cls = NIL then
      for prCl in RnQProtos do
       begin
@@ -681,13 +688,13 @@ begin
          exit;
        end;
     if isOnlyDigits(onlyUID) then
-      tUserPath := tBasePath + onlyUID + PathDelim
+      tUserPath := tBasePath + String(onlyUID) + PathDelim
      else
 //      if prCl = TicqSession then
       if prCl._getProtoID = ICQProtoID then
-        tUserPath := tBasePath + 'AIM_'+ onlyUID + PathDelim
+        tUserPath := tBasePath + 'AIM_'+ String(onlyUID) + PathDelim
        else
-        tUserPath := tBasePath + prCl._GetProtoName +'_'+ onlyUID + PathDelim;
+        tUserPath := tBasePath + prCl._GetProtoName +'_'+ String(onlyUID) + PathDelim;
 //    if i <> 0 then
 //     tUserPath := tUserPath + AIMprefix;
 //    tUserPath := tUserPath + String(uin) + PathDelim;
@@ -1068,7 +1075,7 @@ procedure refreshAvailableUsers;
 //      if TRnQProtocol(icq).isValidUID(s)
        for prCl in RnQProtos do
         begin
-         s2 := s;
+         s2 := TUID(s);
 //         if prCl._isValidUid(s2)
          if prCl._isProtoUid(s2)
 //      if icq.isValidUID(s)
@@ -1127,7 +1134,7 @@ begin
      begin
 //      fantomWork := True;    // New фича 2007.10.09
  {$IFDEF ICQ_ONLY}
-      addAvailableUser(TicqSession, cmdLinePar.startUser, myPath + cmdLinePar.startUser, 'CMD\');
+      addAvailableUser(TicqSession, cmdLinePar.startUser, myPath + String(cmdLinePar.startUser), 'CMD\');
  {$ENDIF ICQ_ONLY}
      end;
    end;

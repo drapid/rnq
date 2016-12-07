@@ -126,8 +126,8 @@
             <Form>logFrm</Form>
         </DCCReference>
         <DCCReference Include="incapsulate.pas"/>
-        <DCCReference Include="RnQButtons.pas"/>
-        <DCCReference Include="RnQSpin.pas"/>
+        <DCCReference Include="VCL\RnQButtons.pas"/>
+        <DCCReference Include="VCL\RnQSpin.pas"/>
         <DCCReference Include="RnQDialogs.pas"/>
         <DCCReference Include="RnQLangs.pas"/>
         <DCCReference Include="RnQPrefsLib.pas"/>

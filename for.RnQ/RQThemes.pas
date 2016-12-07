@@ -223,8 +223,8 @@ type
     FStr,
     FSmiles,
     FSounds,
-    FIntPics : TObjList;
-    FIntPicsIL : THandle;
+    FIntPics: TObjList;
+    FIntPicsIL: THandle;
  {$IFDEF RNQ_FULL}
     FAniSmls: TObjList;
 //    FAniPics: TObjList;
@@ -232,8 +232,8 @@ type
  {$IFDEF SMILES_ANI_ENGINE}
     FAniParamList: TAniSmileParamsArray;
     FAniDrawCnt: Integer;
-    FAniTimer : TTimer;
-    FdrawCS : TCriticalSection;
+    FAniTimer: TTimer;
+    FdrawCS: TCriticalSection;
  {$ENDIF SMILES_ANI_ENGINE}
  {$ENDIF RNQ_FULL}
 //    addProp : procedure (name: TPicName; kind:TthemePropertyKind; s: String);
@@ -260,22 +260,22 @@ type
    public
     ThemePath: TThemePath;
 //    MasterFN, subfn :string;
-//    fs : TPathType;
-//    fs : TThemeSourcePath;
-//    path : String;
+//    fs: TPathType;
+//    fs: TThemeSourcePath;
+//    path: String;
     title, desc: string;
-    useTSC : TThemeSubClass;
-//    supSmiles : Boolean;
+    useTSC: TThemeSubClass;
+//    supSmiles: Boolean;
  {$IFDEF RNQ_FULL}
  {$IFDEF SMILES_ANI_ENGINE}
-    useAnimated : Boolean;
-//    Anipicbg : Boolean;
-    AnibgPic : TBitmap;
+    useAnimated: Boolean;
+//    Anipicbg: Boolean;
+    AnibgPic: TBitmap;
     AnibgPicPPI: Integer;
  {$ENDIF SMILES_ANI_ENGINE}
  {$ENDIF RNQ_FULL}
-//    logo:TRnQBitmap;
-    themelist2 : aThemeinfo;
+//    logo: TRnQBitmap;
+    themelist2: aThemeinfo;
     smileList  : aThemeinfo;
     soundList  : aThemeinfo;
     fBasePath  : String;
@@ -400,7 +400,7 @@ const
 //  PIC_ERROR                       = 'error';
 
 var
-  theme  : TRQtheme;
+  theme: TRQtheme;
 
 
 
@@ -431,16 +431,16 @@ const
 
  {$IFDEF USE_7Z}
 const
-   SevenZipThemes : array[0..2] of string = ('.7z', '.7zip', '.rt7');
+   SevenZipThemes: array[0..2] of string = ('.7z', '.7zip', '.rt7');
  {$ENDIF USE_7Z}
  {$IFDEF USE_RAR}
 const
-   RARThemes : array[0..1] of string = ('.rar', '.rtr');
+   RARThemes: array[0..1] of string = ('.rar', '.rtr');
  {$ENDIF USE_RAR}
  {$IFDEF USE_ZIP}
 const
-   ZipThemes : array[0..1] of string = ('.zip', '.rtz');
-   ThemeInis : array[0..2] of string = ('theme.ini', 'smiles.ini', 'sounds.ini');
+   ZipThemes: array[0..1] of string = ('.zip', '.rtz');
+   ThemeInis: array[0..2] of string = ('theme.ini', 'smiles.ini', 'sounds.ini');
  {$ENDIF USE_ZIP}
 
  function MakeRectI(x, y, width, height: Integer): TGPRect; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
@@ -1664,8 +1664,8 @@ begin
           begin
             Result.cx := Width;
             Result.cy := Height;
-            if fDPI>20 then
-              lPicDPI := fDPI;
+            if picDPI>20 then
+              lPicDPI := picDPI;
           end
          else
         {$ENDIF RNQ_FULL}
@@ -1834,8 +1834,8 @@ begin
           begin
             Result.cx := Width;
             Result.cy := Height;
-            if fDPI>20 then
-              lPicDPI := fDPI;
+            if picDPI>20 then
+              lPicDPI := picDPI;
           end;
    PL_Smile: with TThemePic(FSmilePics.Objects[PicElm.picIdx]) do
         begin
@@ -2106,7 +2106,7 @@ begin
  {$WARN UNSAFE_CAST OFF}
     result := TColor(FClr.Objects[i])
  {$WARN UNSAFE_CAST ON}
-  else
+   else
     begin
 //      addProp(name, pDefColor);
       result := pDefColor;
@@ -2124,7 +2124,7 @@ begin
    {$IFDEF USE_GDIPLUS}
     result := AlphaMask or ABCD_ADCB(ColorToRGB(TColor(FClr.Objects[i])))
    {$ELSE NOT USE_GDIPLUS}
-    result := AlphaMask or ColorToRGB(TColor(FClr.Objects[i]))
+    result := AlphaMask or Cardinal(ColorToRGB(TColor(FClr.Objects[i])))
    {$ENDIF USE_GDIPLUS}
  {$WARN UNSAFE_CAST ON}
   else
@@ -2134,7 +2134,7 @@ begin
       {$IFDEF USE_GDIPLUS}
       result := AlphaMask or ABCD_ADCB(ColorToRGB(pDefColor));
       {$ELSE NOT USE_GDIPLUS}
-       result := AlphaMask or ColorToRGB(pDefColor)
+       result := AlphaMask or Cardinal(ColorToRGB(pDefColor))
       {$ENDIF USE_GDIPLUS}
     end
 end;
@@ -2153,7 +2153,7 @@ begin
     result := cardinal(FClr.Objects[i])
    {$ENDIF USE_GDIPLUS}
  {$WARN UNSAFE_CAST ON}
-  else
+   else
     begin
 //      addProp(name, pDefColor);
 //      result := ColorFromAlphaColor($FF, ABCD_ADCB(ColorToRGB(pDefColor)));
@@ -3151,40 +3151,40 @@ var
        s := fontAvailable(v);
  {$IFDEF UNICODE}
 //       fontProp.name := AnsiStrAlloc(Length(s)+1);
-       fontProp.name := StrAlloc(Length(s)+1);
+       fontProp.name := WideStrAlloc(Length(s)+1);
  {$ELSE nonUNICODE}
        fontProp.name := StrAlloc(Length(s)+1);
  {$ENDIF UNICODE}
-       StrPCopy(fontProp.name, s);
-  //     font.name:=fontAvailable(v);
+       StrPCopy(fontProp.name, String(s));
+  //     font.name := fontAvailable(v);
       end
     else
     if k=prefix+'.size' then
       begin
        fontProp.flags := fontProp.flags or FPT_SIZE;
-       fontProp.size := strToInt(v)
-  //     font.size:=strToInt(v)
+       fontProp.size := strToIntA(v)
+  //     font.size := strToInt(v)
       end
     else
     if k=prefix+'.color' then
       begin
        fontProp.flags := fontProp.flags or FPT_COLOR;
        fontProp.color := str2color(v)
-  //     font.color:=str2color(v)
+  //     font.color := str2color(v)
       end
     else
     if k=prefix+'.charset' then
      begin
        fontProp.flags := fontProp.flags or FPT_CHARSET;
       if isOnlyDigits(v) then
-        fontProp.charset := StrToInt(v)
-  //      font.charset:=strToInt(v)
+        fontProp.charset := strToIntA(v)
+  //      font.charset := strToInt(v)
       else
-        if IdentToCharset(v,i) then
+        if IdentToCharset(String(v), i) then
           fontProp.charset := i
   //        font.charset:=i
         else
-          if IdentToCharset(v+'_CHARSET',i) then
+          if IdentToCharset(String(v+'_CHARSET'), i) then
             fontProp.charset := i
   //          font.charset:=i
            else
@@ -3333,7 +3333,7 @@ begin
 
   if k='PPI' then
    begin
-     CurrentPPI := StrToIntDef(v, cDefaultDPI);
+     CurrentPPI := StrToIntDef(String(v), cDefaultDPI);
      continue;
    end;
 
@@ -3594,8 +3594,8 @@ begin
          lPicDPI := picDPI;
        if (pDPI <> lPicDPI)and (pDPI > 36) then
          begin
-           result.cx := MulDiv(result.cx, pDPI, cDefaultDPI);
-           result.cy := MulDiv(result.cy, pDPI, cDefaultDPI);
+           result.cx := MulDiv(result.cx, pDPI, lPicDPI);
+           result.cy := MulDiv(result.cy, pDPI, lPicDPI);
          end;
        DrawRbmp(DC, FBigPics[PicIDX].bmp,
          makeRectI(pX, pY, result.cx, result.cy), r, pEnabled);
@@ -3677,7 +3677,7 @@ begin
      r1 := DestRect( r.size, pR.size);
      inc(r1.X, pR.X);
      inc(r1.Y, pR.Y);
-     result := GetSize(pR.size);
+     result := pR.size.asTSize;
      DrawRbmp(DC, FBigPics[PicIDX].bmp, R1, r, pEnabled);
    end else
   else
@@ -3708,7 +3708,7 @@ begin
 //             result.cx := r.Width;
 //             result.cy := r.Height;
              r1 := DestRect( r.size, pR.size);
-             result := GetSize(pR.size);
+             result := pR.size.asTSize;
              inc(r1.X, pR.X);
              inc(r1.Y, pR.Y);
              if PicType = PT_SMILE then
@@ -3992,7 +3992,7 @@ begin
             Draw(DC, R1);
 //            result.cx := Width;
 //            result.cy := Height;
-            result := GetSize(pR.size);
+            result := pR.size.asTSize;
           end;
         end;
    PL_Smile:
@@ -4007,7 +4007,7 @@ begin
        if Assigned(po) then
         begin
           r1 := DestRect(R.size, pR.size);
-          result := GetSize(pR.size);
+          result := pR.size.asTSize;
           inc(r1.X, pR.X);
           inc(r1.Y, pR.Y);
           DrawRbmp(DC, po.bmp, R1, r, picElm.pEnabled);
@@ -4676,7 +4676,8 @@ var
   b2: TBitmap;
   b2DC: HDC;
   paramSmile: TAniPicParams;
-  w2, h2: Integer;
+  sz2: TSize;
+//  w2, h2: Integer;
 //  gr, grb: TGPGraphics;
 //  br: TGPBrush;
 begin
@@ -4732,22 +4733,16 @@ begin
         with GetAniPic(paramSmile.Idx) do
         begin
 //         bmp:= TRnQBitmap.Create(Width, Height, PixelFormat32bppRGB);
-           w2 := Width;
-           h2 := Height;
-           if (fDPI <> cDefaultDPI)and (fDPI > 36) then
-             begin
-               w2 := MulDiv(w2, AnibgPicPPI, fDPI);
-               h2 := MulDiv(h2, AnibgPicPPI, fDPI);
-             end;
-           if (b2.Width <> w2)or
-              (b2.Height <> h2) then
+           sz2 := GetSize(AnibgPicPPI);
+           if (b2.Width <> sz2.cx)or
+              (b2.Height <> sz2.cy) then
             begin
              b2.Height := 0;
            {$IFDEF DELPHI9_UP}
-             b2.SetSize(w2, h2);
+             b2.SetSize(sz2.cx, sz2.cy);
            {$ELSE DELPHI_9_dn}
-             b2.Width := w2;
-             b2.Height := h2;
+             b2.Width := sz2.cx;
+             b2.Height := sz2.cy;
            {$ENDIF DELPHI9_UP}
             end;
            b2DC := b2.Canvas.Handle;
@@ -4788,8 +4783,8 @@ begin
 //           b1.Free;
 //           grb.Free;
               SetStretchBltMode(b2DC, HALFTONE);
-              if (fDPI <> cDefaultDPI)and (fDPI > 36) then
-                Draw(b2DC, MakeRectI(0, 0, w2, h2))
+              if (picDPI <> cDefaultDPI)and (picDPI > 36) then
+                Draw(b2DC, MakeRectI(0, 0, sz2.cx, sz2.cy))
                else
                 Draw(b2DC, 0, 0);
 //           BitBlt()

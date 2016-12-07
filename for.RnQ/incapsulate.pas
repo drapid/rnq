@@ -53,14 +53,14 @@ begin
   str := s_;
 end;
 
-constructor Tincapsulate.anInt(i_:integer);
+constructor Tincapsulate.anInt(i_: integer);
 begin
   inherited;
   what := [I_int];
   int := i_;
 end;
 
-constructor Tincapsulate.aDatetime(dt_:Tdatetime);
+constructor Tincapsulate.aDatetime(dt_: Tdatetime);
 begin
   inherited;
   what := [I_dt];

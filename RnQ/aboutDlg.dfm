@@ -87,8 +87,6 @@ object aboutFrm: TaboutFrm
     ScrollBars = ssVertical
     TabOrder = 0
     Visible = False
-    ExplicitTop = 31
-    ExplicitWidth = 286
   end
   object AbPnl: TPanel
     Left = 0
@@ -98,8 +96,6 @@ object aboutFrm: TaboutFrm
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitTop = 70
-    ExplicitWidth = 299
     object forumLbl: TLabel
       Left = 12
       Top = 79

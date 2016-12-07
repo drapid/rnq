@@ -180,7 +180,7 @@ begin
  end;
 end;
 
-function rem_fr_list(id:byte; C : TRnQcontact) : Boolean;
+function rem_fr_list(id: byte; C: TRnQcontact): Boolean;
 begin
  result := True; 
  case id of
@@ -255,7 +255,7 @@ var
   i, k: integer;
   w: Tform;
   bmp: TBitmap;
-//  R : TRect;
+//  R: TRect;
   cl: TRnQCList;
   cnt: TRnQContact;
   ints: TintegerDynArray;

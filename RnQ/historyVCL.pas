@@ -78,7 +78,7 @@ type
     P_topEventNrows, P_bottomEvent: integer;
     fAutoScrollState: TAutoScrollState;    // auto scrolls along messages
 //    fAutoscroll: boolean;    // auto scrolls along messages
-//    not2go2end : Boolean;
+//    not2go2end: Boolean;
    private
     // For Active History!
     lastTimeClick: TdateTime;
@@ -1027,9 +1027,9 @@ var
                  end
                 else
                  begin
-                   inc(i, Length(BodyCurMChar)-1);
+//                   inc(i, Length(BodyCurMChar)-1);
                    SelectionEndPos := i;
-                   inc(i);
+//                   inc(i);
                  end;
                break;
               end;
@@ -1958,6 +1958,7 @@ begin
         end;
 //      globalBuffer.ClipRect := Canvas.ClipRect;
       ARect := Canvas.ClipRect;
+      globalBuffer.Canvas.Font.PixelsPerInch := GetParentCurrentDpi;
 //      globalBuffer.Canvas.MoveTo(0, 0);
 //      Canvas.MoveTo(0, 0);
       globalBuffer.Canvas.Lock;

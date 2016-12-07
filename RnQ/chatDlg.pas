@@ -452,6 +452,7 @@ type
     procedure addcontactAction(Sender: TObject);
     procedure AvtPBoxPaint(Sender: TObject);
     procedure onTimer;
+    property  currentPPI: Integer read GetParentCurrentDpi;
   end; // TchatFrm
 
   function  CHAT_TAB_ADD(Control: Integer; iIcon: HIcon; const TabCaption: string): Integer;
@@ -1591,7 +1592,6 @@ end;
 procedure TchatFrm.updateGraphics;
 var
   ch: Tchatinfo;
-  i: integer;
   PPI: Integer;
 begin
   ch := thisChat;
@@ -1613,24 +1613,6 @@ begin
      ch.btnPnl.Visible := plugBtns.btnCnt > 0
     else
      ch.btnPnl.Visible := false;
-  //sbar.panels[0].Width:=80;
-  with theme.getPicSize(RQteDefault, PIC_OUTBOX, 16, PPI) do
-   begin
-    sbar.panels[1].Width := cx+8;
-    i := cy+6;
-   end;
-  with theme.getPicSize(RQteDefault, PIC_KEY, 16, PPI) do
-   begin
-    sbar.panels[3].Width := cx+8;
-    i := max(i, cy+6);
-   end;
-  with theme.getPicSize(RQteDefault, PIC_CLI_QIP, 16, PPI) do
-   begin
-    sbar.panels[3].Width := sbar.panels[3].Width + cx+3;
-    i := max(i, cy+6);
-   end;
-  sbar.Height := boundInt(i,22,50);
-  sbar.repaint;
   {$IFDEF CHAT_USE_LSB}
   if popupLSB then
     if ch.lsb.Enabled and (ch.lsb.Position > ch.lsb.Min) then
@@ -1646,22 +1628,6 @@ begin
   panel.Realign;
   panel.repaint;
 
-  i := 21;
-  with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size, PPI) do
-  begin
-    i := max(i, cy+6);
-  end;
-  with theme.GetPicSize(RQteButton, PIC_CLOSE, icon_size, PPI) do
-  begin
-    i := max(i, cy+6);
-  end;
-  toolbar.Height := i+2;
-  toolbar.ButtonHeight := i;
-  toolbar.Top := (panel.ClientHeight - toolbar.Height) div 2;
-  SendBtn.Height := i;
-  closeBtn.Height := i;
-  SendBtn.Top := (panel.ClientHeight - SendBtn.Height) div 2;
-  closeBtn.Top := (panel.ClientHeight - closeBtn.Height) div 2;
   InitScale(Self, PPI);
 end; // updateGraphics
 
@@ -2355,12 +2321,63 @@ end;
 procedure TchatFrm.InitScale(Sender: TObject; NewDPI: Integer);
 var
   y: Integer;
+  i, btnH: integer;
+//  PPI: Integer;
+  gapY, gapX: Integer;
 begin
+  if NewDPI > cDefaultDPI then
+    begin
+      gapY := MulDiv(6, NewDPI, cDefaultDPI);
+      gapX := MulDiv(8, NewDPI, cDefaultDPI);
+      btnH := MulDiv(21, NewDPI, cDefaultDPI);
+    end
+   else
+    begin
+      gapY := 6;
+      gapX := 8;
+      btnH := 21;
+    end
+   ;
+  //sbar.panels[0].Width:=80;
+  with theme.getPicSize(RQteDefault, PIC_OUTBOX, 16, NewDPI) do
+   begin
+    sbar.panels[1].Width := cx + gapX;
+    i := cy + gapY;
+   end;
+  with theme.getPicSize(RQteDefault, PIC_KEY, 16, NewDPI) do
+   begin
+    sbar.panels[3].Width := cx + gapX;
+    i := max(i, cy + gapY);
+   end;
+  with theme.getPicSize(RQteDefault, PIC_CLI_QIP, 16, NewDPI) do
+   begin
+    sbar.panels[3].Width := sbar.panels[3].Width + cx + gapX div 2;
+    i := max(i, cy + gapY);
+   end;
+  sbar.Height := boundInt(i, 22, 50);
+  sbar.repaint;
   y := statusDrawExt(0, 0, 0, byte(SC_ONLINE), False, 0, NewDPI).cy;
   if y > 0 then
-    pagectrl.tabHeight := y + 4
+    pagectrl.tabHeight := y + gapY
    else
     pagectrl.tabHeight := 0;
+
+  with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size, NewDPI) do
+  begin
+    btnH := max(btnH, cy + gapY);
+  end;
+  with theme.GetPicSize(RQteButton, PIC_CLOSE, icon_size, NewDPI) do
+  begin
+    btnH := max(btnH, cy + gapY);
+  end;
+  toolbar.Height := btnH + gapY div 3;
+  toolbar.ButtonHeight := btnH;
+  panel.Height := btnH + gapY * 2;
+  toolbar.Top := (panel.ClientHeight - toolbar.Height) div 2;
+  SendBtn.Height := btnH;
+  closeBtn.Height := btnH;
+  SendBtn.Top := (panel.ClientHeight - SendBtn.Height) div 2;
+  closeBtn.Top := (panel.ClientHeight - closeBtn.Height) div 2;
 
 //  if usePlugPanel and (plugBtns.PluginsTB <> toolbar) then
 //    chat.btnPnl.Height := Max(24, MulDiv(24, NewDPI, cDefaultDPI));
@@ -2371,6 +2388,7 @@ procedure TchatFrm.FormAfterMonitorDpiChanged(Sender: TObject; OldDPI,
   NewDPI: Integer);
 begin
   InitScale(Sender, NewDPI);
+  setupChatButtons;
 end;
 
 procedure TchatFrm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -4464,9 +4482,9 @@ begin
   Y := Y + 10;
 
   //вычислим размеры хинта - результат вернется в r
-  bmp := createBitmap(1,1);
+  bmp := createBitmap(1, 1, currentPPI);
   bmp.Canvas.Font := Screen.HintFont;
-  drawHint(bmp.canvas, NODE_CONTACT, 0, ch.who, r, True, GetParentCurrentDpi);
+  drawHint(bmp.canvas, NODE_CONTACT, 0, ch.who, r, True, currentPPI);
   bmp.free;
 
 	//подготовим данные для отрисовки хинта
@@ -5352,10 +5370,10 @@ end;
 
 procedure CHAT_TAB_MODIFY(Control: Integer; iIcon: HIcon; const TabCaption: string);
 var
-//  sheet:TtabSheet;
+//  sheet: TtabSheet;
   chat: TchatInfo;
 //  pnl,
-//  pnl2:Tpanel;
+//  pnl2: Tpanel;
 //  c: Tcontact;
   i, curIdx: Integer;
 begin
@@ -5451,6 +5469,7 @@ var
 //  ia : TGPImageAttributes;
   cnt: TRnQContact;
   ch: TchatInfo;
+  sz: TSize;
 begin
   {$IFDEF RNQ_AVATARS}
   ch  := thisChat;
@@ -5461,9 +5480,10 @@ begin
 //          TPaintBox(sender).Canvas.Brush.Color := paramSmile.color;
     TPaintBox(sender).Canvas.FillRect(TPaintBox(sender).Canvas.ClipRect);
 //    SetStretchBltMode(TPaintBox(sender).Canvas.Handle, HALFTONE);
+    sz := cnt.icon.Bmp.GetSize(currentPPI);
 
     DrawRbmp(TPaintBox(sender).Canvas.Handle, cnt.icon.Bmp,
-             DestRect(cnt.icon.Bmp.GetWidth, cnt.icon.Bmp.GetHeight,
+             DestRect(sz.cx, sz.cy,
                       TPaintBox(sender).ClientWidth, TPaintBox(sender).ClientHeight), false);
 {    gr := TGPGraphics.Create(TPaintBox(sender).Canvas.Handle);
 //    ia.SetWrapMode(w)

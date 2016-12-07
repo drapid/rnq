@@ -70,9 +70,10 @@ const
 
 type
   ThttpProxyInfo = record
-         user : String;
-         addr, port : String;
-         pwd: AnsiString;
+         user: String;
+         addr, port: String;
+//         pwd: AnsiString;
+         pwd: String;
          authType : TRnQHttpAuthType;
 {$IFDEF UseNTLMAuthentication}
         FNTLMMsg2Info         : TNTLM_Msg2_Info;
@@ -82,8 +83,8 @@ type
 {$ENDIF}
         enabled:boolean;
       end;
-  TDataReceived   = procedure (Sender: TObject; ErrCode: Word; pkt : RawByteString) of object;
-  TProxyLogData   = procedure (Sender: TObject; isReceive : Boolean; Data : RawByteString) of object;
+  TDataReceived   = procedure (Sender: TObject; ErrCode: Word; pkt: RawByteString) of object;
+  TProxyLogData   = procedure (Sender: TObject; isReceive: Boolean; Data: RawByteString) of object;
 
  {$IFDEF USE_SSL}
   TRnQSocket = class (TSslWSocket)
@@ -194,15 +195,19 @@ const
                        DoPOST: boolean = false; POSTData: RawByteString = ''; showErrors: boolean = true): boolean; overload;
 
 var
-  MainProxy : Tproxy;
-  AllProxies : TarrProxy;
+  MainProxy: Tproxy;
+  AllProxies: TarrProxy;
 
 implementation
 
-  uses
+uses
     Windows, Base64, SysUtils, StrUtils,
     RDUtils,
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
     RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
@@ -391,7 +396,7 @@ end;
 
 procedure TRnQSocket.Connect;
 var
-  Mtd : Pointer;
+  Mtd: Pointer;
 begin
   FSocksConnected := false;
   http.FProxyAuthNTLMState := ntlmNone;
@@ -488,8 +493,8 @@ end;
 
 procedure TRnQSocket.myOnConnected(Sender: TObject; Error: Word);
 var
-//  eventData, s : AnsiString;
-  vData, vRaw : RawByteString;
+//  eventData, s: AnsiString;
+  vData, vRaw: RawByteString;
 begin
   if error <> 0 then
    begin
@@ -501,9 +506,9 @@ begin
 if http.enabled and not FSocksConnected then
   begin
 {  if phase = CONNECTING_ then
-    eventData:=loginServerAddr+':'+loginServerPort
+    eventData := loginServerAddr+':'+loginServerPort
   else
-    eventData:=serviceServerAddr+':'+serviceServerPort;
+    eventData := serviceServerAddr+':'+serviceServerPort;
 }
   vData := AnsiString(FServerAddr) + ':' + FServerPort;
 
@@ -524,7 +529,7 @@ if http.enabled and not FSocksConnected then
         end
        else //if (http.FAuthBasicState = basicMsg1) then
          vRaw := AnsiString('Authorization: Basic ') +
-                Base64EncodeString(AnsiString(http.user) + ':' + http.pwd)
+                Base64EncodeString(AnsiString(http.user) + ':' + AnsiString(http.pwd))
 //                EncodeStr(encBase64, http.user + ':' + http.pwd)
                + CRLF;
 {$ELSE}
@@ -545,7 +550,7 @@ if http.enabled and not FSocksConnected then
 {$ENDIF}
 //        if (FProxyAuthBasicState = basicMsg1) then
             vRaw := vRaw+ AnsiString('Proxy-Authorization: Basic ') +
-                   Base64EncodeString(AnsiString(http.user) + AnsiString(':') + http.pwd)
+                   Base64EncodeString(AnsiString(http.user) + AnsiString(':') + AnsiString(http.pwd))
 //                   EncodeStr(encBase64, http.user + ':' + http.pwd)
                    + AnsiString(CRLF);
 
@@ -643,20 +648,20 @@ begin
            begin
 //           TriggerSessionClosed();
              DataAvailableError(socksAuthenticationFailed, 'PROXY: Invalid user/password');
-//           eventError:=EC_proxy_badPwd
+//           eventError := EC_proxy_badPwd
              eventError  := 1;
            end
         else
           begin
-//           eventError:=EC_proxy_unk;
-           eventError:=1;
+//           eventError := EC_proxy_unk;
+           eventError := 1;
            DataAvailableError(socksAuthenticationFailed, pkt);
-//           eventMsg:=pkt;
+//           eventMsg := pkt;
           end;
 
       // pass what follows to the snac cruncher
-      pkt:= FMyBeautifulSocketBuffer;
-      FMyBeautifulSocketBuffer:='';
+      pkt := FMyBeautifulSocketBuffer;
+      FMyBeautifulSocketBuffer := '';
 
       if eventError <> 0 then
         begin
@@ -923,7 +928,7 @@ begin
     { Result := FNTLM.GetMessage1(FNTLMHost, FNTLMDomain);            }
     { it is very common not to send domain and workstation strings on }
     { the first message                                               }
-    Result := NtlmGetMessage1('', '');
+    Result := NtlmGetMessage1('', '', 1);
 end;
 
 
@@ -931,7 +936,7 @@ end;
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 function TRnQSocket.GetNTLMMessage3(const ForProxy: Boolean): AnsiString;
 var
-    Hostname : String;
+    Hostname: String;
 begin
     { get local hostname }
     try
@@ -947,20 +952,33 @@ begin
                                   Hostname,
                                   http.user, //FProxyUsername,
                                   http.pwd,// FProxyPassword,
+                                    http.FNTLMMsg2Info, CP_ACP, 1);
+      end
+      else begin
+          Result := NtlmGetMessage3('',
+                                    Hostname,
+  {                                 FNTLMUsercode, FNTLMPassword, }
+  //                                  FCurrUsername, FCurrPassword,
+                                    http.user, http.pwd,
+                                    http.FNTLMMsg2Info, CP_ACP, 1);
+{    if ForProxy then begin
+        Result := NtlmGetMessage3('',
+                                  Hostname,
+                                  http.user, //FProxyUsername,
+                                  http.pwd,// FProxyPassword,
                                   http.FProxyNTLMMsg2Info.Challenge)
     end
     else begin
         Result := NtlmGetMessage3('',
                                   Hostname,
-{                                 FNTLMUsercode, FNTLMPassword, }
 //                                  FCurrUsername, FCurrPassword,
                                   http.user, http.pwd,
-                                  http.FNTLMMsg2Info.Challenge);
+                                  http.FNTLMMsg2Info.Challenge); }
     end;
 end;
 function TRnQSocket.GetNTLMMessage3_RD(const ForProxy: Boolean; Domain : String = ''): AnsiString;
 var
-  Hostname, usr : String;
+  Hostname, usr: String;
 //  res : AnsiString;
   nmd: Boolean;
   AuthDt: RawByteString;
@@ -999,19 +1017,25 @@ begin
       { domain is not used             }
       { hostname is the local hostname }
       if ForProxy then begin
-          Result := NtlmGetMessage3(Domain,
+{          Result := NtlmGetMessage3(Domain,
                                     Hostname,
                                     usr, //FProxyUsername,
                                     http.pwd,// FProxyPassword,
-                                    http.FProxyNTLMMsg2Info.Challenge)
+                                    http.FProxyNTLMMsg2Info.Challenge) }
+          Result := NtlmGetMessage3(Domain,
+                                    Hostname,
+                                    usr, http.pwd,
+                                    http.FNTLMMsg2Info, CP_ACP, 1);
       end
       else begin
+{          Result := NtlmGetMessage3('',
+                                    Hostname,
+                                    usr, http.pwd,
+                                    http.FNTLMMsg2Info.Challenge); }
           Result := NtlmGetMessage3('',
                                     Hostname,
-  {                                 FNTLMUsercode, FNTLMPassword, }
-  //                                  FCurrUsername, FCurrPassword,
                                     usr, http.pwd,
-                                    http.FNTLMMsg2Info.Challenge);
+                                    http.FNTLMMsg2Info, CP_ACP, 1);
       end;
     end;
 end;

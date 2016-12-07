@@ -9,7 +9,9 @@ unit RnQLangs;
 
 interface
 uses
-//  iniFiles,
+  {$IFDEF LANGDEBUG}
+  iniFiles,
+  {$ENDIF}
   Generics.Collections,
   RDFileUtil;
 
@@ -18,8 +20,8 @@ type
    public
 //  Tthemeinfo=record
      fn, subFile, desc: string;
-//     isUTF : Boolean;
-//     Ver : byte;
+//     isUTF: Boolean;
+//     Ver: byte;
     end;
    aLangInfo = array of ToLangInfo;
 
@@ -32,7 +34,8 @@ type
 //    LangPath : TThemePath;
     LangsStr: TLangList;
   {$IFDEF LANGDEBUG}
-    hLangsStr: TLangList;
+//    hLangsStr: TLangList;
+    hLangsStr: THashedStringList;
   {$ENDIF}
 
     langFN0, langFN1: String;
@@ -42,6 +45,9 @@ type
     function TranslateString(const Str: UnicodeString): String; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;
  {$ENDIF UNICODE}
     Procedure LangAddStr(const k: String; const v: String; Mas: TLangList);
+  {$IFDEF LANGDEBUG}
+    Procedure DebugAddStr(const k: String; const v: String);
+  {$ENDIF}
     function  fileIsUTF(const fn: String): Boolean;
    public
 //    constructor LoadLang(p_fn: String; p_isUTFLang: Boolean);
@@ -55,7 +61,7 @@ type
    {$ENDIF UNICODE}
 
 //    Procedure loadLanguageFile(fn: String; isUTFLang: Boolean);
-    Procedure loadLanguageFile2(fn: String; ts: TThemeSourcePath; isUTFLang: Boolean);
+    function loadLanguageFile2(fn: String; ts: TThemeSourcePath; isUTFLang: Boolean): Boolean;
 
     procedure ClearLanguage;
     procedure resetLanguage;
@@ -168,18 +174,18 @@ begin
 //  useLang := False;
   {$IFDEF LANGDEBUG}
    if lang_debug then
-    if Assigned(hLangStr) then
+    if Assigned(hLangsStr) then
      begin
-      hLangStr.SaveToFile('RnQ.Translate.txt');
-      for I := 0 to hLangStr.Count - 1 do
+      hLangsStr.SaveToFile('RnQ.Translate.txt');
+      for I := 0 to hLangsStr.Count - 1 do
        begin
-        so := TPUStrObj(hLangStr.Objects[i]);
-        hLangStr.Objects[i] := NIL;
+        so := TPUStrObj(hLangsStr.Objects[i]);
+        hLangsStr.Objects[i] := NIL;
         FreeMemory(so.Str);
         so.Free;
        end;
-      hLangStr.Clear;
-      FreeAndNil(hLangStr);
+      hLangsStr.Clear;
+      FreeAndNil(hLangsStr);
      end;
   {$ENDIF}
   if Assigned(LangsStr) then
@@ -198,7 +204,7 @@ begin
     end;
 end;
 
-Procedure TRnQLang.loadLanguageFile2(fn: string; ts: TThemeSourcePath; isUTFLang: Boolean);
+function TRnQLang.loadLanguageFile2(fn: string; ts: TThemeSourcePath; isUTFLang: Boolean): Boolean;
   function fullpath(const fn: string): string;
    var
     s1: String;
@@ -214,10 +220,11 @@ Procedure TRnQLang.loadLanguageFile2(fn: string; ts: TThemeSourcePath; isUTFLang
   end;
 var
   k, v: RawByteString;
-  vv: String;
+  kU, vU: String;
   i, j: Integer;
   txt: RawByteString;
 begin
+  Result := False;
  ts.path := ts.path + ExtractFilePath(fn);
  ts.path := includeTrailingPathDelimiter(ts.path);
  if IsPathDelimiter(ts.path, 1) then
@@ -225,11 +232,13 @@ begin
  fn := ExtractFileName(fn);
  if fn = '' then
   Exit;
-
+  Result := ExistsFile(ts, fn);
+  if not Result then
+    Exit;
  txt := loadfile(ts, fn);
  while txt>'' do
   begin
-    k :=chopline(txt);
+    k := chopline(txt);
 //   par := trim(line);
     if k = '' then
       continue;
@@ -239,16 +248,17 @@ begin
       v := AnsiStrings.trim(chop(RawByteString('='),k));
       k := AnsiStrings.trim(k);
  {$ELSE nonUNICODE}
-      v:= trim(chop('=',k));
+      v := trim(chop('=',k));
       k := trim(k);
  {$ENDIF UNICODE}
       if v='include' then
        begin
-         loadLanguageFile2(k, ts, isUTFLang);
+         kU := UnUTF(k);
+         loadLanguageFile2(kU, ts, isUTFLang);
        end;
       continue;
      end;
-    delete(k,1,1);
+    delete(k, 1, 1);
     i := 1;
     repeat
  {$IFDEF UNICODE}
@@ -261,26 +271,27 @@ begin
     until j <= 0;
  //   i := AnsiPos(']', k);
     if i>1 then
-      delete(k,i,length(k));
+      delete(k, i, length(k));
  {$IFDEF UNICODE}
     k := AnsiStrings.trim(k);
+    kU := UnUTF(k);
  {$ELSE nonUNICODE}
-    k := trim(k);
+    kU := trim(k);
  {$ENDIF UNICODE}
-    v :=chopline(txt);
+    v := chopline(txt);
     if isUTFLang then
      begin
 //      vv := UnUTF(v);
 //      vv := UTF8ToString(UTF8String(Pointer(v)));
-      vv := UTF8ToStr(v);
-      vv := TrimRight(vv);
+      vU := UTF8ToStr(v);
+      vU := TrimRight(vU);
      end
     else
      begin
-       vv := TrimRight(v);
+       vU := UnUTF(TrimRight(v));
      end;
-    if vv <> '' then
-      LangAddStr(k, vv, LangsStr);
+    if vU <> '' then
+      LangAddStr(kU, vU, LangsStr);
 
   end;
 end;
@@ -471,7 +482,7 @@ begin
   LangsStr := NIL;
   {$IFDEF LANGDEBUG}
    if lang_debug then
-     hLangStr := THashedStringList.Create;
+     hLangsStr := THashedStringList.Create;
   {$ENDIF}
   if FileExists(f.fn) then
     begin
@@ -499,11 +510,11 @@ begin
 
      LangsStr.CaseSensitive := True;
 }
-     loadLanguageFile2(fn, pt, isUTF);
+     useLang := loadLanguageFile2(fn, pt, isUTF);
      if (pt.pathType = pt_zip) and  Assigned(pt.zp) then
        FreeAndNil(pt.zp);
 //     LangsStr.Sorted := True;
-     useLang := True;
+//     useLang := True;
     end;
    {$IFDEF LANGDEBUG}
   lang_debug := lang_debug and useLang;
@@ -511,7 +522,7 @@ begin
   if useLang and Assigned(LangsStr) then
   for i := low(not2Translate) to High(not2Translate) do
    begin
-     LangsStr.Remove(not2Translate[i]);
+     LangsStr.Remove(String(not2Translate[i]));
 {     k := LangsStr.IndexOf(not2Translate[i]);
      if k >=0 then
       begin
@@ -524,20 +535,20 @@ begin
    {$IFDEF LANGDEBUG}
      if lang_debug then
       begin
-       k := hLangStr.IndexOf(not2Translate[i]);
+       k := hLangsStr.IndexOf(not2Translate[i]);
        if k >= 0 then
         begin
-         FreeMemory(TPUStrObj(hLangStr.Objects[k]).Str);
-         TPUStrObj(hLangStr.Objects[k]).Free;
-         hLangStr.Objects[k] := NIL;
-         hLangStr.Delete(k);
+         FreeMemory(TPUStrObj(hLangsStr.Objects[k]).Str);
+         TPUStrObj(hLangsStr.Objects[k]).Free;
+         hLangsStr.Objects[k] := NIL;
+         hLangsStr.Delete(k);
         end;
       end;
    {$ENDIF LANGDEBUG}
    end;
   {$IFDEF LANGDEBUG}
    if lang_debug then
-     hLangStr.Sorted := True;
+     hLangsStr.Sorted := True;
   {$ENDIF}
 
  {$IFDEF RNQ}
@@ -547,14 +558,15 @@ end;
 
 Function TRnQLang.TranslateString(const Str: AnsiString): String;
 var
-//  Res : String;
-//  i : Integer;
-  s: String;
+//  Res: String;
+//  i: Integer;
+  s0, s: String;
 begin
-    if LangsStr.TryGetValue(Str, s) then
+  s0 := String(Str);
+    if LangsStr.TryGetValue(s0, s) then
       Result := s
      else
-      Result := Str;
+      Result := s0;
 (*
 // if not useLang then
 //    Result := Str
@@ -588,14 +600,24 @@ end;
  {$IFDEF UNICODE}
 Function TRnQLang.TranslateString(const Str: UnicodeString): String;
 var
-//  Res : String;
-//  i : Integer;
+//  Res: String;
+//  i: Integer;
   s: String;
 begin
-    if LangsStr.TryGetValue(Str, s) then
-      Result := s
-     else
+  if LangsStr.TryGetValue(Str, s) then
+    Result := s
+   else
+    begin
       Result := Str;
+
+     {$IFDEF LANGDEBUG}
+      if lang_debug then
+       begin
+        if hLangsStr.IndexOf(Str) < 0 then
+          DebugAddStr(Str, '');
+       end;
+     {$ENDIF}
+    end;
 (*
 // if not useLang then
 //    Result := Str
@@ -629,8 +651,8 @@ end;
 
 Procedure TRnQLang.LangAddStr(const k: String; const v: String; Mas: TLangList);
 //var
-//  so : TPUStrObj;
-//  i : Integer;
+//  so: TPUStrObj;
+//  i: Integer;
 begin
   Mas.AddOrSetValue(k, v);
 (*
@@ -656,6 +678,34 @@ begin
 *)
 end;
 
+     {$IFDEF LANGDEBUG}
+Procedure TRnQLang.DebugAddStr(const k: String; const v: String);
+var
+  so: TPUStrObj;
+  i: Integer;
+begin
+  i := hLangsStr.IndexOf(k);
+  if i>=0 then
+    begin
+      so := TPUStrObj(hLangsStr.Objects[i]);
+      FreeMemory(so.Str);
+//      FreeMem(so.Str);
+      so.Str := NIL;
+    end
+   else
+    so := TPUStrObj.Create;
+//  so.Str := GetMemory(Length(v)+1);
+  so.Str := AllocMem((Length(v)+1)*SizeOf(Char));
+{$IFNDEF UNICODE}
+  StrCopy(so.Str, PChar(v));
+{$ELSE UNICODE}
+  StrCopy(PWideChar(so.Str), PWideChar(v));
+{$ENDIF UNICODE}
+  if i<0 then
+    hLangsStr.AddObject(k, so);
+end;
+     {$ENDIF LANGDEBUG}
+
 function TRnQLang.fileIsUTF(const fn: String): Boolean;
 begin
   Result := ExtractFileExt(fn) = '.utflng';
@@ -663,8 +713,8 @@ end;
 
 procedure TRnQLang.resetLang;
 //var
-//  i : Integer;
-//  so : TPUStrObj;
+//  i: Integer;
+//  so: TPUStrObj;
 begin
   if Assigned(LangsStr) then
     begin
@@ -696,29 +746,29 @@ begin
   if useLang and Assigned(LangVar) then
     result := LangVar.TranslateString(key)
    else
-    result := key;
+    result := String(key);
   result := ansiReplaceStr(result, '\n', #13);
 end; // getTranslation
 
 function getTranslation(const key: Ansistring; const args: array of const): String;
 //var
-//  s : extended;
+//  s: extended;
 begin
   if useLang and Assigned(LangVar) then
     begin
       result := LangVar.TranslateString(key);
     end
    else
-    Result := key;
+    Result := String(key);
 
   if Length(args) > 0 then
    try
-    result:=format(result, args);
+    result := format(result, args);
    except
 
    end;
-  result:=ansiReplaceStr(result, '\n', #13);
-//result:=ansiReplaceStr(result, '\s', ' ');
+  result := ReplaceStr(result, '\n', #13);
+//result := ansiReplaceStr(result, '\s', ' ');
 end; // getTranslation
 
  {$IFDEF UNICODE}
@@ -728,7 +778,7 @@ begin
     result := LangVar.TranslateString(key)
    else
      Result := key;
-  result:=ansiReplaceStr(result,'\n', #13);
+  result := ansiReplaceStr(result,'\n', #13);
 end; // getTranslation
 
 function getTranslation(const key: string; const args: array of const):string;
@@ -982,6 +1032,7 @@ end;
 procedure ClearLanguage;
 begin
  useLang := false;
+ LangVar.ClearLanguage;
  if Assigned(LangVar) then
    FreeAndNil(LangVar);
 end;

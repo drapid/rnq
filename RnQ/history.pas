@@ -14,8 +14,8 @@ uses
   RnQDialogs, RnQProtocol;
 
 const
-  CRYPT_SIMPLE=0;
-  CRYPT_KEY1=1;
+  CRYPT_SIMPLE = 0;
+  CRYPT_KEY1 = 1;
 type
   Thistory = class(Tlist)
    private
@@ -145,7 +145,7 @@ var
   ss: AnsiString;
   Tail: PAnsiChar;
   resU8: PUTF8Char;
-//  cnt : TRnQContact;
+//  cnt: TRnQContact;
   i: Integer;
   biLen: Integer;
   Rows: Int64;

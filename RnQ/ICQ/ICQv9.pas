@@ -15,7 +15,7 @@ uses
   windows, sysutils, classes,
   RnQNet,
   WinSock,
-  ICQflap,
+  ICQflap, RnQBinUtils,
   RnQProtocol,
   ICQContacts, strutils,
   RQThemes, RDGlobal, RQUtil,
@@ -50,7 +50,7 @@ type
 
   TOSSIItem = class(TObject)
    public
-    ItemType : Byte;
+    ItemType: Byte;
     FAuthorized: boolean;
     ItemID, GroupID: integer;
     ItemName8: RawByteString;
@@ -79,8 +79,8 @@ type
   end;
 
 type
-  TsplitProc=procedure(const s: RawByteString) of object;
-  TsplitSSIProc=procedure(items: array of TOSSIItem) of object;
+  TsplitProc = procedure(const s: RawByteString) of object;
+  TsplitSSIProc = procedure(items: array of TOSSIItem) of object;
 
   PSSIEvent = ^TSSIEvent;
   TSSIEvent = class(TObject)
@@ -90,40 +90,40 @@ type
     ID  : Int64;
     NUM : Integer;
     kind: integer;
-//    uin:integer;
-//    flags : Cardinal;
-//    UID   : TUID;
-    Item  : TOSSIItem;
-//    email : string;
-//    info  : string;
-//    cl:TRnQCList;
-//    wrote,lastmodify:Tdatetime;
-//    filepos:integer;
+//    uin: integer;
+//    flags: Cardinal;
+//    UID: TUID;
+    Item: TOSSIItem;
+//    email: string;
+//    info: string;
+//    cl: TRnQCList;
+//    wrote, lastmodify: Tdatetime;
+//    filepos: integer;
     constructor Create;// override;
     destructor Destroy; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-//    function   toString:string;
-//    procedure  fromString(s:string);
-    function   Clone : TSSIEvent;
+//    function   toString: string;
+//    procedure  fromString(s: string);
+    function   Clone: TSSIEvent;
    end; // TSSIEvent
 
   TSSIacks = class(Tlist)
 
-//    function  toString:string;
-//    procedure fromString(s:string);
+//    function  toString: string;
+//    procedure fromString(s: string);
 
-    function empty:boolean;
+    function empty: boolean;
 
     destructor Destroy; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure Clear; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    procedure clearU;
-//    function add(kind: Integer; dest:TUID; flags:integer=0; const info:string=''):TSSIEvent; overload;
-//    function add(kind: Integer; dest:TUID; flags:integer; cl:TRnQCList):TSSIEvent; overload;
-//    function add(ref : Int64; Num : Integer; kind: Integer; dest:TUID):TSSIEvent; overload;
-    function add(ref : Int64; Num : Integer; kind: Integer; item : TOSSIItem):TSSIEvent; overload;
-    function getAt(const idx:integer):TSSIEvent;
-    function findID(id:Integer; NUM:Integer = -1):integer;
-//    function remove(ev:TSSIEvent):boolean; overload;
-//    function stFor(who:Tcontact):boolean;
+//    function add(kind: Integer; dest: TUID; flags: integer=0; const info: string=''): TSSIEvent; overload;
+//    function add(kind: Integer; dest: TUID; flags: integer; cl: TRnQCList): TSSIEvent; overload;
+//    function add(ref: Int64; Num: Integer; kind: Integer; dest:TUID): TSSIEvent; overload;
+    function add(ref: Int64; Num: Integer; kind: Integer; item: TOSSIItem): TSSIEvent; overload;
+    function getAt(const idx: integer): TSSIEvent;
+    function findID(id: Integer; NUM: Integer = -1): integer;
+//    function remove(ev: TSSIEvent): boolean; overload;
+//    function stFor(who: Tcontact): boolean;
 
 //    procedure updateScreenFor(uin: TUID);
    end; // TSSIacks
@@ -273,47 +273,47 @@ type
 {  private
     P_host, P_port: AnsiString;
   public
-    sock    : TRnQSocket;
-    eventID : TmsgID;
-    contact : TICQContact;
-    directs : Tdirects;
-    imserver : boolean;
-    imSender : Boolean;
-    needResume : Boolean;
-    Directed : Boolean;
-    UseLocProxy : Boolean;
-    mode : TDirectMode;
-    stage : byte;
-    kind :(DK_none, DK_file);
-    fileDesc : String;
-//    fileName :string;
-//    fileData :string;
-    buf : RawByteString;
-    fileCntReceived, fileCntTotal:integer;
+    sock: TRnQSocket;
+    eventID: TmsgID;
+    contact: TICQContact;
+    directs: Tdirects;
+    imserver: boolean;
+    imSender: Boolean;
+    needResume: Boolean;
+    Directed: Boolean;
+    UseLocProxy: Boolean;
+    mode: TDirectMode;
+    stage: byte;
+    kind: (DK_none, DK_file);
+    fileDesc: String;
+//    fileName: string;
+//    fileData: string;
+    buf: RawByteString;
+    fileCntReceived, fileCntTotal: integer;
     fileSizeReceived, fileSizeTotal: Int64;
-    transferChkSum, fileChkSum : Cardinal;
-    receivedChkSum : Cardinal;
-//    Received : Int64;
+    transferChkSum, fileChkSum: Cardinal;
+    receivedChkSum: Cardinal;
+//    Received: Int64;
     fileName: String;
-    myspeed :integer;
-    hisVer :integer;
-    AOLProxy : record
+    myspeed: integer;
+    hisVer: integer;
+    AOLProxy: record
                  ip   : Cardinal;
                  port : word;
                end;
-    data :pointer;}
+    data: pointer;}
     constructor Create; Override;
 //    destructor Destroy; override;
    private
-//    FOnDataAvailable, FOnDisconnect : TDirectDataAvailable;
+//    FOnDataAvailable, FOnDisconnect: TDirectDataAvailable;
 //    FOnDataNext     : TDirectDataNext;
 //    FOnNotification : TDirectNotification;
     procedure connected(Sender: TObject; Error: Word);
     procedure received(Sender: TObject; Error: Word);
     procedure sended(Sender: TObject; Error: Word);
     procedure disconnected(Sender: TObject; Error: Word);
-//    function  myPort:integer;
-    function  myinfo:TICQContact;
+//    function  myPort: integer;
+    function  myinfo: TICQContact;
 //    procedure sendPkt(const s: RawByteString);
     function  sendProxyCMD(cmd, flags :word; const data: RawByteString):boolean;
 
@@ -323,13 +323,13 @@ type
 //    procedure sendACK3;
 //    procedure sendVcard;
 //    procedure sendSpeed;
-//    procedure parseFileDC0101(s : RawByteString);
-    function  parseFileDC0101(s : RawByteString) : Boolean;
-    function  parseFileDC0205(s : RawByteString) : Boolean; // Resume request
+//    procedure parseFileDC0101(s: RawByteString);
+    function  parseFileDC0101(s: RawByteString): Boolean;
+    function  parseFileDC0205(s: RawByteString): Boolean; // Resume request
     procedure sendFilePrompt; // 0101
     procedure sendACK_File;   // 0202
     procedure sendDone_File;  // 0204
-//    procedure parseVcard(s : RawByteString);
+//    procedure parseVcard(s: RawByteString);
    public
 //    destructor Destroy;
     procedure connect;
@@ -351,18 +351,18 @@ type
    public
 //    const ContactType : TRnQContactType =  TICQContact;
 //    type ContactType = TICQContact;
-    const ContactType : TClass =  TICQContact;
+    const ContactType: TClass =  TICQContact;
    private
     phase              : TicqPhase;
     wasUINwp           : boolean;  // trigger a last result at first result
 //    creatingUIN        : boolean;  // this is a special session, to create uin
 //    isAvatarSession    : boolean;  // this is a special session, to get avatars
-    protoType : TICQSessionSubType; // main session; to create uin; to get avatars
+    protoType: TICQSessionSubType; // main session; to create uin; to get avatars
     previousInvisible  : boolean;
     P_webaware         : boolean;
     P_authneeded       : boolean;
     P_showInfo         : byte;
-//    startingInvisible  : boolean;
+//    startingInvisible: boolean;
     startingVisibility : Tvisibility;
     startingStatus     : TICQstatus;
     curStatus          : TICQstatus;
@@ -384,28 +384,30 @@ type
                           uid : TUID;
                         end;
     SSIacks            : TSSIacks;
-//    SSI_InServerTransaction : Boolean;
-    SSI_InServerTransaction : Integer;
+//    SSI_InServerTransaction: Boolean;
+    SSI_InServerTransaction: Integer;
 
-    savingMyInfo       :record
-                          running:boolean;
-                          ACKcount:integer;
-                          c:TICQContact;
+    savingMyInfo       : record
+                          running: boolean;
+                          ACKcount: integer;
+                          c: TICQContact;
                          end;
-    fRoster           :TRnQCList;
-    fVisibleList       :TRnQCList;
-    fInvisibleList     :TRnQCList;
+    fRoster           : TRnQCList;
+    fVisibleList       : TRnQCList;
+    fInvisibleList     : TRnQCList;
 {$IFDEF UseNotSSI}
-    fIntVisibleList    :TRnQCList;
-    fIntInvisibleList  :TRnQCList;
+    fIntVisibleList    : TRnQCList;
+    fIntInvisibleList  : TRnQCList;
     fUseSSI, fUseLSI   : Boolean;
 {$ENDIF UseNotSSI}
-    tempVisibleList    :TRnQCList;
-    spamList           :TRnQCList;
+    tempVisibleList    : TRnQCList;
+    spamList           : TRnQCList;
 
     fPwd               : String;
     fPwdHash           : ShortString;
+  {$IFDEF ICQ_REST_API}
     fSession           : TSessionParams;
+  {$ENDIF ICQ_REST_API}
 
     buzzedLastTime     : TDateTime;
 //    getAvatarFor       : Integer;
@@ -418,25 +420,25 @@ type
     procedure proxy_connected;
 
  {$IFDEF UseNotSSI}
-    procedure sendAddContact(const buinlist:AnsiString); overload;
-    procedure sendRemoveContact(const buinlist:AnsiString); overload;
-    procedure sendAddVisible(const buinlist:AnsiString); overload;
-    procedure sendRemoveVisible(const buinlist:AnsiString); overload;
-    procedure sendAddInvisible(const buinlist:AnsiString); overload;
-    procedure sendRemoveInvisible(const buinlist:AnsiString); overload;
+    procedure sendAddContact(const buinlist: AnsiString); overload;
+    procedure sendRemoveContact(const buinlist: AnsiString); overload;
+    procedure sendAddVisible(const buinlist: AnsiString); overload;
+    procedure sendRemoveVisible(const buinlist: AnsiString); overload;
+    procedure sendAddInvisible(const buinlist: AnsiString); overload;
+    procedure sendRemoveInvisible(const buinlist: AnsiString); overload;
  {$ENDIF UseNotSSI}
-    procedure sendAddTempContact(cl:TRnQCList); overload;
-    procedure sendRemoveTempContact(const buinlist:AnsiString); // 0310
+    procedure sendAddTempContact(cl: TRnQCList); overload;
+    procedure sendRemoveTempContact(const buinlist: AnsiString); // 0310
 
    public
       {$IFDEF RNQ_AVATARS}
-        mainICQ : TicqSession; // Is PROTO_ICQ
-        avt_icq : TicqSession;
+        mainICQ: TicqSession; // Is PROTO_ICQ
+        avt_icq: TicqSession;
       {$ENDIF RNQ_AVATARS}
 //    localSSI,
     serverSSI: Tssi;
-    localSSI_modTime : TDateTime;
-    localSSI_itemCnt : Integer;
+    localSSI_modTime: TDateTime;
+    localSSI_itemCnt: Integer;
 //    listener            : TicqNotify;
 //    MyInfo0             : TICQcontact;
     birthdayFlag        : boolean;
@@ -445,14 +447,14 @@ type
     serviceServerAddr   : AnsiString;
     serviceServerPort   : AnsiString;
     // used to pass valors to listeners
-    eventError          :TicqError;
-    eventOldStatus      :TICQstatus;
-    eventOldInvisible   :boolean;
-    eventUrgent         :boolean;
-    eventAccept         :TicqAccept;
-    eventContact        :TICQContact;
-    eventContacts       :TRnQCList;
-    eventWP             :TwpResult;
+    eventError          : TicqError;
+    eventOldStatus      : TICQstatus;
+    eventOldInvisible   : boolean;
+    eventUrgent         : boolean;
+    eventAccept         : TicqAccept;
+    eventContact        : TICQContact;
+    eventContacts       : TRnQCList;
+    eventWP             : TwpResult;
     eventMsgA           : RawByteString;
     eventAddress        : string;
     eventNameA          : AnsiString;
@@ -486,14 +488,16 @@ type
      LoginMD5,
      useSSI2, useLSI2,
    {$ENDIF UseNotSSI}
+  {$IFDEF ICQ_REST_API}
     useWebProtocol,
+  {$ENDIF ICQ_REST_API}
     saveMD5Pwd,
     AvatarsSupport,
     AvatarsAutoGet,
     AvatarsAutoGetSWF: Boolean;
     myAvatarHash: RawByteString;
 
-        class function NewInstance: TObject; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function NewInstance: TObject; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    class function GetId: Word; override;
     class function _GetProtoName: string; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    class function _isValidUid(var uin:TUID):boolean; OverRide; final;
@@ -552,11 +556,13 @@ type
     function  getPwd: String; OverRide; Final;
     function  getPwdOnly: String; //OverRide; Final;
     procedure setPwd(const value: String); OverRide; Final;
+  {$IFDEF ICQ_REST_API}
     procedure refreshSessionSecret();
     procedure loginAndCreateSession();
     function  sessionNeedsUpdate: Boolean;
     function  restAvailable: Boolean;
     function  getSession(updateIfReq: Boolean = True): TSessionParams;
+  {$ENDIF ICQ_REST_API}
 
     function  getStatus: byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  getVisibility: byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -873,11 +879,11 @@ type
     function  getStatusDisable : TOnStatusDisable; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  getPrefPage : TPrefFrameClass; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
    public
-    function  GenSSID : Integer;
+    function  GenSSID: Integer;
     procedure applyBalloon;
    public
 //    property  statuses : TStatusArray read getStatuses;
-    property  MyInfo :TRnQContact read getMyInfo;
+    property  MyInfo: TRnQContact read getMyInfo;
   end; // TicqSession
 
  TICQProtoClass = class of TICQSession;
@@ -901,13 +907,13 @@ var
   showInvisSts,
 
   AvatarsNotDnlddInform,
-  avtSessInit  : Boolean;
-  ToUploadAvatarFN : String;
-  ToUploadAvatarHash : RawByteString;
-  ExtClientCaps : RawByteString;
-  AddExtCliCaps : Boolean;
-  sendBalloonOn     :integer;
-  sendBalloonOnDate :Tdatetime;
+  avtSessInit: Boolean;
+  ToUploadAvatarFN: String;
+  ToUploadAvatarHash: RawByteString;
+  ExtClientCaps: RawByteString;
+  AddExtCliCaps: Boolean;
+  sendBalloonOn: integer;
+  sendBalloonOnDate: Tdatetime;
  {$IFDEF RNQ_FULL}
 //  SendedFlaps : LongWord;
 //  ICQMaxFlaps : LongWord = 70;
@@ -930,10 +936,10 @@ uses
    AnsiStrings, AnsiClasses,
  {$ENDIF UNICODE}
    RnQZip, OverbyteIcsZLibHigh,
-   OverbyteIcsMD5, OverbyteIcsWSocket,
+   OverbyteIcsMD5, OverbyteIcsWSocket, OverbyteIcsUtils,
 //   ElAES,
    aes_type, aes_ecb,
-   RnQDialogs, RnQLangs, RDUtils, RnQBinUtils, RnQGlobal,
+   RnQDialogs, RnQLangs, RDUtils, RnQGlobal,
    Base64, //ZLibEx,
    RDFileUtil, RnQCrypt,
 //   rtf2html,
@@ -941,7 +947,10 @@ uses
    RnQ_Avatars,
  {$ENDIF}
    globalLib, UtilLib,
-   RQ_ICQ, ICQClients, ICQ.Stickers, ICQ.RESTapi,
+   RQ_ICQ, ICQClients, ICQ.Stickers,
+  {$IFDEF ICQ_REST_API}
+   ICQ.RESTapi,
+  {$ENDIF ICQ_REST_API}
    themesLib,
 
    RnQStrings, outboxLib, icq_fr,
@@ -950,7 +959,7 @@ uses
 const
   DT2100miliseconds=1/(SecsPerDay*10);
 var
-  lastSendedFlap : TDateTime;
+  lastSendedFlap: TDateTime;
 
 procedure splitCL(proc: TsplitProc; cl: TRnQCList);
 var
@@ -2063,7 +2072,7 @@ begin
   Result := TicqSession.Create(uid, SESS_IM);
 end;
 
-constructor TicqSession.create(const id : TUID; subType : TICQSessionSubType);
+constructor TicqSession.create(const id: TUID; subType: TICQSessionSubType);
 begin
 
   protoType := subType;
@@ -2071,8 +2080,8 @@ begin
 
   inherited create;
 
-  phase:=null_;
-  listener:=NIL;
+  phase := null_;
+  listener := NIL;
   avt_icq := NIL;
 
   if id='' then
@@ -2093,9 +2102,11 @@ begin
     Attached_login_email := '';
   fPwd     := '';
   fPwdHash := '';
+ {$IFDEF ICQ_REST_API}
 //  fSessionTokenExpIn := 86400;
   fSession.tokenExpIn := 604800; // Week
   fSession.DevId := String(ICQ_DEV_ID);
+ {$ENDIF ICQ_REST_API}
   SNACref := 1;
 //  FLAPseq:=$6700+random($100);
 //  FLAPseq := Flap_start;
@@ -2108,15 +2119,15 @@ begin
   curXStatus := 0;
   startingStatus := SC_ONLINE;
 
-sock:=TRnQSocket.create(NIL);
-sock.OnSessionConnected:=connected;
-sock.OnDataAvailable:= onDataAvailable;
+sock := TRnQSocket.create(NIL);
+sock.OnSessionConnected := connected;
+sock.OnDataAvailable := onDataAvailable;
 sock.OnDataReceived := received;
-sock.OnSessionClosed:= disconnected;
+sock.OnSessionClosed := disconnected;
 sock.OnSocksError := OnProxyError;
 sock.OnProxyTalk := OnProxyTalk;
 //sock.FlushTimeout
-//sock.http.enabled:=FALSE;
+//sock.http.enabled := FALSE;
 
   cookie := '';
   cookieTime := 0;
@@ -2125,7 +2136,7 @@ sock.OnProxyTalk := OnProxyTalk;
     loginServerAddr := host;
     loginServerPort := IntToStrA(port);
    end;
-Q:=TflapQueue.create;
+  Q := TflapQueue.create;
 
   if subType = SESS_IM then
    begin
@@ -2232,7 +2243,7 @@ begin
   AvatarsNotDnlddInform := False;
 {$ENDIF RNQ_LITE}
   myAvatarHash := '';
- saveMD5Pwd:=False;
+ saveMD5Pwd := False;
 // icq.myInfo.Icon_hash_safe := '';
 
 //      useSSI := True;
@@ -2366,7 +2377,12 @@ begin
   then
     begin
       if saveMD5Pwd then
-        sR := fPwdHash
+        begin
+          if fPwdHash <> '' then
+            sR := fPwdHash
+           else
+            sR := MD5Pass(fPwd);
+        end
        else
         sR := StrToUTF8(fPwd);
 //      pp.addPrefBlob('crypted-password', passCrypt(sR));
@@ -2381,10 +2397,10 @@ end;
 
 procedure TicqSession.SetPrefs(pp: TRnQPref);
 var
-  i : Integer;
-  sU, sU2 : String;
+  i: Integer;
+  sU, sU2: String;
   st: Byte;
-  l : RawByteString;
+  l: RawByteString;
 //  myInf : TRnQContact;
 begin
   inherited SetPrefs(pp);
@@ -2634,6 +2650,7 @@ begin
   Result := fPwd;
 end;
 
+  {$IFDEF ICQ_REST_API}
 function TicqSession.sessionNeedsUpdate: Boolean;
 begin
   Result := (fSession.Token = '') or (fSession.TokenTime = 0) or
@@ -2663,6 +2680,7 @@ begin
   Result.restClientId := fSession.restClientId;
 
 end;
+  {$ENDIF ICQ_REST_API}
 
 procedure TicqSession.setPwd(const value:String);
  procedure chg(const v : String);
@@ -3122,7 +3140,7 @@ begin
   addRef(REF_status, '');
 end; // sendStatusCode
 
-//procedure TicqSession.setStatusStr(s : String; Pic : String = '');
+//procedure TicqSession.setStatusStr(s: String; Pic: String = '');
 procedure TicqSession.setStatusStr(xSt: byte; stStr: TXStatStr);
 var
   s: String;
@@ -4246,7 +4264,7 @@ end; // sendMultiQueryInfo
 
 procedure TicqSession.sendQueryInfo(uin: Integer);
 //const
-//  TAB:array [boolean] of AnsiChar=(#$B2,#$D0);
+//  TAB: array [boolean] of AnsiChar=(#$B2,#$D0);
 var
   wpS: TwpSearch;
   cnt: TICQcontact;
@@ -4401,7 +4419,7 @@ begin
   wasUINwp := false;
 
   if (not IsWP) and (wp.uin > '') then
-   s:= //TLV($05B9, Word($8000)) +  #$00#$00#$00#$00+
+   s := //TLV($05B9, Word($8000)) +  #$00#$00#$00#$00+
 //      Length_BE(#00#01#00#02#00#02)
 //      + #$00#$00#$04#$E3#$00#$00#$00#$02
 //      + #$00#$03#$00#$00
@@ -4579,8 +4597,8 @@ end; // sendSMS2
 
 procedure TicqSession.sendsaveMyInfoNew(c: TICQcontact);
 //const
-//  tab1:array [boolean] of AnsiChar=(#1,#0);
-//  tab2:array [boolean] of AnsiChar=(#0,#1);
+//  tab1: array [boolean] of AnsiChar=(#1,#0);
+//  tab2: array [boolean] of AnsiChar=(#0,#1);
 var
   sb: RawByteString;
 //  zi: Integer;
@@ -4930,12 +4948,12 @@ end;
 
 procedure TicqSession.parseAuthKey(const snac: RawByteString);
 var
-    I          : Integer;
-    MD5Digest  : TMD5Digest;
-    MD5Context : TMD5Context;
-    key : RawByteString;
-    sendKey : RawByteString;
-    ppp : RawByteString;
+    I: Integer;
+    MD5Digest: TMD5Digest;
+    MD5Context: TMD5Context;
+    key: RawByteString;
+    sendKey: RawByteString;
+    ppp: RawByteString;
 begin
     i := 1;
     key := getWNTS(snac, i);
@@ -5996,9 +6014,9 @@ case v of
     inc(ofs,4); // skip version
    end;
 if v>=$3132 then
-  eventAddress:=getDLS(snac,ofs)
+  eventAddress := getDLS(snac,ofs)
 else
-  eventAddress:=s;
+  eventAddress := s;
 notifyListeners(IE_gcard);
 end; // parseGCdata
 
@@ -6306,11 +6324,13 @@ case Byte(snac[10]) of // msg format
 
       if sA = 'utf-8' then
 //        msg := unUTF(msgEnc)
-        msg := UTF8ToStr(msgEnc)
-      else if sA = 'us-ascii' then
+//        msg := UTF8ToStr(msgEnc)
         msg := msgEnc
+      else if sA = 'us-ascii' then
+        msg := StrToUTF8(msgEnc)
       else // unknown codepage
-        msg := unUTF(msgEnc);
+        msg := StrToUTF8(unUTF(msgEnc));
+//      msgflags := UTF;
 
       // msg ~ aol://2719:10-4-chat1245382434654977163
       // What to do with this group chatroom?
@@ -6707,7 +6727,7 @@ case Byte(snac[10]) of // msg format
             inc(ofs, 2);
 //            FFSeq2 := word_BEat(@snac[ofs]);
             inc(ofs, 2);
-            eventDirect.fileName := getWNTS(snac, ofs);
+            eventDirect.fileName := UnUTF(getWNTS(snac, ofs));
             eventDirect.fileSizeTotal := dword_LEat(@snac[ofs]);
             inc(ofs, 4);
             if eventDirect.fileName > '' then
@@ -7576,31 +7596,32 @@ begin
 Q.add(pkt);
 if Q.error then
   begin
-   eventData:=q.popError;
+   eventData := q.popError;
     notifyListeners(IE_serverSent);
-   eventError:=EC_invalidFlap;
+   eventError := EC_invalidFlap;
    eventMsgA := '';
    notifyListeners(IE_error);
    disconnect;
   end;
 while Q.available do
   begin
-  pkt:=Q.pop;
-  eventData:=pkt;
+  pkt := Q.pop;
+  eventData := pkt;
   notifyListeners(IE_serverSent);
+  eventData := '';
 
-  channel:=getFlapChannel(pkt);
+  channel := getFlapChannel(pkt);
   if channel = SNAC_CHANNEL then
     begin
-    service:= getSnacService(pkt);
+    service := getSnacService(pkt);
     ref    := getSnacRef(pkt);
     flags  := getSnacFlags(pkt);
     delete(pkt,1,16);  // remove header
     end
   else
     begin
-    service:=0;
-    ref:=0;
+    service := 0;
+    ref := 0;
     flags := 0;
     delete(pkt,1,6);  // remove header
     end;
@@ -7934,14 +7955,14 @@ while Q.available do
     end;//case
   if Q.error then
     begin
-    eventData:=q.popError;
-    eventError:=EC_invalidFlap;
+    eventData := q.popError;
+    eventError := EC_invalidFlap;
     notifyListeners(IE_error);
     end;
   end;
 except
 end;
-eventData:='';
+eventData := '';
 end; // received
 
 procedure TicqSession.sendIMparameter(chn: AnsiChar); // 0402
@@ -8091,7 +8112,7 @@ begin sendSNAC(1,8, #$00#$01#$00#$02#$00#$03#$00#$04#$00#$05) end;
 
 procedure TicqSession.newLogin;
 var
-  s : RawByteString;
+  s: RawByteString;
 begin
   s := #0#0#0#1;
   if Pos(AnsiChar('@'), MyAccount) > 1 then
@@ -8129,7 +8150,7 @@ end;
 
 procedure TicqSession.sendLogin;
 var
-  s : RawByteString;
+  s: RawByteString;
 begin
   s := #0#0#0#1;
 //  if Assigned(myInfo) then
@@ -8467,12 +8488,13 @@ begin
 end;
 
 
-procedure TicqSession.addContact(cl:TRnQCList; SendIt : Boolean = True);
+procedure TicqSession.addContact(cl: TRnQCList; SendIt: Boolean = True);
 begin
-  if cl=NIL then exit;
+  if cl=NIL then
+    exit;
   if TList(cl).count = 0 then
     exit;
-  cl:= cl.clone.remove(fRoster);
+  cl := cl.clone.remove(fRoster);
   if isReady then
     ICQCL_SetStatus(cl, SC_OFFLINE)
    else
@@ -8566,7 +8588,7 @@ begin
  end;
 end;
 
-procedure TicqSession.RemFromList(l : TLIST_TYPES; cl:TRnQCList);
+procedure TicqSession.RemFromList(l: TLIST_TYPES; cl: TRnQCList);
 begin
  case l of
 //   LT_ROSTER:   //removeContact( addContact(cl);
@@ -8577,7 +8599,7 @@ begin
  end;
 end;
 
-procedure TicqSession.AddToList(l : TLIST_TYPES; cnt:TRnQcontact);
+procedure TicqSession.AddToList(l: TLIST_TYPES; cnt: TRnQcontact);
 begin
  case l of
    LT_ROSTER:   addContact(TICQContact(cnt));
@@ -8587,7 +8609,7 @@ begin
    LT_SPAM:      add2ignore(TICQContact(cnt));
  end;
 end;
-procedure TicqSession.RemFromList(l : TLIST_TYPES; cnt:TRnQcontact);
+procedure TicqSession.RemFromList(l: TLIST_TYPES; cnt: TRnQcontact);
 begin
  case l of
    LT_ROSTER:   removeContact(TICQContact(cnt));
@@ -8598,7 +8620,7 @@ begin
  end;
 end;
 
-function TicqSession.isInList(l : TLIST_TYPES; cnt:TRnQContact) : Boolean;
+function TicqSession.isInList(l: TLIST_TYPES; cnt: TRnQContact): Boolean;
 begin
  case l of
    LT_ROSTER:    result:= fRoster.exists(cnt);
@@ -10041,6 +10063,8 @@ begin
  end;
 end; // connect
 
+
+  {$IFDEF ICQ_REST_API}
 // Get session data for web login
 procedure TicqSession.refreshSessionSecret();
 begin
@@ -10056,6 +10080,7 @@ begin
     Exit;
   ICQREST_loginAndCreateSession(MyAccNum, fPwd, fSession);
 end;
+  {$ENDIF ICQ_REST_API}
 
 
 function Ticqsession.getFullStatusCode: dword;

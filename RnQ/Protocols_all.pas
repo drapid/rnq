@@ -32,7 +32,6 @@ procedure Protos_AuthDenied(cnt: TRnQContact; const msg: string='');
 procedure Protos_DelCntFromSrv(cnt: TRnQContact);
 procedure Protos_SendFilesTo(cnt: TRnQContact; const pFiles: String);
 
-function  addToRoster(c: TRnQcontact; isLocal: Boolean = False): boolean; overload;
 function  Proto_StsID2Name(Proto: TRnQProtocol; s: Byte; xs: byte): String;
 procedure Protos_EventExtraPics(Proto: TRnQProtocol; evKind : Integer;
                                 const evBody: RawByteString;
@@ -54,6 +53,7 @@ function  str2db(pProto: TRnQProtocol; const s: RawByteString): TRnQCList; overl
 //function  getClientFor(c: TRnQcontact; pInInfo: Boolean = False): string;
 function  getProtosPref(): TPrefPagesArr;
 function  getProtoClass(ProtoID: Byte): TRnQProtoClass;
+function  addToRoster(c: TRnQcontact; isLocal: Boolean = False): boolean; overload;
 function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer=0; const info: string=''): Toevent; overload;
 function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer; cl: TRnQCList): Toevent; overload;
 procedure getTrayIconTip(var vPic: TPicName; var vTip: String);
@@ -476,7 +476,7 @@ begin
         imAwaySince := 0
       else
        if not (byte(lastStatus) in [byte(SC_away), byte(SC_na)]) then
-        imAwaySince:=now;
+        imAwaySince := now;
     end
  {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_MRA}

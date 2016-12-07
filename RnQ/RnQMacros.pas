@@ -365,7 +365,7 @@ var
   node: Tnode;
   pt: Tpoint;
 begin
-  bmp := createBitmap(1,1);
+  bmp := createBitmap(1, 1, RnQmain.currentPPI);
   pt := RnQmain.roster.ScreenToClient(mousepos);
   if within(0, pt.x, RnQmain.roster.width)
   and within(0, pt.y, RnQmain.roster.height) then
@@ -377,11 +377,13 @@ begin
   if node<>NIL then
     begin
 //    drawNodeHint(bmp.canvas, node.treenode, r);
-    drawHint(bmp.canvas, node.kind, node.groupId, node.contact, r, True);
+    drawHint(bmp.canvas, node.kind,
+             node.groupId, node.contact, r, True, RnQmain.currentPPI);
     bmp.Width := r.Right+1;
     bmp.Height := r.bottom+1;
 //    drawNodeHint(bmp.canvas, node.treenode, r);
-    drawHint(bmp.canvas, node.kind, node.groupId, node.contact, r);
+    drawHint(bmp.canvas, node.kind,
+             node.groupId, node.contact, r, False, RnQmain.currentPPI);
 //    TipAdd(bmp, 50);
     TipAdd3(NIL, bmp, NIL, 50);
 //    tipfrm.show(bmp);

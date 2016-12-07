@@ -799,7 +799,6 @@ begin
   path := includeTrailingPathDelimiter(path);
   for cnt in proto.readList(LT_ROSTER) do
    begin
-     cnt.icon.Bmp := NIL;
      updateAvatar(cnt, cnt.icon.Hash_safe{, True});
    end;
 end;
@@ -815,6 +814,7 @@ var
 // gr: TGPGraphics;
  fn: String;
  w, h: Double;
+ sz: TSize;
  b1, b: Boolean;
 begin
   if Assigned(c) then
@@ -908,16 +908,16 @@ begin
   //          if Assigned(PicAni) then
   //            PicAni.Animate := true;
           end;
-
-         AvtPBox.Width  := c.icon.Bmp.GetWidth;
+         sz := c.icon.Bmp.GetSize(chatFrm.currentPPI);
+         AvtPBox.Width  := sz.cx;
   //       AvtPBox.Height := cnt.iconBmp.GetHeight;
   //        gr := TGPGraphics.Create(Img.Canvas.Handle);
   //        gr.DrawImage(cnt.iconBmp, 0, 0, Img.Width, Img.Height);
   //        gr.Free;
   //       Img.Width
   //       Img.Picture.Assign(cnt.icon);
-         if c.icon.Bmp.GetHeight > 0 then
-          AvtPBox.Width := min(c.icon.Bmp.GetWidth, Trunc(ci.inputPnl.Height/c.icon.Bmp.GetHeight * c.icon.Bmp.GetWidth)) + 5;
+         if sz.cy > 0 then
+          AvtPBox.Width := min(sz.cx, Trunc(ci.inputPnl.Height/sz.cy * sz.cx)) + 5;
        end;
        AvtPBox.Invalidate;
 //       img.Transparent := cnt.iconBmp.Transparent;
@@ -1013,9 +1013,9 @@ begin
      end;
     if not Assigned(ci.avtsplitr) then
     begin
-      ci.avtsplitr:=Tsplitter.create(ci.historyBox);
+      ci.avtsplitr := Tsplitter.create(ci.historyBox);
       //chat.splitter.ResizeStyle:=rsUpdate;
-      ci.avtsplitr.minsize:=10;
+      ci.avtsplitr.minsize := 10;
     //  chat.avtsplitr.parent:=sheet;
       ci.avtsplitr.parent := ci.inputPnl;
       ci.avtsplitr.align  := alRight;

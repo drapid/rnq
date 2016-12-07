@@ -64,6 +64,7 @@ function  bool2str(const b: Boolean): RawByteString;
   function IntToStrA(Value: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}  overload;
   function intToStrA(i, d: Integer): AnsiString; overload;
   function intToStr(i, d: Integer): string; overload;
+  function strToIntA(s: RawByteString): Integer;
 
 // Strings
   function WideBEToUTF8(const Value: RawByteString): RawByteString;
@@ -948,6 +949,10 @@ begin
     result := '0'+result;
 end; // intToStr
 
+function strToIntA(s: RawByteString): Integer;
+begin
+  Result := StrToInt(String(s));
+end;
 
 function excludeTrailingCRLF(const s: string): string;
 var

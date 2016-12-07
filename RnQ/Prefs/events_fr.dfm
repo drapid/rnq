@@ -105,7 +105,7 @@ object eventsFr: TeventsFr
         Width = 350
         Height = 17
         HelpKeyword = 'auto-consume-events'
-        Caption = 'Consume events when you see them'
+        Caption = 'Skip events when you see them'
         TabOrder = 8
       end
       object BringInfoChk: TCheckBox
@@ -315,10 +315,6 @@ object eventsFr: TeventsFr
     object DisEvTS: TTabSheet
       Caption = 'Extra disabling'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         450
         407)
@@ -412,10 +408,6 @@ object eventsFr: TeventsFr
     object LogTS: TTabSheet
       Caption = 'Log'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         450
         407)
@@ -489,10 +481,6 @@ object eventsFr: TeventsFr
     object BDTS: TTabSheet
       Caption = 'Birthday'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LDays1: TLabel
         Left = 349
         Top = 24
