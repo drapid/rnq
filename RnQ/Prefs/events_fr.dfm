@@ -481,6 +481,10 @@ object eventsFr: TeventsFr
     object BDTS: TTabSheet
       Caption = 'Birthday'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LDays1: TLabel
         Left = 349
         Top = 24

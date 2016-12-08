@@ -108,6 +108,8 @@ type
     Height: Integer;
     constructor create(Width, Height: Integer);
     function asTSize: TSize;
+    function ToPPI(PPI: Integer): TGPSize; OverLoad;
+    function ToPPI(PPI: Integer; selfDPI: Integer): TGPSize; OverLoad;
   end;
 
   function MakeSize(sz2: TSize): TGPSize; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
@@ -216,6 +218,41 @@ end;
   begin
     Result.cx := Width;
     Result.cy := Height;
+  end;
+
+  function TGPSize.ToPPI(PPI: Integer): TGPSize;
+  begin
+    if (PPI > 30) and (PPI <> cDefaultDPI) then
+      begin
+        Result.Width := MulDiv(Self.Width, PPI, cDefaultDPI);
+        Result.Height := MulDiv(Self.Height, PPI, cDefaultDPI);
+      end
+     else
+      begin
+        Result.Width := Self.Width;
+        Result.Height := Self.Height;
+      end
+  end;
+
+  function TGPSize.ToPPI(PPI: Integer; selfDPI: Integer): TGPSize;
+  var
+    lDPI: Integer;
+  begin
+    if (selfDPI > 20) then
+      lDPI := selfDPI
+     else
+      lDPI := cDefaultDPI;
+
+    if (PPI > 30) and (PPI <> lDPI) then
+      begin
+        Result.Width := MulDiv(Self.Width, PPI, lDPI);
+        Result.Height := MulDiv(Self.Height, PPI, lDPI);
+      end
+     else
+      begin
+        Result.Width := Self.Width;
+        Result.Height := Self.Height;
+      end
   end;
 
   function MakeRect(x, y, width, height: Integer): TGPRect; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}

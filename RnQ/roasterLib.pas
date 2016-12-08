@@ -1536,9 +1536,6 @@ var
   cnv: Tcanvas;
   R, rB: Trect;
   cntTxt: TRect;
- {$IFDEF PROTOCOL_ICQ}
-  c: TICQcontact;
- {$ENDIF PROTOCOL_ICQ}
   s: string;
   b, isNIL: boolean;
   isOnRight: Boolean;
@@ -1606,12 +1603,6 @@ case n.kind of
   NODE_CONTACT:
     begin
     inc(x, 2);
- {$IFDEF PROTOCOL_ICQ}
-    if n.contact is TICQcontact then
-      c :=  TICQContact(n.contact)
-     else
-      c := NIL;
- {$ENDIF PROTOCOL_ICQ}
     if n.contact.UID = '' then
       Exit;
     isNIL := notinlist.exists(n.contact);
@@ -1670,7 +1661,7 @@ case n.kind of
            begin
              theme.ApplyFont('roaster.online', cnv.font);
  {$IFDEF PROTOCOL_ICQ}
-             if c.noClient then
+             if (n.contact is TICQContact) and (n.contact as TICQContact).noClient then
                theme.ApplyFont('roaster.noclient', cnv.font);
  {$ENDIF PROTOCOL_ICQ}
            end

@@ -18,6 +18,9 @@ This file is part of &RQ.
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 unit authreqDlg;
+{$I RnQConfig.inc}
+{$I NoRTTI.inc}
+
 
 interface
 
@@ -25,9 +28,6 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   StdCtrls, RnQButtons, ExtCtrls, Menus,
   RnQProtocol;
-
-{$I RnQConfig.inc}
-{$I NoRTTI.inc}
 
 type
   TauthreqFrm = class(TForm)
@@ -56,7 +56,7 @@ type
     procedure Label2Click(Sender: TObject);
   public
     contact: TRnQContact;
-    constructor doAll(owner_ : Tcomponent; c: TRnQContact; reason: string);
+    constructor doAll(owner_: Tcomponent; c: TRnQContact; reason: string);
     procedure addcontactAction(sender: Tobject);
   end;
 
@@ -72,7 +72,7 @@ uses
   Protocols_all,
   themesLib, menusUnit;
 
-constructor TauthreqFrm.doAll(owner_ : Tcomponent; c: TRnQContact; reason: string);
+constructor TauthreqFrm.doAll(owner_: Tcomponent; c: TRnQContact; reason: string);
 begin
   inherited create(owner_);
   position := poDefaultPosOnly;

@@ -176,8 +176,7 @@ procedure sendICQautomsgreq(cnt: TRnQContact);
 var
   oe: Toevent;
 begin
-  oe := Toevent.create;
-  oe.kind := OE_automsgreq;
+  oe := Toevent.create(OE_automsgreq);
   //oe.uid := uin;
   oe.whom := cnt;
   oe.timeSent := now;

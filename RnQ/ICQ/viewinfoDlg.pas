@@ -374,20 +374,20 @@ begin
   pagectrl.visible := FALSE;
 with TICQcontact(contact) do
   begin
-  caption:=getTranslation('%s',[displayed]);
+  caption := getTranslation('%s',[displayed]);
   if nodb then
-    caption:=caption+getTranslation(' -user not found on server')
+    caption := caption+getTranslation(' -user not found on server')
   else
     if infoUpdatedTo = 0 then
-      caption:=caption+getTranslation(' -no info')
+      caption := caption+getTranslation(' -no info')
     else
       if not isUpToDate then
-        caption:=caption+getTranslation(' -newer info available on server');
-  displayBox.text:=displayed;
-  firstBox.text:=first;
-  lastBox.text:=last;
-  emailBox.text:=email;
-  cityBox.text:=city;
+        caption := caption+getTranslation(' -newer info available on server');
+  displayBox.text := displayed;
+  firstBox.text := first;
+  lastBox.text := last;
+  emailBox.text := email;
+  cityBox.text := city;
   addressBox.text := address;
   stateBox.text:=state;
 //  aboutBox.text:=unUTF(about);
@@ -1295,8 +1295,9 @@ begin
 end;
 
 procedure TviewinfoFrm.AvtPBoxPaint(Sender: TObject);
-//var
-//  gr : TGPGraphics;
+var
+//  gr: TGPGraphics;
+  sz: TSize;
 begin
    {$IFDEF RNQ_AVATARS}
   if Assigned(contactAvt) then
@@ -1304,8 +1305,11 @@ begin
     if contactAvt.Animated and FAniTimer.Enabled then
       TickAniTimer(NIL)
      else
-      DrawRbmp(TPaintBox(sender).Canvas.Handle, contactAvt, DestRect(contactAvt.GetWidth, contactAvt.GetHeight,
-                  TPaintBox(sender).ClientWidth, TPaintBox(sender).ClientHeight));
+      begin
+        sz := contactAvt.getSize(GetParentCurrentDpi);
+        DrawRbmp(TPaintBox(sender).Canvas.Handle, contactAvt, DestRect(sz.cx, sz.cy,
+                    TPaintBox(sender).ClientWidth, TPaintBox(sender).ClientHeight));
+      end;
 {    gr := TGPGraphics.Create(TPaintBox(sender).Canvas.Handle);
     with DestRect(contactAvt.GetWidth, contactAvt.GetHeight,
                   TPaintBox(sender).ClientWidth, TPaintBox(sender).ClientHeight) do
@@ -1317,7 +1321,7 @@ end;
 
 procedure TviewinfoFrm.avtSaveBtnClick(Sender: TObject);
 var
-  fn : String;
+  fn: String;
 begin
 //  openICQURL('http://www.icq.com/people/' + Account.AccProto.ProtoElem.MyAccNum + '/edit/');
 //  if OpenSaveFileDialog(Application.Handle, '', 'Pictures (*.gif;*.jpg;*.jpeg;*.png;*.bmp;*.xml)|*.gif;*.jpg;*.jpeg;*.png;*.bmp;*.xml'
@@ -1330,7 +1334,7 @@ end;
 
 procedure TviewinfoFrm.PhotoPBoxPaint(Sender: TObject);
 //var
-//  gr : TGPGraphics;
+//  gr: TGPGraphics;
 begin
    {$IFDEF RNQ_AVATARS}
   if Assigned(contactPhoto) then
@@ -1368,7 +1372,7 @@ end;
 
 procedure TviewinfoFrm.ClrAvtBtnClick(Sender: TObject);
 var
-  itsme : Boolean;
+  itsme: Boolean;
 begin
   if not Assigned(contact) then
     Exit;
@@ -1408,11 +1412,12 @@ end;
 
 procedure TviewinfoFrm.TickAniTimer(Sender: TObject);
 var
-  b2 : TBitmap;
+  b2: TBitmap;
   paramSmile: TAniPicParams;
-//  w, h : Integer;
-  resW, resH : Integer;
-//  ch : TchatInfo;
+  sz: TSize;
+//  w, h: Integer;
+  resW, resH: Integer;
+//  ch: TchatInfo;
 begin
 //  if not UseAnime then Exit;
 //  checkGifTime;
@@ -1428,10 +1433,8 @@ begin
 //  h := ch.avtPic.PicAni.Height;
   resW := AvtPBox.ClientWidth;
   resH := AvtPBox.ClientHeight;
-  paramSmile.Bounds := DestRect(//w, h,
-                  contactAvt.Width, contactAvt.Height,
-//                  ch.avtPic.AvtPBox.ClientWidth, ch.avtPic.AvtPBox.ClientHeight);
-                  resW, resH);
+  sz := contactAvt.GetSize(GetParentCurrentDpi);
+  paramSmile.Bounds := DestRect(sz.cx, sz.cy, resW, resH);
   paramSmile.Canvas := AvtPBox.Canvas;
   paramSmile.Color := AvtPBox.Color;
   paramSmile.selected := false;
@@ -1447,7 +1450,7 @@ begin
           b2.Canvas.FillRect(b2.Canvas.ClipRect);
 //           DrawRbmp(b2.Canvas.Handle, ch.avtPic.PicAni);
 //           ch.avtPic.PicAni.Draw(b2.Canvas.Handle, 0, 0);
-           contactAvt.Draw(b2.Canvas.Handle, paramSmile.Bounds);
+          contactAvt.Draw(b2.Canvas.Handle, paramSmile.Bounds);
           if Assigned(paramSmile.Canvas)
 //           and (paramSmile.Canvas.HandleAllocated )
           then

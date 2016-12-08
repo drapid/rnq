@@ -1058,7 +1058,7 @@ begin
       theme.addHIco(sPic, iIcon, True)
      else
       theme.addHIco(btns[i].ImageName, iIcon, True);
-    w := theme.getPicSize(RQteButton, btns[i].ImageName, 16).cx + 5;
+    w := theme.getPicSize(RQteButton, btns[i].ImageName, 16, ChatFrm.currentPPI).cx + 5;
     w := bound(w+5, 16+5, btns[i].height+2);
     btns[i].width := w;
    end;

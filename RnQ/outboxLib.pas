@@ -27,13 +27,13 @@ const
   );
 type
   POEvent = ^TOEvent;
-  TOEvent=class
+  TOEvent = class
    public
     kind: integer;
 //    uin: integer;
     flags: Cardinal;
     whom: TRnQContact;
-//    UID   : TUID;
+//    UID: TUID;
     email: string;
     info: string;
     cl: TRnQCList;
@@ -43,7 +43,7 @@ type
     ID: integer;
     filepos: integer;
 //    constructor Create;// override;
-    constructor Create;// override;
+    constructor Create(pKind: Integer); // override;
     destructor Destroy; override;
     function   toString: RawByteString; reIntroduce;
     function   fromString(const s: RawByteString): Boolean;
@@ -126,7 +126,7 @@ begin
     begin
       l := integer((@s[i])^);
       inc(i,4);
-      ev := TOevent.create;
+      ev := TOevent.create(OE_msg);
       if ev.fromString( copy(s,i,l) ) then
         add(ev)
        else
@@ -208,7 +208,7 @@ begin
    end;
   if not found then
   begin
-   result := TOevent.create;
+   result := TOevent.create(kind);
    add(result);
   end;
   result.kind := kind;
@@ -432,8 +432,8 @@ end; // fromString
 
 function  TOevent.Clone: TOEvent;
 begin
-  Result := TOEvent.Create;
-  Result.kind  := Self.kind;
+  Result := TOEvent.Create(kind);
+
   Result.flags := Self.flags;
   Result.whom   := Self.whom;
   Result.email := Self.email;
@@ -462,10 +462,10 @@ begin
  inherited;
 end;
 
-constructor TOEvent.Create;
+constructor TOEvent.Create(pKind: Integer);
 begin
-  inherited;
-  kind := OE_msg;
+//  inherited();
+  kind := pKind;
 //    uin:integer;
   flags := 0;
 //  UID   := '';

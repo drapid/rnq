@@ -37,7 +37,7 @@ var
   aFileSendMenu : aTaMenuItem; // Menu of button "Send File" in chat
 
 implementation
-  uses
+uses
     mainDlg, globalLib, themesLib, chatDlg,
     SysUtils, RDGlobal, RDUtils, RnQSysUtils, RnQGlobal,
     RnQLangs, utilLib, RnQPics,

@@ -466,17 +466,21 @@ begin
 
   resetAutosize();
   AutoSzUpChk.Checked := autosizeUp;
-{  onlycloseChk.checked:=TRUE;
-  hideoncloseChk.Checked:=True;//hideOnClose;
-  closeandminChk.checked:=showRosterMinButton;
-  roundwindowsChk.Checked:=roundedWindows;}
-  roasterTitleBox.Text:=rosterTitle;
-  if not RnQmain.bar.visible then roasterbarGrp.ItemIndex:=2
-  else
-    if rosterbarOnTop then roasterbarGrp.ItemIndex:=0
-    else roasterbarGrp.ItemIndex:=1;
-  if not RnQmain.FilterBar.visible then FilterBarGrp.ItemIndex:=2
-  else
+{  onlycloseChk.checked := TRUE;
+  hideoncloseChk.Checked := True;//hideOnClose;
+  closeandminChk.checked := showRosterMinButton;
+  roundwindowsChk.Checked := roundedWindows;}
+  roasterTitleBox.Text := rosterTitle;
+  if not RnQmain.bar.visible then
+    roasterbarGrp.ItemIndex:=2
+   else
+    if rosterbarOnTop then
+      roasterbarGrp.ItemIndex:=0
+     else
+      roasterbarGrp.ItemIndex:=1;
+  if not RnQmain.FilterBar.visible then
+    FilterBarGrp.ItemIndex:=2
+   else
     if FilterBarOnTop then
       FilterBarGrp.ItemIndex := 0
      else
@@ -536,7 +540,7 @@ procedure TdesignFr.IconsListDragDrop(Sender: TBaseVirtualTree; Source: TObject;
 var
   Attachmode: TVTNodeAttachMode;
   Nodes: TNodeArray;
-  i : Integer;
+  i: Integer;
 begin
   if Source = Sender then
     Effect := DROPEFFECT_MOVE
@@ -612,10 +616,10 @@ end;
 procedure TdesignFr.IconsListDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-//  x,y : Integer;
-  IcItem : PIcItem;
-  oldMode : Integer;
-  gR : TGPRect;
+//  x, y: Integer;
+  IcItem: PIcItem;
+  oldMode: Integer;
+  gR: TGPRect;
 begin
 //  if PaintInfo.Column in [0..0] then
   begin
@@ -629,7 +633,7 @@ begin
      gr.Width  := gr.Height;
      IcItem := PIcItem(sender.getnodedata(paintinfo.node));
 //     inc(x, theme.drawPic(paintinfo.canvas.Handle, x,y+1, IcItem.IconName).cx+2);
-     inc(gR.x, theme.drawPic(paintinfo.canvas.Handle, gR, IcItem.IconName).cx+2);
+     inc(gR.x, theme.drawPic(paintinfo.canvas.Handle, gR, IcItem.IconName, True, GetParentCurrentDpi).cx+2);
 
      oldMode := SetBKMode(paintinfo.canvas.Handle, TRANSPARENT);
       paintinfo.canvas.textout(gR.x, 2, IcItem.Name);

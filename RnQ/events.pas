@@ -1190,7 +1190,7 @@ else
   if count = 1 then
     if assigned(OnNewTop) then
       OnNewTop;
-  saveInboxDelayed:=TRUE;
+  saveInboxDelayed := TRUE;
   end;
 end; // add
 

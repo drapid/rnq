@@ -48,7 +48,8 @@ procedure usersetVisibility(const proto: TRnQProtocol; vi: byte);
 function  sendEmailTo(c: TRnQContact): boolean;
 //function  str2db(cls: TRnQCntClass; const s: RawByteString; var ok: boolean): TRnQCList; overload;
 //function  str2db(cls: TRnQCntClass; const s: RawByteString): TRnQCList; overload;
-function  str2db(pProto: TRnQProtocol; const s: RawByteString; var ok: boolean; pCheckGroups: Boolean): TRnQCList; overload;
+function  str2db(pProto: TRnQProtocol; const s: RawByteString;
+                    var ok: boolean; pCheckGroups: Boolean): TRnQCList; overload;
 function  str2db(pProto: TRnQProtocol; const s: RawByteString): TRnQCList; overload;
 //function  getClientFor(c: TRnQcontact; pInInfo: Boolean = False): string;
 function  getProtosPref(): TPrefPagesArr;
@@ -112,11 +113,12 @@ uses
   ICQConsts, RQ_ICQ,
  {$ENDIF PROTOCOL_ICQ}
 
-  pluginutil, pluginLib, history,
+  outboxDlg,
+  events, pluginutil, pluginLib, history,
 
 //  globalLib,
   utilLib, themesLib, RQThemes, roasterlib,
-  MainDlg, chatDlg, events, outboxDlg;
+  MainDlg, chatDlg;
 
 procedure Protos_Events(Sender: TRnQProtocol; event: Integer);
   {$IFDEF PROTOCOL_ICQ}

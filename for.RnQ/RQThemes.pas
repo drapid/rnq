@@ -3674,7 +3674,7 @@ begin
    begin
 //     result.cx := r.Width;
 //     result.cy := r.Height;
-     r1 := DestRect( r.size, pR.size);
+     r1 := DestRect( r.size.ToPPI(DPI, picDPI), pR.size);
      inc(r1.X, pR.X);
      inc(r1.Y, pR.Y);
      result := pR.size.asTSize;

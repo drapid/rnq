@@ -73,8 +73,8 @@ type
     procedure processChk00Click(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   public
-    lastSelected:TOevent;
-    function  selectedContact:TRnQContact;
+    lastSelected: TOevent;
+    function  selectedContact: TRnQContact;
     procedure updateList;
     procedure updateMemo;
     procedure updateChars;
@@ -102,8 +102,8 @@ uses
 
 procedure ToutboxFrm.updateList;
 var
-  i:integer;
-  o : POEvent;
+  i: integer;
+  o: POEvent;
 begin
   if self = NIL then
     Exit;
@@ -121,7 +121,7 @@ end; // updateList
 
 procedure ToutboxFrm.updatememo;
 var
-  s, s1 :string;
+  s, s1: string;
 begin
 memo.readonly:=TRUE;
 if list.FocusedNode = NIL then
@@ -179,24 +179,24 @@ end;
 procedure ToutboxFrm.listDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-  oe:TOevent;
-  cnv:Tcanvas;
-  x,y:integer;
-//  c:Tcontact;
-  s1 : String;
-  msg:string;
+  oe: TOevent;
+  cnv: Tcanvas;
+  x, y: integer;
+//  c: Tcontact;
+  s1: String;
+  msg: string;
   bmp: AnsiString;
-//  oldClr:Tcolor;
+//  oldClr: Tcolor;
 
-  procedure outText(s:string);
+  procedure outText(s: string);
   begin
-  cnv.textOut(x,y,s);
-  inc(x, cnv.textWidth(s));
+    cnv.textOut(x, y, s);
+    inc(x, cnv.textWidth(s));
   end;
 
 begin
-cnv:=PaintInfo.canvas;
-cnv.fillRect(PaintInfo.ContentRect);
+  cnv := PaintInfo.canvas;
+  cnv.fillRect(PaintInfo.ContentRect);
   if vsSelected in PaintInfo.Node.States then
    begin
     if Sender.Focused then
@@ -207,7 +207,7 @@ cnv.fillRect(PaintInfo.ContentRect);
   else
     PaintInfo.Canvas.Font.Color := clWindowText;
 
-oe:= TOevent(POevent(Sender.getnodedata(PaintInfo.Node))^);
+  oe := TOevent(POevent(Sender.getnodedata(PaintInfo.Node))^);
 //list.Items.Objects[index] as TOevent;
 x:=PaintInfo.ContentRect.Left+2;
 y:=PaintInfo.ContentRect.top;
@@ -238,7 +238,7 @@ case oe.kind of
   else exit;
   end;
 if bmp<>'' then
-  inc(x, theme.drawPic(cnv.Handle,x,y,bmp).cx+2)
+  inc(x, theme.drawPic(cnv.Handle,x,y,bmp, True, GetParentCurrentDpi).cx+2)
 else
   begin
 //  cnv.Font.style:=[fsBold];

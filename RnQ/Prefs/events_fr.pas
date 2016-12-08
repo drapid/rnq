@@ -395,7 +395,7 @@ begin
     picElm.picName := ImageName;
     picElm.Element := RQteDefault;
     picElm.pEnabled := True;
-    with theme.GetPicSize(picElm, 20) do
+    with theme.GetPicSize(picElm, 20, GetParentCurrentDpi) do
      begin
       gr.Height := min(Rect.Bottom - Rect.Top, cy);
       gr.Width  := min(Rect.Right - Rect.Left, cx);
@@ -418,17 +418,18 @@ begin
     st := byte(TComboBox(Control).items.objects[index]);
     with Account.AccProto.getStatuses[st] do
      begin
-       Height := max(theme.GetPicSize(RQteDefault, ImageName).cy+2, 20);
+       Height := max(theme.GetPicSize(RQteDefault, ImageName, 16, GetParentCurrentDpi).cy+2, 20);
      end;
    end
 end;
 
 procedure TeventsFr.statusBoxSelect(Sender: TObject);
 var
-  st : byte;
+  st: byte;
 begin
   st := currentStatus;
-  if st = $FF then Exit;
+  if st = $FF then
+    Exit;
 
 {
   disableBox.checked[0] := onStatusDisable[currentStatus].tips;
@@ -445,11 +446,11 @@ end;
 
 procedure TeventsFr.initPage;
 var
-  i : Integer;
+  i: Integer;
   st: byte;
-  w : Integer;
-//  st : TStatusProp;
-//  sp : PStatusProp;
+  w: Integer;
+//  st: TStatusProp;
+//  sp: PStatusProp;
 begin
   TrigList.NodeDataSize := SizeOf(TAcItem);
   for i:=1 to EK_last do
