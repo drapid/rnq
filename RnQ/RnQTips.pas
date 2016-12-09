@@ -282,7 +282,7 @@ begin
         item      := TRnQTip.Create;
         needW := 0; needH := 0;
 
-        tempPic := createBitmap(1, 1);
+        tempPic := createBitmap(1, 1, RnQmain.currentPPI);
         tipDrawEvent(tempPic.Canvas.Handle, NIL, pCnt, needW, needH, True, RnQmain.currentPPI);
         tempPic.Free;
         needH := min(work.Bottom - work.Top - TipsMaxTop, needH);
@@ -728,7 +728,7 @@ begin
    {$ENDIF USE_GDIPLUS}
     end;
   if calcOnly then
-    vSize := theme.GetPicSize(RQteDefault, p, PPI)
+    vSize := theme.GetPicSize(RQteDefault, p, 0, PPI)
    else
     vSize := theme.drawPic(DC, x,y, p, true, PPI)
 ;
@@ -1047,7 +1047,10 @@ begin
         if mainprefs.getPrefBoolDef('show-tips-use-avt-size', True) then
           begin
            ms := mainPrefs.getPrefIntDef('show-tips-avt-size', 100); //TipsMaxAvtSize
-           with BoundsSize(icon.Bmp.GetWidth, icon.Bmp.GetHeight, ms, ms) do
+           if (PPI > 30)and (PPI <> cDefaultDPI) then
+             ms := MulDiv(ms, PPI, cDefaultDPI);
+           R2.size := MakeSize(icon.Bmp.getSize(PPI));
+           with BoundsSize(R2.Width, R2.Height, ms, ms) do
             begin
              R2.Width := cx;
              R2.Height := cy;
@@ -1055,8 +1058,7 @@ begin
           end
          else
           begin
-           R2.Width  := icon.Bmp.GetWidth;
-           R2.Height := icon.Bmp.GetHeight;
+           R2.size := MakeSize(icon.Bmp.getSize(PPI));
           end;
         if not calcOnly then
           DrawRbmp(DC, icon.Bmp, R2);
