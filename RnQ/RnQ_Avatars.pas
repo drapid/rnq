@@ -99,6 +99,7 @@ implementation
    ICQConsts, ICQv9,
 // Protocol_ICQ,
    ICQContacts,
+   viewinfoDlg,
  {$ENDIF PROTOCOL_ICQ}
  {$IFDEF UNICODE}
    AnsiStrings,
@@ -111,9 +112,6 @@ implementation
    roasterLib,
    ShockwaveFlashObjects_TLB,
 //    FlashPlayerControl,
- {$IFDEF PROTOCOL_ICQ}
-   viewinfoDlg,
- {$ENDIF PROTOCOL_ICQ}
    chatDlg;
 
 procedure SaveAvatar(const hash: RawByteString; picFmt: TPAFormat;
@@ -1020,8 +1018,8 @@ begin
       ci.avtsplitr.parent := ci.inputPnl;
       ci.avtsplitr.align  := alRight;
       ci.avtsplitr.Width  := 5;
-//      ci.avtsplitr.OnCanResize  := chatFrm.AvtsplitterMoving;
-      ci.avtsplitr.OnMoved  := chatFrm.AvtSplitterMoved;
+//      ci.avtsplitr.OnCanResize := chatFrm.AvtsplitterMoving;
+      ci.avtsplitr.OnMoved := chatFrm.AvtSplitterMoved;
     end;
     if ci.input.Width < 5 then
       ci.input.Width := 5;

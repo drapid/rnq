@@ -379,7 +379,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCCReference Include="NewAccount.pas">
             <Form>NewAccFrm</Form>
         </DCCReference>
-        <DCCReference Include="..\For.rnq\RDtrayLib.pas"/>
+        <DCCReference Include="..\for.RnQ\RnQtrayLib.pas"/>
         <DCCReference Include="..\For.rnq\tipDlg.pas"/>
         <DCCReference Include="..\For.rnq\RnQLangFrm.pas">
             <Form>FrmLangs</Form>
@@ -421,7 +421,6 @@ $(PreBuildEvent)]]></PreBuildEvent>
             <Form>wpFrm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="ICQ\ICQ.RESTapi.pas"/>
         <DCCReference Include="ViewHEventDlg.pas">
             <Form>HEventFrm</Form>
         </DCCReference>

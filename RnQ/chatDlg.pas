@@ -441,7 +441,8 @@ type
     function  grabThisText: String;
     function  Pages2String: RawByteString;
 //    procedure savePages;
-    procedure loadPages(const s: RawByteString);
+    procedure loadPages(const s: RawByteString); OverLoad;
+    procedure loadPages(const cl: TRnQCList); OverLoad;
     procedure updateGraphics;
     procedure addSmileAction(Sender: TObject);
   {$IFDEF CHAT_USE_LSB}
@@ -3664,6 +3665,15 @@ begin
 //  cl.fromString(Account.AccProto, s, contactsDB);
   open(True);
 end; // loadPages
+
+procedure TchatFrm.loadPages(const cl: TRnQCList);
+var
+  cnt: TRnQContact;
+begin
+  for cnt in cl do
+    openOn(cnt, True, False);
+  open(True);
+end;
 
 procedure TchatFrm.closeBtnClick(Sender: TObject);
 begin

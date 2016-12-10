@@ -20,7 +20,7 @@ uses
   RnQProtocol,
   groupsLib,
   roasterLib,
-  pluginLib, RDtrayLib,
+  pluginLib, RnQtrayLib,
   outboxLib, uinlistLib,
   RQThemes, RDGlobal,
   themesLib,

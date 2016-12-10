@@ -285,7 +285,7 @@ uses
   RQUtil, RDFileUtil, RDUtils, RnQSysUtils,
   RQMenuItem, RQThemes, RQLog, RnQDialogs,
   RnQLangs, RnQButtons, RnQBinUtils, RnQGlobal, RnQCrypt, RnQPics,
-  RDtrayLib, RnQTips, Hook,
+  RnQtrayLib, RnQTips, Hook,
   Murmur2, json,
    {$IFDEF RNQ_FULL2}
      converthistoriesDlg,
@@ -3800,16 +3800,16 @@ var
 //    drawText(cnv.handle, PChar(s), -1, R, DT_CALCRECT or DT_SINGLELINE or DT_VCENTER or DT_CENTER);
 //   cnv.TextRect(150);
 //  rr := r;
-  rr.Left := x;
-  rr.Top := y;
-  rr.Right := maxWidth;
-  rr.Bottom := y;// + 100;
-  s := dupAmperstand(s);
+    rr.Left := x;
+    rr.Top := y;
+    rr.Right := maxWidth;
+    rr.Bottom := y;// + 100;
+    s := dupAmperstand(s);
   //  rr.Right := r.Left + 10;
-  {$IFDEF DELPHI9_UP}
-   cnv.TextRect(rr, s, [tfCalcRect, tfBottom, tfLeft, tfWordBreak, tfEndEllipsis, tfEditControl]);
-  {$ENDIF DELPHI9_UP} 
-  xdy := rr.Bottom - rr.Top;
+    {$IFDEF DELPHI9_UP}
+     cnv.TextRect(rr, s, [tfCalcRect, tfBottom, tfLeft, tfWordBreak, tfEndEllipsis, tfEditControl]);
+    {$ENDIF DELPHI9_UP}
+    xdy := rr.Bottom - rr.Top;
 //  if rr.Right > maxWidth then
     begin
 //      rr.Left := x;
@@ -4210,9 +4210,9 @@ case kind of
             inc(a)
            else
             if cnt1.isOnline then
-               inc(a2)
-              else
-               inc(a3);
+              inc(a2)
+             else
+              inc(a3);
       fieldOutDP('Online', inttostr(a2));
       fieldOutDP('Offline', inttostr(a));
       fieldOutDP('Unknown', inttostr(a3));

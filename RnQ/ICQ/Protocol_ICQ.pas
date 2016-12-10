@@ -73,7 +73,7 @@ implementation
    RnQBinUtils, RnQNet, RQUtil, RnQDialogs, RQlog,
 //   RnQProtocol,
    rnqLangs, RnQStrings, RQThemes, RnQFileUtil, RDUtils,
-   RnQTips, RDtrayLib, RnQGlobal, RnQPics,
+   RnQTips, RnQtrayLib, RnQGlobal, RnQPics,
    NetEncoding, cHash, Base64,
  {$IFDEF RNQ_AVATARS}
   RnQ_Avatars,

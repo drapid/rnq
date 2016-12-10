@@ -85,7 +85,7 @@ uses
   visibilityDlg in 'visibilityDlg.pas' {visibilityFrm},
   Protocols_all in 'Protocols_all.pas',
   NewAccount in 'NewAccount.pas' {NewAccFrm},
-  RDtrayLib in '..\For.rnq\RDtrayLib.pas',
+  RnQtrayLib in '..\for.RnQ\RnQtrayLib.pas',
   Vcl.Themes,
   Vcl.Styles,
   tipDlg in '..\For.rnq\tipDlg.pas',

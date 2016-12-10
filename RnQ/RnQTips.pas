@@ -32,7 +32,7 @@ implementation
    math, StrUtils, Base64,
    RDUtils, RnQGraphics32, RnQSysUtils, RnQBinUtils,
    RQUtil, RDGlobal, RQThemes, RnQLangs, RnQGlobal,
-   globalLib, utilLib, RDtrayLib, RnQPics,
+   globalLib, utilLib, RnQtrayLib, RnQPics,
  {$IFDEF UNICODE}
    AnsiStrings,
 //   Character,

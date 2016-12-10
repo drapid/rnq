@@ -549,7 +549,7 @@ uses
  {$ENDIF}
   hook,
   OverbyteIcsWSocket,
-  RnQFileUtil, RDFileUtil, RDUtils, RnQSysUtils, RDtrayLib, tipDlg,
+  RnQFileUtil, RDFileUtil, RDUtils, RnQSysUtils, RnQtrayLib, tipDlg,
   RQUtil, RQLog, RQThemes, RnQMenu, RnQPics,
   RnQLangs, RnQStrings, RnQNet, RnQGlobal,
   RnQdbDlg, RnQTips, RnQMacros,

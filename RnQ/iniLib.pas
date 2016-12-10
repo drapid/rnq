@@ -40,7 +40,7 @@ uses
   menus, windows, graphics, classes, sysutils, forms, shellapi,
   controls, types, strutils, SysConst, iniFiles,
   ThemesLib,
-  RnQDialogs, RnQLangs, RnQNet, RDtrayLib, RnQGlobal,
+  RnQDialogs, RnQLangs, RnQNet, RnQtrayLib, RnQGlobal,
  {$IFDEF PREF_IN_DB}
   DBPrefsLib,
  {$ELSE ~PREF_IN_DB}

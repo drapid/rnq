@@ -1363,12 +1363,12 @@ var
                 begin
                   if pIsRight then
                    begin
-                    Result := statusDrawExt(0, 0, 0, byte(TICQcontact(cnt).status),
-                                 TICQcontact(cnt).invisible, TICQcontact(cnt).xStatus, PPI);
+                    Result := statusDrawExt(0, 0, 0, byte(cnt.status),
+                                 cnt.isInvisible, TICQcontact(cnt).xStatus, PPI);
                     dec(p.X, Result.cx);
                    end;
                   Result := statusDrawExt(DC, p.X, p.Y, byte(TICQcontact(cnt).status),
-                                 TICQcontact(cnt).invisible, TICQcontact(cnt).xStatus, PPI);
+                                 cnt.isInvisible, TICQcontact(cnt).xStatus, PPI);
                 end
       //         size:=theme.drawPic(cnv, x,y+1, rosterImgNameFor(c))
                else
@@ -1419,7 +1419,7 @@ var
            (TicqSession(cnt.iProto.ProtoElem).UseSSI) and
    {$ENDIF UseNotSSI}
             not cnt.Authorized and not cnt.CntIsLocal
-            and (TICQcontact(cnt).SSIID <> 0) then
+            and (cnt.SSIID <> 0) then
            result := theme.drawPic(DC, p, po, PPI);
         end
        else
@@ -1427,16 +1427,9 @@ var
         if not cnt.Authorized then
            result := theme.drawPic(DC, p, po, PPI);
 
- {$IFDEF PROTOCOL_ICQ}
       CNT_ICON_LCL:
-       if (cnt is TICQcontact) and
-   {$IFDEF UseNotSSI}
-//         icq.useSSI and
-           (TicqSession(cnt.iProto.ProtoElem).UseSSI) and
-   {$ENDIF UseNotSSI}
-         (cnt.CntIsLocal) then
+         if (cnt.CntIsLocal) then
          result := theme.drawPic(DC, p, po, PPI);
- {$ENDIF PROTOCOL_ICQ}
       CNT_ICON_VER:
          begin
 //          po.picName := cnt.ClientStr;

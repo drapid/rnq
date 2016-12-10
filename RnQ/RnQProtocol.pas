@@ -719,7 +719,7 @@ uses
  {$ENDIF UNICODE}
    RnQFileUtil,
    RQLog, RQUtil, RnQGlobal, RnQCrypt, RnQPics,
-   globalLib, mainDlg, utilLib,
+   globalLib, mainDlg,// utilLib,
    ThemesLib;
 
 const
@@ -1597,9 +1597,6 @@ var
 begin
   setlength(result, count);
   for i:=0 to count-1 do
-//    result[i] := StrToIntDef(PRnQContact(items[i]).uid, 0);
-{$IFDEF  UID_IS_UNICODE}
-{$ENDIF  UID_IS_UNICODE}
     result[i] :=  TRnQContact(items[i]).UIDasInt;
 end; // toIntArray
 

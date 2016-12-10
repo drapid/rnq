@@ -1,4 +1,4 @@
-{
+﻿{
 This file is part of R&Q.
 Under same license
 }
@@ -42,15 +42,21 @@ const
   RnQImageUnTag = AnsiString('</RnQImage>');
   RnQImageExTag = AnsiString('<RnQImageEx>');
   RnQImageExUnTag = AnsiString('</RnQImageEx>');
-
+  RnQTrayIconGUID: TGUID = '{0629FFDF-0F1A-40A1-BB6F-32942AD6DF17}';
 
 var
-  timeformat :record chat,info,clock,log,automsg:string; end;
-  logpref :record
-    pkts, evts :record
-      onFile,onWindow,clear:boolean;
+  timeformat: record
+    chat,
+    info,
+    clock,
+    log,
+    automsg: string;
+   end;
+  logpref: record
+    pkts, evts: record
+      onFile, onWindow, clear: boolean;
       end;
-    writehistory :boolean;
+    writehistory: boolean;
    end;
 
 
@@ -79,9 +85,9 @@ var
 
 var
  {$IFDEF RNQ_PLAYER}
-  RnQbPlayer : TBASSplayer;
+  RnQbPlayer: TBASSplayer;
  {$ELSE RNQ_PLAYER}
-  Soundhndl : THandle;
+  Soundhndl: THandle;
  {$ENDIF RNQ_PLAYER}
 
 implementation
