@@ -50,7 +50,7 @@ type
 //    procedure save;
 //    procedure load(s : AnsiString);
     procedure fromString(s: RawByteString);
-    function  toString: RawByteString;
+    function  toString: RawByteString; reintroduce;
     function  idxOf(id: integer): integer;
     function  add(id_: integer=0): integer; OverLoad;
     function  add(const name: String; ssid: Integer = -1): integer; OverLoad;
@@ -101,34 +101,34 @@ begin
   clear;
   while s>'' do
    begin
-    line:=chopLine(s);
-    k:=trim(chop(AnsiString('='),line));
-    line:=trim(line);
+    line := chopLine(s);
+    k := trim(chop(AnsiString('='), line));
+    line := trim(line);
     if isOnlyDigits(k) then
       try
         add;
-        last.id:=strToInt(k);
-        last.name:= UnUTF(line);
+        last.id := strToIntA(k);
+        last.name := UnUTF(line);
        except
-        setlength(a,length(a)-1);
+        setlength(a, length(a)-1);
       end
      else
       if k='collapsed' then
         while line > '' do
          try
-           last.expanded[str2divisor(chop(string_separator,line))]:=FALSE;
+           last.expanded[str2divisor(chop(string_separator,line))] := FALSE;
           except
          end
        else
         if k='order' then
           try
-            last.order := strToInt(line)
+            last.order := strToIntA(line)
            except
           end
          else
           if k='ssi' then
             try
-              last.ssiID := strToInt(line)
+              last.ssiID := strToIntA(line)
              except
             end;
   end;

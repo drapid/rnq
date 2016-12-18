@@ -18,6 +18,7 @@ uses
 
 type
   TlinkKind = (LK_FTP, LK_EMAIL, LK_WWW, LK_UIN, LK_ED);
+  THistSearchDirection = (hsdFromBegin, hsdAhead, hsdBack, hsdFromEnd);
   TAutoScrollState = (ASS_FULLSCROLL, // fAutoscroll = True, not2go2end = false
     ASS_ENABLENOTSCROLL, // fAutoscroll = True, not2go2end = True
     ASS_FULLDISABLED); // fAutoscroll = False, not2go2end = Any
@@ -111,21 +112,18 @@ type
     who: TRnQContact;
     history: Thistory;
     margin: Trect;
-//    rsb_visible: boolean;
-//    rsb_position: integer;
-//    rsb_rowPerPos: integer;
     onPainted: TNotifyEvent;
     w2s: String;
-    rightClickedChatItem: TChatItem;
+    clickedItem: TChatItem;
     //templateLoaded: Boolean;
     embeddedImgs: TDictionary<LongWord, RawByteString>;
 
 //    property lastEventIsFullyVisible: boolean read P_lastEventIsFullyVisible;
-    property pointedItem: ThistoryItem read P_pointedItem;
-    property clickedItem: ThistoryItem read lastClickedItem;
-    property pointedSpace: ThistoryItem read P_pointedSpace;
-    property topEventNrows: integer read P_topEventNrows;
-    property bottomEvent: integer read P_bottomEvent;
+//    property pointedItem: ThistoryItem read P_pointedItem;
+//    property clickedItem: ThistoryItem read lastClickedItem;
+//    property pointedSpace: ThistoryItem read P_pointedSpace;
+//    property topEventNrows: integer read P_topEventNrows;
+//    property bottomEvent: integer read P_bottomEvent;
     property autoScrollVal: boolean read getAutoScroll write setAutoScrollForce;
     property OnScroll: TNotifyEvent read FOnScroll write FOnScroll;
     property onLinkClick: TLinkClickEvent read FOnLinkClick write FOnLinkClick;
@@ -143,7 +141,7 @@ type
     procedure LoadEntireHistory;
     procedure ClearEvents;
     procedure DeleteEvents(st, en: TDateTime);
-    procedure ReloadLast;
+//    procedure ReloadLast;
     procedure InitSettings;
     procedure InitSettingsOnce;
     procedure InitSettingsMsgPreview;
@@ -152,7 +150,7 @@ type
     procedure UpdateSmiles;
     procedure RememberScrollPos;
     procedure RestoreScrollPos;
-    procedure addChatItem(var params: TParams; hev: Thevent; animate: Boolean; last: Boolean = True);
+    procedure AddChatItem(var params: TParams; hev: Thevent; animate: Boolean);
     procedure sendChatItems(params: TParams; prepend: Boolean = False);
     procedure RememberTopEvent;
     procedure RestoreTopEvent;
@@ -160,6 +158,9 @@ type
     procedure HideHistory;
     procedure ShowLimitWarning;
     procedure ViewInWindow(const title, body: String; const when: String; const formicon: String = '');
+    procedure CheckServerHistory;
+    procedure ShowServerHistoryNotif;
+
     procedure ShowDebug;
 
 //    constructor Create(AOwner: Tcomponent; cnt: TRnQContact); override;
@@ -169,10 +170,11 @@ type
     procedure move2end(animate: Boolean = False);
     function  moveToTime(time: TDateTime; NeedOpen: Boolean = false; fast: Boolean = False): Boolean;
 
+    function  search(text: String; dir: THistSearchDirection; caseSens: Boolean; useRE: Boolean): Boolean;
     procedure copySel2Clpb;
     function  getSelText: String;
     function  getSelBin(): AnsiString;
-    function  getSelHtml(smiles: boolean): RawByteString;
+    function  getSelHtml(smiles: boolean): String;
     function  somethingIsSelected(): boolean;
     function  wholeEventsAreSelected(): boolean;
     function  nothingIsSelected(): boolean;
@@ -185,9 +187,9 @@ type
     procedure selectAll;
     procedure DeleteSelected;
 
-    procedure updateRSB(SetPos: boolean; pos: integer = 0; doRedraw: boolean = true);
+//    procedure updateRSB(SetPos: boolean; pos: integer = 0; doRedraw: boolean = true);
     procedure addEvent(ev: Thevent);
-    function  historyNowCount: integer;
+//    function  historyNowCount: integer;
     procedure histScrollEvent(d: integer);
     procedure histScrollLine(d: integer);
     procedure doOnScroll;
@@ -250,8 +252,8 @@ uses
   themesLib, menusUnit, ViewPicDimmedDlg, Murmur2;
 
 var
-  lastBGCnt: TRnQContact;
-  lastBGToken: integer;
+//  lastBGCnt: TRnQContact;
+//  lastBGToken: integer;
   vKeyPicElm: TRnQThemedElementDtls;
 
 destructor ThistoryBox.Destroy;
@@ -311,7 +313,7 @@ begin
   end;
 end; // color2html
 
-function ThistoryBox.getSelHtml(smiles: boolean): RawByteString;
+function ThistoryBox.getSelHtml(smiles: boolean): String;
 const
   HTMLTemplate = AnsiString('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"' + CRLF +
     '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' + CRLF + CRLF +
@@ -353,7 +355,7 @@ var
     inc(dim, length(s));
   end;
 
-  function makeElement(uin: TUID; font: TFont; isMy: Boolean): RawByteString;
+  function makeElement(uin: TUID; font: TFont; isMy: Boolean): String;
   begin
     result := '   .uin' + uin + ' {' + CRLF +
               '     color: #333;' + CRLF;
@@ -512,10 +514,104 @@ var
   end; // search
 
 begin
-  result := search(offset) >= 0;
+//  result := search(offset) >= 0;
+  result := search(0) >= 0;
   f.Create;
   f.DecimalSeparator := '.';
   Call('moveToTime', [floattostr(time, f), fast]);
+end;
+
+function ThistoryBox.search(text: String; dir: THistSearchDirection; caseSens: Boolean; useRE: Boolean): Boolean;
+(*var
+  start: integer;
+  i: integer;
+  s: string;
+ {$IFNDEF DB_ENABLED}
+//  re:Tregexpr;
+  re: TRegEx;
+  l_RE_opt: TRegExOptions;
+ {$ENDIF ~DB_ENABLED}
+  found: boolean;
+begin
+  if not useRE and not caseSens then
+    text := uppercase(text);
+  if text = '' then
+    begin
+      exit(false);
+    end;
+  if useRE then
+    begin
+   {$IFNDEF DB_ENABLED}
+  {    re:=TRegExpr.Create;
+      re.ModifierI:=not caseChk.checked;
+      re.Expression := w2s;
+        try
+          re.Compile
+        except
+          FreeAndNIL(re);
+          exit;
+        end;}
+        l_RE_opt := [roCompiled];
+        if not caseSens then
+          Include(l_RE_opt, roIgnoreCase)
+         else
+          Exclude(l_RE_opt, roIgnoreCase)
+        ;
+        re := TRegEx.Create(text, l_RE_opt);
+   {$ENDIF ~DB_ENABLED}
+    end;
+  case dir of
+    hsdFromBegin: start := historyNowOffset;
+    hsdAhead:     start := topVisible+1;
+    hsdBack:      start := topVisible-1;
+    hsdFromEnd:   start := history.count-1;
+   else
+    start := historyNowOffset;
+  end;
+  i := start;
+  while (i >= historyNowOffset) and (i < history.Count) do
+//    while (i >= historyBox.topVisible) and (i < historyBox.history.count) do
+    begin
+      s := Thevent(history[i]).getBodyText;
+   {$IFNDEF DB_ENABLED}
+      if useRE then
+  //     	found := re.exec(s)
+        found := re.IsMatch(s)
+      else
+   {$ENDIF ~DB_ENABLED}
+        begin
+        if not caseSens then
+          found := AnsiContainsText(s, text)
+         else
+  //        s := uppercase(s);
+          found := pos(text, s) > 0;
+  //      found := AnsiPos(w2s, s) > 0;
+        end;
+      if found then
+        begin
+  //      historyBox.rsb_position := i-historyBox.offset;
+  //      historyBox.topVisible := i;
+  //      historyBox.topOfs := 0;
+         self.w2s := w2s;
+         updateRSB(true, i - offset, True);
+         topVisible := offset + rsb_position;
+         topOfs := 0;
+         chatFrm.autoscrollBtn.down := autoScrollVal;
+         repaint;
+         DoOnScroll;
+  //      historyBox.repaint;
+         exit(True);
+        end;
+      case dir of
+        hsdFromBegin,
+        hsdAhead: inc(i);
+        hsdBack,
+        hsdFromEnd: dec(i);
+      end;
+    end;
+*)
+begin
+  result := False;
 end;
 
 function ThistoryBox.getWhole: Boolean;
@@ -616,12 +712,6 @@ begin
 end;
 
 
-procedure ThistoryBox.updateRSB(SetPos: boolean; pos: integer = 0; doRedraw: boolean = true);
-var
-  ScrollInfo: TScrollInfo;
-  // vSBI : TScrollBarInfo;
-begin
-end; // updateRSB
 
 procedure ThistoryBox.addEvent(ev: Thevent);
 var
@@ -629,20 +719,20 @@ var
   params: TParams;
 begin
   evIdx := history.add(ev);
-  inc(offsetAll);
+{  inc(offsetAll);
   if (BE_save in behaviour[ev.kind].trig) and (ev.flags and IF_not_save_hist = 0) then
-    inc(offset);
+    inc(offset);}
   addChatItem(params, ev, True);
   sendChatItems(params);
 
   // if autoScroll and (not not2go2end or P_lastEventIsFullyVisible) then
-  if (fAutoScrollState = ASS_FULLSCROLL) or ((fAutoScrollState = ASS_ENABLENOTSCROLL) and P_lastEventIsFullyVisible) then
+  if (fAutoScrollState = ASS_FULLSCROLL) then //or ((fAutoScrollState = ASS_ENABLENOTSCROLL) and P_lastEventIsFullyVisible) then
   begin
     move2end;
     begin
       // not2go2end := False;
       setAutoScroll(ASS_FULLSCROLL);
-      topOfs := 0;
+//      topOfs := 0;
     end;
   end;
 
@@ -652,7 +742,7 @@ function ThistoryBox.getAutoScroll: boolean;
 begin
   // result := fAutoScrollState < ASS_FULLDISABLED;
   // result := fAutoScrollState = ASS_FULLSCROLL;
-  result := (fAutoScrollState = ASS_FULLSCROLL) or ((fAutoScrollState = ASS_ENABLENOTSCROLL) and P_lastEventIsFullyVisible);
+  result := (fAutoScrollState = ASS_FULLSCROLL) //or ((fAutoScrollState = ASS_ENABLENOTSCROLL) and P_lastEventIsFullyVisible);
 end;
 
 { procedure ThistoryBox.setAutoScroll(vAS : Boolean);
@@ -697,8 +787,8 @@ begin
     topOfs := 0;
     Repaint;
     end; }
-  if vAS then
-    topOfs := 0;
+//  if vAS then
+//    topOfs := 0;
   changed := false;
   case fAutoScrollState of
     ASS_FULLSCROLL:
@@ -728,14 +818,6 @@ begin
   if changed then
     if fAutoScrollState < ASS_FULLDISABLED then
       move2end;
-end;
-
-function ThistoryBox.historyNowCount: integer;
-begin
-  if Assigned(history) then
-    result := history.getIdxBeforeTime(topVisible, False)
-  else
-    result := 0;
 end;
 
 procedure ThistoryBox.DoOnScroll;
@@ -932,10 +1014,11 @@ begin
       if not (hev = nil) then
       if (BE_save in behaviour[hev.kind].trig) and (hev.flags and IF_not_save_hist = 0) then
       begin
-        addChatItem(params, hev, False, evId = endId);
-        if length(params) = 1 then
-          topVisible := hev.when;
+        addChatItem(params, hev, False);//, evId = endId);
+//        if length(params) = 1 then
+//          topVisible := hev.when;
         hasEvents := True;
+//        FreeAndNil(events[evId]);
       end;
     end;
 
@@ -1073,6 +1156,21 @@ begin
   end;
 end;
 
+function GetServerHistory(vm: HVM; self: tiscript_value; tag: Pointer): tiscript_value; cdecl;
+begin
+  if tag = nil then
+    Exit;
+
+  {$IFDEF ICQ_REST_API}
+  with THistoryBox(tag) do
+  begin
+    TICQSession(who.fProto).getServerHistory(who.UID);
+    LoadTemplate;
+    CheckServerHistory;
+  end;
+  {$ENDIF ICQ_REST_API}
+end;
+
 //function ShowPreview(vm: HVM): tiscript_value; cdecl;
 function ShowPreview(vm: HVM; self: tiscript_value; tag: Pointer): tiscript_value; cdecl;
 var
@@ -1145,12 +1243,30 @@ end;
 
 function UploadLastSnapshot(vm: HVM; self: tiscript_value): tiscript_value; cdecl;
 begin
-{  if Assigned(chatFrm) then
+{
+  if Assigned(chatFrm) then
   begin
     chatFrm.FileUpload(False, cacheDir + 'snapshot.png');
     DeleteFile(cacheDir + 'snapshot.png');
   end;
 }
+end;
+
+function TrimNewLines(vm: HVM; self: tiscript_value): tiscript_value; cdecl;
+var
+  str: PWideChar;
+  strLen: UINT;
+begin
+  if (NI.get_arg_count(vm) > 2) then
+  begin
+{    if TrimMsgNewLines then
+    begin
+      NI.get_string_value(NI.get_arg_n(vm, 2), str, strLen);
+      str := PWideChar(String(str).Trim([#13, #10]));
+      Result := NI.string_value(vm, str, Length(str));
+    end else }
+      Result := NI.get_arg_n(vm, 2);
+  end;
 end;
 
 function DecodeURL(url: String): String;
@@ -1432,6 +1548,7 @@ begin
   RegisterNativeFunctionTag('SendQuote', @SendQuote, ns, Pointer(Self));
   RegisterNativeFunctionTag('SendInput', @SendInput, ns, Pointer(Self));
   RegisterNativeFunctionTag('OpenChatMenu', @OpenChatMenu, ns, Pointer(Self));
+  RegisterNativeFunctionTag('GetServerHistory', @GetServerHistory, ns, Pointer(Self));
   RegisterNativeFunction('GetYoutubeLinks', @GetYoutubeLinks);
   RegisterNativeFunction('GetVimeoLinks', @GetVimeoLinks);
   RegisterNativeFunction('GetVolumeLevel', @GetVolumeLevel);
@@ -1440,6 +1557,7 @@ begin
   RegisterNativeFunction('GetTranslation', @GetTrans);
   RegisterNativeFunction('DetectFileFormat', @DetectFileFormat);
   RegisterNativeFunction('UploadLastSnapshot', @UploadLastSnapshot);
+  RegisterNativeFunction('TrimNewLines', @TrimNewLines);
 end;
 
 procedure ThistoryBox.LoadTemplate(msgPreview: Boolean = False);
@@ -1528,7 +1646,7 @@ var
   cacheDir: String;
   tmp: String;
 begin
-  SetLength(args, 17);
+  SetLength(args, 18);
   args[0] := autocopyHist;
   args[1] := useSmiles;
   args[2] := wheelVelocity;
@@ -1628,7 +1746,7 @@ begin
     args[16] := 36;
   end;
 
-  args[17] := bViewTextWrap;
+  args[17] := MainPrefs.getPrefBoolDef('hist-msg-view-wrap', True); // bViewTextWrap;
 
   try
     Call('initSettings', [args]);
@@ -1741,7 +1859,7 @@ begin
   Result := StartsText('http://', link) or StartsText('https://', link) or StartsText('www.', link);
 end;
 
-procedure ThistoryBox.addChatItem(var params: TParams; hev: Thevent; animate: Boolean; last: Boolean = True);
+procedure ThistoryBox.AddChatItem(var params: TParams; hev: Thevent; animate: Boolean);
 var
   headerText, bodyImages, cachedLink, cachedLinks, evPic, cryptPic, statusImg1, statusImg2: array of OleVariant;
   codeStr, msgText: String;
@@ -1951,6 +2069,7 @@ begin
   Call('viewInWindow', [title, body, when, formicon]);
 end;
 
+{
 procedure ThistoryBox.ReloadLast;
 var
   evId, endId, startId: Integer;
@@ -2004,7 +2123,7 @@ begin
 //TimingSeconds := (StopCount - StartCount) / Freq;
 //OutputDebugString(PChar(floattostr(TimingSeconds)));
 end;
-
+}
 
 constructor ThistoryBox.Create(AOwner: Tcomponent; cnt: TRnQContact);
 begin
@@ -2017,9 +2136,9 @@ begin
   tabStop := False;
   fAutoScrollState := ASS_FULLSCROLL;
   Color := $00F6F6F6;
-  topVisible := 0;
-  offset := 0;
-  offsetAll := 0;
+//  topVisible := 0;
+//  offset := 0;
+//  offsetAll := 0;
 
   embeddedImgs := TDictionary<LongWord, RawByteString>.Create;
 
@@ -2047,6 +2166,30 @@ begin
 //  PostMessage(chatFrm.handle, WM_NEXTDLGCTL, ch.input.handle, 1);
 //  PostMessage(ParentWindow, WM_NEXTDLGCTL, ch.input.handle, 1);
 
+end;
+
+procedure ThistoryBox.CheckServerHistory;
+begin
+  {$IFDEF ICQ_REST_API}
+  if Assigned(who) and Assigned(who.fProto) and who.fProto.isOnline then
+  begin
+    checkTask := TTask.Create(procedure
+    begin
+      Sleep(2000);
+      if not (TTask.CurrentTask.Status = TTaskStatus.Canceled) and Assigned(who) and Assigned(who.fProto) then
+      TThread.Queue(nil, procedure
+      begin
+        TICQSession(who.fProto).checkServerHistory(who.UID);
+      end);
+    end);
+    checkTask.Start;
+  end;
+  {$ENDIF ICQ_REST_API}
+end;
+
+procedure ThistoryBox.ShowServerHistoryNotif;
+begin
+  FireRoot($103);
 end;
 
 procedure ThistoryBox.InitRequest(ASender: TObject; const url: WideString; resType: SciterResourceType; requestId: Pointer; out discard: Boolean; out delay: Boolean);
@@ -2253,7 +2396,7 @@ begin
       ignore := True;
   end else
   begin
-    FDataStream.Free;
+    FreeAndNil(FDataStream);
     discard := False;
     delay := False;
     Exit;
@@ -2301,8 +2444,7 @@ begin
   end else
     discard := True;
 
-  if Assigned(FDataStream) then
-    FDataStream.Free;
+  FreeAndNil(FDataStream);
 end;
 
 class function TWinBehavior.BehaviorName: AnsiString;

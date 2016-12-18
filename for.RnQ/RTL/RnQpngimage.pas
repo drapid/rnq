@@ -2319,12 +2319,13 @@ begin
   {The chunk name}
   Stream.Write(fName, 4);
   {If there is data for the chunk, write it}
-  if DataSize > 0 then Stream.Write(Data^, DataSize);
+  if DataSize > 0 then
+    Stream.Write(Data^, DataSize);
   {Calculates and write CRC}
 //  ChunkCRC := update_crc($ffffffff, @fName[0], 4);
 //  ChunkCRC := Byteswap(update_crc(ChunkCRC, Data, DataSize) xor $ffffffff);
   ChunkCRC := Crc32($ffffffff,@fName[0],4);
-  ChunkCRC:=Byteswap(Crc32(ChunkCRC,Data,DataSize) xor $ffffffff);
+  ChunkCRC := Byteswap(Crc32(ChunkCRC,Data,DataSize) xor $ffffffff);
   Stream.Write(ChunkCRC, 4);
 
   {Returns that everything went ok}
@@ -2675,7 +2676,8 @@ end;
 function TChunkIHDR.SaveToStream(Stream: TStream): Boolean;
 begin
   {Ignore 2 bits images}
-  if BitDepth = 2 then BitDepth := 4;
+  if BitDepth = 2 then
+    BitDepth := 4;
 
   {It needs to do is update the data with the IHDR data}
   {structure containing the write values}

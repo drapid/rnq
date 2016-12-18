@@ -27,11 +27,11 @@ type
     procedure saveBtnClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    constructor Create(const proto : TRnQProtocol; isAccPass : Boolean);
+    constructor Create(const proto: TRnQProtocol; isAccPass: Boolean); ReIntroduce;
   private
     { Private declarations }
-    curProto : TRnQProtocol;
-    isProtoPwd : Boolean;
+    curProto: TRnQProtocol;
+    isProtoPwd: Boolean;
   public
     { Public declarations }
 //  public procedure DestroyHandle; OverRide;
@@ -51,7 +51,7 @@ uses
   RnQSysUtils, RnQPics,
   RnQLangs, mainDlg, RQUtil, RDGlobal, RQThemes, themesLib;
 
-constructor TchangePwdFrm.Create(const proto : TRnQProtocol; isAccPass : Boolean);
+constructor TchangePwdFrm.Create(const proto: TRnQProtocol; isAccPass: Boolean);
 begin
   inherited Create(Application);
   if not isAccPass then

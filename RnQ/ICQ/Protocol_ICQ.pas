@@ -51,6 +51,10 @@ interface
   function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts: byte= 0): TPicName;
 //  function  visibility2imgName(vi:Tvisibility):String;
   function  visibilityName(vi: Tvisibility): string;
+
+  function  ICQstatusDrawExt(const DC: HDC; const x, y: integer; const s: byte;
+                        const inv: boolean=FALSE; const ExtSts: Byte = 0; PPI: Integer = 0): TSize;
+
   function  contactlist2clb(cl: TRnQCList): AnsiString;
   function  clb2contactlist(data: RawByteString): TRnQCList;
   function  str2status(const s: RawByteString): byte;
@@ -177,7 +181,6 @@ var
   oe: Toevent;
 begin
   oe := Toevent.create(OE_automsgreq);
-  //oe.uid := uin;
   oe.whom := cnt;
   oe.timeSent := now;
   oe.ID := TicqSession(cnt.fProto).sendAutoMsgReq(cnt.uid);
@@ -522,10 +525,10 @@ const
   prefix = 'status.';
 begin
  if s in [byte(LOW(status2Img)).. byte(HIGH(status2Img))] then
-  result := prefix + status2Img[s]
+   result := prefix + status2Img[s]
 //   result := sta 'status.' + status2str[s]
- else
-  result := prefix + status2Img[byte(SC_UNK)];
+  else
+   result := prefix + status2Img[byte(SC_UNK)];
 {case s of
   SC_ONLINE: result:=PIC_STATUS_ONLINE;
   SC_occupied: result:=PIC_STATUS_OCCUPIED;
@@ -553,19 +556,45 @@ const
 begin
  if XStatusAsMain and (extSts > 0) then
    result := XStatusArray[extSts].PicName
- else
- begin
-   if s in [byte(SC_ONLINE)..byte(SC_Last)] then
-    result := prefix + status2Img[s]
-   else
-    result := prefix + status2Img[Byte(SC_UNK)];
-   if inv then
-     result := INVIS_PREFIX + result;
- end;
+  else
+   begin
+     if s in [byte(SC_ONLINE)..byte(SC_Last)] then
+       result := prefix + status2Img[s]
+      else
+       result := prefix + status2Img[Byte(SC_UNK)];
+     if inv then
+       result := INVIS_PREFIX + result;
+   end;
 end; // status2imgdx
 
+function  ICQstatusDrawExt(const DC: HDC; const x, y: integer; const s: byte;
+                        const inv: boolean=FALSE; const ExtSts: Byte = 0; PPI: Integer = 0): TSize;
+begin
+  if XStatusAsMain and (ExtSts > 0) then
+    if DC = 0 then
+      Result := theme.GetPicSize(RQteDefault, XStatusArray[ExtSts].PicName, 0, PPI)
+     else
+      Result := theme.drawPic(DC, x, y, XStatusArray[ExtSts].PicName, True, PPI)
+   else
+    begin
+     if statusPics[s, inv].picName = '' then
+      begin
+       statusPics[s, inv].picName  := status2imgName(s, inv);
+       statusPics[s, inv].pEnabled := True;
+       statusPics[s, inv].ThemeToken := -1;
+       statusPics[s, inv].Element  := RQteDefault;
+      end;
+     if DC = 0 then
+       Result := theme.GetPicSize(statusPics[s, inv])
+      else
+       result := theme.drawPic(DC, Point(x, y), statusPics[s, inv], PPI)
+    end;
+end;
+
 function visibilityName(vi: Tvisibility): string;
-begin result:=getTranslation(visibility2ShowStr[vi]) end;
+begin
+  result := getTranslation(visibility2ShowStr[vi])
+end;
 
 function clb2contactlist(data: RawByteString): TRnQCList;
 var

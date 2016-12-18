@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RDUtils;
 {$I ForRnQConfig.inc}
@@ -22,9 +22,9 @@ function  bound(i: Integer; min, max: Integer): Integer;
 function  within(pt: Tpoint; x, y, w, h: Integer): boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 function  within(a, b, c: Integer): boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 function  DestRect(const W, H, cw, ch: Integer): TGPRect; overload;
-function  DestRect(const PicSize, DestSize : TGPSize): TGPRect; overload;
-function  BoundsSize(srcSize, maxSize : TSize) : TSize; overload;
-function  BoundsSize(srcCX, srcCY, maxCX, maxCY : Longint) : TSize; overload;
+function  DestRect(const PicSize, DestSize: TGPSize): TGPRect; overload;
+function  BoundsSize(srcSize, maxSize: TSize): TSize; overload;
+function  BoundsSize(srcCX, srcCY, maxCX, maxCY: Longint): TSize; overload;
 // strings
 function  isURL(const s: string; ofs: Integer=1): boolean;
 function  ipos(const ss: string; const s: string): Integer;
@@ -97,7 +97,7 @@ function  bool2str(const b: Boolean): RawByteString;
 
 // strings
  {$IFDEF UNICODE}
-  function  findInStrings(const s: AnsiString; ss:Tstrings): Integer; overload;
+  function  findInStrings(const s: AnsiString; ss: Tstrings): Integer; overload;
  {$ENDIF UNICODE}
   function  findInStrings(const s: AnsiString; ss: array of AnsiString): Integer; overload;
   function  findInStrings(const s: AnsiString; ss, separator: RawByteString): Integer; overload;
@@ -121,7 +121,7 @@ function  bool2str(const b: Boolean): RawByteString;
  {$ELSE ~UNICODE}
   function  isOnlyDigits(const s: AnsiString): Boolean;
  {$ENDIF UNICODE}
-//  function  UnDelimiter(s : String) :String;
+//  function  UnDelimiter(s: String): String;
   function  BetterStr(const s: AnsiString): AnsiString;
   function BetterStrS(const s: String): String;
 
@@ -189,9 +189,9 @@ end;
 function IfThen(AValue: Boolean; const s1, s2: RawByteString): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
   if avalue then
-    result:=s1
+    result := s1
    else
-    result:=s2
+    result := s2
 end;
 
 
@@ -199,12 +199,12 @@ function packArray(a: array of Integer; zero: Integer): TintegerDynArray;
 var
   i, n: Integer;
 begin
-  n:=0;
+  n := 0;
   setlength(result, length(a));
   for i:=0 to length(a)-1 do
     if a[i]<>zero then
       begin
-      result[n]:=a[i];
+      result[n] := a[i];
       inc(n);
       end;
   SetLength(result, n);
@@ -213,64 +213,64 @@ end; // packArray
 function compareInt(a, b: Integer): Smallint;
 begin
   if a<b then
-    result:=-1
+    result := -1
    else
     if a>b then
-      result:=+1
+      result := +1
      else
-      result:=0
+      result := 0
 end; // compareInt
 
 function compareInt(a, b: int64): Smallint;
 begin
   if a<b then
-    result:=-1
+    result := -1
    else
     if a>b then
-      result:=+1
+      result := +1
      else
-      result:=0
+      result := 0
 end; // compareInt
 
 function CompareDate(a, b: TDateTime): Smallint;
 begin
   if a<b then
-    result:=-1
+    result := -1
    else
     if a>b then
-      result:=+1
+      result := +1
      else
-      result:=0
+      result := 0
 end;
 
 function boundInt(var i: Integer; min, max: Integer): Integer;
 begin
   if i > max then
-    i:=max;
+    i := max;
   if i < min then
-    i:=min;
-  result:=i;
+    i := min;
+  result := i;
 end; // boundInt
 
 function bound(i: Integer; min, max: Integer): Integer;
 begin
   if i > max then
-     result:=max
+     result := max
    else
      if i < min then
-       result:=min
+       result := min
       else
-       result:=i;
+       result := i;
 end; // boundInt
 
 function within(a, b, c: Integer): boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
-  result:=(b>=a) and (b<=c)
+  result := (b>=a) and (b<=c)
 end;
 
 function within(pt: Tpoint; x, y, w, h: Integer): boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
-  result:=(pt.x>=x) and (pt.y>=y) and (pt.x < x+w) and (pt.y < y+h)
+  result := (pt.x>=x) and (pt.y>=y) and (pt.x < x+w) and (pt.y < y+h)
 end;
 
 function BoundsSize(srcCX, srcCY, maxCX, maxCY : Longint): TSize;
@@ -298,7 +298,7 @@ begin
    end;
 end;
 
-function BoundsSize(srcSize, maxSize : TSize) : TSize;
+function BoundsSize(srcSize, maxSize: TSize): TSize;
 begin
   if (srcSize.cx > maxSize.cx )
    or (srcSize.cy > maxSize.cy) then
@@ -319,7 +319,7 @@ begin
    result := srcSize;
 end;
 
-{function DestRect(W, H, cw, ch :Integer): TRect;
+{function DestRect(W, H, cw, ch: Integer): TRect;
 const
   Stretch = false;
   Proportional = True;
@@ -377,7 +377,7 @@ begin
     OffsetRect(Result, (cw - w) div 2, (ch - h) div 2);
 end;}
 
-function DestRect(const W, H, cw, ch :Integer): TGPRect;
+function DestRect(const W, H, cw, ch: Integer): TGPRect;
 const
   Stretch = false;
   Proportional = True;
@@ -443,7 +443,7 @@ begin
    end;
 end;
 
-function  DestRect(const PicSize, DestSize : TGPSize): TGPRect;
+function  DestRect(const PicSize, DestSize: TGPSize): TGPRect;
 const
   Stretch = false;
   Proportional = True;
@@ -547,7 +547,7 @@ end; // ipos
 
 function capitalize(const s: string): string;
 begin
- result:=s;
+ result := s;
  if result>'' then
    result[1] := upcase(result[1]);
 end; // capitalize
@@ -572,7 +572,7 @@ function separated(const sep: string; ss: array of string): string;
 var
   i: Integer;
 begin
-  result:='';
+  result := '';
   for i:=0 to length(ss)-1 do
     if ss[i] > '' then
       result := result+ifThen(result>'', ',')+ss[i];
@@ -582,8 +582,8 @@ function template(const src: string; table: array of string): string;
 var
   i: Integer;
 begin
-  result:=src;
-  i:=0;
+  result := src;
+  i := 0;
   while i < length(table) do
    begin
 //    result:=AnsiReplaceText(result, table[i], table[i+1]);
@@ -613,17 +613,17 @@ var
   i: Integer;
 begin
   repeat
-  i:=pos(#13,s);
+  i := pos(#13,s);
   if i>0 then
     begin
-    s[i]:='\';
+    s[i] := '\';
     if (i>=length(s)) or (s[i+1]<>#10) then
       insert('n',s,i)
     else
-      s[i+1]:='n';
+      s[i+1] := 'n';
     end;
   until i=0;
-result:=s;
+  result := s;
 end; // newline2slashn
 
 
@@ -740,7 +740,7 @@ end;
 
 function trailing(const s, ss: String): Boolean;
 begin
-  result:= ss=copy(s,length(s)-length(ss)+1,length(ss))
+  result := ss=copy(s,length(s)-length(ss)+1,length(ss))
 end;
 
 
@@ -775,7 +775,7 @@ function color2str(color: Tcolor): AnsiString;
 var
   res: String;
 begin
-//color:=ABCD_ADCB(ColorToRGB(color));
+//color := ABCD_ADCB(ColorToRGB(color));
   if ColorToIdent(Color, Res) then
     Result := AnsiString(res)
    else
@@ -785,7 +785,7 @@ begin
     end;
  {$ELSE nonUNICODE}
 begin
-//color:=ABCD_ADCB(ColorToRGB(color));
+//color := ABCD_ADCB(ColorToRGB(color));
   if not ColorToIdent(Color, Result) then
     begin
       color := ABCD_ADCB(ColorToRGB(color));
@@ -942,6 +942,7 @@ begin
   while length(result) < d do
     result := '0'+result;
 end; // intToStr
+
 function intToStrA(i, d: Integer): AnsiString; overload;
 begin
   result := intToStrA(i);
@@ -969,8 +970,8 @@ begin
 //  setLength(s,i);
 //if s[length(s)]=#10 then setLength(s,length(s)-1);
 //if s[length(s)]=#13 then setLength(s,length(s)-1);
-//result:=s;
-  result:= copy(s, 1, i);
+//result := s;
+  result := copy(s, 1, i);
 end; // excludeTrailingCRLF
 
 function dupAmperstand(const s: string): string;
@@ -989,7 +990,7 @@ begin
     result := result+copy(s,last,length(s)-last+1);
 end; // dupAmperstand
 
-{function max(a,b:double):double;
+{function max(a, b: double): double;
 begin if a > b then result:=a else result:=b end;
 
 function min(a,b:double):double;
@@ -2320,21 +2321,21 @@ begin
       result := result + s[i];
 end;}
 
-function BetterStr(const s : AnsiString): AnsiString;
+function BetterStr(const s: AnsiString): AnsiString;
 var
-  i : Integer;
+  i: Integer;
 begin
   SetLength(Result, Length(s));
   for i := 1 to length(s) do
    if s[i] < #32 then
-    Result[i]:= AnsiChar('.')
+    Result[i] := AnsiChar('.')
    else
-    Result[i]:= s[i];
+    Result[i] := s[i];
 end;
 
-function BetterStrS(const s : String): String;
+function BetterStrS(const s: String): String;
 var
-  i : Integer;
+  i: Integer;
 begin
   SetLength(Result, Length(s));
   for i := 1 to length(s) do

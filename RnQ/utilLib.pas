@@ -124,12 +124,7 @@ function  addToRoster(c: TRnQContact; group: integer; const isLocal: Boolean = T
 function  doConnect: boolean;
 procedure connect_after_dns(const proto: TRnQProtocol);
 // convert
-function  ints2cl(a: TintegerDynArray): TRnQCList;
-function  event2imgName(e: integer): TPicName;
-function  statusDrawExt(const DC: HDC; const x, y: Integer; const s: byte;
-                        const inv: Boolean = False; const ExtSts: Byte = 0;
-                        const PPI: Integer = 0): TSize;
-//function  statusDraw(cnv:Tcanvas; x,y:integer; s:Tstatus; inv:boolean=FALSE) : TSize;
+function  ints2cl(proto: TRnQProtocol; a: TintegerDynArray): TRnQCList;
 function  beh2str(kind: integer): RawByteString;
 procedure str2beh(const b, s: RawByteString); overload;
 function  str2beh(s: AnsiString): Tbehaviour; overload;
@@ -470,7 +465,7 @@ begin
    line := trim(line);
    if isOnlyDigits(k) then
      try
-       i := strToInt(k);
+       i := strToIntA(k);
        if i < Length(ExtStsStrings) then
         begin
          ExtStsStrings[i].Cap := '';
@@ -478,7 +473,7 @@ begin
         end;
      except
        i := -1;
-//       setlength(a,length(a)-1);
+//       setlength(a, length(a)-1);
      end
    else
 //    if (i >= Low(XStatus6))and(i <= High(XStatus6)) then
@@ -500,10 +495,10 @@ end;
 
 {procedure SaveExtSts;
 var
-  i:integer;
-  f : string;
+  i: integer;
+  f: string;
 begin
-  f:='';
+  f := '';
 //  for I := low(XStatus6) to High(XStatus6) do
   for I := low(ExtStsStrings) to High(ExtStsStrings) do
   begin
@@ -511,7 +506,7 @@ begin
            +CRLF+'desc=%s', [
       i, XStatusArray[i].Caption, newline2slashn(ExtStsStrings[i])]);
 //  f := f+format(CRLF+'ssi=%d', [a[i].ssiID]);
-    f:=f+CRLF;
+    f := f+CRLF;
   end;
  saveFile(userPath + extstatusesFilename, f);
 end;
@@ -2180,33 +2175,6 @@ begin
 //  Result := c.statusImg;
 end; // rosterImgIdxFor
 
-function statusDrawExt(const DC: HDC; const x, y: integer; const s: byte;
-                       const inv: boolean = FALSE; const ExtSts: Byte = 0;
-                       const PPI: Integer = 0): TSize;
-begin
- {$IFDEF PROTOCOL_ICQ}
-  if XStatusAsMain and (ExtSts > 0) then
-    if DC = 0 then
-      Result := theme.GetPicSize(RQteDefault, XStatusArray[ExtSts].PicName, 0, PPI)
-     else
-      Result := theme.drawPic(DC, x, y, XStatusArray[ExtSts].PicName, True, PPI)
-   else
- {$ENDIF PROTOCOL_ICQ}
-    begin
-     if statusPics[s, inv].picName = '' then
-      begin
-       statusPics[s, inv].picName  := status2imgName(s, inv);
-       statusPics[s, inv].pEnabled := True;
-       statusPics[s, inv].ThemeToken := -1;
-       statusPics[s, inv].Element  := RQteDefault;
-      end;
-     if DC = 0 then
-       Result := theme.GetPicSize(statusPics[s, inv], 0, PPI)
-      else
-       result := theme.drawPic(DC, Point(x, y), statusPics[s, inv], PPI)
-    end;
-end;
-
 procedure showAuthreq(c: TRnQcontact; msg: string);
 var
   ar: TauthreqFrm;
@@ -3190,26 +3158,6 @@ begin
 
 end; // str2beh
 
-//function event2imgidx(e: integer): integer;
-function event2imgName(e: integer): TPicName;
-begin
-case e of
-  EK_URL:       result := PIC_URL;
-  EK_MSG:       result := PIC_MSG;
-  EK_CONTACTS:  result := PIC_CONTACTS;
-  EK_ADDEDYOU:  result := PIC_ADDEDYOU;
-  EK_AUTHREQ:   result := PIC_AUTH_REQ;
-  EK_TYPINGBEG: result := PIC_TYPING;
-  EK_TYPINGFIN: result := PIC_TYPING;
-  EK_ONCOMING:  result := PIC_ONCOMING;
-  EK_OFFGOING:  result := PIC_OFFGOING;
-  EK_file:      result := PIC_FILE;
-  EK_GCARD:     result := PIC_GCARD;
-  EK_BUZZ:      result := PIC_BUZZ;
-  else          result := PIC_OTHER_EVENT;
-  end;
-end; // event2imgidx
-
 procedure hideTaskButtonIfUhave2;
 begin
   if not menuViaMacro then
@@ -3402,7 +3350,7 @@ begin
     EK_file:
       begin
  {$IFDEF PROTOCOL_ICQ}
-        dd := TicqSession(vCnt.fProto).directs.findID(ev.ID);
+        dd := vCnt.fProto.directs.findID(ev.ID);
         if Assigned(dd) then
           receiveFile(dd);
  {$ENDIF PROTOCOL_ICQ}
@@ -3487,7 +3435,7 @@ else
 end; // loadNewOrOldVersionContactList
 }
 
-function ints2cl(a: Types.TintegerDynArray): TRnQCList;
+function ints2cl(proto: TRnQProtocol; a: TintegerDynArray): TRnQCList;
 var
   i: integer;
 begin
@@ -3495,13 +3443,14 @@ begin
  {$IFDEF PROTOCOL_ICQ}
   for i:=0 to length(a)-1 do
 //    result.add(contactsDB.get(TICQContact, IntToStr(a[i])));
-    result.add(TRnQProtocol.contactsDB.get(TICQContact, a[i]));
+//    result.add(TRnQProtocol.contactsDB.get(TICQContact, a[i]));
+    result.add(proto.GetContact(Int2UID(a[i])));
  {$ENDIF PROTOCOL_ICQ}
 end; // ints2cl
 
 function doLock: Boolean;
 begin
-  Result := False;
+//  Result := False;
   if (AccPass = '') and (Account.AccProto.pwd = '') then
     begin
      msgDlg('No password has been inserted, so you can''t lock.', True, mtInformation);
@@ -3581,7 +3530,7 @@ var
   i: integer;
 begin
   i := 0;
-  while (i<length(s)) and (s[i+ofs] in ['>',' ']) do
+  while (i<length(s)) and (CharInSet(s[i+ofs],['>',' '])) do
     inc(i);
   result := copy(s, ofs, i);
 end; // getLeadingInMsg

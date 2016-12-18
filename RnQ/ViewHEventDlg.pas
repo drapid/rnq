@@ -11,7 +11,12 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.StdCtrls, vcl.ComCtrls, Winapi.CommCtrl,
-  RnQGraphics32, Vcl.ExtCtrls, Vcl.Menus, rnqPrefsLib;
+ {$IFDEF PREF_IN_DB}
+  DBPrefsLib,
+ {$ELSE ~PREF_IN_DB}
+  RnQPrefsLib,
+ {$ENDIF PREF_IN_DB}
+  RnQGraphics32, Vcl.ExtCtrls, Vcl.Menus;
 
 type
    TImgRec = record

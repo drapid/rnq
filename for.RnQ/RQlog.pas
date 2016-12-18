@@ -60,12 +60,12 @@ type
 procedure loggaEvtS(s: String; const img: TPicName = '';
                    const pFlush: Boolean = false);
 {
-procedure loggaEvtA(s: AnsiString; const img : TPicName = '';
-                   const pFlush : Boolean = false);
+procedure loggaEvtA(s: AnsiString; const img: TPicName = '';
+                   const pFlush: Boolean = false);
 }
 procedure logEvPkt(const Head: String; const TextData: String;
-                   const data: RawByteString; const img : TPicName;
-                   needHex : Boolean = True);
+                   const data: RawByteString; const img: TPicName;
+                   needHex: Boolean = True);
 procedure FlushLogEvFile;
 
 var
@@ -89,7 +89,7 @@ procedure TlogFrm.addToLog(pkt: Boolean; const s, Text: String;
                      const data: rawByteString; const Img: TPicName);
 var
   it: PLogItem;
-//  i:integer;
+//  i: integer;
   SetLast: Boolean;
   n: PVirtualNode;
 begin
@@ -173,7 +173,7 @@ begin
   with LogList do
   begin
     Align := alClient;
-    DefaultNodeHeight := 16;
+    DefaultNodeHeight := MulDiv(16, GetParentCurrentDpi, cDefaultDPI);
     Header.AutoSizeIndex := 0;
 {    Header.Font.Charset := DEFAULT_CHARSET
     Header.Font.Color := clWindowText
@@ -185,7 +185,7 @@ begin
     Header.Options := [hoColumnResize, hoDrag];
     PopupMenu := menu;
     TabOrder := 1;
-    TreeOptions.PaintOptions := [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages];
+    TreeOptions.PaintOptions := [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection];
     TreeOptions.SelectionOptions := [toFullRowSelect, toMiddleClickSelect, toRightClickSelect];
     OnChange := LogListChange;
     OnDrawNode := LogListDrawNode;

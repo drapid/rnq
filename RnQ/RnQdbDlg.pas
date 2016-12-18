@@ -258,10 +258,10 @@ begin
   cnv := paintinfo.canvas;
   c := TRnQcontact(sender.getnodedata(paintinfo.node)^);
   if vsSelected in PaintInfo.Node^.States then
-    cnv.Font.Color :=clHighlightText
+    cnv.Font.Color := clHighlightText
    else
     cnv.Font.Color := clWindowText;
-  if c.fProto.readList(LT_ROSTER).exists(c) then
+  if c.isInRoster then
     cnv.Font.Style := [fsBold]
    else
     cnv.Font.Style := [];
@@ -371,7 +371,7 @@ begin
 //if (row>=1) and (row <= contactsDB.count) then
   begin
 //  grid.row:=row;
-  AddToCL.visible:=Assigned(curContact) and not curContact.fProto.readList(LT_ROSTER).exists(curContact);
+  AddToCL.visible := Assigned(curContact) and not curContact.isInRoster;
   if AddToCL.visible then
     addGroupsToMenu(self, AddToCL, addContactActn, True);
   end;

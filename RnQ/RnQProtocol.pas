@@ -8,7 +8,7 @@ unit RnQProtocol;
 
 interface
 uses
-   Windows, Classes, Types,
+   Windows, Classes, Types, SysUtils,
    RnQNet, RDGlobal,
 //   globalLib,
    RnQPrefsLib,
@@ -47,7 +47,8 @@ type
    end;
 
 const
-  ICQProtoID = 1; //!!! ICQ +AIM
+  MinProtoID  = 1;
+  ICQProtoID  = 1; //!!! ICQ +AIM
  {$IFDEF ICQ_ONLY}
    MAXProtoID  = 1;
    cProtosDesc: array[1..1] of String = ('ICQ');
@@ -59,7 +60,7 @@ const
   MAXProtoID  = 4;
 
 //  ProtosDesc: array[1..4] of String = ('ICQ', 'AIM', 'Mail.ru Agent', 'XMPP');
-  cProtosDesc: array[1..4] of String = ('ICQ', 'Mail.ru Agent', 'XMPP', 'OBIMP');
+  cProtosDesc: array[MinProtoID..MAXProtoID] of String = ('ICQ', 'Mail.ru Agent', 'XMPP', 'OBIMP');
  {$ENDIF ICQ_ONLY}
 
 const
@@ -594,7 +595,7 @@ type
     function  isInRoster: Boolean;
     function  isInList(l: TLIST_TYPES): Boolean;
 //   public
-//    function  GetProto : IRnQProtocol;
+//    function  GetProto: IRnQProtocol;
     procedure SetGroupName(const pName: String);
     function  buin: RawByteString;
     function  UIDasInt: Integer;
@@ -657,6 +658,9 @@ type
 //    function  idxBySSID(ssid: Word): integer;
     function  buinlist: RawByteString;
     function  toIntArray: TIntegerDynArray;
+    procedure ForEach(const AIteratorEvent: TProc<TRnQContact> );
+    procedure ForEachAsync(const AIteratorEvent: TProc<TRnQContact> );
+
 //    function  getCount(group: integer=-1; OnlyOnline: Boolean = false): integer;
     function  getCount(group: integer; OnlyOnline: Boolean = false): integer;
     procedure getOnlOfflCount(var pOnlCount, pOfflCount: Integer);
@@ -713,7 +717,7 @@ var
 implementation
 
 uses
-   SysUtils, StrUtils, OverbyteIcsWSocket,
+   StrUtils, OverbyteIcsWSocket, System.Threading,
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
@@ -1536,6 +1540,26 @@ begin
   for i:=0 to count-1 do
     result.add(getAt(i))
 end; // clone
+
+procedure TRnQCList.ForEach(const AIteratorEvent: TProc<TRnQContact> );
+var
+  cnt: TRnQContact;
+begin
+  if Self.Count > 0 then
+    for cnt in Self do
+      AIteratorEvent(cnt);
+end;
+
+procedure TRnQCList.ForEachAsync(const AIteratorEvent: TProc<TRnQContact> );
+var
+  cnt: TRnQContact;
+begin
+  if Self.Count > 0 then
+    TParallel.&For(0, Self.Count-1,  procedure(i: integer)
+     begin
+       AIteratorEvent(Self.Items[i]);
+     end);
+end;
 
 function TRnQCList.GetEnumerator: TCListEnumerator;
 begin

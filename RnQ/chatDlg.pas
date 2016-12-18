@@ -73,7 +73,7 @@ type
 
   TchatInfo = class
    public
-    ID: integer;
+    ID: IntPtr;
     chatType: TChatType;
 //    panelID: Integer;
 //    who: Tcontact;
@@ -362,7 +362,9 @@ type
     procedure customBrowsing(Sender: TObject; const browser: ICefBrowser; const frame: ICefFrame;
                              const request: ICefRequest; isRedirect: Boolean; out Result: Boolean);
 {$ELSE ~CHAT_CEF}
+  {$IFNDEF CHAT_SCI}
     procedure onHistoryRepaint(Sender: TObject);
+  {$ENDIF ~CHAT_SCI}
 {$ENDIF CHAT_CEF}
 {$IFDEF CHAT_SCI}
     procedure showHistMenu(Sender: TObject; const Data: String; clickedTime: TDateTime; msgPreview, linkClicked, imgClicked: Boolean);
@@ -380,12 +382,12 @@ type
  { $ENDIF USE_SECUREIM}
     enterCount   : integer;
   {$IFDEF USE_SMILE_MENU}
-    smile_theme_token : Integer;
-    smileMenuExt : TRnQPopupMenu;
+    smile_theme_token: Integer;
+    smileMenuExt: TRnQPopupMenu;
   {$ENDIF USE_SMILE_MENU}
-    MainFormWidth : Integer;
-//    favMenuExt   : TPopupMenu;
-    FileSendMenu : TPopupMenu;
+    MainFormWidth: Integer;
+//    favMenuExt: TPopupMenu;
+    FileSendMenu: TPopupMenu;
   {$IFDEF CHAT_USE_LSB}
     popupLSB,
     showLSB : Boolean;
@@ -441,7 +443,7 @@ type
     function  grabThisText: String;
     function  Pages2String: RawByteString;
 //    procedure savePages;
-    procedure loadPages(const s: RawByteString); OverLoad;
+    procedure loadPages(proto: TRnQProtocol; const s: RawByteString); OverLoad;
     procedure loadPages(const cl: TRnQCList); OverLoad;
     procedure updateGraphics;
     procedure addSmileAction(Sender: TObject);
@@ -581,7 +583,7 @@ begin
  SetBKMode(hnd, TRANSPARENT);
   if ci.chatType = CT_IM then
   begin
-    ev:=eventQ.firstEventFor(c);
+    ev := eventQ.firstEventFor(c);
     if (ev<>NIL) //then
 //      begin
 //      if
@@ -773,6 +775,7 @@ var
   i: Integer;
 begin
   if Assigned(Account.AccProto) then
+ {$WARN UNSAFE_CAST OFF}
 
   if (Account.AccProto.SupportTypingNotif) and (Account.AccProto.isSendTypingNotif) then
    if count > 0 then
@@ -780,6 +783,7 @@ begin
      if TchatInfo(items[i]).chatType = CT_IM then
        if Assigned(TchatInfo(items[i]).who) then
          TchatInfo(items[i]).CheckTypingTime;
+ {$WARN UNSAFE_CAST ON}
 end;
 
 /////////////////////////////////////////////////////////////////
@@ -1324,7 +1328,9 @@ begin
 //  rqSmiles.ClearAniParams;
   theme.ClearAniParams;
  {$ENDIF SMILES_ANI_ENGINE}
+ {$IFNDEF CHAT_SCI}
   chat.historyBox.updateRSB(false);
+ {$ENDIF ~CHAT_SCI}
 end; // newIMchannel
 
  {$IFDEF CHAT_USE_LSB}
@@ -1876,7 +1882,7 @@ begin
 //       k := eventQ.find(t, c);
        if (k >= 0) and (k < eventQ.count) then
          begin
-          ev0 := Thevent(eventQ.items[k]);
+          ev0 := eventQ.items[k];
           if ev0.kind in clearEvents then
            begin
             found := True;
@@ -2324,6 +2330,7 @@ var
   y: Integer;
   i, btnH: integer;
 //  PPI: Integer;
+  sz: TSize;
   gapY, gapX: Integer;
 begin
   if NewDPI > cDefaultDPI then
@@ -2339,6 +2346,7 @@ begin
       btnH := 21;
     end
    ;
+
   //sbar.panels[0].Width:=80;
   with theme.getPicSize(RQteDefault, PIC_OUTBOX, 16, NewDPI) do
    begin
@@ -2357,13 +2365,15 @@ begin
    end;
   sbar.Height := boundInt(i, 22, 50);
   sbar.repaint;
-  y := statusDrawExt(0, 0, 0, byte(SC_ONLINE), False, 0, NewDPI).cy;
+
+  sz := theme.GetPicSize(RQteDefault, PIC_STATUS_ONLINE, 0, NewDPI);
+  y := sz.cy;
   if y > 0 then
     pagectrl.tabHeight := y + gapY
    else
     pagectrl.tabHeight := 0;
 
-  with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size, NewDPI) do
+  with theme.GetPicSize(RQteButton, PIC_STATUS_ONLINE, icon_size, NewDPI) do
   begin
     btnH := max(btnH, cy + gapY);
   end;
@@ -2416,6 +2426,8 @@ begin
   with thisChat.historyBox do
     if somethingIsSelected then
       viewTextWindow(MainPrefs, getTranslation('selection'), getSelText)
+ {$IFNDEF CHAT_CEF} // Chromium
+ {$IFNDEF CHAT_SCI}
   else
 //    if pointedItem.kind<>PK_NONE then
     if clickedItem.kind<>PK_NONE then
@@ -2423,6 +2435,8 @@ begin
         viewImageDimmed(self, clickedItem.ev.getBodyBin, clickedItem.ofs)
       else
         viewHeventWindow(clickedItem.ev);
+ {$ENDIF ~CHAT_SCI}
+ {$ENDIF ~CHAT_CEF} // Chromium
 end; // open
 
 procedure TchatFrm.txt1Click(Sender: TObject);
@@ -2722,6 +2736,7 @@ var
   i: Integer;
   R: Trect;
 begin
+ {$WARN UNSAFE_CODE OFF}
   i := chats.IdxOf(c);
   if (i < 0) or (i >= pagectrl.PageCount) then
     exit;
@@ -2730,6 +2745,7 @@ begin
   inc(r.Top, 1);
   dec(r.Bottom, 1);
   invalidateRect(pagectrl.handle, @R, TRUE);
+ {$WARN UNSAFE_CODE ON}
 end;
 
 procedure TchatFrm.setCaptionFor(c: TRnQContact);
@@ -2798,9 +2814,11 @@ begin
     begin
      pageCtrl.pages[idx].caption := chats.byIdx(idx).lastInputText +    // additional spaces for icon
        StringOfChar('_', 2 + theme.getPicSize(RQteDefault, 'plugintab' + IntToStrA(chats.byIdx(idx).ID), 16, getParentCurrentDPI).cx div w);
+ {$WARN UNSAFE_CODE OFF}
      SendMessage(pagectrl.Handle, TCM_GETITEMRECT, idx, Longint(@R));
      //R.right := R.left+20;
      invalidateRect(pagectrl.handle, @R, TRUE);
+ {$WARN UNSAFE_CODE ON}
 
     end;
 end; // setCaption
@@ -2852,7 +2870,9 @@ begin
   WM_KEYDOWN:
      if (thisChat <> nil) and (thisChat.chatType = CT_PLUGING) then
       begin
+ {$WARN UNSAFE_CAST OFF}
        TControl(thisChat.ID).WindowProc(Message);
+ {$WARN UNSAFE_CAST ON}
 //       Perform(WM_KEYDOWN, )
       end;
 {
@@ -2881,7 +2901,9 @@ begin
   
    }
    WM_TIMER:
+ {$WARN UNSAFE_CAST OFF}
       if TWMTimer(Message).TimerID = HintTimer then
+ {$WARN UNSAFE_CAST ON}
       begin
         // determine current mouse position to check if it left the window
         GetCursorPos(P);
@@ -2913,8 +2935,25 @@ begin
   inherited;
 end; // WMmouseWheel
 
+function stripProtocol(const stringData: String): String;
+begin
+  if StartsText('uin:', stringData) then
+    Result := copy(stringData, 5, length(stringData))
+  else if StartsText('link:', stringData) then
+    Result := copy(stringData, 6, length(stringData))
+  else if StartsText('mailto:', stringData) then
+    Result := copy(stringData, 8, length(stringData))
+  else
+    Result := stringData;
+end;
+
 procedure TchatFrm.copylink2clpbdClick(Sender: TObject);
 begin
+ {$IFDEF CHAT_SCI}
+  with thisChat.historyBox.clickedItem do
+    if Kind = PK_LINK then
+      clipboard.asText := stripProtocol(stringData);
+ {$ELSE}
 //with thisChat.historyBox do
 //  if pointedItem.kind=PK_LINK then
 //    clipboard.asText := pointedItem.link.str;
@@ -2922,6 +2961,7 @@ begin
   with thisChat.historyBox.ClickedItem do
   if kind=PK_LINK then
     clipboard.asText := link.str;
+ {$ENDIF ~CHAT_SCI}
 end;
 
 procedure TchatFrm.copy2clpbClick(Sender: TObject);
@@ -2953,10 +2993,16 @@ end;
 
 procedure TchatFrm.addlink2favClick(Sender: TObject);
 begin
+ {$IFDEF CHAT_SCI}
+  with thisChat.historyBox.clickedItem do
+    if Kind = PK_LINK then
+      addLinkToFavorites(stripProtocol(stringData));
+ {$ELSE ~CHAT_SCI}
 //with thisChat.historyBox.pointedItem do
  with thisChat.historyBox.clickedItem do
   if kind=PK_LINK then
     addLinkToFavorites(link.str);
+ {$ENDIF ~CHAT_SCI}
 end;
 
 procedure TchatFrm.updatechatfrmXY;
@@ -3306,7 +3352,7 @@ var
   msg: String;
   cnt: TRnQContact;
 begin
-//msg:=grabThisText;
+//msg := grabThisText;
   msg := thisChat.input.text;
   if trim(msg) = '' then
   begin
@@ -3314,6 +3360,7 @@ begin
     exit;
   end;
   cnt := thisContact;
+ {$WARN UNSAFE_CODE OFF}
   wnd := TselectCntsFrm.doAll(MainDlg.RnQmain,
                               'Send multiple', 'Send message',
                               cnt.fProto,
@@ -3322,6 +3369,7 @@ begin
                               [sco_multi, sco_groups, sco_predefined],
                               @wnd
                               );
+ {$WARN UNSAFE_CODE ON}
   wnd.toggle(cnt);
 //  theme.getIco2(PIC_MSG, wnd.icon);
   theme.pic2ico(RQteFormIcon, PIC_MSG, wnd.icon);
@@ -3586,6 +3634,7 @@ var
    : TMemoryStream;
 // fmt : TGUID;
 begin
+  {$IFNDEF CHAT_SCI}
   with thisChat.historyBox do
 //   if pointedItem.kind=PK_RQPICEX then
    if clickedItem.kind=PK_RQPICEX then
@@ -3595,10 +3644,12 @@ begin
       k := PosEx(RnQImageExUnTag, pic, i+12);
       if (i > 0) and (k > 5) then
       begin
-            pic:=Base64DecodeString(Copy(pic, i+12, k-i-12));
+            pic := Base64DecodeString(Copy(pic, i+12, k-i-12));
 //            pic := '';
             RnQPicStream := TMemoryStream.Create;
+ {$WARN UNSAFE_CODE OFF}
             RnQPicStream.Write(pic[1], Length(pic));
+ {$WARN UNSAFE_CODE ON}
             pic := '';
             p := PAFormat[DetectFileFormatStream(RnQPicStream)];
            Delete(p, 1, 1);
@@ -3620,15 +3671,18 @@ begin
         if p > '' then
          begin
            RnQPicStream := TMemoryStream.Create;
+ {$WARN UNSAFE_CODE OFF}
            RnQPicStream.Write(pic[i+10], k-i-10);
+ {$WARN UNSAFE_CODE ON}
            RnQPicStream.SaveToFile(p);
            RnQPicStream.Free;
          end;
       end
     end;
+  {$ENDIF ~CHAT_SCI}
 end;
 
-procedure TchatFrm.loadPages(const s: RawByteString);
+procedure TchatFrm.loadPages(proto: TRnQProtocol; const s: RawByteString);
 var
   i: integer;
   s1: RawByteString;
@@ -3653,7 +3707,7 @@ begin
  {$else ansi}
       u := s1;
  {$ENDIF ~UID_IS_UNICODE}
-      openOn(Account.AccProto.getContact(u), True, False);
+      openOn(proto.getContact(u), True, False);
      except
 //      result:=FALSE
     end;
@@ -3902,13 +3956,8 @@ begin
   if add2rstr.visible then
   try
     selectedUIN := copy(params.LinkUrl, 5, length(params.LinkUrl));
-{$IFDEF UseNotSSI}
-    addGroupsToMenu(Self, add2rstr, addcontactAction, not ch.who.iProto.isOnline or
-    // not icq.useSSI
-    ((ch.who.iProto.ProtoElem is TicqSession) and not(TicqSession(ch.who.iProto.ProtoElem).UseSSI)));
-{$ELSE UseNotSSI}
-    addGroupsToMenu(Self, add2rstr, addcontactAction, not ch.who.fProto.isOnline); // false);
-{$ENDIF UseNotSSI}
+    addGroupsToMenu(Self, add2rstr, addcontactAction, not ch.who.fProto.isOnline or
+      ch.who.fProto.canAddCntOutOfGroup);
   except
     add2rstr.visible := false;
   end;
@@ -3939,13 +3988,8 @@ begin
     add2rstr.visible := True;
     try
       selectedUIN := copy(request.Url, 5, length(request.Url));
-{$IFDEF UseNotSSI}
-      addGroupsToMenu(Self, add2rstr, addcontactAction, not thisChat.who.iProto.isOnline or
-      // not icq.useSSI
-      ((ch.who.iProto.ProtoElem is TicqSession) and not(TicqSession(thisChat.who.iProto.ProtoElem).UseSSI)));
-{$ELSE UseNotSSI}
-      addGroupsToMenu(Self, add2rstr, addcontactAction, not thisChat.who.fProto.isOnline); // false);
-{$ENDIF UseNotSSI}
+      addGroupsToMenu(Self, add2rstr, addcontactAction, not thisChat.who.fProto.isOnline or
+         thisChat.who.fProto.canAddCntOutOfGroup);
     except
       add2rstr.visible := false;
     end;
@@ -3967,21 +4011,21 @@ begin
    Exit;
   hb := Sender as THistoryBox;
 
-  hb.rightClickedChatItem.timeData := clickedTime;
+  hb.clickedItem.timeData := clickedTime;
   with hb do
   if linkClicked then
   begin
-    rightClickedChatItem.kind := PK_LINK;
-    rightClickedChatItem.stringData := Data;
+    clickedItem.kind := PK_LINK;
+    clickedItem.stringData := Data;
   end else if imgClicked then
   begin
     if StartsText('embedded:', Data) then
-      rightClickedChatItem.kind := PK_RQPIC
+      clickedItem.kind := PK_RQPIC
     else if StartsText('download:', Data) then
-      rightClickedChatItem.kind := PK_RQPICEX;
-    rightClickedChatItem.stringData := Data;
+      clickedItem.kind := PK_RQPICEX;
+    clickedItem.stringData := Data;
   end else
-    rightClickedChatItem.kind := PK_NONE;
+    clickedItem.kind := PK_NONE;
 
   del1.enabled := hb.wholeEventsAreSelected;
   saveas1.enabled := hb.somethingIsSelected;
@@ -3993,19 +4037,14 @@ begin
   savePicMnu.visible := imgClicked;
   ViewinfoM.visible := clickedTime > 0;
   viewmessageinwindow1.enabled := hb.somethingIsSelected or (clickedTime > 0);
-  selectall1.enabled := hb.topVisible > 0;
+  selectall1.enabled := hb.hasEvents;
 
   add2rstr.visible := linkClicked and StartsText('uin:', Data);
   if add2rstr.visible then
   try
     selectedUIN := copy(Data, 5, length(Data));
-{$IFDEF UseNotSSI}
-    addGroupsToMenu(Self, add2rstr, addcontactAction, not hb.who.iProto.isOnline or
-    // not icq.useSSI
-    ((hb.who.iProto.ProtoElem is TicqSession) and not(TicqSession(hb.who.iProto.ProtoElem).UseSSI)));
-{$ELSE UseNotSSI}
-    addGroupsToMenu(Self, add2rstr, addcontactAction, not hb.who.fProto.isOnline); // false);
-{$ENDIF UseNotSSI}
+    addGroupsToMenu(Self, add2rstr, addcontactAction, not hb.who.fProto.isOnline
+      or hb.who.fProto.canAddCntOutOfGroup); // false);
   except
     add2rstr.visible := false;
   end;
@@ -4014,7 +4053,7 @@ begin
 //  popupHistmenu(MousePos.X, MousePos.Y);
   histmenu.popup(mousePos.X, mousePos.Y);
 end;
-{$ENDIF CHAT_SCI}
+{$ELSE ~CHAT_SCI}
 
 procedure TchatFrm.onHistoryRepaint(sender: TObject);
 var
@@ -4033,6 +4072,7 @@ begin
 end;
 
 // onHistoryRepaint
+{$ENDIF CHAT_SCI}
 
 {$ENDIF CHAT_CEF}
 
@@ -4329,7 +4369,7 @@ begin
  SetBKMode(hnd, TRANSPARENT);
   if ci.chatType = CT_IM then
   begin
-    ev:=eventQ.firstEventFor(c);
+    ev := eventQ.firstEventFor(c);
     if (ev<>NIL) //then
 //      begin
 //      if
@@ -4477,15 +4517,21 @@ begin
   //получим индекс закладки
   tabindex := pagectrl.IndexOfTabAt(X, Y);
   ch := NIL;
+ {$WARN UNSAFE_CAST OFF}
   if chats.validIdx(tabindex) then
     ch := TchatInfo(chats[tabindex]);
+ {$WARN UNSAFE_CAST ON}
   if not Assigned(ch) then
     Exit;
   if (tabindex < 0)or (ch.chatType = CT_PLUGING) then
 		exit;
 
+ {$WARN UNSAFE_CODE OFF}
+ {$WARN UNSAFE_CAST OFF}
   if not (Assigned(ch.who.data) and Assigned(TCE(ch.who.data^).node)) then
     Exit;
+ {$WARN UNSAFE_CODE ON}
+ {$WARN UNSAFE_CAST ON}
 
   //сместим хинт чуть правее и ниже
   X := X + 10;
@@ -4505,8 +4551,12 @@ begin
   hr.BottomRight := HintData.Tree.ScreenToClient(pagectrl.ClientToScreen(hr.BottomRight));
   hintdata.Tree.LastHintRect := hr;
 
+ {$WARN UNSAFE_CODE OFF}
+ {$WARN UNSAFE_CAST OFF}
   if Assigned(ch.who.data) and Assigned(TCE(ch.who.data^).node) then
     hintdata.Node := TCE(ch.who.data^).node.treenode
+ {$WARN UNSAFE_CODE ON}
+ {$WARN UNSAFE_CAST ON}
    else
     hintdata.Node := NIL;
   hintdata.HintText := '';
@@ -4523,7 +4573,9 @@ begin
 
   //и создадим новое
   hintwnd := TVirtualTreeHintWindow.Create(chatFrm);
+ {$WARN UNSAFE_CODE OFF}
  	hintwnd.CalcHintRect(10, '', @hintdata); //а эта функция нужна не для того,
+ {$WARN UNSAFE_CODE ON}
   // чтобы рассчитать r, как можно было подумать, а лишь для того, чтобы
   //  передать окну @hintdata
 
@@ -4566,7 +4618,9 @@ begin
     // если хинт существует, переместим его обновим для нового таба
     if (tabindex <> last_tabindex) then
      begin
+ {$WARN UNSAFE_CAST OFF}
       if (TchatInfo(chats[tabindex]).chatType = CT_PLUGING) then
+ {$WARN UNSAFE_CAST ON}
        FreeAndNil(hintwnd)
       else
        begin
@@ -4740,7 +4794,7 @@ begin
 SetBKMode(Handle, TRANSPARENT);
   if ci.chatType = CT_ICQ then
   begin
-    ev:=eventQ.firstEventFor(c);
+    ev := eventQ.firstEventFor(c);
     if (ev<>NIL) //then
 //      begin
 //      if
@@ -4842,9 +4896,11 @@ end;
 
 procedure TchatFrm.hAViewInfoExecute(Sender: TObject);
 begin
+{$IFNDEF CHAT_SCI}
   with thisChat.historyBox do
   if Assigned(clickedItem.ev) and Assigned(clickedItem.ev.who) then
     clickedItem.ev.who.ViewInfo;
+{$ENDIF ~CHAT_SCI}
 end;
 
 procedure TchatFrm.hAchatpopuplsbUpdate(Sender: TObject);
@@ -4935,7 +4991,9 @@ begin
      end;
     setLength(s, fs.Size);
     if fs.Size > 1 then
+ {$WARN UNSAFE_CODE OFF}
       fs.Read(s[1], length(s))
+ {$WARN UNSAFE_CODE ON}
      else
       s := '';
     fs.Free;
@@ -5002,7 +5060,8 @@ begin
     begin
       ev := THevent.new(EK_buzz, Account.AccProto.getMyInfo, Now, ''{$IFDEF DB_ENABLED}, ''{$ENDIF DB_ENABLED}, 0);
       ev.fIsMyEvent := True;
-      writeHistorySafely(ev);
+      if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
+        writeHistorySafely(ev);
       chatFrm.addEvent(ch.who, ev);
     end
    else
@@ -5374,7 +5433,9 @@ begin
 
     pagectrlChange(pageCtrl);
 
+ {$WARN UNSAFE_CAST OFF}
     result := Integer(pnl2);
+ {$WARN UNSAFE_CAST ON}
   end;
 end;
 
@@ -5655,7 +5716,9 @@ begin
 //  SystemParametersInfo
 //     (SPI_GETWORKAREA, 0, @rWorkArea, 0);
 
+ {$WARN UNSAFE_CODE OFF}
   with Msg.WindowPos^ do begin
+ {$WARN UNSAFE_CODE ON}
     if chkLeft then
 //     if ABS(x - rWorkArea.Left) <=  StickAt then begin
 //      x := rWorkArea.Left;
@@ -5818,7 +5881,9 @@ begin
       n := DragQueryFile(Message.Drop, Cardinal(-1), NIL, 0);
       for i:=0 to n-1 do
         begin
+ {$WARN UNSAFE_CODE OFF}
         DragQueryFile(Message.Drop, i, @buffer, sizeOf(buffer));
+ {$WARN UNSAFE_CODE ON}
         ss := ss + buffer + CRLF;
         end;
       DragFinish(message.Drop);

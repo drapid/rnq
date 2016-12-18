@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RDGlobal;
 {$I ForRnQConfig.inc}
@@ -38,7 +38,7 @@ type
   /// unsigned Int64 doesn't exist under older Delphi, but is defined in FPC
   QWord = {$ifdef UNICODE}UInt64{$else}Int64{$endif};
 
-{$ifNdef COMPILER_16_UP}
+{$ifNdef COMPILER16_UP}
 //  INT_PTR = System.IntPtr;    // NativeInt;
   INT_PTR = NativeInt;
   {$EXTERNALSYM INT_PTR}
@@ -81,7 +81,7 @@ type
   protected
 //    procedure WMPaint(var Msg: TWMPaint); message WM_PAINT;
     procedure WMEraseBkgnd(var Msg: TWmEraseBkgnd); message WM_ERASEBKGND;
-  public  
+  public
     constructor Create(AOwner: TComponent); override;
 //    procedure PaintImages;
   end;
@@ -89,8 +89,8 @@ type
 type
   PGPPoint = ^TGPPoint;
   TGPPoint = packed record
-    X : Integer;
-    Y : Integer;
+    X: Integer;
+    Y: Integer;
   end;
   TPointDynArray = array of TGPPoint;
 

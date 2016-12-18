@@ -253,8 +253,10 @@ MAX_CLIENT_DESCRIPTION = 256;
 // LPS client description //max 256
 
 
- // By Rapid D
-MRIM_CS_SMS_SEND = $00001039;
+
+ // By Rapid D
+
+MRIM_CS_SMS_SEND = $00001039;
 // DWORD Some
 // LPS To
 // LPS Message
@@ -302,20 +304,20 @@ const
 //       ('Invisible', 'Privacy (only visible-list)',
 //        'Normal (all but invisible-list)', 'Visible to all', 'Visible to contact-list');
        ('Normal (all but invisible-list)', 'Privacy (only visible-list)');
-  MRAvisibility2imgName : array [TMRAvisibility] of AnsiString = (PIC_VISIBILITY_NORMAL, PIC_VISIBILITY_PRIVACY);
+  MRAvisibility2imgName : array [TMRAvisibility] of TPicName = (PIC_VISIBILITY_NORMAL, PIC_VISIBILITY_PRIVACY);
   MRAvisib2str:array [TMRAvisibility] of string=('normal', 'invisible');
 //  MRAstatus2str:array [TMRAstatus] of AnsiString=('online','occupied','dnd','na','away',
 //    'f4c','offline','unk');
 //  MRAstatus2ShowStr:array [TMRAstatus] of string=('Online','Offline','Unknown',
 //    'Occupied','Don''t disturb', 'N/A', 'Away', 'Free for chat');
   MRAstatus2ShowStr:array [TMRAstatus] of string=('Online','Offline','Unknown','Away');
-  MRAstatus2Img:array [TMRAstatus] of AnsiString=('online','offline','unk','away');
+  MRAstatus2Img:array [TMRAstatus] of TPicName=('online','offline','unk','away');
   MRAstatus2code : array[TMRAStatus] of byte= (STATUS_ONLINE, STATUS_OFFLINE, STATUS_UNDETERMINATED, STATUS_AWAY);
   MRAstatus2codeStr : array[TMRAStatus] of AnsiString=
      ('STATUS_ONLINE', 'STATUS_OFFLINE', 'STATUS_UNDETERMINATED', 'STATUS_AWAY');
 
 //  function  statusNameExt2(s:TMRAstatus; extSts : byte = 0; Xsts : String = ''; sts6 : String = ''):string;
-  function  MRAstatus2imgName(s:TMRAstatus; inv:boolean=FALSE):String;
+  function  MRAstatus2imgName(s:TMRAstatus; inv:boolean=FALSE): TPicName;
 //  function  status2imgNameExt(s:TMRAstatus; inv:boolean=FALSE; extSts : byte= 0):String;
 //  function  MRAvisibility2imgName(vi:TMRAvisibility):String;
 
@@ -335,7 +337,7 @@ const
     ((pid: ''; PicName: 'st_custom.none'; Caption: 'None')
     );
 }
-  MRAXStatusArray: array [0..50] of string = ('',
+  MRAXStatusArray: array [0..50] of TPicName = ('',
 	'status_5',     'status_18',   	  'status_19',
  	'status_7', 	  'status_10',  	  'status_47',
   'status_22',    'status_26',	    'status_24',
@@ -360,14 +362,14 @@ var
 
 type
   TMRAflapQueue=class(Tobject)
-    buff: AnsiString;
+    buff: RawByteString;
     constructor create;
-    procedure add(s:AnsiString);
-    function  error:boolean;     // errore di protocollo, è necessario invocare popError per continuare
-    function  errorTill:integer; // fino a questo byte i dati sono considerati errati
-    function  available:boolean; // disponibilità di un pacchetto
-    function  pop:AnsiString;        // estrale il pacchetto
-    function  popError:string;   // estrae i dati errati dalla coda
+    procedure add(s: RawByteString);
+    function  error: boolean;     // errore di protocollo, è necessario invocare popError per continuare
+    function  errorTill: integer; // fino a questo byte i dati sono considerati errati
+    function  available: boolean; // disponibilità di un pacchetto
+    function  pop:RawByteString;        // estrale il pacchetto
+    function  popError: string;   // estrae i dati errati dalla coda
     function  bodySize:integer;
     procedure reset;
     end; // TflapQueue
@@ -377,7 +379,7 @@ implementation
    uses
      flap;
 
-function  MRAstatus2imgName(s:TMRAstatus; inv:boolean=FALSE):String;
+function  MRAstatus2imgName(s:TMRAstatus; inv:boolean=FALSE):TPicName;
 begin
  if s in [LOW(TMRAstatus)..HIGH(TMRAstatus)] then
   result := 'status.' + MRAstatus2img[s]
@@ -408,7 +410,7 @@ begin reset end;
 procedure TMRAflapQueue.reset;
 begin buff:='' end;
 
-procedure TMRAflapQueue.add(s:AnsiString);
+procedure TMRAflapQueue.add(s: RawByteString);
 begin buff:=buff+s end;
 
 function TMRAflapQueue.error:boolean;
@@ -420,20 +422,21 @@ end; // error
 function TMRAflapQueue.errorTill:integer;
 begin
 result:=-1;
-if buff='' then exit;
+  if buff='' then
+    exit;
 result:=1;
 while (result<=length(buff)-4) and
-      ((cardinal(dword_LEat(@buff[1])) <> CS_MAGIC)) do
+      ((cardinal(dword_LEat(@buff[Result])) <> CS_MAGIC)) do
   inc(result);
 end; // errorTill
 
-function TMRAflapQueue.popError:string;
+function TMRAflapQueue.popError: RawByteString;
 var
-  i:integer;
+  i: integer;
 begin
-i:=errorTill;
-result:=copy(buff,1,i);
-delete(buff,1,i);
+  i:=errorTill;
+  result:=copy(buff,1,i);
+  delete(buff,1,i);
 end; // popError
 
 function TMRAflapQueue.bodySize:integer;
@@ -446,7 +449,7 @@ result:=not error
    and (length(buff) >= SizeOf(mrim_packet_header_t) + bodySize)
 end; // available
 
-function TMRAflapQueue.pop:string;
+function TMRAflapQueue.pop: RawByteString;
 begin
 if not available then
   begin

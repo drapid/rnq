@@ -10,9 +10,10 @@ Type
 
   Private
     { Déclarations privées }
-
+  public
+    class var LibPathName: String;
   Public
-    Procedure LoadFromStream(Stream: TStream); Override;
+    function LoadFromStream(Stream: TStream): Boolean; ReIntroduce;
     { Déclarations publiques }
   End;
 
@@ -28,10 +29,18 @@ Type
   TRGBArray = ARRAY [0 .. 0] OF TRGBTriple; // élément de bitmap (API windows)
   pRGBArray = ^TRGBArray; // type pointeur vers tableau 3 octets 24 bits
 
+  function init_libJPEGCS(LibPath: String): Boolean;
+  procedure UnInit_libJPEG;
+
 Implementation
 
 uses
-   RDGlobal;
+  SyncObjs,
+  RDGlobal;
+
+var
+  initCS: TCriticalSection;
+
 
 Procedure error_exit(cinfo: j_common_ptr); Cdecl;
 Var
@@ -103,19 +112,39 @@ Procedure term_source(cinfo: j_decompress_ptr); Cdecl;
 Begin
 End;
 
-Procedure TJpegImage.LoadFromStream(Stream: TStream);
+function init_libJPEGCS(LibPath: String): Boolean;
+begin
+  initCS.Acquire;
+  try
+    Result := init_libJPEG(LibPath);
+  finally
+    initCS.Release;
+  end;
+end;
+
+procedure UnInit_libJPEG;
+begin
+  quit_libJPEG;
+end;
+
+
+
+function TJpegImage.LoadFromStream(Stream: TStream): Boolean;
 Var
   jpeg: jpeg_decompress_struct;
   jpeg_err: jpeg_error_mgr;
-  prow: Prgbarray;
+//  prow: Prgbarray;
   RowD: Prgbarray;
   x, y: Integer;
+  a: Byte;
 Begin
   // *** initialization ***
-  If Not init_libJPEG Then
+  If Not init_libJPEGCS(LibPathName) Then
   Begin
-    msgDlg('Initialization of libJPEG failed', false, mtError);
-    halt;
+//    msgDlg('Initialization of libJPEG failed', false, mtError);
+//    halt;
+    Result := false;
+    Exit;
   End;
 
   // *** quering informations ***
@@ -159,7 +188,7 @@ Begin
   jpeg_read_header(@jpeg, False);
 
   // setting output parameter
-  jpeg.out_color_space := JCS_RGB;
+  jpeg.out_color_space := JCS_EXT_BGR; // We need BGR!
 
   // Scaling
   jpeg.scale_num := 1;
@@ -176,26 +205,14 @@ Begin
   // reading image
   jpeg_start_decompress(@jpeg);
 
-  // allocate row
-  GetMem(prow, jpeg.output_width * 3);
-
   Inherited SetSize(jpeg.output_width, jpeg.output_height);
   Inherited PixelFormat := pf24bit;
   For y := 0 To jpeg.output_height - 1 Do
   Begin
     // reading row
-    jpeg_read_scanlines(@jpeg, @prow, 1);
     rowD := scanline[y];
-    For x := 0 To jpeg.output_width - 1 Do
-    Begin
-      rowD[x].RgbtRed := prow[x].Rgbtblue;
-      rowD[x].Rgbtgreen := prow[x].Rgbtgreen;
-      rowD[x].Rgbtblue := prow[x].RgbtRed;
-    End;
-    // do anything with the data
+    a := jpeg_read_scanlines(@jpeg, @rowD, 1);
   End;
-  // freeing row
-  FreeMem(prow);
 
   // finish decompression
   jpeg_finish_decompress(@jpeg);
@@ -205,6 +222,12 @@ Begin
 
   // not really necessary
   quit_libJPEG;
+  Result := True;
 End;
 
+initialization
+  initCS := TCriticalSection.Create;
+
+finalization
+  FreeAndNil(initCS);
 End.

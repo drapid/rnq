@@ -190,7 +190,6 @@ procedure TusersFrm.UsersBoxDrawNode(Sender: TBaseVirtualTree;
 var
   s: String;
   x: Integer;
-//  cr : Boolean;
 begin
   with TRnQUser(PRnQUser(usersBox.getnodedata(PaintInfo.Node))^) do
    begin
@@ -690,7 +689,6 @@ begin
     if isOnlyDigits(onlyUID) then
       tUserPath := tBasePath + String(onlyUID) + PathDelim
      else
-//      if prCl = TicqSession then
       if prCl._getProtoID = ICQProtoID then
         tUserPath := tBasePath + 'AIM_'+ String(onlyUID) + PathDelim
        else
@@ -1055,40 +1053,31 @@ procedure refreshAvailableUsers;
   procedure searchIn(path: string; Prefix : String = '');
 
   var
-//  code:integer;
     sr: TsearchRec;
-//   i:integer;
     s: String;
-    s2: TUID;
+    u2: TUID;
 //   prCl : TRnQProtoHelper;
     prCl: TRnQProtoClass;
   begin
-  path := includeTrailingPathDelimiter(path);
-  ZeroMemory(@sr.FindData, SizeOf(TWin32FindData));
-  if FindFirst(path+'*', faDirectory, sr)=0 then
-    repeat
-    if (sr.Attr and faDirectory > 0) and (sr.name <> '.')and (sr.name <> '..') then
-      begin
+    path := includeTrailingPathDelimiter(path);
+    ZeroMemory(@sr.FindData, SizeOf(TWin32FindData));
+    if FindFirst(path+'*', faDirectory, sr)=0 then
+     repeat
+      if (sr.Attr and faDirectory > 0) and (sr.name <> '.')and (sr.name <> '..') then
+       begin
         s := ExtractFileName(sr.name);
-//      val(sr.Name, i, code);
-//      if TicqSession.isValidUID(s)
-//      if TRnQProtocol(icq).isValidUID(s)
-       for prCl in RnQProtos do
-        begin
-         s2 := TUID(s);
-//         if prCl._isValidUid(s2)
-         if prCl._isProtoUid(s2)
-//      if icq.isValidUID(s)
-//        or (copy(sr.Name, 1, 4) = 'AIM_')
-        then
-         begin
-          addAvailableUser(prCl, s2, path+sr.name, Prefix);
-          break;
-         end;
-        end;
-      end;
-    until FindNext(sr) > 0;
-  FindClose(sr);
+        for prCl in RnQProtos do
+          begin
+            u2 := TUID(s);
+            if prCl._isProtoUid(u2) then
+             begin
+              addAvailableUser(prCl, u2, path+sr.name, Prefix);
+              break;
+             end;
+          end;
+       end;
+     until FindNext(sr) > 0;
+    FindClose(sr);
   end;
 
 var
@@ -1096,7 +1085,7 @@ var
   i, j, n: integer;
   found: Boolean;
   ss: TUID;
-//  uid : AnsiString;
+//  uid: AnsiString;
 begin
   clearAvailableUsers;
   searchIn(myPath);

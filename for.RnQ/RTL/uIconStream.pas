@@ -8,11 +8,11 @@ uses
    {$IFDEF FPC}
      JwaWinGDI,
    {$ENDIF}
-   Windows, Classes, Types, Graphics, SysUtils,
+   Windows, Classes, Types, Graphics,
   {$IFNDEF FPC}
    UITypes,
   {$ENDIF}
-   Dialogs;
+   SysUtils;
 
 type
   PColor32 = ^TColor32;

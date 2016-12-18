@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RnQBinUtils;
 {$I ForRnQConfig.inc}
@@ -44,13 +44,13 @@ function TLV(t: word; const v: RawByteString): RawByteString; overload;
 function TLV_IFNN(t: word; const v: RawByteString): RawByteString; inline;
 function TLV_LE(t: word; const v: RawByteString): RawByteString;
 function TLV2(code: Integer; const data: RawByteString): RawByteString; overload;
-function TLV2(code: Integer; const data: TDateTime): RawByteString;overload;
-function TLV2(code: Integer; const data: Integer): RawByteString;overload;
+function TLV2(code: Integer; const data: TDateTime): RawByteString; overload;
+function TLV2(code: Integer; const data: Integer): RawByteString; overload;
 function TLV2(code: Integer; const data: Boolean): RawByteString; overload;
 function TLV2_IFNN(code: Integer; const data: RawByteString): RawByteString; overload; // if data not null
-function TLV2_IFNN(code: Integer; const data: TDateTime): RawByteString;overload; // if data not null
+function TLV2_IFNN(code: Integer; const data: TDateTime): RawByteString; overload; // if data not null
 function TLV2_IFNN(code: Integer; data: Integer): RawByteString; overload; // if data not null
-function TLV2U_IFNN(code: Integer; const str: String): RawByteString;// overload; // if data not null. Unicode String
+function TLV2U_IFNN(code: Integer; const str: String): RawByteString; // overload; // if data not null. Unicode String
 function TLV3(code: Integer; const data: RawByteString): RawByteString;
 function TLV3U(code: Integer; const Str: UnicodeString): RawByteString;
 function Length_LE(const data: RawByteString): RawByteString;
@@ -61,50 +61,50 @@ function WNTS(const s: RawByteString): RawByteString;
 function WNTSU(const s: String): RawByteString;
 
 // read data
-function Qword_LEat(p: Pointer): Int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-function Qword_BEat(p: Pointer): Int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-function dword_BEat(const s: RawByteString; ofs: Integer): Integer; overload; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-function dword_BEat(p: Pointer): LongWord; overload; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-function dword_LEat(p: Pointer): LongWord; inline; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-function word_LEat(p: Pointer): word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-function word_BEat(p: Pointer): word; overload; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function Qword_LEat(p: Pointer): Int64; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function Qword_BEat(p: Pointer): Int64; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function dword_BEat(const s: RawByteString; ofs: Integer): Integer; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function dword_BEat(p: Pointer): LongWord; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function dword_LEat(p: Pointer): LongWord; inline; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function word_LEat(p: Pointer): word; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function word_BEat(p: Pointer): word; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 function ptrWNTS(p: Pointer): RawByteString;
 
 function word_BEat(const s: RawByteString; ofs: Integer): Word; overload;
-//function word_BEat(s:string; ofs:integer):word; overload;
+//function word_BEat(s: string; ofs: integer): word; overload;
 
   function readQWORD(const snac: RawByteString; var ofs: Integer): Int64;
   function readWORD(const snac: RawByteString; var ofs: Integer): Word;
-  function readBEWORD(const snac: RawByteString; var ofs: Integer): Word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-  function readINT(const snac: RawByteString; var ofs: Integer): Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+  function readBEWORD(const snac: RawByteString; var ofs: Integer): Word; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+  function readINT(const snac: RawByteString; var ofs: Integer): Integer; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
   function readDWORD(const snac: RawByteString; var ofs: integer): Cardinal;
   function readBEDWORD(const snac: RawByteString; var ofs: integer): Cardinal;
   function readBYTE(const snac: RawByteString; var ofs: Integer): Byte;
 
-//function getBUIN2(const s:RawByteString; var ofs:integer): RawByteString;
-//function getBUIN(const s:RawByteString; var ofs:integer): Integer;
-function getDLS(const s:RawByteString; var ofs:integer):RawByteString;
-function getWNTS(const s:RawByteString; var ofs:integer):RawByteString;
-function getBEWNTS(const s:RawByteString; var ofs:integer):RawByteString;
+//function getBUIN2(const s: RawByteString; var ofs: integer): RawByteString;
+//function getBUIN(const s: RawByteString; var ofs: integer): Integer;
+function getDLS(const s: RawByteString; var ofs: integer): RawByteString;
+function getWNTS(const s: RawByteString; var ofs: integer): RawByteString;
+function getBEWNTS(const s: RawByteString; var ofs: integer): RawByteString;
 
-function getTLV(p:pointer):RawByteString; overload;
-function getTLVwordBE(p:pointer):word; overload;
-function getTLVdwordBE(p:pointer):dword; overload;
+function getTLV(p: pointer): RawByteString; overload;
+function getTLVwordBE(p: pointer): word; overload;
+function getTLVdwordBE(p: pointer): dword; overload;
 
-function getTLV(idx:integer; const s:RawByteString;ofs:integer=1):RawByteString; overload;
-function getTLVwordBE(idx:integer; const s:RawByteString; ofs:integer=1):word; overload;
-function getTLVdwordBE(idx:integer; const s:RawByteString; ofs:integer=1):dword; overload;
-function getTLVqwordBE(idx:integer; const s:RawByteString; ofs:integer=1): Int64;
+function getTLV(idx: integer; const s: RawByteString; ofs: integer=1): RawByteString; overload;
+function getTLVwordBE(idx: integer; const s: RawByteString; ofs: integer=1): word; overload;
+function getTLVdwordBE(idx: integer; const s: RawByteString; ofs: integer=1): dword; overload;
+function getTLVqwordBE(idx: integer; const s: RawByteString; ofs: integer=1): Int64;
 
 function getTLVSafe(idx: integer; const s: RawByteString; ofs: integer=1): RawByteString;
 function getTLVSafeDelete(idx: integer; var s: RawByteString; ofs: integer=1): RawByteString;
 function replaceAddTLV(idx: integer; const s: RawByteString; ofs: integer=1; NewTLV: RawByteString = ''): RawByteString;
 
 //----------------------------
-function findTLV3(const idx:integer; const s:RawByteString; ofs:integer):integer;
-function getTLV3Safe(const idx:integer; const s:RawByteString; const ofs:integer):RawByteString;
-function getTLV3dwordBE(p:pointer):dword;
-function getTLV3wordBE(p:pointer):dword;
+function findTLV3(const idx: integer; const s: RawByteString; ofs: integer): integer;
+function getTLV3Safe(const idx: integer; const s: RawByteString; const ofs: integer): RawByteString;
+function getTLV3dwordBE(p: pointer): dword;
+function getTLV3wordBE(p: pointer): dword;
 
 function getwTLD(const s: RawByteString; var ofs: integer): RawByteString;
 function getwTLD_DWORD(const s: RawByteString; var ofs: integer): LongWord;
@@ -138,7 +138,7 @@ Begin
   { 'X shr 8' is turned into "longint(X) shr 8", so if x < 0 then   }
   { the sign bits from the upper 16 bits are shifted in rather than }
   { zeroes. Another bug for TP/Delphi compatibility...              }
-  swap:=(X and $ff) shl 8 + ((X shr 8) and $ff)
+  swap := (X and $ff) shl 8 + ((X shr 8) and $ff)
 End;
 {$ENDIF Linux}
 {$IFDEF FPC}
@@ -189,7 +189,7 @@ End;
 
 {function invert(d:integer):integer; assembler; register;
 //begin
-//  result:=swap(d shr 16)+swap(d) shl 16
+//  result := swap(d shr 16)+swap(d) shl 16
 asm
  BSWAP EAX
 end;}
@@ -200,9 +200,9 @@ asm
   BSWAP  EAX
 end;
 
-function invert64(const d:int64):int64;
+function invert64(const d: int64): int64;
 //var
-//  i : Int64Rec
+//  i: Int64Rec
 begin
   Int64Rec(result).Words[0] := Swap(Int64Rec(d).Words[3]);
   Int64Rec(result).Words[1] := Swap(Int64Rec(d).Words[2]);
@@ -250,18 +250,18 @@ end;
 
 
 
-function int2str(i:integer):RawByteString;
+function int2str(i: integer): RawByteString;
 var
-  v : RawByteString;
+  v: RawByteString;
 begin
   setLength(v, 4);
   move(i, Pointer(v)^, 4);
   Result := v;
 end;
 
-function ptrWNTS(p:pointer):RawByteString;
+function ptrWNTS(p: pointer): RawByteString;
 var
-  v : RawByteString;
+  v: RawByteString;
 begin
   setLength(v, word(p^)-1);
   move(incPtr(p,2)^, Pointer(v)^, length(v));
@@ -269,75 +269,75 @@ begin
 end; // ptrWNTS
 
 {
-function getBUIN2(const s:RawByteString; var ofs:integer): RawByteString;
+function getBUIN2(const s: RawByteString; var ofs: integer): RawByteString;
 begin
-//result:=strToInt(copy(s,ofs+1,ord(s[ofs])));
-result:= copy(s,ofs+1,ord(s[ofs]));
-inc(ofs, 1+ord(s[ofs]));
+  //result := strToInt(copy(s,ofs+1,ord(s[ofs])));
+  result := copy(s,ofs+1,ord(s[ofs]));
+  inc(ofs, 1+ord(s[ofs]));
 end; // getBUIN
 
-function getBUIN(const s:RawByteString; var ofs:integer): Integer;
+function getBUIN(const s: RawByteString; var ofs: integer): Integer;
 var
   E: Integer;
-//  ss : AnsiString;
-  ss : String;
+//  ss: AnsiString;
+  ss: String;
 begin
-//  result:=strToInt(ss);
+//  result := strToInt(ss);
   ss := copy(s, ofs+1, byte(s[ofs]));
   Val(ss, Result, E);
   if e <> 0 then
     Result := 0;
-//result:= copy(s,ofs+1,ord(s[ofs]));
+//result := copy(s,ofs+1,ord(s[ofs]));
   inc(ofs, 1+ byte(s[ofs]));
 end; // getBUIN
 }
-function getWNTS(const s:RawByteString; var ofs:integer): RawByteString;
+function getWNTS(const s: RawByteString; var ofs: integer): RawByteString;
 var
-  i:integer;
+  i: integer;
 begin
-i:=word((@s[ofs])^);
-result:=copy(s,ofs+2,i-1);
-inc(ofs, 2+i);
+  i := word((@s[ofs])^);
+  result := copy(s, ofs+2, i-1);
+  inc(ofs, 2+i);
 end; // getWNTS
 
-function getBEWNTS(const s:RawByteString; var ofs:integer): RawByteString;
+function getBEWNTS(const s: RawByteString; var ofs: integer): RawByteString;
 var
-  i:integer;
+  i: integer;
 begin
-  i:=swap(word((@s[ofs])^));
-  result:=copy(s,ofs+2,i);
+  i := swap(word((@s[ofs])^));
+  result := copy(s, ofs+2, i);
   inc(ofs, 2+i);
 end; // getBEWNTS
 
-function getDLS(const s:RawByteString; var ofs:integer): RawByteString;
+function getDLS(const s: RawByteString; var ofs: integer): RawByteString;
 var
-  i:integer;
+  i: integer;
 begin
-i:=integer((@s[ofs])^);
-if i > 100*1024 then
-  result:=''
-else
-  begin
-  result:=copy(s,ofs+4,i);
-  inc(ofs, 4+i);
-  end;
+  i := integer((@s[ofs])^);
+  if i > 100*1024 then
+    result := ''
+   else
+    begin
+      result := copy(s, ofs+4, i);
+      inc(ofs, 4+i);
+    end;
 end; // getDLS
 
-function incPtr(p:pointer;d:integer):pointer; inline;
+function incPtr(p: pointer; d: integer): pointer; inline;
 begin
-  result:=pointer(PtrInt(p)+d)
+  result := pointer(PtrInt(p)+d)
 end;
 
-function existsTLV(idx:integer; const s:RawByteString;ofs:integer):boolean;
+function existsTLV(idx: integer; const s: RawByteString; ofs: integer): boolean;
 begin
-  result:=findTLV(idx,s,ofs)>0
+  result := findTLV(idx,s,ofs)>0
 end;
 
-function findTLV(idx:integer; const s:RawByteString; ofs:integer):integer;
+function findTLV(idx: integer; const s: RawByteString; ofs: integer): integer;
 var
- l :  Integer;
+ l:  Integer;
 begin
-  result:=-1;
+  result := -1;
 {
   l := length(s);
   if (l >= 4)and(ofs < l) then
@@ -361,13 +361,13 @@ begin
     if ofs >= l then
       exit;
     end;
-   result:=ofs;
+   result := ofs;
   end;
 end; // findTLV
 
-function deleteTLV(idx:integer; const s:RawByteString;ofs:integer=1):RawByteString;
+function deleteTLV(idx: integer; const s: RawByteString; ofs: integer=1): RawByteString;
 var
- i, l : Integer;
+ i, l: Integer;
 begin
   i := findTLV(idx, s, ofs);
   if i > 0 then
@@ -379,37 +379,37 @@ begin
    Result := s;
 end;
 
-function getTLV(p:pointer):RawByteString;
+function getTLV(p: pointer): RawByteString;
 var
-  pw:pword absolute p;
+  pw: pword absolute p;
 begin
-if pw=NIL then
-  result:=''
-else
-  begin
-  inc(pw);
-  setLength(result, swap(pw^));
-  inc(pw);
-  move(pw^, Pointer(result)^, length(result));
-  end;
+  if pw=NIL then
+    result := ''
+   else
+    begin
+      inc(pw);
+      setLength(result, swap(pw^));
+      inc(pw);
+      move(pw^, Pointer(result)^, length(result));
+    end;
 end; // getTLV
 
-function getTLVwordBE(p:pointer):word;
+function getTLVwordBE(p: pointer): word;
 var
-  pw:pword absolute p;
+  pw: pword absolute p;
 begin
-inc(pw,2);
-result:=swap(pw^);
+  inc(pw, 2);
+  result := swap(pw^);
 end; // getTLVwordBE
 
-function getTLVdwordBE(p:pointer):dword;
+function getTLVdwordBE(p: pointer): dword;
 var
-  pw:pword absolute p;
-  pd:pinteger absolute p;
+  pw: pword absolute p;
+  pd: pinteger absolute p;
 begin
-  inc(pw,2);
-//result:= BSwapInt(pd^);
-  result:= IcsSwap32(pd^);
+  inc(pw, 2);
+  //result := BSwapInt(pd^);
+  result := IcsSwap32(pd^);
 end;
 
 function getTLV(idx: integer; const s: RawByteString; ofs: integer): RawByteString;
@@ -423,19 +423,19 @@ var
 begin
  i := findTLV(idx,s,ofs);
  if i > 0 then
-  result:=getTLV(@s[i])
+  result := getTLV(@s[i])
  else
-  result:='';
+  result := '';
 end;
 
-function getTLVSafeDelete(idx:integer; var s: RawByteString; ofs:integer=1): RawByteString;
+function getTLVSafeDelete(idx: integer; var s: RawByteString; ofs: integer=1): RawByteString;
 var
-  i : Integer;
+  i: Integer;
 begin
  i := findTLV(idx,s,ofs);
  if i > 0 then
    begin
-    result:=getTLV(@s[i]);
+    result := getTLV(@s[i]);
     s := deleteTLV(idx, s, i);
    end
  else
@@ -444,7 +444,7 @@ end;
 
 function replaceAddTLV(idx: integer; const s: RawByteString; ofs:integer=1; NewTLV: RawByteString = ''): RawByteString;
 var
-  i, l : Integer;
+  i, l: Integer;
 begin
   i := findTLV(idx, s, ofs);
   if i > 0 then
@@ -458,17 +458,17 @@ end;
 
 function getTLVwordBE(idx: integer; const s: RawByteString; ofs: integer=1): word;
 begin
-  result:=getTLVwordBE(@s[findTLV(idx,s,ofs)])
+  result := getTLVwordBE(@s[findTLV(idx,s,ofs)])
 end;
 
-function getTLVdwordBE(idx: integer; const s: RawByteString;ofs: integer=1): dword;
+function getTLVdwordBE(idx: integer; const s: RawByteString; ofs: integer=1): dword;
 begin
-  result:=getTLVdwordBE(@s[findTLV(idx,s,ofs)])
+  result := getTLVdwordBE(@s[findTLV(idx,s,ofs)])
 end;
 
-function getTLVqwordBE(idx: integer; const s: RawByteString;ofs: integer=1): Int64;
+function getTLVqwordBE(idx: integer; const s: RawByteString; ofs: integer=1): Int64;
 var
-  i : Integer;
+  i: Integer;
 begin
  i := findTLV(idx, s, ofs);
  if i > 0  then
@@ -478,11 +478,11 @@ begin
 end;
 
 
-function findTLV3(const idx: integer; const s: RawByteString; ofs:integer):integer;
+function findTLV3(const idx: integer; const s: RawByteString; ofs: integer): integer;
 var
- l :  Integer;
+  l:  Integer;
 begin
-  result:=-1;
+  result := -1;
   l := length(s)-2;
   if (l >= 8)and(ofs < l) then
 //  if l > 2 then
@@ -493,19 +493,19 @@ begin
     if ofs >= l then
       exit;
     end;
-   result:=ofs;
+   result := ofs;
   end;
 end; // findTLV3
 
 function getTLV3(p: pointer): RawByteString;
 var
-//  pw:PDWord absolute p;
+//  pw: PDWord absolute p;
   pw: PINT absolute p;
-  a : Integer;
+  a: Integer;
 begin
-if pw=NIL then
-  result:=''
-else
+  if pw=NIL then
+    result := ''
+   else
   begin
   inc(pw);
 //  setLength(result, swap(pw^));
@@ -519,47 +519,47 @@ end; // getTLV
 
 function getTLV3Safe(const idx: integer; const s: RawByteString; const ofs:integer):RawByteString;
 var
-  i : Integer;
+  i: Integer;
 begin
- i := findTLV3(idx,s,ofs);
- if i > 0 then
-  result:= getTLV3(@s[i])
- else
-  result:='';
+  i := findTLV3(idx,s,ofs);
+  if i > 0 then
+    result := getTLV3(@s[i])
+   else
+    result := '';
 end;
 
 function getTLV3dwordBE(p: pointer): dword;
 var
-  pw:PDWORD absolute p;
-  pd:pinteger absolute p;
+  pw: PDWORD absolute p;
+  pd: pinteger absolute p;
 begin
-  inc(pw,2);
-//  result:= BSwapInt(pd^);
-  result:= IcsSwap32(pd^);
+  inc(pw, 2);
+//  result := BSwapInt(pd^);
+  result := IcsSwap32(pd^);
 end;
 
 function getTLV3wordBE(p: pointer): dword;
 var
-  pw:PDWORD absolute p;
-  pd:pword absolute p;
+  pw: PDWORD absolute p;
+  pd: pword absolute p;
 begin
-  inc(pw,2);
-  result:= swap(pd^);
+  inc(pw, 2);
+  result := swap(pd^);
 end;
 
 function getwTLD(const s: RawByteString; var ofs: integer): RawByteString;
 var
-  i:integer;
+  i: integer;
 begin
-//i:= BSwapInt(integer((@s[ofs+4])^));
-  i:= IcsSwap32(integer((@s[ofs+4])^));
-if i > 100*1024 then
-  result:=''
-else
-  begin
-  result:=copy(s,ofs+4 + 4,i);
-  inc(ofs, 4+4+i);
-  end;
+//i := BSwapInt(integer((@s[ofs+4])^));
+  i := IcsSwap32(integer((@s[ofs+4])^));
+  if i > 100*1024 then
+    result := ''
+   else
+    begin
+     result := copy(s,ofs+4 + 4,i);
+     inc(ofs, 4+4+i);
+    end;
 end; // getwTLD
 
 function getwTLD_DWORD(const s: RawByteString; var ofs: integer): LongWord;
@@ -567,8 +567,8 @@ var
   i: integer;
 begin
   inc(ofs, 4);
-//  i:= BSwapInt(integer((@s[ofs])^));
-  i:= IcsSwap32(LongWord((@s[ofs])^));
+//  i := BSwapInt(integer((@s[ofs])^));
+  i := IcsSwap32(LongWord((@s[ofs])^));
   if i <> 4 then
     result := 0
    else
@@ -586,7 +586,7 @@ end;
 
 function Length_DLE(const data: RawByteString): RawByteString;
 begin
-  result:=dword_LEasStr(length(data))+data
+  result := dword_LEasStr(length(data))+data
 end;
 
 function Length_BE(const data: RawByteString): RawByteString;
@@ -606,30 +606,30 @@ end;
 
 function WNTSU(const s: String): RawByteString;
 var
-  s1 : RawByteString;
+  s1: RawByteString;
 begin
   s1 := StrToUTF8(s);
-  result:=Word_LEasStr(length(s1)+1)+s1+#0
+  result := Word_LEasStr(length(s1)+1)+s1+#0
 end;
 
 function TLV(t: word; v: dword): RawByteString;
 begin
-  result:=TLV(t,dword_BEasStr(v))
+  result := TLV(t,dword_BEasStr(v))
 end;
 
 function TLV(t: word; v: word): RawByteString;
 begin
-  result:=TLV(t,word_BEasStr(v))
+  result := TLV(t,word_BEasStr(v))
 end;
 
 function TLV(t: word; v: integer): RawByteString;
 begin
-  result:=TLV(t,dword_BEasStr(v))
+  result := TLV(t,dword_BEasStr(v))
 end;
 
 function TLV(t: word; v: Int64): RawByteString;
 begin
-  result:=TLV(t,qword_BEasStr(v))
+  result := TLV(t,qword_BEasStr(v))
 end;
 
 function TLV(t: word; const v: RawByteString): RawByteString;
@@ -661,8 +661,8 @@ begin
    else
     result := '';
 end;
-//function TLV_LE(t:word; v:word):string;
-//begin result:= TLV_LE(t, word_LEasStr(v)) end;
+//function TLV_LE(t: word; v: word): string;
+//begin result := TLV_LE(t, word_LEasStr(v)) end;
 
 function TLV_LE(t: word; const v: RawByteString): RawByteString;
 begin
@@ -672,9 +672,9 @@ end;
 function TLV2(code: integer; const data: RawByteString): RawByteString;
 var
   s: RawByteString;
-//  ps : PAnsiChar;
-  ps : Pointer;
-  i : Integer;
+//  ps: PAnsiChar;
+  ps: Pointer;
+  i: Integer;
 begin
   i := length(data);
   SetLength(s, 4+ 4+ i);
@@ -710,10 +710,10 @@ end;
 
 function TLV3(code: integer; const data: RawByteString): RawByteString;
 var
-  s : RawByteString;
-  ps : Pointer;
-  i : Integer;
-//  a : Integer;
+  s: RawByteString;
+  ps: Pointer;
+  i: Integer;
+//  a: Integer;
 begin
   i := length(data);
   SetLength(s, 4+ 4+ i);
@@ -737,9 +737,9 @@ end;
 
 function TLV2(code: integer; const data: TDateTime): RawByteString;
 var
-  s : RawByteString;
-  ps : Pointer;
-//  i : Integer;
+  s: RawByteString;
+  ps: Pointer;
+//  i: Integer;
 begin
   SetLength(s, 4+ 4+ 8);
   ps := Pointer(s);
@@ -772,11 +772,11 @@ end;
 //  Result := s;
 //end;
 
-function TLV2(code:integer; const data:Integer):RawByteString;
+function TLV2(code: integer; const data: Integer): RawByteString;
 var
-  s : RawByteString;
-  ps : Pointer;
-//  i : Integer;
+  s: RawByteString;
+  ps: Pointer;
+//  i: Integer;
 begin
   SetLength(s, 4+ 4+ 4);
   ps := Pointer(s);
@@ -792,12 +792,12 @@ begin
 end;
 
 
-function TLV2(code:integer; const data:Boolean):RawByteString;
+function TLV2(code: integer; const data: Boolean): RawByteString;
 //begin result:=int2str(code)+int2str(1)+ AnsiChar(data) end;
 var
-  s : RawByteString;
-  ps : Pointer;
-//  i : Integer;
+  s: RawByteString;
+  ps: Pointer;
+//  i: Integer;
 begin
   SetLength(s, 4+ 4+ 1);
   ps := Pointer(s);
@@ -814,46 +814,46 @@ begin
   Result := s;
 end;
 
-function TLV2_IFNN(code:integer; const data:RawByteString):RawByteString; // if data not null
+function TLV2_IFNN(code: integer; const data: RawByteString):RawByteString; // if data not null
 begin
   if Length(data)>0 then
-    result:=int2str(code)+int2str(length(data))+data
+    result := int2str(code)+int2str(length(data))+data
    else
-    result:='';
+    result := '';
 end;
 
-function TLV2U_IFNN(code:integer; const str:String):RawByteString; // if data not null. Unicode String
+function TLV2U_IFNN(code: integer; const str: String): RawByteString; // if data not null. Unicode String
 var
- s1 : RawByteString;
+ s1: RawByteString;
 begin
   if str> '' then
     s1 := StrToUTF8(str)
    else
     begin
-     result:='';
+     result := '';
      Exit;
     end;
   if Length(s1)>0 then
-//    result:=int2str(code)+int2str(length(s1))+s1
-    result:=TLV2(code, s1)
+//    result := int2str(code)+int2str(length(s1))+s1
+    result := TLV2(code, s1)
    else
-    result:='';
+    result := '';
 end;
 
 
-function TLV2_IFNN(code:integer; data: Integer):RawByteString; // if data not null
+function TLV2_IFNN(code: integer; data: Integer): RawByteString; // if data not null
 begin
   if data>0 then
-    result:=int2str(code)+int2str(4)+ int2str(data)
+    result := int2str(code)+int2str(4)+ int2str(data)
    else
-    result:='';
+    result := '';
 end;
 
-function TLV2_IFNN(code:integer; const data:TDateTime):RawByteString;
+function TLV2_IFNN(code: integer; const data: TDateTime): RawByteString;
 var
-  s : RawByteString;
-  ps : Pointer;
-//  i : Integer;
+  s: RawByteString;
+  ps: Pointer;
+//  i: Integer;
 begin
   if data > 0 then
    begin
@@ -878,49 +878,49 @@ end;
 
 function qword_LEat(p: pointer): int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 begin
-  result:=int64(p^)
+  result := int64(p^)
 end;
 
-function Qword_BEat(p:pointer):int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function Qword_BEat(p: pointer): int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 begin
-//  result:=invert64(int64(p^))
-  result:=IcsSwap64(int64(p^))
+//  result := invert64(int64(p^))
+  result := IcsSwap64(int64(p^))
 end;
 
-function dword_BEat(p:pointer):LongWord; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function dword_BEat(p: pointer): LongWord; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 begin
-//  result:= BSwapInt(integer(p^))
-  result:= IcsSwap32(LongWord(p^))
+//  result := BSwapInt(integer(p^))
+  result := IcsSwap32(LongWord(p^))
 end;
 
-function dword_BEat(const s: RawByteString; ofs: integer): integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function dword_BEat(const s: RawByteString; ofs: integer): integer; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 begin
-  result:=dword_BEat(@s[ofs])
+  result := dword_BEat(@s[ofs])
 end;
 
-function dword_LEat(p: pointer): LongWord; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function dword_LEat(p: pointer): LongWord; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 begin
   result:=integer(p^)
 end;
 
-function word_LEat(p: pointer): word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function word_LEat(p: pointer): word; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 begin
-  result:=word(p^)
+  result := word(p^)
 end;
 
-function word_BEat(p: pointer): word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function word_BEat(p: pointer): word; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 begin
-  result:=swap(word(p^))
+  result := swap(word(p^))
 end;
 
-function word_BEat(const s: RawByteString; ofs: integer): word; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function word_BEat(const s: RawByteString; ofs: integer): word; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 begin
-  result:=word_BEat(@s[ofs])
+  result := word_BEat(@s[ofs])
 end;
 
 function dword_LE2ip(d: dword): AnsiString;
 begin
-  result:=format(AnsiString('%d.%d.%d.%d'),[byte(d shr 24),byte(d shr 16),byte(d shr 8),byte(d)])
+  result := format(AnsiString('%d.%d.%d.%d'),[byte(d shr 24),byte(d shr 16),byte(d shr 8),byte(d)])
 end;
 
  {$IFDEF UNICODE}
@@ -942,23 +942,23 @@ end;
 
 function dword_BEasStr(d: dword): RawByteString;
 begin
-  result:=AnsiChar(d shr 24)+AnsiChar(d shr 16)+AnsiChar(d shr 8)+AnsiChar(d)
+  result := AnsiChar(d shr 24)+AnsiChar(d shr 16)+AnsiChar(d shr 8)+AnsiChar(d)
 end;
 
 function dword_LEasStr(d: dword): RawByteString;
 begin
-  result:=AnsiChar(d)+AnsiChar(d shr 8)+AnsiChar(d shr 16)+AnsiChar(d shr 24)
+  result := AnsiChar(d)+AnsiChar(d shr 8)+AnsiChar(d shr 16)+AnsiChar(d shr 24)
 end;
 
 function qword_LEasStr(d: int64): RawByteString;
 begin
-  setLength(result,8);
-  move(d, Pointer(result)^,8);
+  setLength(result, 8);
+  move(d, Pointer(result)^, 8);
 end; // qword_LEasStr
 
 function qword_BEasStr(d: int64): RawByteString;
 begin
-  setLength(result,8);
+  setLength(result, 8);
 //  d := Invert64(d);
   d := IcsSwap64(d);
   move(d, Pointer(result)^, 8);
@@ -968,54 +968,54 @@ end; // qword_LEasStr
 //  begin result:=byte((@snac[ofs])^); inc(ofs) end;
 //  function readBYTE:byte;
   begin
-    result:=byte(snac[ofs]);
+    result := byte(snac[ofs]);
     inc(ofs)
   end;
   function readWORD(const snac: RawByteString; var ofs: integer): word;
   begin
-    result:=word_LEat(@snac[ofs]);
+    result := word_LEat(@snac[ofs]);
     inc(ofs, 2)
   end;
   function readBEWORD(const snac: RawByteString; var ofs: integer): word;
   begin
-    result:=word_BEat(@snac[ofs]);
+    result := word_BEat(@snac[ofs]);
     inc(ofs, 2)
   end;
   function readINT(const snac: RawByteString; var ofs: integer): integer;
   begin
-    result:=dword_LEat(@snac[ofs]);
+    result := dword_LEat(@snac[ofs]);
     inc(ofs, 4)
   end;
   function readDWORD(const snac: RawByteString; var ofs: integer): cardinal;
   begin
-    result:=dword_LEat(@snac[ofs]);
+    result := dword_LEat(@snac[ofs]);
     inc(ofs, 4)
   end;
   function readBEDWORD(const snac: RawByteString; var ofs: integer): cardinal;
   begin
-    result:=dword_BEat(@snac[ofs]);
+    result := dword_BEat(@snac[ofs]);
     inc(ofs, 4)
   end;
 
   function readQWORD(const snac: RawByteString; var ofs: integer): Int64;
   begin
-    result:=Qword_LEat(@snac[ofs]);
+    result := Qword_LEat(@snac[ofs]);
     inc(ofs, 8)
   end;
 
 
-function int2str64(i:Int64):RawByteString;
+function int2str64(i: Int64): RawByteString;
 var
-  v : RawByteString;
+  v: RawByteString;
 begin
   setLength(v, 8);
   move(i, Pointer(v)^, 8);
   Result := v;
 end;
 
-function dt2str(dt:Tdatetime):RawByteString;
+function dt2str(dt: Tdatetime): RawByteString;
 var
-  v : RawByteString;
+  v: RawByteString;
 begin
   setLength(v, 8);
   move(dt, Pointer(v)^, 8);
@@ -1024,12 +1024,12 @@ end;
 
 function str2int(const s: RawByteString): integer;
 begin
-  result:=dword_LEat(Pointer(s))
+  result := dword_LEat(Pointer(s))
 end;
 
 function str2int(p: pointer): integer;
 begin
-  result:=dword_LEat(p)
+  result := dword_LEat(p)
 end;
 
 end.

@@ -541,6 +541,8 @@ type
 
 //    constructor Create; override;
 //    destructor Destroy; override;
+    class constructor InitICQProto;
+    class destructor UnInitICQProto;
     constructor Create(const id: TUID; subType: TICQSessionSubType);
     destructor Destroy; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure ResetPrefs; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -559,6 +561,8 @@ type
   {$IFDEF ICQ_REST_API}
     procedure refreshSessionSecret();
     procedure loginAndCreateSession();
+    procedure checkServerHistory(uid: TUID);
+    procedure getServerHistory(uid: TUID);
     function  sessionNeedsUpdate: Boolean;
     function  restAvailable: Boolean;
     function  getSession(updateIfReq: Boolean = True): TSessionParams;
@@ -7259,7 +7263,7 @@ case ReplyType of
            if useSSI then
  {$ENDIF UseNotSSI}
              OldNick := cont.displayed;
-//          nick:=unUTF(getWNTS(snac, ofs));
+//          nick := unUTF(getWNTS(snac, ofs));
 
           extractWP;
           if Assigned(cont) then
@@ -10027,6 +10031,7 @@ begin
    CopyProxy(aProxy, MainProxy);
   end
  else
+
   begin
    sock.addr := loginServerAddr;
    sock.port := loginServerPort;
@@ -10080,6 +10085,16 @@ begin
     Exit;
   ICQREST_loginAndCreateSession(MyAccNum, fPwd, fSession);
 end;
+
+procedure TicqSession.checkServerHistory(uid: TUID);
+begin
+  ICQREST_checkOrGetServerHistory(uid, False);
+end;
+
+procedure TicqSession.getServerHistory(uid: TUID);
+begin
+  ICQREST_checkOrGetServerHistory(uid, True);
+end;
   {$ENDIF ICQ_REST_API}
 
 
@@ -10088,7 +10103,7 @@ begin
   result := 0;
   case DCmode of
     DC_roster: inc(result, flag_dcForRoster);
-    DC_uponauth, DC_none : inc(result, flag_dcByRequest);
+    DC_uponauth, DC_none: inc(result, flag_dcByRequest);
   //  DC_none: inc(result, flag_dcForNone);
     end;
   if webaware then inc(result, flag_webaware);
@@ -12284,7 +12299,7 @@ begin
 end; // applyBalloon
 
 
-procedure InitICQProto;
+class constructor TicqSession.InitICQProto;
 var
   b, b2: Byte;
 begin
@@ -12332,13 +12347,12 @@ begin
   RegisterProto(TicqSession);
 end;
 
-procedure UnInitICQProto;
+class destructor TicqSession.UnInitICQProto;
 var
-  b : Byte;
+  b: Byte;
 begin
-//var
-//  B : Byte;
-  for b := byte(LOW(tICQstatus)) to byte(HIGH(tICQstatus)) do
+  if Length(ICQstatuses) > 0 then
+   for b := byte(LOW(ICQstatuses)) to byte(HIGH(ICQstatuses)) do
     with ICQstatuses[b] do
      begin
       SetLength(ShortName, 0);
@@ -12347,7 +12361,8 @@ begin
      end;
   SetLength(ICQstatuses, 0);
   setLength(statMenu, 0);
-  for b := byte(LOW(Tvisibility)) to byte(HIGH(Tvisibility)) do
+  if Length(ICQvis) > 0 then
+   for b := byte(LOW(ICQvis)) to byte(HIGH(ICQvis)) do
     with ICQvis[B] do
      begin
       SetLength(ShortName, 0);
@@ -12359,10 +12374,4 @@ begin
 end;
 
 
-INITIALIZATION
-
-  InitICQProto;
-
-FINALIZATION
-  UnInitICQProto;
 end.

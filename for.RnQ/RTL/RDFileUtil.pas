@@ -7,7 +7,7 @@ unit RDFileUtil;
 {$I NoRTTI.inc}
 
 interface
-  uses
+uses
    Windows, RDGlobal,
  {$IFDEF USE_ZIP}
 //   kazip,
@@ -74,8 +74,8 @@ type
  {$ENDIF USE_RAR}
 
   function  loadFile(pt: TThemeSourcePath; fn: string): RawByteString; overload;
-  function  ExistsFile(pt: TThemeSourcePath; fn: string): Boolean;
   function  loadFile(pt: TThemeSourcePath; fn: string; var ResStream: TStream): Boolean; overload;
+  function  ExistsFile(pt: TThemeSourcePath; fn: string): Boolean;
   function  GetStream(const fn: String): TStream;
 //  function  loadFile(fn:string): RawByteString; overload;
   function  loadFileA(const fn: string): RawByteString; overload;
@@ -871,7 +871,7 @@ end;
 
 function fileIsWritible(const fn: String): boolean;
 var
- fs : TFileStream;
+ fs: TFileStream;
 begin
   if not FileExists(fn) then
    result := True
@@ -885,15 +885,15 @@ begin
   end;
 end;
 
-function partDeleteFile(fn:string; from,length:integer):boolean;
+function partDeleteFile(fn: string; from, length: integer): boolean;
 const
   bufdim=64*1024;
 var
-  f:file;
-  buf:string;
-  dim,i,left:integer;
+  f: file;
+  buf: string;
+  dim, i, left: integer;
 begin
-result:=FALSE;
+result := FALSE;
 IOresult;
 assignFile(f,fn);
 reset(f,1);
@@ -937,13 +937,14 @@ begin
   IOresult;
   assignFile(f,fn);
   bak:=fileMode;
-  filemode:=0;
+  filemode := 0;
   {$I-}
   reset(f,1);
-  filemode:=bak;
-  result:=FileSize(f);
+  filemode := bak;
+  result := FileSize(f);
   closeFile(f);
-  if IOresult<>0 then result:=-1;
+  if IOresult<>0 then
+    result:=-1;
 end; // sizeOfFile
 
 function  CreateDirRecursive(const fpath: String): Boolean;

@@ -103,11 +103,11 @@ uses
 type
   PIgnItem = ^TIgnItem;
   TIgnItem = record
-//     s : array[0..1] of string;
-     s0 : string;
-     s1 : TUID;
-     isSrv : Boolean;
-//     Pl : T;
+//     s: array[0..1] of string;
+     s0: string;
+     s1: TUID;
+     isSrv: Boolean;
+//     Pl: T;
   end;
 
 procedure TantispamFr.updateVisPage;
@@ -122,11 +122,11 @@ end;
 
 procedure TantispamFr.fillIgnoreList;
 var
-//  i:integer;
-  PlItem : PIgnItem;
-  n : PVirtualNode;
-  cnt : tRnQcontact;
-//  pl:Tplugin;
+//  i: integer;
+  PlItem: PIgnItem;
+  n: PVirtualNode;
+  cnt: tRnQcontact;
+//  pl: Tplugin;
 begin
   IgnoreTree.Clear;
 // if prefPages[thisPrefIdx].frame = NIL then exit;
@@ -138,10 +138,11 @@ begin
      n := IgnoreTree.AddChild(nil);
      PlItem := IgnoreTree.GetNodeData(n);
      PlItem.s0 := cnt.displayed;
-     if PlItem.s0<>cnt.UID then
-       PlItem.s0 :=PlItem.s0 + '('+cnt.UID+')'
-      else
-       PlItem.s0 := cnt.UID;
+
+     if PlItem.s0 <> String(cnt.UID) then
+       PlItem.s0 := PlItem.s0 + ' ('+ cnt.uin2Show +')';
+//      else
+//       PlItem.s0 := s;
      PlItem.s1 := cnt.UID;
      PlItem.isSrv := Account.AccProto.isInList(LT_SPAM, cnt);
 //     PlItem.Pl   := pl;
@@ -296,16 +297,16 @@ end;
 procedure TantispamFr.AddToIgnoreAction(sender: Tobject);
 var
   wnd: TselectCntsFrm;
-  cntct : TRnQContact;
-//  histFile : String;
-//  rslt : String;
-//  fn : String;
-  PlItem : PIgnItem;
-  n : PVirtualNode;
+  cntct: TRnQContact;
+//  histFile: String;
+//  rslt: String;
+//  fn: String;
+  PlItem: PIgnItem;
+  n: PVirtualNode;
 begin
   if (not (sender is Tcontrol))or(not((sender as Tcontrol).parent is TselectCntsFrm)) then
    Exit;
-  wnd:=(sender as Tcontrol).parent as TselectCntsFrm;
+  wnd := (sender as Tcontrol).parent as TselectCntsFrm;
   cntct := wnd.current;
   if cntct = NIL then
 //    msgDlg('You must select contact', mtInformation)
@@ -316,10 +317,10 @@ begin
      n := IgnoreTree.AddChild(nil);
      PlItem := IgnoreTree.GetNodeData(n);
      PlItem.s0 := cntct.displayed;
-     if PlItem.s0<>cntct.UID then
-       PlItem.s0 :=PlItem.s0 + '('+cntct.uin2Show+')'
-      else
-       PlItem.s0 := cntct.UID;
+     if PlItem.s0 <> String(cntct.UID) then
+       PlItem.s0 := PlItem.s0 + '('+cntct.uin2Show+')';
+//      else
+//       PlItem.s0 := cntct.UID;
      PlItem.s1 := cntct.UID;
 //     PlItem.isSrv := usessi and ICQ.isOnline;
 //     PlItem.isSrv := usessi and ICQ.isOnline;

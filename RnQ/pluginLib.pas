@@ -284,7 +284,7 @@ case _byte_at(data,1) of
       PC_SEND_MSG: if minimum(2+3*4) then
         begin
 //        outbox.add(OE_msg, IntToStr(_int_at(data,3)), _int_at(data,7), _istring_at(data,11));
-         Proto_Outbox_add(OE_msg, Account.AccProto.getContact(IntToStr(_int_at(data,3))), _int_at(data,7), _istring_at(data,11));
+         Proto_Outbox_add(OE_msg, Account.AccProto.getContact(Int2UID(_int_at(data,3))), _int_at(data,7), _istring_at(data,11));
         end;
       PC_ADD_MSG: if minimum(2+4 + 8+4) then        // By Rapid D
         begin
@@ -326,17 +326,17 @@ case _byte_at(data,1) of
          if Account.AccProto.ProtoElem is TicqSession then
           begin
             Proto_Outbox_add(OE_contacts, TicqSession(Account.AccProto.ProtoElem).getICQContact(_int_at(data,3)),
-                _int_at(data,7), ints2cl(_intlist_at(data,11)));
+                _int_at(data,7), ints2cl(Account.AccProto, _intlist_at(data,11)));
           end;
  {$ENDIF PROTOCOL_ICQ}
         end;
       PC_SEND_ADDEDYOU: if minimum(2+4) then
         begin
-           Proto_Outbox_add(OE_addedyou, Account.AccProto.getContact(intToStr(_int_at(data,3))));
+           Proto_Outbox_add(OE_addedyou, Account.AccProto.getContact(int2UID(_int_at(data,3))));
         end;
  {$IFDEF PROTOCOL_ICQ}
       PC_SEND_AUTOMSG_REQ: if minimum(2+4) then
-        sendICQautomsgreq(Account.AccProto.getContact(intToStr(_int_at(data,3))));
+        sendICQautomsgreq(Account.AccProto.getContact(int2UID(_int_at(data,3))));
  {$ENDIF PROTOCOL_ICQ}
       PC_LIST_REMOVE,
       PC_LIST_ADD: if minimum(2+1+4) then
@@ -346,17 +346,17 @@ case _byte_at(data,1) of
 //          outBuffer:=char(PM_ERROR)+char(PERR_UNEXISTENT)
 //        else
           begin
-          b:= _byte_at(data,2)=PC_LIST_ADD;
-          ints:=_intlist_at(data,4);
+          b := _byte_at(data,2)=PC_LIST_ADD;
+          ints := _intlist_at(data,4);
           for i:=0 to length(ints)-1 do
             if b then
               begin
-              if not add2list(k, Account.AccProto.getContact(intToStr(ints[i]))) then
-                ints[i]:=0;
+              if not add2list(k, Account.AccProto.getContact(int2UID(ints[i]))) then
+                ints[i] := 0;
               end
             else
-              if not rem_fr_list(k, Account.AccProto.getContact(intToStr(ints[i]))) then
-                ints[i]:=0;
+              if not rem_fr_list(k, Account.AccProto.getContact(int2UID(ints[i]))) then
+                ints[i] := 0;
           packArray(ints, 0);
           if length(ints)>0 then
             resStr := AnsiChar(PM_ERROR)+AnsiChar(PERR_FAILED_FOR)+_intlist(ints);
@@ -382,11 +382,11 @@ case _byte_at(data,1) of
  {$ENDIF PROTOCOL_ICQ}
       PC_CONNECT: doConnect;
       PC_DISCONNECT: userSetStatus(Account.AccProto, byte(SC_OFFLINE));
-      PC_PLAYSOUND  : if minimum(2+4) then        // By Rapid D
+      PC_PLAYSOUND: if minimum(2+4) then        // By Rapid D
              theme.PlaySound(_istring_at(data, 3));
       PC_PLAYSOUNDFN: if minimum(2+4) then        // By Rapid D
              SoundPlay(_istring_at(data, 3));
-      PC_SHOWINFO  : if minimum(2+4) then        // By Rapid D
+      PC_SHOWINFO: if minimum(2+4) then        // By Rapid D
              begin
                cnt := Account.AccProto.getContact(_istring_at(data, 3));
                if Assigned(cnt) then
@@ -491,7 +491,7 @@ case _byte_at(data,1) of
         else
           resStr := AnsiChar(PM_DATA)+_int(StrToIntDef(Account.AccProto.ProtoElem.MyAccNum, 0)) +
                       _istring(Account.AccProto.ProtoElem.MyAccNum);
-      PG_DISPLAYED_NAME: resStr := AnsiChar(PM_DATA)+_istring( Account.AccProto.getContact(IntToStrA(_int_at(data,3))).displayed );
+      PG_DISPLAYED_NAME: resStr := AnsiChar(PM_DATA)+_istring( Account.AccProto.getContact(Int2UID(_int_at(data,3))).displayed );
       PG_ANDRQ_VER: resStr := AnsiChar(PM_DATA)+_int( RQversion );
       PG_ANDRQ_VER_STR: resStr := AnsiChar(PM_DATA)+_istring( ip2str(RQversion) );
       PG_RNQ_BUILD: resStr := AnsiChar(PM_DATA)+_int( RnQBuild ) + _dt(BuiltTime);
@@ -618,12 +618,12 @@ case _byte_at(data,1) of
               if Account.AccProto.ProtoElem is TICQSession then
                 begin
                   resStr := AnsiChar(PM_DATA) + AnsiChar(Status2OldStatus[TICQStatus(Account.AccProto.getStatus)])
-                     + AnsiChar(vis2OldVis[TICQSession(Account.AccProto.ProtoElem).visibility])
-                     + AnsiChar(TICQSession(Account.AccProto.ProtoElem).curXStatus);
-                  if TICQSession(Account.AccProto.ProtoElem).curXStatus > 0 then
+                     + AnsiChar(vis2OldVis[Tvisibility(Account.AccProto.getVisibility)])
+                     + AnsiChar(Account.AccProto.getXStatus);
+                  if Account.AccProto.getXStatus > 0 then
                     resStr := resStr
-                     + _istring(ExtStsStrings[TICQSession(Account.AccProto.ProtoElem).curXStatus].Cap)
-                     + _istring(ExtStsStrings[TICQSession(Account.AccProto.ProtoElem).curXStatus].Desc)
+                     + _istring(ExtStsStrings[Account.AccProto.getXStatus].Cap)
+                     + _istring(ExtStsStrings[Account.AccProto.getXStatus].Desc)
                    else
                     resStr := resStr + _istring('') + _istring('');
                 end
@@ -631,6 +631,7 @@ case _byte_at(data,1) of
                   resStr := AnsiChar(PM_DATA) + AnsiChar(Status2OldStatus[TICQStatus(Account.AccProto.getStatus)])
                      + AnsiChar(vis2OldVis[Tvisibility(Account.AccProto.getVisibility)])
                      + AnsiChar(0) + _istring('') + _istring('');
+
              end
             else
  {$ENDIF PROTOCOL_ICQ}
@@ -644,7 +645,7 @@ case _byte_at(data,1) of
               else
                i := $FF;
             if not (i in [Low(XStatusArray)..High(XStatusArray)]) then
-             i := TICQSession(Account.AccProto.ProtoElem).curXStatus;
+             i := Account.AccProto.getXStatus;
             resStr := AnsiChar(PM_DATA) + AnsiChar(byte(i)) +
                          _istring(getTranslation(ExtStsStrings[i].Cap)) +
                          _istring(getXStatusMsgFor(nil));
@@ -849,7 +850,7 @@ var
   sr: TsearchRec;
   plugin: Tplugin;
 begin
-loggaEvtS('scanning for plugins: '+myPath+pluginsPath+'*.dll');
+  loggaEvtS('scanning for plugins: '+myPath+pluginsPath+'*.dll');
 if findFirst(myPath+pluginsPath+'*.dll', faAnyFile, sr) = 0 then
   repeat
   plugin := Tplugin.create;

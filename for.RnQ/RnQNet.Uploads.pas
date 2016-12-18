@@ -128,8 +128,8 @@ end;
 
 function InputText(Boundry, Name, Value: RawByteString): RawByteString;
 begin
-  result := format(RawByteString('%s') + CRLF + 'Content-Disposition: form-data; name="%s"' + CRLF + CRLF + '%s' + CRLF,
-            ['--' + boundry, name, value]);
+  result := format(AnsiString(RawByteString('%s') + CRLF + 'Content-Disposition: form-data; name="%s"' + CRLF + CRLF + '%s' + CRLF),
+            [AnsiString('--') + boundry, name, value]);
 end;
 
 function UploadFileRGhost(const Filename: String; pOnSendData: TDocDataEvent): String;
@@ -176,7 +176,7 @@ begin
   if Assigned(JSONObject) then
     begin
       Host := JSONObject.GetValue('upload_host').Value;
-      Token := JSONObject.GetValue('authenticity_token').Value;
+      Token := AnsiString(JSONObject.GetValue('authenticity_token').Value);
       ULimit := 100;
       TryStrToInt(JSONObject.GetValue('upload_limit').Value, ULimit);
 
@@ -359,6 +359,7 @@ begin
 
   tar := TtarStream.create;
 
+ {$WARN CONSTRUCTING_ABSTRACT OFF}
   str := TStrings.Create;
 
   str.StrictDelimiter := True;
@@ -370,6 +371,7 @@ begin
    finally
     str.Free;
   end;
+ {$WARN CONSTRUCTING_ABSTRACT ON}
 
   fsize := tar.getTotal;
 

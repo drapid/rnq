@@ -7,8 +7,6 @@ object usersFrm: TusersFrm
   ClientHeight = 257
   ClientWidth = 314
   Color = clBtnFace
-  Constraints.MaxHeight = 500
-  Constraints.MaxWidth = 450
   Constraints.MinHeight = 270
   Constraints.MinWidth = 280
   ParentFont = True

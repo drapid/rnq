@@ -20,7 +20,7 @@ uses
  {$IFDEF PREF_IN_DB}
   DBPrefsLib,
  {$ELSE ~PREF_IN_DB}
-   RnQPrefsLib,
+  RnQPrefsLib,
  {$ENDIF PREF_IN_DB}
    Types;
 
@@ -57,42 +57,42 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   private
-    fOnPaintTip : DoPaintTip;
-    fOnToShow  : DoToShow;
-    fOnTipDestroy : DoTipDestroy;
+    fOnPaintTip: DoPaintTip;
+    fOnToShow: DoToShow;
+    fOnTipDestroy: DoTipDestroy;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
-    function preshow():boolean;
+    function preshow(): boolean;
     procedure postshow();
     procedure hide();
-    procedure WndProc(var msg:TMessage); override;
+    procedure WndProc(var msg: TMessage); override;
     procedure Paint; override;
   public
-    info : TTipInfo;
-//    counter:integer;
-//    time:Tdatetime;
+    info: TTipInfo;
+//    counter: integer;
+//    time: Tdatetime;
     action: (TA_NULL, TA_LCLICK, TA_2LCLICK, TA_RCLICK, TA_2RCLICK);
     actionCount: integer;
-    prevWnd:Thandle;
-    mouseDown:boolean;
-    isPainting:boolean;
-    processing:boolean;
+    prevWnd: Thandle;
+    mouseDown: boolean;
+    isPainting: boolean;
+    processing: boolean;
     procedure showTip();
-    class function Add2ShowTip(pInfo : TTipInfo; x, y, Width, Height : Integer) : TtipFrm;
+    class function Add2ShowTip(pInfo: TTipInfo; x, y, Width, Height: Integer): TtipFrm;
 
 (*
-    procedure show(pEv:Thevent; x, y : Integer); overload;
-    procedure show(pCnt:TRnQContact; x, y : Integer); overload;
-//    procedure show(bmp:Tbitmap); overload;
-    procedure show(bmp:Tbitmap; x, y : Integer); overload;
+    procedure show(pEv: Thevent; x, y: Integer); overload;
+    procedure show(pCnt: TRnQContact; x, y: Integer); overload;
+//    procedure show(bmp: Tbitmap); overload;
+    procedure show(bmp: Tbitmap; x, y: Integer); overload;
   {$IFNDEF NOT_USE_GDIPLUS}
-    procedure show(gpbmp:TGPBitmap; x, y : Integer); overload;
+    procedure show(gpbmp: TGPBitmap; x, y: Integer); overload;
   {$ELSE NOT_USE_GDIPLUS}
-    procedure show(gpbmp:TRnQBitmap; x, y : Integer); overload;
+    procedure show(gpbmp: TRnQBitmap; x, y: Integer); overload;
   {$ENDIF NOT_USE_GDIPLUS}
 *)
-    property onPaintTip : DoPaintTip read fonPaintTip write fonPaintTip;
-    property onToShow : DoToShow read fOnToShow write fOnToShow;
+    property onPaintTip: DoPaintTip read fonPaintTip write fonPaintTip;
+    property onToShow: DoToShow read fOnToShow write fOnToShow;
     property OnTipDestroy: DoTipDestroy read fOnTipDestroy write fOnTipDestroy;
     property currentPPI: Integer read GetParentCurrentDpi;
   end;
@@ -118,12 +118,12 @@ type
   procedure TipsHideAll;
   procedure TipsShowTop;
   procedure MoveTips;
-  function AddTip(var item : TRnQTip; ti : TTipInfo; needW, needH : Integer) : Boolean;
+  function AddTip(var item: TRnQTip; ti: TTipInfo; needW, needH: Integer): Boolean;
 
-  procedure tipsSetCFG(pp : TRnQPref);
+  procedure tipsSetCFG(pp: TRnQPref);
 
 const
-  TipsMaxTop : Integer = 200;
+  TipsMaxTop: Integer = 200;
 
 var
   TipsMaxCnt   : Integer = 20;
@@ -651,7 +651,7 @@ begin
  end;
 end;
 
-function AddTip(var item : TRnQTip; ti : TTipInfo; needW, needH : Integer) : Boolean;
+function AddTip(var item: TRnQTip; ti: TTipInfo; needW, needH: Integer): Boolean;
 var
   i, cnt, idx: Integer;
   minX, minY: Integer;
@@ -662,11 +662,11 @@ var
 begin
   if not Assigned(tipsList) then
     tipsList := TList.Create;
-  cnt  := 0;
-  Result := false;
+//  cnt  := 0;
+//  Result := false;
 //  lastY := work.Bottom;
   not_ok := True;
-  idx := 0;
+//  idx := 0;
   work := desktopWorkArea(Application.MainFormHandle);
   case TipsAlign of
     alBottomRight,
@@ -709,7 +709,7 @@ begin
              rt.form := NIL;
              rt.Free;
             end;
-           idx := -1;
+//           idx := -1;
            dec(cnt);
   //         minY := lastY;
          end;
@@ -765,7 +765,7 @@ begin
           //       rt.frm.Free;
                  rt.Free;
                end;
-             idx := -1;
+//             idx := -1;
              dec(cnt);
     //         minY := lastY;
            end;

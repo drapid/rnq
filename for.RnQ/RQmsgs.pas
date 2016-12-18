@@ -165,12 +165,12 @@ end;
 procedure TmsgsFrm.msgListMeasureItem(Sender: TBaseVirtualTree;
   TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: Integer);
 var
-  r:Trect;
-  s:string;
-  m : Pmsg;
-//  l : Integer;
+  r: Trect;
+  s: string;
+  m: Pmsg;
+//  l: Integer;
 begin
-  r:=rect(0, 0, Sender.ClientWidth, 0);
+  r := rect(0, 0, Sender.ClientWidth, 0);
   m := Pmsg(sender.getnodedata(node));
   if m = NIL then
    begin
@@ -188,11 +188,11 @@ begin
      NodeHeight := 1;
      exit;
     end;
-  s:='000'+CRLF+s;
+  s := '000'+CRLF+s;
   inc(r.Left, GAP_X);
   dec(r.right, GAP_X);
   inc(r.Top, GAP_Y shl 1);
-  with theme.getPicSize(RQteDefault, IconNames[m.kind]) do
+  with theme.getPicSize(RQteDefault, IconNames[m.kind], 0, GetParentCurrentDpi) do
    begin
     NodeHeight := cy + 5;
     inc(r.Left, cx);
@@ -202,7 +202,7 @@ begin
 //  r.Bottom := 1000;
   DrawText(TargetCanvas.Handle, pchar(s), -1, r,
    DT_WORDBREAK or DT_EXTERNALLEADING or DT_NOPREFIX or DT_CALCRECT);
-  NodeHeight:= max(r.Bottom + GAP_Y, NodeHeight);
+  NodeHeight := max(r.Bottom + GAP_Y, NodeHeight);
 end;
 
 procedure TmsgsFrm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -217,11 +217,22 @@ begin
 end;
 
 procedure TmsgsFrm.FormCreate(Sender: TObject);
-const
-  BottomHeight = 40;
+var
+  BottomHeight: Integer;
+  BtnWidth: Integer;
+  BtnHeight: Integer;
 begin
   msgList := TVirtualDrawTree.Create(self);
   Self.InsertComponent(msgList);
+  BottomHeight := 40;
+  BtnWidth := 89;
+  BtnHeight := 25;
+  if GetParentCurrentDpi > cDefaultDPI then
+   begin
+     BottomHeight := MulDiv(BottomHeight, GetParentCurrentDpi, cDefaultDPI);
+     BtnWidth := MulDiv(BtnWidth, GetParentCurrentDpi, cDefaultDPI);
+     BtnHeight := MulDiv(BtnHeight, GetParentCurrentDpi, cDefaultDPI);
+   end;
   with msgList do
   begin
     Parent := self;
@@ -258,10 +269,11 @@ begin
   with OkBtn do
   begin
     Parent := self;
-    Left := Round((Self.ClientWidth - Width) / 2);
-    Top := Self.ClientHeight - BottomHeight + ((BottomHeight-25) div 2);
-    Width := 89;
-    Height := 25;
+    Width := BtnWidth;
+    Height := BtnHeight;
+
+    Left := Round((Self.ClientWidth - BtnWidth) / 2);
+    Top := Self.ClientHeight - BottomHeight + ((BottomHeight - BtnHeight) div 2);
     Anchors := [akBottom];
     Default := True;
     ModalResult := 1;

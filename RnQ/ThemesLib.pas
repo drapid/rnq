@@ -32,8 +32,8 @@ procedure reloadCurrentTheme();
 procedure applySizes(const OldDPI, NewDPI: Integer);
 
 var
-  statusPics : array[0..15] of array[boolean] of TRnQThemedElementDtls;
-  RQSmilesPath, RQSoundsPath : TThemePath;
+  statusPics: array[0..15] of array[boolean] of TRnQThemedElementDtls;
+  RQSmilesPath, RQSoundsPath: TThemePath;
 
 implementation
 
@@ -56,10 +56,11 @@ uses
  {$IFNDEF RNQ_LITE}
   themedit_fr,
  {$ENDIF}
-  RnQProtocol, protocols_all,
+  RnQProtocol,
  {$IFDEF PROTOCOL_ICQ}
   Protocol_ICQ, ICQClients, icqConsts,
  {$ENDIF PROTOCOL_ICQ}
+  Protocols_all,
   roasterlib;
 
 procedure applyTheme;
@@ -95,7 +96,7 @@ mainFrm.roaster.background.bitmap.ReleaseHandle;}
           and (roster.background.bitmap.Height > 0) then
        begin
         paintoptions := paintoptions + [toShowBackground];
-        end
+       end
    end
      else
         paintoptions := paintoptions - [toShowBackground];
@@ -142,7 +143,8 @@ mainFrm.roaster.background.bitmap.ReleaseHandle;}
      visibilityBtn.Invalidate;}
     FormResize(NIL);
   end;
-  statusIcon.ReDraw;
+  if Assigned(statusIcon) then
+    statusIcon.ReDraw;
   repaintAllWindows;
 end; // applyTheme
 

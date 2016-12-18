@@ -354,17 +354,17 @@ behaviour[EK_oncoming].trig := [BE_tray, BE_sound, BE_tip, BE_history];
 behaviour[EK_offgoing].trig := [BE_history, BE_tip];
 behaviour[EK_msg].trig := [BE_tray, BE_openchat, BE_save, BE_sound, BE_history, BE_tip, BE_FLASHCHAT];
 behaviour[EK_contacts] := behaviour[EK_msg];
-behaviour[EK_auth]:=behaviour[EK_msg];
-behaviour[EK_authDenied]:=behaviour[EK_msg];
-behaviour[EK_authreq]:=behaviour[EK_msg];
-behaviour[EK_addedyou]:=behaviour[EK_msg];
-//behaviour[EK_file].trig:=[BE_tray,BE_save,BE_sound,BE_history];
-behaviour[EK_file] :=behaviour[EK_msg];
-behaviour[EK_automsgreq].trig:=[BE_history];
-behaviour[EK_statuschange].trig:=[BE_history];
-//behaviour[EK_statuschangeExt].trig:=[BE_history];
-behaviour[EK_gcard].trig:=[BE_tray,BE_sound,BE_history,BE_openchat,BE_save];
-behaviour[EK_automsg].trig:=[BE_openchat,BE_history,BE_sound,BE_popup];
+behaviour[EK_auth] := behaviour[EK_msg];
+behaviour[EK_authDenied] := behaviour[EK_msg];
+behaviour[EK_authreq] := behaviour[EK_msg];
+behaviour[EK_addedyou] := behaviour[EK_msg];
+//behaviour[EK_file].trig := [BE_tray,BE_save,BE_sound,BE_history];
+behaviour[EK_file] := behaviour[EK_msg];
+behaviour[EK_automsgreq].trig := [BE_history];
+behaviour[EK_statuschange].trig := [BE_history];
+//behaviour[EK_statuschangeExt].trig := [BE_history];
+behaviour[EK_gcard].trig := [BE_tray,BE_sound,BE_history,BE_openchat,BE_save];
+behaviour[EK_automsg].trig := [BE_openchat,BE_history,BE_sound,BE_popup];
  {$IFDEF Use_Baloons}
 behaviour[EK_typingBeg].trig := [BE_tip, BE_BALLOON];
 behaviour[EK_typingFin].trig := [BE_tip, BE_BALLOON];
@@ -656,6 +656,7 @@ begin
 
   pp.addPrefBool('use-default-browser', useDefaultBrowser);
   pp.addPrefStr('browser-command-line', browserCmdLine);
+  pp.addPrefGuid('tray-icon-guid', trayIconGuid);
   pp.addPrefStr('sort-by', sortby2str[sortBy]);
 //  pp.addPrefBlob('starting-status', status2Img[TICQStatus(startingStatus)]);
 
@@ -899,6 +900,7 @@ begin
   pp.getPrefBool('minimize-roaster', minimizeRoster);
   pp.getPrefBool('use-default-browser', useDefaultBrowser);
   pp.getPrefStr('browser-command-line', browserCmdLine);
+  pp.getPrefGuid('tray-icon-guid', trayIconGuid);
   pp.getPrefStr('disabled-plugins', disabledPlugins);
   pp.getPrefInt('last-update-info', checkupdate.lastSerial);
   pp.getPrefInt('wheel-velocity', wheelVelocity);
@@ -1628,6 +1630,8 @@ begin
       halt(1);
      end;
 
+ // Starting user
+
 
   Account.acks   := Toutbox.create;
   Account.outbox := Toutbox.create;
@@ -1660,11 +1664,8 @@ begin
   autoaway.time:=0;
   userTime:=-1;
   eventQ := TeventQ.create;
-  statusIcon:=TstatusIcon.create;
-  statusIcon.OnGetPicTip := Protocols_All.getTrayIconTip;
-  eventQ.onNewTop:=statusIcon.update;
-  hotkeysEnabled:=TRUE;
-  plugins:=Tplugins.create;
+  hotkeysEnabled := TRUE;
+  plugins := Tplugins.create;
   portsListen := TPortList.Create;
   GSSL_DLL_DIR := modulesPath;
 
@@ -1877,6 +1878,10 @@ begin
   picDrawFirstLtr := theme.ThemePath.fn = '';
   loggaEvtS('theme: loaded');
 
+  statusIcon := TstatusIcon.create(RnQmain.handle);
+  statusIcon.OnGetPicTip := Protocols_All.getTrayIconTip;
+  eventQ.onNewTop := statusIcon.update;
+
   if not skipsplash then
     showSplash;
   if not skipsplash then
@@ -2011,6 +2016,10 @@ loggaEvtS('Various lists: loaded');
   loggaEvtS('Lang: Translating');
    translateWindows;
   loggaEvtS('Lang: Translated');
+
+ statusIcon.trayicon.show;
+ statusIcon.update;
+
  rosterRebuildDelayed := TRUE;
 { $I-}
  {$IFNDEF DB_ENABLED}
@@ -2028,8 +2037,6 @@ loggaEvtS('Various lists: loaded');
   loggaEvtS('Avatars: loaded');
    {$ENDIF RNQ_AVATARS}
  setRosterAnimation(animatedRoster);
- statusIcon.trayicon.show;
- statusIcon.update;
  contactsPnlStr := intToStr(TList(Account.AccProto.readList(LT_ROSTER)).count);
  Account.acks.clear;
   if assigned(prefFrm) then
@@ -2047,7 +2054,7 @@ loggaEvtS('Various lists: loaded');
   if reopenchats then
    begin
 //    chatFrm.Visible := False;
-    chatFrm.loadPages(loadFromZipOrFile(dbZip, Account.ProtoPath, reopenchatsFileName));
+    chatFrm.loadPages(Account.AccProto, loadFromZipOrFile(dbZip, Account.ProtoPath, reopenchatsFileName));
 //    chatFrm.Visible := True;
    end;
 // if Assigned(dbZip) then
@@ -2089,21 +2096,21 @@ loggaEvtS('Various lists: loaded');
 
  if lockOnStart then
   begin
-    startingLock:=TRUE;
+    startingLock := TRUE;
     if not doLock then
       Exit;
   enD;
- startingLock:=FALSE;
+ startingLock := FALSE;
 
  if docking.Dock2Chat and docking.Docked2chat then
    begin
      RnQmain.WindowState := wsNormal;
      showForm(RnQmain);
-     bringForeground:= chatFrm.Handle
+     bringForeground := chatFrm.Handle
    end
   else
-   bringForeground:=RnQmain.handle;
- userTime:=0;
+   bringForeground := RnQmain.handle;
+ userTime := 0;
   setProgBar(nil, 0);
   if autoConnect then
     doConnect;
@@ -2179,6 +2186,9 @@ else
   AccPass := '';
   MainPrefs.Free;
   MainPrefs := NIl;
+
+  eventQ.onNewTop := NIL;
+  FreeAndNil(statusIcon);
 
   Account.Outbox.Clear;
   eventQ.clear;
@@ -2361,8 +2371,6 @@ begin
  uninstallHook;
 
  RnQmain.hide;
- freeAndNIL(statusIcon);
- eventQ.OnNewTop:=NIL;
  chatFrm.updateChatfrmXY;
  quitUser;
  quitconfirmation := false;
@@ -2413,7 +2421,6 @@ begin
 // acks.clear;
  freeAndNIL(Account.acks);
  freeAndNIL(eventQ);
-// freeAndNIL(statusIcon);
  freeAndNIL(uinlists);
 // freeAndNIL(Account.AccProto);
  freeAndNIL(prefFrm);

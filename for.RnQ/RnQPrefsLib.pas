@@ -44,7 +44,7 @@ type
       Destructor Destroy; OverRide;
       procedure Load(const cfg: RawByteString);
       procedure resetPrefs;
-      procedure getPrefStr(const key: String; var Val: String);
+      function  getPrefStr(const key: String; var Val: String): Boolean;
       function  getPrefBool(const key: String; var Val: Boolean): Boolean;
       procedure getPrefBlob(const key: String; var Val: RawByteString);
       procedure getPrefBlob64(const key: String; var Val: RawByteString);
@@ -52,6 +52,7 @@ type
       procedure getPrefDate(const key: String; var Val: TDateTime);
       procedure getPrefDateTime(const key: String; var Val: TDateTime);
       procedure getPrefValue(const key: String; et: TElemType; var Val : TPrefElem);
+      function getPrefGuid(const key: String; var Val: TGUID): Boolean;
       function getPrefBoolDef(const key: String; const DefVal: Boolean): Boolean;
       function getPrefBlobDef(const key: String; const DefVal: RawByteString = ''): RawByteString;
       function getPrefBlob64Def(const key: String; const DefVal: RawByteString = ''): RawByteString;
@@ -73,6 +74,7 @@ type
  {$IFDEF DELPHI9_UP}
       procedure addPrefDate(const key: String; const Val: TDate);
  {$ENDIF DELPHI9_UP}
+      procedure addPrefGuid(const key: String; const Val: TGUID);
       procedure addPrefParam(param: TObject);
       procedure addPrefArrParam(param: array of TObject);
       procedure getPrefArrParam(param: array of TObject);
@@ -162,7 +164,7 @@ type
 implementation
 
  uses
-   SysUtils, Character, ExtCtrls, StdCtrls, Controls,
+   SysUtils, Character, ExtCtrls, StdCtrls, Controls, Types,
    RnQSpin, RDUtils,
  {$IFDEF RNQ}
    RQlog,
@@ -367,8 +369,8 @@ end;
  {$IFDEF DELPHI9_UP}
 procedure TRnQPref.addPrefDate(const key: String; const Val: TDate);
 var
-  El : TPrefElement;
-  i : Integer;
+  El: TPrefElement;
+  i: Integer;
 begin
   if key = '' then
     Exit;
@@ -388,10 +390,16 @@ begin
 end;
  {$ENDIF DELPHI9_UP}
 
+procedure TRnQPref.addPrefGuid(const key: String; const Val: TGUID);
+begin
+  addPrefStr(Key, GUIDToString(Val));
+end;
+
+
 procedure TRnQPref.addPrefInt(const key: String; const Val: Integer);
 var
-  El : TPrefElement;
-  i : Integer;
+  El: TPrefElement;
+  i: Integer;
 begin
   if key = '' then
     Exit;
@@ -414,12 +422,11 @@ procedure TRnQPref.addPrefParam(param: TObject);
 begin
   if param is TCheckBox then
     addPrefBool(TCheckBox(param).HelpKeyword, TCheckBox(param).Checked);
-
 end;
 
 procedure TRnQPref.addPrefArrParam(param: array of TObject);
 var
-  pp : TObject;
+  pp: TObject;
 begin
   for pp in param do
     if (pp is TCheckBox) {and (TCheckBox(pp).HelpKeyword > '')} then
@@ -806,26 +813,46 @@ begin
    end;
 end;
 
-procedure TRnQPref.getPrefStr(const key: String; var Val : String);
+function TRnQPref.getPrefStr(const key: String; var Val: String): Boolean;
 var
   i: Integer;
   el: TPrefElement;
 begin
+  Result := false;
    begin
 //    Result := '';
      i := fPrefStr.IndexOf(key);
      if i >= 0 then
       begin
+        Result := True;
        el := TPrefElement(fPrefStr.Objects[i]);
        if el.ElType = ET_Blob then
          Val := UnUTF(AnsiStrings.StrPas(el.elem.bVal))
         else
        if el.ElType = ET_String then
          Val := StrPas(el.elem.sVal)
-//        else
-//         Result := DefVal;
+        else
+         Result := False;
       end
    end;
+end;
+
+function TRnQPref.getPrefGuid(const key: String; var Val: TGUID): Boolean;
+var
+  str: String;
+begin
+  Result := getPrefStr(key, str);
+  if Result then
+    begin
+      if str = '' then
+        Val := GUID_NULL
+      else try
+        Val := StringToGUID(str);
+      except
+        Val := GUID_NULL;
+        Result := false;
+      end;
+    end;
 end;
 
 function TRnQPref.getPrefStrDef(const key: String; const DefVal: String): String;

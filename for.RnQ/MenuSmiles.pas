@@ -361,19 +361,19 @@ var
   row, col: Integer;
 //  DrawLines, SmileCount: integer;
 //  showCnt: Integer;
-  so: TSmlObj;
+//  so: TSmlObj;
 begin
 //  smilecount :=  RQSmiles.SmilesCount;
-//drawlines := fprefs.LINES.Position;
+//  drawlines := fprefs.LINES.Position;
   row := menusel mod DrawLines;
   col := menusel div DrawLines;
   case key of
-    VK_ESCAPE :
+    VK_ESCAPE:
       begin
         self.Hide;
         gotochat;
       end;
-    VK_UP :
+    VK_UP:
       begin
         case row of
          0  : row := DrawLines-1;
@@ -384,7 +384,7 @@ begin
         if (col*DrawLines + row)> DrawSmiles-1 then
           row := (DrawSmiles mod Drawlines)-1;
       end;
-    VK_DOWN :
+    VK_DOWN:
       begin
        if (row = DrawLines-1)or(row = -1) then
          row := 0
@@ -393,7 +393,7 @@ begin
        if (col*DrawLines + row)>DrawSmiles-1 then
          row := 0;
       end;
-    VK_RIGHT :
+    VK_RIGHT:
      begin
       if row = -1 then
         row := 0;

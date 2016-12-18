@@ -967,7 +967,7 @@ procedure TRnQmain.sendContactsAction(sender:Tobject);
 var
 //  i: integer;
 //  s: String;
-  s: AnsiString;
+  s: RawByteString;
   cnt: TRnQContact;
   wnd: TselectCntsFrm;
   cl: TRnQCList;

@@ -299,7 +299,7 @@ const
     'n','o','p','q','r','s','t','u','v','w','x','y','z',
     '0','1','2','3','4','5','6','7','8','9','+','/');
 
-function UUencode(const s: string):string;
+function UUencode(const s: string): string;
 var
   x: Integer;
   i: Integer;
@@ -350,7 +350,7 @@ const
     64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,
     64,64,64,64,64,64,64,64,64,64,64,64,64);
 
-function UUdecode(const s: AnsiString) : string;
+function UUdecode(const s: AnsiString): string;
 var
   nbytesdecoded: Integer;
   x: Integer;

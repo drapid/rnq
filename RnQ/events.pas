@@ -198,6 +198,8 @@ Type
     destructor Destroy; override;
     function  add(kind_: integer; c: TRnQContact; when: Tdatetime; flags_: integer): Thevent; overload;
     procedure add(ev: Thevent); overload;
+    function  Get(Index: Integer): Thevent;
+    procedure Put(Index: Integer; Item: Thevent);
     function  pop: Thevent;
     function  top: Thevent;
     function  empty: boolean;
@@ -212,11 +214,14 @@ Type
     procedure fromString(const Qs: RawByteString);
     function  toString: RawByteString; reIntroduce;
     procedure removeExpiringEvents;
+    property Items[Index: Integer]: Thevent read Get write Put; default;
    end; // TeventQ
 
+  function  event2imgName(e: integer): TPicName;
+
 var
-  hasMsgOK :  Boolean;
-  hasMsgSRV : Boolean;
+  hasMsgOK:  Boolean;
+  hasMsgSRV: Boolean;
 
 
 implementation
@@ -233,9 +238,8 @@ uses
   themesLib, pluginutil, globalLib, mainDlg,
   Protocols_all,
  {$IFDEF PROTOCOL_ICQ}
-  viewinfoDlg, ICQConsts, protocol_ICQ, ICQv9,
+  protocol_ICQ,
  {$ENDIF PROTOCOL_ICQ}
-//  Contacts
   roasterLib;
 
 function Thevent.clone: Thevent;
@@ -1194,6 +1198,16 @@ else
   end;
 end; // add
 
+function TeventQ.Get(Index: Integer): Thevent;
+begin
+  Result := Thevent(inherited get(Index));
+end;
+
+procedure TeventQ.Put(Index: Integer; Item: Thevent);
+begin
+  inherited put(Index, Item);
+end;
+
 function TeventQ.add(kind_: integer; c: TRnQContact; when: Tdatetime; flags_: integer): Thevent;
 begin
   result := Thevent.create;
@@ -1491,6 +1505,27 @@ begin
     else
       inc(i);
 end; // removeExpiringEvents
+
+//function event2imgidx(e: integer): integer;
+function event2imgName(e: integer): TPicName;
+begin
+  case e of
+    EK_URL:       result := PIC_URL;
+    EK_MSG:       result := PIC_MSG;
+    EK_CONTACTS:  result := PIC_CONTACTS;
+    EK_ADDEDYOU:  result := PIC_ADDEDYOU;
+    EK_AUTHREQ:   result := PIC_AUTH_REQ;
+    EK_TYPINGBEG: result := PIC_TYPING;
+    EK_TYPINGFIN: result := PIC_TYPING;
+    EK_ONCOMING:  result := PIC_ONCOMING;
+    EK_OFFGOING:  result := PIC_OFFGOING;
+    EK_file:      result := PIC_FILE;
+    EK_GCARD:     result := PIC_GCARD;
+    EK_BUZZ:      result := PIC_BUZZ;
+   else
+                  result := PIC_OTHER_EVENT;
+  end;
+end; // event2imgidx
 
 
 end.

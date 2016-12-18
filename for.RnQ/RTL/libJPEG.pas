@@ -261,34 +261,33 @@ type
   
 // #define JCS_EXTENSIONS 1
 // #define JCS_ALPHA_EXTENSIONS 1
-  
   // jpeglib.h line 219
+{ Known color spaces. }
   J_COLOR_SPACE = (
-    JCS_UNKNOWN,    { error/unspecified }
-    JCS_GRAYSCALE,  { monochrome }
-    JCS_RGB,        { red/green/blue }
-    JCS_YCbCr,      { Y/Cb/Cr (also known as YUV) }
-    JCS_CMYK,       { C/M/Y/K }
+    JCS_UNKNOWN, { error/unspecified }
+    JCS_GRAYSCALE, { monochrome }
+    JCS_RGB, { red/green/blue }
+    JCS_YCbCr, { Y/Cb/Cr (also known as YUV) }
+    JCS_CMYK, { C/M/Y/K }
     JCS_YCCK        { Y/Cb/Cr/K }
     {$IFDEF JCS_EXTENSIONS},
-    JCS_EXT_RGB,		{ red/green/blue }
-    JCS_EXT_RGBX,		{ red/green/blue/x }
-    JCS_EXT_BGR,		{ blue/green/red }
-    JCS_EXT_BGRX,		{ blue/green/red/x }
-    JCS_EXT_XBGR,		{ x/blue/green/red }
+    JCS_EXT_RGB, { red/green/blue }
+    JCS_EXT_RGBX, { red/green/blue/x }
+    JCS_EXT_BGR, { blue/green/red }
+    JCS_EXT_BGRX,	{ blue/green/red/x }
+    JCS_EXT_XBGR,	{ x/blue/green/red }
     JCS_EXT_XRGB		{ x/red/green/blue }
     {$IFDEF JCS_ALPHA_EXTENSIONS},
-    { When out_color_space it set to JCS_EXT_RGBX, JCS_EXT_BGRX,
-      JCS_EXT_XBGR, or JCS_EXT_XRGB during decompression, the X byte is
-      undefined, and in order to ensure the best performance,
-      libjpeg-turbo can set that byte to whatever value it wishes.  Use
-      the following colorspace constants to ensure that the X byte is set
-      to 0xFF, so that it can be interpreted as an opaque alpha
-      channel. }
-    JCS_EXT_RGBA,		{ red/green/blue/alpha }
-    JCS_EXT_BGRA,		{ blue/green/red/alpha }
-    JCS_EXT_ABGR,		{ alpha/blue/green/red }
-    JCS_EXT_ARGB		{ alpha/red/green/blue }
+  { When out_color_space it set to JCS_EXT_RGBX, JCS_EXT_BGRX,
+  JCS_EXT_XBGR, or JCS_EXT_XRGB during decompression, the X byte is
+  undefined, and in order to ensure the best performance,
+  libjpeg-turbo can set that byte to whatever value it wishes.  Use
+  the following colorspace constants to ensure that the X byte is set
+  to 0xFF, so that it can be interpreted as an opaque alpha channel. }
+    JCS_EXT_RGBA,	{ red/green/blue/alpha }
+    JCS_EXT_BGRA,	{ blue/green/red/alpha }
+    JCS_EXT_ABGR,	{ alpha/blue/green/red }
+    JCS_EXT_ARGB { alpha/red/green/blue }
     {$ENDIF}
     {$ENDIF}
   );
@@ -1071,7 +1070,7 @@ const
     LIB_JPEG_NAME = 'libjpeg.so.62';
   {$endif}
 
-  function init_libJPEG(const libJPEG_Name: AnsiString = LIB_JPEG_NAME): boolean;
+  function init_libJPEG(const libJPEG_Name: String = LIB_JPEG_NAME): boolean;
   procedure quit_libJPEG;
 
   procedure jpeg_create_compress(cinfo: j_compress_ptr);
@@ -1094,7 +1093,8 @@ var
 const
   Kernel32 = 'kernel32.dll';
 
-  function LoadLibrary(lpFileName: pAnsiChar): LongWord; stdcall; external Kernel32 name 'LoadLibraryA';
+//  function LoadLibrary(lpFileName: pAnsiChar): LongWord; stdcall; external Kernel32 name 'LoadLibraryA';
+  function LoadLibraryExW(lpLibFileName: PWideChar; hFile: THandle; dwFlags: LongWord): HMODULE; stdcall; external Kernel32 name 'LoadLibraryExW';
   function FreeLibrary(hModule: LongWord): LongBool; stdcall; external Kernel32 name 'FreeLibrary';
   function GetProcAddress(hModule: LongWord; lpProcName: pAnsiChar): Pointer; stdcall; external Kernel32 name 
 'GetProcAddress';
@@ -1132,15 +1132,16 @@ begin
 end;
 
 
-function init_libJPEG(const libJPEG_Name: AnsiString): boolean;
+function init_libJPEG(const libJPEG_Name: String): boolean;
 var
   Temp: Boolean;
 begin
-  if (libJPEG_RefCount = 0) or (libJPEG_Handle = {$ifdef win32} 0 {$else} {$ifdef win64} 0 {$else} nil {$endif} {$endif}) then 
+  if (libJPEG_RefCount = 0) or (libJPEG_Handle = {$ifdef win32} 0 {$else} {$ifdef win64} 0 {$else} nil {$endif} {$endif}) then
   begin
     if libJPEG_Handle = {$ifdef win32} 0 {$else} {$ifdef win64} 0 {$else} nil {$endif} {$endif} then
       {$ifdef win32}
-        libJPEG_Handle := LoadLibrary(pAnsiChar(libJPEG_Name));
+//        libJPEG_Handle := LoadLibrary(pAnsiChar(libJPEG_Name));
+        libJPEG_Handle := LoadLibraryExW(PWideChar(libJPEG_Name), 0, 0);
       {$else}
         {$ifdef win64}
           libJPEG_Handle := LoadLibrary('jpeg62_x64.dll');

@@ -206,7 +206,7 @@ uses
  {$IFDEF PREF_IN_DB}
   DBPrefsLib,
  {$ELSE ~PREF_IN_DB}
-    RnQPrefsLib,
+  RnQPrefsLib,
  {$ENDIF PREF_IN_DB}
  {$IFDEF UNICODE}
    AnsiStrings,
@@ -947,11 +947,11 @@ begin
 
     { domain is not used             }
     { hostname is the local hostname }
-    if ForProxy then begin
-        Result := NtlmGetMessage3('',
-                                  Hostname,
-                                  http.user, //FProxyUsername,
-                                  http.pwd,// FProxyPassword,
+      if ForProxy then begin
+          Result := NtlmGetMessage3('',
+                                    Hostname,
+                                    http.user, //FProxyUsername,
+                                    http.pwd,// FProxyPassword,
                                     http.FNTLMMsg2Info, CP_ACP, 1);
       end
       else begin
@@ -1127,6 +1127,7 @@ begin
     httpCli.MultiThreaded := True;
     httpCli.URL := URL;
     httpCli.FollowRelocation := True;
+    httpCli.SslContext := TSslContext.Create(NIL);
     SetupProxy(httpCli);
 
     AvStream := TMemoryStream.Create;
@@ -1184,6 +1185,8 @@ begin
         end;
       end;
     finally
+      httpCli.SslContext.Free;
+      httpCli.SslContext := NIL;
       httpCli.Free;
       FreeAndNil(AvStream);
     end;

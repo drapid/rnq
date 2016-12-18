@@ -44,22 +44,22 @@ type
     procedure Init;
     procedure SetNameVis;
   public
+    tempStatus: byte;
     { Public declarations }
-//    procedure ShowNear(icq: TICQSession; mR: TRect; X, Y: Integer);
     procedure ShowNear(mR: TRect; X, Y: Integer);
 //    constructor ShowNear2(owner_: Tcomponent; proto : IRnQProtocol; mR: TRect; X, Y: Integer);
 //    constructor ShowNear2(owner_: TWinControl; proto : IRnQProtocol; mR: TRect; X, Y: Integer);
     class procedure ShowNear2(owner_: TWinControl; const proto: TRnQProtocol; mR: TRect; X, Y: Integer);
+    property  currentPPI: Integer read GetParentCurrentDpi;
   end;
 
   function OpenedXStForm: Boolean;
 
-var
+//var
 //  xStatusForm: TxStatusForm;
 //  xStatusbuttons: array [low(aXStatus)..High(aXStatus)] of TStsBtn;
 //  xStatusbuttons: array [low(XStatus6)..High(XStatus6)] of TStsBtn;
 //  xStatus6buttons: array [0..XStatus6Count-1] of TStsBtn;
-  tempStatus: byte;
 
 implementation
 
@@ -80,25 +80,6 @@ uses
 
 procedure TxStatusForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-{
-  if ModalResult = mrOk then
-   begin
-//    RnQmain.sBar.Repaint;
-    RnQmain.PntBar.Repaint;
-    if thisProto.isOnline then
-      if thisProto.ProtoElem is TicqSession then
-//      icq.setStatusStr(ExtStsStrings[icq.curXStatus], xStatus6[icq.curXStatus].pid);
-//      thisICQ.setStatusStr(ExtStsStrings[thisICQ.curXStatus], XStatusArray[thisICQ.curXStatus].pid6);
-//      if UseOldXSt then
-        ChangeXStatus(TicqSession(thisProto.ProtoElem), tempStatus, xstatusname.text, XStatusStrMemo.Text)
-//       else
-//        thisICQ.setStatusStr(thisICQ.curXStatus, ExtStsStrings[thisICQ.curXStatus]);
-//      icq.sendCapabilities;
-      else if thisProto.ProtoElem is TMRASession then
-        with TMRASession(thisProto.ProtoElem) do
-          setStatusStr(curXStatus.id, MRAExtStsStrings[curXStatus.idx]);
-   end;
-}
   saveListsDelayed := True;
   if Assigned(childWindows) then
     childWindows.remove(self);

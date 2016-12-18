@@ -32,6 +32,7 @@ type
 
   TitemKind=( PK_NONE, PK_HEAD, PK_TEXT, PK_ARROWS_UP, PK_ARROWS_DN, PK_LINK,
     PK_SMILE, PK_CRYPTED, PK_RQPIC, PK_RQPICEX, PK_RNQBUTTON);
+
   PhistoryItem = ^ThistoryItem;
   ThistoryLink = record
     evIdx: integer;    // -1 for null links
@@ -41,6 +42,7 @@ type
     id: integer;
     ev: Thevent;
    end;
+
   TLinkClickEvent = procedure(
     const Sender: TObject;
     const LinkHref: String;
@@ -194,6 +196,7 @@ type
     function  getQuoteByIdx(var pQuoteIdx: Integer): String;
     procedure setScrollPrefs(ShowAll: Boolean);
     function  AllowShowAll: Boolean;
+    function  hasEvents: Boolean;
   end; // ThistoryBox
 
 const
@@ -256,9 +259,6 @@ uses
   {$ENDIF USE_GDIPLUS}
 //  historyRnQ,
   Base64,
- {$IFDEF PROTOCOL_ICQ}
-//  ICQConsts, ICQv9,
- {$ENDIF PROTOCOL_ICQ}
   Protocols_All,
   {$IFDEF USE_GDIPLUS}
     RnQGraphics,
@@ -3673,6 +3673,11 @@ end;
 function ThistoryBox.AllowShowAll: Boolean;
 begin
   Result := True;
+end;
+
+function ThistoryBox.hasEvents: Boolean;
+begin
+  Result := topVisible > 0;
 end;
 
 function ThistoryBox.historyNowCount: Integer;

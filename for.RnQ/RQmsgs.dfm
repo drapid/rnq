@@ -5,7 +5,6 @@ object msgsFrm: TmsgsFrm
   ClientHeight = 225
   ClientWidth = 342
   Color = clBtnFace
-  Constraints.MaxWidth = 431
   Constraints.MinWidth = 350
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

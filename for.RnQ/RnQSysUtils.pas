@@ -12,14 +12,14 @@ interface
 uses
   windows, sysutils, Forms, graphics, Classes;
 
-  function  connectionAvailable:boolean;
-  function  getDefaultBrowser(const proto:string='http'):string;
-  procedure exec(const cmd:string; const pars:string='');
+  function  connectionAvailable: boolean;
+  function  getDefaultBrowser(const proto: string='http'): string;
+  procedure exec(const cmd: string; const pars: string='');
   function  DSiExecute(const commandLine: string;
     visibility: integer = SW_SHOWDEFAULT; const workDir: string = '';
     wait: boolean = false): cardinal;
 //  procedure openURL(url: AnsiString);
-  procedure openURL(const pURL: String; const useDefaultBrowser : boolean;
+  procedure openURL(const pURL: String; const useDefaultBrowser: boolean;
                   const browserCmdLine: String);
 
 //Для того, чтобы убрать программу Delphi из списка диспетчера задач можно воспользоваться следующим кодом:
@@ -27,17 +27,17 @@ uses
 //  function RegisterServiceProcess(dwProcessID, dwType: Integer): Integer; stdcall; external 'KERNEL32.DLL';
 //  procedure HideFromProcess;
 
-//  function  getSpecialFolder(const what:string):string;
+//  function  getSpecialFolder(const what: string): string;
   function getSpecialFolder(const what: Integer): String;
-//  function  getURLfromFav(fn:string):string;
+//  function  getURLfromFav(fn: string): string;
   function  desktopWorkArea(clHandle: THandle): TRect;
-  function  ForceForegroundWindow(hwnd:THandle; doRestore:boolean=TRUE): Boolean;
+  function  ForceForegroundWindow(hwnd: THandle; doRestore: boolean=TRUE): Boolean;
 
-//function  getRegion(bmp:TGPBitmap):HRGN;
-function  getRegion(bmp:Tbitmap):HRGN;
-function  isTopMost(frm:Tform):boolean;
-function  setTopMost(frm:Tform; val:boolean):boolean;
-function  formVisible(frm:Tform):boolean;
+//function  getRegion(bmp: TGPBitmap): HRGN;
+function  getRegion(bmp: Tbitmap): HRGN;
+function  isTopMost(frm: Tform): boolean;
+function  setTopMost(frm: Tform; val: boolean): boolean;
+function  formVisible(frm: Tform): boolean;
 
 { Clipboard }
 
@@ -48,13 +48,13 @@ function  formVisible(frm:Tform):boolean;
   function  DSiAddApplicationToFirewallExceptionList(const entryName,
     applicationFullPath: string): boolean;
 
-  function  validFilename(const s:string):string;
-  procedure addLinkToFavorites(const link:string);
+  function  validFilename(const s: string): string;
+  procedure addLinkToFavorites(const link: string);
 
-  procedure dockSet(const hnd : HWND; const pOn:boolean; const pCallbackMessage : Integer);
+  procedure dockSet(const hnd: HWND; const pOn: boolean; const pCallbackMessage: Integer);
   procedure setAppBarSize(const hnd: HWND; const R: TRect;
-                          const pCallbackMessage : Integer;
-                          const pIsLeft : Boolean);
+                          const pCallbackMessage: Integer;
+                          const pIsLeft: Boolean);
   function  IsCanShowNotifications: Boolean;
   function  GetScaleFactor(hnd: HWND): Integer; deprecated 'Need to add support for scaled monitors';
 
@@ -656,7 +656,9 @@ var
           pClipData := GlobalLock(hClipData);
           Win32Check(assigned(pClipData));
           try
+    {$WARN UNSAFE_CODE OFF}
             Move(PChar(clipStrings[iFormats])^, pClipData^, Length(clipStrings[iFormats]) + 1);
+    {$WARN UNSAFE_CODE ON}
            finally
             GlobalUnlock(hClipData);
           end;
@@ -862,9 +864,9 @@ procedure setAppBarSize(const hnd: HWND; const R: TRect;
                         const pCallbackMessage: Integer;
                         const pIsLeft: Boolean);
 var
-  abd:APPBARDATA;
-  scale : Integer;
-  rs : TRect;
+  abd: APPBARDATA;
+  scale: Integer;
+  rs: TRect;
 begin
 
   rs := r;
@@ -881,21 +883,21 @@ begin
        end
     end;
 
-  abd.cbsize:=sizeOf(abd);
-  abd.hWnd:= hnd;
-  abd.uCallbackMessage:= pCallbackMessage;
+  abd.cbsize := sizeOf(abd);
+  abd.hWnd := hnd;
+  abd.uCallbackMessage := pCallbackMessage;
   abd.rc := rs;
   if pIsLeft then
-    abd.uedge:=ABE_LEFT
+    abd.uedge := ABE_LEFT
    else
-    abd.uedge:=ABE_RIGHT;
+    abd.uedge := ABE_RIGHT;
   SHAppBarMessage(ABM_SETPOS, abd);
 end; // setAppBarSize
 
 
-function  IsCanShowNotifications : Boolean;
+function  IsCanShowNotifications: Boolean;
 var
-  MachState : Integer;
+  MachState: Integer;
 begin
   Result := True;
   try
@@ -917,6 +919,7 @@ begin
   result := 100;
 //
 //  hm := MonitorFromWindow(hnd, MONITOR_DEFAULTTONEAREST);
+//  hm.
 // if SUCCEEDED(GetScaleFactorForMonitor(hm, Scale)) then
 //   Result := Scale;
 end;

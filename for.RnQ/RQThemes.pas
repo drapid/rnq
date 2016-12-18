@@ -267,8 +267,8 @@ type
     useTSC: TThemeSubClass;
 //    supSmiles: Boolean;
  {$IFDEF RNQ_FULL}
- {$IFDEF SMILES_ANI_ENGINE}
     useAnimated: Boolean;
+ {$IFDEF SMILES_ANI_ENGINE}
 //    Anipicbg: Boolean;
     AnibgPic: TBitmap;
     AnibgPicPPI: Integer;
@@ -656,8 +656,10 @@ begin
 //  FSmiles.Sorted := True;
 //  FAniSmls.Sorted := True;
  {$ENDIF RNQ_FULL}
+ {$IFDEF SMILES_ANI_ENGINE}
   AnibgPic := NIL;
- 
+ {$ENDIF SMILES_ANI_ENGINE}
+
   initThemeIcons;
 end;
 
@@ -669,10 +671,10 @@ begin
   SetLength(ThemePath.subfn, 0);
 //  SetLength(title, 0);
 //  SetLength(desc, 0);
+ {$IFDEF SMILES_ANI_ENGINE}
   if Assigned(AnibgPic) then
    AnibgPic.Free;
   AnibgPic := NIL;
- {$IFDEF SMILES_ANI_ENGINE}
   if Assigned(FAniTimer) then
    FreeAndNil(FAniTimer);
   FdrawCS.Free;
@@ -852,11 +854,6 @@ begin
 //   FBigPics.Clear;
    SetLength(FSmileBigPics, 0);
 
-    if Assigned(AnibgPic) then
-    begin
-  //    AnibgPic. := 0;
-  //    AnibgPic.GetHeight := 0;
-    end;
    {$ENDIF RNQ_FULL}
   end;
 
@@ -1041,13 +1038,15 @@ begin
 // UnInitGDIP;
 // InitGDIP;
     useAnimated := False;
+ {$IFDEF SMILES_ANI_ENGINE}
     if Assigned(AnibgPic) then
     begin
      AnibgPic.Free;
      AnibgPic := NIL;
   //   Anipicbg := False;
     end;
-  end;  
+ {$ENDIF SMILES_ANI_ENGINE}
+  end;
  {$ENDIF RNQ_FULL}
 
   Clear(subClass);
@@ -2105,12 +2104,12 @@ begin
   if i >= 0 then
  {$WARN UNSAFE_CAST OFF}
     result := TColor(FClr.Objects[i])
- {$WARN UNSAFE_CAST ON}
    else
     begin
 //      addProp(name, pDefColor);
       result := pDefColor;
     end
+ {$WARN UNSAFE_CAST ON}
 end;
 
 function TRQtheme.GetAColor(const name: TPicName; pDefColor: Integer = clDefault): Cardinal;
@@ -2152,7 +2151,6 @@ begin
    {$ELSE NOT USE_GDIPLUS}
     result := cardinal(FClr.Objects[i])
    {$ENDIF USE_GDIPLUS}
- {$WARN UNSAFE_CAST ON}
    else
     begin
 //      addProp(name, pDefColor);
@@ -2163,6 +2161,7 @@ begin
        result := pDefColor
       {$ENDIF USE_GDIPLUS}
     end
+ {$WARN UNSAFE_CAST ON}
 end;
 
 function TRQtheme.pic2ico(pTE: TRnQThemedElement; const picName: TPicName; ico: Ticon): Boolean;
@@ -2202,7 +2201,7 @@ begin
    end
   else *)
   begin
-//   bmp :=TRnQBitmap.Create;
+//   bmp := TRnQBitmap.Create;
    result := false;
    i := -1;
    if pTE <> RQteDefault then
@@ -2236,7 +2235,7 @@ begin
                bmp.GetHICON(hi);
                if Assigned(Bmp) then
                  Bmp.Free;
-               Bmp := NIL;
+//               Bmp := NIL;
              end
             else
              hi := 0;
@@ -2307,7 +2306,7 @@ begin
            bmp.GetHICON(ico);
            if Assigned(Bmp) then
              Bmp.Free;
-           Bmp := NIL;
+//           Bmp := NIL;
          end
         else
          ico := 0;
@@ -2809,13 +2808,15 @@ procedure TRQtheme.addProp(const name: TPicName; c: TColor);
 var
   i: Integer;
 begin
- i := FClr.IndexOf(AnsiLowerCase(name));
- if i < 0 then
-   FClr.AddObject(AnsiLowerCase(name), TObject(c))
- else
-  begin
-   FClr.Objects[i] := TObject(c);
-  end;
+ {$WARN UNSAFE_CAST OFF}
+  i := FClr.IndexOf(AnsiLowerCase(name));
+  if i < 0 then
+    FClr.AddObject(AnsiLowerCase(name), TObject(c))
+   else
+    begin
+     FClr.Objects[i] := TObject(c);
+    end;
+ {$WARN UNSAFE_CAST ON}
 end;
 
 procedure TRQtheme.loadThemeScript(const fn: string; const path: string);
@@ -3564,7 +3565,7 @@ begin
   loadedPic := NIL;
   if Assigned(loadedAniPic) then
     loadedAniPic.Free;
-  loadedAniPic := NIL;
+//  loadedAniPic := NIL;
 //  FreeAndNil(LastLoadedPic);
 end; // loadThemeScript
 

@@ -841,43 +841,43 @@ begin
 //           sa := ev.bInfo;
            sa := ev.getBodyBin;
            if length(sa) >= 4 then
-             begin
+            begin
               st := (str2int(sa));
 
               if Assigned(thisCnt) then
               begin
                  stsArr := thisCnt.fProto.statuses;
                  if {(st >= Low(stsArr)) and} (st <=High(stsArr)) then
-              begin
-                b := infoToXStatus(sa);
-                p := status2imgName(st, (length(sa)>4) and boolean(sa[5]));
-  //              if (not XStatusAsMain) and (st <> SC_ONLINE)and (b>0) then
-                if (st <> byte(SC_ONLINE))or(not XStatusAsMain)or (b=0)  then
-                 begin
-                 if calcOnly then
-                     inc(X, theme.GetPicSize(RQteDefault, p, PPI).cx)
-                  else
-                      inc(X, theme.drawPic(DC, X+2, Y, p, true, PPI).cx);
-                  ;
-                  inc(X, 2);
-                 end;
+                  begin
+                    b := infoToXStatus(sa);
+                    p := status2imgName(st, (length(sa)>4) and boolean(sa[5]));
+      //              if (not XStatusAsMain) and (st <> SC_ONLINE)and (b>0) then
+                    if (st <> byte(SC_ONLINE))or(not XStatusAsMain)or (b=0)  then
+                     begin
+                       if calcOnly then
+                         inc(X, theme.GetPicSize(RQteDefault, p, 0, PPI).cx)
+                        else
+                         inc(X, theme.drawPic(DC, X+2, Y, p, true, PPI).cx);
+                        ;
+                       inc(X, 2);
+                     end;
   //              with statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s)), (length(s)>4) and boolean(s[5])) do
  {$IFDEF PROTOCOL_ICQ}
-                if (b > 0) then
-                begin
-                 if {(b >= Low(xStsArr)) and} (b <= High(XStatusArray)) then
-                 begin
-                   p := XStatusArray[b].PicName;
-                   if calcOnly then
-                     inc(X, theme.GetPicSize(RQteDefault, p, PPI).cx+1)
-                    else
-                     theme.drawPic(DC, X+1, Y, p, True, PPI);
-                 end;
-               end;
+                    if (b > 0) then
+                    begin
+                     if {(b >= Low(xStsArr)) and} (b <= High(XStatusArray)) then
+                     begin
+                       p := XStatusArray[b].PicName;
+                       if calcOnly then
+                         inc(X, theme.GetPicSize(RQteDefault, p, 0, PPI).cx+1)
+                        else
+                         theme.drawPic(DC, X+1, Y, p, True, PPI);
+                     end;
+                    end;
  {$ENDIF PROTOCOL_ICQ}
+                  end;
               end;
-             end;
-         end;
+            end;
          end;
   inc(x, GAP * 2);
 //inc(y, h);
@@ -1061,7 +1061,7 @@ begin
            R2.size := MakeSize(icon.Bmp.getSize(PPI));
           end;
         if not calcOnly then
-          DrawRbmp(DC, icon.Bmp, R2);
+          DrawRbmp(DC, icon.Bmp, R2, false);
     //    cnv.Draw(5, y+3,  contact.icon);
         inc(y, GAP*5 + R2.Height);
         if calcOnly then

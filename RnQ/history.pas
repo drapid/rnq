@@ -909,7 +909,7 @@ end;
 
 
 var
-  writingQ:Tlist;
+  writingQ: Tlist;
 
 procedure writeHistorySafely(ev: Thevent; other: TRnQContact=NIL);
 begin

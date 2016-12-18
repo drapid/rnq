@@ -1,5 +1,6 @@
 unit RnQCrypt;
 {$I forRnQConfig.inc}
+{$I NoRTTI.inc}
 
 interface
 
@@ -206,6 +207,7 @@ var
 begin
   L := length(pwd);
   result := L shl 16;
+ {$WARN UNSAFE_CODE OFF}
   p := NIL;  // shut up compiler warning
   if pwd>'' then
     p := @pwd[1];
@@ -221,6 +223,7 @@ begin
     inc(result, ord(pwd[i]));
     inc(i);
    end;
+ {$WARN UNSAFE_CODE ON}
 end; // calculate_KEY1
 
 function MD5Pass(const s: RawBytestring): RawByteString;
@@ -234,7 +237,9 @@ begin
   SetLength(Result, length(MD5Digest));
 //  StrPLCopy(@result[1], PByte(@MD5Digest), length(MD5Digest))
 //  StrPLCopy(@result[1], PAnsiChar(@MD5Digest), length(MD5Digest))
+ {$WARN UNSAFE_CODE OFF}
   ansiStrings.StrPLCopy(@result[1], PAnsiChar(@MD5Digest), length(MD5Digest))
+ {$WARN UNSAFE_CODE ON}
 //  result := copy(PChar(MD5Digest), 0, length(MD5Digest));
 end;
 

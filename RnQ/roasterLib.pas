@@ -170,7 +170,7 @@ uses
   mainDlg, sysutils, utilLib, globalLib, groupsLib,
 //  ICQConsts,
  {$IFDEF PROTOCOL_ICQ}
-  ICQv9, ICQContacts, ICQconsts,
+  ICQv9, ICQContacts, ICQconsts, Protocol_ICQ,
  {$ENDIF PROTOCOL_ICQ}
   events,
  {$IFDEF USE_SECUREIM}
@@ -1351,10 +1351,11 @@ var
           {$ENDIF}
              if notinlist.exists(cnt) then
               begin
-                Result := statusDrawExt(0, 0, 0, byte(SC_UNK), FALSE, 0, PPI);
+                po.picName := PIC_STATUS_UNK;
                 if pIsRight then
-                  dec(p.X, Result.cx);
-                statusDrawExt(DC, p.X, p.Y, byte(SC_UNK), FALSE, 0)
+                    with theme.GetPicSize(po, 0, PPI) do
+                      dec(p.X, cx);
+                Result := theme.drawPic(DC, p, po, PPI);
               end
              else
  {$IFDEF PROTOCOL_ICQ}
@@ -1363,11 +1364,11 @@ var
                 begin
                   if pIsRight then
                    begin
-                    Result := statusDrawExt(0, 0, 0, byte(cnt.status),
+                    Result := ICQstatusDrawExt(0, 0, 0, byte(cnt.status),
                                  cnt.isInvisible, TICQcontact(cnt).xStatus, PPI);
                     dec(p.X, Result.cx);
                    end;
-                  Result := statusDrawExt(DC, p.X, p.Y, byte(TICQcontact(cnt).status),
+                  Result := ICQstatusDrawExt(DC, p.X, p.Y, byte(cnt.status),
                                  cnt.isInvisible, TICQcontact(cnt).xStatus, PPI);
                 end
       //         size:=theme.drawPic(cnv, x,y+1, rosterImgNameFor(c))

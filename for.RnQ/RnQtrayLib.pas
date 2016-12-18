@@ -76,11 +76,11 @@ type
                       bitWarning, // иконка восклицания (жёлтая)
                       bitError);  // иконка ошибки (красная)
  {$ENDIF Use_Baloons}
-{  TBalloonType=(btNone, btError, btInfo, btWarning);
+{  TBalloonType = (btNone, btError, btInfo, btWarning);
 }
-  TtrayIcon=class
+  TtrayIcon = class
     private
-//      data:TNotifyIconData;
+//      data: TNotifyIconData;
       data: TNotifyIconDataW_V4;
       shown, fHidden: Boolean;
       Ico: TIcon;
@@ -109,7 +109,7 @@ type
     trayIcon: TtrayIcon;
     IcoName: TPicName;
     lastTip: String;
-    constructor Create;
+    constructor Create(hndl: THandle);
     destructor Destroy; override;
     procedure update;
     procedure empty;
@@ -131,11 +131,12 @@ var
   ShowBalloonTime: Int64;
   EnabledBaloons: Boolean;
   TrayIconDataVersion: Integer = 2;
+  trayIconGuid: TGUID;
 
 implementation
 
 uses
-  forms, sysutils,
+  forms, sysutils, Types,
   RDUtils, RnQStrings, RnQLangs, //themesLib,
   RQUtil, RQThemes, RnQGlobal
 //  dwTaskbarComponents, dwTaskbarList,
@@ -154,14 +155,14 @@ type
     property TaskbarList3;
   end;
 var
-  tbcmp : TRnQTaskbarComponent;
+  tbcmp: TRnQTaskbarComponent;
 }
 
-constructor TstatusIcon.create;
+constructor TstatusIcon.Create(hndl: THandle);
 begin
   if CheckWin32Version(6, 1) then
     TrayIconDataVersion := 4;
-  trayIcon := TtrayIcon.create(0);
+  trayIcon := TtrayIcon.create(hndl);
   trayIcon.setTip(Application.Title);
   IcoName := '';
   lastTip := '';
@@ -293,13 +294,15 @@ begin
 end;
 
 constructor TtrayIcon.create(hndl: HWND);
-var
-  FGUID: TGUID;
+//var
+//  FGUID: TGUID;
 begin
   ZeroMemory(@data, NOTIFYIconDataW_V4_SIZE);
   if TrayIconDataVersion = 4 then
+    if IsEqualGUID(trayIconGuid, GUID_NULL) then
+      CreateGUID(trayIconGuid);
 //      CreateGUID(FGUID);
-    FGuid := RnQTrayIconGUID;
+//    FGuid := RnQTrayIconGUID;
 
  with data do
   begin
@@ -316,8 +319,7 @@ begin
       uFlags := flags_v4
      else
       uFlags := flags_v2;
-   uFlags := NIF_MESSAGE + NIF_ICON + NIF_TIP;
-   guidItem := FGUID;
+   guidItem := trayIconGuid;
   end;
 // tbcmp := TRnQTaskbarComponent.Create(Application);
 
@@ -423,11 +425,11 @@ end;
 {
 procedure TtrayIcon.setIconFile(fn: String);
 var
-  ico:Ticon;
+  ico: Ticon;
 begin
-ico:=Ticon.create;
-ico.loadFromFile(fn);
-setIcon(ico);
+  ico := Ticon.create;
+  ico.loadFromFile(fn);
+  setIcon(ico);
 end; // setIconFile}
 
 procedure TtrayIcon.setTip(const s: String);

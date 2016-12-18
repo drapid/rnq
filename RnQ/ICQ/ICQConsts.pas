@@ -952,7 +952,7 @@ type
  XStatusFlags = (xsf_Old, xsf_6);
  XStatusFlagsSet = set of XStatusFlags;
 const
-  XStatusArray : array[0..43] of record flags: XStatusFlagsSet;
+  XStatusArray: array[0..43] of record flags: XStatusFlagsSet;
                                 pidOld: RawByteString;
                                 pid6: RawByteString;
                                 PicName: TPicName;

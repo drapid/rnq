@@ -144,7 +144,7 @@ uses
   RQUtil, RDGlobal, RQThemes, RnQMenu, RnQSysUtils, RnQBinUtils,
   globallib, mainDlg, viewinfoDlg, chatDlg, utilLib,
   themesLib, RQCodes,
-  RQ_ICQ, ICQConsts, ICQContacts,
+  RQ_ICQ, ICQConsts, ICQContacts, Protocol_ICQ,
   menusUnit;
 
 {$R *.DFM}
@@ -342,7 +342,7 @@ end;
 
 procedure TwpFrm.FormCreate(Sender: TObject);
 var
-  i : byte;
+  i: byte;
 begin
   menu := TRnQPopupMenu.Create(Self);
   menu.OnPopup := menuPopup;
@@ -406,11 +406,11 @@ procedure TwpFrm.addResult(wp: TwpResult);
 var
   s: string;
 //  i: integer;
-//  li : TListItem;
-  n : PVirtualNode;
-//  r : Tresults;
-  tr : Presults;
-  cs : TCheckState;
+//  li: TListItem;
+  n: PVirtualNode;
+//  r: Tresults;
+  tr: Presults;
+  cs: TCheckState;
 begin
 // does already exist ?
   n := resultTree.GetFirst;
@@ -533,11 +533,11 @@ procedure TwpFrm.resultTreeCompareNodes(Sender: TBaseVirtualTree; Node1,
   Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
 begin
 {  if Column = 0 then
-    result:= CompareText(IntToStr(Node1..ImageIndex),  IntToStr(Node2.ImageIndex))
+    result := CompareText(IntToStr(Node1..ImageIndex),  IntToStr(Node2.ImageIndex))
   else
 //   if
 }
-    result:= - CompareText(Tresults(Presults(resultTree.getnodedata(Node1))^)[Column+1],
+    result := - CompareText(Tresults(Presults(resultTree.getnodedata(Node1))^)[Column+1],
       Tresults(Presults(resultTree.getnodedata(Node2))^)[Column+1])
 end;
 
@@ -546,11 +546,11 @@ procedure TwpFrm.resultTreeDrawNode(Sender: TBaseVirtualTree;
 var
   cnv: Tcanvas;
   x, y: integer;
-  s : Tstatus;
+  s: Tstatus;
 begin
   x:=PaintInfo.ContentRect.left;
-  y:=PaintInfo.ContentRect.top;
-  cnv:=PaintInfo.Canvas;
+  y := PaintInfo.ContentRect.top;
+  cnv := PaintInfo.Canvas;
   cnv.FillRect(PaintInfo.CellRect);
   if PaintInfo.Column = 0 then
   begin
@@ -563,7 +563,7 @@ begin
 }
 //    statusDraw(cnv, x, y, s);
     s := tstatus(Presults(sender.getnodedata(paintinfo.node))^[1][1]);
-    statusDrawExt(cnv.Handle, x, y, byte(s));
+    ICQstatusDrawExt(cnv.Handle, x, y, byte(s), false, 0, GetParentCurrentDpi);
 //    draws
 //    theme.drawPic(cnv, x, y, status2imgName(s));
     Exit;
@@ -590,7 +590,7 @@ else
  try
 //  if isOnlyDigits(Presults(sender.getnodedata(paintinfo.node))^[2]) then
    if thisICQ.readList(LT_ROSTER).exists(thisICQ, Presults(sender.getnodedata(paintinfo.node))^[2]) then
-     cnv.font.Color:=clGrayText;
+     cnv.font.Color := clGrayText;
   except
  end;
  cnv.TextRect(PaintInfo.CellRect, x,y, Presults(sender.getnodedata(paintinfo.node))^[PaintInfo.Column+1]);

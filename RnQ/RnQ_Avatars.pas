@@ -95,6 +95,7 @@ implementation
    StrUtils, math,
    RQUtil, RnQLangs, RnQDialogs, RnQNet, RnQFileUtil, RDUtils, RnQGlobal,
    utilLib, globalLib,
+   Protocols_all,
  {$IFDEF PROTOCOL_ICQ}
    ICQConsts, ICQv9,
 // Protocol_ICQ,
@@ -656,7 +657,8 @@ begin
   if not AvatarsSupport then
     Exit;
   path := AccPath + avtPath;
-  if (path='') or not directoryExists(path) then exit;
+  if (path='') or not directoryExists(path) then
+    exit;
 
   path:=includeTrailingPathDelimiter(path);
 //  for I := 0 to Length(hash) - 1 do
@@ -781,9 +783,12 @@ begin
      end;
 end;
 
+procedure updateAvatar1(cnt: TRnQContact);
+begin
+  updateAvatar(cnt, cnt.icon.Hash_safe{, True});
+end;
+
 procedure loadAvatars(const proto: TRnQProtocol; path: String);
-var
-  cnt: TRnQContact;
 begin
  {$IFDEF PROTOCOL_ICQ}
 //  path := userPath + avtPath;
@@ -795,10 +800,15 @@ begin
     exit;
 
   path := includeTrailingPathDelimiter(path);
+(*
   for cnt in proto.readList(LT_ROSTER) do
    begin
      updateAvatar(cnt, cnt.icon.Hash_safe{, True});
    end;
+*)
+  BeginPicsMassLoad;
+  proto.readList(LT_ROSTER).ForEachAsync(updateAvatar1);
+  EndPicsMassLoad;
 end;
 
 

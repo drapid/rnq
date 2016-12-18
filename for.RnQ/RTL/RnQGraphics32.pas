@@ -38,9 +38,9 @@ type
                );
 
 const
-  PAFormat : array [TPAFormat] of string = ('.dat','.bmp','.jpeg','.gif','.png', '.xml', '.swf', '.ico', '.tif', '.webp');
-  PAFormatString : array [TPAFormat] of string = ('Unknown', 'Bitmap', 'JPEG', 'GIF', 'PNG', 'XML', 'SWF', 'ICON', 'TIF', 'WEBP');
-  PAFormatMime : array [TPAFormat] of string = ('image/x-icon', 'image/bmp', 'image/jpeg',
+  PAFormat: array [TPAFormat] of string = ('.dat','.bmp','.jpeg','.gif','.png', '.xml', '.swf', '.ico', '.tif', '.webp');
+  PAFormatString: array [TPAFormat] of string = ('Unknown', 'Bitmap', 'JPEG', 'GIF', 'PNG', 'XML', 'SWF', 'ICON', 'TIF', 'WEBP');
+  PAFormatMime: array [TPAFormat] of string = ('image/x-icon', 'image/bmp', 'image/jpeg',
           'image/gif','image/png', 'text/xml', 'application/x-shockwave-flash', 'image/x-icon', 'image/tiff', 'image/webp');
 
 type
@@ -141,8 +141,8 @@ type
     procedure SetTransparentColor(clr: cardinal);
     function  bmp2ico32: HIcon;
     procedure GetHICON(var hi: HICON);
-    function  GetWidth: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-    function  GetHeight: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+    function  GetWidth: Integer; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+    function  GetHeight: Integer; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
     function  GetSize(PPI: Integer): TSize;
     function  RnQCheckTime: Boolean;
     property  Animated: Boolean read fAnimated;
@@ -153,13 +153,13 @@ type
     property  picDPI: Integer read fDPI;
   end;
 
-   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR, SrcR: TGPRect); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR: TGPRect; Bound: Boolean = True); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; X, Y: Integer); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
-//    procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; DestRect : TRect; SrcX, SrcY, SrcW, SrcH : Integer; pEnabled : Boolean= True); OverLoad; inline;
+   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR, SrcR: TGPRect); OverLoad; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR: TGPRect; Bound: Boolean = True); OverLoad; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap); OverLoad; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+   procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; X, Y: Integer); OverLoad; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+//    procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestRect : TRect; SrcX, SrcY, SrcW, SrcH: Integer; pEnabled: Boolean= True); OverLoad; inline;
    procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR, SrcR: TGPRect;
-                       pEnabled: Boolean= True; isCopy: Boolean = false); OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+                       pEnabled: Boolean= True; isCopy: Boolean = false); OverLoad; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 
    function  loadPic(const fn: string; var bmp: TRnQBitmap; idx: Integer = 0): Boolean; Overload;
    function  loadPic(var str0: TStream; var bmp: TRnQBitmap; idx: Integer = 0;
@@ -170,15 +170,17 @@ type
  {$ENDIF RNQ}
 
    function  loadPic2(const fn: string; var bmp: TRnQBitmap): boolean; // if not loaded then bmp is nil!
+   procedure BeginPicsMassLoad;
+   procedure EndPicsMassLoad;
 
-{   //function  loadPic(fn:string; bmp:Tbitmap):boolean; overload;
-    function  loadPic(fn:string; bmp:Tbitmap; idx : Integer = 0):boolean; overload;
-    function  loadPic(fn:string; img:Timage):boolean; overload;
-    function  loadPic(fn:string; var bmp:TGpBitmap; idx : Integer = 0):boolean; overload;
-    function  loadPic(fs:TStream; bmp:Tbitmap; idx : Integer = 0; name : string = ''):boolean; overload;
-    //function  loadPic(fs:TStream; var bmp:TGPbitmap; idx : Integer = 0):boolean; overload;
-    function  loadPic(fs:TStream; var bmp:TGPbitmap; idx : Integer = 0; name : string = ''):boolean; overload;
-    //procedure loadIco(fn:string; var result:Ticon);
+{   //function  loadPic(fn: string; bmp: Tbitmap): boolean; overload;
+    function  loadPic(fn: string; bmp: Tbitmap; idx: Integer = 0): boolean; overload;
+    function  loadPic(fn: string; img: Timage): boolean; overload;
+    function  loadPic(fn: string; var bmp: TGpBitmap; idx: Integer = 0): boolean; overload;
+    function  loadPic(fs: TStream; bmp: Tbitmap; idx: Integer = 0; name : string = ''):boolean; overload;
+    //function  loadPic(fs: TStream; var bmp: TGPbitmap; idx: Integer = 0): boolean; overload;
+    function  loadPic(fs: TStream; var bmp: TGPbitmap; idx: Integer = 0; name: string = ''):boolean; overload;
+    //procedure loadIco(fn: string; var result: Ticon);
 }
 
     function  isSupportedPicFile(fn: string): boolean;
@@ -209,19 +211,20 @@ type
   function  createBitmap(dx, dy: integer; PPI: Integer = cDefaultDPI): Tbitmap; overload;
   function  createBitmap(cnv: Tcanvas): Tbitmap; overload;
 
+
 // Color
 type
   Thls = record h,l,s: double; end; // H=[0,6] L=[0,1] S=[0,1]
 
-//  function GPtranspPColor(cl : Cardinal): Cardinal;
-//  function transpColor(cl : TColor; alpha : Byte): TColor;
+//  function GPtranspPColor(cl: Cardinal): Cardinal;
+//  function transpColor(cl: TColor; alpha: Byte): TColor;
   function  gpColorFromAlphaColor(Alpha: Byte; Color: TColor): Cardinal;
   function  color2hls(clr: Tcolor): Thls;
   function  hls2color(hls: Thls):  Tcolor;
-  function  addLuminosity(clr: Tcolor; q:real): Tcolor;
-  function  MidColor(clr1, clr2: Cardinal) : Cardinal; overLoad;
+  function  addLuminosity(clr: Tcolor; q: real): Tcolor;
+  function  MidColor(clr1, clr2: Cardinal): Cardinal; overLoad;
   function  MidColor(const clr1, clr2: Cardinal; koef: Double): Cardinal; overLoad;
-  function  blend(c1,c2: Tcolor; left: real): Tcolor;
+  function  blend(c1, c2: Tcolor; left: real): Tcolor;
 //function  traspBmp1(bmp: Tbitmap; bg: Tcolor; transpLevel: integer): Tbitmap;
 
 // convert
@@ -237,8 +240,8 @@ type
 type
   TRnQAni = TRnQBitmap;
 
-  function CreateAni(fn : String; var b : Boolean): TRnQBitmap; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE} overload;
-  function CreateAni(fs : TStream; var b : Boolean): TRnQBitmap; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE} overload;
+  function CreateAni(fn: String; var b: Boolean): TRnQBitmap; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE} overload;
+  function CreateAni(fs: TStream; var b: Boolean): TRnQBitmap; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE} overload;
   function LoadAGifFromStream(var NonAnimated: boolean;
               Stream: TStream): TRnQBitmap;
 
@@ -270,6 +273,7 @@ implementation
    RnQGlobal,
  {$ENDIF RNQ}
     litegif1,
+    cgJpeg,
     uIconStream
    ;
 {
@@ -332,15 +336,15 @@ type
 {$ENDIF FPC}
 
 const
-  JPEG_HDRS: array [0 .. 5] of AnsiString = (
+  JPEG_HDRS: array [0..6] of AnsiString = (
     #$FF#$D8#$FF#$E0,
     #$FF#$D8#$FF#$E1,
     #$FF#$D8#$FF#$ED, {ADOBE}
     #$FF#$D8#$FF#$E2, {CANON}
     #$FF#$D8#$FF#$E3,
-    #$FF#$D8#$FF#$DB {SAMSUNG});
-
-  TIF_HDR : array [0..3] of AnsiChar = #$49#$49#$2A#$00;
+    #$FF#$D8#$FF#$DB, {SAMSUNG}
+    #$FF#$D8#$FF#$FE {UNKNOWN});
+  TIF_HDR: array [0..3] of AnsiChar = #$49#$49#$2A#$00;
   TIF_HDR2: array [0..3] of AnsiChar = #$4D#$4D#$00#$2A;
   CLSID_WICWEBPDecoder: TGUID = '{C747A836-4884-47B8-8544-002C41BD63D2}';
 
@@ -352,6 +356,7 @@ var
                  'gif', 'png', 'jpg', 'jpe', 'jpeg');//, 'tif', 'dll')
  isWEBPSupport: Boolean;
  isTIFFSupport: Boolean;
+ JPEGTurbo: Boolean;
 
   var
     ThePalette: HPalette;       {the rainbow palette for 256 colors}
@@ -374,7 +379,7 @@ end;
 {
 destructor TAniFrame.Destroy;
 begin
-inherited Destroy;
+  inherited Destroy;
 end;}
 
 {----------------TAniFrameList.GetFrame}
@@ -386,7 +391,7 @@ end;
 
 destructor  TRnQBitmap.Destroy;
 var
- i : Integer;
+ i: Integer;
 begin
  FreeAndNil(fBmp);
  FreeAndNil(htMask);
@@ -440,7 +445,7 @@ begin
   fFormat := PA_FORMAT_UNK;
 end;
 
-constructor TRnQBitmap.Create(Width, Heigth : Integer);
+constructor TRnQBitmap.Create(Width, Heigth: Integer);
 begin
   Create;
 //  fBmp := createBitmap(Width, Heigth);
@@ -516,9 +521,9 @@ var
  Scan32: pColor32Array;
  I, X: Cardinal;
 // A1: Double;
- h,w : Integer;
- bt  : Boolean;
- Trans : TColor32;
+ h, w: Integer;
+ bt: Boolean;
+ Trans: TColor32;
 begin
 //  if not bmp.Transparent then
 //    Exit;
@@ -537,16 +542,16 @@ begin
          if bt and ((Color and not AlphaMask) = Trans.Color) then
            A := 0
           else
-           A:= $FF;
+           A := $FF;
        end;
      end;
    end;
 end;
 
-procedure Premultiply(var bmp : TBitmap);
-  function mult1(const a, b: byte) : byte; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+procedure Premultiply(var bmp: TBitmap);
+  function mult1(const a, b: byte): byte; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
   var
-    i : Integer;
+    i: Integer;
   begin
     if b = 255 then
       Result := a
@@ -564,7 +569,7 @@ var
  Scan32: pColor32Array;
  I, X: Cardinal;
 // A1: Double;
- h,w : Integer;
+ h, w: Integer;
 begin
   h := bmp.Height-1; // Сразу вычетаем 1 !!!
   w := bmp.Width-1;  // Сразу вычетаем 1 !!!
@@ -586,12 +591,12 @@ begin
    end;
 end;
 
-procedure Demultiply(bmp : TBitmap);
+procedure Demultiply(bmp: TBitmap);
 var
  Scan32: pColor32Array;
  I, X: Cardinal;
  A1: Double;
- h,w : Integer;
+ h, w: Integer;
 begin
   h := bmp.Height-1;
   w := bmp.Width-1;
@@ -603,7 +608,7 @@ begin
      begin
       if A > 0 then
        begin
-        A1:= A / $FF;
+        A1 := A / $FF;
         R := round(R / A1);
         G := round(G / A1);
         B := round(B / A1);
@@ -612,15 +617,15 @@ begin
    end;
 end;
 
-{procedure LoadPictureFile(Name : String; var gpPicture : IPicture);
+{procedure LoadPictureFile(Name: String; var gpPicture: IPicture);
 var
- aFile     : HFILE;
-// pstm      : IStream;
- pvData    : Pointer;
- dwBytesRead   : DWORD;
- dwFileSize    : DWORD;
- Global    : HGLOBAL;
- i:longint;
+ aFile: HFILE;
+// pstm: IStream;
+ pvData: Pointer;
+ dwBytesRead: DWORD;
+ dwFileSize: DWORD;
+ Global: HGLOBAL;
+ i: longint;
 begin
 
  aFile := CreateFile(PChar(Name), GENERIC_READ, 0, NIL, OPEN_EXISTING, 0, 0);
@@ -675,12 +680,12 @@ end;}
 function OleLoadPicture(stream: IStream; lSize: Longint; fRunmode: BOOL;
     const iid: TGUID; var vObject): HResult; stdcall external 'olepro32.dll' name 'OleLoadPicture';
 {$ENDIF}
-procedure LoadPictureStream(str : TStream; var gpPicture : IPicture);
+procedure LoadPictureStream(str: TStream; var gpPicture: IPicture);
 var
- stra : TStreamAdapter;
- dwFileSize    : DWORD;
-// Global    : HGLOBAL;
-// i:longint;
+ stra: TStreamAdapter;
+ dwFileSize: DWORD;
+// Global: HGLOBAL;
+// i: longint;
 begin
 
  str.Position := 0;
@@ -707,7 +712,7 @@ end;
 
 { $ENDIF ~FPC}
 
-function  loadPic2(const fn : string; var bmp : TRnQBitmap):boolean;
+function  loadPic2(const fn: string; var bmp: TRnQBitmap):boolean;
 begin
   Result := loadPic(fn, bmp);
   if not Result then
@@ -718,17 +723,17 @@ begin
      end;
 end;
 
-function  loadPic(const fn : string; var bmp : TRnQBitmap; idx : Integer = 0):boolean;
+function  loadPic(const fn: string; var bmp: TRnQBitmap; idx : Integer = 0):boolean;
 var
   Stream: TStream;
    {$IFDEF USE_FLASH}
-  swf : TShockwaveFlash;
-//  swf : TTransparentFlashPlayerControl;
-//  swf : TFlashPlayerControl;
+  swf: TShockwaveFlash;
+//  swf: TTransparentFlashPlayerControl;
+//  swf: TFlashPlayerControl;
   frm: TForm;
   w, h: Double;
    {$ENDIF USE_FLASH}
-//  pnl : TPanel;
+//  pnl: TPanel;
   ff: TPAFormat;
   pic: TPicture;
 begin
@@ -869,7 +874,7 @@ begin
        if Assigned(pic) then
         begin
          if not Assigned(bmp.fBmp) then
-           bmp.fBmp :=TBitmap.Create;
+           bmp.fBmp := TBitmap.Create;
          try
            bmp.fBmp.Assign(pic.Graphic);
            bmp.fWidth := bmp.fBmp.Width;
@@ -927,12 +932,22 @@ begin
     msgDlg(GetLastErrorText, False, mtError);
 }
 var
-  icn : TIcon;
+  icn: TIcon;
 begin
   icn := TIcon.Create;
   icn.LoadFromStream(str);
   Result := CopyIcon(icn.Handle);
   icn.Free;
+end;
+
+procedure BeginPicsMassLoad;
+begin
+  init_libJPEGCS(TJpegImage.LibPathName);
+end;
+
+procedure EndPicsMassLoad;
+begin
+  UnInit_libJPEG;
 end;
 
 function  loadPic(var str0: TStream; var bmp: TRnQBitmap; idx: Integer = 0;
@@ -944,11 +959,12 @@ var
   WICpic: TWICImage;
 //  aniImg : TRnQAni;
   NonAnimated: Boolean;
-//  vJpg : TJPEGImage;
+  vJpg: TJPEGImage;
+
 //  {$IFNDEF RNQ_LITE}
-//  vJpg, vJpgBad : TsdJpegFormat;
-//  vJpg, vJpgBad : jpeg_decompress_struct;
-//  JPegR : TFPReaderJPEG;
+//  vJpg, vJpgBad: TsdJpegFormat;
+//  vJpg, vJpgBad: jpeg_decompress_struct;
+//  JPegR: TFPReaderJPEG;
   pic: IPicture;
   a, b: Integer;
   h, w: Integer;
@@ -957,11 +973,11 @@ var
   vBmp: TBitmap;
 //  {$ENDIF RNQ_LITE}
   IcoStream: TIconStream;
-  MemStream : TMemoryStream;
+  MemStream: TMemoryStream;
   i: Integer;
   Frame: TAniFrame;
 //  Grph: TGraphic;
-//  ff : TPAFormat;
+//  ff: TPAFormat;
 begin
 //  fBmp := NIL;
 //  fBMP32 := NIL;
@@ -1016,7 +1032,23 @@ begin
 //         vJpg.LoadOptions := [loTileMode];
          vBmp := NIL;
          try
+           if JPEGTurbo then
+             begin
+              vJpg := TJPEGImage.Create;
+              if vJpg.LoadFromStream(str0) then
+                begin
+                  vBmp := TBitmap.Create;
+                  vBmp.PixelFormat := pf24bit;
+                  vBmp.Assign(vJpg);
+                end;
+              vJpg.Free;
+//              if not PreserveStream then
+//                FreeAndNil(str0);
+             end;
+            if not Assigned(vBmp) then
+
           try
+
 //           vBmp := JPegR.GetBMP(str);
 
 //           jpeg_read_header(vJpg, True);
@@ -1395,13 +1427,13 @@ function loadPic(pt: TThemeSourcePath; fn : string; var bmp: TRnQbitmap; idx: In
   function fullpath(const fn: string): string;
   begin
     if ansipos(':',fn)=0 then
-      result:=pt.path+fn
+      result := pt.path+fn
      else
-      result:=fn
+      result := fn
   end;
 var
-  Stream : TMemoryStream;
-  ff : TPAFormat;
+  Stream: TMemoryStream;
+  ff: TPAFormat;
 begin
 //  result := false;
   Stream := NIL;
@@ -1418,7 +1450,7 @@ begin
 end;
  {$ENDIF RNQ}
 
-procedure TRnQBitmap.SetTransparentColor(clr : cardinal);
+procedure TRnQBitmap.SetTransparentColor(clr: cardinal);
 begin
   fBMP.TransparentColor := clr;
   fTransparentColor := clr;
@@ -1693,7 +1725,7 @@ var
   DoHalftone: Boolean;
   Pt: TPoint;
   BPP: Integer;
-  MyDC : HDC;
+  MyDC: HDC;
 begin
 //  with DestBnd do
   begin
@@ -2149,8 +2181,8 @@ end;
 procedure TRnQBitmap.Draw(DC: HDC; DX, DY: Integer);
 var
     blend: BLENDFUNCTION;
-    LeftTop : TPoint;
-    MyDC : HDC;
+    LeftTop: TPoint;
+    MyDC: HDC;
 begin
   if fAnimated then
     begin
@@ -2260,21 +2292,21 @@ end;
 
 
 //function  TRnQBitmap.Clone(x, y, pWidth, pHeight: Integer): TRnQBitmap;
-function  TRnQBitmap.Clone(bnd : TGPRect): TRnQBitmap;
+function  TRnQBitmap.Clone(bnd: TGPRect): TRnQBitmap;
 var
 {
   PB, //:PByte;
   PC:PColor32;
   r, C:Cardinal;
 }
-//    b : Byte;
-//    bi : TBitmapInfo;
-//    biSize : Cardinal;
-//    arr : TMAXBITMAPINFO;
+//    b: Byte;
+//    bi: TBitmapInfo;
+//    biSize: Cardinal;
+//    arr: TMAXBITMAPINFO;
 //    blend: BLENDFUNCTION;
-  MyDC : HDC;
-  i : Integer;
-  Frame : TAniFrame;
+  MyDC: HDC;
+  i: Integer;
+  Frame: TAniFrame;
 begin
   if Assigned(fBmp) then
   begin
@@ -2302,7 +2334,7 @@ begin
         Result.FAnimated := Result.FNumFrames > 1;
         Result.FWidth := FWidth;
         Result.FHeight := FHeight;
-        Result.FNumIterations:= FNumIterations;
+        Result.FNumIterations := FNumIterations;
         Result.htTransparent := htTransparent;
          begin
     //      Strip := ThtBitmap.Create;
@@ -2434,16 +2466,16 @@ end;
 
 function  TRnQBitmap.CloneFrame(frame: Integer): TRnQBitmap;
 var
-    LeftTop : TPoint;
+    LeftTop: TPoint;
 //var
-//  PB, //  :PByte;
-//    PC:PColor32;
-//    b : Byte;
-//    bi : TBitmapInfo;
-//    biSize : Cardinal;
-//    arr : TMAXBITMAPINFO;
-//    C:Cardinal;
-//    r : Integer;
+//  PB, //  : PByte;
+//    PC: PColor32;
+//    b: Byte;
+//    bi: TBitmapInfo;
+//    biSize: Cardinal;
+//    arr: TMAXBITMAPINFO;
+//    C: Cardinal;
+//    r: Integer;
 var
   SRect: TRect;
   blend: BLENDFUNCTION;
@@ -2667,7 +2699,7 @@ begin
 //    TransparencyColor := self.fTransparentColor;
     for Y := 0 to Self.Height - 1 do
      begin
-       PB:=Pointer(Self.fBmp.ScanLine[self.Height - Y - 1]);
+       PB := Pointer(Self.fBmp.ScanLine[self.Height - Y - 1]);
        if PB<>nil then
        begin
 //        inc(PB, LeftTop.X);
@@ -2699,7 +2731,7 @@ begin
              rgbGreen := PAlphaColor(PB)^ shr 8 and $FF;
              rgbRed :=   PAlphaColor(PB)^ shr 16 and $FF;
             end;
-          Inc(PB);// Inc(PC);
+          Inc(PB); // Inc(PC);
          end;
        end;
      end;
@@ -2776,13 +2808,13 @@ end;
 (*
 //procedure wbmp2bmp(s: String; pic : TBitmap);
 //procedure wbmp2bmp(Stream: TStream; var pic : TBitmap);
-function wbmp2bmp(Stream: TStream; var pic : TBitmap; CalcOnly : Boolean = false) : TSize;
+function wbmp2bmp(Stream: TStream; var pic: TBitmap; CalcOnly: Boolean = false): TSize;
 var
-  Bts : Integer;
-  w, h : Integer;
-  l, i : Word;
-//  , k, j : Word;
-  b : Byte;
+  Bts: Integer;
+  w, h: Integer;
+  l, i: Word;
+//  , k, j: Word;
+  b: Byte;
 var
   Pal: TMaxLogPalette;
 begin
@@ -2873,7 +2905,7 @@ begin
 end;
 *)
 
-function wbmp2bmp(Stream: TStream; var pic : TBitmap; CalcOnly : Boolean = false) : TSize;
+function wbmp2bmp(Stream: TStream; var pic: TBitmap; CalcOnly: Boolean = false): TSize;
 const
   WBMP_TYPE_BW_NOCOMPRESSION = 0;
   WBMP_DATA_MASK = $7F;
@@ -2891,7 +2923,7 @@ const
 var
     FTypeField: Byte;
     FFixHeaderField: Byte;
-//    width, height : Integer;
+//    width, height: Integer;
   B: Byte;
   BytesPerRow: Integer;
   i: Integer;
@@ -2986,7 +3018,8 @@ begin
             Pal.palPalEntry[1].peBlue := $FF;
             pic.Palette := CreatePalette(PLogPalette(@Pal)^);
             BytesPerRow := Result.cx div 8;
-            if Result.cx mod 8 > 0 then inc(BytesPerRow);
+            if Result.cx mod 8 > 0 then
+              inc(BytesPerRow);
             for i := 0 to Result.cy - 1 do
               Stream.Read(pic.ScanLine[i]^, BytesPerRow);
     //        Changed(Self);
@@ -2998,13 +3031,13 @@ begin
 end;
 
 (*
-function bmp2wbmp(bmp : TBitmap) : String;
+function bmp2wbmp(bmp: TBitmap): String;
 var
-  Bts : Byte;
-  ACols, ARows : word;
-  i, j, k, l : word;
-//  clr : TColor;
-//Chs : Array[0..15] of Char;
+  Bts: Byte;
+  ACols, ARows: word;
+  i, j, k, l: word;
+//  clr: TColor;
+//Chs: Array[0..15] of Char;
 begin
   ACols := bmp.Width;
   ARows := bmp.Height;
@@ -3080,12 +3113,12 @@ begin
 
 end;
 
-function  getSupPicExts:String;
+function  getSupPicExts: String;
 var
   I: Integer;
   s: String;
 //var
-//  l : TStrings;
+//  l: TStrings;
 begin
 //  FileFormatList.GetExtensionList(l);
   s := '';
@@ -3096,7 +3129,7 @@ begin
   if isWEBPSupport then
     s := S + '*.webp; ';
 
-  result := 'All images' + '|' + s;// + '|';
+  result := 'All images' + '|' + s; // + '|';
 //  result := FileFormatList.GetGraphicFilter([], fstDescription,
 //            [foCompact, foIncludeAll, foIncludeExtension], nil);
 // !!!!!!!!!!!!!!!!!         ADDD       WBMP, GIF         !!!!!!!!!!!!!
@@ -3104,9 +3137,9 @@ end;
 function isSupportedPicFile(fn: string): boolean;
 //var
 //  Extensions: TStringList;
-//  i : Integer;
+//  i: Integer;
 begin
-//  result:=true;
+//  result := true;
   result := false;
   fn := lowercase(SysUtils.ExtractFileExt(fn));
 //  if fn <> '' then
@@ -3295,15 +3328,15 @@ begin
   else
     bmp.Draw(DC, DestR);
 end;
-procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap); OverLoad;
+procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap); OverLoad;
 begin
   bmp.Draw(DC, 0, 0);
 end;
-procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; X, Y : Integer); OverLoad;
+procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; X, Y: Integer); OverLoad;
 begin
   bmp.Draw(DC, x, y);
 end;
-{procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; DestRect : TRect; SrcX, SrcY, SrcW, SrcH : Integer; pEnabled : Boolean= True);
+{procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestRect : TRect; SrcX, SrcY, SrcW, SrcH: Integer; pEnabled: Boolean= True);
 var
   Pt: TPoint;
 begin
@@ -3317,7 +3350,7 @@ begin
   bmp.Draw(DC, DestRect, SrcX, SrcY, SrcW, SrcH, pEnabled);
 end;}
 
-procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR, SrcR: TGPRect; pEnabled: Boolean= True; isCopy: Boolean = false);
+procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR, SrcR: TGPRect; pEnabled: Boolean = True; isCopy: Boolean = false);
 var
   Pt: TPoint;
 begin
@@ -3590,10 +3623,10 @@ begin
 //  GdiFlush;
 end;
 
-procedure FillRoundRectangle(DC: HDC; ARect: TRect; Clr : Cardinal; rnd : Word);
+procedure FillRoundRectangle(DC: HDC; ARect: TRect; Clr: Cardinal; rnd: Word);
 var
-  oldBr, brF : HBRUSH;
-  oldPen, Hp : HPEN;
+  oldBr, brF: HBRUSH;
+  oldPen, Hp: HPEN;
 begin
   if ((Clr and AlphaMask) <> AlphaMask) then
    begin
@@ -3614,20 +3647,20 @@ begin
 end;
 
 
-procedure DrawTextTransparent(DC : HDC; x, y : Integer; Text : String; Font : TFont; Alpha : Byte; fmt : integer);
+procedure DrawTextTransparent(DC: HDC; x, y: Integer; Text: String; Font: TFont; Alpha: Byte; fmt: integer);
 var
-  tempDC  : HDC;
-//  ABitmap, HOldBmp : HBITMAP;
+  tempDC: HDC;
+//  ABitmap, HOldBmp: HBITMAP;
 //  BIH: TBitmapInfoHeader;
-//  BI : TBitmapInfo;
-  tempBitmap : TBitmap;
+//  BI: TBitmapInfo;
+  tempBitmap: TBitmap;
   blend: BLENDFUNCTION;
-  oldFont : HFONT;
-  R : TRect;
-  res : TSize;
-  i, k,h, w : Integer;
+  oldFont: HFONT;
+  R: TRect;
+  res: TSize;
+  i, k, h, w: Integer;
  Scan32: pColor32Array;
-//  oldBr, brF : HBRUSH;
+//  oldBr, brF: HBRUSH;
 begin
 //            SetBKMode(cnv.Handle, oldMode);
   R.Left := 0;
@@ -3641,7 +3674,7 @@ begin
   R.Right := res.cx;
   R.Bottom := res.cy;
 //     tempBitmap := createBitmap(res.cx, res.cy);
-     tempBitmap:=Tbitmap.create;
+     tempBitmap := Tbitmap.create;
      tempBitmap.PixelFormat := pf32bit;
  {$IFDEF DELPHI9_UP}
      tempBitmap.SetSize(res.cx, res.cy);
@@ -3753,21 +3786,21 @@ begin
 end;
 
  {$IFDEF DELPHI9_UP}
-//procedure DrawTextTransparent2(DC : HDC; x, y : Integer; Text : String; Font : TFont; Alpha : Byte; fmt : Integer);
-procedure DrawText32(DC : HDC; TextRect : TRect; Text : String; Font : TFont; TextFlags : Cardinal);
+//procedure DrawTextTransparent2(DC: HDC; x, y: Integer; Text: String; Font: TFont; Alpha: Byte; fmt: Integer);
+procedure DrawText32(DC: HDC; TextRect: TRect; Text: String; Font: TFont; TextFlags: Cardinal);
 var
    TextLen: Integer;
 //   TextRect: TRect;
 //   TextFlags: ;
    Options: TDTTOpts;
-//   pmtParams : TBPPaintParams;
+//   pmtParams: TBPPaintParams;
 //   blend: BLENDFUNCTION;
-//   PaintOnGlass : Boolean;
+//   PaintOnGlass: Boolean;
   MemDC: HDC;
   PaintBuffer: HPAINTBUFFER;
-//  br : HBRUSH;
-  oldF : HFONT;
-//  s : String;
+//  br: HBRUSH;
+  oldF: HFONT;
+//  s: String;
 begin
       TextLen := Length(Text);
 //      TextFlags := DT_CENTER or DT_VCENTER;
@@ -3846,7 +3879,7 @@ try
     NonAnimated := not Result.FAnimated;
     Result.FWidth := AGif.Width;
     Result.FHeight := AGif.Height;
-    Result.FNumIterations:= AGif.LoopCount;
+    Result.FNumIterations := AGif.LoopCount;
     if Result.FNumIterations < 0 then    {-1 means no loop block}     
       Result.FNumIterations := 1
     else if Result.FNumIterations > 0 then
@@ -3913,22 +3946,27 @@ end;
 {----------------TRnQBitmap.SetCurrentFrame}
 procedure TRnQBitmap.SetCurrentFrame(AFrame: Integer);
 begin
-if AFrame = FCurrentFrame then Exit;
+  if AFrame = FCurrentFrame then
+    Exit;
 
-NextFrame(FCurrentFrame);
-if AFrame > FNumFrames then FCurrentFrame := 1
-else if AFrame < 1 then FCurrentFrame := FNumFrames
-else FCurrentFrame := AFrame;
-if FAnimated then
-  WasDisposal := dtToBackground;
+  NextFrame(FCurrentFrame);
+  if AFrame > FNumFrames then
+    FCurrentFrame := 1
+   else
+    if AFrame < 1 then
+      FCurrentFrame := FNumFrames
+     else
+      FCurrentFrame := AFrame;
+  if FAnimated then
+    WasDisposal := dtToBackground;
 end;
 
 {----------------TRnQBitmap.RnQCheckTime}
-function TRnQBitmap.RnQCheckTime : Boolean;
+function TRnQBitmap.RnQCheckTime: Boolean;
 var
   ThisTime: DWord;
 begin
-  Result:= False;
+  Result := False;
   if not fAnimated then
     Exit;
 
@@ -3938,7 +3976,7 @@ begin
   if ThisTime - LastTime < CurrentInterval then
     Exit;
 
-LastTime := ThisTime;
+  LastTime := ThisTime;
 
 if (FCurrentFrame = FNumFrames) then
   begin
@@ -3951,7 +3989,7 @@ if (FCurrentFrame = FNumFrames) then
   end;
 NextFrame(FCurrentFrame);
 Inc(FCurrentFrame);
-  Result:= True;
+  Result := True;
 if (FCurrentFrame > FNumFrames) or (FCurrentFrame <= 0) then
   FCurrentFrame := 1;
 
@@ -3961,7 +3999,7 @@ CurrentInterval := IntMax(fFrames[FCurrentFrame].frDelay, 1);
 end;
 
 
-function CreateAni(fn : String; var b : Boolean): TRnQBitmap; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+function CreateAni(fn: String; var b: Boolean): TRnQBitmap; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 var
   Stream: TFileStream;
 begin
@@ -4007,27 +4045,33 @@ function color2hls(clr: Tcolor): Thls;
 var
   r,g,b,a,z,d: double;
 begin
-clr:=colorToRGB(clr);
-r:=GetRvalue(clr)/255;
-g:=GetGvalue(clr)/255;
-b:=GetBvalue(clr)/255;
-a:=min(min(r,g),b);
-z:=max(max(r,g),b);
-d:=z-a;
+  clr := colorToRGB(clr);
+  r := GetRvalue(clr)/255;
+  g := GetGvalue(clr)/255;
+  b := GetBvalue(clr)/255;
+  a := min(min(r,g),b);
+  z := max(max(r,g),b);
+  d := z-a;
 with result do
   begin
-  l:=z;
+  l := z;
   if d=0 then
     begin
-    h:=0;
-    s:=0;
+      h := 0;
+      s := 0;
     exit;
     end;
   //if l < 0.5 then s:=d/(z+a) else s:=d/(2-z-a);
-  if z=0 then s:=0 else result.s:=d/z;
-  if r=z then h:=(g-b)/d;
-  if g=z then h:=2+(b-r)/d;
-  if b=z then h:=4+(r-g)/d;
+  if z=0 then
+    s := 0
+   else
+    result.s := d/z;
+  if r=z then
+    h := (g-b)/d;
+  if g=z then
+    h := 2+(b-r)/d;
+  if b=z then
+    h := 4+(r-g)/d;
   end;
 end; // color2hls
 
@@ -4062,16 +4106,18 @@ end; // hls2color
 
 function addLuminosity(clr: Tcolor; q: real): Tcolor;
 var
-  hls:Thls;
+  hls: Thls;
 begin
-hls:=color2hls(clr);
-with hls do
-  begin
-  l:=l+q;
-  if l<0 then l:=0;
-  if l>1 then l:=1;
-  end;
-result:=hls2color(hls);
+  hls := color2hls(clr);
+  with hls do
+   begin
+     l := l+q;
+     if l<0 then
+       l := 0;
+     if l>1 then
+       l := 1;
+   end;
+  result := hls2color(hls);
 end; // addLuminosity
 
 function  MidColor(clr1, clr2: Cardinal): Cardinal;
@@ -4085,9 +4131,9 @@ end;
 
 function  MidColor(const clr1, clr2: Cardinal; koef: Double): Cardinal; overLoad;
 var
-  r1, g1, b1, a1 : Byte;
-  r2, g2, b2, a2 : Byte;
-  k1 : Double;
+  r1, g1, b1, a1: Byte;
+  r2, g2, b2, a2: Byte;
+  k1: Double;
 begin
   r1 := byte(clr1 shr 24);
   g1 := byte(clr1 shr 16);
@@ -4117,12 +4163,12 @@ var
   IconInfo: TIconInfo;
   IconBitmap, MaskBitmap: TBitmap;
 //  dx,dy,
-  x,y: Integer;
+  x, y: Integer;
   tc: TColor;
 begin
 if bitmap=NIL then
   begin
-  result:=NIL;
+  result := NIL;
   exit;
   end;
 
@@ -4181,7 +4227,7 @@ function bmp2ico3(bitmap: Tbitmap): Ticon;
 var
   il: THandle;
   hi: HICON;
-  iconX, iconY : integer;
+  iconX, iconY: integer;
 begin
   Result := TIcon.Create;
 // iconX := icon_size;
@@ -4200,16 +4246,16 @@ end;
 
 function bmp2ico32(bitmap: Tbitmap): HICON;
 var
-  il : THandle;
-  i : Integer;
-//  mask : TBitmap;
-//  hi : HICON;
+  il: THandle;
+  i: Integer;
+//  mask: TBitmap;
+//  hi: HICON;
 begin
 //  Result := TIcon.Create;
 //  bitmap.PixelFormat := pf32bit;
 //  il := ImageList_Create(icon_size, icon_size, ILC_COLOR32 or ILC_MASK, 0, 0);
 //  il := ImageList_Create(Min(bitmap.Width, icon_size), Min(bitmap.Height, icon_size), ILC_COLOR32 or ILC_MASK, 0, 0);
-  il := ImageList_Create(min(bitmap.Width,bitmap.Height), min(bitmap.Width,bitmap.Height), ILC_COLOR32, 0, 0);
+  il := ImageList_Create(min(bitmap.Width, bitmap.Height), min(bitmap.Width,bitmap.Height), ILC_COLOR32, 0, 0);
 //  ImageList_SetBkColor(il, $00FFFF00);
 {          Mask := TBitmap.Create;
           try
@@ -4232,11 +4278,11 @@ end;
 
 function bmp2ico4M(bitmap: Tbitmap): HICON;
 var
-  il : THandle;
-  i : Integer;
-//  mask : TBitmap;
-//  hi : HICON;
-  iconX, iconY : integer;
+  il: THandle;
+  i: Integer;
+//  mask: TBitmap;
+//  hi: HICON;
+  iconX, iconY: integer;
 begin
 //  Result := TIcon.Create;
 //  bitmap.PixelFormat := pf32bit;
@@ -4280,7 +4326,7 @@ end;
 
 function bmp2ico(bitmap: Tbitmap): Ticon;
 var
-  iconX, iconY : integer;
+  iconX, iconY: integer;
   IconInfo: TIconInfo;
   IconBitmap, MaskBitmap: TBitmap;
   dx,dy,x,y: Integer;
@@ -4288,66 +4334,66 @@ var
 begin
   if bitmap=NIL then
    begin
-    result:=NIL;
+    result := NIL;
     exit;
    end;
 iconX := GetSystemMetrics(SM_CXICON);
 iconY := GetSystemMetrics(SM_CYICON);
-IconBitmap:= TBitmap.Create;
-IconBitmap.Width:= iconX;
-IconBitmap.Height:= iconY;
-IconBitmap.TransparentColor:=Bitmap.TransparentColor;
-tc:=Bitmap.TransparentColor and $FFFFFF;
-Bitmap.transparent:=FALSE;
+IconBitmap := TBitmap.Create;
+IconBitmap.Width := iconX;
+IconBitmap.Height := iconY;
+IconBitmap.TransparentColor := Bitmap.TransparentColor;
+tc := Bitmap.TransparentColor and $FFFFFF;
+Bitmap.transparent := FALSE;
 //IconBitmap.Width :=
 with IconBitmap.Canvas do
   begin
-  dx:=bitmap.width*2;
-  dy:=bitmap.height*2;
+  dx := bitmap.width*2;
+  dy := bitmap.height*2;
   if (dx < iconX) and (dy < iconY) then
     begin
-    brush.color:=tc;
+    brush.color := tc;
     fillrect(clipRect);
-    x:=(iconX-dx) div 2;
-    y:=(iconY-dy) div 2;
+    x := (iconX-dx) div 2;
+    y := (iconY-dy) div 2;
     StretchDraw(Rect(x,y,x+dx,y+dy), Bitmap);
     end
   else
     IconBitmap.Canvas.StretchDraw(Rect(0, 0, iconX, iconY), Bitmap);
   end;
-MaskBitmap:= TBitmap.Create;
+MaskBitmap := TBitmap.Create;
 MaskBitmap.Assign(IconBitmap);
-Bitmap.transparent:=TRUE;
+Bitmap.transparent := TRUE;
 with IconBitmap.Canvas do
   for y:= 0 to iconY - 1 do
     for x:= 0 to iconX - 1 do
       if Pixels[x, y]=tc then
-        Pixels[x, y]:=clBlack;
-IconInfo.fIcon:= True;
-IconInfo.hbmMask:= MaskBitmap.MaskHandle;
-IconInfo.hbmColor:= IconBitmap.Handle;
-Result:= TIcon.Create;
-Result.Handle:= CreateIconIndirect(IconInfo);
+        Pixels[x, y] := clBlack;
+IconInfo.fIcon := True;
+IconInfo.hbmMask := MaskBitmap.MaskHandle;
+IconInfo.hbmColor := IconBitmap.Handle;
+Result := TIcon.Create;
+Result.Handle := CreateIconIndirect(IconInfo);
 MaskBitmap.Free;
 IconBitmap.Free;
 end; // bmp2ico
 
 function pic2ico(pic: Tbitmap): Ticon;
 begin
-  result:=bmp2ico(pic)
+  result := bmp2ico(pic)
 end;
 
 procedure ico2bmp(ico: TIcon; bmp: TBitmap);
 //var
-//  IcoStream : TIconStream;
+//  IcoStream: TIconStream;
 //  str: TMemoryStream;
-//  idx : Integer;
-// il : TCustomImageList;
+//  idx: Integer;
+// il: TCustomImageList;
 // ilH: HIMAGELIST;
-// R : TRect;
+// R: TRect;
 begin
 //  il := TCustomImageList.Create(NIL);
-{   ilH:=  ImageList_Create(icon_size, icon_size, ILC_COLOR32// or ILC_MASK
+{   ilH :=  ImageList_Create(icon_size, icon_size, ILC_COLOR32// or ILC_MASK
    , 0, 0);
   ImageList_AddIcon(ilH, ico.Handle);
   bmp.Width := icon_size;
@@ -4357,7 +4403,7 @@ begin
 //  il.AddIcon(ico);
 //  il.GetBitmap(0, bmp);
 //  bmp.Width := icon_size; //ico.Width;
-//  bmp.Height :=icon_size;
+//  bmp.Height := icon_size;
   bmp.Width  := GetSystemMetrics(SM_CXICON);
   bmp.Height := GetSystemMetrics(SM_CYICON);
   bmp.PixelFormat := pf24bit;
@@ -4405,17 +4451,17 @@ begin
   str.Free;}
 end;
 
-procedure ico2bmp2(pIcon : HIcon; bmp : TBitmap);
+procedure ico2bmp2(pIcon: HIcon; bmp: TBitmap);
 var
-//  IcoStream : TIconStream;
+//  IcoStream: TIconStream;
 //  str: TMemoryStream;
-//  idx : Integer;
-// il : TCustomImageList;
+//  idx: Integer;
+// il: TCustomImageList;
  ilH: HIMAGELIST;
-// hi : HICON;
-// ico : TIcon;
-// R : TRect;
-  iconX, iconY : integer;
+// hi: HICON;
+// ico: TIcon;
+// R: TRect;
+  iconX, iconY: integer;
 begin
 //  il := TCustomImageList.Create(NIL);
 {   ilH:=  ImageList_Create(icon_size, icon_size, ILC_COLOR32// or ILC_MASK
@@ -4424,8 +4470,8 @@ begin
   ImageList_Draw(ilH, 0, bmp.Canvas.Handle, 0, 0, ILD_NORMAL);
   ImageList_Destroy(ilh);}
 
-iconX := GetSystemMetrics(SM_CXICON);
-iconY := GetSystemMetrics(SM_CYICON);
+  iconX := GetSystemMetrics(SM_CXICON);
+  iconY := GetSystemMetrics(SM_CYICON);
 
  {$IFDEF DELPHI9_UP}// By Rapid D
   bmp.SetSize(iconX, iconY);
@@ -4509,21 +4555,27 @@ end;
 
 function TrimInt(i, Min, Max: Integer): Integer;
 begin
-  if      i>Max then Result:=Max
-  else if i<Min then Result:=Min
-  else               Result:=i;
+  if      i>Max then
+    Result := Max
+  else if i<Min then
+    Result := Min
+  else
+    Result := i;
 end;
 
-function IntToByte(i:Integer):Byte;
+function IntToByte(i: Integer): Byte;
 begin
-  if      i>255 then Result:=255
-  else if i<0   then Result:=0
-  else               Result:=i;
+  if      i>255 then
+    Result := 255
+  else if i<0   then
+    Result := 0
+  else
+    Result := i;
 end;
 
 procedure SmoothRotate(var Src, Dst: TBitmap; cx, cy: Integer; Angle: Extended);
 type
- TFColor  = record b,g,r, a:Byte end;
+ TFColor  = record b,g,r, a: Byte end;
 const
   colorBytes  = 4;
 var
@@ -4531,77 +4583,77 @@ var
   Left, Right,
   eww,nsw,
   fx,fy,
-  wx,wy:    Extended;
+  wx,wy:  Extended;
   cAngle, sAngle:   Double;
   xDiff, yDiff,
-  ifx,ify,
-  px,py,
-  ix,iy,
-  x,y:      Integer;
-  nw,ne,
-  sw,se:    TFColor;
-  P1,P2,P3:Pbytearray;
+  ifx, ify,
+  px, py,
+  ix, iy,
+  x, y:     Integer;
+  nw, ne,
+  sw, se:   TFColor;
+  P1, P2, P3: Pbytearray;
 begin
-  Angle:=angle;
-  Angle:=-Angle*Pi/180;
-  sAngle:=Sin(Angle);
-  cAngle:=Cos(Angle);
-  xDiff:=(Dst.Width-Src.Width)div 2;
-  yDiff:=(Dst.Height-Src.Height)div 2;
+  Angle := angle;
+  Angle := -Angle*Pi/180;
+  sAngle := Sin(Angle);
+  cAngle := Cos(Angle);
+  xDiff := (Dst.Width-Src.Width)div 2;
+  yDiff := (Dst.Height-Src.Height)div 2;
   for y:=0 to Dst.Height-1 do
   begin
-    P3:=Dst.scanline[y];
-    py:=2*(y-cy)+1;
+    P3 := Dst.scanline[y];
+    py := 2*(y-cy)+1;
     for x:=0 to Dst.Width-1 do
     begin
-      px:=2*(x-cx)+1;
-      fx:=(((px*cAngle-py*sAngle)-1)/ 2+cx)-xDiff;
-      fy:=(((px*sAngle+py*cAngle)-1)/ 2+cy)-yDiff;
-      ifx:=Round(fx);
-      ify:=Round(fy);
+      px := 2*(x-cx)+1;
+      fx := (((px*cAngle-py*sAngle)-1)/ 2+cx)-xDiff;
+      fy := (((px*sAngle+py*cAngle)-1)/ 2+cy)-yDiff;
+      ifx := Round(fx);
+      ify := Round(fy);
 
       if(ifx>-1)and(ifx<Src.Width)and(ify>-1)and(ify<Src.Height)then
       begin
-        eww:=fx-ifx;
-        nsw:=fy-ify;
-        iy:=TrimInt(ify+1,0,Src.Height-1);
-        ix:=TrimInt(ifx+1,0,Src.Width-1);
-        P1:=Src.scanline[ify];
-        P2:=Src.scanline[iy];
-        nw.r:=P1[ifx*colorBytes];
-        nw.g:=P1[ifx*colorBytes+1];
-        nw.b:=P1[ifx*colorBytes+2];
-        nw.a:=P1[ifx*colorBytes+3];
+        eww := fx-ifx;
+        nsw := fy-ify;
+        iy := TrimInt(ify+1,0,Src.Height-1);
+        ix := TrimInt(ifx+1,0,Src.Width-1);
+        P1 := Src.scanline[ify];
+        P2 := Src.scanline[iy];
+        nw.r := P1[ifx*colorBytes];
+        nw.g := P1[ifx*colorBytes+1];
+        nw.b := P1[ifx*colorBytes+2];
+        nw.a := P1[ifx*colorBytes+3];
 
-        ne.r:=P1[ix*colorBytes];
-        ne.g:=P1[ix*colorBytes+1];
-        ne.b:=P1[ix*colorBytes+2];
-        ne.a:=P1[ix*colorBytes+3];
+        ne.r := P1[ix*colorBytes];
+        ne.g := P1[ix*colorBytes+1];
+        ne.b := P1[ix*colorBytes+2];
+        ne.a := P1[ix*colorBytes+3];
 
-        sw.r:=P2[ifx*colorBytes];
-        sw.g:=P2[ifx*colorBytes+1];
-        sw.b:=P2[ifx*colorBytes+2];
-        sw.a:=P2[ifx*colorBytes+3];
+        sw.r := P2[ifx*colorBytes];
+        sw.g := P2[ifx*colorBytes+1];
+        sw.b := P2[ifx*colorBytes+2];
+        sw.a := P2[ifx*colorBytes+3];
 
-        se.r:=P2[ix*colorBytes];
-        se.g:=P2[ix*colorBytes+1];
-        se.b:=P2[ix*colorBytes+2];
-        se.a:=P2[ix*colorBytes+3];
+        se.r := P2[ix*colorBytes];
+        se.g := P2[ix*colorBytes+1];
+        se.b := P2[ix*colorBytes+2];
+        se.a := P2[ix*colorBytes+3];
 
 
-        Top:=nw.a+eww*(ne.a-nw.a);
-        Bottom:=sw.a+eww*(se.a-sw.a);
-        P3[x*colorBytes+3]:=IntToByte(Round(Top+nsw*(Bottom-Top)));
+        Top := nw.a+eww*(ne.a-nw.a);
+        Bottom := sw.a+eww*(se.a-sw.a);
+        P3[x*colorBytes+3] := IntToByte(Round(Top+nsw*(Bottom-Top)));
 
-        Top:=nw.b+eww*(ne.b-nw.b);
+        Top := nw.b+eww*(ne.b-nw.b);
         Bottom:=sw.b+eww*(se.b-sw.b);
         P3[x*colorBytes+2]:=IntToByte(Round(Top+nsw*(Bottom-Top)));
 
-        Top:=nw.g+eww*(ne.g-nw.g);
+        Top := nw.g+eww*(ne.g-nw.g);
         Bottom:=sw.g+eww*(se.g-sw.g);
         P3[x*colorBytes+1]:=IntToByte(Round(Top+nsw*(Bottom-Top)));
 
-        Top:=nw.r+eww*(ne.r-nw.r);
+        Top := nw.r+eww*(ne.r-nw.r);
         Bottom:=sw.r+eww*(se.r-sw.r);
         P3[x*colorBytes]:=IntToByte(Round(Top+nsw*(Bottom-Top)));
       end;
@@ -4620,7 +4672,7 @@ var
   LP: ^TLogPalette;
   I, J, K, Sub: integer;
 begin
-GetMem(LP, Sizeof(TLogPalette) + 256*Sizeof(TPaletteEntry));
+  GetMem(LP, Sizeof(TLogPalette) + 256*Sizeof(TPaletteEntry));
 try
   with LP^ do
     begin
@@ -4661,34 +4713,34 @@ end;
 
 
 
-function blend(c1,c2:Tcolor; left:real):Tcolor;
+function blend(c1, c2: Tcolor; left: real): Tcolor;
 var
-  right:real;
-//  clr1 : Tcolor32;
+  right: real;
+//  clr1: Tcolor32;
 begin
-right:=1-left;
-c1:=colorToRGB(c1);
-c2:=colorToRGB(c2);
-result:=rgb(
-  round(left*(c1 and $FF)+right*(c2 and $FF)),
-  round(left*(c1 shr 8 and $FF)+right*(c2 shr 8 and $FF)),
-  round(left*(c1 shr 16)+right*(c2 shr 16))
-);
+  right := 1-left;
+  c1 := colorToRGB(c1);
+  c2 := colorToRGB(c2);
+  result := rgb(
+     round(left*(c1 and $FF)+right*(c2 and $FF)),
+     round(left*(c1 shr 8 and $FF)+right*(c2 shr 8 and $FF)),
+     round(left*(c1 shr 16)+right*(c2 shr 16))
+    );
 end; // blend
 
-function traspBmp1(bmp:Tbitmap; bg:Tcolor; transpLevel:integer):Tbitmap;
+function traspBmp1(bmp: Tbitmap; bg: Tcolor; transpLevel: integer): Tbitmap;
 var
-  a,t:Tcolor;
-  x,y, r,g,b:integer;
+  a, t: Tcolor;
+  x,y, r,g,b: integer;
 begin
-result:=Tbitmap.create;
-result.Assign(bmp);
-bg:=colorToRGB(bg);
-r:=transpLevel*(bg and $FF);
-g:=transpLevel*(bg shr 8 and $FF);
-b:=transpLevel*(bg shr 16);
-bg:=r+g+b;
-t:=result.TransparentColor and $FFFFFF;
+  result := Tbitmap.create;
+  result.Assign(bmp);
+  bg := colorToRGB(bg);
+  r := transpLevel*(bg and $FF);
+  g := transpLevel*(bg shr 8 and $FF);
+  b := transpLevel*(bg shr 16);
+  bg := r+g+b;
+  t := result.TransparentColor and $FFFFFF;
 with result.Canvas do
   for x:=0 to result.width-1 do
     for y:=0 to result.height-1 do
@@ -4699,10 +4751,10 @@ with result.Canvas do
       g:=a shr 8 and $FF;
       b:=a shr 16;
       a:=(r+g+b+bg) div ((transpLevel+1)*3);
-      pixels[x,y]:=rgb(a,a,a);
+      pixels[x,y] := rgb(a,a,a);
       end;
-result.transparent:=bmp.transparent;
-result.transparentcolor:=bmp.transparentcolor;
+  result.transparent := bmp.transparent;
+  result.transparentcolor := bmp.transparentcolor;
 end; // traspBmp
 
 
@@ -4710,6 +4762,7 @@ end; // traspBmp
 var
   DC: HDC;
   ColorBits: Byte;
+  h: HMODULE;
 
 initialization
   DC := GetDC(0);
@@ -4720,7 +4773,8 @@ initialization
       ColorBits := 4
     else if ColorBits <= 8 then
       ColorBits := 8
-    else  ColorBits := 24;
+    else
+      ColorBits := 24;
 
     ThePalette := 0;
     if ColorBits = 8 then
@@ -4739,6 +4793,15 @@ initialization
   // Stock objects doesn't have to be deleted.
   SystemPalette16 := GetStockObject(DEFAULT_PALETTE);
 {$endif}
+
+  h := LoadLibrary(modulesPath + 'jpegturbo.dll');
+  if h <> 0 then
+  begin
+    JPEGTurbo := True;
+    FreeLibrary(h);
+    TJpegImage.LibPathName := modulesPath + 'jpegturbo.dll';
+  end else
+    JPEGTurbo := False;
 
 finalization
   if ThePalette <> 0 then

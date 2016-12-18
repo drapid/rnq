@@ -304,7 +304,7 @@ begin
     1: contact.icon.ToShow := IS_PHOTO;
     2: contact.icon.ToShow := IS_NONE;
    end;
-   updateAvatar(contact, TICQcontact(contact).Icon.Hash_safe);
+   updateAvatar(contact, contact.Icon.Hash_safe);
    updateAvatarFor(contact);
   end;
   addmenu.Free;
@@ -321,17 +321,6 @@ begin
  destroyHandle;
  self := NIL;
 end;
-
-function findInStrings(s:string;ss:Tstrings):integer;
-begin
-result:=0;
-while result < ss.count do
-  if ss[result] = s then
-    exit
-  else
-    inc(result);
-result:=-1;
-end; // findInStrings
 
 procedure TviewinfoFrm.updateInfo;
 
@@ -1308,7 +1297,7 @@ begin
       begin
         sz := contactAvt.getSize(GetParentCurrentDpi);
         DrawRbmp(TPaintBox(sender).Canvas.Handle, contactAvt, DestRect(sz.cx, sz.cy,
-                    TPaintBox(sender).ClientWidth, TPaintBox(sender).ClientHeight));
+                  TPaintBox(sender).ClientWidth, TPaintBox(sender).ClientHeight), false);
       end;
 {    gr := TGPGraphics.Create(TPaintBox(sender).Canvas.Handle);
     with DestRect(contactAvt.GetWidth, contactAvt.GetHeight,
@@ -1333,14 +1322,16 @@ begin
 end;
 
 procedure TviewinfoFrm.PhotoPBoxPaint(Sender: TObject);
-//var
+var
 //  gr: TGPGraphics;
+  sz: TSize;
 begin
    {$IFDEF RNQ_AVATARS}
   if Assigned(contactPhoto) then
    begin
-    DrawRbmp(TPaintBox(PhotoPBox).Canvas.Handle, contactPhoto, DestRect(contactPhoto.GetWidth, contactPhoto.GetHeight,
-                  TPaintBox(PhotoPBox).ClientWidth, TPaintBox(PhotoPBox).ClientHeight))
+     sz := contactPhoto.GetSize(GetParentCurrentDpi);
+     DrawRbmp(TPaintBox(PhotoPBox).Canvas.Handle, contactPhoto, DestRect(sz.cx, sz.cy,
+                  TPaintBox(PhotoPBox).ClientWidth, TPaintBox(PhotoPBox).ClientHeight), False)
 {    gr := TGPGraphics.Create(TPaintBox(sender).Canvas.Handle);
     with DestRect(contactPhoto.GetWidth, contactPhoto.GetHeight,
                   TPaintBox(sender).ClientWidth, TPaintBox(sender).ClientHeight) do
