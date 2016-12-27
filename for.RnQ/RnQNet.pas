@@ -87,19 +87,19 @@ type
   TProxyLogData   = procedure (Sender: TObject; isReceive: Boolean; Data: RawByteString) of object;
 
  {$IFDEF USE_SSL}
-  TRnQSocket = class (TSslWSocket)
+  TRnQSocket = class(TSslWSocket)
  {$ELSE}
-  TRnQSocket = class (TWSocket)
+  TRnQSocket = class(TWSocket)
  {$ENDIF USE_SSL}
   private
-    FSocksConnected : Boolean;
+    FSocksConnected: Boolean;
     FOldOnSessionConnected: TSessionConnected;
     FOldOnDataAvailable: TDataAvailable;
-    FServerAddr : String;
-    FServerPort : AnsiString;
+    FServerAddr: String;
+    FServerPort: AnsiString;
     FMyBeautifulSocketBuffer: RawByteString;
-    FOnDataReceived : TDataReceived;
-    FOnProxyTalk : TProxyLogData;
+    FOnDataReceived: TDataReceived;
+    FOnProxyTalk: TProxyLogData;
 
     // server authentication
 //    oSeq: AUTH_SEQ;
@@ -111,10 +111,10 @@ type
     procedure ClientConnected(Sender: TObject; Error: Word);
     procedure ClientConnected2(Sender: TObject; Error: Word);
   public
-     fAccIDX : Integer;
-     http : ThttpProxyInfo;
+     fAccIDX: Integer;
+     http: ThttpProxyInfo;
  {$IFDEF USE_SSL}
-     isSSL : Boolean;
+     isSSL: Boolean;
     procedure StartTLS;
  {$ENDIF USE_SSL}
   protected
@@ -123,19 +123,19 @@ type
     procedure SockSslHandshakeDone(Sender: TObject; ErrCode: Word;
                PeerCert: TX509Base; var Disconnect: Boolean);
  {$ENDIF USE_SSL}
-    procedure TriggerSessionClosed(Error : Word); override;
-    function  GetAddr1 : String;
-    function  GetAddr2 : String;
+    procedure TriggerSessionClosed(Error: Word); override;
+    function  GetAddr1: String;
+    function  GetAddr2: String;
 {$IFDEF UseNTLMAuthentication}
 //        procedure StartAuthNTLM; virtual;
 //        procedure StartProxyAuthNTLM; virtual;  {BLD proxy NTLM support }
-        function  GetNTLMMessage1 : AnsiString;
-        function  GetNTLMMessage3(const ForProxy: Boolean) : AnsiString;
-        function  GetNTLMMessage3_RD(const ForProxy: Boolean; Domain : String = ''): AnsiString;
+        function  GetNTLMMessage1: AnsiString;
+        function  GetNTLMMessage3(const ForProxy: Boolean): AnsiString;
+        function  GetNTLMMessage3_RD(const ForProxy: Boolean; Domain: String = ''): AnsiString;
 //        procedure ElaborateNTLMAuth;
-//        function  PrepareNTLMAuth(var FlgClean : Boolean) : Boolean;
+//        function  PrepareNTLMAuth(var FlgClean: Boolean): Boolean;
 {$ENDIF}
-    procedure TriggerProxyData(isReceive : Boolean; Data : RawByteString);
+    procedure TriggerProxyData(isReceive: Boolean; Data: RawByteString);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -144,22 +144,22 @@ type
 //    procedure CloseDelayed; override;
 
     procedure DisableProxy();
-    procedure proxySettings(proxy : TProxy);
+    procedure proxySettings(proxy: TProxy);
     procedure getFreePort;
 
-//    function RealSend(Data : Pointer; Len : Integer) : Integer; override;
-//    function RealSend(var Data : TWSocketData; Len : Integer) : Integer; override;
+//    function RealSend(Data: Pointer; Len: Integer) : Integer; override;
+//    function RealSend(var Data: TWSocketData; Len : Integer) : Integer; override;
 //    function Send(Data: Pointer; Len: Integer): Integer; override;
 //    function Send(const Data : TWSocketData; Len : Integer) : Integer; override;
 
-//    function SendStr(const Str : String) : Integer; override;
+//    function SendStr(const Str: String): Integer; override;
 //    function Receive(Buffer: Pointer; BufferSize: Integer): Integer; override;
-//    function Receive(Buffer : TWSocketData; BufferSize: Integer) : Integer;  {overload; } override;
+//    function Receive(Buffer: TWSocketData; BufferSize: Integer) : Integer;  {overload; } override;
 //    function ReceiveStr: string; override;
-    property Addr : String read  GetAddr1 write SetAddr;
-    property AddrPort : String read GetAddr2;
-    property OnDataReceived : TDataReceived read FOnDataReceived write FOnDataReceived;
-    property OnProxyTalk : TProxyLogData read FOnProxyTalk write FOnProxyTalk;
+    property Addr: String read  GetAddr1 write SetAddr;
+    property AddrPort: String read GetAddr2;
+    property OnDataReceived: TDataReceived read FOnDataReceived write FOnDataReceived;
+    property OnProxyTalk: TProxyLogData read FOnProxyTalk write FOnProxyTalk;
    end;
 
 const

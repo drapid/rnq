@@ -107,6 +107,7 @@ function  bool2str(const b: Boolean): RawByteString;
   function  chop(i, l: Integer; var s: RawByteString): RawByteString; overload;
   function  chop(const ss: RawByteString; var s: RawByteString): RawByteString; overload;
   function  chopline(var s: RawByteString): RawByteString; overload;
+  function  choplineV(const s: RawByteString; var pos0: Integer): RawByteString;
 
  {$IFDEF UNICODE}
   function chop(const ss: String; var s: UnicodeString): String; overload;
@@ -2261,6 +2262,39 @@ begin
   result := chop(0,0,s);
 end; // chopline
 
+function choplineV(const s: RawByteString; var pos0: Integer): RawByteString;
+var
+  i, l: Integer;
+begin
+    l := Length(s);
+    if pos0 < l then
+    for i := pos0 to l do
+      case s[i] of
+        #10:
+          begin
+            result := Copy(s, pos0, i-pos0);
+            pos0 := i+1;
+            exit;
+          end;
+        #13:
+          begin
+            if (i < length(s)) and (s[i+1]=#10) then
+              begin
+                result := Copy(s, pos0, i-pos0);
+                pos0 := i+2;
+              end
+             else
+              begin
+                result := Copy(s, pos0, i-pos0);
+                pos0 := i+1;
+              end;
+            exit;
+          end;
+        end;
+    result := s;
+    pos0 := Length(s)+1;
+end; // chopline
+
  {$IFDEF UNICODE}
 function chop(i, l: Integer; var s: String): String;
 begin
@@ -2283,7 +2317,6 @@ function chop(const ss: String; var s: String): String;
 begin
   result := chop(pos(ss,s), length(ss), s)
 end;
-
 
 function chopline(var s: String): String;
 var

@@ -20,17 +20,17 @@ uses
   Graphics;
 
 const
-  eventslogFilename='events.log';
-  defaultThemePrefix='RQ.';
-  defaultThemePostfix='theme.ini';
+  eventslogFilename = 'events.log';
+  defaultThemePrefix = 'RQ.';
+  defaultThemePostfix = 'theme.ini';
   // paths
-  themesPath= 'themes\';
-  pluginsPath= 'plugins\';
-  accountsPath= 'Accounts\';
+  themesPath = 'themes\';
+  pluginsPath = 'plugins\';
+  accountsPath = 'Accounts\';
  {$IFDEF CPUX64}
-  modulesPath= 'modules.x64\';
+  modulesPath = 'modules.x64\';
  {$ELSE}
-  modulesPath= 'modules\';
+  modulesPath = 'modules\';
  {$ENDIF CPUX64}
 
   maxPICAVTW = 200;
@@ -42,7 +42,7 @@ const
   RnQImageUnTag = AnsiString('</RnQImage>');
   RnQImageExTag = AnsiString('<RnQImageEx>');
   RnQImageExUnTag = AnsiString('</RnQImageEx>');
-  RnQTrayIconGUID: TGUID = '{0629FFDF-0F1A-40A1-BB6F-32942AD6DF17}';
+//  RnQTrayIconGUID: TGUID = '{0629FFDF-0F1A-40A1-BB6F-32942AD6DF17}';
 
 var
   timeformat: record

@@ -52,6 +52,7 @@ type
    public
 //    constructor LoadLang(p_fn: String; p_isUTFLang: Boolean);
     constructor Create;
+    destructor Destroy;
 //    function Trans(const key: AnsiString; const args:array of const):string; overload;
 //    function Trans(const key: AnsiString):string; overload;
 
@@ -89,7 +90,7 @@ type
 var
   useLang: Boolean = false;
 
-  gLangFile, gLangSubFile : String;
+  gLangFile, gLangSubFile: String;
 
 const
   c_Int_Lang_FN = 'internal';
@@ -112,15 +113,15 @@ implementation
    Classes;
 
 var
-  langList : aLangInfo;
-  LangVar : TRnQLang;
-{  lang:array of record
-    key,text:string;
+  langList: aLangInfo;
+  LangVar: TRnQLang;
+{  lang: array of record
+    key, text: string;
     end;
-  alreadyLoaded:array of string;  // keep track of loaded modules
+  alreadyLoaded: array of string;  // keep track of loaded modules
 }
 
-//  PrefStr : THashedStringList;
+//  PrefStr: THashedStringList;
 {
 Procedure LangAddStr(const k, v: AnsiString; Mas: THashedStringList);
 var
@@ -154,6 +155,11 @@ constructor TRnQLang.Create;
 begin
 //  LangsStr := THashedStringList.Create;
   LangsStr := TLangList.Create;
+end;
+
+destructor TRnQLang.Destroy;
+begin
+  FreeAndNil(LangsStr);
 end;
 
 procedure TRnQLang.resetLanguage;
@@ -210,13 +216,13 @@ function TRnQLang.loadLanguageFile2(fn: string; ts: TThemeSourcePath; isUTFLang:
     s1: String;
   begin
     if RnQMainPath > '' then
-      s1 := RnQMainPath +fn
+      s1 := RnQMainPath + fn
      else
       s1 := fn;
-    if ansipos(':',fn)=0 then
-      result:= myPath+ s1
+    if ansipos(':', fn)=0 then
+      result := myPath + s1
      else
-      result:= s1
+      result := s1
   end;
 var
   k, v: RawByteString;
@@ -245,10 +251,10 @@ begin
     if k[1] <> '[' then
      begin
  {$IFDEF UNICODE}
-      v := AnsiStrings.trim(chop(RawByteString('='),k));
+      v := AnsiStrings.trim(chop(RawByteString('='), k));
       k := AnsiStrings.trim(k);
  {$ELSE nonUNICODE}
-      v := trim(chop('=',k));
+      v := trim(chop('=', k));
       k := trim(k);
  {$ENDIF UNICODE}
       if v='include' then
@@ -276,6 +282,7 @@ begin
     k := AnsiStrings.trim(k);
     kU := UnUTF(k);
  {$ELSE nonUNICODE}
+    k := trim(k);
     kU := trim(k);
  {$ENDIF UNICODE}
     v := chopline(txt);
@@ -370,8 +377,8 @@ end;
 procedure TRnQLang.loadLanguage;
 var
   sr:TsearchRec;
-//  ls : String;
-  i,k : Integer;
+//  ls: String;
+  i, k: Integer;
 begin
   loggaEvt('loading language: ');
   useLang := False;

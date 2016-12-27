@@ -17,7 +17,11 @@ function  MD5Pass(const s: RawByteString): RawByteString;
 
 implementation
 uses
-  OverbyteIcsMD5,
+   {$IFDEF USE_SYMCRYPTO}
+     SynCrypto,
+    {$ELSE not SynCrypto}
+     OverbyteIcsMD5,
+   {$ENDIF ~USE_SYMCRYPTO}
  {$IFDEF UNICODE}
    AnsiStrings,
 //   Character,
@@ -229,11 +233,22 @@ end; // calculate_KEY1
 function MD5Pass(const s: RawBytestring): RawByteString;
 var
   MD5Digest: TMD5Digest;
-  MD5Context: TMD5Context;
+ {$IFDEF USE_SYMCRYPTO}
+   MD5: TMD5;
+  {$ELSE not SynCrypto}
+   MD5Context: TMD5Context;
+ {$ENDIF ~USE_SYMCRYPTO}
 begin
+ {$IFDEF USE_SYMCRYPTO}
+   md5.Init;
+   if Length(s)>0 then
+     md5.Update(s[1], length(s));
+   md5.Final(MD5Digest);
+  {$ELSE not SynCrypto}
   MD5Init(MD5Context);
   MD5UpdateBuffer(MD5Context, PAnsiChar(s), length(s));
   MD5Final(MD5Digest, MD5Context);
+ {$ENDIF ~USE_SYMCRYPTO}
   SetLength(Result, length(MD5Digest));
 //  StrPLCopy(@result[1], PByte(@MD5Digest), length(MD5Digest))
 //  StrPLCopy(@result[1], PAnsiChar(@MD5Digest), length(MD5Digest))

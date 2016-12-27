@@ -74,7 +74,12 @@ type
   TBalloonIconType = (bitNone,    // нет иконки
                       bitInfo,    // информационна€ иконка (син€€)
                       bitWarning, // иконка восклицани€ (жЄлта€)
-                      bitError);  // иконка ошибки (красна€)
+                      bitError,  // иконка ошибки (красна€)
+      bitUser, // кастомна€ иконка, XP SP2+
+      bitNoSound, // без звука, XP+
+      bitLargeIcon, // больша€ иконка, Vista+
+      bitRespectQuietTime, // 7+
+      bitMask); // Reserved, XP+
  {$ENDIF Use_Baloons}
 {  TBalloonType = (btNone, btError, btInfo, btWarning);
 }
@@ -232,7 +237,7 @@ procedure TstatusIcon.showballoon(const bldelay: integer;
                           const BalloonText, BalloonTitle: String;
                           const BalloonIconType: TBalloonIconType);
 const
-  aBalloonIconTypes: array[TBalloonIconType] of Byte = (NIIF_NONE, NIIF_INFO, NIIF_WARNING, NIIF_ERROR);
+  aBalloonIconTypes: array [TBalloonIconType] of Byte = (NIIF_NONE, NIIF_INFO, NIIF_WARNING, NIIF_ERROR, NIIF_USER, NIIF_NOSOUND, NIIF_LARGE_ICON, NIIF_RESPECT_QUIET_TIME, NIIF_ICON_MASK);
 var
 //  NID_50: NotifyIconData_50;
 //  NID_50: TNotifyIconData;
@@ -365,7 +370,7 @@ end;
 
 procedure TtrayIcon.update;
 //var
-//  ic : HICON;
+//  ic: HICON;
 begin
 { if shown then
    begin
@@ -396,7 +401,7 @@ begin
     ico := TIcon.Create;
   ico.Assign(icon);
 //if data.hIcon <> 0 then
-  data.hIcon:=ico.Handle;
+  data.hIcon := ico.Handle;
   if TrayIconDataVersion = 4 then
     data.hBalloonIcon := Ico.Handle;
   update;

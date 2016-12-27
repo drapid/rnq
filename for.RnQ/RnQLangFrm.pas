@@ -141,6 +141,7 @@ begin
     if (desc > '') and ((path > '') or (fn > '')) then
       s := s + ' )';
    end;
+  PaintInfo.Canvas.Font.Assign(Application.DefaultFont);
   if vsSelected in PaintInfo.Node.States then
    begin
     if Sender.Focused then

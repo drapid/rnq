@@ -2389,7 +2389,8 @@ end;
 
 procedure TSciter.UnsubscribeAll;
 begin
-  FEventList.Clear;
+  if Assigned(FEventList) then
+    FEventList.Clear;
 end;
 
 procedure TSciter.UpdateWindow;

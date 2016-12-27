@@ -51,19 +51,19 @@ type
       function  getPrefInt(const key: String; var Val: Integer): Boolean;
       procedure getPrefDate(const key: String; var Val: TDateTime);
       procedure getPrefDateTime(const key: String; var Val: TDateTime);
-      procedure getPrefValue(const key: String; et: TElemType; var Val : TPrefElem);
+      procedure getPrefValue(const key: String; et: TElemType; var Val: TPrefElem);
       function getPrefGuid(const key: String; var Val: TGUID): Boolean;
       function getPrefBoolDef(const key: String; const DefVal: Boolean): Boolean;
       function getPrefBlobDef(const key: String; const DefVal: RawByteString = ''): RawByteString;
       function getPrefBlob64Def(const key: String; const DefVal: RawByteString = ''): RawByteString;
       function getPrefStrDef(const key: String; const DefVal: String = ''): String;
-      function getPrefIntDef(const key: String; const DefVal: Integer = -1) : Integer;
+      function getPrefIntDef(const key: String; const DefVal: Integer = -1): Integer;
       function getPrefVal(const key: String): TPrefElement;
 
       function getAllPrefs: RawByteString;
 
       procedure DeletePref(const key: String);
-      function prefExists(const key: String) : Boolean;
+      function prefExists(const key: String): Boolean;
 
       procedure addPrefBlobOld(const key: String; const Val: RawByteString);
       procedure addPrefBlob64(const key: String; const Val: RawByteString);
@@ -92,10 +92,10 @@ type
 
   TPrefFrame = class(TFrame)
   public
-    FOldCreateOrder : Boolean;
-    FPixelsPerInch  : Integer;
-    FTextHeight     : Integer;
-    fAccIDX         : Integer;
+    FOldCreateOrder: Boolean;
+    FPixelsPerInch: Integer;
+    FTextHeight: Integer;
+    fAccIDX: Integer;
     procedure applyPage; virtual; abstract;
     procedure resetPage; virtual; abstract;
     procedure updateVisPage; virtual;
@@ -125,17 +125,17 @@ type
     GroupName: String;
     Name,
     Caption: string;
-    fProtoIDX : Integer;
-//    proto : IRnQProtocol;
+    fProtoIDX: Integer;
+//    proto: IRnQProtocol;
    public
      destructor Destroy; override;
-     function Clone : TPrefPage;
+     function Clone: TPrefPage;
   end;
   TPrefPagesArr = array of TPrefPage;
 
-//  function getPrefString(const key:String; const DefVal : String):string;
+//  function getPrefString(const key: String; const DefVal : String):string;
 
-//  Procedure PrefAddStr(const k : String; v : String; Mas : THashedStringList);
+//  Procedure PrefAddStr(const k: String; v: String; Mas : THashedStringList);
 
 //  procedure ClearPrefs;
 //  procedure resetPrefs;
@@ -163,7 +163,7 @@ type
 
 implementation
 
- uses
+uses
    SysUtils, Character, ExtCtrls, StdCtrls, Controls, Types,
    RnQSpin, RDUtils,
  {$IFDEF RNQ}
@@ -276,8 +276,8 @@ procedure TRnQPref.addPrefBlobOld(const key: String;
   const Val: RawByteString);
 var
 //  so : TPUStrObj;
-  El : TPrefElement;
-  i : Integer;
+  El: TPrefElement;
+  i: Integer;
 begin
   if key = '' then
     Exit;
@@ -322,8 +322,8 @@ end;
 procedure TRnQPref.addPrefBlob64(const key: String;
                                  const Val: RawByteString);
 var
-  El : TPrefElement;
-  i : Integer;
+  El: TPrefElement;
+  i: Integer;
 begin
   if key = '' then
     Exit;
@@ -346,8 +346,8 @@ end;
 
 procedure TRnQPref.addPrefBool(const key: String; const Val: Boolean);
 var
-  El : TPrefElement;
-  i : Integer;
+  El: TPrefElement;
+  i: Integer;
 begin
   if key = '' then
     Exit;
@@ -432,49 +432,49 @@ begin
     if (pp is TCheckBox) {and (TCheckBox(pp).HelpKeyword > '')} then
      begin
       if TCheckBox(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object ['+ TCheckBox(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        loggaEvtS('Parameter object [' + TCheckBox(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         addPrefBool(TCheckBox(pp).HelpKeyword, TCheckBox(pp).Checked);
      end
     else
     if (pp is TrnqSpinEdit) then
       if TrnqSpinEdit(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object ['+ TrnqSpinEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        loggaEvtS('Parameter object [' + TrnqSpinEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         addPrefInt(TrnqSpinEdit(pp).HelpKeyword, TrnqSpinEdit(pp).AsInteger)
     else
     if (pp is TEdit) then
       if TEdit(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object ['+ TEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        loggaEvtS('Parameter object [' + TEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         addPrefStr(TEdit(pp).HelpKeyword, TEdit(pp).Text)
     else
     if (pp is TLabeledEdit) then
       if TControl(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object ['+ TControl(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        loggaEvtS('Parameter object [' + TControl(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         addPrefStr(TControl(pp).HelpKeyword, TLabeledEdit(pp).Text)
     else
     if (pp is TRadioButton) then
      begin
       if TControl(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object ['+ TControl(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        loggaEvtS('Parameter object [' + TControl(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         addPrefBool(TCheckBox(pp).HelpKeyword, TRadioButton(pp).Checked);
      end
 end;
 
-procedure TRnQPref.getPrefArrParam(param : array of TObject);
+procedure TRnQPref.getPrefArrParam(param: array of TObject);
 var
-  pp : TObject;
-  i : Integer;
-  b : Boolean;
+  pp: TObject;
+  i: Integer;
+  b: Boolean;
 begin
   for pp in param do
     if (pp is TCheckBox) {and (TCheckBox(pp).HelpKeyword > '')} then
      begin
       if TCheckBox(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object ['+ TCheckBox(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        loggaEvtS('Parameter object [' + TCheckBox(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         begin
           b := TCheckBox(pp).Checked;
@@ -486,7 +486,7 @@ begin
     if (pp is TrnqSpinEdit) then
      begin
       if TrnqSpinEdit(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object ['+ TrnqSpinEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        loggaEvtS('Parameter object [' + TrnqSpinEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         begin
           i := TrnqSpinEdit(pp).AsInteger;
@@ -498,7 +498,7 @@ begin
     if (pp is TEdit) then
      begin
       if TEdit(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object ['+ TEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        loggaEvtS('Parameter object [' + TEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         begin
           TEdit(pp).Text := getPrefStrDef(TControl(pp).HelpKeyword, '');
@@ -508,7 +508,7 @@ begin
     if (pp is TRadioButton) then
      begin
       if TControl(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object ['+ TControl(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        loggaEvtS('Parameter object [' + TControl(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         begin
           b := TRadioButton(pp).Checked;
@@ -592,9 +592,9 @@ end;
 
 procedure TRnQPref.DeletePref(const key: String);
 var
-//  so : TPUStrObj;
-  El : TPrefElement;
-  i : Integer;
+//  so: TPUStrObj;
+  El: TPrefElement;
+  i: Integer;
 begin
   i := fPrefStr.IndexOf(key);
   if i>=0 then
@@ -609,7 +609,7 @@ begin
     end
 end;
 
-function TRnQPref.prefExists(const key:String) : Boolean;
+function TRnQPref.prefExists(const key: String): Boolean;
 begin
   Result := fPrefStr.IndexOf(key) >= 0;
 end;
@@ -624,9 +624,9 @@ end;
 
 procedure TRnQPref.resetPrefs;
 var
-  i : Integer;
-//  so : TPUStrObj;
-  el : TPrefElement;
+  i: Integer;
+//  so: TPUStrObj;
+  el: TPrefElement;
 begin
   if Assigned(fPrefStr) then
     begin
@@ -651,10 +651,11 @@ var
   p1, p2, // Position of CRLF
   len,
   m1, m: Integer;
-//  lastVersion:integer;
-//  i:integer;
+//  lastVersion: integer;
+//  i: integer;
 begin
-  if cfg = '' then exit;
+  if cfg = '' then
+    exit;
   fPrefStr.Sorted := False;
   p1 := 1;
 //  p2 := 1;
@@ -697,7 +698,7 @@ end;
 function TRnQPref.getAllPrefs: RawByteString;
 var
   I: Integer;
-//  s : String;
+//  s: String;
 begin
   Result := '';
   for I := 0 to fPrefStr.Count - 1 do
@@ -882,7 +883,7 @@ begin
    end;
 end;
 
-  function yesnof(l: PAnsiChar): boolean; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+  function yesnof(l: PAnsiChar): boolean; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   const
     yyy = AnsiString('yes');
   begin
@@ -1191,9 +1192,9 @@ begin
                   else
                    Result := '';
                end;
-    ET_Integer:begin
+    ET_Integer: begin
                  Result := IntToStrA(elem.iVal);
-               end;
+                end;
     ET_Blob:   begin
                  if elem.bVal <> NIL then
                    Result := AnsiStrings.StrPas(elem.bVal)

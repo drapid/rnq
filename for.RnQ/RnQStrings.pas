@@ -10,8 +10,10 @@ unit RnQStrings;
 {$I NoRTTI.inc}
 
 interface
-   uses
-     RDGlobal;
+
+uses
+  RDGlobal;
+
 const
    Str_message = 'Message';
    Str_roster = 'roaster';

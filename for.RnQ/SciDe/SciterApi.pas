@@ -1065,15 +1065,17 @@ begin
     Result := True;
 end;
 
-{ Returns true if an object (class, variable, constant etc) exists in the global namespace,
-  false otherwise }
-function IsNameExists(const vm: HVM; const Name: WideString): boolean;
+{ Returns true if an object (class, variable, constant etc) exists in local or global namespace, false otherwise }
+function IsNameExists(const vm: HVM; ns: tiscript_value; const Name: WideString): boolean;
 var
   var_name: tiscript_string;
   var_value: tiscript_object;
   zns: tiscript_value;
 begin
-  zns := NI.get_global_ns(vm);
+  if ns = 0 then
+    zns := NI.get_global_ns(vm)
+   else
+    zns := ns;
   var_name  := NI.string_value(vm, PWideChar(Name), Length(Name));
   var_value := NI.get_prop(vm, zns, var_name);
   Result := not NI.is_undefined(var_value);
@@ -1130,7 +1132,7 @@ var
   func_name: tiscript_value;
   zns: tiscript_value;
 begin
-  if IsNameExists(vm, Name) and ThrowIfExists then
+  if IsNameExists(vm, ns, Name) and ThrowIfExists then
     raise ESciterException.CreateFmt('Failed to register native function %s. Object with same name already exists.', [Name]);
     
   if ns = 0 then
@@ -1273,7 +1275,11 @@ begin
     HSCITER := LoadLibrary(modulesPath + 'sciter32.dll');
     {$ENDIF CPUX64}
     if HSCITER = 0 then
-      raise ESciterException.Create('Failed to load Sciter DLL.');
+      begin
+        HSCITER := LoadLibrary(modulesPath + 'sciter.dll');
+        if HSCITER = 0 then
+          raise ESciterException.Create('Failed to load Sciter DLL.');
+      end;
 
     pFuncPtr := GetProcAddress(HSCITER, 'SciterAPI');
     if pFuncPtr = nil then

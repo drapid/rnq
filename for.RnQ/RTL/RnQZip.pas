@@ -35,8 +35,8 @@ uses
 type
 
   TZLibStreamHeader = packed record
-     CMF : Byte;
-     FLG : Byte;
+     CMF: Byte;
+     FLG: Byte;
   end;
 
   TFileDescriptor = packed record
@@ -61,10 +61,10 @@ type
     filename: TBytes; //variable size
     extrafield: RawByteString; //variable size
     CompressedData: RawByteString; //variable size
-    pass : AnsiString;
+    pass: AnsiString;
  { TODO -oRapid D -cIncrease load speed : Add support of "preview" loading }
-    DataOffset : Int64;
-    DataLoaded : Boolean;
+    DataOffset: Int64;
+    DataLoaded: Boolean;
     function UTFSupport: Boolean;
   end;
 
@@ -134,7 +134,7 @@ type
     fileComment: AnsiString; //variable size
 
  {$IFDEF ZIP_AES}
-    AESInfo : TAESExtraData; // By Rapid D
+    AESInfo: TAESExtraData; // By Rapid D
  {$ENDIF ZIP_AES}
     function UTFSupport: Boolean;
   end;
@@ -172,18 +172,18 @@ type
   public
     constructor create;
     function  AddFile(const name: string; FAttribute: DWord = 0; const pPass: AnsiString = '';
-                       const pData : RawByteString = '') : Integer;
+                       const pData: RawByteString = ''): Integer;
     function  AddExtFile(const pFileName : String; const name: string = '';
-                         FAttribute: DWord = 0; const pPass: AnsiString = '') : Integer;
+                         FAttribute: DWord = 0; const pPass: AnsiString = ''): Integer;
     procedure SaveToFile(const filename: string);
     procedure SaveToStream(ZipFileStream: TStream);
-    procedure LoadFromFile(const filename: string; pPreview : Boolean = false);
+    procedure LoadFromFile(const filename: string; pPreview: Boolean = false);
     procedure LoadFromStream(const ZipFileStream: TStream; pPreview: Boolean = false);
     function  IndexOf(const s: String) : Integer;
-    Function  ExtractToStream(const fn : String; Stream : TStream) : Boolean; Overload;
-    function  ExtractToStream(i : Integer; Stream : TStream) : Boolean; Overload;
-    function  IsEncrypted(i : Integer)  : Boolean;
-    function  CheckPassword(I:Integer; const pass : AnsiString) : Boolean;
+    Function  ExtractToStream(const fn: String; Stream: TStream): Boolean; Overload;
+    function  ExtractToStream(i: Integer; Stream: TStream): Boolean; Overload;
+    function  IsEncrypted(i: Integer): Boolean;
+    function  CheckPassword(I: Integer; const pass: AnsiString): Boolean;
     property  Count: integer read GetCount;
 //    property Uncompressed[i: integer]: AnsiString read GetUncompressed;
                                                   //write SetUncompressed;
@@ -196,20 +196,21 @@ type
   end;
 
   EZipFileCRCError = class(Exception);
-  const
+
+const
    dwLocalFileHeaderSignature = $04034B50;
    dwLocalFileDescriptorSignature = $08074B50;
    dwCentralFileHeaderSignature = $02014B50;
    dwEndOfCentralDirSignature = $06054b50;
    wAESEncrSignature = $9901;
 
-function ZipCrc32(crc: Cardinal; const buffer : PByteArray; size: Integer): Cardinal; OverLoad;
-function ZipCrc32(crc: Cardinal; const stream : TStream): Cardinal; OverLoad;
+function ZipCrc32(crc: Cardinal; const buffer: PByteArray; size: Integer): Cardinal; OverLoad;
+function ZipCrc32(crc: Cardinal; const stream: TStream): Cardinal; OverLoad;
 
 //function ZipCRC32(const Data: string): longword;
-Function ToZipName(const FileName:String):String;
-Function ToDosName(const FileName:String):String;
-function CheckZIPFilePass(const zipfn, fn : String; const pass : AnsiString) : Boolean;
+Function ToZipName(const FileName: String): String;
+Function ToDosName(const FileName: String): String;
+function CheckZIPFilePass(const zipfn, fn: String; const pass: AnsiString): Boolean;
 
 implementation
   uses
@@ -219,7 +220,12 @@ implementation
      System.ZLibConst,
      OverbyteIcsZLibHigh,
   {$IFDEF ZIP_AES}
+   {$IFDEF USE_SYMCRYPTO}
+//     SynCrypto,
+     AES_HMAC_Syn,
+    {$ELSE not SynCrypto}
      AES_HMAC,
+   {$ENDIF ~USE_SYMCRYPTO}
   {$ENDIF ZIP_AES}
  {$IFDEF UNICODE}
    AnsiStrings,
@@ -247,6 +253,9 @@ const
   ZL_FLEVEL_MASK            = $C0; { mask out leftmost 2 bits }
   ZL_CM_MASK                = $0F; { mask out rightmost 4 bits }
 
+
+
+   SALT_LENGTH : array[1..3] of byte = (8, 12, 16);
 
 //procedure make_crc_table;
 var
@@ -596,19 +605,24 @@ begin
 end;
 
 
-function TZipFile.CheckPassword(I:Integer; const pass : AnsiString) : Boolean;
+function TZipFile.CheckPassword(I: Integer; const pass: AnsiString): Boolean;
 var
-//  ReadBytes2 : Integer;
-  l : Integer;
+//  ReadBytes2: Integer;
+  l: Integer;
 
  {$IFDEF ZIP_AES}
-  salt2 : RawByteString;
-//  key : Ansistring;
-  pwd_ver : RawByteString;
-//  pwd_verW : Word;
-  cx : fcrypt_ctx;
-//  cx : T_fcrypt_ctx;
-  s1 : RawByteString;
+  salt2: RawByteString;
+//  key: Ansistring;
+  pwd_ver: RawByteString;
+//  pwd_verW: Word;
+  {$IFDEF USE_SYMCRYPTO}
+//    aes: TAESCTR;
+    cx: fcrypt_ctx;
+   {$ELSE not SynCrypto}
+    cx: fcrypt_ctx;
+  {$ENDIF ~USE_SYMCRYPTO}
+//  cx: T_fcrypt_ctx;
+  s1: RawByteString;
 //  data : TData_Type;
  {$ENDIF ZIP_AES}
 begin
@@ -627,8 +641,13 @@ begin
    SetLength(salt2, l);
 //   CopyMemory(@salt2[1], @Files[I].CompressedData[1], l);
    Move(Pointer(Files[I].CompressedData)^, Pointer(salt2)^, l);
-
+  {$IFDEF USE_SYMCRYPTO}
+//   aes := TAESCTR.Create(@pass[1], Length(pass));
+//   aes.IV := (salt2);
+    fcrypt_init(CentralDirectory[i].AESInfo.AESMode, pass, salt2, pwd_ver, cx);
+  {$ELSE ~USE_SYMCRYPTO}
     AES_HMAC.fcrypt_init(CentralDirectory[i].AESInfo.AESMode, pass, salt2, pwd_ver, cx);
+  {$ENDIF ~USE_SYMCRYPTO}
 //    AES_HMAC.fcrypt_end(cx);
 //    fcrypt_init(CentralDirectory[i].AESInfo.AESMode, @pass[1], Length(pass), @salt2[1], pwd_verW, cx);
 //    SetLength(pwd_ver, 2);
@@ -646,37 +665,37 @@ begin
 end;
 
 
-procedure TZipFile.Uncompress2Stream(I:Integer; Stream : TStream);
+procedure TZipFile.Uncompress2Stream(I: Integer; Stream: TStream);
 var
-//  Decompressor:TDecompressionStream;
-//  CompressedStream : TMemoryStream;
-// UncompressedStream:TStringStream;
-// CompressedStream:TStringStream;
- ComprStream:TMemoryStream;
+//  Decompressor: TDecompressionStream;
+//  CompressedStream: TMemoryStream;
+// UncompressedStream: TStringStream;
+// CompressedStream: TStringStream;
+ ComprStream: TMemoryStream;
   AHeader: RawByteString;
-  FZLHeader : TZLibStreamHeader;
-//  ReadBytes:Integer;
-//  ReadBytes2 : Integer;
-  l : Integer;
-  LoadedCrc32:DWORD;
+  FZLHeader: TZLibStreamHeader;
+//  ReadBytes: Integer;
+//  ReadBytes2: Integer;
+  l: Integer;
+  LoadedCrc32: DWORD;
 
-  data : Pointer;
+  data: Pointer;
  {$IFDEF ZIP_AES}
-  salt2 : RawByteString;
-//  key : Ansistring;
-  pwd_ver : RawByteString;
-  cx : fcrypt_ctx;
-  s1, s2 : RawByteString;
-//  data : TData_Type;
-  dataLen : Integer;
-  Cont_Size : Integer;
+  salt2: RawByteString;
+//  key: Ansistring;
+  pwd_ver: RawByteString;
+  cx: fcrypt_ctx;
+  s1, s2: RawByteString;
+//  data: TData_Type;
+  dataLen: Integer;
+  Cont_Size: Integer;
 
-//  pwd_verW : word;
-//  cx : DIFileEncrypt.T_fcrypt_ctx;
+//  pwd_verW: word;
+//  cx: DIFileEncrypt.T_fcrypt_ctx;
  {$ENDIF ZIP_AES}
 
-  ZLH       : Word;
-  Compress  : Byte;
+  ZLH: Word;
+  Compress: Byte;
 begin
  if (I<0) or (I>High(Files)) then
   raise Exception.Create('Index out of range.');
@@ -725,7 +744,7 @@ begin
     SetLength(salt2, l);
     Move(Pointer(Files[I].CompressedData)^, Pointer(salt2)^, l);
 
-    AES_HMAC.fcrypt_init(CentralDirectory[i].AESInfo.AESMode, Password, salt2, pwd_ver, cx);
+    fcrypt_init(CentralDirectory[i].AESInfo.AESMode, Password, salt2, pwd_ver, cx);
 //    fcrypt_init(CentralDirectory[i].AESInfo.AESMode, @Password[1], Length(Password), @salt2[1], pwd_verW, cx);
 //    SetLength(pwd_ver, 2);
 //    CopyMemory(@pwd_ver[1], @pwd_verW, 2);
@@ -748,7 +767,7 @@ begin
   //    ReadBytes := 0;
   //      for l := 1 to Files[I].CommonFileHeader.UncompressedSize div SizeOf(buf) do
       if dataLen > 0 then
-       AES_HMAC.fcrypt_decrypt(data, dataLen, cx);
+       fcrypt_decrypt(data, dataLen, cx);
 //      fcrypt_decrypt(data, dataLen, cx2);
 //      AES_HMAC.fcrypt_decrypt(data, dataLen, fcrypt_ctx((@cx2)^));
   //        fcrypt_decrypt(ComprStream.Memory, dataLen, cx);
@@ -762,7 +781,7 @@ begin
       if l > 0 then
        fcrypt_decrypt(data, l, cx);
 }  
-      s1 := AES_HMAC.fcrypt_end(cx);
+      s1 := fcrypt_end(cx);
 
       if dataLen > 0 then
       if CentralDirectory[i].AESInfo.CompressMethod = 0 then
@@ -918,10 +937,10 @@ begin
 //       salt2 := #$FA#$48#$CB#$73#$F9#$65#$A2#$87#$85#$83#$CE#$79#$60#$3C#$08#$90;
        salt2 := TestRPNG;
        aesMode := 3;
-       l := AES_HMAC.SALT_LENGTH[aesMode];
+       l := SALT_LENGTH[aesMode];
 //       l := SALT_LENGTH(aesMode);
        SetLength(salt2, l);
-       AES_HMAC.fcrypt_init(aesMode, Files[i].pass, salt2, pwd_ver, cx);
+       fcrypt_init(aesMode, Files[i].pass, salt2, pwd_ver, cx);
 //        fcrypt_init(aesMode, @Files[i].pass[1], Length(Files[i].pass), @salt2[1], pwd_verW, cx);
 //        SetLength(pwd_ver, 2);
 //        CopyMemory(@pwd_ver[1], @pwd_verW, 2);
@@ -938,7 +957,7 @@ begin
            fcrypt_encrypt(data1, ofs, cx);
           end;}
         end;
-       s1 := AES_HMAC.fcrypt_end(cx);
+       s1 := fcrypt_end(cx);
 //        SetLength(s1, 10);
 //        fcrypt_end(@s1[1], cx);
        ofs := l + 2 + ComprSize + 10;
@@ -1337,10 +1356,10 @@ Begin
   Result := StringReplace(Result,'/','\',[rfReplaceAll]);
 End;
 
-function CheckZipFilePass(const zipfn, fn : String; const pass : AnsiString) : Boolean;
+function CheckZipFilePass(const zipfn, fn: String; const pass: AnsiString): Boolean;
 var
-  zp : TZipFile;
-  i : Integer;
+  zp: TZipFile;
+  i: Integer;
 begin
   Result := False;
   if FileExists(zipfn) then
