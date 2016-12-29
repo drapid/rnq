@@ -76,16 +76,16 @@ end;
 
 procedure TaddContactFrm.addBtnClick(Sender: TObject);
 var
-//  i:integer;
-  uid : TUID;
+//  i: integer;
+  uid: TUID;
 begin
-   uid := trim(uinBox.text);
+   uid := TUID(trim(uinBox.text));
 //   if not thisProto.validUid(uid) then
    if not thisProto.ValidUid1(uid) then
      msgDlg('Invalid UIN', True, mtError)
     else
      begin
-      c:= thisProto.getContact(uid);
+      c := thisProto.getContact(uid);
       if not Assigned(c) then
        begin
         msgDlg('Couldn''t create contact!', True, mtError);
