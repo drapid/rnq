@@ -25,7 +25,7 @@ uses
   RQThemes, RDGlobal,
   themesLib,
  {$IFDEF PREF_IN_DB}
-  DBPrefsLibs,
+  DBPrefsLib,
  {$ELSE ~PREF_IN_DB}
   RnQPrefsLib,
  {$ENDIF PREF_IN_DB}
@@ -58,7 +58,7 @@ const
   RnQBuild = 1300;
   PIC_CLIENT_LOGO = TPicName('rnq');
  {$ELSE ~DB_ENABLED}
-  RnQBuild = 1127;
+  RnQBuild = 1128;
   PIC_CLIENT_LOGO                 = TPicName('rnq');
  {$ENDIF ~DB_ENABLED}
 //  {$Include RnQBuiltTime.inc}
@@ -443,7 +443,7 @@ var
   plugins   : Tplugins;
   progStart : double;
   statusIcon: TstatusIcon;
-  hintMode  : (HM_null,HM_url,HM_comm);
+  hintMode  : (HM_null, HM_url, HM_comm);
   usertime  : integer;
   startTime : TdateTime;
   WM_TASKBARCREATED: longword;

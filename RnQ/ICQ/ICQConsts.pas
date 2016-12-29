@@ -64,9 +64,9 @@ const
                      byte(SC_occupied)//, byte(SC_f4c)
 //                     , byte(SC_Evil),byte(SC_Depression)
                     ];
-//  Tvisibility=(VI_invisible, VI_privacy, VI_normal, VI_all, VI_CL);
-//  visibility2SSIcode : array[Tvisibility] of byte = (02, 03, 04, 01, 05);
-//  overrideStatus2code:array [Tstatus] of dword=(0,9,$A,$E,4,0,0,0);
+//  Tvisibility = (VI_invisible, VI_privacy, VI_normal, VI_all, VI_CL);
+//  visibility2SSIcode: array[Tvisibility] of byte = (02, 03, 04, 01, 05);
+//  overrideStatus2code: array [Tstatus] of dword = (0,9,$A,$E,4,0,0,0);
 
 const
   maxRefs = 2000;
@@ -1072,11 +1072,11 @@ const
 
   function CAPS_sm2big(i: byte): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 var
-//   ExtStsStrings : array[low(aXStatus)..High(aXStatus),0..1] of string;
-//   ExtStsStrings : array[low(XStatus6)..High(XStatus6)] of string;
-//   ExtStsStrings : array[low(XStatusArray)..High(XStatusArray)] of string;
-   ExtStsStrings : array[low(XStatusArray)..High(XStatusArray)] of TXStatStr;
-   StatusesArray : TStatusArray;
+//   ExtStsStrings: array[low(aXStatus)..High(aXStatus),0..1] of string;
+//   ExtStsStrings: array[low(XStatus6)..High(XStatus6)] of string;
+//   ExtStsStrings: array[low(XStatusArray)..High(XStatusArray)] of string;
+   ExtStsStrings: array[low(XStatusArray)..High(XStatusArray)] of TXStatStr;
+   StatusesArray: TStatusArray;
 
 var
    useFBcontacts: Boolean = false;

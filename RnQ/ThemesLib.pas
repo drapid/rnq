@@ -20,14 +20,14 @@ uses
 procedure ResetThemePaths;
 procedure resetTheme;
 procedure applyTheme;
-procedure ApplyThemeComponent(c : Tcontrol);
+procedure ApplyThemeComponent(c: Tcontrol);
 procedure repaintAllWindows;
-procedure refreshMenuThemelist(menuItem : TMenuItem; StartIDX : byte; proc : TnotifyEvent);
-procedure refreshMenuSmileslist(menuItem : TMenuItem; StartIDX : byte; proc : TnotifyEvent);
-procedure refreshMenuSoundslist(menuItem : TMenuItem; StartIDX : byte; proc : TnotifyEvent);
-procedure SetContactsThemeUse(b : Boolean);
+procedure refreshMenuThemelist(menuItem: TMenuItem; StartIDX: byte; proc: TnotifyEvent);
+procedure refreshMenuSmileslist(menuItem: TMenuItem; StartIDX: byte; proc: TnotifyEvent);
+procedure refreshMenuSoundslist(menuItem: TMenuItem; StartIDX: byte; proc: TnotifyEvent);
+procedure SetContactsThemeUse(b: Boolean);
 
-procedure reloadCurrentTheme();
+function reloadCurrentTheme(): String;
 
 procedure applySizes(const OldDPI, NewDPI: Integer);
 
@@ -402,20 +402,27 @@ begin
 }
 end;
 
-procedure reloadCurrentTheme();
+function reloadCurrentTheme(): String;
 begin
-  Theme.load(theme.ThemePath.fn, theme.ThemePath.subfn);
+  Result := Theme.load(theme.ThemePath.fn, theme.ThemePath.subfn);
+  Result := Result + CrLf + logtimestamp + 'Theme ' +  theme.ThemePath.subfn + ' in file ' + theme.ThemePath.fn + ' loaded';
 
-   if (RQSmilesPath.fn > '')and FileExists(mypath+themesPath+RQSmilesPath.fn) then
-     theme.load(RQSmilesPath.fn, RQSmilesPath.subfn, false, tsc_smiles)
+   if (RQSmilesPath.fn > '') and FileExists(mypath+themesPath+RQSmilesPath.fn) then
+     begin
+       theme.load(RQSmilesPath.fn, RQSmilesPath.subfn, false, tsc_smiles);
+       Result := Result + CrLf + logtimestamp + 'Smiles ' +  RQSmilesPath.subfn + ' in file ' + RQSmilesPath.fn + ' loaded';
+     end
     else
      begin
        RQSmilesPath.fn := '';
        RQSmilesPath.subfn := '';
      end;
 
-   if (RQSoundsPath.fn > '')and FileExists(mypath+themesPath+RQSoundsPath.fn) then
-     theme.load(RQSoundsPath.fn, RQSoundsPath.subfn, false, tsc_sounds)
+   if (RQSoundsPath.fn > '') and FileExists(mypath+themesPath+RQSoundsPath.fn) then
+     begin
+       theme.load(RQSoundsPath.fn, RQSoundsPath.subfn, false, tsc_sounds);
+       Result := Result + CrLf + logtimestamp + 'Sounds ' +  RQSoundsPath.subfn + ' in file ' + RQSoundsPath.fn + ' loaded';
+     end
     else
      begin
        RQSoundsPath.fn := '';
@@ -423,6 +430,8 @@ begin
      end;
 
   Theme.loadThemeScript(userthemeFilename, AccPath);
+  Result := Result + CrLf + logtimestamp + 'UserTheme loaded';
+
   if useContactThemes then
     begin
      if FileExists(AccPath + contactsthemeFilename) then
@@ -436,6 +445,7 @@ begin
       begin
        ContactsTheme.load(AccPath + contactsthemeFilename, '', false);
        ContactsTheme.loadThemeScript(userthemeFilename, AccPath);
+       Result := Result + CrLf + logtimestamp + 'Contacts Theme loaded';
       end;
    end;
   applyTheme;

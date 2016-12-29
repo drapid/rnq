@@ -131,7 +131,7 @@ var
 
   end;
 
-  function choplineF(const s: String; var pos0 : Integer): String;
+  function choplineF(const s: String; var pos0: Integer): String;
   var
     i, l: Integer;
 

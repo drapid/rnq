@@ -1551,8 +1551,6 @@ begin
 end;
 
 procedure TRnQCList.ForEachAsync(const AIteratorEvent: TProc<TRnQContact> );
-var
-  cnt: TRnQContact;
 begin
   if Self.Count > 0 then
     TParallel.&For(0, Self.Count-1,  procedure(i: integer)

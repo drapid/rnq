@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit uinlistLib;
 {$I RnQConfig.inc}
@@ -12,14 +12,14 @@ uses
   RnQProtocol, classes;
 
 type
-  PuinList=^TuinList;
-  TuinList=record
+  PuinList = ^TuinList;
+  TuinList = record
     name: string;
     desc: string;
     cl: TRnQCList;
    end;
 
-  TuinLists=class(Tlist)
+  TuinLists = class(Tlist)
    private
     enumidx: integer;
    public
@@ -52,7 +52,7 @@ end;
 function TuinLists.idxOf(const name: string): integer;
 begin
   result := count-1;
-  while (result>=0) and (compareText(getAt(result).name,name)<>0) do
+  while (result>=0) and (compareText(getAt(result).name, name)<>0) do
     dec(result);
 end; // idxof
 
@@ -109,10 +109,10 @@ begin
 end; // destroy
 
 const
-  FK_NAME=1;
-  FK_DESC=2;
-  FK_UIN=3;
-  FK_UID=4;
+  FK_NAME = 1;
+  FK_DESC = 2;
+  FK_UIN = 3;
+  FK_UID = 4;
 
 procedure Tuinlists.fromString(pr: TRnQProtocol; s: RawByteString);
 var

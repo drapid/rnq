@@ -15,9 +15,9 @@ uses
 
 type
  {$IFDEF CHECK_INVIS}
-  Tdivisor = (d_online,d_invis,d_offline,d_contacts,d_nil);
+  Tdivisor = (d_online, d_invis, d_offline, d_contacts, d_nil);
  {$ELSE}
-  Tdivisor = (d_online,d_offline,d_contacts,d_nil);
+  Tdivisor = (d_online, d_offline, d_contacts, d_nil);
  {$ENDIF}
 const
  {$IFDEF CHECK_INVIS}
@@ -53,19 +53,19 @@ type
 //    ev: procedure;
   end;
 const
-//  RnQCLIcons : array[0..6] of TRnQCLIcons = (
-  RnQCLIcons : array[TRnQCLIconsSet] of TRnQCLIcons = (
-  ( IDX:CNT_ICON_VIS;   Name:'I''m visible to'; IconName: PIC_VISIBLE_TO; PrefText : 'visibility-flag'),
-  ( IDX:CNT_ICON_STS;   Name:'Status';          IconName: 'status.online'; PrefText : 'show-status'),
+//  RnQCLIcons: array[0..6] of TRnQCLIcons = (
+  RnQCLIcons: array[TRnQCLIconsSet] of TRnQCLIcons = (
+  ( IDX: CNT_ICON_VIS;   Name:'I''m visible to'; IconName: PIC_VISIBLE_TO; PrefText : 'visibility-flag'),
+  ( IDX: CNT_ICON_STS;   Name:'Status';          IconName: 'status.online'; PrefText : 'show-status'),
  {$IFDEF RNQ_FULL}
-  ( IDX:CNT_ICON_XSTS;  Name:'XStatus';         IconName: 'st_custom.cigarette'; PrefText : 'show-xstatus-flag'),
+  ( IDX: CNT_ICON_XSTS;  Name:'XStatus';         IconName: 'st_custom.cigarette'; PrefText : 'show-xstatus-flag'),
  {$ENDIF RNQ_FULL}
-  ( IDX:CNT_ICON_AUTH;  Name:'Not authorized';  IconName: PIC_AUTH_NEED; PrefText : 'show-need-auth-flag'),
-  ( IDX:CNT_ICON_LCL;   Name:'Is local';        IconName: PIC_LOCAL; PrefText : 'show-is-local-flag'),
-   ( IDX:CNT_TEXT;      Name:'Displayed';       IconName: PIC_INFO; PrefText: 'text'),
-  ( IDX:CNT_ICON_BIRTH; Name:'Birthday baloon'; IconName: PIC_BIRTH; PrefText : 'show-birth-day-flag'),
-  ( IDX:CNT_ICON_AVT;   Name:'Avatar';          IconName: 'avatar'; PrefText : 'show-avatar-flag'),
-  ( IDX:CNT_ICON_VER;   Name:'IM icon';         IconName: PIC_RNQ; PrefText : 'show-client-flag')
+  ( IDX: CNT_ICON_AUTH;  Name:'Not authorized';  IconName: PIC_AUTH_NEED; PrefText : 'show-need-auth-flag'),
+  ( IDX: CNT_ICON_LCL;   Name:'Is local';        IconName: PIC_LOCAL; PrefText : 'show-is-local-flag'),
+   ( IDX: CNT_TEXT;      Name:'Displayed';       IconName: PIC_INFO; PrefText: 'text'),
+  ( IDX: CNT_ICON_BIRTH; Name:'Birthday baloon'; IconName: PIC_BIRTH; PrefText : 'show-birth-day-flag'),
+  ( IDX: CNT_ICON_AVT;   Name:'Avatar';          IconName: 'avatar'; PrefText : 'show-avatar-flag'),
+  ( IDX: CNT_ICON_VER;   Name:'IM icon';         IconName: PIC_RNQ; PrefText : 'show-client-flag')
   );
 
 var

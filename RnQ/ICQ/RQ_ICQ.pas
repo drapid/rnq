@@ -11,12 +11,12 @@ interface
    Windows, Forms, Classes, Graphics, SysUtils, ICQv9,
    RnQProtocol;
 
-  procedure icq_SinchrCL(icq : ticqSession);
-  Procedure ProcessSSIItem(curICQ : TicqSession; item : TOSSIItem);
+  procedure icq_SinchrCL(icq: ticqSession);
+  Procedure ProcessSSIItem(curICQ: TicqSession; item: TOSSIItem);
 
-  function  TypeStringToTypeId(const s : AnsiString) : Integer;
-  procedure debug_Snac(const snac: RawByteString; const Fn : String);
-  function  unFakeUIN(uin : int64 ) : TUID;
+  function  TypeStringToTypeId(const s: AnsiString): Integer;
+  procedure debug_Snac(const snac: RawByteString; const Fn: String);
+  function  unFakeUIN(uin: int64 ): TUID;
  {$IFDEF RNQ_AVATARS}
   procedure avt_icqEvent(thisICQ: TicqSession; ev: TicqEvent);
 
@@ -47,7 +47,7 @@ interface
 
 {$IFDEF usesDC}
 type
-  TFilePacket = class(TObject)
+  TICQFilePacket = class(TObject)
    public
     CheckSum: Cardinal;
     FileList: TStringList;
@@ -57,7 +57,7 @@ type
     function Count: Integer; Inline;
   end;
 
- function peer_oft_checksum_file(fn : String; InitChkSum : Cardinal = $ffff0000) : Cardinal;
+ function peer_oft_checksum_file(fn: String; InitChkSum : Cardinal = $ffff0000): Cardinal;
 {$ENDIF usesDC}
 
   procedure parseImgLinks2(var msg: RawByteString);
@@ -69,15 +69,15 @@ var
   Attached_login_email:  string;
 
 var
-  isImpCL : Boolean;
+  isImpCL: Boolean;
 
 var
-//  ListLoaded : Boolean;
+//  ListLoaded: Boolean;
 
-  icqdebug : Boolean;
+  icqdebug: Boolean;
 
 var
-  CLPktNUM : Byte;
+  CLPktNUM: Byte;
 
 
 
@@ -1075,13 +1075,13 @@ begin
   FreeMemory(checksum_data);
 end;
 
-constructor TFilePacket.Create;
+constructor TICQFilePacket.Create;
 begin
   FileList := TStringList.Create;
   CheckSum := $FFFF0000;
 end;
 
-destructor TFilePacket.Destroy;
+destructor TICQFilePacket.Destroy;
 var
   I: Integer;
 begin
@@ -1101,14 +1101,14 @@ begin
   Inherited; 
 end;
 
-function TFilePacket.Count : Integer;
+function TICQFilePacket.Count : Integer;
 begin
   Result := FileList.Count;
 end;
 
-function TFilePacket.AddFile(fn : String) : Integer;
+function TICQFilePacket.AddFile(fn : String) : Integer;
 var
-  fa : TFileAbout;
+  fa: TFileAbout;
 begin
   fa := TFileAbout.Create;
   fa.Size := sizeOfFile(fn);
@@ -1123,7 +1123,7 @@ end;
 {$ENDIF usesDC}
 
 
-function getFirstFlap:word;
+function getFirstFlap: word;
 //var a,b,c,d:word;
 var a,b,c,d: Integer;
 begin

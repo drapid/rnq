@@ -80,8 +80,8 @@ type
 //    ExtInfo:   string;
     HexInfo : String;
     //    FNick,
-    FCellular: ShortString;
-    FMail:     ShortString;
+    FCellular: String;
+    FMail:     String;
   end;
 
 
@@ -89,7 +89,7 @@ procedure TSSIForm.CLTreeDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
   s: string;
-  i : NativeInt;
+  i: NativeInt;
 begin
   SetBKMode(PaintInfo.Canvas.Handle, TRANSPARENT);
   if vsSelected in PaintInfo.Node^.States then
@@ -176,11 +176,11 @@ begin
   end;
 end;
 
-function ExtInfo2Debug(ItemType :Integer; s0 : AnsiString) : String;
+function ExtInfo2Debug(ItemType: Integer; s0: AnsiString): String;
 var
-  ofs00, i : Integer;
-  bday : TDateTime;
-  vs : String;
+  ofs00, i: Integer;
+  bday: TDateTime;
+  vs: String;
 begin
         Result := '';
         ofs00 := 1;
@@ -308,7 +308,7 @@ begin
    end;
 end;
 
-procedure TSSIForm.FillTree(vSSI : Tssi);
+procedure TSSIForm.FillTree(vSSI: Tssi);
 var
   n, fn: PVirtualNode;
   nd:    PSSIItem;
@@ -338,7 +338,7 @@ begin
     nd := CLTree.GetNodeData(n);
     nd.ItemType := TOSSIItem(vSSI.items.Objects[i]).ItemType;
     nd.Name := unUTF(TOSSIItem(vSSI.items.Objects[i]).ItemName8);
-    nd.Caption := unUTF(TOSSIItem(vSSI.items.Objects[i]).Caption);
+    nd.Caption := TOSSIItem(vSSI.items.Objects[i]).Caption;
     nd.ItemID := TOSSIItem(vSSI.items.Objects[i]).ItemID;
     nd.FAuthorized := TOSSIItem(vSSI.items.Objects[i]).FAuthorized;
     nd.GroupID := k;

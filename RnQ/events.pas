@@ -73,14 +73,14 @@ const
   tipBirth2str: array[0..2] of string=(
     'Has a birthday!', 'Has a birthday tomorrow!', 'Has a birthday after tomorrow!'
   );
-    histHeadPrefix = '%2:s %0:s, %1:s';
-    histHeadevent2str:array [0..EK_last] of string=(
+  histHeadPrefix = '%2:s %0:s, %1:s';
+  histHeadevent2str:array [0..EK_last] of string=(
     '','','','',' sent file',' Request authorization','',
     ' is online',' is offline',' Authorized',' Denied authorization',' - status %3:s',
     ' requested your auto-message',' Greeting Card',' auto-message', ' started typing',
     ' finished typing', ' - status %3:s', ' requested your XStatus', '%3:s'
   );
-     histBodyEvent2str:array [EK_null..EK_last] of string=(
+  histBodyEvent2str:array [EK_null..EK_last] of string=(
     '','','','',
     'Filename: %s\nCount: %d\nSize: %s\nMessage: %s', // EK_FILE
     '%s',   // EK_authReq
@@ -533,6 +533,17 @@ begin
  {$IFDEF DB_ENABLED}
   fBin := '';
   txt := '';
+  if flags and IF_Bin <> 0 then
+    begin
+      fBin := pMsg;
+      txt := '';
+      Exit;
+    end;
+  if flags and IF_CODEPAGE_MASK = IF_UTF8_TEXT then
+    begin
+      txt := UnUTF(pMsg);
+      exit;
+    end;
   msg := pMsg;
       i := Pos(RnQImageTag, msg);
       while i > 0 do

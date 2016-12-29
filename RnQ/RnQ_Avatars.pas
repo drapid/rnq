@@ -513,7 +513,7 @@ begin
       path := AccPath + avtPath;
       if (path='') or not directoryExists(path) then exit;
 
-      path:=includeTrailingPathDelimiter(path);
+      path := includeTrailingPathDelimiter(path);
 
       if FindFirst(path+ str2hexU(hash)+'.*', faAnyFile, sr) = 0 then
       repeat
@@ -586,12 +586,12 @@ begin
   result := (hash = '') or hasAvatar;
 end;
 
-{function try_load_avatar2(bmp:TBitmap; hash : String) :Boolean ;
+{function try_load_avatar2(bmp: TBitmap; hash: String): Boolean ;
 var
- path : String;
-  sr:TsearchRec;
-  hasAvatar : Boolean;
-//  hasAvatar, b : Boolean;
+ path: String;
+  sr: TsearchRec;
+  hasAvatar: Boolean;
+//  hasAvatar, b: Boolean;
 begin
   result := false;
   if not AvatarsSupport then
@@ -599,7 +599,7 @@ begin
   path := userPath + avtPath;
   if (path='') or not directoryExists(path) then exit;
 
-  path:=includeTrailingPathDelimiter(path);
+  path := includeTrailingPathDelimiter(path);
 
   begin
    hasAvatar := False;
@@ -645,13 +645,13 @@ begin
   result := hasAvatar;
 end;
 
-function try_load_avatar3(var bmp:TRnQBitmap; const hash : AnsiString) :Boolean;
+function try_load_avatar3(var bmp: TRnQBitmap; const hash: AnsiString): Boolean;
 var
- path : String;
-  sr:TsearchRec;
-  hasAvatar : Boolean;
+ path: String;
+  sr: TsearchRec;
+  hasAvatar: Boolean;
 //  I: Integer;
-//  hasAvatar, b : Boolean;
+//  hasAvatar, b: Boolean;
 begin
   result := false;
   if not AvatarsSupport then
@@ -660,7 +660,7 @@ begin
   if (path='') or not directoryExists(path) then
     exit;
 
-  path:=includeTrailingPathDelimiter(path);
+  path := includeTrailingPathDelimiter(path);
 //  for I := 0 to Length(hash) - 1 do
 
   begin

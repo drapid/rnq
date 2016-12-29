@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit selectcontactsDlg;
 {$I RnQConfig.inc}
@@ -26,7 +26,7 @@ type
      UID: TUID;
     end;
 
-  TscOptions = set of (sco_multi,sco_groups, sco_selected, sco_predefined);
+  TscOptions = set of (sco_multi, sco_groups, sco_selected, sco_predefined);
 
   PselectCntsFrm = ^TselectCntsFrm;
   TselectCntsFrm = class(TForm)
@@ -86,7 +86,7 @@ type
     function unselectedList: TRnQCList;
     procedure updateList;
     procedure clearList;
-    function  findGroupNode(id: Integer) : PVirtualNode;
+    function  findGroupNode(id: Integer): PVirtualNode;
     procedure toggleAt(Node: PVirtualNode);
     procedure toggle(c: TRnQcontact);
     function  current: TRnQContact;
@@ -159,7 +159,7 @@ begin
   list.clear;
 end; // clearList
 
-function TselectCntsFrm.findGroupNode(id : Integer) : PVirtualNode;
+function TselectCntsFrm.findGroupNode(id: Integer): PVirtualNode;
 var
 //  i: integer;
   ligrp: Plistitem;
@@ -185,10 +185,10 @@ begin
     list.BeginUpdate;
     n := list.AddChild(NIL);
     ligrp := list.GetNodeData(n);
-//    ligrp.check:=li.check;
-    ligrp.kind:=LI_group;
-    ligrp.grpId:= id;
-    ligrp.UID  := '';
+//    ligrp.check := li.check;
+    ligrp.kind := LI_group;
+    ligrp.grpId := id;
+    ligrp.UID := '';
     if sco_multi in options then
 //      n.CheckType := ctCheckBox
       n.CheckType := ctTriStateCheckBox
@@ -217,7 +217,7 @@ begin
  else
   sortCL(cl);
  cl.resetEnumeration;
-// grp:=0;
+// grp := 0;
 // g := NIL;
 //groups.
  list.BeginUpdate;
@@ -228,9 +228,9 @@ begin
      Continue;
 {
     if SCO_selected in options then
-      chk:=CK_on
+      chk := CK_on
     else
-      chk:=CK_off;}
+      chk := CK_off;}
     if (SCO_groups in options) then // and (grp<> cl.get(li.UID).group) then
       begin
        g := findGroupNode(c.group);
@@ -248,8 +248,8 @@ begin
     n := list.AddChild(g);
     li := list.GetNodeData(n);
     li.UID := c.UID;
-    li.kind:= LI_contact;
-//    li.check:=chk;
+    li.kind := LI_contact;
+//    li.check := chk;
 //    n.CheckType := ctTriStateCheckBox;
 //    if li.kind = LI_group then
 //      n.CheckType := ctTriStateCheckBox
@@ -278,26 +278,26 @@ end;
 
 procedure TselectCntsFrm.selectBtnClick(Sender: TObject);
 var
-//  i:integer;
-//  ch : TchkState;
-  ch : TCheckState;
+//  i: integer;
+//  ch: TchkState;
+  ch: TCheckState;
 begin
 //  ch := CK_on;
   ch := csCheckedNormal;
-  list.IterateSubtree(nil, ApplyCheck, @ch );
+  list.IterateSubtree(nil, ApplyCheck, @ch);
   list.repaint;
   updateNumLbl;
 end; // select
 
 procedure TselectCntsFrm.unselectBtnClick(Sender: TObject);
 var
-//  i:integer;
-//  ch : TchkState;
-  ch : TCheckState;
+//  i: integer;
+//  ch: TchkState;
+  ch: TCheckState;
 begin
 //  ch := CK_off;
   ch := csUnCheckedNormal;
-  list.IterateSubtree(nil, ApplyCheck, @ch );
+  list.IterateSubtree(nil, ApplyCheck, @ch);
   list.repaint;
   updateNumLbl;
 end; // unselect
@@ -328,10 +328,10 @@ end;
 procedure TselectCntsFrm.updateNumLbl;
 var
 //  i,
-  cnt:integer;
-  node : PVirtualNode;
+  cnt: integer;
+  node: PVirtualNode;
 begin
- cnt:=0;
+ cnt := 0;
   node := list.GetFirst;
   while (node<>NIL) do
   begin
@@ -339,10 +339,10 @@ begin
 //     if (node.CheckState = csCheckedNormal) (check=CK_on) and (kind=LI_contact) then
      if (node.CheckState = csCheckedNormal) and (kind=LI_contact) then
        inc(cnt);
-    node:= list.GetNext(node);
-  end;// or (node.kind=NODE_CONTACT) and AnsiStartsText(searching[1], node.contact.displayed);
+    node := list.GetNext(node);
+  end; // or (node.kind=NODE_CONTACT) and AnsiStartsText(searching[1], node.contact.displayed);
 
- sbar.simpletext := getTranslation('Contacts selected: %d/%d',[cnt,cl.count]);
+ sbar.simpletext := getTranslation('Contacts selected: %d/%d', [cnt, cl.count]);
 end; // updateNumLbl
 
 function TselectCntsFrm.selectedList: TRnQCList;
@@ -356,7 +356,7 @@ begin
     with Tlistitem(PListItem(list.getnodedata(n))^) do
 //      if (check=CK_on) and (kind=LI_contact) then
       if (n.CheckState =csCheckedNormal) and (kind=LI_contact) then
-     result.add( proto.getContact(UID));
+     result.add(proto.getContact(UID));
     n := list.GetNext(n);
    end;
 end; // selectedList
@@ -372,7 +372,7 @@ begin
     with Tlistitem(PListItem(list.getnodedata(n))^) do
 //      if (check=CK_off) and (kind=LI_contact) then
       if (n.CheckState =csUncheckedNormal) and (kind=LI_contact) then
-     result.add( proto.getContact(UID));
+     result.add(proto.getContact(UID));
     n := list.GetNext(n);
    end;
 end; // unselectedList
@@ -402,7 +402,7 @@ begin
 //    PaintInfo.Canvas.brush.color:=selectedColor;
 //  PaintInfo.Canvas.fillRect(PaintInfo.ContentRect);
    if vsSelected in PaintInfo.Node^.States then
-    PaintInfo.Canvas.Font.Color :=clHighlightText
+    PaintInfo.Canvas.Font.Color := clHighlightText
    else
     PaintInfo.Canvas.Font.Color := clWindowText;
 
@@ -419,7 +419,7 @@ begin
     case kind of
       LI_contact:
         begin
-        PaintInfo.Canvas.font.style:=[];
+        PaintInfo.Canvas.font.style := [];
 //        drawTxt(PaintInfo.Canvas.handle, x,y+1, cl.get(UID).displayed);
 //        PaintInfo.Canvas.TextOut(x,y+1, cl.get(UID).displayed);
           cnt := proto.getContact(UID);
@@ -429,21 +429,21 @@ begin
              inc(x, theme.drawPic(PaintInfo.Canvas.Handle, x,y, statusImg).cx+2);
              s := displayed;
             end;
-          oldMode:= SetBKMode(PaintInfo.Canvas.Handle, TRANSPARENT);
-          textOut(PaintInfo.Canvas.handle, x,y+1, PChar(s), length(s));
+          oldMode := SetBKMode(PaintInfo.Canvas.Handle, TRANSPARENT);
+          textOut(PaintInfo.Canvas.handle, x, y+1, PChar(s), length(s));
           SetBKMode(PaintInfo.Canvas.Handle, oldMode);
         end;
       LI_group:
         begin
 //        PaintInfo.Node.States
         if vsExpanded in PaintInfo.Node.States then
-          inc(x, theme.drawPic(PaintInfo.Canvas.Handle, x,y, PIC_OPEN_GROUP).cx+2)
+          inc(x, theme.drawPic(PaintInfo.Canvas.Handle, x, y, PIC_OPEN_GROUP).cx+2)
          else
-          inc(x, theme.drawPic(PaintInfo.Canvas.Handle, x,y, PIC_CLOSE_GROUP).cx+2);
-        PaintInfo.Canvas.font.color:=clMaroon;
-        PaintInfo.Canvas.font.style:=[fsBold];
-        PaintInfo.Canvas.TextOut(x,y+1, groups.id2name(grpId));
-//        drawTxt(PaintInfo.Canvas.handle, x,y+1, groups.id2name(grpId));
+          inc(x, theme.drawPic(PaintInfo.Canvas.Handle, x, y, PIC_CLOSE_GROUP).cx+2);
+        PaintInfo.Canvas.font.color := clMaroon;
+        PaintInfo.Canvas.font.style := [fsBold];
+        PaintInfo.Canvas.TextOut(x, y+1, groups.id2name(grpId));
+//        drawTxt(PaintInfo.Canvas.handle, x, y+1, groups.id2name(grpId));
         end;
       end;
     end;
@@ -461,13 +461,15 @@ end;
 procedure TselectCntsFrm.listMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-//  i:integer;
-  n : PVirtualNode;
+//  i: integer;
+  n: PVirtualNode;
 begin
-if not (sco_multi in options) then exit;
+  if not (sco_multi in options) then
+    exit;
   n := list.GetNodeAt(x, y);
-//i:=list.ItemAtPos(point(x,y),TRUE);
-if n = nil then exit;
+//i := list.ItemAtPos(point(x,y), TRUE);
+  if n = nil then
+    exit;
 (*
 case button of
   mbLeft:
@@ -486,9 +488,9 @@ end;
 
 procedure TselectCntsFrm.MenuPopup(Sender: TObject);
 var
- C : TRnQcontact;
-// i : Integer;
- it : TMenuItem;
+ C: TRnQcontact;
+// i: Integer;
+ it: TMenuItem;
 begin
  c := current; 
  if Sender is TPopupMenu then
@@ -500,10 +502,10 @@ begin
 
 end;
 
-procedure TselectCntsFrm.toggle(c:TRnQcontact);
+procedure TselectCntsFrm.toggle(c: TRnQcontact);
 var
-//  i:integer;
-  n : PVirtualNode;
+//  i: integer;
+  n: PVirtualNode;
 begin
   if not Assigned(c) then
     Exit;
@@ -519,12 +521,13 @@ begin
   until n=nil;
 end; // toggle
 
-procedure TselectCntsFrm.toggleAt(node : PVirtualNode);
+procedure TselectCntsFrm.toggleAt(node: PVirtualNode);
 //var
 //  R:Trect;
 //  chk : TchkState;
 begin
- if Node = NIL then exit;
+  if Node = NIL then
+    exit;
 
  with Tlistitem(PListItem(list.getnodedata(Node))^) do
   begin
@@ -554,7 +557,7 @@ begin
     end
   end;
  list.InvalidateNode(Node);
-//R:=list.itemRect(i);
+//R := list.itemRect(i);
 //invalidateRect(list.handle, @R, FALSE);
  updateNumLbl;
 end; // toggleAt
@@ -562,7 +565,7 @@ end; // toggleAt
 procedure TselectCntsFrm.listKeyPress(Sender: TObject; var Key: Char);
 begin
 //  if key in [' ','+','-'] then
-  if CharInSet(key, [' ','+','-']) then
+  if CharInSet(key, [' ', '+', '-']) then
     toggleAt(list.FocusedNode);
   if key=' ' then
     key := #0;
@@ -585,18 +588,19 @@ end;
 
 procedure TselectCntsFrm.addBtnClick(Sender: TObject);
 var
-//  i:integer;
-  cl:TRnQCList;
-  n : PVirtualNode;
+//  i: integer;
+  cl: TRnQCList;
+  n: PVirtualNode;
 begin
-  if not uinlists.exists(uinlistbox.text) then exit;
-  cl:=uinlists.get(uinlistbox.text).cl;
+  if not uinlists.exists(uinlistbox.text) then
+    exit;
+  cl := uinlists.get(uinlistbox.text).cl;
   n := list.GetFirst;
   repeat
     with Tlistitem(PListItem(list.getnodedata(n))^) do
       if (kind=LI_contact) and cl.exists(proto, uid) then
         begin
-//         check:=CK_on;
+//         check := CK_on;
           n.CheckState := csCheckedNormal
         end;
     n := list.GetNext(n);    
@@ -607,10 +611,11 @@ begin
 // exit;
 end;
 
-function TselectCntsFrm.current:TRnQcontact;
+function TselectCntsFrm.current: TRnQcontact;
 begin
-  result:=NIL;
-  if list.FocusedNode = NIL then exit;
+  result := NIL;
+  if list.FocusedNode = NIL then
+    exit;
   with Tlistitem(PListItem(list.getnodedata(list.FocusedNode))^) do
   if kind = LI_group then
    result := NIL
@@ -628,22 +633,25 @@ begin
 end;
 
 procedure TselectCntsFrm.Sendmessage1Click(Sender: TObject);
-begin chatFrm.openOn(current) end;
+begin
+  chatFrm.openOn(current)
+end;
 
 procedure TselectCntsFrm.subBtnClick(Sender: TObject);
 var
-//  i:integer;
+//  i: integer;
   cl: TRnQCList;
-  n : PVirtualNode;
+  n: PVirtualNode;
 begin
-if not uinlists.exists(uinlistbox.text) then exit;
-cl:=uinlists.get(uinlistbox.text).cl;
+  if not uinlists.exists(uinlistbox.text) then
+    exit;
+  cl := uinlists.get(uinlistbox.text).cl;
   n := list.GetFirst;
   repeat
     with Tlistitem(PListItem(list.getnodedata(n))^) do
       if (kind=LI_contact) and cl.exists(proto, UID) then
         begin
-//         check:=CK_off;
+//         check := CK_off;
           n.CheckState := csUncheckedNormal; 
         end;
     n := list.GetNext(n);
@@ -654,22 +662,30 @@ cl:=uinlists.get(uinlistbox.text).cl;
 end;
 
 procedure TselectCntsFrm.FormShow(Sender: TObject);
-begin applyTaskButton(self) end;
+begin
+  applyTaskButton(self)
+end;
 
 procedure TselectCntsFrm.delBtnClick(Sender: TObject);
 var
-  ul:Puinlist;
+  ul: Puinlist;
 begin
-ul:=uinlists.get(uinlistBox.text);
-if ul=NIL then exit;
-if messageDlg(getTranslation('Are you sure you want to delete?'),mtConfirmation,[mbYes,mbNo],0)<>mrYes then exit;
-if uinlists.remove(ul) then
+  ul := uinlists.get(uinlistBox.text);
+  if ul=NIL then
+    exit;
+  if messageDlg(getTranslation('Are you sure you want to delete?'), mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+    exit;
+  if uinlists.remove(ul) then
 	begin
-	uinlistBox.Items.text:=uinlists.names;
-  with uinlistBox do if Items.count=0 then text:='' else text:=items[0];
-	msgDlg('Done', True, mtInformation)
-  end
-else
+      uinlistBox.Items.text := uinlists.names;
+      with uinlistBox do
+      if Items.count=0 then
+        text := ''
+       else
+        text := items[0];
+	  msgDlg('Done', True, mtInformation)
+    end
+   else
 	msgDlg('Failed', True, mtError)
 end;
 

@@ -48,7 +48,7 @@ type
     report: string;
     procedure menuPopup(Sender: TObject);
     procedure ViewinfoClick(Sender: TObject);
-    procedure addContactActn(sender:Tobject);
+    procedure addContactActn(sender: Tobject);
     procedure AddALLcontactsToList(Sender: TObject);
     procedure openChat(Sender: TObject);
     procedure deleteC(Sender: TObject);
@@ -68,6 +68,9 @@ implementation
 {$R *.dfm}
 
 uses
+ {$IFDEF UNICODE}
+   AnsiStrings,
+ {$ENDIF}
   RnQLangs, RnQStrings, RDUtils,
   RnQSysUtils, RnQPics,
   RQUtil, RDGlobal, RQThemes, RnQMenu, menusUnit,
@@ -323,10 +326,13 @@ var
 begin
   with dbTree do
   if focusedNode<>NIL then
-    cnt := TRnQContact(getnodedata(focusednode)^);
-//  if cnt is TICQContact then
-//    viewInfoAbout(TICQContact(cnt));
-  cnt.ViewInfo;
+    begin
+      cnt := TRnQContact(getnodedata(focusednode)^);
+    //  if cnt is TICQContact then
+    //    viewInfoAbout(TICQContact(cnt));
+      if Assigned(cnt) then
+        cnt.ViewInfo;
+    end;
 end;
 
 procedure TRnQdbFrm.VTHPMenuPopup(Sender: TObject);
@@ -334,7 +340,7 @@ begin
   applyCommonSettings(TControl(Sender));
 end;
 
-procedure TRnQdbFrm.addContactActn(sender:Tobject);
+procedure TRnQdbFrm.addContactActn(sender: Tobject);
 begin
   with dbTree do
   if focusedNode<>NIL then
@@ -343,7 +349,7 @@ end;
 
 procedure TRnQdbFrm.menuPopup(Sender: TObject);
 var
- curContact : TRnQcontact;
+  curContact: TRnQcontact;
   I: Integer;
 begin
   curContact := NIL;

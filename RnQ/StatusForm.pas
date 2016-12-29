@@ -47,8 +47,8 @@ type
     tempStatus: byte;
     { Public declarations }
     procedure ShowNear(mR: TRect; X, Y: Integer);
-//    constructor ShowNear2(owner_: Tcomponent; proto : IRnQProtocol; mR: TRect; X, Y: Integer);
-//    constructor ShowNear2(owner_: TWinControl; proto : IRnQProtocol; mR: TRect; X, Y: Integer);
+//    constructor ShowNear2(owner_: Tcomponent; proto: IRnQProtocol; mR: TRect; X, Y: Integer);
+//    constructor ShowNear2(owner_: TWinControl; proto: IRnQProtocol; mR: TRect; X, Y: Integer);
     class procedure ShowNear2(owner_: TWinControl; const proto: TRnQProtocol; mR: TRect; X, Y: Integer);
     property  currentPPI: Integer read GetParentCurrentDpi;
   end;
@@ -174,8 +174,8 @@ begin
 //  childWindows.Add(self);
   with theme.GetPicSize(RQteButton, status2imgName(byte(SC_ONLINE)), icon_size, GetParentCurrentDpi) do
    begin
-     BtnHeight := bound(cy, icon_size, 32)+8;
-     BtnWidth  := bound(cx, icon_size, 32)+8;
+     BtnHeight := bound(cy, icon_size, icon_size*2)+8;
+     BtnWidth  := bound(cx, icon_size, icon_size*2)+8;
    end;
 
  {$IFDEF PROTOCOL_ICQ}
@@ -235,7 +235,7 @@ begin
   ClientHeight      := {Bevel1.Top + bevel1.Height+10}
                         XStatusStrMemo.Top + XStatusStrMemo.Height+6 +
                         SBar.Height ;
-  ClientHeight      := XStatusStrMemo.Top + 90;
+  ClientHeight      := XStatusStrMemo.Top + MulDiv(90, currentPPI, cDefaultDPI);
   Self.Constraints.MinHeight := Height;
   Self.Constraints.MinWidth := width;
 
@@ -545,6 +545,7 @@ begin
 //  xStForm.ParentWindow := owner_.Handle;
   xStForm.thisProto := proto;
   xStForm.protoIs := curProtoIs;
+  xStForm.SBar.Height := MulDiv(20, xStForm.currentPPI, cDefaultDPI);
   xStForm.Init;
   translateWindow(xStForm);
 //   xStForm.ShowNear(TicqSession(proto.ProtoElem), mR, x, y);

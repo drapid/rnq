@@ -207,21 +207,21 @@ type
     procedure HEXCapsChkClick(Sender: TObject);
   protected
     addmenu: TPopupMenu;
-    procedure SetPhtBtnEnb(val : Boolean);
+    procedure SetPhtBtnEnb(val: Boolean);
     procedure TickAniTimer(Sender: TObject);
     procedure FillCaps;
   public
 //    contact: TICQContact;
    {$IFDEF RNQ_AVATARS}
-    FAniTimer : TTimer;
+    FAniTimer: TTimer;
     contactAvt,
-    contactPhoto : TRnQBitmap;
+    contactPhoto: TRnQBitmap;
    {$ENDIF RNQ_AVATARS}
-    lookup : TRnQSocket;
-//    readOnlyContact:boolean;
+    lookup: TRnQSocket;
+//    readOnlyContact: boolean;
     procedure updateInfo; OverRide; final;
-    constructor doAll(owner_ :Tcomponent; c: TRnQContact); OverRide; final;
-    function isUpToDate:boolean;
+    constructor doAll(owner_: Tcomponent; c: TRnQContact); OverRide; final;
+    function  isUpToDate: boolean;
     procedure setupBirthage;
     procedure UpdateCntAvatar; OverRide; final;
     procedure ClearAvatar; OverRide; final;
@@ -268,10 +268,10 @@ end;
 procedure TviewinfoFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
  childWindows.remove(self);
-  visible:=FALSE;
+  visible := FALSE;
   if displayBox.text <> contact.displayed then
    begin
-    contact.display:=displayBox.text;
+    contact.display := displayBox.text;
 //   SSI_UpdateContact  -- In Contacts.pas
 
     roasterLib.sort(contact);
@@ -317,27 +317,27 @@ begin
   contactPhoto := NIL;
    {$ENDIF RNQ_AVATARS}
  FreeAndNil(FAniTimer);
- action:=caFree;
+ action := caFree;
  destroyHandle;
  self := NIL;
 end;
 
 procedure TviewinfoFrm.updateInfo;
 
-  function gmt2str(gmt:Tdatetime):string;
+  function gmt2str(gmt: Tdatetime): string;
   var
-    halfs:integer;
+    halfs: integer;
   begin
-//  result:=getTranslation('GMT')+' ';
-  result:='';
+//  result := getTranslation('GMT')+' ';
+  result := '';
   if gmt < 0 then
     begin
-    result:=result+'-';
-    gmt:=-gmt;
+    result := result+'-';
+    gmt := -gmt;
     end
   else
-    result:=result+'+';
-  halfs:=round(gmt*48);
+    result := result+'+';
+  halfs := round(gmt*48);
   if halfs = 100 then
     begin
       result := '';
@@ -355,7 +355,7 @@ procedure TviewinfoFrm.updateInfo;
     result := datetimeTostrMinMax(dt,{1980}80*365,now)
   end;
 var
-  i: Byte;
+//  i: Byte;
   sr: TsearchRec;
   b: Boolean;
   fn: String;
@@ -378,29 +378,29 @@ with TICQcontact(contact) do
   emailBox.text := email;
   cityBox.text := city;
   addressBox.text := address;
-  stateBox.text:=state;
-//  aboutBox.text:=unUTF(about);
-  aboutBox.text:= about;
-  nickBox.text:=nick;
+  stateBox.text := state;
+//  aboutBox.text := unUTF(about);
+  aboutBox.text := about;
+  nickBox.text := nick;
   uinBox.text := uid;
   if contact.fProto.isMyAcc(contact) then
-    ipBox.text:= TICQSession(contact.fProto).getLocalIPstr
+    ipBox.text := TICQSession(contact.fProto).getLocalIPstr
   else
     if connection.ip = 0 then
-      ipBox.text:=''
+      ipBox.text := ''
     else
-      ipBox.text:=ip2str(connection.ip);
+      ipBox.text := ip2str(connection.ip);
   if ipBox.text='' then
     begin
-    ipBox.text:=getTranslation(Str_unk);
-    resolveBtn.enabled:=FALSE;
+    ipBox.text := getTranslation(Str_unk);
+    resolveBtn.enabled := FALSE;
     end
   else
-    resolveBtn.enabled:=TRUE;
-  copyBtn.enabled:=resolveBtn.enabled;
-  ipbox2.text:=ipbox.text;
+    resolveBtn.enabled := TRUE;
+  copyBtn.enabled := resolveBtn.enabled;
+  ipbox2.text := ipbox.text;
   if connection.internal_ip<>0 then
-    ipBox2.text:=ipBox2.text+CRLF+getTranslation('Internal IP')+': '+ip2str(connection.internal_ip);
+    ipBox2.text := ipBox2.text+ CRLFs +getTranslation('Internal IP')+': '+ip2str(connection.internal_ip);
   if xStatusStr > '' then
     statusBox.text := xStatusStr
    else
@@ -414,28 +414,28 @@ with TICQcontact(contact) do
 //  theme.getPic(aXStatus[xStatus].PicName, xstatusImg.Picture.bitmap);
  {$ENDIF}
   if zip='' then
-    zipbox.text:=''
+    zipbox.text := ''
    else
     zipBox.text := zip;
-  cellularBox.text:=cellular;
+  cellularBox.text := cellular;
   regularBox.text := regular;
-  timeBox.text:='';
-  smsChk.checked:=smsable;
+  timeBox.text := '';
+  smsChk.checked := smsable;
 
   with gmtBox do
-    itemIndex:=findInStrings(gmt2str(getGMT), Items);
+    itemIndex := findInStrings(gmt2str(getGMT), Items);
   with genderBox do
-    itemIndex:=findInStrings(GendersByID(gender), Items);
+    itemIndex := findInStrings(GendersByID(gender), Items);
   with countryBox do
-    itemIndex:=findInStrings(CountriesByID(country), Items);
+    itemIndex := findInStrings(CountriesByID(country), Items);
   with lang1Box do
-    itemIndex:=findInStrings(languagesByID(lang[1]), Items);
+    itemIndex := findInStrings(languagesByID(lang[1]), Items);
   with lang2Box do
-    itemIndex:=findInStrings(languagesByID(lang[2]), Items);
+    itemIndex := findInStrings(languagesByID(lang[2]), Items);
   with lang3Box do
-    itemIndex:=findInStrings(languagesByID(lang[3]), Items);
+    itemIndex := findInStrings(languagesByID(lang[3]), Items);
   with MarStsBox do
-    itemIndex:=findInStrings(MarStsByID(MarStatus), Items);
+    itemIndex := findInStrings(MarStsByID(MarStatus), Items);
 //  i := interests.Count;
   if interests.Count > 0 then
    begin
@@ -459,13 +459,13 @@ with TICQcontact(contact) do
       Inter3.Text := '';
       Inter4.Text := '';
      end;
-  homepageBox.text:=homepage;
+  homepageBox.text := homepage;
   if birth > 1 then
     try
-       birthBox.date:=birth;
+       birthBox.date := birth;
        birthageBox.itemIndex:=1;
     except
-       birthBox.date:=now;
+       birthBox.date := now;
        birthageBox.itemIndex:=1;
     end
   else
@@ -513,12 +513,12 @@ with TICQcontact(contact) do
   dontdeleteChk.checked:=TCE(data^).dontdelete;
   ChkSendTransl.Checked := SendTransl;
 
-  lastmsgBox.text:=datetime2str( TCE(data^).lastMsgTime );
-  lastonlineBox.text:=datetime2str( lastTimeSeenOnline );
-  lastupdateBox.text:=datetime2str( infoUpdatedTo );
-  onlinesinceBox.text:=datetime2str( onlineSince );
-  membersinceBox.text:=datetime2str( memberSince );
-  LastChgInfoBox.Text:=datetime2str( lastInfoUpdate );
+  lastmsgBox.text := datetime2str( TCE(data^).lastMsgTime );
+  lastonlineBox.text := datetime2str( lastTimeSeenOnline );
+  lastupdateBox.text := datetime2str( infoUpdatedTo );
+  onlinesinceBox.text := datetime2str( onlineSince );
+  membersinceBox.text := datetime2str( memberSince );
+  LastChgInfoBox.Text := datetime2str( lastInfoUpdate );
   lastmsgBox.ReadOnly     := True;
   lastonlineBox.ReadOnly  := True;
   lastupdateBox.ReadOnly  := True;
@@ -650,7 +650,7 @@ with TICQcontact(contact) do
       IcShRGrp.ItemIndex := 1;
   end;
 // MarStsBox.Enabled := False;
-  pagectrl.visible:=TRUE;
+  pagectrl.visible := TRUE;
  end; // end with
 
 end;
@@ -726,9 +726,9 @@ begin
   theme.getPic(PIC_MAIL, mailBtn.glyph);}
  if itsme then
   begin
-    birthBox.MinDate:=now-120*365;
-   //birthBox.MaxDate:=now-13*365;
-    birthBox.MaxDate:=now;
+    birthBox.MinDate := now-120*365;
+   //birthBox.MaxDate := now-13*365;
+    birthBox.MaxDate := now;
   end;
 
 for i:=componentcount-1 downto 0 do
@@ -970,7 +970,7 @@ end;
 procedure TviewinfoFrm.FillCaps;
   procedure addHex(Const s: RawByteString);
   begin
-    CliCapsMemo.Lines.Append(str2HexU(s) + ' - ' + BetterStr(s));
+    CliCapsMemo.Lines.Append(str2HexU(s) + ' - ' + String(BetterStr(s)));
   end;
 var
   i: Integer;
@@ -1209,7 +1209,7 @@ function TviewinfoFrm.isUpToDate: boolean;
 
 begin
   with TICQcontact(contact) do
-    result:=not (newer(lastUpdate) or newer(lastInfoUpdate) or newer(lastStatusUpdate))  
+    result := not (newer(lastUpdate) or newer(lastInfoUpdate) or newer(lastStatusUpdate))
 end; 
 
 // isUpToDate
@@ -1225,8 +1225,8 @@ var
 begin
   i := birthageBox.itemIndex;
   ageSpin.Visible := i=2;
-  birthBox.visible:= i=1;
-  birthageLbl.visible:= i=0;
+  birthBox.visible := i=1;
+  birthageLbl.visible := i=0;
 end;
 
 procedure TviewinfoFrm.statusBoxSubLabelDblClick(Sender: TObject);

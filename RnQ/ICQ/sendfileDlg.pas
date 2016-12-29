@@ -11,7 +11,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   RnQButtons, ExtCtrls, StdCtrls, ComCtrls, VirtualTrees,
-  ICQcontacts, ICQv9, RQ_ICQ;
+  RnQProtocol, ICQcontacts, ICQv9, RQ_ICQ;
 
 type
   TCalcTime = record
@@ -69,14 +69,14 @@ type
     fileList: TstringList;
     ID: Int64;
     current: Integer;
-    fp: TFilePacket;
+    fp: TICQFilePacket;
     fstr: TFileStream;
-    dirct: TICQdirect;
+    dirct: TProtoDirect;
     fSize: Int64;
     sendedSize: Int64;
     Closing: Boolean;
     constructor doAll(owner_: Tcomponent; contact_: TICQcontact; files_: string);
-    procedure doTransfer(dr: TICQdirect);
+    procedure doTransfer(dr: TProtoDirect);
     procedure doDoneTransfer;
     procedure someData(Sender: TObject; var Data: RawByteString; var IsLast: Boolean);
     procedure senddata(sender: Tobject; bytes: integer);
@@ -94,11 +94,11 @@ uses
   math, Types, OverbyteIcsWSocket,
   RnQSysUtils, RDFileUtil, RQUtil, RDGlobal, RDUtils,
   RQThemes, RnQLangs, RnQPics,
-  globalLib, utilLib, langLib, themesLib,
+  globalLib, utilLib, langLib,
   Protocol_ICQ;
 
 const
-  BufSize = 8192;
+   BufSize = 8192;
 type
   PfiItem = ^TfiItem;
   TfiItem = record
@@ -106,7 +106,7 @@ type
      fs: Int64;
   end;
 
-procedure TsendFileFrm.SetPrgrsPos(pos : Integer);
+procedure TsendFileFrm.SetPrgrsPos(pos: Integer);
 begin
   FilePrgrs.Position := pos;
   FilePrgrs.Hint := intToStr(pos) + '%';
@@ -144,7 +144,7 @@ begin
   tree.EndUpdate;  
 end;
 
-constructor TsendFileFrm.doAll(owner_ :Tcomponent; contact_: TICQcontact; files_: string);
+constructor TsendFileFrm.doAll(owner_: Tcomponent; contact_: TICQcontact; files_: string);
 begin
   inherited create(owner_);
   position := poDefaultPosOnly;
@@ -158,7 +158,7 @@ begin
 
   caption:= getTranslation('File transfer to %s', [contact.displayed + ' ('+contact.uin2Show+')']);
   fileList := TstringList.create;
-  fp := TFilePacket.Create;
+  fp := TICQFilePacket.Create;
   fileList.Text := files_;
   if fileList.Count = 1 then
     begin
@@ -226,7 +226,7 @@ begin
   for I := Low(times.bt) to High(times.bt) do
     times.bt[i].bytes := 0;
 
-  ID := sendICQfiles(contact, fp, s, LocProxyChk.Checked, SrvChk.Checked, dirct);
+  ID := sendICQfiles(contact, fp, s, LocProxyChk.Checked, SrvChk.Checked, TICQdirect(dirct));
 
   SrvChk.Enabled := false;
   LocProxyChk.Enabled := False;
@@ -240,7 +240,7 @@ end;
 procedure TsendfileFrm.treeDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-  x //,y
+  x //, y
    : Integer;
   fiItem: PfiItem;
   oldMode: Integer;
@@ -308,7 +308,7 @@ end;
 
 procedure TsendfileFrm.FormShow(Sender: TObject);
 begin
- if contact.displayed = contact.UID then
+ if  contact.displayed = contact.UID then
    toBox.Text := contact.uin2Show
   else
    toBox.Text := contact.displayed + ' (' +contact.uin2Show + ')';
@@ -361,20 +361,20 @@ end;
 
 procedure TsendfileFrm.senddata(sender: Tobject; bytes: integer);
 var
-  i, l : Integer;
-  Data : RawByteString;
-//  curPos : Int64;
+  i, l: Integer;
+  Data: RawByteString;
+//  curPos: Int64;
 begin
   if bytes <=0 then
     Exit;
-  if sendedSize = 0 then
+   if sendedSize = 0 then
     begin
      times.startTime := now;
      times.bt[0].startTime := times.startTime;
      T1.Enabled := True;
     end;
-  inc(sendedSize, bytes);
-  if fstr.Position < fSize then
+   inc(sendedSize, bytes);
+   if fstr.Position < fSize then
     begin
       l := min(BufSize, fSize-fstr.Position);
       l := min(BufSize-TCustomWSocket(sender).BufferedByteCount, l);
@@ -406,10 +406,10 @@ begin
 end;
 
 
-procedure TsendfileFrm.someData(Sender: TObject; var Data : RawByteString; var IsLast : Boolean);
+procedure TsendfileFrm.someData(Sender: TObject; var Data: RawByteString; var IsLast: Boolean);
 var
-  i, l : Integer;
-  curPos : Int64;
+  i, l: Integer;
+  curPos: Int64;
 begin
   if Assigned(fstr) then
   begin
@@ -431,7 +431,6 @@ begin
       SetPrgrsPos(100);
     end;
    IsLast := fstr.Position = fSize;
-
    ;
   end;
 end;
@@ -448,11 +447,11 @@ end;
 
 procedure TsendfileFrm.T1Timer(Sender: TObject);
 var
-  speed, tLeft : Int64;
-  b : Int64;
+  speed, tLeft: Int64;
+  b: Int64;
   I, PrevTimeIDX: byte;
-  dt : TDateTime;
-  ts : Double;
+  dt: TDateTime;
+  ts: Double;
 begin
   b := 0;
   times.bt[times.curBT].bytes := sendedSize - times.prevRcvd;
@@ -504,7 +503,7 @@ begin
 //   if ;
 end;
 
-procedure TsendfileFrm.notifFunc(Sender: TObject; ErrCode: Word; msg : String);
+procedure TsendfileFrm.notifFunc(Sender: TObject; ErrCode: Word; msg: String);
 begin
   if msg > '' then
     msgBox.Lines.Add(msg);
@@ -516,9 +515,9 @@ begin
   EndTrasfer;
 end;
 
-procedure TsendfileFrm.doTransfer(dr: TICQdirect);
+procedure TsendfileFrm.doTransfer(dr: TProtoDirect);
 //var
-//  i : Integer;
+//  i: Integer;
 begin
   if (self = nil)or (not Assigned(fileList)) then
     Exit;

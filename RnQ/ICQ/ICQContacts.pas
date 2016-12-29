@@ -28,23 +28,23 @@ uses
 
 type
 //  TvisStatus = set
-  Tlanguages=array [1..3] of byte;
+  Tlanguages = array [1..3] of byte;
 
 type
-  TinterestBlock=record // By Shyr
-             Code:integer;
-//             Str : String;
-             Names:Tstrings;
+  TinterestBlock = record // By Shyr
+             Code: integer;
+//             Str: String;
+             Names: Tstrings;
             end;
-  Tinterests=record
-//              InterestBlock:array of TinterestBlock;
-              InterestBlock:array[0..3] of TinterestBlock;
-              Count:integer;
+  Tinterests = record
+//              InterestBlock: array of TinterestBlock;
+              InterestBlock: array[0..3] of TinterestBlock;
+              Count: integer;
              end;
 //  TAvatarTypes =
 
-//  TICQcontact=class;
-//  TcontactProc=procedure(c:Tcontact);
+//  TICQcontact = class;
+//  TcontactProc = procedure(c: Tcontact);
 
   TICQcontact = class(TRnQContact)
    public
@@ -60,9 +60,12 @@ type
     invisibleState: byte;
    { $ENDIF}
     crypt: record
+      supportEcc: Boolean;
       supportCryptMsg: Boolean;
       cryptPWD: RawByteString;
       qippwd: Integer;
+      EccPubKey: RawByteString;
+      EccMsgKey: RawByteString;
      end;  
     gender: Smallint;
     age: Smallint;
@@ -246,7 +249,7 @@ begin
    try
      icon.Bmp.Free;
     except
-     msgDlg(getTranslation('Error on destroying avatar of contact: %s', [uid]), False, mtError, uid);
+     msgDlg(getTranslation('Error on destroying avatar of contact: %s', [uid]), False, mtError, uinAsStr);
    end;
   icon.Bmp := NIL;
   icon.ToShow := 0;

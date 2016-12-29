@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit usersDlg;
 {$I RnQConfig.inc}
@@ -118,13 +118,13 @@ var
 
 procedure TusersFrm.refreshUsers;
 var
-//  toSelect:integer;
+//  toSelect: integer;
   i: integer;
-  ur : PRnQUser;
-  n, s : PVirtualNode;
+  ur: PRnQUser;
+  n, s: PVirtualNode;
 begin
   usersBox.clear;
-// toSelect:=-1;
+// toSelect := -1;
   s := nil;
   for i:=0 to length(availableUsers)-1 do
    with availableUsers[i] do
@@ -183,7 +183,9 @@ begin
 end; // doSelect
 
 procedure TusersFrm.usersBoxDblClick(Sender: TObject);
-begin okBtnClick(sender) end;
+begin
+  okBtnClick(sender)
+end;
 
 procedure TusersFrm.UsersBoxDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
@@ -225,7 +227,7 @@ begin
   if Node <> NIL then
    with TRnQUser(PRnQUser(Sender.getnodedata(Node))^) do
     ssiChk.Checked := SSI;}
-  OKbtn.enabled:= usersBox.FocusedNode <> NIL
+  OKbtn.enabled := usersBox.FocusedNode <> NIL
 end;
 
 procedure TusersFrm.UsersBoxFocusChanging(Sender: TBaseVirtualTree; OldNode,
@@ -236,7 +238,7 @@ begin
   if OldNode <> NIL then
    with TRnQUser(PRnQUser(Sender.getnodedata(OldNode))^) do
     SSI := ssiChk.Checked;}
-  OKbtn.enabled:= usersBox.FocusedNode <> NIL
+  OKbtn.enabled := usersBox.FocusedNode <> NIL
 end;
 
 procedure TusersFrm.UsersBoxFreeNode(Sender: TBaseVirtualTree;
@@ -269,8 +271,8 @@ end;
 {$IFDEF RNQ_FULL2}
 procedure TusersFrm.importBtnClick(Sender: TObject);
 begin
-{importFrm:=TimportFrm.create(NIL);
-importFrm.filename:=getICQfolder;
+{importFrm := TimportFrm.create(NIL);
+importFrm.filename := getICQfolder;
 translateWindow(importFrm);
 importFrm.showModal;
 ForceForegroundWindow(handle);
@@ -300,7 +302,7 @@ end;
 procedure TusersFrm.FormShow(Sender: TObject);
 begin
 //applyTaskButton(self);
-  selected:=FALSE;
+  selected := FALSE;
 //hideTaskButtonIfUhave2;
 // ActiveControl := UsersBox;
 
@@ -338,7 +340,7 @@ procedure TusersFrm.usersBoxKeyPress(Sender: TObject; var Key: Char);
 begin
 if key=#13 then
   begin
-    selected:= usersBox.FocusedNode <> NIL;
+    selected := usersBox.FocusedNode <> NIL;
     if selected then
       close
     else
@@ -354,20 +356,20 @@ end;
 
 function TusersFrm.selectUIN(const uin: TUID): boolean;
 var
-//  i:integer;
+//  i: integer;
   n: PVirtualNode;
 begin
   result := FALSE;
-//i:=0;
+//i := 0;
   n := UsersBox.GetFirst;
   while n <> NIL do
    begin
     if TRnQUser(PRnQUser(usersBox.getnodedata(n))^).uin = uin then
      begin
       usersBox.Selected[n] := True;
-//      usersBox.itemIndex:=i;
-      okBtn.enabled:=TRUE;
-      result:=TRUE;
+//      usersBox.itemIndex := i;
+      okBtn.enabled := TRUE;
+      result := TRUE;
       exit;
       break;
      end;
@@ -390,7 +392,7 @@ end;
 function TusersFrm.uinAt(idx: integer): TUID;
 begin
   if idx >= length(availableUsers) then
-    result:=''
+    result := ''
    else
     result := availableUsers[idx].uin;
 end;
@@ -412,46 +414,46 @@ var
   u: TRnQUser;
 begin
 //if usersBox.itemIndex < 0 then
-if usersBox.FocusedNode = NIL then
-  msgDlg(Have2Sel, True, mtInformation)
-else
-  begin
-    u := TRnQUser(PRnQUser(usersBox.getnodedata(usersBox.FocusedNode))^);
-  UINtoDelete:= u.uin;
-//  path := u.path + u.uinStr;
-  path := u.path + u.SubPath;
-//  uinAt(usersBox.ItemIndex);
-  if UINtoDelete = '' then
-   begin
-     msgDlg(Have2Sel, True, mtInformation);
-     Exit;
-   end;
-  itsme := Assigned(Account.AccProto) and (Account.AccProto.getMyInfo<>NIL) and (Account.AccProto.getMyInfo.equals(UINtoDelete));
-  if itsme then
+  if usersBox.FocusedNode = NIL then
+    msgDlg(Have2Sel, True, mtInformation)
+   else
     begin
-    continue := messageDlg(getTranslation('The user you are trying to delete is the one in use right now.\nIt will be closed to be deleted. Continue?',[UINtoDelete]), mtConfirmation, [mbYes,mbNo], 0) = mrYes;
-    deletedMe:=continue;
-    if continue then
-      quitUser;
-    end
-  else
-    continue := messageDlg(getTranslation('Are you sure you want to delete %s ?',[UINtoDelete]), mtConfirmation, [mbYes,mbNo], 0) = mrYes;
-  if continue then
+      u := TRnQUser(PRnQUser(usersBox.getnodedata(usersBox.FocusedNode))^);
+      UINtoDelete := u.uin;
+    //  path := u.path + u.uinStr;
+      path := u.path + u.SubPath;
+    //  uinAt(usersBox.ItemIndex);
+      if UINtoDelete = '' then
+       begin
+         msgDlg(Have2Sel, True, mtInformation);
+         Exit;
+       end;
+      itsme := Assigned(Account.AccProto) and (Account.AccProto.getMyInfo<>NIL) and (Account.AccProto.getMyInfo.equals(UINtoDelete));
+      if itsme then
+        begin
+         continue := messageDlg(getTranslation('The user you are trying to delete is the one in use right now.\nIt will be closed to be deleted. Continue?',[UINtoDelete]), mtConfirmation, [mbYes,mbNo], 0) = mrYes;
+         deletedMe := continue;
+         if continue then
+           quitUser;
+        end
+       else
+        continue := messageDlg(getTranslation('Are you sure you want to delete %s ?',[UINtoDelete]), mtConfirmation, [mbYes,mbNo], 0) = mrYes;
+      if continue then
 //    if delSUBtree(UINtoDelete) then
-    if delTree(Path) then
-      begin
-      refreshAvailableUsers;
-      refreshUsers;
-      msgDlg('User deleted!', True, mtInformation)
-      end
-    else
-      msgDlg('Error deleting this user!', True, mtError);
+        if delTree(Path) then
+          begin
+           refreshAvailableUsers;
+           refreshUsers;
+           msgDlg('User deleted!', True, mtInformation)
+          end
+         else
+          msgDlg('Error deleting this user!', True, mtError);
   end
 end;
 
 procedure TusersFrm.deleteaccountBtnClick(Sender: TObject);
 begin
-//removeFrm:=TremoveFrm.create(mainFrm);
+//removeFrm := TremoveFrm.create(mainFrm);
 // notAvailable
 end;
 
@@ -465,7 +467,7 @@ begin
     ModalResult := mrNone;
     Exit;
    end;
-  selected:=TRUE;
+  selected := TRUE;
   close;
 end;
 
@@ -479,7 +481,7 @@ var
 //  picIdx: Integer;
   cnv: Tcanvas;
 //  oldMode: Integer;
-//  bmp : TBitmap;
+//  bmp: TBitmap;
    TextLen: Integer;
    TextRect, R: TRect;
    TextFlags: Cardinal;
@@ -683,7 +685,7 @@ begin
        end;
      if selectUIN(onlyUID) then
        begin
-         msgDlg(getTranslation('%s already exists',[uin]), False, mtError);
+         msgDlg(getTranslation('%s already exists', [uin]), False, mtError);
          exit;
        end;
     if isOnlyDigits(onlyUID) then
@@ -697,9 +699,10 @@ begin
 //     tUserPath := tUserPath + AIMprefix;
 //    tUserPath := tUserPath + String(uin) + PathDelim;
     IOresult;
-    if not directoryExists(tBasePath) then
+{    if not directoryExists(tBasePath) then
       mkdir(tBasePath);
-    mkdir(tUserPath);
+    mkdir(tUserPath);}
+    ForceDirectories(tUserPath);
  {$IFNDEF DB_ENABLED}
     mkdir(tUserPath+historyPath);
  {$ENDIF ~DB_ENABLED}
@@ -740,11 +743,11 @@ begin
   RnQVer := RnQVer + ' x64';
 {$ENDIF CPUX64}
 
-   RnQVer0:= RnQVer;
+   RnQVer0 := RnQVer;
    RnQVerT := '';
 
   if LiteVersion or PREVIEWversion then
-    RnQVer:= RnQVer + crlf;
+    RnQVer := RnQVer + crlf;
 
   if LiteVersion then
    begin
@@ -786,7 +789,7 @@ end;
 
 procedure TusersFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-if deletedMe and not selected then
+  if deletedMe and not selected then
   begin
    hideForm(RnQmain);
    quit;
@@ -797,17 +800,17 @@ procedure TusersFrm.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   case Key of
-   VK_ESCAPE : Close;
-   VK_DELETE : deleteuserBtnClick(nil);
-   VK_INSERT : newuserBtnClick(nil);
+   VK_ESCAPE: Close;
+   VK_DELETE: deleteuserBtnClick(nil);
+   VK_INSERT: newuserBtnClick(nil);
   end;
 end;
 
-function TusersFrm.CheckPass : Boolean;
+function TusersFrm.CheckPass: Boolean;
 var
 //  a: Boolean;
   pt: String;
-//  newAccPass : AnsiString;
+//  newAccPass: AnsiString;
 begin
   Result := True;
   if usersBox.FocusedNode <> NIL then
@@ -949,7 +952,7 @@ procedure refreshAvailableUsers;
       end;
     if not result then
      begin
-      cf := path+ PathDelim + configFileName;
+      cf := path + PathDelim + configFileName;
       if fileExists(cf) then
         begin
           save := True;

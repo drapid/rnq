@@ -50,7 +50,7 @@ type
   end;
 
 implementation
-   uses
+uses
      events, RnQTips, RDGlobal, RnQLangs, tipDlg, globalLib;
 {$R *.dfm}
 
@@ -98,9 +98,9 @@ procedure TTipsFr.RnQButton1Click(Sender: TObject);
 //                    'isFromAgency=10&isWithoutSalary=10&compensationCurrencyId=1&desireableCompensation=70000&'+
 //                    'searchPeriod=30&orderBy=2&itemsOnPage=20&page=5&actionSearch=actionSearch&showRss=1');
 var
-  e : Thevent;
-  i : Integer;
-  s : AnsiString;
+  e: Thevent;
+  i: Integer;
+  s: AnsiString;
 begin
   i := EK_msg;
   s := '';

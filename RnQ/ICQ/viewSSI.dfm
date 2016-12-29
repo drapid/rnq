@@ -18,7 +18,6 @@ object SSIForm: TSSIForm
     Height = 320
     Align = alClient
     BorderWidth = 1
-    CheckImageKind = ckXP
     Header.AutoSizeIndex = 0
     Header.Font.Charset = DEFAULT_CHARSET
     Header.Font.Color = clWindowText

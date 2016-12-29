@@ -7,7 +7,7 @@
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>
-        <ProjectVersion>18.1</ProjectVersion>
+        <ProjectVersion>18.2</ProjectVersion>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -107,7 +107,7 @@
         <PreBuildEvent><![CDATA[BuiltTime.exe
 $(PreBuildEvent)]]></PreBuildEvent>
         <Icon_MainIcon>Res\MAINICON_Lite.ico</Icon_MainIcon>
-        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\AES;..\For.rnq\Flash;..\For.rnq\RTL;..\For.rnq\VCL;..\For.rnq\SQLite;.\ICQ;.\MRA;.\Prefs;.\xmpp;..\For.rnq\XML;.\DB;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\Flash;..\For.rnq\RTL;..\For.rnq\VCL;..\For.rnq\SQLite;.\ICQ;.\MRA;.\Prefs;.\xmpp;..\For.rnq\XML;.\DB;..\For.rnq\External\mORMot;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <SanitizedProjectName>RnQx64</SanitizedProjectName>
         <DCC_UsePackage>rtl;$(DCC_UsePackage)</DCC_UsePackage>
         <Manifest_File>Res\rnq.manifest1</Manifest_File>

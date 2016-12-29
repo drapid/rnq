@@ -451,6 +451,7 @@ type
     procedure MMGenErrorClick(Sender: TObject);
     procedure FormAfterMonitorDpiChanged(Sender: TObject; OldDPI,
       NewDPI: Integer);
+    procedure onAeroChanged();
   private
     FMouseInControl : Boolean;
     toggling        : Boolean;
@@ -602,6 +603,22 @@ begin
   themeslib.applySizes(OldDPI, NewDPI);
 end;
 
+procedure TRnQmain.onAeroChanged();
+begin
+  if StyleServices.Enabled and DwmCompositionEnabled then
+    begin
+//     bar.BevelEdges := [];
+     bar.BevelKind := bkNone;
+     roster.DoubleBuffered := True;
+     TCustomControl(roster).DoubleBuffered := True;
+    end
+   else
+    begin
+     bar.BevelKind := bkFlat;
+     roster.DoubleBuffered := False;
+     TCustomControl(roster).DoubleBuffered := False;
+    end;
+end;
 procedure TRnQmain.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
  quit;
@@ -2494,7 +2511,9 @@ case msg.msg of
            end;}
 //      else
 //        msgdlg('WTS_Unknown', mtInformation);
-     end
+     end;
+   WM_DWMCOMPOSITIONCHANGED:
+     onAeroChanged;
   else
     inherited;
   end;
@@ -3627,7 +3646,7 @@ begin
   uninstallHook;
   installHook(self.Handle);
   width := 120;
-//contactsPnl:=sbar.panels[0];
+//contactsPnl := sbar.panels[0];
 
   application.OnActivate := appActivate;
   application.OnDeActivate := appActivate;
@@ -3639,13 +3658,8 @@ begin
   toggling := False;
   Self.GlassFrame.SheetOfGlass := CheckWin32Version(6);
 
-  if StyleServices.Enabled and DwmCompositionEnabled then
-    begin
-//     bar.BevelEdges := [];
-     bar.BevelKind := bkNone;
-     roster.DoubleBuffered := True;
-     TCustomControl(roster).DoubleBuffered := True;
-    end;
+  onAeroChanged;
+
 // Self.DoubleBuffered := GlassFrame.SheetOfGlass;
 // roster.DoubleBuffered := Self.GlassFrame.SheetOfGlass;
 // StsBox.DoubleBuffered := True;
@@ -3784,7 +3798,7 @@ begin
     begin
       sub := '';
       if shift=[SSctrl] then
-        sub := CRLF;
+        sub := CRLFs;
       if shift=[SSshift] then
         sub := #13;
       if shift=[SSalt] then
@@ -4907,21 +4921,21 @@ end;
 
 
 //function TRnQmain.AddMainMenuItem(wPar: WPARAM; lPar: LPARAM): Integer; cdecl;
-function TRnQmain.AddContactMenuItem(pMI : PCLISTMENUITEM ): Integer;// cdecl;
+function TRnQmain.AddContactMenuItem(pMI: PCLISTMENUITEM ): Integer;// cdecl;
 {function TRnQmain.AddContactMenuItem(pPluginProc: Pointer; menuIcon: hIcon; menuCaption: String;
               menuHint: string; //procIdx: Integer;
               position: Integer;
               PopupName: String; popupPosition: Integer;
               hotKey: DWORD; PicName: String = ''): integer;}
 var
-//  clMI : TCLISTMENUITEM;
+//  clMI: TCLISTMENUITEM;
   Str, Str1: String;
   i: Integer;
   MI: TRQMenuItem;
   PM: TRQMenuItem;
   MM: TMenuItem;
-//  Ic : TIcon;
-//  bmp : TBitmap;
+//  Ic: TIcon;
+//  bmp: TBitmap;
 begin
 //  Str := String(wPar);
 //  clMI := PCLISTMENUITEM(lPar)^;
@@ -4932,8 +4946,8 @@ begin
    end;
 //  Str := pMI.pszName;
   MI := TRQMenuItem.Create(self);
-  MI.Caption := pMI.pszName;
-  MI.Hint := pMI.pszHint;
+  MI.Caption := UnUTF(pMI.pszName);
+  MI.Hint := UnUTF(pMI.pszHint);
     if (pMI.hIcon <> 0) then
      begin
       ico2bmp2(pMI.hIcon, MI.Bitmap);
@@ -4950,7 +4964,7 @@ begin
   mi.Enabled := (pMI.flags and RQFM_DISABLED)=0;
   mi.Visible := (pMI.flags and RQFM_HIDDEN)=0;
   MM := contactMenu.Items;
-  Str := pMI.pszPopupName;
+  Str := UnUTF(pMI.pszPopupName);
   if str <> '' then
    begin
      str1 := str;
@@ -5005,9 +5019,9 @@ begin
   if mi <> NIL then
    begin
      if (pMI.flags and RQFM_UPD_CAPTION)>0 then
-       MI.Caption := pMI.pszName;
+       MI.Caption := UnUTF( pMI.pszName );
      if (pMI.flags and RQFM_UPD_HINT)>0 then
-       MI.Hint := pMI.pszHint;
+       MI.Hint := UnUTF( pMI.pszHint );
      if (pMI.flags and RQFM_UPD_ENABLE)>0 then
        mi.Enabled := (pMI.flags and RQFM_DISABLED)=0;
      if (pMI.flags and RQFM_UPD_VISIBLE)>0 then
@@ -5062,7 +5076,7 @@ end;
 
 procedure TRnQmain.OnPluginMenuClick(Sender: TObject);
 var
-//  pr : procedure(uid:String);
+//  pr: procedure(uid: String);
   pr: procedure(uid: RawByteString);
 begin
   if Sender is TRQMenuItem then
@@ -5071,7 +5085,7 @@ begin
 //      if (TRQMenuItem(Sender).Plugin^) is Tplugin then
       begin
        pr := TRQMenuItem(Sender).PluginProc;
-       pr(clickedContact.UID);
+       pr(clickedContact.UID2cmp);
 //        Tplugin(TRQMenuItem(Sender).Plugin).cast(
 //           char(PM_EVENT)+char(PE_CONTACTMENUCLICK)+_int(TRQMenuItem(Sender).ProcIdx)+_int(StrToIntDef(clickedContact.UID, 0))
 //          )

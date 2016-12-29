@@ -35,6 +35,7 @@
 ////////////// For ICQ ------->
  {$IFDEF PROTOCOL_ICQ}
    { $DEFINE usesRSA}
+   {$DEFINE usesECC}
   { $DEFINE UseNotSSI}
    {$DEFINE ICQ_OLD_STATUS}
    {$DEFINE usesDC} // Enable File-transfer

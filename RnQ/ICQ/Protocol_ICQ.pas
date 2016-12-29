@@ -25,7 +25,7 @@ interface
   procedure receiveFile(d: TProtoDirect);
   procedure ICQsendfile(c: TICQContact; const fn: string);
 //  function  sendICQfiles(uin:TUID; files, msg:string):integer;
-  function sendICQfiles(cnt: TRnQContact; files : TFilePacket; msg: string;
+  function sendICQfiles(cnt: TRnQContact; files : TICQFilePacket; msg: string;
               useLocProxy: Boolean; ThrSrv: Boolean; var drct: TICQdirect): integer;
   function  findSendFile(id: Int64): TsendfileFrm;
   function  findRcvFile(id: Int64): TfiletransferFrm;
@@ -41,15 +41,15 @@ interface
                           ;const ChgdUseOldXSt: Boolean = false);
 
   procedure loggaICQPkt(const prefix: String; what: TwhatLog; data: RawByteString='');
-//  function  findICQViewInfo(c:TRnQContact):TviewInfoFrm;
+//  function  findICQViewInfo(c: TRnQContact): TviewInfoFrm;
   procedure ProcessICQEvents(var thisICQ: TICQSession; ev: TicqEvent);
 
 
-  //function  statusName(s:Tstatus):string;
+  //function  statusName(s: Tstatus): string;
   function  statusNameExt2(s: byte; extSts : byte = 0; const Xsts: String = ''; const sts6: String = ''): string;
   function  status2imgName(s: byte; inv: boolean=FALSE): TPicName;
   function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts: byte= 0): TPicName;
-//  function  visibility2imgName(vi:Tvisibility):String;
+//  function  visibility2imgName(vi: Tvisibility): String;
   function  visibilityName(vi: Tvisibility): string;
 
   function  ICQstatusDrawExt(const DC: HDC; const x, y: integer; const s: byte;
@@ -190,7 +190,7 @@ end; // sendICQautomsgreq
 
 {$IFDEF usesDC}
 //function sendICQfiles(uin: TUID; files, msg: string): integer;
-function sendICQfiles(cnt: TRnQContact; files: TFilePacket; msg: string;
+function sendICQfiles(cnt: TRnQContact; files: TICQFilePacket; msg: string;
             useLocProxy: Boolean; ThrSrv: Boolean; var drct: TICQdirect): integer;
 //var
 //  ss: Tstrings;
@@ -255,7 +255,7 @@ begin
    d.imSender := False;
    d.mode := dm_bin_direct;
    d.stage := 1;}
-  TfiletransferFrm.doAll(d);
+  TfiletransferFrm.doAll(RnQmain, d);
 //  TfiletransferFrm.doAll(thisICQ, evID, fromCnt, fn);
  {$ENDIF usesDC}
 end; // receiveFile
@@ -1569,13 +1569,12 @@ case ev of
          thisICQ.pwd := '';
        with TRnQProtocol.contactsDB.clone do
        begin
-        resetEnumeration;
-        while hasMore do
-            with TICQcontact(getNext) do
+           ForEach(procedure(cnt: TRnQContact)
              begin
-              OfflineClear;
-              status := SC_UNK;
-             end;
+                TICQcontact(cnt).OfflineClear;
+                TICQcontact(cnt).status := SC_UNK;
+              end
+             );
          free;
        end;
       {$IFDEF CHECK_INVIS}
@@ -1810,11 +1809,13 @@ case ev of
         if (vS>'') and (ord(vS[1])=PM_DATA) then
          begin
            thisICQ.eventMsgA := _istring_at(vS, 2);
-           e.flags := e.flags and not IF_CODEPAGE_MASK;
+           e.flags := e.flags and not IF_CODEPAGE_MASK; // Clear Encodings flags
+           e.flags := e.flags and not IF_Bin; // Clear bin flag
          end;
         if e.flags and IF_CODEPAGE_MASK = 0 then
-         if IsUTF8String(thisICQ.eventMsgA) then
-          e.flags := e.flags or IF_UTF8_TEXT;
+          if not (e.flags and IF_Bin <> 0) then
+           if IsUTF8String(thisICQ.eventMsgA) then
+             e.flags := e.flags or IF_UTF8_TEXT;
         e.ParseMsgStr(thisICQ.eventMsgA);
         if behave(e, EK_msg) then
           NILifNIL(c);

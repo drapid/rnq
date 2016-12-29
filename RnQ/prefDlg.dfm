@@ -10,6 +10,7 @@ object prefFrm: TprefFrm
   DefaultMonitor = dmMainForm
   ParentFont = True
   GlassFrame.Enabled = True
+  GlassFrame.Bottom = 30
   KeyPreview = True
   OldCreateOrder = True
   Position = poScreenCenter
@@ -67,7 +68,9 @@ object prefFrm: TprefFrm
     Header.Height = 17
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
+    IncrementalSearch = isAll
     TabOrder = 0
+    TreeOptions.MiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
     TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection]
     TreeOptions.SelectionOptions = [toFullRowSelect, toMiddleClickSelect, toRightClickSelect]
     OnChange = PrefListChange

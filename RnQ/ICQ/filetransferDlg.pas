@@ -14,12 +14,12 @@ uses
 
 type
   TCalcTime = record
-          startTime : TDateTime;
-          prevRcvd : Int64;
-          curBT : byte;
-          bt : array[0..19] of record
-            bytes : Int64;
-            startTime : TDateTime;
+          startTime: TDateTime;
+          prevRcvd: Int64;
+          curBT: byte;
+          bt: array[0..19] of record
+            bytes: Int64;
+            startTime: TDateTime;
            end;
         end;
 
@@ -61,10 +61,10 @@ type
     fSize: Int64;
     direct: TProtoDirect;
     fn: string;
-    // fs :integer;
-    constructor doAll(d: TProtoDirect);
-//    constructor doAll(thisICQ : TicqSession; evID : Int64; fromCnt : TContact;
-//                       fn : String); Overload;
+    // fs: integer;
+    constructor doAll(Owner: TComponent; d: TProtoDirect);
+//    constructor doAll(thisICQ: TicqSession; evID: Int64; fromCnt: TContact;
+//                       fn: String); Overload;
   protected
     fpath: String;
     myICQ: TICQSession;
@@ -73,14 +73,14 @@ type
     times: TCalcTime;
     FileDone: Boolean;
     Closing: Boolean;
-//    transferID : Int64;
-//    who : TContact;
-//    state : byte;
+//    transferID: Int64;
+//    who: TContact;
+//    state: byte;
     procedure SetPrgrsPos(pos: Integer);
   end;
 
-var
-  filetransferFrm: TfiletransferFrm;
+//var
+//  filetransferFrm: TfiletransferFrm;
 
 implementation
 
@@ -88,17 +88,16 @@ implementation
 
 uses
   Types,
-  globalLib, mainDlg, langLib,
   RDGlobal, RDFileUtil, RDUtils, RnQNet,
-  rqUtil, RQThemes, RnQSysUtils, RnQDialogs, RnQPics,
+  rqUtil, RQThemes, RnQSysUtils, RnQDialogs, RnQPics, RnQLangs,
   ICQContacts, RQ_ICQ, ICQConsts,
-  themesLib, utilLib, RnQLangs;
+  globalLib, langLib, utilLib;
 
 const
   CantCrDir = 'Error. Can''t create directory!';
   CantCrFile = 'Error!!! Can''t create file.';
 
-constructor TfiletransferFrm.doAll(d: TProtoDirect);
+constructor TfiletransferFrm.doAll(Owner: TComponent; d: TProtoDirect);
 //constructor TfiletransferFrm.doAll(thisICQ: TicqSession; evID: Int64;
 //  fromCnt: TContact; fn: String);
 begin
@@ -107,7 +106,8 @@ begin
 //     result := NIL;
      Exit;
    end;
-  inherited create(rnqmain);
+//  inherited create(rnqmain);
+  inherited create(Owner);
   position := poDefaultPosOnly;
   childWindows.Add(self);
   Theme.pic2ico(RQteFormIcon, PIC_FILE, icon);
@@ -289,7 +289,7 @@ procedure TfiletransferFrm.AcceptBtnClick(Sender: TObject);
 var
   wasErr: Boolean;
   needRes: Boolean;
-  fp: TFilePacket;
+  fp: TICQFilePacket;
   i: Integer;
 begin
 //  fsize := 0;
@@ -329,7 +329,7 @@ begin
   direct.needResume      := needRes;
   if needRes then
    begin
-     fp := TFilePacket.Create;
+     fp := TICQFilePacket.Create;
      fp.AddFile(fpath);
 
      rcvdSize := TFileAbout(fp.FileList.Objects[0]).Size;
@@ -377,7 +377,7 @@ begin
   end;
   if not wasErr then
     AcceptBtn.Enabled := False;
-//  direct:=myICQ.eventDirect;
+//  direct := myICQ.eventDirect;
 //  fstr := NIL;
 //  direct.fileName := fn;
 //  if wasErr then
@@ -408,7 +408,7 @@ begin
 //   if ;
 end;
 
-procedure TfiletransferFrm.notifFunc(Sender: TObject; ErrCode: Word; msg : String);
+procedure TfiletransferFrm.notifFunc(Sender: TObject; ErrCode: Word; msg: String);
 begin
   if msg > '' then
     box.Lines.Add(msg);
