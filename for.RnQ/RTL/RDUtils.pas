@@ -162,7 +162,7 @@ function  bool2str(const b: Boolean): RawByteString;
 
 { $IFNDEF UNICODE }
 var
-  RnQDefaultSystemCodePage : Integer;
+  RnQDefaultSystemCodePage: Integer;
 { $ENDIF UNICODE }
 
 
@@ -182,9 +182,9 @@ const
 function IfThen(AValue: Boolean; const ATrue: Integer; const AFalse: Integer = 0): Integer; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
   if avalue then
-    result:=atrue
+    result := atrue
    else
-    result:=afalse
+    result := afalse
 end;
 
 function IfThen(AValue: Boolean; const s1, s2: RawByteString): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
@@ -2378,7 +2378,7 @@ begin
     Result[i]:= s[i];
 end;
 
- function Rgb2Gray(RGBColor : TColor) : byte;
+ function Rgb2Gray(RGBColor: TColor): byte;
 // var
 //   Gray : byte;
  begin

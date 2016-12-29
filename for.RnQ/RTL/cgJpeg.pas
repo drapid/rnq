@@ -36,7 +36,7 @@ Implementation
 
 uses
   SyncObjs,
-  RDGlobal;
+  RDGlobal, RDUtils;
 
 var
   initCS: TCriticalSection;
@@ -47,8 +47,8 @@ Var
   Msg: AnsiString;
 Begin
   SetLength(Msg, 256);
-  cinfo^.err^.format_message(cinfo, pChar(Msg));
-  OutputDebugString(PChar('ERROR [' + IntToStr(cinfo^.err^.msg_code) + '] ' + Msg));
+  cinfo^.err^.format_message(cinfo, PAnsiChar(Msg));
+  OutputDebugStringA(PAnsiChar('ERROR [' + IntToStrA(cinfo^.err^.msg_code) + '] ' + Msg));
   cinfo^.global_state := 0;
   jpeg_abort(cinfo);
 End;
@@ -58,8 +58,8 @@ Var
   Msg: AnsiString;
 Begin
   SetLength(Msg, 256);
-  cinfo^.err^.format_message(cinfo, pChar(Msg));
-  OutputDebugString(PChar('OUTPUT [' + IntToStr(cinfo^.err^.msg_code) + '] ' + Msg));
+  cinfo^.err^.format_message(cinfo, PAnsiChar(Msg));
+  OutputDebugStringA(PAnsiChar('OUTPUT [' + IntToStrA(cinfo^.err^.msg_code) + '] ' + Msg));
   cinfo^.global_state := 0;
 End;
 
@@ -135,7 +135,7 @@ Var
   jpeg_err: jpeg_error_mgr;
 //  prow: Prgbarray;
   RowD: Prgbarray;
-  x, y: Integer;
+  y: Integer;
   a: Byte;
 Begin
   // *** initialization ***
@@ -212,6 +212,8 @@ Begin
     // reading row
     rowD := scanline[y];
     a := jpeg_read_scanlines(@jpeg, @rowD, 1);
+    if a = 0 then
+      Break;
   End;
 
   // finish decompression

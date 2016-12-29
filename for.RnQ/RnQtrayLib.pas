@@ -16,7 +16,7 @@ const
   WM_TRAY = WM_USER+1;
   cTRAY_uID = 100;
   flags_v2 = NIF_MESSAGE or NIF_ICON or NIF_TIP;
-  flags_v4 = NIF_MESSAGE or NIF_ICON or NIF_TIP or NIF_SHOWTIP or NIF_GUID;
+  flags_v4 = NIF_MESSAGE or NIF_ICON or NIF_TIP or NIF_SHOWTIP;
   flags_info = NIF_INFO or NIF_SHOWTIP or NIF_GUID;
 
 type
@@ -89,8 +89,10 @@ type
       data: TNotifyIconDataW_V4;
       shown, fHidden: Boolean;
       Ico: TIcon;
+      useGUID: Boolean;
+      trayIconGuid: TGUID;
     public
-      constructor Create(hndl: HWND);
+      constructor Create(hndl: HWND; g: TGUID);
       destructor Destroy; override;
       procedure minimize;
       procedure update;
@@ -99,6 +101,7 @@ type
       procedure setIcon(icon: Ticon); overload;
       procedure setIcon(const iName: TPicName); overload;
       procedure setTip(const s: String);
+      procedure setGUID(const g: TGUID);
 //      procedure setIconFile(fn: String);
       procedure updateHandle(hndl: HWND);
       property Hidden: boolean read fHidden;
@@ -114,7 +117,7 @@ type
     trayIcon: TtrayIcon;
     IcoName: TPicName;
     lastTip: String;
-    constructor Create(hndl: THandle);
+    constructor Create(hndl: THandle; g: TGUID);
     destructor Destroy; override;
     procedure update;
     procedure empty;
@@ -136,7 +139,6 @@ var
   ShowBalloonTime: Int64;
   EnabledBaloons: Boolean;
   TrayIconDataVersion: Integer = 2;
-  trayIconGuid: TGUID;
 
 implementation
 
@@ -163,11 +165,11 @@ var
   tbcmp: TRnQTaskbarComponent;
 }
 
-constructor TstatusIcon.Create(hndl: THandle);
+constructor TstatusIcon.Create(hndl: THandle; g: TGUID);
 begin
   if CheckWin32Version(6, 1) then
     TrayIconDataVersion := 4;
-  trayIcon := TtrayIcon.create(hndl);
+  trayIcon := TtrayIcon.create(hndl, g);
   trayIcon.setTip(Application.Title);
   IcoName := '';
   lastTip := '';
@@ -298,14 +300,17 @@ begin
   Shell_NotifyIcon(NIM_MODIFY, @NID_50);
 end;
 
-constructor TtrayIcon.create(hndl: HWND);
+constructor TtrayIcon.create(hndl: HWND; g: TGUID);
 //var
 //  FGUID: TGUID;
 begin
   ZeroMemory(@data, NOTIFYIconDataW_V4_SIZE);
   if TrayIconDataVersion = 4 then
-    if IsEqualGUID(trayIconGuid, GUID_NULL) then
-      CreateGUID(trayIconGuid);
+    begin
+      if IsEqualGUID(g, GUID_NULL) then
+        useGUID := false;
+//        CreateGUID(trayIconGuid);
+    end;
 //      CreateGUID(FGUID);
 //    FGuid := RnQTrayIconGUID;
 
@@ -321,10 +326,16 @@ begin
    uID := cTRAY_uID;
    hIcon := 0;
     if TrayIconDataVersion = 4 then
-      uFlags := flags_v4
+      begin
+        uFlags := flags_v4;
+        if useGUID then
+          begin
+            guidItem := trayIconGuid;
+            uFlags := flags_v4 or NIF_GUID;
+          end;
+      end
      else
       uFlags := flags_v2;
-   guidItem := trayIconGuid;
   end;
 // tbcmp := TRnQTaskbarComponent.Create(Application);
 
@@ -415,7 +426,7 @@ begin
 //  ico := theme.GetIco(iName);
 //  if ico <> nil then
    begin
-     data.hIcon:=ico.Handle;
+     data.hIcon := ico.Handle;
      if TrayIconDataVersion = 4 then
        data.hBalloonIcon := Ico.Handle;
    end
@@ -443,6 +454,16 @@ begin
   strLCopy(data.szTip, PChar(s), 127);
   update;
 end; // setTip
+
+procedure TtrayIcon.setGUID(const g: TGUID);
+begin
+  if IsEqualGUID(g, GUID_NULL) then
+//      CreateGUID(g);
+    useGUID := false
+   else
+    data.guidItem := g;
+  update;
+end;
 
 procedure TtrayIcon.minimize;
 begin

@@ -656,7 +656,7 @@ begin
 
   pp.addPrefBool('use-default-browser', useDefaultBrowser);
   pp.addPrefStr('browser-command-line', browserCmdLine);
-  pp.addPrefGuid('tray-icon-guid', trayIconGuid);
+//  pp.addPrefGuid('tray-icon-guid', trayIconGuid);
   pp.addPrefStr('sort-by', sortby2str[sortBy]);
 //  pp.addPrefBlob('starting-status', status2Img[TICQStatus(startingStatus)]);
 
@@ -900,7 +900,7 @@ begin
   pp.getPrefBool('minimize-roaster', minimizeRoster);
   pp.getPrefBool('use-default-browser', useDefaultBrowser);
   pp.getPrefStr('browser-command-line', browserCmdLine);
-  pp.getPrefGuid('tray-icon-guid', trayIconGuid);
+//  pp.getPrefGuid('tray-icon-guid', trayIconGuid);
   pp.getPrefStr('disabled-plugins', disabledPlugins);
   pp.getPrefInt('last-update-info', checkupdate.lastSerial);
   pp.getPrefInt('wheel-velocity', wheelVelocity);
@@ -1217,9 +1217,9 @@ end; // setcfg
 
 procedure loadCFG(zp: TZipFile);
 var
- fn : String;
- s : RawByteString;
- i : Integer;
+ fn: String;
+ s: RawByteString;
+ i: Integer;
 begin
   i := -1;
   if Assigned(zp) then
@@ -1874,11 +1874,11 @@ begin
   loggaEvtS('R&Q: '+intToStrA(RnQBuild) +' starting');
 
   loggaEvtS('theme: loading');
-  reloadCurrentTheme;
+  logEvPkt(logtimestamp + 'theme: reload', reloadCurrentTheme, '', '', false);
   picDrawFirstLtr := theme.ThemePath.fn = '';
   loggaEvtS('theme: loaded');
 
-  statusIcon := TstatusIcon.create(RnQmain.handle);
+  statusIcon := TstatusIcon.create(RnQmain.handle, GUID_NULL);
   statusIcon.OnGetPicTip := Protocols_All.getTrayIconTip;
   eventQ.onNewTop := statusIcon.update;
 
@@ -2359,7 +2359,7 @@ begin
  disablesounds := True;
 
  running := false;
- stayconnected:=FALSE;
+ stayconnected := FALSE;
 
  stopMainTimer;
 
