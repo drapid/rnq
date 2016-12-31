@@ -281,7 +281,7 @@ const
   header2711_2=header2711_0 + #03#00#00#00
             +#00#00#00#$0E#00#00#00+Z+Z+Z;
 
-  publicEmailTab:array [boolean] of byte=(0, 1);
+  publicEmailTab: array [boolean] of byte=(0, 1);
 
 // Message types
     MTYPE_PLAIN    = $01; // Plain text (simple) message

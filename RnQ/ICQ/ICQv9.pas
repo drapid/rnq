@@ -617,8 +617,6 @@ type
     procedure sendkeepalive; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  canAddCntOutOfGroup: Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
-    function  getNewDirect: TProtoDirect; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-
   {$IFDEF UNICODE}
 //    procedure notificationForMsgW(msgtype: byte; flags: byte; urgent: boolean;
 //                    msg: string{; offline: boolean = false});
@@ -628,6 +626,7 @@ type
     function  getLocalIPstr: string;
 
 {$IFDEF usesDC}
+    function  getNewDirect: TProtoDirect; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  directTo(c: TICQContact): TICQDirect;
 {$ENDIF usesDC}
    public // ICQ Only
@@ -657,8 +656,10 @@ type
     procedure SSI_UpdateContact(c: TICQContact);
     procedure SSI_UpdateGroup(c: TICQContact);
     procedure SSIdeleteGroup(gID: integer);
-    function  SSI_deleteAvatar: Boolean;
     procedure SSIUpdateGroup(const args: array of integer);
+ {$IFDEF RNQ_AVATARS}
+    function  SSI_deleteAvatar: Boolean;
+ {$ENDIF RNQ_AVATARS}
 
     procedure addContact(cl: TRnQCList; SendIt: Boolean = True); overload;
  {$IFDEF UseNotSSI}
@@ -711,8 +712,10 @@ type
     procedure sendFileAbort(cnt: TICQContact; msgID: TmsgID);
     procedure sendFileAck(msgID: TmsgID);
 
+ {$IFDEF RNQ_AVATARS}
     function  RequestIcon(c: TICQContact): Boolean;
     function  uploadAvatar(const fn: String): Boolean;
+ {$ENDIF RNQ_AVATARS}
     procedure RequestXStatus(const uin: TUID);
 {$IFDEF usesDC}
 //    function  sendFileReq(uin: TUID; msg, fn: string; size: integer): integer; // returns handle
@@ -822,7 +825,7 @@ type
     procedure parse010F(const snac: RawByteString);
     procedure parse0206(snac: RawByteString);
     procedure parse020C(const snac: RawByteString; ref: Integer);
-    procedure parseIncomingMsg(snac: RawByteString);
+    procedure parseIncomingMsg(pkt: RawByteString);
     procedure goneOffline; // called going offline
 {$IFDEF usesDC}
     procedure dc_connected(Sender: TObject; Error: Word);
@@ -956,7 +959,6 @@ uses
 //   ElAES,
    {$IFDEF USE_SYMCRYPTO}
      SynCrypto,
-//     AES_HMAC_Syn,
     {$ELSE not SynCrypto}
      OverbyteIcsMD5,
      aes_type, aes_ecb,
@@ -3829,14 +3831,18 @@ end;
 procedure TicqSession.sendEccMSGsnac(const cnt: TICQContact; const sn: RawByteString);
 var
   cap: RawByteString;
+  mykey: RawByteString;
 begin
   cap := 'RDEC0' + Copy(cnt.crypt.EccPubKey, 1, 11);
+  SetLength(mykey, SizeOf(fECCKeys.pubEccKey));
+  CopyMemory(@mykey[1], @fECCKeys.pubEccKey[0], Length(mykey));
   sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
     + cnt.buin
     + TLV(5, #0#0+qword_LEasStr(SNACref)+ cap
       +TLV($A,#0#1)
       +TLV($F,'')
       +TLV($2711, header2711 + sn )
+      +TLV($EC, mykey)
       )
 //    +TLV(3,'')
     +TLV(6, '')  // <--  if (args->flags & AIM_IMFLAGS_OFFLINE)
@@ -4005,7 +4011,8 @@ begin
 
   sutf := '';
   lShouldEncr := (UseCryptMsg and (c.Crypt.supportCryptMsg or (fECCKeys.generated and useEccCryptMsg and c.crypt.supportEcc)) )
-                 and (not useMsgType2For(c) or not isBin);
+                 and (not useMsgType2For(c) or not isBin)
+                 and not (c.isOffline);
   if ( useMsgType2For(c)
       or lShouldEncr)
      and not (IF_Simple and flags > 0) then
@@ -4116,13 +4123,6 @@ begin
        flags := flags or IF_Encrypt;
       end
     else
-{  sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
-    +BUIN(uin)
-    +TLV(5, #0#0+qword_LEasStr(SNACref)+ CAPS_sm2big(CAPS_sm_ICQSERVERRELAY)
-      +TLV($A,#0#1)
-      +TLV($F,'')
-      +TLV($2711,
-        header2711+}
      sendMSGsnac(c.UID, AnsiChar(MTYPE_PLAIN)+flagChar
         +status
         +priorityChar+#0
@@ -5144,12 +5144,13 @@ begin
     begin
      eventInt := getTLVwordBE(@flap[i]);
     case eventInt of
-      $01:eventError :=EC_badUIN;
-      $04:eventError :=EC_badPwd;
-      $05:eventError :=EC_badPwd;
-      $18:eventError :=EC_rateExceeded;
-      $1D:eventError :=EC_loginDelay;
-      else eventError:=EC_other;
+      $01:eventError := EC_badUIN;
+      $04:eventError := EC_badPwd;
+      $05:eventError := EC_badPwd;
+      $18:eventError := EC_rateExceeded;
+      $1D:eventError := EC_loginDelay;
+      else
+       eventError := EC_other;
       end;
     if eventInt <> $1C then // if recommended update, then continue logon
      begin
@@ -5161,14 +5162,15 @@ begin
     end;
   if existsTLV(9, flap) then
     begin
-      eventError:=EC_serverDisconnected;
+      eventError := EC_serverDisconnected;
       case getTLVwordBE(9, flap) of
-        $01:eventError :=EC_badUIN;
-        $04:eventError :=EC_badPwd;
-        $05:eventError :=EC_badPwd;
-        $18:eventError :=EC_rateExceeded;
-        $1D:eventError :=EC_loginDelay;
-       else eventError:=EC_other;
+        $01:eventError := EC_badUIN;
+        $04:eventError := EC_badPwd;
+        $05:eventError := EC_badPwd;
+        $18:eventError := EC_rateExceeded;
+        $1D:eventError := EC_loginDelay;
+       else
+         eventError := EC_other;
       end;
 //      if existsTLV($0B) then
       eventMsgA := getTLV($0B, flap);
@@ -5556,7 +5558,10 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
              begin
                SetLength(cont.crypt.EccMsgKey, sizeof(TECCSecretKey));
                if not ecdh_shared_secret(PECCPublicKey(cont.crypt.EccPubKey)^, fECCKeys.pk, PECCSecretKey(cont.crypt.EccMsgKey)^) then
+                begin
                  cont.crypt.EccMsgKey := '';
+                 cont.crypt.supportEcc := false;
+                end;
              end;
            end;
        end;
@@ -6201,7 +6206,7 @@ end; // parseSRV_LOCATION_ERROR
 
 procedure TicqSession.parseMsgError(const snac: RawByteString; ref: integer);
 begin
-  eventMsgID:=ref;
+  eventMsgID := ref;
   eventInt:=word_BEat(@snac[1]);
   eventFlags := 0;
   notifyListeners(IE_msgError);
@@ -6220,19 +6225,22 @@ begin
   notifyListeners(IE_serverAck);
 end; // parseServerAck
 
-procedure TicqSession.parseIncomingMsg(snac: RawByteString); // 0407
+procedure TicqSession.parseIncomingMsg(pkt: RawByteString); // 0407
+var
+  thisCnt: TICQContact;
+  isAutoMsg: Boolean;
+
+procedure parseMsgInl(const snac: RawByteString; ofs: Integer);
    {$IFDEF USE_SYMCRYPTO}
 const
   AESBLKSIZE = sizeof(TAESBlock);
    {$ENDIF USE_SYMCRYPTO}
 var
   t, i: Integer;
-  ofs, ofs2, l, l2: integer;
+  ofs2, l, l2: integer;
   isTzer: Boolean;
-  isAutoMsg: Boolean;
-  thisCnt: TICQcontact;
   CharsetNumber, CharsetSubset: Word;
-  msgDwnCnt, TLVcnt: Word;
+  msgDwnCnt: Word;
   CompressType: Word;
   priority, msgtype, msgflags, TypeId: byte;
   msgLen, origMsgLen, msgCRC, origMsgCRC: Cardinal;
@@ -6247,47 +6255,14 @@ var
    {$ENDIF ~USE_SYMCRYPTO}
    CrptMsg: RawByteString;
   PlugNameLen: longWord;
-//  msgGUID: TGUID;
   Plugin: AnsiString;
   Cap: RawByteString;
   msgEnc, msg, sA: RawByteString;
-// {$IFDEF UNICODE}
-//  msgU: UnicodeString;
-// {$ENDIF UNICODE}
   PlugName: AnsiString;
 begin
   eventFlags := 0;
 //  msgDwnCnt  := $FFFF;
-  eventMsgID := qword_LEat(@snac[1]);
-  ofs := 11;
-  thisCnt := getICQContact(getBUIN2(snac, ofs));
-  eventTime := now;
-  inc(ofs, 2);
-  TLVCnt := readBEWORD(snac, ofs);
-  t := ofs;
-  i := 0;
-  l := Length(snac);
-  while (i < TLVCnt)and (t < l) do
-   begin
-//    inc(t, 2);
-//    t := findTLV(5, snac,ofs);
-    inc(t, word_BEat(snac, t+2) + 4);
-    inc(i);
-   end;
-  sA := Copy(snac, ofs, t-ofs);
-  Delete(snac, ofs, t-ofs);
-  isAutoMsg := existsTLV(04, sA);
-//  ofs := 1;
-  parseOnlineInfo(sA, 1, thisCnt, false);
-  sA := '';
-
-if thisCnt.typing.bIsTyping then
- begin
-  thisCnt.typing.bIsTyping := false;
-  eventContact := thisCnt;
-  notifyListeners(IE_redraw);
- end;
-case Byte(snac[10]) of // msg format
+ case Byte(snac[10]) of // msg format
   1:begin // Simply(old-type) message
     if existsTLV($06, snac, ofs) then
      begin
@@ -6405,9 +6380,9 @@ case Byte(snac[10]) of // msg format
 //    inc(i, word_BEat(snac, i+2) + 4);
 //    if existsTLV(5, snac,i) then
 //      begin
-//       eventContact.memberSince:= UnixToDateTime(getTLVdwordBE(5, snac,ofs));
+//       eventContact.memberSince := UnixToDateTime(getTLVdwordBE(5, snac,ofs));
 ////       getTLV(5, snac, i)
-//       ofs:=findTLV(5, snac,i)+4
+//       ofs := findTLV(5, snac,i)+4
 //      end
 //     else
       ofs := findTLV(5, snac, ofs)+4;
@@ -6725,6 +6700,18 @@ case Byte(snac[10]) of // msg format
     if Copy(Cap, 1, 5) = 'RDEC0' then
      // Ecc encrypted msg
      begin
+      if not (thisCnt.crypt.supportEcc and (thisCnt.crypt.EccMsgKey>'')) then
+        begin
+          // Need to calculate key
+          thisCnt.crypt.EccPubKey := getTLVSafe($EC, snac, ofs);
+          if thisCnt.crypt.EccPubKey > '' then
+            begin
+              SetLength(thisCnt.crypt.EccMsgKey, sizeof(TECCSecretKey));
+              if not ecdh_shared_secret(PECCPublicKey(thisCnt.crypt.EccPubKey)^, fECCKeys.pk, PECCSecretKey(thisCnt.crypt.EccMsgKey)^) then
+                thisCnt.crypt.EccMsgKey := '';
+            end;
+
+        end;
       ofs := findTLV($2711, snac, ofs)+4;
       msgDwnCnt := word_LEat(@snac[ofs]);
       msgDwnCnt := word_LEat(@snac[ofs + msgDwnCnt]);
@@ -6742,16 +6729,18 @@ case Byte(snac[10]) of // msg format
       origMsgLen := cardinal(readDWORD(snac, ofs));
       origMsgCRC := readDWORD(snac, ofs);
       CompressType := readWORD(snac, ofs);
-      i := readDWORD(snac, ofs);
-      if i = 2 then
-        eventFlags := eventFlags or IF_Bin
-       else
-        eventFlags := eventFlags or IF_UTF8_TEXT;
-
       if not (CompressType in [0,1]) then
          msg := getTranslation('R&Q error: Unknown type of compress [%d]', [CompressType])
        else
+      if not (thisCnt.crypt.EccMsgKey > '') then
+         msg := getTranslation('R&Q error: Unknown key for encription')
+       else
        begin
+         i := readDWORD(snac, ofs);
+          if i = 2 then
+            eventFlags := eventFlags or IF_Bin
+           else
+            eventFlags := eventFlags or IF_UTF8_TEXT;
          eventFlags := eventFlags or IF_Encrypt;
 
          CrptMsg := Base64DecodeString(msg);
@@ -6792,7 +6781,10 @@ case Byte(snac[10]) of // msg format
            begin
             msgCRC := (ZipCrc32($FFFFFFFF, @msg[1], origMsgLen)XOR $FFFFFFFF);
             if msgCRC <> origMsgCRC then
+             begin
               msg := getTranslation('R&Q error: Could''t decrypt message. Bad CRC.\n[%s]', [msg]);
+              eventFlags := eventFlags and not IF_Bin and not IF_CODEPAGE_MASK;
+             end;
            end;
           eventContact := thisCnt;
 
@@ -7005,6 +6997,44 @@ case Byte(snac[10]) of // msg format
       end;
     end;
   end; // case
+end; // parseMsgInl
+
+var
+  i, t, l: Integer;
+  TLVCnt: Word;
+  ofs: Integer;
+  sA: RawByteString;
+begin
+  eventMsgID := qword_LEat(@pkt[1]);
+  ofs := 11;
+  thisCnt := getICQContact(getBUIN2(pkt, ofs));
+  eventTime := now;
+  inc(ofs, 2);
+  TLVCnt := readBEWORD(pkt, ofs);
+  t := ofs;
+  i := 0;
+  l := Length(pkt);
+  while (i < TLVCnt)and (t < l) do
+   begin
+//    inc(t, 2);
+//    t := findTLV(5, snac,ofs);
+    inc(t, word_BEat(pkt, t+2) + 4);
+    inc(i);
+   end;
+  sA := Copy(pkt, ofs, t-ofs);
+  Delete(pkt, ofs, t-ofs);
+  isAutoMsg := existsTLV(04, sA);
+//  ofs := 1;
+  parseOnlineInfo(sA, 1, thisCnt, false);
+  sA := '';
+
+  if thisCnt.typing.bIsTyping then
+   begin
+    thisCnt.typing.bIsTyping := false;
+    eventContact := thisCnt;
+    notifyListeners(IE_redraw);
+   end;
+  parseMsgInl(pkt, ofs);
 end; // parseincomingMsg
 
 procedure TicqSession.parsePagerString(s: RawByteString);
@@ -10527,16 +10557,16 @@ begin
   sendSNAC(ICQ_LISTS_FAMILY, $16, Length_B(uin));
 end;
 
-procedure TicqSession.AuthGrant(cnt : TRnQContact);
+procedure TicqSession.AuthGrant(cnt: TRnQContact);
 begin
   sendSNAC(ICQ_LISTS_FAMILY, $14, cnt.BUIN + Length_BE('Hi') + #00#00);
 end;
 
-procedure TicqSession.SSIAuth_REPLY(const uin : TUID; isAccept : Boolean; const msg : String = '');
+procedure TicqSession.SSIAuth_REPLY(const uin: TUID; isAccept: Boolean; const msg: String = '');
 const
-  ReplyType : array[False..True] of AnsiChar = (#$00, #$01);
+  ReplyType: array[False..True] of AnsiChar = (#$00, #$01);
 var
-  str1 : RawByteString;
+  str1: RawByteString;
 begin
   if isAccept then
     str1 := ''
@@ -10545,7 +10575,7 @@ begin
   sendSNAC(ICQ_LISTS_FAMILY, $1A, Length_B(uin) + ReplyType[isAccept] + Length_BE(str1))
 end;
 
-procedure TicqSession.parseTYPING_NOTIFICATION(const pkt : RawByteString);
+procedure TicqSession.parseTYPING_NOTIFICATION(const pkt: RawByteString);
 var
   ofs : Integer;
 begin
@@ -10622,12 +10652,12 @@ begin
 //    avt_icq.sendSNAC(ICQ_AVATAR_FAMILY, $02, #00+ #01 + Length_BE(''));
 end;
 
-procedure TicqSession.parse0121(const pkt : RawByteString; flags : Word);
-  procedure SSI_UpdateAvatar(ch : AnsiChar; flags : Byte; const hash : RawByteString);
+procedure TicqSession.parse0121(const pkt: RawByteString; flags: Word);
+  procedure SSI_UpdateAvatar(ch: AnsiChar; flags: Byte; const hash: RawByteString);
    var
-     i : Integer;
-     s : RawByteString;
-     b : Boolean;
+     i: Integer;
+     s: RawByteString;
+     b: Boolean;
   begin
     b := True;
       i := FindSSIItemType(serverSSI, FEEDBAG_CLASS_ID_BART);
@@ -10655,9 +10685,9 @@ procedure TicqSession.parse0121(const pkt : RawByteString; flags : Word);
   end;
 var
   i,
-  ofs : Integer;
-  ch : AnsiChar;
-  cnt : TICQcontact;
+  ofs: Integer;
+  ch: AnsiChar;
+  cnt: TICQcontact;
 begin
 {  if (Length(pkt) > 2) and
      (pkt[1] = #0) and (pkt[2] = #6) then
@@ -10732,9 +10762,9 @@ begin
 }
 end;
 
-procedure TicqSession.iconUploadAck(const pkt : RawByteString); // $1003
+procedure TicqSession.iconUploadAck(const pkt: RawByteString); // $1003
 var
-  b : Byte;
+  b: Byte;
 begin
   if Length(pkt)= 0 then
     Exit;
@@ -10863,11 +10893,11 @@ begin
 end;
 
 
-function TicqSession.uploadAvatar(const fn : String) : Boolean; // 1002
-{  procedure SSI_UpdateAvatar(ch : Char; hash : String);
+function TicqSession.uploadAvatar(const fn: String): Boolean; // 1002
+{  procedure SSI_UpdateAvatar(ch: Char; hash: String);
    var
-     i : Integer;
-     s : String;
+     i: Integer;
+     s: String;
   begin
       i := FindSSIItemType(serverSSI, FEEDBAG_CLASS_ID_BART);
       s := TLV($131, '') + TLV($D5, ch+BUIN(hash));
