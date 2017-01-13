@@ -159,6 +159,7 @@ function  bool2str(const b: Boolean): RawByteString;
 
   function DoubleAsInt64(Value: double): int64; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   function Int64AsDouble(Value: int64): double; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+  function TryStrToLongWord(const S: string; var Value: LongWord): Boolean;
 
 { $IFNDEF UNICODE }
 var
@@ -2291,7 +2292,7 @@ begin
             exit;
           end;
         end;
-    result := s;
+  result := Copy(s, pos0);
     pos0 := Length(s)+1;
 end; // chopline
 
@@ -2300,8 +2301,8 @@ function chop(i, l: Integer; var s: String): String;
 begin
   if i=0 then
     begin
-      result:=s;
-      s:='';
+      result := s;
+      s := '';
       exit;
     end;
   result := copy(s, 1, i-1);
@@ -2326,7 +2327,7 @@ begin
     case s[i] of
       #10:
         begin
-          result:=chop(i,s);
+          result := chop(i,s);
           exit;
         end;
       #13:
@@ -2380,7 +2381,7 @@ end;
 
  function Rgb2Gray(RGBColor: TColor): byte;
 // var
-//   Gray : byte;
+//   Gray: byte;
  begin
    Result := Round((0.30 * GetRValue(RGBColor)) +
                  (0.59 * GetGValue(RGBColor)) +
@@ -2424,6 +2425,15 @@ begin
   finally
     E.Free;
   end;
+end;
+
+function TryStrToLongWord(const S: string; var Value: LongWord): Boolean;
+var
+  Int64Value: Int64;
+begin
+  Result := TryStrToInt64(S, Int64Value) and (Int64Value >= 0) and (Int64Value <= High(Value));
+  if Result then
+    Value := LongWord(Int64Value);
 end;
 
 { $IFNDEF UNICODE }
