@@ -31,7 +31,7 @@ type
  PStatusProp = ^TStatusProp;
  TStatusProp = record
    Cptn: String;
-   ShortName: AnsiString;
+   ShortName: TPicName;
    ImageName: TPicName;
    idx: byte;
  end;
@@ -407,7 +407,7 @@ type
     function  getStatusMenu : TStatusMenu; Virtual; Abstract;
     function  getVisMenu    : TStatusMenu; Virtual; Abstract;
     function  getContactClass: TRnQCntClass; Virtual; Abstract;
-    function  getContact(const UID: TUID) : TRnQContact; Virtual; Abstract;
+    function  getContact(const UID: TUID): TRnQContact; Virtual; Abstract;
 //    function  ProtoName: String; Virtual; Abstract;
     function  ProtoName: String; inline;
     function  ProtoElem: TRnQProtocol; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}

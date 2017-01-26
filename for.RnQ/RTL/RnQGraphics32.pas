@@ -4763,6 +4763,9 @@ var
   DC: HDC;
   ColorBits: Byte;
   h: HMODULE;
+ {$IFNDEF RNQ}
+  modulesPath: String;
+ {$ENDIF RNQ}
 
 initialization
   DC := GetDC(0);
@@ -4793,8 +4796,11 @@ initialization
   // Stock objects doesn't have to be deleted.
   SystemPalette16 := GetStockObject(DEFAULT_PALETTE);
 {$endif}
+ {$IFNDEF RNQ}
+  modulesPath := '';
+ {$ENDIF RNQ}
 
-  h := LoadLibrary(modulesPath + 'jpegturbo.dll');
+  h := LoadLibrary(PWideChar( modulesPath + 'jpegturbo.dll'));
   if h <> 0 then
   begin
     JPEGTurbo := True;

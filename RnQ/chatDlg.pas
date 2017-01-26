@@ -1,6 +1,6 @@
 ﻿{
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit chatDlg;
 {$I RnQConfig.inc}
@@ -32,6 +32,9 @@ uses
   {$ELSE}
     RnQGraphics32,
   {$ENDIF USE_GDIPLUS}
+ {$IFDEF CHAT_SPELL_CHECK}
+  SpellCheck,
+ {$ENDIF CHAT_SPELL_CHECK}
   RnQProtocol,
   incapsulate, events,
   pluginLib, RQMenuItem;
@@ -85,17 +88,21 @@ type
 //    simpleMsg: Boolean;
     lastInputText: String;  // last input.text before quoting sequence
     quoteIdx: Integer;
-    wasTyped  : boolean; // input was not clear?
+    wasTyped: boolean; // input was not clear?
     historyBox: ThistoryBox;
-    splitter  : Tsplitter;
-    inputPnl  : TPanel;
-    input     : TMemo;
-    btnPnl    : TPanel;
-    avtsplitr : Tsplitter;
-    avtPic    : TAvatr;
+    splitter: Tsplitter;
+    inputPnl: TPanel;
+ {$IFDEF CHAT_SPELL_CHECK}
+    input: TMemoEx;
+ {$ELSE CHAT_SPELL_CHECK}
+    input: TMemo;
+ {$ENDIF CHAT_SPELL_CHECK}
+    btnPnl: TPanel;
+    avtsplitr: Tsplitter;
+    avtPic: TAvatr;
 {$IFDEF CHAT_USE_LSB}
-//    rsb:TscrollBar;
-    lsb       : TscrollBarEx;
+//    rsb: TscrollBar;
+    lsb: TscrollBarEx;
     procedure updateLSB;
 {$ENDIF CHAT_USE_LSB}
 
@@ -331,10 +338,10 @@ type
     function  OnGetHNDL: HWND;
 
   private
-    lastClick   : Tdatetime;
+    lastClick: Tdatetime;
     lastClickIdx: Integer;
-//    lastContact : Tcontact;
-    lastContact : TRnQContact;
+//    lastContact: Tcontact;
+    lastContact: TRnQContact;
   //окно хинта для отображения на закладках окна чата
 //  hintwnd: TVirtualTreeHintWindow = nil;
    	hintwnd: TVirtualTreeHintWindow;
@@ -354,6 +361,7 @@ type
     procedure inputChange(Sender: TObject);
     procedure inputPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure inputKeydown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure inputKeyup(Sender: TObject; var Key: Word; Shift: TShiftState);
 {$IFDEF CHAT_CEF}
     procedure preKeyEvent(Sender: TObject; const browser: ICefBrowser; const event: PCefKeyEvent;
                           osEvent: TCefEventHandle; out isKeyboardShortcut: Boolean; out Result: Boolean);
@@ -370,17 +378,17 @@ type
     procedure showHistMenu(Sender: TObject; const Data: String; clickedTime: TDateTime; msgPreview, linkClicked, imgClicked: Boolean);
 {$ENDIF CHAT_SCI}
   public
-    chats        : Tchats;
-    poppedup     : TPoint;
-    selectedUIN  : TUID;
-    plugBtns     : TPlugButtons;
-    histPM       : TPopupMenu;
-    sendMenuExt  : TPopupMenu;
-    closeMenuExt : TPopupMenu;
+    chats: Tchats;
+    poppedup: TPoint;
+    selectedUIN: TUID;
+    plugBtns: TPlugButtons;
+    histPM: TPopupMenu;
+    sendMenuExt: TPopupMenu;
+    closeMenuExt: TPopupMenu;
  { $IFDEF USE_SECUREIM}
     EncryptMenuExt: TPopupMenu;
  { $ENDIF USE_SECUREIM}
-    enterCount   : integer;
+    enterCount: integer;
   {$IFDEF USE_SMILE_MENU}
     smile_theme_token: Integer;
     smileMenuExt: TRnQPopupMenu;
@@ -390,8 +398,8 @@ type
     FileSendMenu: TPopupMenu;
   {$IFDEF CHAT_USE_LSB}
     popupLSB,
-    showLSB : Boolean;
-    hideScrollTimer : integer;
+    showLSB: Boolean;
+    hideScrollTimer: integer;
   {$ENDIF CHAT_USE_LSB}
 
     procedure SetSmilePopup(pIsMenu: Boolean);
@@ -456,6 +464,11 @@ type
     procedure AvtPBoxPaint(Sender: TObject);
     procedure onTimer;
     property  currentPPI: Integer read GetParentCurrentDpi;
+  {$IFDEF CHAT_SPELL_CHECK}
+    procedure InitSpellCheck;
+    procedure SpellCheck;
+    procedure RefreshThisInput;
+  {$ENDIF CHAT_SPELL_CHECK}
   end; // TchatFrm
 
   function  CHAT_TAB_ADD(Control: Integer; iIcon: HIcon; const TabCaption: string): Integer;
@@ -482,8 +495,9 @@ uses
   RnQ_Avatars, UxTheme,
  {$ENDIF}
   Protocols_all,
+  RnQCrypt,
  {$IFDEF PROTOCOL_ICQ}
-  ICQConsts, ICQContacts, ICQv9, RQ_ICQ,
+  ICQConsts, ICQContacts, ICQv9,
   ICQ.Stickers, MenuStickers,
  {$ENDIF PROTOCOL_ICQ}
   RQThemes, themesLib,
@@ -1017,6 +1031,27 @@ begin
   lastClickIdx := -1;
 end;
 
+ {$IFDEF CHAT_SPELL_CHECK}
+procedure TchatFrm.InitSpellCheck;
+begin
+  TMemoEx.DoInitSpellCheck;
+end;
+
+procedure TchatFrm.SpellCheck;
+begin
+  TMemoEx.DoSpellCheck;
+end;
+
+procedure TchatFrm.RefreshThisInput;
+var
+  ch: TchatInfo;
+begin
+  ch := thisChat;
+  if Assigned(ch) and Assigned(ch.input) then
+    ch.input.Refresh;
+end;
+ {$ENDIF CHAT_SPELL_CHECK}
+
 procedure TchatFrm.setTab(idx: Integer);
 var
   bool: Boolean;
@@ -1228,7 +1263,11 @@ begin
     chat.inputPnl.FullRepaint := False;
     chat.inputPnl.DoubleBuffered := True;
 
+ {$IFDEF CHAT_SPELL_CHECK}
+    chat.input := TMemoEx.create(chat.inputPnl);
+ {$ELSE CHAT_SPELL_CHECK}
     chat.input := Tmemo.create(chat.inputPnl);
+ {$ENDIF CHAT_SPELL_CHECK}
     chat.input.parent := chat.inputPnl;
     chat.input.align  := alClient;
 {$IFNDEF CHAT_CEF}
@@ -1247,7 +1286,11 @@ begin
   else
    begin
     chat.inputPnl := NIL;
+ {$IFDEF CHAT_SPELL_CHECK}
+    chat.input := TMemoEx.create(sheet);
+ {$ELSE CHAT_SPELL_CHECK}
     chat.input := Tmemo.create(sheet);
+ {$ENDIF CHAT_SPELL_CHECK}
     chat.input.parent := sheet;
     chat.input.align := alBottom;
     if splitY > 0 then
@@ -1262,8 +1305,15 @@ begin
   chat.input.onChange := inputChange;
   chat.input.OnContextPopup := inputPopup;
   chat.input.onKeyDown  := inputKeydown;
+  chat.input.OnKeyUp    := inputKeyup;
   chat.input.onDragOver := chatDragOver;
   chat.input.onDragDrop := chatDragDrop;
+
+  chat.input.WantTabs := True;
+  chat.input.HideSelection := False;
+  chat.input.DoubleBuffered := False;
+  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) or WS_EX_COMPOSITED);
+
 {  if theme.GetPicSize( PIC_CHAT_BG+'5').cx > 0 then
    begin
     if not Assigned(chat.input.Brush.Bitmap) then
@@ -1680,6 +1730,15 @@ begin
         ch.historyBox.go2end
       else}
         ch.historyBox.repaint;
+
+ {$IFDEF CHAT_SPELL_CHECK}
+     if EnableSpellCheck then
+      begin
+        SetSpellText(ch.input.Text);
+        SpellCheck;
+      end;
+ {$ENDIF CHAT_SPELL_CHECK}
+
      updateGraphics;
      SBSearch.Enabled := True;
      fp.Visible := findBtn.Down;
@@ -1807,6 +1866,24 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TchatFrm.inputKeyup(Sender: TObject; var Key: Word; Shift: TShiftState);
+var
+  ch: TchatInfo;
+begin
+ {$IFDEF CHAT_SPELL_CHECK}
+  if not EnableSpellCheck then
+    Exit;
+  ch := thisChat;
+  if ch = nil then
+    Exit;
+  if SpellTextChanged(ch.input.Text) and not (Key in [VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN, VK_PRIOR, VK_NEXT, VK_ESCAPE, VK_SHIFT, VK_CONTROL]) then
+  begin
+    SetSpellText(ch.input.Text);
+    SpellCheck;
+  end;
+ {$ENDIF CHAT_SPELL_CHECK}
 end;
 
 procedure TchatFrm.inputPopup(Sender: TObject;
@@ -3178,12 +3255,31 @@ begin
       if ch.chatType = CT_IM then
       if ch.who.fProto.ProtoID = ICQProtoID then
        if TICQSession(ch.who.fProto).UseCryptMsg and
-          ( TICQContact(ch.who).crypt.supportCryptMsg
+          (( TICQContact(ch.who).crypt.supportCryptMsg
            or
             TICQSession(ch.who.fProto).useMsgType2for(TICQContact(ch.who))
            )
+          or
+          ( TICQContact(ch.who).crypt.SupportEcc
+           and
+            TICQSession(ch.who.fProto).UseEccCryptMsg)
+          )
        then
          begin
+          if TICQContact(ch.who).crypt.supportEcc then
+            begin
+               with theme.GetPicSize(RQteDefault, PIC_CLIENT_LOGO, 16, PPI) do
+                begin
+                  r2 := agR;
+                  inc(R2.X, cx+2);
+                  dec(R2.Width, cx+3);
+                  agR.Width := cx+3;
+                  theme.drawPic(statusbar.canvas.Handle, R2, PIC_KEY, True, PPI);
+//                    dec(agR.Width, cx+2);
+                end;
+              theme.drawPic(statusbar.canvas.Handle, agR, PIC_CLIENT_LOGO, True, PPI)
+            end
+          else
           if TICQContact(ch.who).crypt.supportCryptMsg then
 //           theme.drawPic(statusbar.canvas.Handle, rect.left,rect.top+1, PIC_KEY);
             theme.drawPic(statusbar.canvas.Handle, agR, PIC_KEY, True, PPI)

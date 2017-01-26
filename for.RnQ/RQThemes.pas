@@ -65,7 +65,7 @@ type
   );
 
 const
-  TE2Str : array[TRnQThemedElement] of TPicName = ('', 'button.', 'menu.', 'tray.', 'formicon.', 'smile.');
+  TE2Str: array[TRnQThemedElement] of TPicName = ('', 'button.', 'menu.', 'tray.', 'formicon.', 'smile.');
 
 type
   TPicLocation = (PL_pic, PL_icon, PL_int, PL_Ani, PL_Smile);
@@ -224,7 +224,8 @@ type
     FSmiles,
     FSounds,
     FIntPics: TObjList;
-    FIntPicsIL: THandle;
+    FIntPicsILSm: THandle;
+    FIntPicsILBig: THandle;
  {$IFDEF RNQ_FULL}
     FAniSmls: TObjList;
 //    FAniPics: TObjList;
@@ -309,6 +310,8 @@ type
     procedure initPic(var picElm: TRnQThemedElementDtls); overload;
     function  GetBigPic(const picName: TPicName; var mem: TMemoryStream): Boolean;
     function  GetBigSmile(const picName: TPicName; var mem: TMemoryStream): Boolean;
+    function GetOrigPic(pTE: TRnQThemedElement; const picName: TPicName; var mem: TMemoryStream): Boolean; Deprecated 'Use GetBigPic instead';
+    function GetOrigSmile(const picName: TPicName; var mem: TMemoryStream): Boolean; Deprecated 'Use GetBigSmile instead';
     function  GetPicSize(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0;
                              const DPI: Integer = cDefaultDPI): Tsize; overload;
 //    function  GetPicSize(name: String; var ThemeToken: Integer;
@@ -317,6 +320,8 @@ type
                              const DPI: Integer = cDefaultDPI): Tsize; overload;
     function  GetPicOld(const PicName: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
     procedure GetPicOrigin(const name: TPicName; var OrigPic: TPicName; var rr: TGPRect);
+    function GetPicRect(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0): TGPRect; Deprecated 'Use GetPicOrigin instead';
+    function GetPicSprite(pTE: TRnQThemedElement; const picName: TPicName): TPicName; Deprecated 'Use GetPicOrigin instead';
 //    function  GetIcoBad(name : String) : TIcon;
     function  GetString(const name: TPicName; isAdd: Boolean = True): String;
     function  GetSound(const name: TPicName): String;
@@ -340,8 +345,8 @@ type
 //        var picLoc: TPicLocation; var picIdx: Integer; pEnabled: Boolean = true): Tsize; overload;
 //    function  drawPic(DC: HDC; x,y:integer; var picElm : TRnQThemedElementDtls): Tsize; overload;
     function  drawPic(DC: HDC; pR: TGPRect; const picName: TPicName; pEnabled: Boolean = true; const DPI: Integer = 0): Tsize; overload;
-    function  drawPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls; const DPI: Integer): Tsize; overload;
-    function  drawPic(DC: HDC; pR: TGPRect; var picElm: TRnQThemedElementDtls; const DPI: Integer): Tsize; overload;
+    function  drawPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls; const DPI: Integer = 0): Tsize; overload;
+    function  drawPic(DC: HDC; pR: TGPRect; var picElm: TRnQThemedElementDtls; const DPI: Integer = 0): Tsize; overload;
     function  getPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls; const DPI: Integer; var is32Alpha: Boolean): Tsize; overload;
   {$IFDEF USE_GDIPLUS}
     function  drawPic(gr: TGPGraphics; x, y: integer; picName: string; pEnabled: Boolean = true): Tsize; overload;
@@ -641,8 +646,8 @@ begin
   FFonts2    := TObjList.Create;
 //  FFonts    := TFontList.Create;
 
-  FIntPicsIL := ImageList_Create(icon_size, icon_size, ILC_COLOR32 or ILC_MASK, 0, 0);
-//  FIntPicsIL := ImageList_Create(GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), ILC_COLOR32 or ILC_MASK, 0, 0);
+  FIntPicsILSm := ImageList_Create(icon_size, icon_size, ILC_COLOR32 or ILC_MASK, 0, 0);
+  FIntPicsILBig := ImageList_Create(GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), ILC_COLOR32 or ILC_MASK, 0, 0);
 
 //  FIconPics.BkColor := clNone;
   FSmiles.CaseSensitive := True;
@@ -685,7 +690,8 @@ begin
   FSmilePics.Free;
   FThemePics.Free;
   FIntPics.Free;
-  ImageList_Destroy(FIntPicsIL);
+  ImageList_Destroy(FIntPicsILSm);
+  ImageList_Destroy(FIntPicsILBig);
 
   FSmiles.Free;
 //  FFonts.Free;
@@ -1437,16 +1443,16 @@ end;
  {$ELSE NOT USE_GDIPLUS}
 function TRQtheme.GetPicOld(const PicName: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
 var
-  i : Integer;
-//  bmp : TRnQBitmap;
-//  hb : HBITMAP;
-//  gr : TGPGraphics;
-//  tt, idx : Integer;
-//  pl : TPicLocation;
-  s : TPicName;
-  tbmp : TRnQBitmap;
-  hi   : HICON;
-  ico  : TIcon;
+  i: Integer;
+//  bmp: TRnQBitmap;
+//  hb: HBITMAP;
+//  gr: TGPGraphics;
+//  tt, idx: Integer;
+//  pl: TPicLocation;
+  s: TPicName;
+  tbmp: TRnQBitmap;
+  hi: HICON;
+  ico: TIcon;
 begin
   result := false;
 //  s := AnsiLowerCase(PicName);
@@ -1504,7 +1510,7 @@ begin
        i := FIntPics.IndexOf(s);
        if i >= 0 then
          begin
-          hi := ImageList_ExtractIcon(0, FIntPicsIL, i);
+          hi := ImageList_ExtractIcon(0, FIntPicsILSm, i);
           ico := TIcon.Create;
           ico.Handle := hi;
           pic.Width := ico.Width;
@@ -1527,8 +1533,8 @@ end;
   {$IFNDEF USE_GDIPLUS}
 function TRQtheme.GetBrush(name: TPicName): HBRUSH;
 var
-  i : Integer;
-  bmp : TRnQBitmap;
+  i: Integer;
+  bmp: TRnQBitmap;
 begin
   result := 0;
 //  i := Fpics.IndexOf(LowerCase(name));
@@ -1623,6 +1629,16 @@ begin
  {$ENDIF PRESERVE_BIG_FILE}
 end;
 
+function TRQtheme.GetOrigPic(pTE: TRnQThemedElement; const picName: TPicName; var mem: TMemoryStream): Boolean;
+begin
+  Result := GetBigPic(picName, mem);
+end;
+
+function TRQtheme.GetOrigSmile(const picName: TPicName; var mem: TMemoryStream): Boolean;
+begin
+  Result := GetBigSmile(picName, mem);
+end;
+
 function TRQtheme.GetPicSize(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0;
                              const DPI: Integer = cDefaultDPI): Tsize;
 var
@@ -1652,7 +1668,13 @@ begin
        begin
 //         result.cx := icon_size;
 //         result.cy := icon_size;
-         ImageList_GetIconSize(FIntPicsIL, result.cx, result.cy);
+         if (pTE = RQteTrayNotify) or (DPI > cDefaultDPI) then
+           begin
+             ImageList_GetIconSize(FIntPicsILBig, result.cx, result.cy);
+             lPicDPI := DPI;
+           end
+          else
+           ImageList_GetIconSize(FIntPicsILSm, result.cx, result.cy);
 //         lPicDPI := dpi;
 //         result.cx := TRnQBitmap(FIntPics.Objects[i]).GetWidth;
 //         result.cy := TRnQBitmap(FIntPics.Objects[i]).GetHeight;
@@ -1803,6 +1825,21 @@ begin
   end;
 end;
 
+function TRQtheme.GetPicRect(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0): TGPRect;
+var
+  sA: TPicName;
+begin
+  GetPicOrigin(name, sA, Result);
+end;
+
+function TRQtheme.GetPicSprite(pTE: TRnQThemedElement; const picName: TPicName): TPicName;
+var
+  r: TGPRect;
+begin
+  GetPicOrigin(picName, Result, r);
+end;
+
+
 function TRQtheme.GetPicSize(var PicElm: TRnQThemedElementDtls; minSize: Integer = 0;
                              const DPI: Integer = cDefaultDPI):Tsize;
 var
@@ -1830,7 +1867,13 @@ begin
         begin
 //         result.cx := icon_size;
 //         result.cy := icon_size;
-         ImageList_GetIconSize(FIntPicsIL, result.cx, result.cy);
+          if DPI > cDefaultDPI then
+            begin
+              ImageList_GetIconSize(FIntPicsILBig, result.cx, result.cy);
+              lPicDPI := DPI;
+            end
+           else
+              ImageList_GetIconSize(FIntPicsILSm, result.cx, result.cy);
 //         lPicDPI := DPI;
 //         result.cx := TRnQBitmap(FIntPics.Objects[picIdx]).GetWidth;
 //         result.cy := TRnQBitmap(FIntPics.Objects[picIdx]).GetHeight;
@@ -2265,7 +2308,10 @@ begin
      i := FIntPics.IndexOf(AnsiLowerCase(picName));
      if i >= 0 then
       begin
-       hi := ImageList_ExtractIcon(0, FIntPicsIL, i);
+        if pTE = RQteFormIcon then
+          hi := ImageList_ExtractIcon(0, FIntPicsILBig, i)
+         else
+          hi := ImageList_ExtractIcon(0, FIntPicsILSm, i);
        ico.Handle := hi;
        if hi > 0 then
         begin
@@ -2331,7 +2377,7 @@ begin
      i := FIntPics.IndexOf(AnsiLowerCase(picName));
      if i >= 0 then
       begin
-       ico := ImageList_ExtractIcon(0, FIntPicsIL, i);
+       ico := ImageList_ExtractIcon(0, FIntPicsILSm, i);
        Result := True;
       end
 //     else
@@ -2538,13 +2584,15 @@ begin
           begin
 //           i :=
             FIntPics.Add(AnsiLowerCase(name));
-           ImageList_AddIcon(FIntPicsIL, hi);
+           ImageList_AddIcon(FIntPicsILSm, hi);
+           ImageList_AddIcon(FIntPicsILBig, hi);
 //           FIntPicsIL
 //           i := FIntPics.AddObject(AnsiLowerCase(name), TRnQBitmap.Create(hi));
           end
          else
          begin
-          ImageList_ReplaceIcon(FIntPicsIL, i, hi)
+          ImageList_ReplaceIcon(FIntPicsILSm, i, hi);
+          ImageList_ReplaceIcon(FIntPicsILBig, i, hi);
 //          TRnQBitmap(FIntPics.Objects[i]).Free;
 //          FIntPics.Objects[i] := TRnQBitmap.Create(hi);
          end;
@@ -3301,7 +3349,7 @@ begin
    line := choplineV(txt2, lPos);
 //   line := chopline(txt);
    par := trim(line);
-   line := trim(chop('#',line));
+   line := trim(chop('#', line));
    if (line='')or((line[1]=';') and not ((section = _smiles)and hasSmilePic)) then
      continue;
    if (line[1]='[') and (line[length(line)]=']') then
@@ -3569,7 +3617,7 @@ begin
            par := k
           else
            par := v;
-       addProp(par, ts, TP_string, UnUTF(ansiReplaceStr(v,AnsiString('\n'),CRLF)));
+       addProp(par, ts, TP_string, UnUTF(ansiReplaceStr(v, AnsiString('\n'),CRLF)));
       end;
    end;
   except
@@ -3591,6 +3639,7 @@ var
 //  ia: timage
 //  pic: TRnQBitmap;
   lPicDPI: Integer;
+  ILhnd: THandle;
 begin
 {  pic := TRnQBitmap.Create;
   GetPic(picName, pic);
@@ -3625,11 +3674,21 @@ begin
 //         result.cy:=TRnQBitmap(FIntPics.Objects[i]).GetHeight;
 //         result.cx:= icon_size;
 //         result.cy:= icon_size;
-         ImageList_GetIconSize(FIntPicsIL, result.cx, result.cy);
+         if pDPI > cDefaultDPI then
+           begin
+             ILhnd := FIntPicsILBig;
+             lPicDPI := pDPI;
+           end
+          else
+           begin
+             ILhnd := FIntPicsILSm;
+             lPicDPI := cDefaultDPI;
+           end;
+         ImageList_GetIconSize(ILhnd, result.cx, result.cy);
          if pEnabled then
-          ImageList_Draw(FIntPicsIL, i, DC, pX, pY, ILD_TRANSPARENT)
+          ImageList_Draw(ILhnd, i, DC, pX, pY, ILD_TRANSPARENT)
          else
-          ImageList_Draw(FIntPicsIL, i, DC, pX, pY, ILD_TRANSPARENT or ILD_BLEND25);
+          ImageList_Draw(ILhnd, i, DC, pX, pY, ILD_TRANSPARENT or ILD_BLEND25);
 //         gr := TGPGraphics.Create(cnv.Handle);
 //         gr.DrawImage(TRnQBitmap(FIntPics.Objects[i]), x, y, icon_size, icon_size);
 //         gr.Free;
@@ -3675,6 +3734,7 @@ function TRQtheme.drawPic(DC: HDC; pR: TGPRect; const picName: TPicName;
 var
   i: Integer;
   r1: TGPRect;
+  ILhnd: THandle;
 begin
   if Length(picName)=0 then
              begin
@@ -3700,16 +3760,18 @@ begin
       i := FIntPics.IndexOf(AnsiLowerCase(picName));
       if i >= 0 then
        begin
-//         result.cx := TRnQBitmap(FIntPics.Objects[i]).GetWidth;
-//         result.cy := TRnQBitmap(FIntPics.Objects[i]).GetHeight;
 //         result.cx := icon_size;
 //         result.cy := icon_size;
-         ImageList_GetIconSize(FIntPicsIL, result.cx, result.cy);
+         if DPI > cDefaultDPI then
+           ILhnd := FIntPicsILBig
+          else
+           ILhnd := FIntPicsILSm;
+         ImageList_GetIconSize(ILhnd, result.cx, result.cy);
          if pEnabled then
-          ImageList_Draw(FIntPicsIL, i, DC, pR.X, pR.Y, ILD_TRANSPARENT)
+          ImageList_Draw(ILhnd, i, DC, pR.X, pR.Y, ILD_TRANSPARENT)
 //          ImageList_DrawEx(FIntPicsIL, i, DC, pX, pY, ILD_TRANSPARENT)
          else
-          ImageList_Draw(FIntPicsIL, i, DC, pR.X, pR.Y, ILD_TRANSPARENT or ILD_BLEND25)
+          ImageList_Draw(ILhnd, i, DC, pR.X, pR.Y, ILD_TRANSPARENT or ILD_BLEND25)
 //         gr := TGPGraphics.Create(cnv.Handle);
 //         gr.DrawImage(TRnQBitmap(FIntPics.Objects[i]), x, y, icon_size, icon_size);
 //         gr.Free;
@@ -3805,13 +3867,14 @@ begin
 end;
   {$ENDIF USE_GDIPLUS}
 
-//function TRQtheme.drawPic(DC: HDC; x,y:integer; var picElm : TRnQThemedElementDtls):Tsize;
+//function TRQtheme.drawPic(DC: HDC; x, y: integer; var picElm: TRnQThemedElementDtls): Tsize;
 function TRQtheme.drawPic(DC: HDC; p: TPoint; var picElm: TRnQThemedElementDtls; const DPI: Integer): Tsize;
 var
   po: TPicObj;
   crd: Cardinal;
   rS: TGPSize; // Scaled Image Size
   lPicDPI: Integer;
+  ILhnd: THandle;
 begin
   initPic(picElm);
   lPicDPI := fThemeDPI;
@@ -3858,19 +3921,14 @@ begin
            crd := ILD_TRANSPARENT
          else
            crd := ILD_TRANSPARENT or ILD_BLEND25;
-
-         ImageList_Draw(FIntPicsIL, picElm.picIdx, DC, p.x, p.y, crd);
-{
-         gr := TGPGraphics.Create(cnv.Handle);
-         gr.SetInterpolationMode(InterpolationModeHighQualityBicubic);
-         gr.DrawImage(TRnQBitmap(FIntPics.Objects[picIdx]), x, y, icon_size, icon_size);
-//         gr.DrawImage(TRnQBitmap(FIntPics.Objects[picIdx]), x, y);
-         gr.Free;}
+         if (picElm.Element = RQteTrayNotify) or (DPI > cDefaultDPI) then
+           ILhnd := FIntPicsILBig
+          else
+           ILhnd := FIntPicsILSm;
+         ImageList_Draw(ILhnd, picElm.picIdx, DC, p.x, p.y, crd);
+         ImageList_GetIconSize(ILhnd, result.cx, result.cy);
 //         result.cx:= icon_size;
 //         result.cy:= icon_size;
-         ImageList_GetIconSize(FIntPicsIL, result.cx, result.cy);
-//         result.cx:=TRnQBitmap(FIntPics.Objects[picIdx]).GetWidth;
-//         result.cy:=TRnQBitmap(FIntPics.Objects[picIdx]).GetHeight;
         end;
    PL_Ani:
         begin
@@ -3926,6 +3984,7 @@ var
   po: TPicObj;
   crd: Cardinal;
   lPicDPI: Integer;
+  ILhnd: THandle;
 begin
   initPic(picElm);
   lPicDPI := fThemeDPI;
@@ -3976,13 +4035,18 @@ begin
      begin
 //       result.cx := icon_size;
 //       result.cy := icon_size;
-       ImageList_GetIconSize(FIntPicsIL, result.cx, result.cy);
+         if (picElm.Element = RQteTrayNotify) or (DPI > cDefaultDPI) then
+           ILhnd := FIntPicsILBig
+          else
+           ILhnd := FIntPicsILSm;
+
+       ImageList_GetIconSize(ILhnd, result.cx, result.cy);
        r1 := DestRect(result.cx, result.cy, pR.Width, pR.Height);
 
        result.cx := r1.X + r1.Width;
        result.cy := r1.Y + r1.Height;
-//       result.cx:= icon_size;
-//       result.cy:= icon_size;
+//       result.cx := icon_size;
+//       result.cy := icon_size;
 
        inc(r1.X, pR.X);
        inc(r1.Y, pR.Y);
@@ -3992,7 +4056,7 @@ begin
         else
          crd := ILD_TRANSPARENT or ILD_BLEND25;
 //       ImageList_Draw(FIntPicsIL, picElm.picIdx, DC, pR.X, pR.Y, crd);
-       ImageList_DrawEx(FIntPicsIL, picElm.picIdx, DC, r1.X, r1.Y, r1.Width, r1.Height, CLR_NONE, CLR_NONE, crd);
+       ImageList_DrawEx(ILhnd, picElm.picIdx, DC, r1.X, r1.Y, r1.Width, r1.Height, CLR_NONE, CLR_NONE, crd);
      end;
    PL_Ani:
         begin

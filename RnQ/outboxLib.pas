@@ -98,16 +98,18 @@ var
 begin
   res := '';  // file version
   if count > 0 then
-   begin
-    for i:=0 to count-1 do
-     begin
-      s := getAt(i).toString;
-      res := res + int2str(length(s))+s;
-     end;
-    i := StrToIntDef(String(Account.AccProto.getContactClass.trimUID(Account.AccProto.ProtoElem.MyAccNum)), 0);
-    critt(res, i);
-   end;
-  result := 'VER'+int2str(1)+res;
+    begin
+     for i:=0 to count-1 do
+      begin
+       s := getAt(i).toString;
+       res := res + int2str(length(s))+s;
+      end;
+      i := StrToIntDef(String(Account.AccProto.getContactClass.trimUID(Account.AccProto.ProtoElem.MyAccNum)), 0);
+      critt(res, i);
+      result := 'VER'+int2str(1)+res;
+    end
+   else
+    result := '';
 end; // toString
 
 procedure Toutbox.fromString(s: RawByteString);
@@ -125,7 +127,7 @@ begin
    while i < length(s) do
     begin
       l := integer((@s[i])^);
-      inc(i,4);
+      inc(i, 4);
       ev := TOevent.create(OE_msg);
       if ev.fromString( copy(s,i,l) ) then
         add(ev)
@@ -387,7 +389,7 @@ begin
   i := 1;
   Result := True;
   try
-  while i < length(s) do
+  while i+8 < length(s) do
    begin
     L := integer((@s[i])^); inc(i,4);
     code := integer((@s[i])^); inc(i,4);

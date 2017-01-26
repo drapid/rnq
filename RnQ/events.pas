@@ -464,7 +464,6 @@ begin
   result.expires := -1;
   result.cl := NIL;
   result.ID := pID;
-  Result.WID := guID;
  {$IFDEF DB_ENABLED}
   result.fBin := info_;
   result.txt := txt_;
@@ -475,6 +474,7 @@ begin
  {$ENDIF ~DB_ENABLED}
   Result.HistoryToken := 0;
   Result.fImgElm.ThemeToken := -1;
+  Result.WID := SGUID2rGUID(guID);
 end; // new
 
 function Thevent.toString: RawByteString;
@@ -539,12 +539,9 @@ begin
       txt := '';
       Exit;
     end;
-  if flags and IF_CODEPAGE_MASK = IF_UTF8_TEXT then
-    begin
-      txt := UnUTF(pMsg);
-      exit;
-    end;
   msg := pMsg;
+  if (flags and IF_CODEPAGE_MASK) <> IF_UTF8_TEXT then
+    begin
       i := Pos(RnQImageTag, msg);
       while i > 0 do
        begin
@@ -558,6 +555,7 @@ begin
          i := PosEx(RnQImageTag, msg, i);
         ;
        end;
+    end;
       i := pos(RnQImageExTag, msg);
       while i > 0 do
        begin

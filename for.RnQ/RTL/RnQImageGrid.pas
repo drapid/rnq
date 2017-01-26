@@ -1,4 +1,4 @@
-unit AwImageGrid;
+unit RnQImageGrid;
 {$I forRnQConfig.inc}
 {$I NoRTTI.inc}
 

@@ -86,7 +86,7 @@ procedure ThistUtilsFrm.loadHistBtnClick(Sender: TObject);
 var
   dir: String;
   rslt: String;
-//  fn : String;
+//  fn: String;
 begin
  //chatFrm.closeAllPages;
   if chatFrm.chats.count > 0 then

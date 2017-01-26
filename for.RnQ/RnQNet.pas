@@ -10,8 +10,6 @@ interface
   RnQHttpAuth,
 {$ENDIF}
   RDGlobal;
-//  wsocket, HttpProt;
-//  , OverbyteIcsMD5,
 
 
 type
@@ -49,16 +47,16 @@ type
   TarrProxy = array of Tproxy;
 
 const
-  proxyProto2Str:array [TproxyProto] of AnsiString=('NONE', 'SOCKS4', 'SOCKS5', 'HTTP/S');
+  proxyProto2Str: array [TproxyProto] of AnsiString=('NONE', 'SOCKS4', 'SOCKS5', 'HTTP/S');
 
 //var
    {:record
-    enabled   :boolean;
-    auth      :boolean;
-    proto     :TproxyProto;
-//    addr      :array [Tproxyproto] of Thostport;
-    NTLM      :boolean;
-    user, pwd :string;
+    enabled: boolean;
+    auth: boolean;
+    proto: TproxyProto;
+//    addr: array [Tproxyproto] of Thostport;
+    NTLM: boolean;
+    user, pwd: string;
     end; }
    Procedure CopyProxy(var pTo: Tproxy; const pFrom: Tproxy);
    Procedure ClearProxy(var p1: Tproxy);

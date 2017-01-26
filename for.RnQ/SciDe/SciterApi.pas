@@ -982,7 +982,7 @@ function  V2T(const vm: HVM; const Value: OleVariant): tiscript_value;
 
 function  API: PSciterApi;
 function NI: ptiscript_native_interface;
-function IsNameExists(const vm: HVM; const Name: WideString): boolean;
+function IsNameExists(const vm: HVM; ns: tiscript_value; const Name: WideString): boolean;
 function IsNameExistsCurr(const vm: HVM; const Name: WideString): boolean;
 function IsNativeClassExists(const vm: HVM; const Name: WideString): boolean;
 function GetNativeObject(const vm: HVM; const Name: WideString): tiscript_value;

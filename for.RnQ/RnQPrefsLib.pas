@@ -35,63 +35,64 @@ type
   end;
 
 type
-   TRnQPref = class
-     private
-       fPrefStr: THashedStringList;
-       fInUpdate: Boolean;
-     public
-      constructor Create;
-      Destructor Destroy; OverRide;
-      procedure Load(const cfg: RawByteString);
-      procedure resetPrefs;
-      function  getPrefStr(const key: String; var Val: String): Boolean;
-      function  getPrefBool(const key: String; var Val: Boolean): Boolean;
-      procedure getPrefBlob(const key: String; var Val: RawByteString);
-      procedure getPrefBlob64(const key: String; var Val: RawByteString);
-      function  getPrefInt(const key: String; var Val: Integer): Boolean;
-      procedure getPrefDate(const key: String; var Val: TDateTime);
-      procedure getPrefDateTime(const key: String; var Val: TDateTime);
-      procedure getPrefValue(const key: String; et: TElemType; var Val: TPrefElem);
-      function getPrefGuid(const key: String; var Val: TGUID): Boolean;
-      function getPrefBoolDef(const key: String; const DefVal: Boolean): Boolean;
-      function getPrefBlobDef(const key: String; const DefVal: RawByteString = ''): RawByteString;
-      function getPrefBlob64Def(const key: String; const DefVal: RawByteString = ''): RawByteString;
-      function getPrefStrDef(const key: String; const DefVal: String = ''): String;
-      function getPrefIntDef(const key: String; const DefVal: Integer = -1): Integer;
-      function getPrefVal(const key: String): TPrefElement;
+  TRnQPref = class
+   private
+     fPrefStr: THashedStringList;
+     fInUpdate: Boolean;
+   public
+     constructor Create;
+     Destructor Destroy; OverRide;
+     procedure Load(const cfg: RawByteString);
+     procedure resetPrefs;
+     function  getPrefStr(const key: String; var Val: String): Boolean;
+     function  getPrefStrList(const key: String; var Val: TStringList): Boolean;
+     function  getPrefBool(const key: String; var Val: Boolean): Boolean;
+     procedure getPrefBlob(const key: String; var Val: RawByteString);
+     procedure getPrefBlob64(const key: String; var Val: RawByteString);
+     function  getPrefInt(const key: String; var Val: Integer): Boolean;
+     procedure getPrefDate(const key: String; var Val: TDateTime);
+     procedure getPrefDateTime(const key: String; var Val: TDateTime);
+     procedure getPrefValue(const key: String; et: TElemType; var Val: TPrefElem);
+     function getPrefGuid(const key: String; var Val: TGUID): Boolean;
+     function getPrefBoolDef(const key: String; const DefVal: Boolean): Boolean;
+     function getPrefBlobDef(const key: String; const DefVal: RawByteString = ''): RawByteString;
+     function getPrefBlob64Def(const key: String; const DefVal: RawByteString = ''): RawByteString;
+     function getPrefStrDef(const key: String; const DefVal: String = ''): String;
+     function getPrefIntDef(const key: String; const DefVal: Integer = -1): Integer;
+     function getPrefVal(const key: String): TPrefElement;
 
-      function getAllPrefs: RawByteString;
+     function getAllPrefs: RawByteString;
 
-      procedure DeletePref(const key: String);
-      function prefExists(const key: String): Boolean;
+     procedure DeletePref(const key: String);
+     function prefExists(const key: String): Boolean;
 
-      procedure addPrefBlobOld(const key: String; const Val: RawByteString);
-      procedure addPrefBlob64(const key: String; const Val: RawByteString);
-      procedure addPrefInt(const key: String; const Val: Integer);
-      procedure addPrefBool(const key: String; const Val: Boolean);
-      procedure addPrefStr(const key: String; const Val: String);
-      procedure addPrefTime(const key: String; const Val: TDateTime);
+     procedure addPrefBlobOld(const key: String; const Val: RawByteString);
+     procedure addPrefBlob64(const key: String; const Val: RawByteString);
+     procedure addPrefInt(const key: String; const Val: Integer);
+     procedure addPrefBool(const key: String; const Val: Boolean);
+     procedure addPrefStr(const key: String; const Val: String);
+     procedure addPrefStrList(const key: String; const Val: TStringList);
+     procedure addPrefTime(const key: String; const Val: TDateTime);
  {$IFDEF DELPHI9_UP}
-      procedure addPrefDate(const key: String; const Val: TDate);
+     procedure addPrefDate(const key: String; const Val: TDate);
  {$ENDIF DELPHI9_UP}
-      procedure addPrefGuid(const key: String; const Val: TGUID);
-      procedure addPrefParam(param: TObject);
-      procedure addPrefArrParam(param: array of TObject);
-      procedure getPrefArrParam(param: array of TObject);
+     procedure addPrefGuid(const key: String; const Val: TGUID);
+     procedure addPrefParam(param: TObject);
+     procedure addPrefArrParam(param: array of TObject);
+     procedure getPrefArrParam(param: array of TObject);
+     procedure initPrefBool(const key: String; const Val: Boolean);
+     procedure initPrefInt(const key: String; const Val: Integer);
+     procedure initPrefStr(const key: String; const Val: String);
 
-      procedure initPrefBool(const key: String; const Val: Boolean);
-      procedure initPrefInt(const key: String; const Val: Integer);
-      procedure initPrefStr(const key: String; const Val: String);
+     procedure BeginUpdate;
+     procedure EndUpdate;
 
-      procedure BeginUpdate;
-      procedure EndUpdate;
-
-      property  isUpdating: Boolean read fInUpdate;
-   end;
+     property  isUpdating: Boolean read fInUpdate;
+  end;
 
 
   TPrefFrame = class(TFrame)
-  public
+   public
     FOldCreateOrder: Boolean;
     FPixelsPerInch: Integer;
     FTextHeight: Integer;
@@ -101,7 +102,7 @@ type
     procedure updateVisPage; virtual;
     procedure initPage; virtual;
     procedure unInitPage; virtual;
-  published
+   published
     property TabOrder;
     property TabStop;
     property OldCreateOrder: Boolean read FOldCreateOrder write FOldCreateOrder;
@@ -558,6 +559,21 @@ begin
     fPrefStr.AddObject(key, el);
 end;
 
+procedure TRnQPref.addPrefStrList(const key: String; const Val: TStringList);
+var
+  s, str: String;
+begin
+  if Val.Count = 0 then
+    addPrefStr(key, '')
+  else
+  begin
+    for s in Val do
+    str := str + ',' + s;
+    Delete(str, 1, 1);
+    addPrefStr(key, str);
+  end;
+end;
+
 procedure TRnQPref.addPrefTime(const key: String; const Val: TDateTime);
 var
   El: TPrefElement;
@@ -836,6 +852,14 @@ begin
          Result := False;
       end
    end;
+end;
+
+function TRnQPref.getPrefStrList(const key: String; var Val: TStringList): Boolean;
+var
+  str: String;
+begin
+  Result := getPrefStr(key, str);
+  Val.DelimitedText := str;
 end;
 
 function TRnQPref.getPrefGuid(const key: String; var Val: TGUID): Boolean;

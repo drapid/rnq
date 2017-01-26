@@ -50,8 +50,8 @@ const
   status2ShowStr: array [TICQStatus] of string=('Online','Offline','Unknown',
     'Occupied','Don''t disturb', 'N/A', 'Away', 'Free for chat', 'Evil', 'Depression', 'At home', 'At work', 'Lunch');
 //  status2Img:array [TICQStatus] of TPicName=('online','offline','unk',
-  status2Img: array [0..byte(SC_Last)] of TPicName=('online','offline','unk',
-      'occupied','dnd','na','away', 'f4c',
+  status2Img: array [0..byte(SC_Last)] of TPicName=('online', 'offline', 'unk',
+      'occupied', 'dnd', 'na', 'away', 'f4c',
       'evil', 'depression', 'home', 'work', 'lunch');
 //  status2code: array [Tstatus] of dword=(0,$11,$13,5,1,$20,0,0, $3000, $4000);
   status2code: array [TICQStatus] of dword=(0,0,0, $11,$13,5,1,$20,

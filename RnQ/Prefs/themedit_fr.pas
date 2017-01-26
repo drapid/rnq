@@ -104,7 +104,7 @@ begin
   p := @themeprops[propsBox.itemIndex];
   //f := TFont
   case p.kind of
-    TP_color: colorBtn.SelectionColor:=theme.GetColor(copy(p.name, 1, length(p.name)-6));
+    TP_color: colorBtn.SelectionColor := theme.GetColor(copy(p.name, 1, length(p.name)-6));
     TP_font:
        begin
         fontBox.Font.Assign(Screen.MenuFont);
@@ -112,7 +112,7 @@ begin
         theme.ApplyFont(sA, fontBox.Font);
   //    with f do
         begin
-         colorBtn.SelectionColor:= fontBox.Font.color;
+         colorBtn.SelectionColor := fontBox.Font.color;
          fontBox.Text := fontBox.Font.name;//findInStrings(name, fontBox.items);
   //      fontBox.Font := f;
          sizeSpin.Value := fontBox.Font.size;
@@ -205,7 +205,7 @@ begin
   fontLbl.Font := fontBox.Font;
 //  fontLbl.Font.name  := fontBox.Text;
 //  fontLbl.font.size  := sizeSpin.AsInteger;
-//  fontLbl.font.color :=colorBtn.SelectionColor;
+//  fontLbl.font.color := colorBtn.SelectionColor;
 //  fontLbl.Font.Charset :=
 end; // updateGUI
 

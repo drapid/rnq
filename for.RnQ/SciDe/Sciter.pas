@@ -3867,7 +3867,7 @@ procedure Register;
 begin
   RegisterClass(TSciterEventMapRule);
   RegisterClass(TSciterEventMap);
-  RegisterComponents('Samples', [TSciter]);
+  RegisterComponents('RnQ', [TSciter]);
 end;
 
 { TElementList }

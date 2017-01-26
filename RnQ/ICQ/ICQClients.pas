@@ -161,7 +161,7 @@ var
             exit;
           end;
         end;
-    result := s;
+    result := Copy(s, pos0);
     pos0 := Length(s)+1;
   end; // chopline
 

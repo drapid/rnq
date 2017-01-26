@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit iniLib;
 {$I RnQConfig.inc}
@@ -285,108 +285,108 @@ autocopyhist := TRUE;
   useSmiles := TRUE;
   ShowSmileCaption := FALSE;
 
-MenuHeightPerm := True;
-MenuDrawExt := True;
-sendTheAddedYou:=FALSE;
-texturizedWindows:=TRUE;
-showOncomingDlg:=FALSE;
-autoSizeRoster := FALSE;
-autosizeFullRoster := FALSE;
-autosizeUp := False;
-showDisconnectedDlg := TRUE;
-//showDisconnectedDlg := FALSE;
-fontstylecodes.enabled := TRUE;
-playSounds := TRUE;
-SoundReset;
-autoconnect := FALSE;
-showGroups:=TRUE;
-alwaysOnTop:=TRUE;
-chatAlwaysOnTop:=FALSE;
-avatarShowInChat := True;
-avatarShowInHint := True;
-avatarShowInTray := True;
-useSingleClickTray := True;
-autoDeselect:=FALSE;
-warnVisibilityExploit:=TRUE;
-wheelVelocity:=1;
-useDefaultBrowser:=TRUE;
-browserCmdLine:='';
+  MenuHeightPerm := True;
+  MenuDrawExt := True;
+  sendTheAddedYou := FALSE;
+  texturizedWindows := TRUE;
+  showOncomingDlg := FALSE;
+  autoSizeRoster := FALSE;
+  autosizeFullRoster := FALSE;
+  autosizeUp := False;
+  showDisconnectedDlg := TRUE;
+  //showDisconnectedDlg := FALSE;
+  fontstylecodes.enabled := TRUE;
+  playSounds := TRUE;
+  SoundReset;
+  autoconnect := FALSE;
+  showGroups := TRUE;
+  alwaysOnTop := TRUE;
+  chatAlwaysOnTop := FALSE;
+  avatarShowInChat := True;
+  avatarShowInHint := True;
+  avatarShowInTray := True;
+  useSingleClickTray := True;
+  autoDeselect:=FALSE;
+  warnVisibilityExploit:=TRUE;
+  wheelVelocity := 1;
+  useDefaultBrowser:=TRUE;
+  browserCmdLine := '';
 
-with spamfilter do
+ with spamfilter do
   begin
-	ignoreNIL:=FALSE;
-  ignorepagers:=FALSE;
-  warn:=FALSE;
-  addToHist := True;
-  ignoreauthNIL:=false; // By Rapid D
+	ignoreNIL := FALSE;
+    ignorepagers := FALSE;
+    warn := FALSE;
+    addToHist := True;
+    ignoreauthNIL := false; // By Rapid D
   useBot := False; ////////////////////////////////////////////////////////
   useBotInInvis := False;
   UseBotFromFile := False;
   BotTryesCount  := 3;
-  notNIL:=FALSE;
-  notEmpty:=FALSE;
-  nobadwords:=FALSE;
-  multisend:=FALSE;
-  badwords:='';
-  uingt:=0;
+    notNIL := FALSE;
+    notEmpty := FALSE;
+    nobadwords := FALSE;
+    multisend := FALSE;
+  badwords := '';
+  uingt := 0;
   end;
  with histcrypt do
   begin
-   enabled:=FALSE;
-   savePwd:=FALSE;
-   pwd:='';
+   enabled := FALSE;
+   savePwd := FALSE;
+   pwd := '';
   end;
-autoaway.autoexit:=TRUE;
-autoaway.away:=TRUE;
-autoaway.na:=TRUE;
-autoaway.ss:=TRUE;
-autoaway.boss := True;
-autoaway.clearXSts := False;
-autoaway.awayTime:=15*(10*60);
-autoaway.naTime:=30*(10*60);
-autoaway.msg:='';
-autoaway.bakmsg:='';
-docking.enabled:=TRUE;
-docking.appbar:=TRUE;
-docking.Dock2Chat := False;
-docking.Docked2chat := False;
-behaviour[EK_oncoming].trig := [BE_tray, BE_sound, BE_tip, BE_history];
-behaviour[EK_offgoing].trig := [BE_history, BE_tip];
-behaviour[EK_msg].trig := [BE_tray, BE_openchat, BE_save, BE_sound, BE_history, BE_tip, BE_FLASHCHAT];
-behaviour[EK_contacts] := behaviour[EK_msg];
-behaviour[EK_auth] := behaviour[EK_msg];
-behaviour[EK_authDenied] := behaviour[EK_msg];
-behaviour[EK_authreq] := behaviour[EK_msg];
-behaviour[EK_addedyou] := behaviour[EK_msg];
-//behaviour[EK_file].trig := [BE_tray,BE_save,BE_sound,BE_history];
-behaviour[EK_file] := behaviour[EK_msg];
-behaviour[EK_automsgreq].trig := [BE_history];
-behaviour[EK_statuschange].trig := [BE_history];
-//behaviour[EK_statuschangeExt].trig := [BE_history];
-behaviour[EK_gcard].trig := [BE_tray,BE_sound,BE_history,BE_openchat,BE_save];
-behaviour[EK_automsg].trig := [BE_openchat,BE_history,BE_sound,BE_popup];
+  autoaway.autoexit := TRUE;
+  autoaway.away := TRUE;
+  autoaway.na := TRUE;
+  autoaway.ss := TRUE;
+  autoaway.boss := True;
+  autoaway.clearXSts := False;
+  autoaway.awayTime := 15*(10*60);
+  autoaway.naTime := 30*(10*60);
+  autoaway.msg := '';
+  autoaway.bakmsg := '';
+  docking.enabled := TRUE;
+  docking.appbar := TRUE;
+  docking.Dock2Chat := False;
+  docking.Docked2chat := False;
+  behaviour[EK_oncoming].trig := [BE_tray, BE_sound, BE_tip, BE_history];
+  behaviour[EK_offgoing].trig := [BE_history, BE_tip];
+  behaviour[EK_msg].trig := [BE_tray, BE_openchat, BE_save, BE_sound, BE_history, BE_tip, BE_FLASHCHAT];
+  behaviour[EK_contacts] := behaviour[EK_msg];
+  behaviour[EK_auth] := behaviour[EK_msg];
+  behaviour[EK_authDenied] := behaviour[EK_msg];
+  behaviour[EK_authreq] := behaviour[EK_msg];
+  behaviour[EK_addedyou] := behaviour[EK_msg];
+  //behaviour[EK_file].trig := [BE_tray,BE_save,BE_sound,BE_history];
+  behaviour[EK_file] := behaviour[EK_msg];
+  behaviour[EK_automsgreq].trig := [BE_history];
+  behaviour[EK_statuschange].trig := [BE_history];
+  //behaviour[EK_statuschangeExt].trig := [BE_history];
+  behaviour[EK_gcard].trig := [BE_tray,BE_sound,BE_history,BE_openchat,BE_save];
+  behaviour[EK_automsg].trig := [BE_openchat,BE_history,BE_sound,BE_popup];
  {$IFDEF Use_Baloons}
-behaviour[EK_typingBeg].trig := [BE_tip, BE_BALLOON];
-behaviour[EK_typingFin].trig := [BE_tip, BE_BALLOON];
+  behaviour[EK_typingBeg].trig := [BE_tip, BE_BALLOON];
+  behaviour[EK_typingFin].trig := [BE_tip, BE_BALLOON];
  {$ELSE not Use_Baloons}
-behaviour[EK_typingBeg].trig := [BE_TIP];
-behaviour[EK_typingFin].trig := [BE_TIP];
+  behaviour[EK_typingBeg].trig := [BE_TIP];
+  behaviour[EK_typingFin].trig := [BE_TIP];
  {$ENDIF Use_Baloons}
-behaviour[EK_XstatusMsg].trig:=[BE_history];
-behaviour[EK_Xstatusreq].trig:=[BE_history];
-behaviour[EK_buzz].trig := [BE_OPENCHAT, BE_HISTORY, BE_TIP, BE_SOUND];
+  behaviour[EK_XstatusMsg].trig := [BE_history];
+  behaviour[EK_Xstatusreq].trig := [BE_history];
+  behaviour[EK_buzz].trig := [BE_OPENCHAT, BE_HISTORY, BE_TIP, BE_SOUND];
 
-for i:=1 to EK_last do
+  for i:=1 to EK_last do
   begin
-  behaviour[i].tiptimes := False;
-  behaviour[i].tiptime:=50;
-  behaviour[i].tiptimeplus:=50;
+    behaviour[i].tiptimes := False;
+    behaviour[i].tiptime := 50;
+    behaviour[i].tiptimeplus := 50;
   end;
-behaviour[EK_msg].tiptimes := True;
-behaviour[EK_msg].tiptime:=1;
-behaviour[EK_url]:=behaviour[EK_msg];
-behaviour[EK_typingBeg].tiptime := 20;
-behaviour[EK_typingFin].tiptime := 20;
+  behaviour[EK_msg].tiptimes := True;
+  behaviour[EK_msg].tiptime := 1;
+  behaviour[EK_url] := behaviour[EK_msg];
+  behaviour[EK_typingBeg].tiptime := 20;
+  behaviour[EK_typingFin].tiptime := 20;
 
   tipsSetCFG(NIL);
 // TipsMaxCnt   := 20;
@@ -395,6 +395,17 @@ behaviour[EK_typingFin].tiptime := 20;
  TipsMaxAvtSizeUse := True;
  TipsMaxAvtSize := 100;
 
+ {$IFDEF CHAT_SPELL_CHECK}
+  EnableSpellCheck := False;
+{
+  FreeAndNil(spellLanguages);
+  spellLanguages := TStringList.Create;
+  spellLanguages.Delimiter := ',';
+  spellLanguages.StrictDelimiter := True;
+}
+  spellErrorColor := clRed;
+  spellErrorStyle := 0;
+ {$ENDIF CHAT_SPELL_CHECK}
 end; // resetCFG
 
 procedure UpdateProperties;
@@ -692,6 +703,11 @@ begin
   pp.addPrefStr('theme-sounds', RQSoundsPath.fn);
   pp.addPrefStr('theme-sounds-sub', RQSoundsPath.subfn);
 
+ {$IFDEF CHAT_SPELL_CHECK}
+  pp.addPrefBool('chat-spellcheck', EnableSpellCheck);
+  pp.addPrefStr('spellcheck-error-color', ColorToString(spellErrorColor));
+  pp.addPrefInt('spellcheck-error-style', spellErrorStyle);
+ {$ENDIF CHAT_SPELL_CHECK}
 
  if Assigned(Account.AccProto)then
    Account.AccProto.GetPrefs(pp);
@@ -1181,6 +1197,21 @@ begin
 
   pp.getPrefInt('send-on-enter', sendOnEnter);
 
+ {$IFDEF CHAT_SPELL_CHECK}
+  pp.getPrefBool('chat-spellcheck', EnableSpellCheck);
+  sU := '';
+  pp.getPrefInt('spellcheck-error-style', spellErrorStyle);
+  pp.getPrefStr('spellcheck-error-color', sU);
+  try
+    if sU > '' then
+      spellErrorColor := StringToColor(sU)
+     else
+      spellErrorColor := clRed;
+  except
+    spellErrorColor := clRed;
+  end;
+ {$ENDIF CHAT_SPELL_CHECK}
+
 //  pp.getPrefBool('', );
 //  pp.getPrefStr('', );
 //  pp.getPrefInt('', );
@@ -1195,21 +1226,21 @@ begin
     if BE_history in supportedBehactions[i] then
       include(behaviour[i].trig, BE_history);
 // end of backward compatibility}
-boundInt(inactivehideTime, 0,60*60*10);
-boundInt(blinkSpeed, 1,15);
-boundInt(transparency.active, 0,255);
-boundInt(transparency.inactive, 0,255);
+  boundInt(inactivehideTime, 0, 60*60*10);
+  boundInt(blinkSpeed, 1, 15);
+  boundInt(transparency.active, 0, 255);
+  boundInt(transparency.inactive, 0, 255);
 //  l := curXStatusStr;
 //  mainFrm.ChangeXStatus(curXStatus);
 //  curXStatusStr := l;
 //   RnQmain.sbar.Repaint;
   if Assigned(RnQmain) and Assigned(RnQmain.PntBar) then
     RnQmain.PntBar.Repaint;
-histcrypt.pwdKey := calculate_KEY1(histcrypt.pwd);
+  histcrypt.pwdKey := calculate_KEY1(histcrypt.pwd);
 
-setVisibility(Account.AccProto, byte(RnQstartingVisibility));
+  setVisibility(Account.AccProto, byte(RnQstartingVisibility));
 
-dockSet;
+  dockSet;
   applyDocking;
   applyTransparency;
 
@@ -1899,6 +1930,11 @@ begin
   chatFrm.SetSmilePopup(false);
    {$ENDIF NOT USE_SMILE_MENU}
 
+
+ {$IFDEF CHAT_SPELL_CHECK}
+  chatFrm.InitSpellCheck;
+ {$ENDIF CHAT_SPELL_CHECK}
+
   setProgBar(nil, 4/maxProg);
 
   LoadProxies(dbZip, AllProxies);
@@ -2277,41 +2313,41 @@ saveFile(userPath+automsgFileName, s);
 s:='';
 end; // saveautomessages}
 
-procedure loadAutomessages(zp : TZipFile);
+procedure loadAutomessages(zp: TZipFile);
 var
-  s : RawByteString;
-  name,text:string;
+  s: RawByteString;
+  name, text: string;
 
   function split(sp: RawByteString): String;
   var
-    i:integer;
+    i: integer;
   begin
-    i:=pos(sp,s);
+    i := pos(sp,s);
     if i=0 then
-      i:=length(s)+1;
+      i := length(s)+1;
     result := UnUTF(copy(s,1,i-1));
-    delete(s,1,i+length(sp)-1);
+    delete(s, 1, i+length(sp)-1);
   end; // chop
 
 begin
-//s:=loadFile(userPath+automsgFileName);
-  s:= loadFromZipOrFile(zp, Account.ProtoPath, automsgFileName);
+//s := loadFile(userPath+automsgFileName);
+  s := loadFromZipOrFile(zp, Account.ProtoPath, automsgFileName);
 {if s = '' then
   begin
-//  s:=loadFile(langPath+defaultPrefix+automsgFileName);
-   s:=loadFile(defaultPrefix+automsgFileName);
+//  s := loadFile(langPath+defaultPrefix+automsgFileName);
+   s := loadFile(defaultPrefix+automsgFileName);
 //  if s = '' then
-//    s:=loadFile(defaultlangPath+defaultPrefix+automsgFileName);
+//    s := loadFile(defaultlangPath+defaultPrefix+automsgFileName);
   end;
 }
 automessages.clear;
 automessages.add(excludeTrailingCRLF(split(splitMsg)));
 while s > '' do
   begin
-  name:= excludeTrailingCRLF(split(CRLF));
-  text:= excludeTrailingCRLF(split(splitMsg));
+  name := excludeTrailingCRLF(split(CRLF));
+  text := excludeTrailingCRLF(split(splitMsg));
   if name = autoaway_name then
-    autoaway.msg:=text
+    autoaway.msg := text
    else
     begin
      automessages.add(name);
@@ -2328,10 +2364,10 @@ end;
 {procedure saveMacros;
 begin saveFile(userPath+macrosFileName, macros2str(macros), True) end;
 }
-procedure loadMacros(zp : TZipFile);
+procedure loadMacros(zp: TZipFile);
 var
-  s : RawByteString;
-  i : Integer;
+  s: RawByteString;
+  i: Integer;
 begin
   i := -1;
   if Assigned(zp) then
@@ -2352,7 +2388,7 @@ procedure quit;
 begin
  if not initOnce then
    exit;
- initOnce:=FALSE;
+  initOnce := FALSE;
    plugins.castEv( PE_QUIT); // Added For Test Purpose
 
  SoundUnInit;
@@ -2372,6 +2408,7 @@ begin
 
  RnQmain.hide;
  chatFrm.updateChatfrmXY;
+ chatFrm.Hide;
  quitUser;
  quitconfirmation := false;
  FreeAndNil(logfrm);

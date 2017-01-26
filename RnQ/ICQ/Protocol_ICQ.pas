@@ -78,7 +78,7 @@ implementation
 //   RnQProtocol,
    rnqLangs, RnQStrings, RQThemes, RnQFileUtil, RDUtils,
    RnQTips, RnQtrayLib, RnQGlobal, RnQPics,
-   NetEncoding, cHash, Base64,
+   NetEncoding, Base64,
  {$IFDEF RNQ_AVATARS}
   RnQ_Avatars,
  {$ENDIF}
@@ -757,8 +757,8 @@ begin
    else
     cuid := '';
 // these icqevents are associated with hevents
-if ev in [TicqEvent(IE_msg),IE_url,IE_contacts,IE_authReq,IE_addedyou,
-      TicqEvent(IE_oncoming), TicqEvent(IE_offgoing),IE_auth,IE_authDenied,
+if ev in [TicqEvent(IE_msg), IE_url, IE_contacts, IE_authReq, IE_addedyou,
+      TicqEvent(IE_oncoming), TicqEvent(IE_offgoing), IE_auth, IE_authDenied,
       IE_automsgreq, IE_statuschanged, IE_gcard, IE_ack,
    {$IFDEF usesDC} IE_filereq, {$ENDIF usesDC}
       IE_email, IE_webpager, IE_fromMirabilis, IE_TYPING, IE_ackXStatus, IE_XStatusReq,

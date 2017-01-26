@@ -15,6 +15,13 @@ procedure decritt(var s: RawByteString; key: integer);
 function  calculate_KEY1(const pwd: AnsiString): integer;
 function  MD5Pass(const s: RawByteString): RawByteString;
 
+//  function qip_msg_decr(s1: RawByteString; s2: AnsiString; n: integer): AnsiString;
+//  function qip_msg_crypt(s1, s2: AnsiString; n: integer): RawByteString;
+  function qip_msg_crypt(const s: AnsiString; p: Integer): RawByteString;
+  function qip_msg_decr(const s1: RawByteString; p: integer): AnsiString;
+//  function qip_msg_crypt(s1, s2: AnsiString; n: integer): RawByteString;
+  function qip_str2pass(const s: RawByteString): Integer;
+
 implementation
 uses
    {$IFDEF USE_SYMCRYPTO}
@@ -26,7 +33,7 @@ uses
    AnsiStrings,
 //   Character,
  {$ENDIF UNICODE}
-    RDUtils;
+   Base64, RDUtils;
 
 function passCrypt(const s: RawByteString): RawByteString;
 var
@@ -253,9 +260,76 @@ begin
 //  StrPLCopy(@result[1], PByte(@MD5Digest), length(MD5Digest))
 //  StrPLCopy(@result[1], PAnsiChar(@MD5Digest), length(MD5Digest))
  {$WARN UNSAFE_CODE OFF}
-  ansiStrings.StrPLCopy(@result[1], PAnsiChar(@MD5Digest), length(MD5Digest))
+//  ansiStrings.StrPLCopy(@result[1], PAnsiChar(@MD5Digest), length(MD5Digest))
+  ansiStrings.StrPLCopy(PAnsiChar(result), PAnsiChar(@MD5Digest), length(MD5Digest))
  {$WARN UNSAFE_CODE ON}
 //  result := copy(PChar(MD5Digest), 0, length(MD5Digest));
+end;
+
+function qip_msg_crypt(const s: AnsiString; p: Integer): RawByteString;
+//                 текст    пароль
+const
+  n0 = $1B5F;
+var
+  s5: RawByteString;
+  n, l, i: integer;
+begin
+  Result := s;
+  if p=0 then
+    exit;
+  Result := '';
+  s5 := '';
+  n := n0;
+  l := Length(s);
+  if l>0 then
+   for I := 1 to l do
+    begin
+      s5 := s5+ AnsiChar(Byte(s[i]) xor byte(n shr 8));
+      n:=(Byte(s5[i])+n)*$A8C3+p;
+    end;
+//  s5:=_005D6FF8(Result); //похоже на кодирование base64
+  Result:= Base64EncodeString(s5);
+end;
+
+function qip_str2pass(const s: RawByteString): Integer;
+var
+  l, i: Integer;
+begin
+  Result := 0;
+  l := Length(s);
+  if l > 0 then
+   begin
+     Result := $3E9;
+     for I := 1 to l do
+      Result := Result+ Byte(s[i]);
+   end;
+end;
+
+function qip_msg_decr(const s1: RawByteString; p: integer): AnsiString;
+const
+  n0 = $1B5F;
+var
+  s4: RawByteString;
+//  a,
+  n, l: integer;
+  I: Integer;
+begin
+  if p=0 then
+   begin
+    Result := s1;
+    exit;
+   end;
+  Result := '';
+  n := n0;
+//  a:=0;
+  s4 := Base64DecodeString(s1); //похоже на декодирование base64
+  l := Length(s4);
+  if l>0 then
+   for I := 1 to l do
+    begin
+      Result := Result+AnsiChar(Byte(s4[i]) xor byte(n shr 8));
+      n := (Byte(s4[i])+n)*$A8C3+p;
+    end;
 end;
 
 

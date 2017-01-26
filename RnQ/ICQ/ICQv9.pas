@@ -901,7 +901,7 @@ type
     function  GenSSID: Integer;
     procedure applyBalloon;
    public
-//    property  statuses : TStatusArray read getStatuses;
+//    property  statuses: TStatusArray read getStatuses;
     property  MyInfo: TRnQContact read getMyInfo;
   end; // TicqSession
 

@@ -10,7 +10,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Types, StdCtrls, RnQNet, RnQProtocol, utilLib,
-  ExtCtrls, RDGlobal, RnQGraphics32, RnQButtons, AwImageGrid,
+  ExtCtrls, RDGlobal, RnQGraphics32, RnQButtons, RnQImageGrid,
   System.Threading, System.SyncObjs, System.Actions, Vcl.ActnList, Generics.Collections;
 
 type

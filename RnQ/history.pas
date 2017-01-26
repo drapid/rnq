@@ -74,18 +74,20 @@ uses
  {$IFDEF DB_ENABLED}
   RnQDB,
 //  SQLite3,
-//  SQLite3Commons, SynCommons,
-  RnQ2SQL, ASGSQLite3Api,
+  RnQ2SQL,// SQLite3Commons, SynCommons,
+  ASGSQLite3Api,
  {$ENDIF DB_ENABLED}
   utilLib, globalLib;
 
 const
   Max_Event_ID = 1000000;
 
+ {$IFNDEF DB_ENABLED}
 class function Thistory.UIDHistoryFN(UID: TUID): String;
 begin
   Result := Account.ProtoPath + historyPath + String(UID);
 end;
+ {$ENDIF ~DB_ENABLED}
 
 //function Thistory.load(uid:AnsiString; quite : Boolean = false):boolean;
 function Thistory.load(cnt: TRnQContact; const quiet: Boolean = false): boolean;
@@ -1034,7 +1036,7 @@ begin
 //  if Stmt <> 0 then
   while writingQ.count > 0 do
   begin
-    ev:=writingQ.first;
+    ev := writingQ.first;
     writingQ.delete(0);
     InsertHist(ev);
 //    ev.appendToHistoryFile(ev.otherpeer.uid);

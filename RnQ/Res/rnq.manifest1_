@@ -3,7 +3,7 @@
   <assemblyIdentity
    type="win32"
    name="Rapid.RnQ"
-   version="0.999.9999.1126"
+   version="0.999.9999.1128"
    processorArchitecture="*"/>
   <description>RnQ IM</description> 
   <dependency>

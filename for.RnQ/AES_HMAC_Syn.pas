@@ -1,8 +1,11 @@
 unit AES_HMAC_Syn;
 // This is an implementation of HMAC, the FIPS standard keyed hash function
+{$I forRnQConfig.inc}
+{$I NoRTTI.inc}
 
 interface
-   uses
+
+uses
      Windows,
      SynCrypto,
      RDGlobal

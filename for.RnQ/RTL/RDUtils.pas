@@ -128,6 +128,8 @@ function  bool2str(const b: Boolean): RawByteString;
 
  function IsEqualGUID(const guid1, guid2: TGUID): Boolean; stdcall;
 {$EXTERNALSYM IsEqualGUID}
+ function SGUID2rGUID(const guid: RawByteString): RawByteString;
+ function GUID2rGUID(const guid: TGUID): RawByteString;
 
 
 // convert
@@ -1799,6 +1801,37 @@ end;
  function IsEqualGUID;                   external ole32 name 'IsEqualGUID';
 {$EXTERNALSYM IsEqualGUID}
 
+function SGUID2rGUID(const guid: RawByteString): RawByteString;
+var
+  g: TGUID;
+begin
+  if Length(GUID) = 16 then
+    Exit(guid);
+  Result := '';
+  if Length(GUID) > 16 then
+   begin
+     if Length(GUID) = 38 then
+       g := StringToGUID(guid)
+      else
+       if Length(GUID) = 36 then;
+         g := StringToGUID('{'+guid+'}');
+     if g <> GUID_NULL then
+      begin
+       SetLength(Result, 16);
+       CopyMemory(@Result[1], @g, 16);
+      end;
+   end;
+end;
+
+function GUID2rGUID(const guid: TGUID): RawByteString;
+begin
+  Result := '';
+  if guid <> GUID_NULL then
+    begin
+       SetLength(Result, 16);
+       CopyMemory(@Result[1], @guid, 16);
+    end;
+end;
 
 function findInStrings(const s: string; ss: Tstrings): Integer;
 begin
@@ -2267,8 +2300,8 @@ function choplineV(const s: RawByteString; var pos0: Integer): RawByteString;
 var
   i, l: Integer;
 begin
-    l := Length(s);
-    if pos0 < l then
+  l := Length(s);
+  if pos0 < l then
     for i := pos0 to l do
       case s[i] of
         #10:
@@ -2291,9 +2324,9 @@ begin
               end;
             exit;
           end;
-        end;
+      end;
   result := Copy(s, pos0);
-    pos0 := Length(s)+1;
+  pos0 := Length(s)+1;
 end; // chopline
 
  {$IFDEF UNICODE}

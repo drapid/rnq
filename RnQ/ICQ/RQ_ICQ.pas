@@ -27,22 +27,15 @@ interface
 
   function  parse1306(curICQ: TICQSession; var ssiList: Tssi; const snac: RawByteString; ref:integer) : Boolean;
 
-  function  FindSSIItemType(si: Tssi; pType : Byte) : Integer;
-  function  FindSSIItemID(si: Tssi; iID : Word) : Integer;
-  function  FindSSIItemIDType(si: Tssi; iID: Word; pType : byte) : Integer;
-  function  FindSSIItemIDgID(si: Tssi; iID, gID : Word) : Integer;
-  function  FindSSIItemName(si: Tssi; iType: Word; const iName: TUID) : Integer;
-  procedure clearSSIList(var list : Tssi);
-  Function  ReadSSIChunk(const snac: RawByteString; var ofs: Integer; ExtractInfo : Boolean = True) : TOSSIItem;
+  function  FindSSIItemType(si: Tssi; pType: Byte): Integer;
+  function  FindSSIItemID(si: Tssi; iID: Word): Integer;
+  function  FindSSIItemIDType(si: Tssi; iID: Word; pType: byte): Integer;
+  function  FindSSIItemIDgID(si: Tssi; iID, gID: Word): Integer;
+  function  FindSSIItemName(si: Tssi; iType: Word; const iName: TUID): Integer;
+  procedure clearSSIList(var list: Tssi);
+  Function  ReadSSIChunk(const snac: RawByteString; var ofs: Integer; ExtractInfo: Boolean = True): TOSSIItem;
 
-  function getFirstFlap:word;
-
-//  function qip_msg_decr(s1 : RawByteString; s2: AnsiString; n:integer): AnsiString;
-//  function qip_msg_crypt(s1, s2: AnsiString;n:integer): RawByteString;
-  function qip_msg_crypt(const s: AnsiString; p: Integer): RawByteString;
-  function qip_msg_decr(const s1: RawByteString; p: integer): AnsiString;
-//  function qip_msg_crypt(s1, s2: AnsiString;n:integer): RawByteString;
-  function qip_str2pass(const s: RawByteString): Integer;
+  function getFirstFlap: word;
 
 
 {$IFDEF usesDC}
@@ -86,7 +79,7 @@ uses
   DateUtils, ansistrings, AnsiClasses,
   math, Types, StrUtils, System.Threading, NetEncoding,
   RDGlobal, RnQBinUtils, RDFileUtil, RDUtils, Base64,
-  RnQGlobal, JSON, cHash,
+  RnQGlobal, JSON,
  {$IFDEF RNQ_AVATARS}
   RnQ_Avatars,
  {$ENDIF}
@@ -959,12 +952,12 @@ procedure peer_oft_checksum_destroy(cs : PChecksumData);
 begin
 end;
 
-function peer_oft_checksum_chunk(buffer : PByteArray; bufferlen :Integer; prevchecksum : cardinal; odd : Boolean) : cardinal;
+function peer_oft_checksum_chunk(buffer: PByteArray; bufferlen: Integer; prevchecksum: cardinal; odd: Boolean): cardinal;
 var
-	checksum, oldchecksum : Cardinal;
-	i : Integer;
-//	val : Shortint;
-	val : DWORD;
+	checksum, oldchecksum: Cardinal;
+	i: Integer;
+//	val: Shortint;
+	val: DWORD;
 begin
   i := 0;
 	checksum := (prevchecksum shr 16) and $ffff;
@@ -1124,86 +1117,22 @@ end;
 
 
 function getFirstFlap: word;
-//var a,b,c,d:word;
-var a,b,c,d: Integer;
+//var a, b, c, d: word;
+var
+  a, b, c, d: Integer;
 begin
-  a:=random(65535) and $7FFF;
-  b:=a;
-  c:=0;
+  a := random(65535) and $7FFF;
+  b := a;
+  c := 0;
   while a<>0 do begin
-    inc(c,a);
-    a:=a div 8;
+    inc(c, a);
+    a := a div 8;
   end;
-  d:=b-c;
-//  dec(d,c);
-  result:=(((((d and $FF) xor (b and $FF))+(d and $FFFFFF00)) and 7) xor b)+3;
+  d := b-c;
+//  dec(d, c);
+  result := (((((d and $FF) xor (b and $FF))+(d and $FFFFFF00)) and 7) xor b)+3;
 end;
 
-
-function qip_msg_crypt(const s: AnsiString; p: Integer): RawByteString;
-//                 текст    пароль
-const
-  n0=$1B5F;
-var
-  s5: RawByteString;
-  n, l, i:integer;
-begin
-  Result:=s;
-  if p=0 then exit;
-  Result:='';
-  s5 := '';
-  n := n0;
-  l := Length(s);
-  if l>0 then
-   for I := 1 to l do
-    begin
-      s5 := s5+ AnsiChar(Byte(s[i]) xor byte(n shr 8));
-      n:=(Byte(s5[i])+n)*$A8C3+p;
-    end;
-//  s5:=_005D6FF8(Result); //похоже на кодирование base64
-  Result:= Base64EncodeString(s5);
-end;
-
-function qip_str2pass(const s: RawByteString): Integer;
-var
-  l, i : Integer;
-begin
-  Result := 0;
-  l := Length(s);
-  if l > 0 then
-   begin
-     Result := $3E9;
-     for I := 1 to l do
-      Result := Result+ Byte(s[i]);
-   end;
-end;
-
-function qip_msg_decr(const s1: RawByteString; p: integer): AnsiString;
-const
-  n0=$1B5F;
-var
-  s4 : RawByteString;
-//  a,
-  n, l : integer;
-  I: Integer;
-begin
-  if p=0 then
-   begin
-    Result:=s1;
-    exit;
-   end;
-  Result:='';
-  n := n0;
-//  a:=0;
-  s4 := Base64DecodeString(s1); //похоже на декодирование base64
-  l := Length(s4);
-  if l>0 then
-   for I := 1 to l do
-    begin
-      Result := Result+AnsiChar(Byte(s4[i]) xor byte(n shr 8));
-      n := (Byte(s4[i])+n)*$A8C3+p;
-    end;
-end;
 
 procedure parseImgLinks2(var msg: RawByteString);
 var

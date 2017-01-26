@@ -883,13 +883,13 @@ begin
    else
     FilterBar.align := alBottom;
   FilterClearBtn.Left := FilterBar.Width - FilterClearBtn.Width - 2; 
-//  menuBtn.left:=0;
-//  statusBtn.left:=menuBtn.boundsrect.right+1;
-//  visibilityBtn.left:=statusBtn.boundsrect.right+1;
-{  sbar.left:=visibilityBtn.BoundsRect.right+1;
-  sbar.width:=clientWidth-visibilityBtn.BoundsRect.right-1;
-  sbar.top:=0;
-  sbar.Height:=bar.ClientHeight;
+//  menuBtn.left := 0;
+//  statusBtn.left := menuBtn.boundsrect.right+1;
+//  visibilityBtn.left := statusBtn.boundsrect.right+1;
+{  sbar.left := visibilityBtn.BoundsRect.right+1;
+  sbar.width := clientWidth-visibilityBtn.BoundsRect.right-1;
+  sbar.top := 0;
+  sbar.Height := bar.ClientHeight;
 }
 //  PntBar.Left := visibilityBtn.BoundsRect.right+1;
 {
@@ -1032,16 +1032,16 @@ var
   cnv: Tcanvas;
   r: TRect;
   vImgElm: TRnQThemedElementDtls;
-//  thmTkn : Integer;
-//  picLoc : TPicLocation;
-//  picIdx : Integer;
+//  thmTkn: Integer;
+//  picLoc: TPicLocation;
+//  picIdx: Integer;
   oldMode: Integer;
-//  bmp : TBitmap;
+//  bmp: TBitmap;
 //   TextLen: Integer;
    TextRect: TRect;
 //   TextFlags: Cardinal;
 //   Options: TDTTOpts;
-   PaintOnGlass : Boolean;
+   PaintOnGlass: Boolean;
   MemDC: HDC;
   PaintBuffer: HPAINTBUFFER;
   br: HBRUSH;
@@ -1075,11 +1075,11 @@ begin
     progress := progStart
    else
     if Assigned(Account.AccProto) then
-      progress:= Account.AccProto.ProtoElem.progLogon;
+      progress := Account.AccProto.ProtoElem.progLogon;
  if progress>0 then
   begin
     try
-      TextRect := rect(r.left,r.Top+2,r.Left+round((r.right-r.left)*progress),r.bottom-2);
+      TextRect := rect(r.left, r.Top+2, r.Left+round((r.right-r.left)*progress), r.bottom-2);
       cnv.font.color := clHighlightText;
       if PaintOnGlass then
        begin
@@ -1681,7 +1681,7 @@ if found<>NIL then
   roasterLib.focusTemp(found);
 end; // doSearch
 
-function TRnQmain.clickedGroupList:TRnQCList;
+function TRnQmain.clickedGroupList: TRnQCList;
 var
   c: TRnQcontact;
 begin
@@ -3538,7 +3538,7 @@ begin
     Exit;
 
   roasterLib.dragging := FALSE;
-  grpOrDiv := roasterLib.nodeAt(pt.x,pt.y);
+  grpOrDiv := roasterLib.nodeAt(pt.x, pt.y);
   while grpOrDiv.kind=NODE_CONTACT do
     grpOrDiv := grpOrDiv.Parent;
   if clickedContact<>NIL then

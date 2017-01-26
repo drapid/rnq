@@ -613,20 +613,20 @@ var
   TipsMaxAvtSize : Integer;
   TipsMaxAvtSizeUse : Boolean;
 
-  useDefaultBrowser :boolean;
-  minOnOff :boolean;
-  minOnOffTime :integer; // in seconds
-  autostartUIN : TUID;
-  RnQStartingStatus, RnQStartingVisibility : Int8;
-  lastStatus, lastStatusUserSet : Int8;
-  rosterTitle : string;
+  useDefaultBrowser: boolean;
+  minOnOff: boolean;
+  minOnOffTime: integer; // in seconds
+  autostartUIN: TUID;
+  RnQStartingStatus, RnQStartingVisibility: Int8;
+  lastStatus, lastStatusUserSet: Int8;
+  rosterTitle: string;
   automessages: Tstrings;
   keepalive: record
     enabled: boolean;
     freq: integer;
     timer: integer;
    end;
-  fixingWindows:record
+  fixingWindows: record
     lastWidth, lastRightSpace: integer;
     onTheRight: boolean;
    end;
@@ -657,6 +657,14 @@ var
   fontstylecodes: record
     enabled: boolean;
     end;
+
+ {$IFDEF CHAT_SPELL_CHECK}
+  EnableSpellCheck: Boolean;
+//  spellLanguages: TStringList = nil;
+  spellErrorColor: TColor;
+  spellErrorStyle: Integer;
+ {$ENDIF CHAT_SPELL_CHECK}
+
    {$IFDEF CHECK_INVIS}
     checkInvQ, autoCheckInvQ: TRnQCList;
   checkInvis: record

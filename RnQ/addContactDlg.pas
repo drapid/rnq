@@ -102,7 +102,8 @@ begin
         end
        else
         begin
-         addGroupsToMenu(self, menu.items, addcontactAction, LocalChk.Checked);
+         addGroupsToMenu(self, menu.items, addcontactAction,
+                         LocalChk.Checked or thisProto.canAddCntOutOfGroup);
   //      applyCommonSettings(menu);
          with clientToScreen(addBtn.BoundsRect.bottomRight) do
           menu.popup(x,y);
