@@ -30,7 +30,8 @@ unit RnQZip;
 interface
 
 uses
-  SysUtils, Classes, Types, Windows, RDGlobal;
+  SysUtils, Classes, Types, Windows, RDGlobal,
+  OverbyteIcsZLibHigh;
 
 type
 
@@ -158,8 +159,8 @@ type
     aUTF8Support: Boolean;  // By Default its True
    public
     ZipFileComment: AnsiString;
-    Password : AnsiString;
-//    fCompressionLevel : Integer;
+    Password: AnsiString;
+//    fCompressionLevel: Integer;
   private
     function  GetUncompressed(i: integer): RawByteString;
     procedure SetUncompressed(i: integer; const Value: RawByteString);
@@ -210,7 +211,11 @@ function ZipCrc32(crc: Cardinal; const stream: TStream): Cardinal; OverLoad;
 //function ZipCRC32(const Data: string): longword;
 Function ToZipName(const FileName: String): String;
 Function ToDosName(const FileName: String): String;
-function CheckZIPFilePass(const zipfn, fn: String; const pass: AnsiString): Boolean;
+function CheckZIPFilePass(const zipfn, fn: String; const pass: String): Boolean;
+
+function zCompressStr(const sa: RawByteString; Level: TCompressionLevel = clMax; StreamType: TZStreamType = zsZLib): RawByteString;
+function ZDecompressStr(const sa: RawByteString): RawByteString;
+function ZDecompressStr3(const sa: RawByteString; StreamType: TZStreamType = zsZLib): RawByteString;
 
 implementation
   uses
@@ -218,7 +223,6 @@ implementation
 //     OverbyteIcsZLibObj,
      System.ZLib,
      System.ZLibConst,
-     OverbyteIcsZLibHigh,
   {$IFDEF ZIP_AES}
    {$IFDEF USE_SYMCRYPTO}
 //     SynCrypto,
@@ -255,16 +259,17 @@ const
 
 
 
-   SALT_LENGTH : array[1..3] of byte = (8, 12, 16);
+   SALT_LENGTH: array[1..3] of byte = (8, 12, 16);
 
 //procedure make_crc_table;
 var
-  crc_table: array[0..255]of Cardinal;
+  crc_table: array[0..255] of Cardinal;
   crc_table_computed: Boolean;
 
 procedure make_crc_table;
-var c:Cardinal;
-  n,k:Integer;
+var
+  c: Cardinal;
+  n, k: Integer;
 begin
  for n:=0 to 255 do
   begin
@@ -276,12 +281,13 @@ begin
     end;
    crc_table[n]:=c;
   end;
- crc_table_computed:=True;
+ crc_table_computed := True;
 end;
 
-function update_crc(crc:Cardinal;buf:PByteArray;len:Integer):Cardinal;
-var c:Cardinal;
-    n:Integer;
+function update_crc(crc: Cardinal; buf: PByteArray; len: Integer): Cardinal;
+var
+  c: Cardinal;
+  n: Integer;
 begin
  c:=crc;
  if not crc_table_computed then
@@ -292,8 +298,9 @@ begin
 end;
 
 function ZipCrc32(crc: Cardinal; const buffer: PByteArray; size: Integer): Cardinal;
-var c:Cardinal;
-    n:Integer;
+var
+  c: Cardinal;
+  n: Integer;
 begin
  c:=crc;
  if not crc_table_computed then
@@ -303,10 +310,11 @@ begin
  Result:=c;
 end;
 
-function ZipCrc32(crc: Cardinal; const stream : TStream): Cardinal;
-var c:Cardinal;
-    n:Integer;
-    buf : Byte;
+function ZipCrc32(crc: Cardinal; const stream: TStream): Cardinal;
+var
+  c: Cardinal;
+  n: Integer;
+  buf: Byte;
 begin
  c:=crc;
  if not crc_table_computed then
@@ -320,12 +328,13 @@ begin
  Result:=c;
 end;
 
-{function ZCrc32(crc: Cardinal; const stream : TStream): Cardinal;
-var c:Cardinal;
-//    n:Integer;
-    a : byte;
-    Res : Int64;
-    buf : array[0..254] of Byte;
+{function ZCrc32(crc: Cardinal; const stream: TStream): Cardinal;
+var
+  c: Cardinal;
+//  n: Integer;
+  a: byte;
+  Res: Int64;
+  buf: array[0..254] of Byte;
 begin
  c:=crc;
 // if not crc_table_computed then
@@ -879,23 +888,23 @@ const
 var
 //  Compressor: TCompressionStream;
 //  CompressedStream: TStringStream;
-  resStream : TMemoryStream;
-  UnComprStream : TMemoryStream;
-  Data : Pointer;
-  ComprDataNIL : RawByteString;
-  ComprSize : Int64;
+  resStream: TMemoryStream;
+  UnComprStream: TMemoryStream;
+  Data: Pointer;
+  ComprDataNIL: RawByteString;
+  ComprSize: Int64;
  {$IFDEF ZIP_AES}
-  isEncr : Boolean;
-  aesMode : byte;
-  salt2 : RawByteString;
-  pwd_ver : RawByteString;
-  cx : fcrypt_ctx;
-//  cx : T_fcrypt_ctx;
-//  pwd_verW : Word;
-  s1 : RawByteString;
-  l, ofs : Integer;
-//  data1 : Pointer;
-//  EncrSize : Cardinal;
+  isEncr: Boolean;
+  aesMode: byte;
+  salt2: RawByteString;
+  pwd_ver: RawByteString;
+  cx: fcrypt_ctx;
+//  cx: T_fcrypt_ctx;
+//  pwd_verW: Word;
+  s1: RawByteString;
+  l, ofs: Integer;
+//  data1: Pointer;
+//  EncrSize: Cardinal;
  {$ENDIF ZIP_AES}
 begin
   if i > High(Files) then // exit;
@@ -920,7 +929,7 @@ begin
         CopyMemory(UnComprStream.Memory, Pointer(Value), Length(Value));
         resStream := TMemoryStream.Create;
     //    ZlibCompressStreamEx(UnComprStream, resStream, clMax, zsZLib, false);
-        ZLibCompressStreamEx(UnComprStream, resStream, clMax, zsZLib, True);
+        ZLibCompressStreamEx(UnComprStream, resStream, OverbyteIcsZLibHigh.clMax, zsZLib, True);
         UnComprStream.Free;
     //    ZCompressStream(UnComprStream, resStream, clMax);
         ComprSize := resStream.Size - 6;
@@ -1356,7 +1365,7 @@ Begin
   Result := StringReplace(Result,'/','\',[rfReplaceAll]);
 End;
 
-function CheckZipFilePass(const zipfn, fn: String; const pass: AnsiString): Boolean;
+function CheckZipFilePass(const zipfn, fn: String; const pass: String): Boolean;
 var
   zp: TZipFile;
   i: Integer;
@@ -1376,6 +1385,47 @@ begin
         end;
       zp.Free;
     end;
+end;
+
+function zCompressStr(const sa: RawByteString; Level: OverbyteIcsZLibHigh.TCompressionLevel = OverbyteIcsZLibHigh.clMax; StreamType: TZStreamType = zsZLib): RawByteString;
+var
+  buf, destBuf: TMemoryStream;
+begin
+  if sa = '' then
+    Exit('');
+  buf := TMemoryStream.create;
+  destBuf := TMemoryStream.create;
+  buf.Write(sa[1], Length(sa));
+  buf.Position := 0;
+  ZlibCompressStreamEx(buf, destBuf, OverbyteIcsZLibHigh.clMax, StreamType, false);
+  buf.free;
+  SetLength(Result, destBuf.Size);
+  destBuf.Position := 0;
+  destBuf.Read(Result[1], destBuf.Size);
+  destBuf.free;
+end;
+
+function ZDecompressStr(const sa: RawByteString): RawByteString;
+var
+  buf, destBuf: TMemoryStream;
+begin
+  if sa = '' then
+    Exit('');
+  Buf := TMemoryStream.create;
+  destBuf := TMemoryStream.create;
+  buf.Write(sa[1], Length(sa));
+  buf.Position := 0;
+  ZlibDecompressStream(buf, destBuf);
+  buf.free;
+  setLength(Result, destBuf.Size);
+  destBuf.Position := 0;
+  CopyMemory(@Result[1], destBuf.Memory, destBuf.Size);
+  destBuf.free;
+end;
+
+function ZDecompressStr3(const sa: RawByteString; StreamType: TZStreamType = zsZLib): RawByteString;
+begin
+  Result := ZDecompressStr(sa);
 end;
 
 end.

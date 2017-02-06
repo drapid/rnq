@@ -29,7 +29,7 @@ type
   Tproxy = record
     name : string;
     user : String;
-    pwd  : String; // Support Unicode!
+    pwd: String; // Support Unicode!
 //    enabled   : boolean;
     auth      : boolean;
     NTLM      : boolean;
@@ -210,8 +210,9 @@ uses
    AnsiStrings,
  {$ENDIF UNICODE}
 //    OverbyteIcsLogger,
+  RnQDialogs,
  {$IFDEF RNQ}
-    RnQLangs, RnQDialogs,
+    RnQLangs,
     RQUtil,
  {$ENDIF RNQ}
  {$IFDEF RNQ_PLUGIN}
@@ -1158,9 +1159,17 @@ begin
         on E: EHttpException do
           if showErrors then
             if E.ErrorCode = 3 then
+ {$IFDEF RNQ}
               msgDlg(getTranslation(SSLError, [E.Message]), false, mtError)
+ {$ELSE ~RNQ}
+              MessageDlg(Format(SSLError, [E.Message]), mtError, [mbOK], 0)
+ {$ENDIF ~RNQ}
             else if E.ErrorCode <> 404 then
+ {$IFDEF RNQ}
               msgDlg(getTranslation(ProxyUnkError, [E.ErrorCode, E.Message]), false, mtError)
+ {$ELSE ~RNQ}
+              MessageDlg(Format(ProxyUnkError, [E.ErrorCode, E.Message]), mtError, [mbOK], 0)
+ {$ENDIF ~RNQ}
       end;
 
       if Result then
@@ -1282,7 +1291,11 @@ begin
     except
      on e: EHttpException do
       if e.ErrorCode <> 404 then
+ {$IFDEF RNQ}
         msgDlg(getTranslation(ProxyUnkError, [e.ErrorCode, e.Message]), False, mtError)
+ {$ELSE ~RNQ}
+        MessageDlg(Format(ProxyUnkError, [e.ErrorCode, e.Message]), mtError, [mbOK], 0)
+ {$ENDIF ~RNQ}
     end;
 //    httpCli.
     if Result and (fn>'') then

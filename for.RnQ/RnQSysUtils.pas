@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RnQSysUtils;
 {$I ForRnQConfig.inc}
@@ -12,9 +12,9 @@ interface
 uses
   windows, sysutils, Forms, graphics, Classes;
 
-  function  connectionAvailable: boolean;
-  function  getDefaultBrowser(const proto: string='http'): string;
-  procedure exec(const cmd: string; const pars: string='');
+  function connectionAvailable: boolean;
+  function getDefaultBrowser(const proto: string = 'http'): string;
+  procedure exec(const cmd: string; const pars: string = '');
   function  DSiExecute(const commandLine: string;
     visibility: integer = SW_SHOWDEFAULT; const workDir: string = '';
     wait: boolean = false): cardinal;
@@ -27,17 +27,18 @@ uses
 //  function RegisterServiceProcess(dwProcessID, dwType: Integer): Integer; stdcall; external 'KERNEL32.DLL';
 //  procedure HideFromProcess;
 
-//  function  getSpecialFolder(const what: string): string;
+  //function  getSpecialFolder(const what: string): string;
   function getSpecialFolder(const what: Integer): String;
-//  function  getURLfromFav(fn: string): string;
+  function expandEnv(const env: String): String;
+  //function  getURLfromFav(fn: string): string;
   function  desktopWorkArea(clHandle: THandle): TRect;
   function  ForceForegroundWindow(hwnd: THandle; doRestore: boolean=TRUE): Boolean;
 
-//function  getRegion(bmp: TGPBitmap): HRGN;
-function  getRegion(bmp: Tbitmap): HRGN;
-function  isTopMost(frm: Tform): boolean;
-function  setTopMost(frm: Tform; val: boolean): boolean;
-function  formVisible(frm: Tform): boolean;
+  //function  getRegion(bmp: TGPBitmap): HRGN;
+  function  getRegion(bmp: Tbitmap): HRGN;
+  function  isTopMost(frm: Tform): boolean;
+  function  setTopMost(frm: Tform; val: boolean): boolean;
+  function  formVisible(frm: Tform): boolean;
 
 { Clipboard }
 
@@ -161,7 +162,7 @@ procedure openURL(const pURL: String; const useDefaultBrowser: boolean;
 var
 //  prg, par, proto: AnsiString;
   url, prg, par, proto: String;
-  i:integer;
+  i: integer;
 begin
   if pURL='' then
     exit;
@@ -171,7 +172,7 @@ begin
     proto:=''
    else
     proto := Copy(pURL, 1, i-1);
-  i:=length(pURL);
+  i := length(pURL);
   if pURL[i]='?' then
     url := Copy(pURL, 1, i-1)
    else
@@ -183,27 +184,27 @@ begin
       exec(url);
       exit;
      end;
-    prg:=browserCmdLine;
-    par:='';
+    prg := browserCmdLine;
+    par := '';
     // search the point where the filename ends (and then come parameters)
     i := ipos('.exe', prg);
     if i>0 then
      begin
-      inc(i,4);
+      inc(i, 4);
       if prg[i]='"' then
         inc(i);
      end;
     if i<length(prg) then
      begin
-      par:=copy(prg,i+1,length(prg))+' ';
+      par := copy(prg,i+1,length(prg))+' ';
       delete(prg,i,length(prg));
      end;
 //    if pos(AnsiString('%1'), par) = 0 then
     if pos('%1', par) = 0 then
-      par:=par+' '+url
+      par := par+' '+url
      else
-//      par:=AnsiReplaceStr(par, AnsiString('%1'),url);
-      par := AnsiReplaceStr(par, '%1',url);
+//      par := AnsiReplaceStr(par, AnsiString('%1'),url);
+      par := AnsiReplaceStr(par, '%1', url);
     exec(prg, trim(par));
    end
   else
@@ -220,14 +221,14 @@ end;
 
 function getSpecialFolder(const what: Integer):string;
 var
-  szPath : array[0..MAX_PATH] of Char;
+  szPath: array[0..MAX_PATH] of Char;
 begin
-  if(SUCCEEDED(SHGetFolderPath(Application.MainFormHandle, what, 0, 0, @szPath[0]))) then
+  if (SUCCEEDED(SHGetFolderPath(Application.MainFormHandle, what, 0, 0, @szPath[0]))) then
     begin
      Result := IncludeTrailingPathDelimiter(StrPas(PChar(@szPath[0])));
     end
    else
-    result:='';
+    result := '';
 end;
 {
 function getSpecialFolder(const what:string):string;
@@ -244,6 +245,21 @@ if reg.openKey(keyName, FALSE) then
   end;
 reg.free;
 end; // getSpecialFolder}
+
+function expandEnv(const env: String): String;
+var
+  path: String;
+  len: Integer;
+begin
+  len := ExpandEnvironmentStrings(PChar(env), PChar(Result), 0);
+  if len > 0 then
+  begin
+    SetLength(Result, len - 1);
+    ExpandEnvironmentStrings(PChar(env), PChar(Result), len);
+    Result := Result.Trim;
+  end else
+    Result := env;
+end;
 
 function getCLMon(clHanlde: THandle): TMonitor;
 var
@@ -266,25 +282,25 @@ begin
     result := mon.WorkareaRect;
 end;
 
-function ForceForegroundWindow(hwnd:THandle; doRestore:boolean=TRUE):boolean;
+function ForceForegroundWindow(hwnd: THandle; doRestore: boolean=TRUE): boolean;
 const
   SPI_GETFOREGROUNDLOCKTIMEOUT = $2000;
   SPI_SETFOREGROUNDLOCKTIMEOUT = $2001;
 var
   ForegroundThreadID: DWORD;
-  ThisThreadID : DWORD;
-  timeout : DWORD;
+  ThisThreadID: DWORD;
+  timeout: DWORD;
 begin
-result:=FALSE;
-if IsIconic(hwnd) and isWindowVisible(hwnd) then
-  if doRestore then
-    ShowWindow(hwnd, SW_RESTORE)
-  else
-    exit;
+  result := FALSE;
+  if IsIconic(hwnd) and isWindowVisible(hwnd) then
+    if doRestore then
+      ShowWindow(hwnd, SW_RESTORE)
+     else
+      exit;
 
   if GetForegroundWindow = hwnd then
   begin
-   result:=TRUE;
+   result := TRUE;
    exit;
   end;
 // Windows 98/2000 doesn't want to foreground a window when some other
@@ -294,8 +310,8 @@ if IsIconic(hwnd) and isWindowVisible(hwnd) then
          ((Win32MajorVersion > 4) or ((Win32MajorVersion = 4) and (Win32MinorVersion > 0)))
         ) then
    begin
-   ForegroundThreadID:=GetWindowThreadProcessID(GetForegroundWindow,nil);
-   ThisThreadID:=GetWindowThreadPRocessId(hwnd,nil);
+   ForegroundThreadID := GetWindowThreadProcessID(GetForegroundWindow, nil);
+   ThisThreadID := GetWindowThreadPRocessId(hwnd, nil);
    if AttachThreadInput(ThisThreadID, ForegroundThreadID, true) then
      begin
      BringWindowToTop(hwnd); // IE 5.5 related hack
@@ -305,7 +321,7 @@ if IsIconic(hwnd) and isWindowVisible(hwnd) then
    if GetForegroundWindow<>hwnd then
      begin
      SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, @timeout, 0);
-     SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, NIL,SPIF_SENDCHANGE);
+     SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, NIL, SPIF_SENDCHANGE);
      BringWindowToTop(hwnd); // IE 5.5 related hack
      SetForegroundWindow(hWnd);
      SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, TObject(timeout), SPIF_SENDCHANGE);
@@ -313,22 +329,22 @@ if IsIconic(hwnd) and isWindowVisible(hwnd) then
   end
 else
   begin
-  BringWindowToTop(hwnd); // IE 5.5 related hack
-  SetForegroundWindow(hwnd);
+    BringWindowToTop(hwnd); // IE 5.5 related hack
+    SetForegroundWindow(hwnd);
   end;
-Result := (GetForegroundWindow = hwnd);
+  Result := (GetForegroundWindow = hwnd);
 end; // ForceForegroundWindow
 
 {
-function getURLfromFav(fn:string):string;
+function getURLfromFav(fn: string): string;
 var
-  f:TextFile;
-  s:string;
+  f: TextFile;
+  s: string;
 begin
-result:='';
-assignFile(f,fn);
-reset(f);
-while not eof(f) do
+  result := '';
+  assignFile(f,fn);
+  reset(f);
+  while not eof(f) do
   begin
   readln(f,s);
   if s='[InternetShortcut]' then
@@ -338,7 +354,7 @@ while not eof(f) do
     break;
     end;
   end;
-closeFile(f);
+  closeFile(f);
 end; // getURLfromFav
 }
 
@@ -408,39 +424,39 @@ end;
 function getRegion(bmp: Tbitmap): HRGN;
 var
   span: HRGN;
-  x,y,sx: integer;
+  x, y, sx: integer;
   p: ^integer;
   transcolor: integer;
 
   procedure addspan;
   begin
-    span:=CreateRectRgn(sx,y,x,y+1);
-    CombineRgn(result,result,span, RGN_OR);
+    span:=CreateRectRgn(sx, y, x, y+1);
+    CombineRgn(result, result, span, RGN_OR);
     DeleteObject(span);
-    sx:=-1;
+    sx := -1;
   end;
 
 begin
   if not bmp.Transparent then
    begin
-     result:=0;
+     result := 0;
      exit;
    end;
-  result:=CreateRectRgn(0,0,0,0);
+  result := CreateRectRgn(0,0,0,0);
   if bmp=NIL then
     exit;
   with bmp do
   begin
-//  pixelFormat:=pf32bit;
-    transcolor:=ABCD_ADCB(bmp.TransparentColor AND $FFFFFF);
+//  pixelFormat := pf32bit;
+    transcolor := ABCD_ADCB(bmp.TransparentColor AND $FFFFFF);
     for y:=0 to height-1 do
      begin
-       p:=bmp.scanline[y];
-       sx:=-1;
+       p := bmp.scanline[y];
+       sx := -1;
        for x:=0 to bmp.width-1 do
         begin
          if (p^ <> transcolor) and (sx < 0) then
-           sx:=x;
+           sx := x;
          if (p^ = transcolor) and (sx >= 0) then
            addspan;
          inc(p);
@@ -454,39 +470,39 @@ end; // getRegion
 function getRegion32(bmp: Tbitmap): HRGN;
 var
   span: HRGN;
-  x,y,sx: integer;
+  x, y, sx: integer;
   p: ^integer;
-//  transcolor:integer;
+//  transcolor: integer;
 
   procedure addspan;
   begin
-    span:=CreateRectRgn(sx,y,x,y+1);
-    CombineRgn(result,result,span, RGN_OR);
+    span := CreateRectRgn(sx, y, x, y+1);
+    CombineRgn(result, result, span, RGN_OR);
     DeleteObject(span);
-    sx:=-1;
+    sx := -1;
   end;
 
 begin
   if not bmp.Transparent then
    begin
-     result:=0;
+     result := 0;
      exit;
    end;
-  result:=CreateRectRgn(0,0,0,0);
+  result := CreateRectRgn(0,0,0,0);
   if bmp=NIL then
     exit;
   with bmp do
   begin
-    pixelFormat:=pf32bit;
-//  transcolor:=bmp.TransparentColor AND $FFFFFF;
+    pixelFormat := pf32bit;
+//  transcolor := bmp.TransparentColor AND $FFFFFF;
     for y:=0 to height-1 do
      begin
-      p:=bmp.scanline[y];
-      sx:=-1;
+      p := bmp.scanline[y];
+      sx := -1;
       for x:=0 to bmp.width-1 do
        begin
         if (p^ and AlphaMask > 0) and (sx < 0) then
-          sx:=x;
+          sx := x;
 //        if (p^ <> transcolor) and (sx < 0) then sx:=x;
         if (p^ and AlphaMask = 0) and (sx >= 0) then
           addspan;
@@ -501,8 +517,8 @@ end; // getRegion2
 
 function isTopMost(frm: Tform): boolean;
 begin
-  //result:=frm.FormStyle=fsStayOnTop
-  result:=Assigned(frm) and ((getWindowLong(frm.handle, GWL_EXSTYLE) and WS_EX_TOPMOST) > 0)
+  //result := frm.FormStyle=fsStayOnTop
+  result := Assigned(frm) and ((getWindowLong(frm.handle, GWL_EXSTYLE) and WS_EX_TOPMOST) > 0)
 end; // isTopMost
 
 function setTopMost(frm: Tform; val: boolean): boolean;
@@ -515,23 +531,23 @@ begin
    else
 with frm do
   begin
-  i:=getWindowLong(handle, GWL_EXSTYLE);
+  i := getWindowLong(handle, GWL_EXSTYLE);
   if val then
     begin
-    result:=setWindowLong(handle, GWL_EXSTYLE,  i or WS_EX_TOPMOST) = i;
+    result := setWindowLong(handle, GWL_EXSTYLE,  i or WS_EX_TOPMOST) = i;
     SetWindowPos(Handle, HWND_TOPMOST, 0,0,0,0, SWP_NOMOVE+SWP_NOSIZE+SWP_NOACTIVATE)
     end
   else
     begin
-    result:=setWindowLong(handle, GWL_EXSTYLE,  i and not WS_EX_TOPMOST) = i;
+    result := setWindowLong(handle, GWL_EXSTYLE,  i and not WS_EX_TOPMOST) = i;
     SetWindowPos(Handle, HWND_NOTOPMOST, Left, Top, Width, Height, SWP_NOMOVE+SWP_NOSIZE+SWP_NOACTIVATE);
     end;
   end;
 end; // setTopMost
 
-function formVisible(frm:Tform):boolean;
+function formVisible(frm: Tform): boolean;
 begin
-  result:=(frm<>NIL) and isWindowVisible(frm.handle)
+  result := (frm<>NIL) and isWindowVisible(frm.handle)
 end;
 
 

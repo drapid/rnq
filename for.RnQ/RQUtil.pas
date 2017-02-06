@@ -69,11 +69,13 @@ function FillGradient2(DC: HDC; ARect: TRect; ColorCount: Integer;
   procedure RestartApp;
 
 
+  function GetShellVersion: Cardinal;
+
+ {$IFDEF RNQ}
   procedure LoadTranslit;
   procedure UnLoadTranslit;
-  function  Translit(const s : String) : String;
-  function GetShellVersion: Cardinal;
-  function TxtFromInt(Int: Integer {3 digits}): String;
+  function  Translit(const s: String): String;
+  function  TxtFromInt(Int: Integer {3 digits}): String;
 
   procedure SoundPlay(fn: String); overload;
   procedure SoundPlay(fs: TMemoryStream); overload;
@@ -81,6 +83,7 @@ function FillGradient2(DC: HDC; ARect: TRect; ColorCount: Integer;
   procedure SoundInit;
   procedure SoundReset;
   procedure SoundUnInit;
+ {$ENDIF RNQ}
 
   function ExistsFlash: Boolean;
  {$IFNDEF DELPHI9_UP}
@@ -198,10 +201,10 @@ procedure msgDlg(msg: String; NeedTransl: Boolean; kind: TMsgDlgType; const uid:
 const
   kind2str: array [TmsgDlgType] of string=('WARNING', 'ERROR', 'INFO', '', '');
 begin
+ {$IFDEF RNQ}
   if NeedTransl then
     msg := getTranslation(msg);
 
- {$IFDEF RNQ}
   loggaEvtS(kind2str[kind]+': '+msg, iconNames[kind]);
  {$ENDIF RNQ}
 
@@ -267,6 +270,7 @@ begin
   result := (r.Left <= p.x) and (r.right >= p.x) and (r.top <= p.y) and (r.bottom >= p.y)
 end;
 
+ {$IFDEF RNQ}
 
 procedure UnLoadTranslit;
 var
@@ -519,6 +523,8 @@ begin
  {$ENDIF RNQ_PLAYER}
 end;
 
+ {$ENDIF RNQ}
+
 function GetShellVersion: Cardinal;
 begin
   if ShellVersion=0 then
@@ -682,41 +688,48 @@ var
   end;
 
 begin
-i:=1;
-r:=cnv.ClipRect;
-l:=length(text);
-st:=cnv.font.Style;
-startX:=cnv.penpos.x;
-while i<=l do
-  begin
-  escpos:=i;
-  while (escpos<=l) and (text[escpos]<>#27) do
-    inc(escpos);
-  if escpos>l then
-    n:=l-i+1
-   else
-    n:=escpos-i;
-  r.Left:=cnv.PenPos.X;
-  r.top:=cnv.PenPos.y;
-  DrawText(cnv.handle, @text[i], n, r, DT_SINGLELINE);
-  inc(i,n);
-  if escpos <= l then
+  i := 1;
+  r := cnv.ClipRect;
+  l := length(text);
+  st := cnv.font.Style;
+  startX := cnv.penpos.x;
+  while i<=l do
     begin
-    inc(i,2);
-    case text[escpos] of
-      'b': turnStyle(fsBold);
-      'i': turnStyle(fsItalic);
-      'u': turnStyle(fsItalic);
-      'r': cnv.MoveTo(startX, cnv.penpos.Y+cnv.TextHeight('I'));
+    escpos := i;
+    while (escpos<=l) and (text[escpos]<>#27) do
+      inc(escpos);
+    if escpos>l then
+      n := l-i+1
+     else
+      n := escpos-i;
+    r.Left := cnv.PenPos.X;
+    r.top := cnv.PenPos.y;
+    DrawText(cnv.handle, @text[i], n, r, DT_SINGLELINE);
+    inc(i,n);
+    if escpos <= l then
+      begin
+      inc(i,2);
+      case text[escpos] of
+        'b': turnStyle(fsBold);
+        'i': turnStyle(fsItalic);
+        'u': turnStyle(fsItalic);
+        'r': cnv.MoveTo(startX, cnv.penpos.Y+cnv.TextHeight('I'));
+        end;
       end;
     end;
-  end;
 end; // drawCoolText
+
+{$IFNDEF RNQ}
+function getTranslation(s: String): String;
+begin
+  Result := s;
+end;
+{$ENDIF RNQ}
 
 function datetimeToStrMinMax(dt: Tdatetime; min: Tdatetime; max: Tdatetime): string; overload;
 begin
   if dt=0 then
-    result:=''
+    result := ''
    else
     if (dt<min) or (dt>max) then
       result := getTranslation('Invalid')
@@ -727,8 +740,8 @@ end; // datetimeToStrMinMax
 function dateTocoolstr(d: Tdatetime): string;
 begin
 case trunc(now)-trunc(d) of
-  0: result:=getTranslation('Today');
-  1: result:=getTranslation('Yesterday');
+  0: result := getTranslation('Today');
+  1: result := getTranslation('Yesterday');
   2..5: result:= FormatSettings.LongDayNames[dayofweek(d)];
   else
     begin
@@ -742,16 +755,16 @@ case trunc(now)-trunc(d) of
 end; // dateToCoolstr
 
 function logTimestamp: string;
-begin result:=formatDatetime(timeformat.log, now)+'> ' end;
+begin result := formatDatetime(timeformat.log, now)+'> ' end;
 
 
-procedure unroundWindow(hnd:Thandle); {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-begin SetWindowRgn(hnd,0,True) end;
+procedure unroundWindow(hnd: Thandle); {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+begin SetWindowRgn(hnd, 0, True) end;
 
 (*
 procedure assignImgPic(img: Timage; picName: String);
 //var
-//  bmp:Tbitmap;
+//  bmp: Tbitmap;
 begin
 { theme.GetPic(picName, bmp);
  img.Picture.Bitmap.Destroy;

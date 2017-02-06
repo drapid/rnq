@@ -310,6 +310,7 @@ type
     procedure initPic(var picElm: TRnQThemedElementDtls); overload;
     function  GetBigPic(const picName: TPicName; var mem: TMemoryStream): Boolean;
     function  GetBigSmile(const picName: TPicName; var mem: TMemoryStream): Boolean;
+    function HasOrigPic(pTE: TRnQThemedElement; const picName: TPicName): Boolean;
     function GetOrigPic(pTE: TRnQThemedElement; const picName: TPicName; var mem: TMemoryStream): Boolean; Deprecated 'Use GetBigPic instead';
     function GetOrigSmile(const picName: TPicName; var mem: TMemoryStream): Boolean; Deprecated 'Use GetBigSmile instead';
     function  GetPicSize(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0;
@@ -1627,6 +1628,34 @@ begin
       end;
   end;
  {$ENDIF PRESERVE_BIG_FILE}
+end;
+
+function TRQtheme.HasOrigPic(pTE: TRnQThemedElement; const picName: TPicName): Boolean;
+var
+  i: integer;
+  s: TPicName;
+begin
+  if picName = '' then
+  begin
+    Result := False;
+    Exit;
+  end;
+
+  Result := False;
+  i := -1;
+  if pTE <> RQteDefault then
+  begin
+    s := TE2Str[pTE] + LowerCase(picName);
+    i := FThemePics.IndexOf(s);
+  end;
+
+  if i < 0 then
+    i := FThemePics.IndexOf(LowerCase(picName));
+
+  if i >= 0 then
+  with TThemePic(FThemePics.Objects[i]) do
+    if Assigned(FBigPics[picIdx].bmp) then
+      Result := True;
 end;
 
 function TRQtheme.GetOrigPic(pTE: TRnQThemedElement; const picName: TPicName; var mem: TMemoryStream): Boolean;

@@ -180,8 +180,24 @@ type
     property OwnsObjects: Boolean read FOwnsObject write FOwnsObject;
   end;
 
+{ TAnsiStringStream }
+
+  TAnsiStringStream = class(TBytesStream)
+  private
+    function GetDataString: RawByteString;
+  public
+    constructor Create; overload;
+    constructor Create(const AString: RawByteString); overload;
+    constructor Create(const ABytes: TBytes); overload;
+    destructor Destroy; override;
+    function ReadString(Count: Integer): RawByteString;
+    procedure WriteString(const AString: RawByteString);
+    property DataString: RawByteString read GetDataString;
+  end;
+
   function FindDelimiterA(const Delimiters, S: AnsiString; StartIdx: Integer = 1): Integer;
   function SplitAnsiString(const S, Delimiters: AnsiString): TAnsiStringDynArray;
+
 
 implementation
 
@@ -1324,6 +1340,55 @@ begin
     // copy the remaining part in case the string does not end in a delimiter
     Result[SplitPoints] := Copy(S, StartIdx, Length(S) - StartIdx + 1);
   end;
+end;
+
+{ TAnsiStringStream }
+
+constructor TAnsiStringStream.Create(const ABytes: TBytes);
+begin
+  inherited;
+end;
+
+constructor TAnsiStringStream.Create;
+begin
+  Create('');
+end;
+
+constructor TAnsiStringStream.Create(const AString: RawByteString);
+begin
+  inherited Create(BytesOf(AString));
+end;
+
+destructor TAnsiStringStream.Destroy;
+begin
+  inherited;
+end;
+
+function TAnsiStringStream.GetDataString: RawByteString;
+begin
+  SetLength(Result, Length(Self.Bytes));
+  if Length(Self.Bytes)>0 then
+    CopyMemory(@Result[1], Self.Bytes, Length(Self.Bytes));
+end;
+
+function TAnsiStringStream.ReadString(Count: Integer): RawByteString;
+begin
+  if Count > Size - Position then
+    Count := Size - Position;
+
+  SetLength(Result, Count);
+  if Count>0 then
+    CopyMemory(@Result[1], @Self.Bytes[Position], Count);
+
+  Position := Position + Count;
+end;
+
+procedure TAnsiStringStream.WriteString(const AString: RawByteString);
+var
+  LBytes: TBytes;
+begin
+  LBytes := BytesOf(AString);
+  Write(LBytes, 0, Length(LBytes));
 end;
 
 end.

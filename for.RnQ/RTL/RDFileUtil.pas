@@ -80,6 +80,7 @@ type
 //  function  loadFile(fn:string): RawByteString; overload;
   function  loadFileA(const fn: string): RawByteString; overload;
   function  loadFile(fs: TStream; const StreamName: String): AnsiString; overload;
+  function  loadFile(const fn: string; from: int64=0; size: int64=-1): RawByteString; overload;
   function  saveFile2(const fn: string; const data: RawByteString;
                needSafe: Boolean = false; MakeBackups: Boolean = false): boolean;
   function  saveTextFile(const fn: String; const s: String): Boolean;
@@ -114,6 +115,8 @@ implementation
     RnQDialogs,
  {$ENDIF RNQ}
 *)
+    RDUtils,
+    StrUtils,
     SysUtils
     ;
 
@@ -754,6 +757,57 @@ begin
     result := '';
   end;
 end; // loadFile
+
+
+function validFilepath(const fn: string; acceptUnits: boolean=TRUE): boolean;
+//type
+//  TcharSet = set of char;
+
+  function poss(chars: TSysCharSet; const s: string; ofs: integer=1): integer;
+  begin
+    for result := ofs to length(s) do
+      if s[result] in chars then
+        exit;
+    result := 0;
+  end; // poss
+var
+  withUnit: boolean;
+begin
+  withUnit := (length(fn) > 2) and (upcase(fn[1]) in ['A'..'Z']) and (fn[2] = ':');
+
+  result := (fn > '')
+  and (posEx(':', fn, IfThen(withUnit,3,1)) = 0)
+  and (poss([#0..#31,'?','*','"','<','>','|'], fn) = 0)
+  and (length(fn) <= 255+IfThen(withUnit, 2));
+end;
+
+function isAbsolutePath(const path: string): boolean;
+begin
+  result := (path > '') and (path[1] = '\') or (length(path) > 1) and (path[2] = ':')
+end;
+
+function loadFile(const fn: string; from: int64=0; size: int64=-1): RawByteString;
+var
+ fs : TFileStream;
+begin
+  result:='';
+  if not validFilepath(fn) then
+    exit;
+  if not isAbsolutePath(fn) then
+    chDir(extractFilePath(ExpandFileName(paramStr(0))));
+  if not FileExists(fn) then exit;
+  try
+    fs := TFileStream.Create(fn, fmOpenRead or fmShareDenyNone);
+    setLength(result, fs.Size);
+    if fs.Size > 1 then
+      fs.Read(Pointer(result)^, length(result))
+     else
+      result := '';
+    fs.Free;
+  except
+    result := '';
+  end;
+end;
 
 function loadFile(fs: TStream; const StreamName: String): AnsiString;
 begin

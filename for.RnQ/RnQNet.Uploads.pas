@@ -1,6 +1,5 @@
 unit RnQNet.Uploads;
 {$I forRnQConfig.inc}
-{$I RnQConfig.inc }
 {$I NoRTTI.inc}
 
 interface
@@ -10,7 +9,7 @@ uses
 {$IFDEF UseNTLMAuthentication}
   RnQHttpAuth,
 {$ENDIF}
-  RDGlobal, RnQGlobal;
+  RDGlobal, RnQGlobal, RnQZip;
 
 type
   TarchiveStream = class(Tstream)
@@ -55,6 +54,7 @@ type
     function  headerLengthForFilename(fn: string):integer;
     procedure calculate(); override;
    public
+    fileNamesOEM: boolean;
     constructor create;
     destructor Destroy; override;
     function Read(var Buffer; Count: Longint): Longint; override;
@@ -69,17 +69,25 @@ const
   AuthFailed = 'File hosting authentication failed';
   UploadError = 'Failed to upload file! Server response';
 
-  function UploadFileRGhost(const Filename: String; pOnSendData: TDocDataEvent): String;
-  function UploadFileRnQ(const Filename: String; pOnSendData: TDocDataEvent): String;
+//  function UploadFileRGhost(const Filename: String; pOnSendData: TDocDataEvent): String;
+  function UploadFileRGhost(FileStream: TStream; FileName: String; pOnSendData: TDocDataEvent): String;
+  function UploadFileRnQ(FileStream: TStream; const Filename: String; pOnSendData: TDocDataEvent): String;
   function UploadTarFileRnQ(const Filenames: String; pOnSendData: TDocDataEvent): String;
+
+  function CreateZip(str: TStringList): TMemoryStream;
 
 
 type
   PMemoryStream = ^TMemoryStream;
 
   TCallbacks = class
+//  private
+//    FOnBeforeHeaderSend: TBeforeHeaderSendEvent;
+//    FOnSendData: TDocDataEvent;
   public
     class procedure OnBeforeHeaderSend(Sender: TObject; const Method: String; Headers: TStrings);
+//    property OnBeforeHeaderSend: TBeforeHeaderSendEvent read FOnBeforeHeaderSend write FOnBeforeHeaderSend;
+//    property OnSendData: TDocDataEvent read FOnSendData write FOnSendData;
   end;
 
 
@@ -103,8 +111,10 @@ uses
 {$ENDIF UNICODE}
   // OverbyteIcsLogger,
 {$IFDEF RNQ}
-  RnQLangs, RnQDialogs, RQUtil,
+  RnQLangs,
 {$ENDIF RNQ}
+  RQUtil,
+  RnQDialogs,
   RnQNet,
   RnQGraphics32;
 
@@ -132,9 +142,9 @@ begin
             [AnsiString('--') + boundry, name, value]);
 end;
 
-function UploadFileRGhost(const Filename: String; pOnSendData: TDocDataEvent): String;
+function UploadFileRGhost(FileStream: TStream; FileName: String; pOnSendData: TDocDataEvent): String;
 var
-  AvStream, FileStream, TokenStream: TMemoryStream;
+  AvStream, TokenStream: TMemoryStream;
   httpCli: TSslHttpCli;
   Host: String;
   Token, Buf, Boundry, TokenStr, FilePage: RawByteString;
@@ -182,14 +192,22 @@ begin
 
       if FileSize(Filename) > ULimit * 1024 * 1024 then
       begin
+ {$IFDEF RNQ}
         msgDlg(getTranslation(FileTooBig, [IntToStr(ULimit)]), true, mtError);
+ {$ELSE ~RNQ}
+        MessageDlg(Format(FileTooBig, [IntToStr(ULimit)]), mtError, [mbOK], 0);
+ {$ENDIF ~RNQ}
         httpCli.Free;
         Exit;
       end;
     end
    else
     begin
+ {$IFDEF RNQ}
       msgDlg(getTranslation(AuthFailed), true, mtError);
+ {$ELSE ~RNQ}
+        MessageDlg(AuthFailed, mtError, [mbOK], 0);
+ {$ENDIF ~RNQ}
       httpCli.Free;
       Exit;
     end;
@@ -204,10 +222,16 @@ begin
            'Content-Transfer-Encoding: binary' + CRLF + CRLF;
     httpCli.SendStream.Write(Buf[1], Length(Buf));
 
-    FileStream := TMemoryStream.Create;
-    FileStream.LoadFromFile(Filename);
-    FileStream.Seek(0, soFromBeginning);
-    FileStream.SaveToStream(httpCli.SendStream);
+    if Assigned(FileStream) then
+      httpCli.SendStream.CopyFrom(FileStream, 0)
+     else
+      begin
+        FileStream := TMemoryStream.Create;
+        TMemoryStream(FileStream).LoadFromFile(Filename);
+        FileStream.Seek(0, soFromBeginning);
+        httpCli.SendStream.CopyFrom(FileStream, 0);
+        FreeAndNil(FileStream);
+      end;
 
     Buf := CRLF + '--' + Boundry + '--' + CRLF;
     httpCli.SendStream.Write(Buf[1], Length(Buf));
@@ -254,7 +278,11 @@ begin
           Result := httpCli.Location;
       end;
     except
+ {$IFDEF RNQ}
       msgDlg(getTranslation(UploadError) + ': ' + httpCli.LastResponse, true, mtError);
+ {$ELSE ~RNQ}
+      MessageDlg(UploadError + ': ' + httpCli.LastResponse, mtError, [mbOK], 0);
+ {$ENDIF RNQ}
     end;
   finally
     isUploading := False;
@@ -266,9 +294,9 @@ begin
   end;
 end;
 
-function UploadFileRnQ(const Filename: String; pOnSendData: TDocDataEvent): String;
+function UploadFileRnQ(FileStream: TStream; const Filename: String; pOnSendData: TDocDataEvent): String;
 var
-  AvStream, FileStream: TMemoryStream;
+  AvStream: TMemoryStream;
   httpCli: TSslHttpCli;
   Buf, Boundry, UploadedName: RawByteString;
 begin
@@ -285,7 +313,11 @@ begin
 
   if FileSize(Filename) > 100 * 1024 * 1024 then
   begin
+ {$IFDEF RNQ}
     msgDlg(getTranslation(FileTooBig, [IntToStr(100)]), true, mtError);
+ {$ELSE ~RNQ}
+    MessageDlg(Format(FileTooBig, [IntToStr(100)]), mtError, [mbOK], 0);
+ {$ENDIF RNQ}
     httpCli.Free;
     Exit;
   end;
@@ -301,12 +333,17 @@ begin
            'Content-Transfer-Encoding: binary' + CRLF + CRLF;
     httpCli.SendStream.Write(Buf[1], Length(Buf));
 
-    FileStream := TMemoryStream.Create;
-    FileStream.LoadFromFile(Filename);
-    FileStream.Seek(0, soFromBeginning);
-    FileStream.SaveToStream(httpCli.SendStream);
+
     if Assigned(FileStream) then
-      FreeAndNil(FileStream);
+      httpCli.SendStream.CopyFrom(FileStream, 0)
+     else
+      begin
+        FileStream := TMemoryStream.Create;
+        TMemoryStream(FileStream).LoadFromFile(Filename);
+        FileStream.Seek(0, soFromBeginning);
+        httpCli.SendStream.CopyFrom(FileStream, 0);
+        FreeAndNil(FileStream);
+      end;
 
     Buf := CRLF + '--' + Boundry + '--' + CRLF;
     httpCli.SendStream.Write(Buf[1], Length(Buf));
@@ -333,7 +370,11 @@ begin
 
       Result := UnUTF(UploadedName);
     except
+ {$IFDEF RNQ}
       msgDlg(getTranslation(UploadError) + ': ' + #13#10 + httpCli.RcvdHeader.Text, true, mtError);
+ {$ELSE ~RNQ}
+      MessageDlg(UploadError + ': ' + #13#10 + httpCli.RcvdHeader.Text, mtError, [mbOK], 0);
+ {$ENDIF RNQ}
     end;
   finally
     isUploading := False;
@@ -377,7 +418,11 @@ begin
 
   if fsize = 0 then
   begin
+ {$IFDEF RNQ}
     msgDlg(getTranslation('File doesn''t exist', [Filenames]), true, mtError);
+ {$ELSE ~RNQ}
+    MessageDlg(Format('File doesn''t exist', [Filenames]), mtError, [mbOK], 0);
+ {$ENDIF RNQ}
     tar.Free;
     Exit;
   end;
@@ -385,7 +430,11 @@ begin
 
   if fsize > 100 * 1024 * 1024 then
   begin
+ {$IFDEF RNQ}
     msgDlg(getTranslation(FileTooBig, [IntToStr(100)]), true, mtError);
+ {$ELSE ~RNQ}
+    MessageDlg(Format(FileTooBig, [IntToStr(100)]), mtError, [mbOK], 0);
+ {$ENDIF RNQ}
     tar.Free;
     Exit;
   end;
@@ -450,7 +499,11 @@ begin
 
       Result := UnUTF(UploadedName);
     except
+ {$IFDEF RNQ}
       msgDlg(getTranslation(UploadError) + ': ' + #13#10 + httpCli.RcvdHeader.Text, true, mtError);
+ {$ELSE ~RNQ}
+      MessageDlg(UploadError + ': ' + #13#10 + httpCli.RcvdHeader.Text, mtError, [mbOK], 0);
+ {$ENDIF RNQ}
     end;
   finally
     isUploading := False;
@@ -458,6 +511,30 @@ begin
     if Assigned(AvStream) then
       FreeAndNil(AvStream);
   end;
+end;
+
+function CreateZip(str: TStringList): TMemoryStream;
+var
+  Zip: TZipFile;
+  i: Integer;
+  fs: TFileStream;
+  pData: RawByteString;
+begin
+  Result := TMemoryStream.Create;
+  Zip := TZipFile.Create;
+  try
+    for i := 0 to str.Count - 1 do
+    if FileExists(str.Strings[i]) then
+    begin
+      fs := TFileStream.Create(str.Strings[i], fmOpenRead);
+      SetLength(pData, fs.Size);
+      fs.ReadBuffer(pData[1], fs.Size);
+      FreeAndNil(fs);
+      Zip.AddFile(ExtractFileName(str.Strings[i]), 0, '', pData);
+    end;
+    Zip.SaveToStream(Result);
+  except end;
+  FreeAndNil(Zip);
 end;
 
 
@@ -485,7 +562,7 @@ function TarchiveStream.addFile(src: string; dst: string=''; data: Tobject=NIL):
 var
   i, fh: integer;
 begin
-  result:=FALSE;
+  result := FALSE;
   fh := fileopen(src, fmOpenRead+fmShareDenyNone);
   if fh = -1 then
     exit;
@@ -540,6 +617,7 @@ begin
   block := TStringStream.create('');
   lastSeekFake := -1;
   where := TW_HEADER;
+  fileNamesOEM := FALSE;
   inherited;
 end; // create
 
@@ -620,9 +698,16 @@ const
   FAKE_CHECKSUM = '        ';
 var
   fn: string;
+  fn2: AnsiString;
   pre, s: RawByteString;
 begin
   fn := replaceStr(flist[cur].dst, '\', '/');
+  if fileNamesOEM then
+    begin
+      CharToOem(pChar(fn), pAnsiChar(fn2));
+      fn := fn2;
+    end;
+
   pre := '';
   if length(fn) >= 100 then
     begin

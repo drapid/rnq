@@ -138,6 +138,7 @@ type
 //    function  Clone(x, y, pWidth, pHeight: Integer): TRnQBitmap;
     function  Clone(bnd: TGPRect): TRnQBitmap;
     function  CloneFrame(frame: Integer): TRnQBitmap;
+    function  CloneAll: TRnQBitmap;
     procedure SetTransparentColor(clr: cardinal);
     function  bmp2ico32: HIcon;
     procedure GetHICON(var hi: HICON);
@@ -2290,6 +2291,38 @@ end;
           Result := (Color32 and $00FFFFFF) or (NewAlpha shl 24);
     end;
 
+function TRnQBitmap.CloneAll: TRnQBitmap;
+begin
+  Result := TRnQBitmap.Create;
+  Result.f32Alpha := Self.f32Alpha;
+  Result.fFormat := Self.fFormat;
+  if Assigned(Self.fBmp) then
+  begin
+    Result.fBmp := TBitmap.Create;
+    Result.fBmp.Assign(Self.fBmp);
+  end;
+  Result.fWidth := Self.fWidth;
+  Result.fHeight := Self.fHeight;
+  Result.fTransparentColor := Self.fTransparentColor;
+  Result.fAnimated := Self.fAnimated;
+  Result.htTransparent := Self.htTransparent;
+
+  Result.fHI := CopyIcon(Self.fHI);
+  Result.FNumFrames := Self.FNumFrames;
+  Result.FCurrentFrame := Self.FCurrentFrame;
+  Result.LastTime := Self.LastTime;
+  Result.CurrentInterval := Self.CurrentInterval;
+  Result.CurrentIteration := Self.CurrentIteration;
+  Result.FNumIterations := Self.FNumIterations;
+  Result.fFrames := Self.fFrames;
+  Result.WasDisposal := Self.WasDisposal;
+
+  if Assigned(Self.htMask) then
+  begin
+    Result.htMask := TBitmap.Create;
+    Result.htMask.Assign(Self.htMask);
+  end;
+end;
 
 //function  TRnQBitmap.Clone(x, y, pWidth, pHeight: Integer): TRnQBitmap;
 function  TRnQBitmap.Clone(bnd: TGPRect): TRnQBitmap;

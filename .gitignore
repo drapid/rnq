@@ -3,6 +3,7 @@
 #################
 Distro/Stickers/
 Distro/Cache/
+Distro/CEF/
 Distro/Accounts/
 Distro/*/Cache/
 Distro/*.map

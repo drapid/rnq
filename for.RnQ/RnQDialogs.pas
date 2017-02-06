@@ -85,16 +85,24 @@ uses
   {$IFDEF usesVCL}
    Controls,
  {$IFDEF RNQ}
-   RnQLangs, RQThemes, RnQGlobal,
+   RnQLangs, RQThemes, RnQGlobal, RnQButtons,
  {$ELSE}
    NotRnQUtils,
  {$ENDIF RNQ}
-   RDUtils, RnQButtons,
+   RDUtils,
  {$IFDEF RNQ_PLUGIN}
    RDPlugins,
  {$ENDIF RNQ_PLUGIN}
   {$ENDIF}
    SysUtils, StrUtils;
+
+type
+ {$IFDEF RNQ}
+//      with TRnQSpeedButton.Create(Form) do
+  TDialogButton = TRnQButton;
+ {$ELSE ~RNQ}
+  TDialogButton = TButton;
+ {$ENDIF ~RNQ}
 
 function CharReplace(const Source: string; oldChar, newChar: Char): string;
 var
@@ -300,9 +308,7 @@ begin
       ButtonTop := Edit.Top + Edit.Height + 15;
       ButtonWidth := MulDiv(50, DialogUnits.X, 4);
       ButtonHeight := MulDiv(14, DialogUnits.Y, 8);
-//      with TRnQSpeedButton.Create(Form) do
-      with TRnQButton.Create(Form) do
-//      with TButton.Create(Form) do
+      with TDialogButton.Create(Form) do
       begin
         Parent := Form;
 //        Caption := getTranslation(SMsgDlgOK);
@@ -312,9 +318,7 @@ begin
         SetBounds(MulDiv(38, DialogUnits.X, 4), ButtonTop, ButtonWidth,
           ButtonHeight);
       end;
-//      with TRnQSpeedButton.Create(Form) do
-      with TRnQButton.Create(Form) do
-//      with TButton.Create(Form) do
+      with TDialogButton.Create(Form) do
       begin
         Parent := Form;
         Caption := getTranslation(SMsgDlgCancel);
@@ -379,9 +383,7 @@ begin
       ButtonTop := memo.Top + memo.Height + 15;
       ButtonWidth := MulDiv(50, DialogUnits.X, 4);
       ButtonHeight := MulDiv(14, DialogUnits.Y, 8);
-//      with TRnQSpeedButton.Create(Form) do
-      with TRnQButton.Create(Form) do
-//      with TButton.Create(Form) do
+      with TDialogButton.Create(Form) do
       begin
         Parent := Form;
         Caption := getTranslation(SMsgDlgOK);
@@ -393,9 +395,7 @@ begin
         Form.ClientHeight := Top + Height + 13;
         Anchors := [akBottom];
       end;
-//      with TRnQSpeedButton.Create(Form) do
-      with TRnQButton.Create(Form) do
-//      with TButton.Create(Form) do
+      with TDialogButton.Create(Form) do
       begin
         Parent := Form;
         Caption := getTranslation(SMsgDlgCancel);
@@ -434,9 +434,7 @@ type
     FTimer: TTimer;
     FSeconds: Integer;
     DefaultButton: TMsgDlgBtn;
-//    DefButton: TRnQSpeedButton;
-      DefButton: TRnQButton;
-//    DefButton: TButton;
+    DefButton: TDialogButton;
     Message: TLabel;
     procedure HelpButtonClick(Sender: TObject);
   protected
@@ -522,12 +520,8 @@ var
 begin
   DividerLine := StringOfChar('-', 27) + sLineBreak;
   for I := 0 to ComponentCount - 1 do
-//    if Components[I] is TButton then
-//      ButtonCaptions := ButtonCaptions + TButton(Components[I]).Caption +
-    if Components[I] is TRnQButton then
-      ButtonCaptions := ButtonCaptions + TRnQButton(Components[I]).Caption +
-//    if Components[I] is TRnQSpeedButton then
-//      ButtonCaptions := ButtonCaptions + TRnQSpeedButton(Components[I]).Caption +
+    if Components[I] is TDialogButton then
+      ButtonCaptions := ButtonCaptions + TDialogButton(Components[I]).Caption +
         StringOfChar(' ', 3);
   ButtonCaptions := StringReplace(ButtonCaptions, '&', '', [rfReplaceAll]);
   Result := Format('%s%s%s%s%s%s%s%s%s%s', [DividerLine, Caption, sLineBreak,
@@ -565,9 +559,7 @@ var
   IconTextWidth, IconTextHeight, X, ALeft: Integer;
   IconID: PChar;
   TextRect: TRect;
-//  tB : TRnQSpeedButton;
-  tB: TRnQButton;
-//  tB : TButton;
+  tB: TDialogButton;
 begin
   Result := TMessageForm.CreateNew(Application);
   with Result do
@@ -680,9 +672,7 @@ begin
     for B := Low(TMsgDlgBtn) to High(TMsgDlgBtn) do
       if B in Buttons then
       begin
-//        tB := TRnQSpeedButton.Create(Result);
-        tB := TRnQButton.Create(Result);
-//        tB := TButton.Create(Result);
+        tB := TDialogButton.Create(Result);
         with tB do
         begin
           Name := ButtonNames[B];

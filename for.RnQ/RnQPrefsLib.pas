@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RnQPrefsLib;
 {$I ForRnQConfig.inc}
@@ -78,8 +78,10 @@ type
  {$ENDIF DELPHI9_UP}
      procedure addPrefGuid(const key: String; const Val: TGUID);
      procedure addPrefParam(param: TObject);
+ {$IFDEF RNQ}
      procedure addPrefArrParam(param: array of TObject);
      procedure getPrefArrParam(param: array of TObject);
+ {$ENDIF RNQ}
      procedure initPrefBool(const key: String; const Val: Boolean);
      procedure initPrefInt(const key: String; const Val: Integer);
      procedure initPrefStr(const key: String; const Val: String);
@@ -103,6 +105,7 @@ type
     procedure initPage; virtual;
     procedure unInitPage; virtual;
    published
+    property ParentFont default True;
     property TabOrder;
     property TabStop;
     property OldCreateOrder: Boolean read FOldCreateOrder write FOldCreateOrder;
@@ -166,8 +169,9 @@ implementation
 
 uses
    SysUtils, Character, ExtCtrls, StdCtrls, Controls, Types,
-   RnQSpin, RDUtils,
+   RDUtils,
  {$IFDEF RNQ}
+   RnQSpin,
    RQlog,
  {$ENDIF RNQ}
  {$IFDEF RNQ_PLUGIN}
@@ -425,6 +429,7 @@ begin
     addPrefBool(TCheckBox(param).HelpKeyword, TCheckBox(param).Checked);
 end;
 
+ {$IFDEF RNQ}
 procedure TRnQPref.addPrefArrParam(param: array of TObject);
 var
   pp: TObject;
@@ -519,6 +524,7 @@ begin
      end
 
 end;
+ {$ENDIF RNQ}
 
 procedure TRnQPref.addPrefStr(const key, Val: String);
 var

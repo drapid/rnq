@@ -117,8 +117,8 @@ type
 
   procedure TipsHideAll;
   procedure TipsShowTop;
-  procedure MoveTips;
-  function AddTip(var item: TRnQTip; ti: TTipInfo; needW, needH: Integer): Boolean;
+  procedure MoveTips(ParentHandle: HWND = 0);
+  function AddTip(var item: TRnQTip; ti: TTipInfo; needW, needH: Integer; ParentHandle: HWND = 0): Boolean;
 
   procedure tipsSetCFG(pp: TRnQPref);
 
@@ -599,7 +599,7 @@ begin
 //  setTopMost(tipFrm, TRUE);
 end;
 
-procedure MoveTips;
+procedure MoveTips(ParentHandle: HWND = 0);
 var
   i:  integer;
   minY: Integer;
@@ -609,7 +609,7 @@ begin
 //OutputDebugString('Processing MoveTips');
  if Assigned(tipsList) then
  begin
-  work := desktopWorkArea(Application.MainFormHandle);
+  work := desktopWorkArea(IfThen(ParentHandle=0, Application.MainFormHandle, ParentHandle));
   case TipsAlign of
     alBottomRight, alBottomLeft:
       begin
@@ -651,7 +651,7 @@ begin
  end;
 end;
 
-function AddTip(var item: TRnQTip; ti: TTipInfo; needW, needH: Integer): Boolean;
+function AddTip(var item: TRnQTip; ti: TTipInfo; needW, needH: Integer; ParentHandle: HWND): Boolean;
 var
   i, cnt, idx: Integer;
   minX, minY: Integer;
@@ -667,7 +667,7 @@ begin
 //  lastY := work.Bottom;
   not_ok := True;
 //  idx := 0;
-  work := desktopWorkArea(Application.MainFormHandle);
+  work := desktopWorkArea(IfThen(ParentHandle=0, Application.MainFormHandle, ParentHandle));
   case TipsAlign of
     alBottomRight,
     alBottomLeft:
