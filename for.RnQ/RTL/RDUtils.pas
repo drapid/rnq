@@ -8,7 +8,7 @@ unit RDUtils;
 
 interface
 uses
-    Windows, sysutils, classes, graphics, forms, types, RDGlobal;
+  Windows, sysutils, classes, graphics, forms, types, RDGlobal;
 
 function  IfThen(AValue: Boolean; const ATrue: Integer; const AFalse: Integer = 0): Integer; overload;
 function  IfThen(AValue: Boolean; const s1, s2: RawByteString): RawByteString; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
@@ -50,6 +50,7 @@ function  dupString(const s: String): String; overload; inline;
 function  trailing(const s, ss: string): Boolean;
 procedure swap4(var a, b: Integer); overload;
 procedure swap4(var src, dest; count: dword; cond: Boolean); overload;
+procedure swap8(var a, b: TDateTime);
 // Convert
 function  ip2str(ip: Integer): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 function  str2ip(const s: RawByteString): Integer;
@@ -70,6 +71,7 @@ function  bool2str(const b: Boolean): RawByteString;
   function WideBEToUTF8(const Value: RawByteString): RawByteString;
 // function unUTF(const s: AnsiString) : AnsiString;
   function UnUTF(const s: RawByteString): String;
+  function UTF(const s: String): RawByteString; inline; deprecated 'Use UTF8Encode instead';
   function StrToUTF8(const Value: AnsiString): RawByteString; OverLoad;
   function StrToUnicode(const Value: AnsiString): RawByteString; overload;
   function StrToUnicodeLE(const Value: AnsiString): AnsiString; overload;
@@ -128,7 +130,7 @@ function  bool2str(const b: Boolean): RawByteString;
 
  function IsEqualGUID(const guid1, guid2: TGUID): Boolean; stdcall;
 {$EXTERNALSYM IsEqualGUID}
- function SGUID2rGUID(const guid: RawByteString): RawByteString;
+ function SGUID2rGUID(const guid: RawByteString; Zero2Empty: Boolean = True): RawByteString;
  function GUID2rGUID(const guid: TGUID): RawByteString;
 
 
@@ -144,7 +146,7 @@ function  bool2str(const b: Boolean): RawByteString;
   function  hexDumpS(const data: RawByteString): String;
 
   function str2hex(const s: RawByteString): AnsiString; overload;
-  function str2hexU(const s: AnsiString): String; overload;
+  function str2hexU(const s: RawByteString): String; overload;
   function str2hex(const s: RawByteString; const Delim : AnsiChar) : AnsiString; overload;
   function  hexToInt(const s: RawByteString): Cardinal; overload;
   function  hexToInt(const s: String): Cardinal; overload;
@@ -1034,6 +1036,14 @@ begin
   end;}
 end; // swapMem
 
+procedure swap8(var a, b: TDateTime);
+var
+  bak: TDateTime;
+begin
+  bak := a;
+  a := b;
+  b := bak;
+end;
 
  {$IFDEF UNICODE}
 function ip2str(ip: Integer): String; inline;
@@ -1583,6 +1593,10 @@ begin
     result := UTF8ToStrSmart3(s);
 end;
 
+function UTF(const s: String): RawByteString;
+begin
+  Result := UTF8Encode(s)
+end;
 
 function WideBEToUTF8(const Value: RawByteString): RawByteString;
 var
@@ -1801,7 +1815,7 @@ end;
  function IsEqualGUID;                   external ole32 name 'IsEqualGUID';
 {$EXTERNALSYM IsEqualGUID}
 
-function SGUID2rGUID(const guid: RawByteString): RawByteString;
+function SGUID2rGUID(const guid: RawByteString; Zero2Empty: Boolean = True): RawByteString;
 var
   g: TGUID;
 begin
@@ -1815,7 +1829,7 @@ begin
       else
        if Length(GUID) = 36 then;
          g := StringToGUID('{'+guid+'}');
-     if g <> GUID_NULL then
+     if not (Zero2Empty and IsEqualGUID(g, GUID_NULL)) then
       begin
        SetLength(Result, 16);
        CopyMemory(@Result[1], @g, 16);
@@ -2060,7 +2074,7 @@ begin
     end;
 end; // Str2hex
 
-function str2hexU(const s: AnsiString): String;
+function str2hexU(const s: RawByteString): String;
 var
 //  ofs,
   i: Integer;

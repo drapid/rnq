@@ -342,6 +342,7 @@ const
   bass_dll_FN = 'bass.dll';
 var
   b: Boolean;
+  err: Integer;
 begin
   audioPresent := FALSE;
  {$IFDEF RNQ_PLAYER}
@@ -376,17 +377,19 @@ begin
 	if not BASS_Init(-1, 44100, 0, Application.MainFormHandle, nil) then
  {$ENDIF DELPHI9_UP}// By Rapid D
    begin
-    audioPresent:=FALSE;
+    err := BASS_ErrorGetCode;
+    audioPresent := FALSE;
     Unload_BASSDLL;
-    msgDlg('Error initializing audio!', True, mtError);
+    msgDlg(getTranslation('Error initializing audio!') + CrLfS +
+           'Code: '+ IntToStr(err), False, mtError);
    end
  {$IFDEF DELPHI9_UP}// By Rapid D
   else
-    audioPresent:=TRUE;
+    audioPresent := TRUE;
  {$ENDIF DELPHI9_UP}// By Rapid D
  end
  else
- audioPresent:=FALSE;
+ audioPresent := FALSE;
  {$ENDIF RNQ_PLAYER}
 end;
 

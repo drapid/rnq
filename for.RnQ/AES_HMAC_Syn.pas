@@ -57,10 +57,10 @@ function derive_key(const pwd: RawByteString;  // the PASSWORD
 *)
 
 const
-   KEY_LENGTH : array[1..3] of byte = (16, 24, 32);
-   SALT_LENGTH : array[1..3] of byte = (8, 12, 16);
+   KEY_LENGTH: array[1..3] of byte = (16, 24, 32);
+   SALT_LENGTH: array[1..3] of byte = (8, 12, 16);
    MAC_LENGTH = 10;
-   EXPKEY_LENGTH : array[1..3] of byte = (44, 54, 64);
+   EXPKEY_LENGTH: array[1..3] of byte = (44, 54, 64);
 
    PWD_VER_LENGTH = 2;
    MAX_KEY_LENGTH = 32;
@@ -111,8 +111,9 @@ function fcrypt_end(var cx: fcrypt_ctx)  //* the context (input)      */
                 : RawByteString;          //* the MAC value (output)   */
 
 implementation
-  uses
-    SysUtils
+
+uses
+  SysUtils
     ;
 
 
@@ -440,5 +441,6 @@ begin
   FillMemory(@cx, sizeof(fcrypt_ctx), 0);
 //	Result  MAC_LENGTH(res);				//* return MAC length in bytes   */
 end;
+
 
 end.

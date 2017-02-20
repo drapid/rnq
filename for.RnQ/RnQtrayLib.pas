@@ -10,7 +10,7 @@ interface
 
 uses
   Messages, windows, RDGlobal,
-  graphics, ShellApi;
+  graphics, ShellApi, Types;
 
 const
   WM_TRAY = WM_USER+1;
@@ -18,6 +18,9 @@ const
   flags_v2 = NIF_MESSAGE or NIF_ICON or NIF_TIP;
   flags_v4 = NIF_MESSAGE or NIF_ICON or NIF_TIP or NIF_SHOWTIP;
   flags_info = NIF_INFO or NIF_SHOWTIP or NIF_GUID;
+
+type
+  TtrayEvent = (TE_CLICK, TE_2CLICK, TE_RCLICK);
 
 type
    TNotifyIconDataW_V2 = record
@@ -80,26 +83,47 @@ type
       bitLargeIcon, // большая иконка, Vista+
       bitRespectQuietTime, // 7+
       bitMask); // Reserved, XP+
+
+const
+  aBalloonIconTypes: array [TBalloonIconType] of Byte =
+          (NIIF_NONE, NIIF_INFO, NIIF_WARNING, NIIF_ERROR, NIIF_USER,
+           NIIF_NOSOUND, NIIF_LARGE_ICON, NIIF_RESPECT_QUIET_TIME, NIIF_ICON_MASK);
  {$ENDIF Use_Baloons}
 {  TBalloonType = (btNone, btError, btInfo, btWarning);
 }
+
+type
   TtrayIcon = class
     private
 //      data: TNotifyIconData;
       data: TNotifyIconDataW_V4;
+      AllocatedHWnd: Boolean;
       shown, fHidden: Boolean;
       Ico: TIcon;
       useGUID: Boolean;
       trayIconGuid: TGUID;
+      procedure wndProc(var Message: TMessage);
+      procedure notify(ev: TtrayEvent);
     public
-      constructor Create(hndl: HWND; g: TGUID);
+      UsrData: pointer;  // user data
+      onEvent: procedure(sender: Tobject; ev: TtrayEvent) of object;
+      constructor Create(hndl: HWND; pg: PGUID = NIL);
       destructor Destroy; override;
       procedure minimize;
       procedure update;
       procedure hide;
       procedure show;
+ {$IFDEF Use_Baloons}
+    procedure showballoon(const bldelay: Integer;
+                          const BalloonText, BalloonTitle: String;
+                          const BalloonIconType: TBalloonIconType);
+    procedure hideBalloon;
+    function  balloon(msg: string; secondsTimeout: real=3; kind: TBalloonIconType=bitNONE; title: string=''):boolean;
+ {$ENDIF Use_Baloons}
       procedure setIcon(icon: Ticon); overload;
+{$IFDEF RNQ}
       procedure setIcon(const iName: TPicName); overload;
+{$ENDIF RNQ}
       procedure setTip(const s: String);
       procedure setGUID(const g: TGUID);
 //      procedure setIconFile(fn: String);
@@ -107,6 +131,7 @@ type
       property Hidden: boolean read fHidden;
     end; // TtrayIcon
 
+{$IFDEF RNQ}
 type
   TGetPicTipFunc = Procedure(var vPic: TPicName; var vTip: String); // of object;
 
@@ -135,6 +160,8 @@ type
 //    procedure BalloonHint (Title, Value: String; BalloonType: TBalloonType; Delay: Integer);
    end; // TstatusIcon
 
+{$ENDIF RNQ}
+
 var
   ShowBalloonTime: Int64;
   EnabledBaloons: Boolean;
@@ -143,9 +170,12 @@ var
 implementation
 
 uses
-  forms, sysutils, Types,
-  RDUtils, RnQStrings, RnQLangs, //themesLib,
-  RQUtil, RQThemes, RnQGlobal
+  forms, sysutils, classes,
+{$IFDEF RNQ}
+  RnQStrings, RnQLangs,
+  RQUtil, RQThemes, RnQGlobal,
+{$ENDIF RNQ}
+  RDUtils
 //  dwTaskbarComponents, dwTaskbarList,
 //  fspTaskbarCommon, fspTaskbarApi,
   ;
@@ -165,11 +195,12 @@ var
   tbcmp: TRnQTaskbarComponent;
 }
 
+{$IFDEF RNQ}
 constructor TstatusIcon.Create(hndl: THandle; g: TGUID);
 begin
   if CheckWin32Version(6, 1) then
     TrayIconDataVersion := 4;
-  trayIcon := TtrayIcon.create(hndl, g);
+  trayIcon := TtrayIcon.create(hndl, @g);
   trayIcon.setTip(Application.Title);
   IcoName := '';
   lastTip := '';
@@ -238,76 +269,67 @@ end;
 procedure TstatusIcon.showballoon(const bldelay: integer;
                           const BalloonText, BalloonTitle: String;
                           const BalloonIconType: TBalloonIconType);
-const
-  aBalloonIconTypes: array [TBalloonIconType] of Byte = (NIIF_NONE, NIIF_INFO, NIIF_WARNING, NIIF_ERROR, NIIF_USER, NIIF_NOSOUND, NIIF_LARGE_ICON, NIIF_RESPECT_QUIET_TIME, NIIF_ICON_MASK);
-var
-//  NID_50: NotifyIconData_50;
-//  NID_50: TNotifyIconData;
-  NID_50: TNotifyIconDataW_V4;
-  t: String;
 begin
   if (not EnabledBaloons) or (not ShowBalloons) then
     exit;
-  if balloontext = '' then
-    t := '_'
-   else
-    t := balloontext;
-  ShowBalloonTime := 0;
-//  tmStopTimer(hTimer);
-//  DZBalloonTrayIcon(window, IconID, t, balloontitle, balloonicontype);
-  ShowBalloonTime := bldelay;
-  ZeroMemory(@NID_50, NOTIFYIconDataW_V4_SIZE);
-  with NID_50 do
-  begin
-    if TrayIconDataVersion = 4 then
-      cbSize := NOTIFYIconDataW_V4_SIZE
-     else
-      cbSize := NOTIFYIconDataW_V2_SIZE;
-    Wnd := trayIcon.data.Wnd;
-    uID := trayIcon.data.uID;
-    uFlags := NIF_INFO;
-    StrLCopy(PWideChar(@szInfo[0]), PChar(BalloonText), 255);
-//    StrPCopy(szTip, BalloonText);
-    uTimeout := 30000;
-    StrLCopy(PWideChar(@szInfoTitle[0]), PChar(BalloonTitle), 63);
-    dwInfoFlags := aBalloonIconTypes[BalloonIconType];
-    guidItem := TrayIcon.data.guidItem;
-  end;
-  Shell_NotifyIcon(NIM_MODIFY, @NID_50);
+  trayIcon.showballoon(bldelay, BalloonText, BalloonTitle, BalloonIconType);
 end;
 
 procedure TstatusIcon.hideBalloon;
-var
-//  NID_50: NotifyIconData_50;
-//  NID_50: TNotifyIconData;
-  NID_50: TNotifyIconDataW_V2;
 begin
   ShowBalloonTime := 0;
   if (not EnabledBaloons) or (not ShowBalloons) then
     exit;
-//  ZeroMemory(@NID_50, SizeOf(NID_50));
-  ZeroMemory(@NID_50, NOTIFYIconDataW_V2_SIZE);
-  with NID_50 do
-  begin
-    cbSize := NOTIFYIconDataW_V2_SIZE;
-    Wnd := trayIcon.data.Wnd;
-    uID := trayIcon.data.uID;
-    uFlags := NIF_INFO;
-//    StrPCopy(PWideChar(@szInfo[0]), '');
-//    StrPCopy(PWideChar(@szInfoTitle[0]), '');
-//     := trayIcon.data.;
-  end;
-  Shell_NotifyIcon(NIM_MODIFY, @NID_50);
+  trayIcon.hideBalloon;
 end;
 
-constructor TtrayIcon.create(hndl: HWND; g: TGUID);
+procedure TstatusIcon.ReDraw;
+begin
+  trayIcon.setIcon(IcoName);
+end;
+
+{
+function TstatusIcon.AcceptBalloons: Boolean;
+begin
+     Result:=GetShellVersion>=$00050000;
+end;
+
+procedure TstatusIcon.BalloonHint (Title, Value: string; BalloonType: TBalloonType; Delay: Integer);
+//http://msdn.microsoft.com/library/default.asp?url=/library/en-us/shellcc/platform/Shell/reference/functions/shell_notifyicon.asp
+begin
+     if AcceptBalloons
+        then begin
+//             FTime :=Now;
+//             FTimeDelay:=Delay;
+//             FIc.uFlags:=NIF_INFO;
+             trayIcon.data.uFlags := NIF_INFO;
+             with FIc
+                  do StrPLCopy (szInfoTitle, Title, SizeOf (szInfoTitle)-1);
+             with FIc
+                  do StrPLCopy (szInfo, Value, SizeOf (szInfo)-1);
+             FIc.uFlags:=NIF_MESSAGE or NIF_ICON or NIF_INFO or NIF_TIP;
+             FIc.uTimeOut:=Delay;
+             case BalloonType of
+                  btError: FIc.dwInfoFlags:=NIIF_ERROR;
+                  btInfo: FIc.dwInfoFlags:=NIIF_INFO;
+                  btNone: FIc.dwInfoFlags:=NIIF_NONE;
+                  btWarning: FIc.dwInfoFlags:=NIIF_WARNING;
+             end;
+             Shell_NotifyIcon (NIM_MODIFY, PNotifyIconData (@FIc));
+        end;
+end;
+}
+
+{$ENDIF RNQ}
+
+constructor TtrayIcon.create(hndl: HWND; pg: PGUID = NIL);
 //var
 //  FGUID: TGUID;
 begin
   ZeroMemory(@data, NOTIFYIconDataW_V4_SIZE);
   if TrayIconDataVersion = 4 then
     begin
-      if IsEqualGUID(g, GUID_NULL) then
+      if (pg = NIL) or IsEqualGUID(pg^, GUID_NULL) then
         useGUID := false;
 //        CreateGUID(trayIconGuid);
     end;
@@ -322,7 +344,11 @@ begin
      else
       cbSize := NOTIFYIconDataW_V2_SIZE;
 
-   Wnd := hndl;
+   Wnd := classes.AllocateHWnd(wndproc);
+   AllocatedHWnd := Wnd <>0;
+   if not AllocatedHWnd then
+     Wnd := hndl;
+
    uID := cTRAY_uID;
    hIcon := 0;
     if TrayIconDataVersion = 4 then
@@ -353,6 +379,7 @@ end; // create
 
 destructor TtrayIcon.Destroy;
 begin
+  classes.DeallocateHWnd(data.wnd);
   if Assigned(ico) then
    ico.Free;
   ico := NIL;
@@ -368,6 +395,9 @@ begin
           else
             fspTaskbarMainAppWnd := Application.Handle; //Legacy App
 }
+  if allocatedHwnd then
+//    DeallocateHWnd(wnd);
+    Exit;
   if not shown then
    begin
     data.wnd := hndl;
@@ -376,6 +406,7 @@ begin
   hide;
   data.wnd := hndl;
   Shell_NotifyIcon(NIM_ADD, @data);
+
  // Для балунов тоже нада бы...
 end;
 
@@ -418,6 +449,7 @@ begin
   update;
 end; { setIcon }
 
+{$IFDEF RNQ}
 procedure TtrayIcon.setIcon(const iName: TPicName);
 begin
   if ico = NIL then
@@ -438,6 +470,7 @@ begin
    end;
   update;
 end;
+{$ENDIF RNQ}
 {
 procedure TtrayIcon.setIconFile(fn: String);
 var
@@ -486,41 +519,108 @@ begin
  Shell_NotifyIcon(NIM_DELETE, @data)
 end;
 
-procedure TstatusIcon.ReDraw;
+function TtrayIcon.balloon(msg: string; secondsTimeout: real=3; kind: TBalloonIconType=bitNONE; title: string=''):boolean;
 begin
-  trayIcon.setIcon(IcoName);
+  data.dwInfoFlags := aBalloonIconTypes[kind];
+
+    StrLCopy(PWideChar(@data.szInfo[0]), PChar(msg), sizeOf(data.szInfo)-1);
+    StrLCopy(PWideChar(@data.szInfoTitle[0]), PChar(title), sizeOf(data.szInfoTitle)-1);
+
+  data.uVersion := round(secondsTimeout*1000);
+  data.uFlags := data.uFlags or NIF_INFO;
+  update();
+  data.uFlags := data.uFlags and not NIF_INFO;
+  result:=TRUE;
 end;
 
-{
-function TstatusIcon.AcceptBalloons: Boolean;
+procedure TtrayIcon.showballoon(const bldelay: integer;
+                          const BalloonText, BalloonTitle: String;
+                          const BalloonIconType: TBalloonIconType);
+var
+//  NID_50: NotifyIconData_50;
+//  NID_50: TNotifyIconData;
+  NID_50: TNotifyIconDataW_V4;
+  t: String;
 begin
-     Result:=GetShellVersion>=$00050000;
+  if (not EnabledBaloons)  then
+    exit;
+  if balloontext = '' then
+    t := '_'
+   else
+    t := balloontext;
+  ShowBalloonTime := 0;
+//  tmStopTimer(hTimer);
+//  DZBalloonTrayIcon(window, IconID, t, balloontitle, balloonicontype);
+  ShowBalloonTime := bldelay;
+  ZeroMemory(@NID_50, NOTIFYIconDataW_V4_SIZE);
+  with NID_50 do
+  begin
+    if TrayIconDataVersion = 4 then
+      cbSize := NOTIFYIconDataW_V4_SIZE
+     else
+      cbSize := NOTIFYIconDataW_V2_SIZE;
+    Wnd := data.Wnd;
+    uID := data.uID;
+    uFlags := NIF_INFO;
+    StrLCopy(PWideChar(@szInfo[0]), PChar(BalloonText), 255);
+//    StrPCopy(szTip, BalloonText);
+    uTimeout := 30000;
+    StrLCopy(PWideChar(@szInfoTitle[0]), PChar(BalloonTitle), 63);
+    dwInfoFlags := aBalloonIconTypes[BalloonIconType];
+    guidItem := data.guidItem;
+  end;
+  Shell_NotifyIcon(NIM_MODIFY, @NID_50);
 end;
 
-procedure TstatusIcon.BalloonHint (Title, Value: string; BalloonType: TBalloonType; Delay: Integer);
-//http://msdn.microsoft.com/library/default.asp?url=/library/en-us/shellcc/platform/Shell/reference/functions/shell_notifyicon.asp
+procedure TtrayIcon.hideBalloon;
+var
+//  NID_50: NotifyIconData_50;
+//  NID_50: TNotifyIconData;
+  NID_50: TNotifyIconDataW_V2;
 begin
-     if AcceptBalloons
-        then begin
-//             FTime :=Now;
-//             FTimeDelay:=Delay;
-//             FIc.uFlags:=NIF_INFO;
-             trayIcon.data.uFlags := NIF_INFO;
-             with FIc
-                  do StrPLCopy (szInfoTitle, Title, SizeOf (szInfoTitle)-1);
-             with FIc
-                  do StrPLCopy (szInfo, Value, SizeOf (szInfo)-1);
-             FIc.uFlags:=NIF_MESSAGE or NIF_ICON or NIF_INFO or NIF_TIP;
-             FIc.uTimeOut:=Delay;
-             case BalloonType of
-                  btError: FIc.dwInfoFlags:=NIIF_ERROR;
-                  btInfo: FIc.dwInfoFlags:=NIIF_INFO;
-                  btNone: FIc.dwInfoFlags:=NIIF_NONE;
-                  btWarning: FIc.dwInfoFlags:=NIIF_WARNING;
-             end;
-             Shell_NotifyIcon (NIM_MODIFY, PNotifyIconData (@FIc));
-        end;
+  ShowBalloonTime := 0;
+  if (not EnabledBaloons) then
+    exit;
+//  ZeroMemory(@NID_50, SizeOf(NID_50));
+  ZeroMemory(@NID_50, NOTIFYIconDataW_V2_SIZE);
+  with NID_50 do
+  begin
+    cbSize := NOTIFYIconDataW_V2_SIZE;
+    Wnd := data.Wnd;
+    uID := data.uID;
+    uFlags := NIF_INFO;
+//    StrPCopy(PWideChar(@szInfo[0]), '');
+//    StrPCopy(PWideChar(@szInfoTitle[0]), '');
+//     := trayIcon.data.;
+  end;
+  Shell_NotifyIcon(NIM_MODIFY, @NID_50);
 end;
-}
+
+procedure TTrayIcon.wndproc(var Message: TMessage);
+begin
+case message.msg of
+  WM_TRAY:
+    case message.lParam of
+      WM_RBUTTONUP: notify(TE_RCLICK);
+      WM_LBUTTONUP: notify(TE_CLICK);
+      WM_LBUTTONDBLCLK: notify(TE_2CLICK);
+      end;
+  WM_QUERYENDSESSION:
+    message.result := 1;
+  WM_ENDSESSION:
+    if TWmEndSession(Message).endSession then
+      hide();
+  NIN_BALLOONHIDE,
+  NIN_BALLOONTIMEOUT:
+    data.uFlags := data.uFlags and not NIF_INFO;
+  end;
+message.result:=1;
+end;
+
+procedure TTrayIcon.notify(ev: TtrayEvent);
+begin
+  if assigned(onEvent) then
+    onEvent(self, ev)
+end;
 
 end.

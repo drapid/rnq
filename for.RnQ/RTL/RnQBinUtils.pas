@@ -56,7 +56,7 @@ function TLV3U(code: Integer; const Str: UnicodeString): RawByteString;
 function Length_LE(const data: RawByteString): RawByteString;
 function Length_BE(const data: RawByteString): RawByteString;
 function Length_DLE(const data: RawByteString): RawByteString;
-function Length_B(const data: RawByteString): RawByteString;
+function Length_B(const data: RawByteString): RawByteString; OverLoad;
 function WNTS(const s: RawByteString): RawByteString;
 function WNTSU(const s: String): RawByteString;
 

@@ -302,7 +302,7 @@ begin
     end;
 end;
 *)
-Procedure CopyProxy(var pTo : Tproxy; const pFrom : Tproxy);
+Procedure CopyProxy(var pTo: Tproxy; const pFrom: Tproxy);
 begin
 //     p1.enabled:= p2.enabled;
      pTo.name   := pFrom.name;
