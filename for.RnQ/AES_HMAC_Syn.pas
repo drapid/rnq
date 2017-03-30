@@ -6,10 +6,10 @@ unit AES_HMAC_Syn;
 interface
 
 uses
-     Windows,
-     SynCrypto,
-     RDGlobal
-     ;
+  Windows,
+  SynCrypto,
+  RDGlobal
+  ;
 
 
 const

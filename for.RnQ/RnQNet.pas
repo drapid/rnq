@@ -27,8 +27,8 @@ type
   end;
 
   Tproxy = record
-    name : string;
-    user : String;
+    name: string;
+    user: String;
     pwd: String; // Support Unicode!
 //    enabled   : boolean;
     auth      : boolean;
@@ -42,7 +42,9 @@ type
  {$ENDIF ~PREF_IN_DB}
 
 //    addr      : array [Tproxyproto] of Thostport;
-//    host,port : string;
+//    host, port: string;
+    procedure CopyFrom(const pFrom: Tproxy);
+    procedure Clear;
   end;
   TarrProxy = array of Tproxy;
 
@@ -58,8 +60,6 @@ const
     NTLM: boolean;
     user, pwd: string;
     end; }
-   Procedure CopyProxy(var pTo: Tproxy; const pFrom: Tproxy);
-   Procedure ClearProxy(var p1: Tproxy);
    Procedure CopyProxyArr(var pATo: TarrProxy; const pAFrom: TarrProxy);
    Procedure ClearProxyArr(var pa: TarrProxy);
 //procedure proxy_http_Enable(v_icq : TicqSession);
@@ -302,55 +302,55 @@ begin
     end;
 end;
 *)
-Procedure CopyProxy(var pTo: Tproxy; const pFrom: Tproxy);
+Procedure Tproxy.CopyFrom(const pFrom: Tproxy);
 begin
-//     p1.enabled:= p2.enabled;
-     pTo.name   := pFrom.name;
-     pTo.proto  := pFrom.proto;
+     Self.name   := pFrom.name;
+     Self.proto  := pFrom.proto;
 {     for pp:=low(pp) to high(pp) do
       begin
        proxy.addr[pp].host:=proxyes[lastProxy].addr[pp].host;
        proxy.addr[pp].port:=proxyes[lastProxy].addr[pp].port;
       end;}
-      pTo.addr.host:=pFrom.addr.host;
-      pTo.addr.port:=pFrom.addr.port;
+      Self.addr.host:=pFrom.addr.host;
+      Self.addr.port:=pFrom.addr.port;
  {$IFDEF PREF_IN_DB}
  {$ELSE ~PREF_IN_DB}
-      pTo.serv.host := pFrom.serv.host;
-      pTo.serv.port := pFrom.serv.port;
-      pTo.ssl := pFrom.ssl;
+      Self.serv.host := pFrom.serv.host;
+      Self.serv.port := pFrom.serv.port;
+      Self.ssl := pFrom.ssl;
  {$ENDIF PREF_IN_DB}
-     pTo.user := pFrom.user;
-     pTo.pwd  := pFrom.pwd;
-     pTo.auth := pFrom.auth;
-     pTo.NTLM := pFrom.NTLM;
-     pTo.rslvIP := pFrom.rslvIP;
+     Self.user := pFrom.user;
+     Self.pwd  := pFrom.pwd;
+     Self.auth := pFrom.auth;
+     Self.NTLM := pFrom.NTLM;
+     Self.rslvIP := pFrom.rslvIP;
 //  if pTo.serv.host = '' then
 //   pTo.serv.host := DefLoginServer;
 //  if pTo.serv.port <= 0 then
 //   pTo.serv.port := DefLoginPort;
 end;
 
-Procedure ClearProxy(var p1 : Tproxy);
+Procedure Tproxy.Clear();
 begin
-     p1.name   := '';
-     p1.proto := PP_NONE;
+  Self.name   := '';
+  Self.proto := PP_NONE;
 {     for pp:=low(pp) to high(pp) do
       begin
        proxy.addr[pp].host:=proxyes[lastProxy].addr[pp].host;
        proxy.addr[pp].port:=proxyes[lastProxy].addr[pp].port;
       end;}
-      p1.addr.host:= '';
-     p1.rslvIP := True;
-     p1.user := '';
-     p1.pwd  := '';
+  Self.addr.host:= '';
+  Self.rslvIP := True;
+  Self.user := '';
+  Self.pwd  := '';
  {$IFDEF PREF_IN_DB}
  {$ELSE ~PREF_IN_DB}
-      p1.serv.host := '';
+  Self.serv.host := '';
  {$ENDIF PREF_IN_DB}
 end;
 
-Procedure CopyProxyArr(var pATo : TarrProxy; const pAFrom : TarrProxy);
+
+Procedure CopyProxyArr(var pATo: TarrProxy; const pAFrom: TarrProxy);
 var
   I: Integer;
 begin
@@ -359,18 +359,18 @@ begin
   if Length(pAFrom) > 0 then
    for I := Low(pAFrom) to High(pAFrom) do
 //    ClearProxy(pa[i]);
-    CopyProxy(pATo[i], pAFrom[i]);
+    pATo[i].CopyFrom(pAFrom[i]);
 //  SetLength(pa, 0);
 end;
 
-procedure ClearProxyArr(var pa : TarrProxy);
+procedure ClearProxyArr(var pa: TarrProxy);
 var
   I: Integer;
 begin
   if Length(pa) > 0 then
    begin
      for I := Low(pa) to High(pa) do
-      ClearProxy(pa[i]);
+       pa[i].Clear;
      SetLength(pa, 0);
    end;
 end;

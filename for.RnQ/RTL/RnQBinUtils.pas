@@ -65,7 +65,8 @@ function Qword_LEat(p: Pointer): Int64; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_I
 function Qword_BEat(p: Pointer): Int64; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 function dword_BEat(const s: RawByteString; ofs: Integer): Integer; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 function dword_BEat(p: Pointer): LongWord; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
-function dword_LEat(p: Pointer): LongWord; inline; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function dword_LEat(p: Pointer): LongWord; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function dword_LEat(const s: RawByteString; ofs: integer): integer; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 function word_LEat(p: Pointer): word; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 function word_BEat(p: Pointer): word; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 function ptrWNTS(p: Pointer): RawByteString;
@@ -487,9 +488,9 @@ begin
   if (l >= 8)and(ofs < l) then
 //  if l > 2 then
   begin
-   while dword_BEat(@s[ofs])<>idx do
+   while Integer(dword_BEat(s, ofs))<>idx do
     begin
-    inc(ofs, dword_BEat(@s[ofs+4])+8);
+    inc(ofs, dword_BEat(s, ofs+4)+8);
     if ofs >= l then
       exit;
     end;
@@ -574,7 +575,7 @@ begin
    else
     begin
      inc(ofs, 4);
-     result := dword_BEat(@s[ofs]);
+     result := dword_BEat(s, ofs);
      inc(ofs, i);
     end;
 end;
@@ -887,7 +888,7 @@ begin
   result := IcsSwap64(int64(p^))
 end;
 
-function dword_BEat(p: pointer): LongWord; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function dword_BEat(p: pointer): LongWord; OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 begin
 //  result := BSwapInt(integer(p^))
   result := IcsSwap32(LongWord(p^))
@@ -898,9 +899,14 @@ begin
   result := dword_BEat(@s[ofs])
 end;
 
-function dword_LEat(p: pointer): LongWord; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function dword_LEat(p: pointer): LongWord; Overload{$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 begin
-  result:=integer(p^)
+  result := LongWord(p^)
+end;
+
+function dword_LEat(const s: RawByteString; ofs: integer): integer; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+begin
+  result := int32((@s[ofs])^)
 end;
 
 function word_LEat(p: pointer): word; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}

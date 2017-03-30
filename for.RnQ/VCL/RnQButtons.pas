@@ -831,10 +831,12 @@ begin
     else
       FState := bsUp;
   Canvas.Font := Self.Font;
+
   MemDC := Canvas.Handle;
    //FTempCanvas := NIL;
   Button := tbPushButtonNormal;
   try
+
   if ThemeControl(Self) then
   begin
     LGlassPaint := DoGlassPaint;
@@ -938,7 +940,7 @@ begin
       else
         if FFlat then
           Offset := Point(1, 0);
-        end;
+    end;
 //    if ImageName <> '' then
 //      theme.drawPic(Canvas, PaintRect.Left, PaintRect.Top, ImageName, FState<>bsDisabled)
 //    else

@@ -4613,10 +4613,10 @@ const
   colorBytes  = 4;
 var
   Top, Bottom,
-  Left, Right,
+//  Left, Right,
   eww,nsw,
   fx,fy,
-  wx,wy:  Extended;
+//  wx,wy:  Extended;
   cAngle, sAngle:   Double;
   xDiff, yDiff,
   ifx, ify,

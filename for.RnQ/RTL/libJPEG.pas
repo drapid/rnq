@@ -1085,7 +1085,11 @@ var
   {$ifdef win32}
     libJPEG_Handle: cardinal;
   {$else}
-    libJPEG_Handle: pointer;
+    {$ifdef win64}
+      libJPEG_Handle: cardinal;
+     {$else}
+      libJPEG_Handle: pointer;
+    {$endif}
   {$endif}
 
 
@@ -1099,14 +1103,25 @@ const
   function GetProcAddress(hModule: LongWord; lpProcName: pAnsiChar): Pointer; stdcall; external Kernel32 name 
 'GetProcAddress';
 {$else}
-const
-  libdl = {$IFDEF Linux} 'libdl.so.2'{$ELSE} 'c'{$ENDIF};
+  {$ifdef win64}
+  const
+    Kernel32 = 'kernel32.dll';
 
-  RTLD_LAZY = $001;
+  //  function LoadLibrary(lpFileName: pAnsiChar): LongWord; stdcall; external Kernel32 name 'LoadLibraryA';
+    function LoadLibraryExW(lpLibFileName: PWideChar; hFile: THandle; dwFlags: LongWord): HMODULE; stdcall; external Kernel32 name 'LoadLibraryExW';
+    function FreeLibrary(hModule: LongWord): LongBool; stdcall; external Kernel32 name 'FreeLibrary';
+    function GetProcAddress(hModule: LongWord; lpProcName: pAnsiChar): Pointer; stdcall; external Kernel32 name
+  'GetProcAddress';
+  {$else}
+  const
+    libdl = {$IFDEF Linux} 'libdl.so.2'{$ELSE} 'c'{$ENDIF};
 
-  function dlopen(Name: pAnsiChar; Flags: LongInt): Pointer; cdecl; external libdl name 'dlopen';
-  function dlclose(Lib: Pointer): LongInt; cdecl; external libdl name 'dlclose';
-  function dlsym(Lib: Pointer; Name: pAnsiChar): Pointer; cdecl; external libdl name 'dlsym';
+    RTLD_LAZY = $001;
+
+    function dlopen(Name: pAnsiChar; Flags: LongInt): Pointer; cdecl; external libdl name 'dlopen';
+    function dlclose(Lib: Pointer): LongInt; cdecl; external libdl name 'dlclose';
+    function dlsym(Lib: Pointer; Name: pAnsiChar): Pointer; cdecl; external libdl name 'dlsym';
+  {$endif}
 {$endif}
 
 
@@ -1115,7 +1130,11 @@ begin
   {$ifdef win32}
     GetProcAddr := GetProcAddress(libJPEG_Handle, Name);
   {$else}
-    GetProcAddr := dlsym(libJPEG_Handle, Name);
+    {$ifdef win64}
+      GetProcAddr := GetProcAddress(libJPEG_Handle, Name);
+    {$else}
+      GetProcAddr := dlsym(libJPEG_Handle, Name);
+    {$endif}
   {$endif}
 end;
 
@@ -1144,7 +1163,8 @@ begin
         libJPEG_Handle := LoadLibraryExW(PWideChar(libJPEG_Name), 0, 0);
       {$else}
         {$ifdef win64}
-          libJPEG_Handle := LoadLibrary('jpeg62_x64.dll');
+//          libJPEG_Handle := LoadLibrary('jpeg62_x64.dll');
+          libJPEG_Handle := LoadLibraryExW(PWideChar(libJPEG_Name), 0, 0);
         {$else}
           libJPEG_Handle := dlopen(pAnsiChar(libJPEG_Name), RTLD_LAZY);
         {$endif}

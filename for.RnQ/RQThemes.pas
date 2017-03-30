@@ -3419,7 +3419,7 @@ begin
   if k='include' then
    begin
      loadThemeScript(UnUTF(v), ts);
-     Result := logtimestamp + 'Themefile ' + v + ' in file ' + ts.ArcFile + ' loaded';
+     Result := logtimestamp + 'Themefile ' + UnUTF(v) + ' in file ' + ts.ArcFile + ' loaded';
      continue;
    end;
 
@@ -3706,12 +3706,12 @@ begin
          if pDPI > cDefaultDPI then
            begin
              ILhnd := FIntPicsILBig;
-             lPicDPI := pDPI;
+//             lPicDPI := pDPI;
            end
           else
            begin
              ILhnd := FIntPicsILSm;
-             lPicDPI := cDefaultDPI;
+//             lPicDPI := cDefaultDPI;
            end;
          ImageList_GetIconSize(ILhnd, result.cx, result.cy);
          if pEnabled then

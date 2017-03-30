@@ -13,6 +13,7 @@ function  critted(const s: RawByteString; key: integer): RawByteString;
 procedure critt(var s: RawByteString; key: integer);
 procedure decritt(var s: RawByteString; key: integer);
 function  calculate_KEY1(const pwd: AnsiString): integer;
+function  calculate_KEY(const pwd: String): integer;
 function  MD5Pass(const s: RawByteString): RawByteString;
 function  MD5Pass2(const s: RawByteString): RawByteString;
 
@@ -242,6 +243,12 @@ begin
    end;
  {$WARN UNSAFE_CODE ON}
 end; // calculate_KEY1
+
+function calculate_KEY(const pwd: String): integer;
+begin
+  Result := calculate_KEY1(AnsiString(pwd));
+end;
+
 
 function MD5Pass(const s: RawBytestring): RawByteString;
 var

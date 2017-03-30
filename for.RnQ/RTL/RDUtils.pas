@@ -112,9 +112,14 @@ function  bool2str(const b: Boolean): RawByteString;
   function  choplineV(const s: RawByteString; var pos0: Integer): RawByteString;
 
  {$IFDEF UNICODE}
+{ split S in position where SS is found, the first part is returned
+  the second part following SS is left in S }
   function chop(const ss: String; var s: UnicodeString): String; overload;
+// same as before, but specifying separator length
   function chop(i, l: Integer; var s: UnicodeString): String; overload;
+// same as before, but separator is I
   function chop(i: Integer; var s: UnicodeString): String; overload;
+// same as chop(lineterminator, s)
   function chopline(var s: UnicodeString): String; overload;
  {$ENDIF UNICODE}
 
@@ -1572,12 +1577,12 @@ begin
      and not odd(Length(s)) then
    begin
    {$IFDEF UNICODE}
-     Result := PWideChar(s);
+     Result := PWideChar(@s[1]);
      if (s[1] < #5) then
       begin
 //        StrSwapByteOrder(PWideChar(result));
 //        SwapShort(@Result[1], ByteLength(Result));
-        SwapWordByteOrder(PAnsiChar(Result), ByteLength(Result));
+        SwapWordByteOrder(PAnsiChar(@Result[1]), ByteLength(Result));
       end;
    {$ELSE nonUNICODE}
      ss := s;
@@ -1721,7 +1726,7 @@ begin
 //  StrSwapByteOrder(PWideChar(str));
 //  SwapShort(@str[1], ByteLength(str));
   SwapWordByteOrder(PAnsiChar(str), Length(str));
-  Result := WideCharToString(PWideChar(str));
+  Result := WideCharToString(PWideChar(@str[1]));
 end;
 
  {Convert string to UTF8 format}
@@ -1763,7 +1768,7 @@ begin
 //  StrSwapByteOrder(PWideChar(str));
 //  SwapShort(@str[1], ByteLength(str));
   BufLen := byteLength(Value);
-  SwapWordByteOrder(PAnsiChar(str), BufLen);
+  SwapWordByteOrder(PAnsiChar(@str[1]), BufLen);
   SetLength(Result, BufLen);
   Move(Pointer(str)^, Pointer(Result)^, BufLen);
 //  Result := Copy(PAnsiChar(Pointer(str)), 0, BufLen);
@@ -2048,7 +2053,7 @@ end; // hexToInt
 function PacketToHex(Buffer: Pointer; BufLen: Word): AnsiString;
 var
 //  S: AnsiString;
-  i: Integer;
+  i: Cardinal;
 begin
   Result := '';
   for i := 1 to BufLen do
