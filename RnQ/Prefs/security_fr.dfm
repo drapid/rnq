@@ -24,7 +24,7 @@ object securityFr: TsecurityFr
       Width = 141
       Height = 17
       HelpKeyword = 'history-crypt-save-password'
-      Caption = 'remember password'
+      Caption = 'Remember password'
       TabOrder = 0
     end
     object histcryptChangeBtn: TRnQButton
@@ -32,7 +32,7 @@ object securityFr: TsecurityFr
       Top = 23
       Width = 141
       Height = 25
-      Caption = 'change password'
+      Caption = 'Change password'
       TabOrder = 1
       OnClick = histcryptChangeBtnClick
     end

@@ -3,9 +3,10 @@ unit RnQMacros;
 {$I NoRTTI.inc}
 
 interface
-   uses
-     windows, graphics, types, Menus, classes,
-     RDGlobal;
+
+uses
+  windows, graphics, types, Menus, classes, RDGlobal;
+
 type
   Tmacro = record
     hk: Tshortcut;
@@ -40,9 +41,9 @@ type
 // convert
   procedure str2macros(s: RawByteString; var m: Tmacros);
   function  str2macro(s: RawByteString): Tmacro;
-  function  macros2str(m:Tmacros):RawByteString;
+  function  macros2str(m: Tmacros): RawByteString;
 
-  procedure popupMenu(m:Tpopupmenu);
+  procedure popupMenu(m: Tpopupmenu);
 
   procedure popupHintByMacro();
   procedure toggleAutosize;
@@ -56,17 +57,17 @@ type
 //  chatButtons : array[0..0] of TRnQbtn;
 
 implementation
-  uses
-   forms,
-   RQUtil, RDUtils, RnQSysUtils, RnQBinUtils, RnQLangs, RnQGlobal,
-   RnQGraphics32, tipDlg,
-   roasterLib, utilLib, globalLib, iniLib, themesLib,
+uses
+  forms,
+  RQUtil, RDUtils, RnQSysUtils, RnQBinUtils, RnQLangs, RnQGlobal,
+  RnQGraphics32, tipDlg,
+  roasterLib, utilLib, RnQConst, globalLib, iniLib, themesLib,
  {$IFDEF RNQ_PLAYER}
    uSimplePlayer,
  {$ENDIF RNQ_PLAYER}
-   mainDlg, RnQTips, chatDlg, addContactDlg,
-   Protocols_all,
-   RnQProtocol;
+  mainDlg, RnQTips, chatDlg, addContactDlg,
+  Protocols_all,
+  RnQProtocol;
 {const
   macroses : array[0..34] of TRnQMACROS = (
   (   Name:'chat'; Cptn:'show/hide chat window'; DefShortCut:'ctrl+shift+o'; ev:),
@@ -111,7 +112,7 @@ implementation
 
 procedure executeMacro(m: integer);
 var
-//  s:string;
+//  s: string;
   c: TRnQContact;
 begin
   if BossMode.isBossKeyOn and askPassOnBossKeyOn
@@ -183,7 +184,7 @@ case m of
            clickedContact.ViewInfo
        end;
   OP_ADDBYUIN: RnQmain.byUIN1Click(NIL);//showForm(addContactFrm);
-  OP_WP: Protos_ShowWP();
+  OP_WP: Account.AccProto.ShowWP;
   OP_TOGGLEBORDER: toggleMainfrmBorder;
   OP_PREFERENCES: showForm(WF_PREF);
   OP_LOCK: doLock;
@@ -437,15 +438,15 @@ begin
       if (AccPass > '') or
          (Assigned(Account.AccProto) and (Length(Account.AccProto.pwd) > 0)) then
         begin
-          if enteringICQpwd then
+          if enteringProtoPWD then
             Exit;
           if AccPass > '' then
             s := 'Account password'
            else
             s := 'Enter your password';
-          enteringICQpwd := TRUE;
+          enteringProtoPWD := TRUE;
           enterPwdDlg(pass, getTranslation(s));
-          enteringICQpwd := false;
+          enteringProtoPWD := false;
         end;
       if (AccPass > '') then
         begin

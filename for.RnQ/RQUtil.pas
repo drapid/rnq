@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 (* $IMPORTEDDATA ON *)
 unit RQUtil;

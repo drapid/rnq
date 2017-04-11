@@ -57,7 +57,7 @@ implementation
 uses
   RnQProtocol,
   utilLib, RQUtil, menusUnit, RnQLangs,
-  math, globalLib,
+  math, RnQConst, globalLib,
   RnQGraphics32, RQThemes;
 
 {$R *.dfm}

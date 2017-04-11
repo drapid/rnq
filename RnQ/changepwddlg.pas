@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit changepwddlg;
 
@@ -122,7 +122,7 @@ begin
      if oldPwdBox.text <> AccPass then
        begin
         msgDlg(ErrIncr, True, mtError);
-        oldpwdBox.text:='';
+        oldpwdBox.text := '';
         oldpwdBox.setFocus;
         exit;
        end;

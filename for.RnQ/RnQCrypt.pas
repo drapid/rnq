@@ -4,6 +4,10 @@ unit RnQCrypt;
 
 interface
 
+   {$IFDEF USE_SYMCRYPTO}
+uses
+  SynCommons;
+   {$ENDIF USE_SYMCRYPTO}
 
 // crypting
 function  passCrypt(const s: RawByteString): RawByteString;
@@ -28,6 +32,8 @@ function HMAC_MD5(Text, Key: RawByteString): RawByteString;
 function SHA1Pass(const s: RawBytestring): RawByteString;
 function HMAC_SHA1_EX( const Data: RawByteString;
                        const Key : RawByteString ): RawByteString;
+
+function DigestToString(digest: THash256): RawByteString;
 
 implementation
 uses
@@ -474,5 +480,11 @@ begin
    SetLength( Result, SizeOf(TSHA1Digest) );
    Move( digest[0], Result[1], Length(Result) );
 end;
+
+function DigestToString(digest: THash256): RawByteString;
+begin
+  SetString(Result, PAnsiChar(@digest[0]), Length(digest));
+end;
+
 
 end.

@@ -64,17 +64,17 @@ implementation
 {$R *.dfm}
 
 uses
-  RnQLangs, RDUtils, utilLib, Menus, StrUtils, globalLib;
+  Menus, StrUtils, RnQConst, RnQLangs, RDUtils, utilLib, globalLib;
 
 type
   PHKItem = ^THKItem;
   THKItem = record
-     s : array[0..2] of string;
-//      s0, s1, s2 : String;
+     s: array[0..2] of string;
+//      s0, s1, s2: String;
   end;
 
 function macroopcodeName(m: integer): string;
-begin result := getTranslation(globalLib.macro2str[m]) end;
+begin result := getTranslation(macro2str[m]) end;
 
 procedure ThotkeysFr.fillMacrosGrid(pMacros:Tmacros);
 var

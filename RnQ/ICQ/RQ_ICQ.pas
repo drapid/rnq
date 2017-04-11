@@ -86,7 +86,7 @@ uses
   RnQNet, RQUtil, RnQLangs,
   Protocol_ICQ,
   menusUnit,
-  UtilLib, roasterlib, mainDlg, GlobalLib, events,
+  UtilLib, roasterlib, mainDlg, RnQConst, GlobalLib, events,
   ICQConsts, ICQContacts, RnQStrings, RnQDialogs, groupsLib;
 
 Procedure ProcessSSIItem(curICQ: TicqSession; item: TOSSIItem);
@@ -1161,7 +1161,8 @@ begin
           buf.Free;
           if imgStr > '' then
            begin
-            JSONObject := TJSONObject.ParseJSONValueUTF8(@imgStr[1], 1, length(imgStr)) as TJSONObject;
+//            JSONObject := TJSONObject.ParseJSONValueUTF8(@imgStr[1], 1, length(imgStr)) as TJSONObject;
+            JSONObject := TJSONObject.ParseJSONValue(TArray<Byte>(@imgStr[1]), 1, length(imgStr), False) as TJSONObject;
             if Assigned(JSONObject) then
             begin
               try

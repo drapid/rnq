@@ -46,6 +46,7 @@
 ////////////////// <-------
 
  {$DEFINE RNQ_AVATARS}
+ { $DEFINE FLASH_AVATARS}
  { $DEFINE AVATARS_DEBUG} // Show packets of avatar session
 
 

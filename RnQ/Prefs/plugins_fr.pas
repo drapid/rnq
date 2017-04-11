@@ -42,7 +42,7 @@ type
 implementation
 
 uses
-  globalLib, RDGlobal, pluginLib, RnQLangs, RDUtils;//, RQThemes;
+  RnQConst, globalLib, RDGlobal, pluginLib, RnQLangs, RDUtils;//, RQThemes;
 
 {$R *.dfm}
 
@@ -62,7 +62,7 @@ end;
 
 procedure TpluginsFr.prefBtnClick(Sender: TObject);
 var
-  n : PVirtualNode;
+  n: PVirtualNode;
 begin
 {with list do
   if ItemIndex >= 0 then
@@ -126,9 +126,9 @@ end;
 
 procedure TpluginsFr.applyPage;
 var
-//  i : Integer;
-  s, pluginsOn,pluginsOff : String;
-  n : PVirtualNode;
+//  i: Integer;
+  s, pluginsOn, pluginsOff: String;
+  n: PVirtualNode;
 begin
 //  i:=0;
   pluginsOn:='';
@@ -156,11 +156,11 @@ begin
   // to remember old disabled plugins
   while disabledPlugins > '' do
     begin
-    s:=chop(';', disabledPlugins);
+    s := chop(';', disabledPlugins);
     if (s>'') and (0=pos(s,pluginsOn+pluginsOff)) then
-      pluginsOff:=s+';'+pluginsOff;
+      pluginsOff := s+';'+pluginsOff;
     end;
-  disabledPlugins:=pluginsOff;
+  disabledPlugins := pluginsOff;
 end;
 
 procedure TpluginsFr.initPage;
@@ -168,14 +168,30 @@ begin
 //  theme.getPic(PIC_PREFERENCES, prefBtn.glyph);
 //  theme.getPic(PIC_REFRESH, reloadBtn.glyph);
   PluginsList.NodeDataSize := SizeOf(TPlItem);
+
+  PluginsList.width := ClientWidth - GAP_SIZE2;
+
+  reloadBtn.top :=  clientHeight - GAP_SIZE - reloadBtn.Height;
+  reloadBtn.left :=  GAP_SIZE;
+
+  prefBtn.top := reloadBtn.top;
+  prefBtn.left := reloadBtn.left + reloadBtn.Width + GAP_SIZE;
+{
+  fileBox.top := reloadBtn.top - GAP_SIZE - fileBox.Height;
+  fileBox.left := 60 + GAP_SIZE;
+  fileBox.Width := PluginsList.width - 60;
+}
+  PluginsList.top := Label1.top + Label1.height + GAP_SIZE;
+//  PluginsList.height := fileBox.top - PluginsList.top - GAP_SIZE;
+  PluginsList.height := reloadBtn.top - GAP_SIZE - PluginsList.top - GAP_SIZE;
 end;
 
 procedure TpluginsFr.fillPluginsGrid;
 var
-//  i:integer;
-  PlItem : PPlItem;
-  n : PVirtualNode;
-  pl:Tplugin;
+//  i: integer;
+  PlItem: PPlItem;
+  n: PVirtualNode;
+  pl: Tplugin;
 begin
   PluginsList.Clear;
 // if prefPages[thisPrefIdx].frame = NIL then exit;
@@ -215,22 +231,6 @@ procedure TpluginsFr.resetPage;
 //var
 //  pl:Tplugin;
 begin
-
-  PluginsList.width:= ClientWidth - GAP_SIZE2;
-
-  reloadBtn.top:=  clientHeight - GAP_SIZE - reloadBtn.Height;
-  reloadBtn.left:=  GAP_SIZE;
-
-  prefBtn.top:=  reloadBtn.top;
-  prefBtn.left:=  reloadBtn.left + reloadBtn.Width + GAP_SIZE;
-{
-  fileBox.top:=  reloadBtn.top - GAP_SIZE - fileBox.Height;
-  fileBox.left:=  60 + GAP_SIZE;
-  fileBox.Width:= PluginsList.width - 60;
-}
-  PluginsList.top:= Label1.top + Label1.height + GAP_SIZE;
-//  PluginsList.height:= fileBox.top - PluginsList.top - GAP_SIZE;
-  PluginsList.height:= reloadBtn.top - GAP_SIZE - PluginsList.top - GAP_SIZE;
 
   //ignoreBox.width:= clientWidth - GAP_SIZE2;
   //ignoreBox.height:=  clientHeight - GAP_SIZE2 - ignoreBox.top - addBtn.Height;

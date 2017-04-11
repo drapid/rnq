@@ -127,7 +127,7 @@ end; // getDefaultBrowser
   end; { DSiExecute }
 
 
-procedure exec(const cmd:string; const pars:string='');
+procedure exec(const cmd: string; const pars: string = '');
 //var
 // Dir3: IAsyncCall;
 //  s : String;
@@ -145,10 +145,10 @@ begin
  }
 end;
 
-procedure OpenURLdef(url : String);
+procedure OpenURLdef(url: String);
 var
-//  szTemp :CHAR[256];
-  s : String;
+//  szTemp: CHAR[256];
+  s: String;
 begin
 //	sprintf(szTemp, "url.dll,FileProtocolHandler %s", url);
   s := 'url.dll,FileProtocolHandler ' + url;
@@ -169,7 +169,7 @@ begin
 //  if pos(AnsiString('://'),url) = 0 then
   i := pos('://', pURL);
   if i = 0 then
-    proto:=''
+    proto := ''
    else
     proto := Copy(pURL, 1, i-1);
   i := length(pURL);
@@ -197,7 +197,7 @@ begin
     if i<length(prg) then
      begin
       par := copy(prg,i+1,length(prg))+' ';
-      delete(prg,i,length(prg));
+      delete(prg, i, length(prg));
      end;
 //    if pos(AnsiString('%1'), par) = 0 then
     if pos('%1', par) = 0 then
@@ -219,7 +219,7 @@ begin
 end;
 }
 
-function getSpecialFolder(const what: Integer):string;
+function getSpecialFolder(const what: Integer): string;
 var
   szPath: array[0..MAX_PATH] of Char;
 begin
@@ -231,7 +231,7 @@ begin
     result := '';
 end;
 {
-function getSpecialFolder(const what:string):string;
+function getSpecialFolder(const what: string): string;
 const
   keyName='Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders';
 var
@@ -248,7 +248,7 @@ end; // getSpecialFolder}
 
 function expandEnv(const env: String): String;
 var
-  path: String;
+//  path: String;
   len: Integer;
 begin
   len := ExpandEnvironmentStrings(PChar(env), PChar(Result), 0);

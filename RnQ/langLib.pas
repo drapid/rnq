@@ -1,7 +1,7 @@
 {
-Copyright (C) 2002-2004  Massimo Melina (www.rejetto.com)
+  Copyright (C) 2002-2004  Massimo Melina (www.rejetto.com)
 
-This file is part of &RQ.
+  This file is part of &RQ.
 
     &RQ is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,9 +27,8 @@ uses
   RnQLangs, classes, forms;
 
 procedure translateWindows;
-procedure translateWindow(w:Tform);
-procedure translateComponent(c:Tcomponent; window:Tform);
-
+procedure translateWindow(w: Tform);
+procedure translateComponent(c: Tcomponent; window: Tform);
 
 implementation
 
@@ -59,17 +58,17 @@ else
   s := getTranslation(s);
 end; // trans*)
 
-procedure translateComponent(c:Tcomponent; window:Tform);
+procedure translateComponent(c: Tcomponent; window: Tform);
 
-  procedure recurMenu(it:Tmenuitem);
+  procedure recurMenu(it: Tmenuitem);
   var
-    i:integer;
+    i: integer;
   begin
-  it.caption:=trans(it.caption);
-  it.hint:=trans(it.hint);
-  with it do
-    for i:=0 to count-1 do
-      recurMenu(items[i]);
+    it.caption := trans(it.caption);
+    it.hint := trans(it.hint);
+    with it do
+      for i:=0 to count-1 do
+        recurMenu(items[i]);
   end; // recurMenu
 
 {  procedure recurTree(t:Ttreenode); overload;
@@ -89,57 +88,57 @@ procedure translateComponent(c:Tcomponent; window:Tform);
     recurTree(t.item[i]);
   end; // recurTree
 }
-  procedure tstrings_trans(s:Tstrings);
+  procedure tstrings_trans(s: Tstrings);
   var
-    i:integer;
+    i: integer;
   begin
   for i:=0 to s.count-1 do
-    s[i]:=trans(s[i]);
+    s[i] := trans(s[i]);
   end; // tstrings_trans
 
 var
-  i, k:integer;
+  i, k: integer;
 begin
   if c is Tcheckbox then
     with c as Tcheckbox do
     begin
      if caption > '' then
        begin
-         caption:=trans(caption);
+         caption := trans(caption);
      //    width:=35+txtSize(window.canvas.handle, caption).cx;
        end
     end
    else if c is Tcustomform then
     with c as Tcustomform do
-      caption:=trans(caption)
+      caption := trans(caption)
    else if c is Tmenu then
     with c as Tmenu do
       recurMenu(items)
    else if c is Tlabel then
     with c as Tlabel do
-      caption:=trans(caption)
+      caption := trans(caption)
    else if c is Ttabsheet then
     with c as Ttabsheet do
-      caption:=trans(caption)
+      caption := trans(caption)
    else if c is Tlabelededit then
     with c as Tlabelededit do
     with editlabel do
-      caption:=trans(caption)
+      caption := trans(caption)
    else if c is Tgroupbox then
     with c as Tgroupbox do
-      caption:=trans(caption)
+      caption := trans(caption)
    else if c is Tpanel then
     with c as Tpanel do
-      caption:=trans(caption)
+      caption := trans(caption)
    else if c is Tbutton then
     with c as Tbutton do
-      caption:=trans(caption)
+      caption := trans(caption)
    else if c is TRnQspeedbutton then
     with c as TRnQspeedbutton do
-      caption:=trans(caption)
+      caption := trans(caption)
    else if c is TRnQToolButton then
     with c as TRnQToolButton do
-      caption:=trans(caption)
+      caption := trans(caption)
    else if c is Tradiobutton then
     with c as Tradiobutton do
       begin
@@ -163,7 +162,7 @@ begin
        if k > 0 then
         begin
          tstrings_trans(items);
-         itemIndex:=i;
+         itemIndex := i;
         end;
       end
     else if c is TVirtualDrawTree then
@@ -190,20 +189,19 @@ if c is Tcontrol then with c as Tcontrol do
     translateComponent(c.components[i], window);
 end; // translateComponent
 
-procedure translateWindow(w:Tform);
-begin translateComponent(w,w) end;
+procedure translateWindow(w: Tform);
+begin translateComponent(w, w) end;
 
 procedure translateWindows;
 var
-  i:integer;
+  i: integer;
 begin
-i:=0;
-while i < screen.formCount do
-  begin
-  translateWindow(screen.forms[i]);
-  inc(i);
-  end;
+  i := 0;
+  while i < screen.formCount do
+    begin
+      translateWindow(screen.forms[i]);
+      inc(i);
+    end;
 end; // translateWindows
-
 
 end.

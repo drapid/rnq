@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RQMenuItem;
 {$I ForRnQConfig.inc}
@@ -24,12 +24,12 @@ const
 type
   TPopupListEx = class(TPopupList)
    protected
-     procedure WndProc(var Message: TMessage) ; override;
+     procedure WndProc(var Message: TMessage); override;
    private
-     //procedure PerformMessage(cm_msg : integer; msg : TMessage) ;
+     //procedure PerformMessage(cm_msg: integer; msg: TMessage) ;
    end;
 
-  TMenuCloseEvent = procedure (Sender: TObject) of object;
+  TMenuCloseEvent = procedure(Sender: TObject) of object;
 
   TRnQPopupMenu = class(TPopupMenu)
   private
@@ -42,7 +42,7 @@ type
     procedure DoPopup(Sender: TObject); override;
 
   public
-    FIsOpenen : boolean;
+    FIsOpenen: boolean;
     constructor Create(AOwner: TComponent); override;
   published
     property Alignment;
@@ -63,15 +63,15 @@ type
 
   TRQMenuItem = class(TMenuItem)
     protected
-      fImgElm : TRnQThemedElementDtls;
-      FImageName  : TPicName;
+      fImgElm: TRnQThemedElementDtls;
+      FImageName: TPicName;
 //      ThemeToken : Integer;
 //      ImageLoc   : TPicLocation;
 //      ImageIdx   : Integer;
       procedure AdvancedDrawItem(ACanvas: TCanvas; ARect: TRect;
         State: TOwnerDrawState; TopLevel: Boolean); override;
-//      function drawMenuItemR(cnv:Tcanvas; Amenu:Tmenu; item:Tmenuitem;
-//        r:Trect; onlysize:boolean=FALSE):Tpoint;
+//      function drawMenuItemR(cnv: Tcanvas; Amenu: Tmenu; item:Tmenuitem;
+//        r: Trect; onlysize: boolean=FALSE): Tpoint;
       procedure MeasureItem(ACanvas: TCanvas; var Width, Height: Integer); override;
       procedure SetImageName(const Value: TPicName);
       function  GetDevicePPI2: Integer;
@@ -90,7 +90,7 @@ type
     {$endif}
       constructor Create(AOwner: TComponent); override;
       procedure onExitMenu(var Msg: TMessage); message WM_EXITMENULOOP;
-      property  ImageName : TPicName read FImageName write SetImageName;
+      property  ImageName: TPicName read FImageName write SetImageName;
       property  DevicePPI: Integer read GetDevicePPI2;
   end;
 //  function drawMenuItemR(ACanvas : TCanvas; Amenu:Tmenu; item:Tmenuitem;
@@ -170,13 +170,13 @@ end;
 
 procedure TPopupListEx.WndProc(var Message: TMessage);
 var
-  nTi : integer;
-//  tt : HMENU;
+  nTi: integer;
+//  tt: HMENU;
 begin
    case message.Msg of
      //WM_ENTERMENULOOP: PerformMessage(CM_ENTER_MENU_LOOP, Message) ;
 //     WM_EXITMENULOOP : PerformMessage(CM_EXIT_MENU_LOOP, Message) ;
-     WM_MENUSELECT :
+     WM_MENUSELECT:
      with TWMMenuSelect(Message) do
      begin
        if (Menu = 0) and (Menuflag = $FFFF) then
@@ -215,7 +215,7 @@ begin
 //   drawmenuitemR98(ACanvas, TmenuItem(Self).GetParentMenu, self, ARect, false, True, odSelected in State)
 //  else
  {$ENDIF WIN98}
-   GPdrawmenuitemR7(ACanvas, TmenuItem(Self).GetParentMenu, self, ARect, false, True, odSelected in State);
+   GPdrawmenuitemR7(ACanvas, TMenuItem(Self).GetParentMenu, self, ARect, false, True, odSelected in State);
 end;
 
 procedure TRQMenuItem.MeasureItem(ACanvas: TCanvas; var Width, Height: Integer);
@@ -227,7 +227,7 @@ begin
 //   p := drawmenuitemR98(ACanvas, NIL, TmenuItem(Self), rect(0,0,width,height), True)
 //  else
  {$ENDIF WIN98}
-   p := GPdrawmenuitemR7(ACanvas, NIL, TmenuItem(Self), rect(0,0,width,height), True);
+   p := GPdrawmenuitemR7(ACanvas, NIL, TMenuItem(Self), rect(0,0,width,height), True);
   width := p.x;
 //  inc(height, 2);
   inc(p.y, 2);
@@ -267,8 +267,8 @@ begin
 end;
 
 (*
-function drawmenuitemR98(cnv : TCanvas; Amenu: Tmenu; item: Tmenuitem; r: Trect;
-           onlysize:boolean=FALSE; drawbar : Boolean = True; Selected : Boolean = false):Tpoint;
+function drawmenuitemR98(cnv: TCanvas; Amenu: Tmenu; item: Tmenuitem; r: Trect;
+           onlysize: boolean=FALSE; drawbar: Boolean = True; Selected : Boolean = false):Tpoint;
 const
   cBarWidth = 20;
 var
@@ -1039,21 +1039,21 @@ function GPdrawmenuitemR7(ACanvas: TCanvas; Amenu: Tmenu; item: Tmenuitem; r: Tr
 const
   cBarWidth1 = 20;
 var
-  x,k: integer;
-  picSize : TSize;
-  s   : string;
-  fullR : TRect;
-  rB  : TRect;
-  r1  : TRect;
-  clBar : TColor;
-//  gpR, resR :TGPRectF;
+  x, k: Integer;
+  picSize: TSize;
+  s: string;
+  fullR: TRect;
+  rB: TRect;
+  r1: TRect;
+  clBar: TColor;
+//  gpR, resR: TGPRectF;
   {$IFNDEF NOT_USE_GDIPLUS}
-  gr  : TGPGraphics;
-//  gfmt :TGPStringFormat;
-  br  : TGPBrush;
-  pen : TGPPen;
+  gr: TGPGraphics;
+//  gfmt: TGPStringFormat;
+  br: TGPBrush;
+  pen: TGPPen;
   {$ENDIF NOT_USE_GDIPLUS}
-  dc  : HDC;
+  dc: HDC;
 
 {  procedure embossedCenteredLine(x1,x2:integer);
   var
@@ -1069,12 +1069,12 @@ var
     pen.Free;
   end; // embossedCenteredLine
 }
-  procedure embossedCenteredLine(x1, x2: integer);
+  procedure embossedCenteredLine(x1, x2: Integer);
   var
-    y: integer;
+    y: Integer;
     oldP, hp: HPEN;
   begin
-    y:=(R.Top+R.bottom) div 2;
+    y := (R.Top+R.bottom) div 2;
 {    pen := TGPPen.Create(gpColorFromAlphaColor($FF, clBtnShadow));
     gr.DrawLine(pen, x1,y, x2,y);
     pen.Free;
@@ -1087,41 +1087,42 @@ var
 //    LineTo(dc, )
     hp := CreatePen(PS_SOLID, 1, ColorToRGB(clBtnShadow));
     oldP := SelectObject(DC, hp);
-    MoveToEx(DC, x1,y, NIL);
-    lineTo(DC, x2,y);
+    MoveToEx(DC, x1, y, NIL);
+    lineTo(DC, x2, y);
     inc(y);
     hp := CreatePen(PS_SOLID, 1, ColorToRGB(clBtnHighlight));
     hp := SelectObject(DC, hp);
     DeleteObject(hp);
-    MoveToEx(DC, x1,y, NIL);
-    lineTo(DC, x2,y);
+    MoveToEx(DC, x1, y, NIL);
+    lineTo(DC, x2, y);
     hp := SelectObject(DC, oldP);
     DeleteObject(hp);
   end; // embossedCenteredLine
 
 var
-  res : Tsize;
-  vBarWidth : Integer;
-//  fnt : TGPFont;
-    vImgElm : TRnQThemedElementDtls;
-//  PicName : String;
-//      ThemeToken : Integer;
-//      ImageLoc   : TPicLocation;
-//      ImageIdx   : Integer;
-//  cnv : TCanvas;
-  oldFont : HFONT;
-  ABitmap, HOldBmp : HBITMAP;
-  BI : TBitmapInfo;
+  res: TSize;
+  vBarWidth: Integer;
+//  fnt: TGPFont;
+    vImgElm: TRnQThemedElementDtls;
+//  PicName: String;
+//      ThemeToken: Integer;
+//      ImageLoc: TPicLocation;
+//      ImageIdx: Integer;
+//  cnv: TCanvas;
+  oldFont: HFONT;
+  ABitmap, HOldBmp: HBITMAP;
+  BI: TBitmapInfo;
   FadeColor1, FadeColor2, FadeColor3: Cardinal;
-  oldColor : Cardinal;
-  oldBr, brF : HBRUSH;
-  oldPen, Hp : HPEN;
+//  oldColor: Cardinal;
+//  oldBr,
+  brF: HBRUSH;
+//  oldPen, Hp: HPEN;
   oldMode: Integer;
-  brLog: LOGBRUSH;
-  fontTransp : Byte;
-  hls : Thls;
+//  brLog: LOGBRUSH;
+  fontTransp: Byte;
+//  hls: Thls;
   ppi: Integer;
-//  Hbr : HBrush;
+//  Hbr: HBrush;
 begin
   fullR := r;
   try
@@ -1165,7 +1166,7 @@ begin
 //  itemfocused:=cnv.brush.color = clHighlight;
 //  itemfocused:=Selected;
   //  cnv.Font.Color := clMenuText;
-  s:=item.caption;
+  s := item.caption;
   vBarWidth := StrToIntDef(theme.GetString('menu.bar.width'), cBarWidth1);
  try
  // Draw Bar and Clear
@@ -1248,8 +1249,8 @@ begin
 //    inc(r.Right, cBarWidth);
   end;
 
-  result.x:=0;//cBarWidth;
-  result.y:=0;
+  result.x := 0; //cBarWidth;
+  result.y := 0;
   rB := r;
 //  gpR.X := r.Left;
 //  gpR.Y := r.Top;
@@ -1283,15 +1284,16 @@ begin
 //       brF := CreateBrushIndirect(brLog);
 //       oldBr := SelectObject(DC, brF);
        oldFont := SelectObject(DC, ACanvas.Font.Handle);
-       oldColor := SetTextColor(DC, ColorToRGB(ACanvas.Font.Color));
+//       oldColor :=
+         SetTextColor(DC, ColorToRGB(ACanvas.Font.Color));
   //         CreateFontIndirect()
 //       Hp := CreatePen(PS_SOLID, 1, ColorToRGB(ACanvas.Font.Color));
 //       oldPen := SelectObject(dc, Hp);
        DrawText(DC, PChar(s), -1, R, DT_CALCRECT or DT_SINGLELINE or DT_VCENTER);
-       GetTextExtentPoint32(DC,pchar(s),length(s), res);
+       GetTextExtentPoint32(DC, PChar(s), length(s), res);
 //       TextOut()
 //       gr.MeasureString(s, length(s), fnt, gpR, resR);
-       result.y:=max(result.y, Trunc(res.cy));
+       result.y := max(result.y, Trunc(res.cy));
         if not onlysize then
           begin
 //            embossedCenteredLine(R.left, (R.right - Trunc(resR.Width)) div 2);
@@ -1299,7 +1301,7 @@ begin
             r := fullR;
             embossedCenteredLine(R.left, (R.right - Trunc(res.cx) -4) div 2);
             embossedCenteredLine( (R.right + Trunc(res.cx) + 4) div 2 ,R.right);
-             oldMode:= SetBKMode(DC, TRANSPARENT);
+             oldMode := SetBKMode(DC, TRANSPARENT);
              drawText(DC, PChar(s), -1, R, DT_SINGLELINE or DT_VCENTER or DT_CENTER);
              SetBKMode(DC, oldMode);
           end;
@@ -1322,10 +1324,10 @@ begin
     end;
 }
   if onlysize then
-    x:=0
+    x := 0
 //  x:=cBarWidth
    else
-    x:=R.Left;
+    x := R.Left;
 
   ppi := TRQMenuItem(item).DevicePPI;
 
@@ -1484,10 +1486,10 @@ begin
 //     PicName := Str_Error
       picSize.cx := item.Bitmap.Width;
       picSize.cy := item.Bitmap.Height;
-      inc(x,2);
+      inc(x, 2);
       if not onlysize then
        begin
-        k:=(r.top+r.bottom-picSize.cy) div 2;
+        k := (r.top+r.bottom-picSize.cy) div 2;
 //        BitBlt(DC, x, k, picSize.cx, picSize.cy, item.Bitmap.Canvas.Handle, 0,0,SRCCOPY);
         {$IFNDEF NO_WIN98}
          if  Win32MajorVersion < 5 then
@@ -1504,7 +1506,7 @@ begin
     begin
       if Assigned(item.Action) then
        begin
-         vImgElm.PicName := TAction(item.Action).HelpKeyword;
+         vImgElm.PicName := TPicName(TAction(item.Action).HelpKeyword);
          if (item is TRQMenuItem) then
           begin
            if TRQMenuItem(item).fImgElm.picName <> vImgElm.PicName then
@@ -1516,7 +1518,7 @@ begin
        end
       else
        if (item is TRQMenuItem) then
-         vImgElm.picName:= TRQMenuItem(item).fImgElm.picName;
+         vImgElm.picName := TRQMenuItem(item).fImgElm.picName;
 
       //  if not AnsiStartsText('menu.', PicName) then
       //    PicName := 'menu.' + PicName;
@@ -1539,7 +1541,7 @@ begin
           inc(x,2);
           if not onlysize then
            begin
-            k:=(r.top+r.bottom-picSize.cy) div 2;
+            k := (r.top+r.bottom-picSize.cy) div 2;
             if (item is TRQMenuItem) then
 //              if ((item.Tag>=4000)and(item.Tag<4999)) then
 //                rqSmiles.drawPic(DC, Point(x,k), TRQMenuItem(item).fImgElm)
@@ -1557,8 +1559,8 @@ begin
         else
           inc(x, vBarWidth);
     end;
-  inc(x,2);
-  R.left:=x;
+  inc(x, 2);
+  R.left := x;
 //  gpR.X := r.Left;
   rB.Left := r.Left;
 //  rB.Top  := trunc(gpR.Y);
@@ -1591,7 +1593,7 @@ begin
 //        hls.s := hls.s -0.5;
 //        hls.l := hls.l +
 //        ACanvas.Font.Color := hls2color(hls);
-        ACanvas.font.color:=clGrayText;
+        ACanvas.font.color := clGrayText;
       end
      else
       fontTransp := $FF;
@@ -1611,14 +1613,15 @@ begin
 //     Hp := CreatePen(PS_SOLID, 5, ColorToRGB(ACanvas.Font.Color));
 //     oldPen := SelectObject(dc, Hp);
      oldFont := SelectObject(DC, ACanvas.Font.Handle);
-     oldColor := SetTextColor(DC, ColorToRGB(ACanvas.Font.Color));
+//     oldColor :=
+       SetTextColor(DC, ColorToRGB(ACanvas.Font.Color));
     DrawText(DC, PChar(s), -1, R, DT_CALCRECT or DT_SINGLELINE or DT_VCENTER);
-    GetTextExtentPoint32(DC,pchar(s),length(s), res);
+    GetTextExtentPoint32(DC, PChar(s), length(s), res);
      if not onlysize then
        begin
-         R.left:=x;
+         R.left := x;
          R.BottomRight := fullR.BottomRight;
-         oldMode:= SetBKMode(DC, TRANSPARENT);
+         oldMode := SetBKMode(DC, TRANSPARENT);
          drawText(DC, PChar(s), -1, R, DT_SINGLELINE or DT_VCENTER);
          SetBKMode(DC, oldMode);
 //         inc(x, R.right);
@@ -1652,15 +1655,15 @@ begin
       end;
    end;
    
-  result.x:=x;
+  result.x := x;
 //  result.y:= Trunc(resR.Height);
-  result.y:= res.cy;
+  result.y := res.cy;
 //  if (picSize.cy > 0) then
-    k:=picSize.cy+2;
+    k := picSize.cy+2;
 //   else
 //    k:=0;
   if result.y<k then
-    result.y:=k;
+    result.y := k;
   if onlysize then
    if item.Count > 0 then
      inc(result.x, 5);
@@ -1679,7 +1682,7 @@ end;
 
 
 {$ifdef RNQ_SERVICES}
-procedure TRQMenuItem.OnMenuClick (Sender: TObject);
+procedure TRQMenuItem.OnMenuClick(Sender: TObject);
 begin
   if ServiceName <> '' then
     CallService(PAnsiChar(ServiceName), 0, 0);

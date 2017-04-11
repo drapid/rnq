@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RQlog;
 {$I ForRnQConfig.inc}
@@ -169,7 +169,7 @@ begin
   LogList := TVirtualDrawTree.Create(self);
   Self.InsertComponent(LogList);
   LogList.Parent := self;
-  LogList.NodeDataSize := SizeOf(TlogItem);
+  LogList.NodeDataSize := SizeOf(TLogItem);
   with LogList do
   begin
     Align := alClient;
@@ -209,17 +209,17 @@ end;
 
 procedure TlogFrm.LogListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
 begin
-  if node = NIL then
+  if Node = NIL then
     Exit;
-  with TlogItem(PLogItem(LogList.getnodedata(Node))^) do
+  with TLogItem(PLogItem(LogList.GetNodeData(Node))^) do
    begin
      if (Cpt = Text) then
-      dumpbox.text := Cpt
+      dumpBox.Text := Cpt
      else
       if pkt then
-        dumpbox.text := Cpt + CrLfS + hexDumpS(PktData)
+        dumpBox.Text := Cpt + CrLfS + hexDumpS(PktData)
        else
-        dumpbox.text := Cpt + CrLfS + Text;
+        dumpBox.Text := Cpt + CrLfS + Text;
    end;
 //  TlogItem(PLogItem(LogList.getnodedata(Node)^)^).Text;
 //  dumpbox.clear;
@@ -232,7 +232,7 @@ var
   x: Integer;
   r: tgprect;
 begin
- with TlogItem(PLogItem(LogList.getnodedata(PaintInfo.Node))^) do
+ with TLogItem(PLogItem(LogList.GetNodeData(PaintInfo.Node))^) do
  begin
   s := Cpt;
   if vsSelected in PaintInfo.Node.States then
@@ -261,7 +261,7 @@ end;
 
 procedure TlogFrm.LogListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
 begin
-  with PLogItem(LogList.getnodedata(Node))^ do
+  with PLogItem(LogList.GetNodeData(Node))^ do
   begin
    SetLength(Cpt, 0);
    SetLength(Text, 0);
@@ -297,7 +297,7 @@ var
 begin
   if LogList.FocusedNode = NIL then
     Exit;
-  s := TlogItem(PLogItem(LogList.getnodedata(LogList.FocusedNode))^).Text;
+  s := TLogItem(PLogItem(LogList.GetNodeData(LogList.FocusedNode))^).Text;
   s := BetterStrS(s);
   clipboard.asText := s;
 end;
@@ -349,7 +349,7 @@ begin
   if pFlush then
     FlushLogEvFile;
 
-  if logpref.evts.onwindow and assigned(logfrm) then
+  if logpref.evts.onwindow and assigned(logFrm) then
     begin
     h := s;
     logFrm.addToLog(False, chopline(h), s, '', img);
@@ -365,7 +365,7 @@ begin
 //  h := '';
 //  s := logtimestamp+h;
 //  if logpref.evts.onwindow and assigned(logfrm) then
-  if logpref.pkts.onwindow and assigned(logfrm) then
+  if logpref.pkts.onwindow and assigned(logFrm) then
     begin
 //    h := s;
     logFrm.addToLog(needHex, Head, TextData, Data, img);

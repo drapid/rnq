@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit HistAllSearch;
 {$I RnQConfig.inc}
@@ -56,7 +56,7 @@ implementation
 //    RegExpr,
     RegularExpressions,
  {$ENDIF ~DB_ENABLED}
-    events, globalLib,
+    events, RnQConst, globalLib,
     chatDlg,
     themesLib;
 
@@ -277,11 +277,11 @@ procedure TAllHistSrchForm.SchBtnClick(Sender: TObject);
   end;
  {$ENDIF ~DB_ENABLED}
 var
-  sr:TsearchRec;
-  hist : Thistory;
-  cnt  : TRnQContact;
-  fn : string;
-  fnUID : TUID;
+  sr: TsearchRec;
+  hist: Thistory;
+  cnt: TRnQContact;
+  fn: string;
+  fnUID: TUID;
 begin
   if stop2search then
    begin

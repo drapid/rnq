@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit tipDlg;
 {$I forRnQConfig.inc}
@@ -207,7 +207,7 @@ end;
 
 function Ttipfrm.preshow():boolean;
 begin
-  result:=FALSE;
+  result := FALSE;
   if processing or mousedown then
     exit;
   hide();
@@ -217,18 +217,18 @@ begin
       Exit;
   if actionCount>0 then
     exit;  // user interacting with tipfrm
-  actioncount:=0;
-  processing:=TRUE;
-  result:=TRUE;
+  actioncount := 0;
+  processing := TRUE;
+  result := TRUE;
 end; // preshow
 
 procedure Ttipfrm.postshow();
 var
-//  i:integer;
-  R:HRGN;
-//  hwnd:THandle;
-  rad : Integer;
-  st : Integer;
+//  i: integer;
+  R: HRGN;
+//  hwnd: THandle;
+  rad: Integer;
+  st: Integer;
 begin
 {for i:=1 to length(info) do
   if info[i] = #9 then
@@ -258,7 +258,7 @@ begin
 end; // postshow
 
 (*
-procedure Ttipfrm.show(bmp:Tbitmap; x, y : Integer);
+procedure Ttipfrm.show(bmp: Tbitmap; x, y: Integer);
 type
   PColor32 = ^TColor32;
   TColor32 = type Cardinal;

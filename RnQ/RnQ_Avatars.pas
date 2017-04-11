@@ -94,11 +94,12 @@ implementation
  uses
    StrUtils, math,
    RQUtil, RnQLangs, RnQDialogs, RnQNet, RnQFileUtil, RDUtils, RnQGlobal,
-   utilLib, globalLib,
+   cgJpeg,
+   RnQConst, utilLib, globalLib,
    Protocols_all,
  {$IFDEF PROTOCOL_ICQ}
    ICQConsts, ICQv9,
-// Protocol_ICQ,
+//   Protocol_ICQ,
    ICQContacts,
    viewinfoDlg,
  {$ENDIF PROTOCOL_ICQ}
@@ -111,8 +112,10 @@ implementation
   DISQLite3Api,
  {$ENDIF AVT_IN_DB}
    roasterLib,
+ {$IFDEF FLASH_AVATARS}
    ShockwaveFlashObjects_TLB,
 //    FlashPlayerControl,
+ {$ENDIF FLASH_AVATARS}
    chatDlg;
 
 procedure SaveAvatar(const hash: RawByteString; picFmt: TPAFormat;
@@ -244,14 +247,14 @@ begin
  k := PosEx(AnsiString('</URL>'), s, i+5);
  if k <= 5 then
    exit;
- url := Copy(s, i+5, k-i-5);
+ url := UnUTF(Copy(s, i+5, k-i-5));
  i := Pos(CRLF, url);
  if i > 5 then
   url := Copy(url, 1, i-1);
  if Pos('icq_player.swf', url) > 0 then
    begin
     if AvatarsNotDnlddInform then
-      msgDlg('Unsupported format of flash-avatar', True, mtError, uin);
+      msgDlg('Unsupported format of flash-avatar', True, mtError, String(uin));
    end
   else
    begin
@@ -266,18 +269,18 @@ begin
      end
     else
      if AvatarsNotDnlddInform then
-       msgDlg(getTranslation('Bad address of flash-avatar.\n%s', [url]), False, mtError, uin);
+       msgDlg(getTranslation('Bad address of flash-avatar.\n%s', [url]), False, mtError, String(uin));
    end;
 end;
  {$ENDIF PROTOCOL_ICQ}
 
-procedure avatars_save_and_load(cnt : TRnQContact; const hash : RawByteString;
-                                var hash_safe : RawByteString;
-                                var str : TMemoryStream);
+procedure avatars_save_and_load(cnt: TRnQContact; const hash: RawByteString;
+                                var hash_safe: RawByteString;
+                                var str: TMemoryStream);
 var
-  s : string;
-  PicFmt : TPAFormat;
-  bb : Integer;
+  s: string;
+  PicFmt: TPAFormat;
+  bb: Integer;
 begin
   PicFmt := DetectFileFormatStream(str);
  {$IFDEF AVT_IN_DB}
@@ -313,7 +316,7 @@ begin
                  if not loadPic2(s, cnt.icon.Bmp) then
                   begin
                     msgDlg(getTranslation('Could''t load avatar for %s', [cnt.displayed]), False,
-                         mtInformation, cnt.UID);
+                         mtInformation, String(cnt.UID));
                   end;
                  if LowerCase(ExtractFileExt(s)) = '.swf' then
                    cnt.icon.IsBmp := false
@@ -364,20 +367,20 @@ begin
     end;
 end;
 
-function LoadAvtByHash(const hash : RawByteString; var bmp : TRnQBitmap;
-                       var hasAvatar : Boolean; var pPicFile : String) : Boolean;
+function LoadAvtByHash(const hash: RawByteString; var bmp: TRnQBitmap;
+                       var hasAvatar: Boolean; var pPicFile: String): Boolean;
 var
-  sr:TsearchRec;
-//  PicFile : String;
-  path : String;
+  sr: TsearchRec;
+//  PicFile: String;
+  path: String;
  {$IFDEF AVT_IN_DB}
-   str : TMemoryStream;
-  i : Integer;
-//    bType : Integer;
-//    hash : RawByteString;
-    LoadAVTStmt : sqlite3_stmt_ptr;
-    Tail : PAnsiChar;
-    ptr : Pointer;
+   str: TMemoryStream;
+  i: Integer;
+//    bType: Integer;
+//    hash: RawByteString;
+    LoadAVTStmt: sqlite3_stmt_ptr;
+    Tail: PAnsiChar;
+    ptr: Pointer;
  {$ENDIF AVT_IN_DB}
 begin
   Result := False;
@@ -734,7 +737,7 @@ begin
      if (c.icon.ToShow = IS_AVATAR) then
        loaded := LoadAvtByHash(hash_safe, c.icon.Bmp, hasAvatar, PicFile);
      if hasAvatar and not loaded then
-       msgDlg(getTranslation('Couldn''t load avatar for %s', [c.UID]), False, mtError, c.UID);
+       msgDlg(getTranslation('Couldn''t load avatar for %s', [c.UID]), False, mtError, String(c.UID));
 //     hasAvatar := loaded;
      if loaded then
       begin
@@ -817,13 +820,15 @@ var
  frm: TRnQViewInfoForm;
  ci: TchatInfo;
  i: integer;
+ {$IFDEF FLASH_AVATARS}
  pnl: TPanel;
  ctrl: TWinControl;
 // gr: TGPGraphics;
  fn: String;
  w, h: Double;
+ b, b1: Boolean;
+ {$ENDIF FLASH_AVATARS}
  sz: TSize;
- b1, b: Boolean;
 begin
   if Assigned(c) then
   begin
@@ -856,6 +861,7 @@ begin
              FreeAndNil(AvtPBox);
           except
          end;
+ {$IFDEF FLASH_AVATARS}
          if Assigned(swf) then
           begin
            ctrl := swf.Parent;
@@ -863,6 +869,7 @@ begin
            if Assigned(ctrl) then
             FreeAndNil(ctrl);
           end;
+ {$ENDIF FLASH_AVATARS}
          if Assigned(PicAni) then
            FreeAndNil(PicAni);
         except
@@ -875,10 +882,11 @@ begin
         FreeAndNil(PicAni);}
    if Assigned(ci.avtPic.PicAni) then
       FreeAndNil(ci.avtPic.PicAni);
-   pnl := NIL;
+
    with ci.avtPic do
    if c.icon.IsBmp then
      begin
+ {$IFDEF FLASH_AVATARS}
        if Assigned(swf) then
         begin
          ctrl := swf.Parent;
@@ -886,6 +894,7 @@ begin
          if Assigned(ctrl) then
           FreeAndNil(ctrl);
         end;
+ {$ENDIF FLASH_AVATARS}
        if not Assigned(AvtPBox) then
         begin
          if Assigned(ci.avtsplitr) then
@@ -935,6 +944,8 @@ begin
      begin
        if Assigned(AvtPBox) then
         FreeAndNil(AvtPBox);
+ {$IFDEF FLASH_AVATARS}
+       pnl := NIL;
        if not Assigned(swf) then
         begin
          if Assigned(ci.avtsplitr) then
@@ -1018,6 +1029,7 @@ begin
 //         swf.FrameNum := 7;
 //       swf.GotoFrame(2);
        end;
+ {$ENDIF FLASH_AVATARS}
      end;
     if not Assigned(ci.avtsplitr) then
     begin
@@ -1038,13 +1050,15 @@ begin
    roasterLib.redraw(c);
 end;
 
-procedure ClearAvatar(var cnt: TRnQcontact);
+procedure ClearAvatar(var cnt: TRnQContact);
 var
  frm: TRnQViewInfoForm;
  ci: TchatInfo;
  i: integer;
+ {$IFDEF FLASH_AVATARS}
 // pnl : TPanel;
  ctrl : TWinControl;
+ {$ENDIF FLASH_AVATARS}
 begin
   if not Assigned(cnt.icon.Bmp) then
     exit;
@@ -1063,6 +1077,7 @@ begin
    ci := chatFrm.chats.byIdx(i);
    with ci.avtPic do
     begin
+ {$IFDEF FLASH_AVATARS}
        if Assigned(swf) then
         begin
          ctrl := swf.Parent;
@@ -1070,6 +1085,7 @@ begin
          if Assigned(ctrl) then
           FreeAndNil(ctrl);
         end;
+ {$ENDIF FLASH_AVATARS}
        if Assigned(AvtPBox) then
         FreeAndNil(AvtPBox);
        if Assigned(PicAni) then

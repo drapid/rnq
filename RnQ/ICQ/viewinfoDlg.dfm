@@ -29,6 +29,10 @@ object viewinfoFrm: TviewinfoFrm
     OnChange = pagectrlChange
     object mainSheet: TTabSheet
       Caption = '&Main'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label7: TLabel
         Left = 3
         Top = 264
@@ -395,6 +399,10 @@ object viewinfoFrm: TviewinfoFrm
     object HomeTS: TTabSheet
       Caption = 'Home'
       ImageIndex = 7
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label14: TLabel
         Left = 34
         Top = 153
@@ -561,6 +569,10 @@ object viewinfoFrm: TviewinfoFrm
     object WorkTS: TTabSheet
       Caption = '&Work'
       ImageIndex = 6
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label1: TLabel
         Left = 32
         Top = 237
@@ -710,6 +722,10 @@ object viewinfoFrm: TviewinfoFrm
     end
     object TabSheet2: TTabSheet
       Caption = '&Extra'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Bevel2: TBevel
         Left = 245
         Top = 201
@@ -924,6 +940,10 @@ object viewinfoFrm: TviewinfoFrm
     object InterSheet: TTabSheet
       Caption = '&Client'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Bevel1: TBevel
         Left = 16
         Top = 293
@@ -1074,6 +1094,10 @@ object viewinfoFrm: TviewinfoFrm
     object TabSheet1: TTabSheet
       Caption = '&Notes'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object notesBox: TMemo
         AlignWithMargins = True
         Left = 3
@@ -1186,6 +1210,10 @@ object viewinfoFrm: TviewinfoFrm
       Caption = '&Avatar'
       ImageIndex = 4
       OnShow = avtTSShow
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         424
         395)
@@ -1328,6 +1356,10 @@ object viewinfoFrm: TviewinfoFrm
     object PrivacyTab: TTabSheet
       Caption = 'Privacy'
       ImageIndex = 6
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label4: TLabel
         Left = 35
         Top = 32

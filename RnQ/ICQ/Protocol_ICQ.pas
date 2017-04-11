@@ -14,9 +14,9 @@ interface
      filetransferDlg,
      sendfileDlg,
   {$ENDIF usesDC}
-   RnQProtocol,
+   RnQProtocol, rnqProtoUtils,
    RQ_ICQ, ICQcontacts, ICQv9, ICQConsts,
-   globalLib, viewinfoDlg;
+   viewinfoDlg;
 
 
   {$IFDEF usesDC}
@@ -31,7 +31,6 @@ interface
   function  findRcvFile(id: Int64): TfiletransferFrm;
   {$ENDIF usesDC}
 
-  function  enterICQpwd(const thisICQ: TRnQProtocol): boolean;
   //function  addToRoster(c:Tcontact):boolean; overload;
   procedure sendICQcontacts(cnt: TRnQContact; flags: integer; cl: TRnQCList);
   procedure sendICQaddedYou(cnt: TRnQContact);
@@ -82,7 +81,8 @@ implementation
  {$IFDEF RNQ_AVATARS}
   RnQ_Avatars,
  {$ENDIF}
-   utilLib,
+   RnQConst, utilLib, globalLib,
+   Protocols_all,
    ICQflap,
    wpDlg,
    ICQClients, ICQ.Stickers,
@@ -91,58 +91,6 @@ implementation
    roasterLib, themesLib,
    history, chatDlg;
 
-
-
-function enterICQpwd(const thisICQ: TRnQProtocol): boolean;
-var
-//  s: AnsiString;
-  s: String;
-  res: boolean;
-  myInf: TRnQContact;
-//    i: Integer;
-begin
-  result := FALSE;
-  if enteringICQpwd then exit;
-  enteringICQpwd:=TRUE;
-  if not Assigned(thisICQ) or
-    ((thisICQ is TicqSession) and TicqSession(thisICQ).saveMD5Pwd) then
-    s := ''
-   else
-    s := thisICQ.pwd;
-  res:=enterPwdDlg(s, getTranslation('Login password') + ' (' + RnQUser + ')',16);
-  if res then
-   begin
-    if Length(s) > maxPwdLength then
-     begin
-      msgDlg('Password too long', True, mtError);
-      enteringICQpwd := FALSE;
-      exit;
-     end;
-    if thisICQ is TicqSession then
-      begin
-        myInf := thisICQ.getMyInfo;
-        if Assigned(myInf) then
-         if not tICQcontact(myInf).isAIM then
-          if Length(s) > 8 then
-           begin
-             msgDlg('Please enter only first 8 symbols of your password', True, mtInformation);
-      //     exit;
-           end;
-      end;
-   end;
-
-  enteringICQpwd := FALSE;
-  if not res or (s='') then exit;
-
-{  if thisICQ.ProtoElem is TicqSession then
-    if LoginMD5 and saveMD5Pwd then
-      s := MD5Pass(s);}
-  thisICQ.pwd:=s;
-//  saveCFG;
-  if not dontSavePwd then
-    saveCfgDelayed := True;
-  result := TRUE;
-end; // enterICQpwd
 
 procedure sendICQaddedYou(cnt: TRnQContact);
 var
@@ -1341,7 +1289,7 @@ case ev of
         if (autoReconnectStop and (thisICQ.eventError = EC_anotherLogin)) then
           lastStatusUserSet := byte(SC_OFFLINE);
         if thisICQ.eventError = EC_missingLogin then
-          if enterICQpwd(thisICQ) then doConnect
+          if thisICQ.enterPWD then doConnect
           else
         else
           if showDisconnectedDlg or not (thisICQ.eventError in [
@@ -1361,7 +1309,7 @@ case ev of
          begin
           sU := thisICQ.pwd;
           thisICQ.pwd := '';
-          if enterICQpwd(thisICQ) then
+          if thisICQ.enterPWD then
            begin
             thisICQ.disconnect();
             doConnect();

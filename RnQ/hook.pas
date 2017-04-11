@@ -1,7 +1,7 @@
 {
-Copyright (C) 2002-2004  Massimo Melina (www.rejetto.com)
+  Copyright (C) 2002-2004  Massimo Melina (www.rejetto.com)
 
-This file is part of &RQ.
+  This file is part of &RQ.
 
     &RQ is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,17 +27,17 @@ uses
   windows, sysutils, messages, classes;
 
 
-  procedure installHook(hdl : THandle);
+  procedure installHook(hdl: THandle);
   //procedure installHook;
   procedure uninstallHook;
   function isMoved(awTime: Integer = -1): Boolean;
 
 var
-  isHooked  : boolean;
-  isLocked  : Boolean = false; 
+  isHooked: boolean;
+  isLocked: Boolean = false;
 
-  function RegisterSessionNotification(Wnd: HWND; dwFlags: DWORD): Boolean; 
-  function UnRegisterSessionNotification(Wnd: HWND): Boolean; 
+  function RegisterSessionNotification(Wnd: HWND; dwFlags: DWORD): Boolean;
+  function UnRegisterSessionNotification(Wnd: HWND): Boolean;
 
 implementation
 
@@ -45,13 +45,14 @@ uses
   globalLib, utilLib, RQLog;
 
 type
-  TintFun=function:integer;
+  TintFun = function: integer;
+
 const
   // The WM_WTSSESSION_CHANGE message notifies applications of changes in session state. 
   WM_WTSSESSION_CHANGE = $2B1; 
 
   // wParam values: 
-{  WTS_CONSOLE_CONNECT = 1; 
+{  WTS_CONSOLE_CONNECT = 1;
   WTS_CONSOLE_DISCONNECT = 2; 
   WTS_REMOTE_CONNECT = 3; 
   WTS_REMOTE_DISCONNECT = 4; 
@@ -68,17 +69,17 @@ const
   NOTIFY_FOR_ALL_SESSIONS = 1; 
 
 var
-  oldHook : Boolean;
-  FRegisteredSessionNotification : Boolean;
-  SessNotifHndl : THandle;
-  GetLII  : function (var plii: TLastInputInfo): BOOL; stdcall;
+  oldHook: Boolean;
+  FRegisteredSessionNotification: Boolean;
+  SessNotifHndl: THandle;
+  GetLII: function (var plii: TLastInputInfo): BOOL; stdcall;
 
 //  GetLastInputInfo
 
 
-procedure installHook(hdl : THandle);
+procedure installHook(hdl: THandle);
 var
- hndl : THandle;
+ hndl: THandle;
 begin
  SessNotifHndl := hdl;
  FRegisteredSessionNotification := RegisterSessionNotification(SessNotifHndl, NOTIFY_FOR_THIS_SESSION);
@@ -88,7 +89,7 @@ begin
    @GetLII := GetProcAddress(hndl, 'GetLastInputInfo');
    if @GetLII = NIL then
      Exit;
-   isHooked:=TRUE;
+   isHooked := TRUE;
    oldHook := false;
  end
 end; // installHook
@@ -98,9 +99,9 @@ begin
   if not isHooked then
     exit;
   if FRegisteredSessionNotification then
-    UnRegisterSessionNotification(SessNotifHndl) ;
+    UnRegisterSessionNotification(SessNotifHndl);
   SessNotifHndl := 0;
-  isHooked:=FALSE;
+  isHooked := FALSE;
 end; // uninstallHook
 
 function LastInput: DWord;
@@ -118,16 +119,16 @@ begin
  if awTime < 0 then
    awTime := autoaway.time;
  if (LastInput+5 < awTime) then
-   result := True;
+      result := True;
 end;
 
 function RegisterSessionNotification(Wnd: HWND; dwFlags: DWORD): Boolean; 
-  // The RegisterSessionNotification function registers the specified window 
-  // to receive session change notifications. 
-  // Parameters: 
-  // hWnd: Handle of the window to receive session change notifications. 
-  // dwFlags: Specifies which session notifications are to be received: 
-  // (NOTIFY_FOR_THIS_SESSION, NOTIFY_FOR_ALL_SESSIONS) 
+  // The RegisterSessionNotification function registers the specified window
+  // to receive session change notifications.
+  // Parameters:
+  // hWnd: Handle of the window to receive session change notifications.
+  // dwFlags: Specifies which session notifications are to be received:
+  // (NOTIFY_FOR_THIS_SESSION, NOTIFY_FOR_ALL_SESSIONS)
 type 
   TWTSRegisterSessionNotification = function(Wnd: HWND; dwFlags: DWORD): BOOL; stdcall; 
 var 
@@ -140,10 +141,10 @@ begin
   begin 
     try
       @WTSRegisterSessionNotification := 
-        GetProcAddress(hWTSAPI32DLL, 'WTSRegisterSessionNotification');
+        GetProcAddress(hWTSAPI32DLL, 'WTSRegisterSessionNotification'); 
       if Assigned(WTSRegisterSessionNotification) then 
       begin 
-        Result:= WTSRegisterSessionNotification(Wnd, dwFlags); 
+        Result := WTSRegisterSessionNotification(Wnd, dwFlags); 
       end; 
     finally 
       if hWTSAPI32DLL > 0 then 
@@ -153,9 +154,9 @@ begin
 end; 
 
 function UnRegisterSessionNotification(Wnd: HWND): Boolean;
-  // The RegisterSessionNotification function unregisters the specified window 
-  // Parameters: 
-  // hWnd: Handle to the window 
+  // The RegisterSessionNotification function unregisters the specified window
+  // Parameters:
+  // hWnd: Handle to the window
 type 
   TWTSUnRegisterSessionNotification = function(Wnd: HWND): BOOL; stdcall; 
 var 
@@ -167,11 +168,11 @@ begin
   if (hWTSAPI32DLL > 0) then 
   begin 
     try
-      @WTSUnRegisterSessionNotification := 
+      @WTSUnRegisterSessionNotification :=
         GetProcAddress(hWTSAPI32DLL, 'WTSUnRegisterSessionNotification');
       if Assigned(WTSUnRegisterSessionNotification) then 
       begin 
-        Result:= WTSUnRegisterSessionNotification(Wnd); 
+        Result:= WTSUnRegisterSessionNotification(Wnd);
       end; 
     finally 
       if hWTSAPI32DLL > 0 then 
@@ -180,11 +181,11 @@ begin
   end; 
 end; 
 
-function IsFullScreenMode() : Boolean;
+function IsFullScreenMode(): Boolean;
 var
-  w, h : Integer;
-  Wnd : HWND;
-  rcWindow : TRECT;
+  w, h: Integer;
+  Wnd: HWND;
+  rcWindow: TRECT;
 begin
   w := GetSystemMetrics(SM_CXSCREEN);
   h := GetSystemMetrics(SM_CYSCREEN);

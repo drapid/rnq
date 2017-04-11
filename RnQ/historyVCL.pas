@@ -252,7 +252,8 @@ uses
  {$ENDIF ~DB_ENABLED}
   RnQSysUtils, RnQLangs, RnQFileUtil, RDUtils, RnQBinUtils,
   RQUtil, RnQButtons, RnQGlobal, RnQCrypt, RnQPics,
-  globalLib, mainDlg, chatDlg, utilLib, ViewPicDimmedDlg,
+  RnQConst, globalLib, mainDlg, chatDlg, utilLib,
+  ViewPicDimmedDlg,
   roasterLib,
   {$IFDEF USE_GDIPLUS}
 //  KOLGDIPV2,
@@ -1625,7 +1626,7 @@ var
        EK_XstatusMsg,
        EK_OFFGOING:
          begin
-           Protos_EventExtraPics(who.fProto, ev.kind, ev.getBodyBin,
+           who.fProto.EventExtraPics(ev.kind, ev.getBodyBin,
             pic1, pic2);
            if pic1 > '' then
              with theme.drawPic(Cnv.Handle, curX+2, curY, pic1, True, PPI) do
@@ -2296,7 +2297,7 @@ var
 
   function makeElement(uin: TUID; font: TFont): RawByteString;
   begin
-    result := '   .uin'+uin+ ' {'+CRLF+
+    result := '   .uin'+ UTF8Encode(uin) + ' {' + CRLF+
               '     color: '+ color2html(font.color)+';'+CRLF;
     result := result + '     font-family: "'+ AnsiString(font.Name)+'";'+CRLF;
     result := result + '     font-size: '+IntToStrA(ABS(font.Height))+'px;'+CRLF;
@@ -2315,6 +2316,8 @@ var
 begin
   result := '';
   dim := 0;
+  EvHost := NIL;
+  EvGuest := NIL;
   fnt := TFont.Create;
   fnt.Assign(Self.canvas.Font);
 
@@ -2473,7 +2476,7 @@ begin
     PK_NONE: selecting := TRUE;
     PK_CRYPTED:
       if enterPwdDlg(histcrypt.pwd) then
-        histcrypt.pwdkey := calculate_KEY1(histcrypt.pwd);
+        histcrypt.pwdkey := calculate_KEY(histcrypt.pwd);
     PK_HEAD, PK_TEXT, PK_LINK, PK_SMILE:
       if ((pointedSpace.kind<>PK_HEAD) or (pointedItem.kind = PK_HEAD))
         and not DoubleClick then

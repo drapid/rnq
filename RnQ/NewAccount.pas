@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit NewAccount;
 
@@ -29,7 +29,7 @@ type
     { Private declarations }
   public
     { Public declarations }
-    function getProto : TRnQProtoClass;
+    function getProto: TRnQProtoClass;
   end;
 
 //var
@@ -51,8 +51,8 @@ end;
 
 procedure TNewAccFrm.FormCreate(Sender: TObject);
 var
-//  s : String;
-  b : Byte;
+//  s: String;
+  b: Byte;
 begin
  {$IFNDEF ICQ_ONLY}
   for b in cUsedProtos do
@@ -70,7 +70,7 @@ function TNewAccFrm.getProto: TRnQProtoClass;
 //type
 //  ff = array [cUsedProtos] of byte;
 var
-  i : Integer;
+  i: Integer;
 begin
  {$IFNDEF ICQ_ONLY}
   i := AccCBox.ItemIndex;
@@ -91,7 +91,7 @@ end;
 
 procedure TNewAccFrm.OkBtnClick(Sender: TObject);
 var
-  pr : TRnQProtoClass;
+  pr: TRnQProtoClass;
 begin
   pr := getProto;
   if Assigned(pr) and pr._isValidUid1(AccEdit.Text) then

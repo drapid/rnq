@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit history;
 {$I RnQConfig.inc}
@@ -77,7 +77,7 @@ uses
   RnQ2SQL,// SQLite3Commons, SynCommons,
   ASGSQLite3Api,
  {$ENDIF DB_ENABLED}
-  utilLib, globalLib;
+  utilLib, RnQConst, globalLib;
 
 const
   Max_Event_ID = 1000000;
@@ -410,10 +410,10 @@ var
             if Account.AccProto.getMyInfo.equals(uid) then
               ev.who       := Account.AccProto.getMyInfo
              else
-                begin
-                   thisCnt := Account.AccProto.getContact(uid);
-                   ev.who  := thisCnt;
-                end;
+               begin
+                 thisCnt := Account.AccProto.getContact(uid);
+                 ev.who  := thisCnt;
+               end;
           end;
         EI_WID:
           begin
@@ -424,6 +424,7 @@ var
       cur := next;
      end;
   end; // parseExtraInfo
+
 var
   len: Int64;
 //  iu : TUID;

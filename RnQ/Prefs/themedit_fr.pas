@@ -73,7 +73,7 @@ implementation
 uses
   Types, UITypes,
   RDFileUtil, RDUtils,
-  utilLib, prefDlg, globalLib, themesLib
+  utilLib, prefDlg, RnQConst, globalLib, themesLib
   ;
 
 {$R *.dfm}

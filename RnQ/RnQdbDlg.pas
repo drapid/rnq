@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RnQdbDlg;
 {$I RnQConfig.inc}
@@ -74,7 +74,7 @@ uses
   RnQLangs, RnQStrings, RDUtils,
   RnQSysUtils, RnQPics,
   RQUtil, RDGlobal, RQThemes, RnQMenu, menusUnit,
-  globalLib, chatDlg, utilLib, themesLib,
+  RnQConst, globalLib, chatDlg, utilLib,
   RnQProtocol, protocols_all,
   ViewHEventDlg
   ;
@@ -137,7 +137,7 @@ procedure TRnQdbFrm.purgeBtnClick(Sender: TObject);
   var
     sr: Tsearchrec;
     path: string;
-//    uin:integer;
+//    uin: integer;
   begin
     if not removenilhistoriesChk.checked then
       exit;
@@ -167,8 +167,8 @@ procedure TRnQdbFrm.purgeBtnClick(Sender: TObject);
     i: integer;
     removeIt: boolean;
   begin
-    for i:= TList(TRnQProtocol.contactsDB).count-1 downto 0 do
-      begin
+   for i:= TList(TRnQProtocol.contactsDB).count-1 downto 0 do
+    begin
       c := TRnQProtocol.contactsDB.getAt(i);
       removeIt := FALSE;
       if nilChk.checked then
@@ -184,7 +184,7 @@ procedure TRnQdbFrm.purgeBtnClick(Sender: TObject);
         { i think it is fair to send back this to the next quit ;)
         }
         end;
-      end;
+    end;
   end; // purgeContacts
 
 begin
@@ -224,8 +224,8 @@ var
  i: Int64;
  c1, c2: TRnQContact;
 begin
- c1 := TRnQcontact(sender.getnodedata(Node1)^);
- c2 := TRnQContact(sender.getnodedata(Node2)^);
+  c1 := TRnQcontact(sender.getnodedata(Node1)^);
+  c2 := TRnQContact(sender.getnodedata(Node2)^);
 
  case Column of
    COLUMN_UID:
@@ -276,7 +276,7 @@ begin
    COLUMN_IMP: // Important string
     cnv.textout(PaintInfo.ContentRect.Left,2, c.lclImportant);
    COLUMN_AVTMD5: // Avatar MD5
-         cnv.textout(PaintInfo.ContentRect.Left,2, str2hexU(c.icon.Hash_safe));
+    cnv.textout(PaintInfo.ContentRect.Left,2, str2hexU(c.icon.Hash_safe));
    COLUMN_BIRTHDAY:
      begin
        dd := c.GetBDay;
@@ -325,7 +325,7 @@ var
   cnt: TRnQContact;
 begin
   with dbTree do
-  if focusedNode<>NIL then
+   if focusedNode<>NIL then
     begin
       cnt := TRnQContact(getnodedata(focusednode)^);
     //  if cnt is TICQContact then

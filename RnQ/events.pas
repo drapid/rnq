@@ -42,23 +42,23 @@ const
 // adding events remember to initialize supportedBehactions
 const
   event2str: array [0..EK_last] of AnsiString=(
-    '','msg','url','contacts','file','authreq','addedyou',
-    'incoming', 'outgoing', 'auth', 'authdenied', 'statuschange',
+    '', 'msg', 'url', 'contacts', 'file', 'authreq', 'addedyou',
+    'oncoming', 'offgoing', 'auth', 'authdenied', 'statuschange',
     'automsgreq', 'gcard', 'automsg', 'begtyping', 'fintyping',
     'xstatusmsg', 'xstatusreq', 'buzz'
   );
   event2ShowStr: array [0..EK_last] of string=(
-    '',Str_message, 'URL', 'Contacts', 'File','Authorization request',
+    '',Str_message, 'URL', 'Contacts', 'File', 'Authorization request',
     'Added you', 'Oncoming', 'Offgoing', 'Authorization given',
     'Authorization denied', 'Status changed','Auto-message request',
     'Green-card', 'Auto-message', 'Begin typing', 'Finish typing',
     'XStatus message', 'XStatus request', 'Contact buzzing'
   );
   trayEvent2str: array [0..EK_last] of string=(
-    '','message from %s','URL from %s','contacts from %s','file',
-    '%s requires authorization','%s added you','%s is online','%s is offline',
-    '%s authorized you','%s denied authorization','%s changed status',
-    'auto-message requested by %s','greeting card from %s',
+    '', 'message from %s', 'URL from %s', 'contacts from %s','file',
+    '%s requires authorization', '%s added you', '%s is online', '%s is offline',
+    '%s authorized you', '%s denied authorization', '%s changed status',
+    'auto-message requested by %s', 'greeting card from %s',
     'auto-message for %s', 'Started typing', 'Finished typing', '%s changed status',
     'XStatus requested by %s', 'Tried to buzz by %s'
   );
@@ -74,13 +74,13 @@ const
     'Has a birthday!', 'Has a birthday tomorrow!', 'Has a birthday after tomorrow!'
   );
   histHeadPrefix = '%2:s %0:s, %1:s';
-  histHeadevent2str:array [0..EK_last] of string=(
+  histHeadevent2str: array [0..EK_last] of string=(
     '','','','',' sent file',' Request authorization','',
     ' is online',' is offline',' Authorized',' Denied authorization',' - status %3:s',
     ' requested your auto-message',' Greeting Card',' auto-message', ' started typing',
     ' finished typing', ' - status %3:s', ' requested your XStatus', '%3:s'
   );
-  histBodyEvent2str:array [EK_null..EK_last] of string=(
+  histBodyEvent2str: array [EK_null..EK_last] of string=(
     '','','','',
     'Filename: %s\nCount: %d\nSize: %s\nMessage: %s', // EK_FILE
     '%s',   // EK_authReq
@@ -235,7 +235,7 @@ uses
   RnQLangs, RnQCrypt, RnQGlobal, RnQPics,
 //  prefDlg,
   outboxDlg, utilLib, chatDlg, history,
-  themesLib, pluginutil, globalLib, mainDlg,
+  themesLib, pluginutil, RnQConst, globalLib, mainDlg,
   Protocols_all,
  {$IFDEF PROTOCOL_ICQ}
   protocol_ICQ,
@@ -346,19 +346,19 @@ function Thevent.pic: TPicName;
 begin
  if (kind = EK_msg) then
    begin
-    if hasMsgOK and((Self.flags and IF_not_delivered) > 0)then
+     if hasMsgOK and((Self.flags and IF_not_delivered) > 0)then
        Result := PIC_MSG_BAD// + 'ok'
-     else
-      if hasMsgOK and
-//    ((Self.flags and (IF_delivered or IF_not_delivered)) > 0) then
-//    if
-      ((Self.flags and IF_delivered) > 0) then
-       Result := PIC_MSG_OK// + 'ok'
       else
-       if hasMsgSRV and ((Self.flags and IF_SERVER_ACCEPT) > 0)then
-         Result := PIC_MSG_SERVER// + 'ok'
+       if hasMsgOK and
+    //    ((Self.flags and (IF_delivered or IF_not_delivered)) > 0) then
+  //    if
+          ((Self.flags and IF_delivered) > 0) then
+         Result := PIC_MSG_OK// + 'ok'
         else
-         Result := PIC_MSG// + 'ok'
+         if hasMsgSRV and ((Self.flags and IF_SERVER_ACCEPT) > 0) then
+           Result := PIC_MSG_SERVER // + 'ok'
+          else
+           Result := PIC_MSG // + 'ok'
    end
   else if kind = EK_buzz then
     Result := PIC_BUZZ
@@ -804,7 +804,7 @@ else
         Result := ' ' + GetTranslation('tried to buzz you!');
       end
     else
-    dsp := who.displayed
+     dsp := who.displayed
   end
    else
     dsp := ''; 

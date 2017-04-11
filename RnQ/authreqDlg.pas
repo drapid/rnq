@@ -1,7 +1,7 @@
 {
-Copyright (C) 2002-2004  Massimo Melina (www.rejetto.com)
+  Copyright (C) 2002-2004  Massimo Melina (www.rejetto.com)
 
-This file is part of &RQ.
+  This file is part of &RQ.
 
     &RQ is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -86,11 +86,11 @@ begin
   msgBox.text := reason;
   theme.pic2ico(RQteFormIcon, PIC_AUTH_REQ, icon);
 //theme.getIco2(PIC_AUTH_REQ, icon);
-closeChk.checked:=closeAuthAfterReply;
+  closeChk.checked := closeAuthAfterReply;
 
-translateWindow(self);
-showForm(self);
-bringForeground:=handle;
+  translateWindow(self);
+  showForm(self);
+  bringForeground := handle;
 end;
 
 procedure TauthreqFrm.authBtnClick(Sender: TObject);
@@ -169,7 +169,7 @@ end;
 procedure TauthreqFrm.Label2Click(Sender: TObject);
 begin
   with closeChk do
-    checked:=not checked
+    checked := not checked
 end;
 
 end.

@@ -10,24 +10,19 @@ interface
 uses
    Windows, Classes, Types, SysUtils,
    RnQNet, RDGlobal,
-//   globalLib,
    RnQPrefsLib,
    RnQGraphics32, RDUtils
    ;
 //    contacts;
 
 type
-  TwhatLog = (WL_connected, WL_disconnected,
-              WL_serverGot, WL_serverSent,
-              WL_heSent, WL_meSent, WL_connecting,
-              WL_sent_text, WL_rcvd_text);
   Tstatus = (SC_ONLINE = 0, SC_OFFLINE, SC_UNK);
-type
+
   TXStatStr = record
                 Cap, Desc: String;
               end;
 type
- TLIST_TYPES = (LT_ROSTER, LT_VISIBLE, LT_INVISIBLE, LT_TEMPVIS, LT_SPAM);
+  TLIST_TYPES = (LT_ROSTER, LT_VISIBLE, LT_INVISIBLE, LT_TEMPVIS, LT_SPAM);
  PStatusProp = ^TStatusProp;
  TStatusProp = record
    Cptn: String;
@@ -127,7 +122,7 @@ type
   TRnQCntClass = class of TRnQContact;
 
   TRnQProtocol = class;
-  TProtoNotify = procedure (Sender: TRnQProtocol; event: Integer) of object;
+  TProtoNotify = procedure (Sender: TRnQProtocol; event: Integer);
   TRnQProtoClass = class of TRnQProtocol;
 
   TProtoEvent=(
@@ -415,6 +410,7 @@ type
     procedure SetPrefs(pp: TRnQPref); Virtual;
     procedure ResetPrefs; Virtual;
     procedure Clear; Virtual; Abstract;
+    function  getDefHost: Thostport; virtual;
 
     procedure disconnect; Virtual; Abstract;
 //    procedure setStatus(s:Tstatus; inv:boolean);
@@ -466,7 +462,7 @@ type
     procedure InputChangedFor(cnt: TRnQContact; InpIsEmpty: Boolean; timeOut: boolean = false); Virtual; Abstract;
     function  compareStatusFor(cnt1, Cnt2: TRnqContact): Smallint; Virtual; Abstract;
 
-    procedure sendkeepalive; Virtual; Abstract;
+    procedure sendKeepalive; Virtual; Abstract;
 
     procedure AuthGrant(Cnt: TRnQContact); Virtual; Abstract;
     procedure AuthRequest(cnt: TRnQContact; const reason : String); Virtual; Abstract;
@@ -581,12 +577,12 @@ type
     function  displayed4All: string;
     function  uin2Show: String; virtual; abstract;
     function  getFN: String;
-    function  equals(c: TRnQContact): boolean; reintroduce; OverLoad;
-    function  equals(const pUID: TUID): boolean; reintroduce; OverLoad;
-    function  equals(pUIN: Integer): boolean; reintroduce; OverLoad;
+    function  equals(c: TRnQContact): boolean; ReIntroduce; OverLoad;
+    function  equals(const pUID: TUID): boolean; ReIntroduce; OverLoad;
+    function  equals(pUIN: Integer): boolean; ReIntroduce; OverLoad;
     procedure SetDisplay(const s: String); Virtual;
     function  GetDBrow: RawByteString; virtual; abstract;
-    function  ParseDBrow(ItemType: Integer; const item: RawByteString): Boolean; virtual; abstract;
+    function  ParseDBrow(ItemType: Integer; const item: RawByteString): Boolean; virtual;
     procedure ViewInfo; virtual; abstract;
     function  isAcceptFile: Boolean; Virtual;
     function  GetBDay: TDateTime;
@@ -687,17 +683,10 @@ var
 
 //  function ActiveProto: IRnQProtocol; Inline;
 
-  procedure logProtoPkt(what: TwhatLog; const head: String; const data: RawByteString='');
-  procedure FlushLogPktFile;
-//  function  activeICQ: TicqSession; Inline;
-  procedure setProgBar(const proto: TRnQProtocol; v: double);
-
   function  Int2UID(const i: Integer): TUID; Inline;
+
 const
-  LogWhatNames: array [TwhatLog] of string=('CONNECTED', 'DISCONNECTED',
-                                            'CLIENT', 'SERVER', 'DC RCVD', 'DC SENT',
-                                            'CONNECTING', 'CLIENT', 'SERVER');
- // Flags for messages                                    
+ // Flags for messages
   IF_multiple = 1 shl 0;      // multiple recipients
   IF_offline  = 1 shl 1;      // sent while you were offline
   IF_urgent   = 1 shl 2;      // send msg urgent
@@ -721,18 +710,13 @@ uses
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
-   RnQFileUtil,
-   RQLog, RQUtil, RnQGlobal, RnQCrypt, RnQPics,
-   globalLib, mainDlg,// utilLib,
+   RnQBinUtils, RnQFileUtil,
+//   RQLog, RQUtil,
+   RnQGlobal, RnQCrypt, RnQPics,
+   RnQConst, globalLib,
+   mainDlg,
    ThemesLib;
 
-const
-  LogPics: array[TwhatLog] of TPicName = (PIC_CONNECTING, PIC_OFFGOING,
-            PIC_LEFT, PIC_RIGHT,
-            PIC_RIGHT, PIC_LEFT, PIC_CONNECTING,
-            PIC_LEFT, PIC_RIGHT );
-var
-  logPktFileData: AnsiString;
 //  ActProto: Integer;
 
 {function ActiveProto: IRnQProtocol; inline;
@@ -885,6 +869,11 @@ begin
   SupportTypingNotif := True;
   isSendTypingNotif  := True;
   pwd := '';
+end;
+
+function TRnQProtocol.getDefHost: Thostport;
+begin
+  Result := _getDefHost;
 end;
 
 { TRnQContact }
@@ -1108,6 +1097,38 @@ begin
  {$ELSE UID_IS_UNICODE}
   result := StrToIntDef(String(uid2cmp), 0); // !!!!!!!!!
  {$ENDIF UID_IS_UNICODE}
+end;
+
+function TRnQcontact.ParseDBrow(ItemType: Integer; const item: RawByteString): Boolean;
+begin
+  Result := True;
+    case ItemType of
+      DBFK_Authorized: Authorized := boolean(item[1]);
+      DBFK_DISPLAY:    fDisplay := UnUTF(item);
+      DBFK_NICK:       nick := UnUTF(item);
+      DBFK_FIRST:      first := UnUTF(item);
+      DBFK_LAST:       last := UnUTF(item);
+
+      DBFK_NOTES:      if Assigned(data) then TCE(data^).notes:= UnUTF(item);
+      DBFK_DONTDELETE: if Assigned(data) then TCE(data^).dontdelete := boolean(item[1]);
+      DBFK_ASKEDAUTH:  if Assigned(data) then TCE(data^).askedAuth := boolean(item[1]);
+      DBFK_QUERY:      if Assigned(data) then TCE(data^).toquery := boolean(item[1]);
+      DBFK_SENDTRANSL: SendTransl := boolean(item[1]);
+      DBFK_BIRTH:      system.move(item[1], birth, 8);
+      DBFK_BIRTHL:     system.move(item[1], birthL, 8);
+      DBFK_LASTBDINFORM: system.move(item[1], LastBDInform, 8);
+      DBFK_lclNoteStr: lclImportant := UnUTF(item);
+      DBFK_ICONSHOW:   system.move(item[1], icon.ToShow, 1);
+      DBFK_SSIID: begin
+                       SSIID := str2int(item);
+                       CntIsLocal := SSIID = 0;
+                  end;
+      else
+       begin
+        Result := False;
+       end
+      ;
+    end;
 end;
 
 function TRnQcontact.imVisibleTo: Boolean;
@@ -1494,7 +1515,7 @@ begin
     result:=result + StrToUTF8(TRnQContact(List[I]).UID) + CRLF;
 end;
 
-//function TRnQCList.fromString(cls : TRnQContactType; const s: RawByteString; db:TRnQCList):boolean;
+//function TRnQCList.fromString(cls: TRnQContactType; const s: RawByteString; db: TRnQCList): boolean;
 function TRnQCList.fromString(pr: TRnQProtocol; const s: RawByteString; db: TRnQCList): boolean;
 var
   i: integer;
@@ -1676,44 +1697,6 @@ begin
 end;}
 
 
-procedure logProtoPkt(what: TwhatLog; const head: String; const data: RawByteString='');
-var
-  sA: RawByteString;
-  sU: String;
-  needHash: Boolean;
-begin
-  needHash := not (what in [WL_sent_text, WL_rcvd_text]);
-  if needHash then
-    begin
-      sA := data;
-      sU := '';
-    end
-   else
-    begin
-      sA := '';
-      sU := String(data);
-    end;
-
-  if (logpref.pkts.onwindow) then
-    logEvPkt(head, sU, sA, LogPics[what], needHash);
-
-  if logpref.pkts.onfile then
-   begin
-    if needHash then
-      sA := hexDump(data)
-     else
-      sA := data;
-    logPktFileData := logPktFileData + AnsiString(head)+CRLF+ sA +CRLF;
-   end;
-end;
-
-procedure FlushLogPktFile;
-begin
-  if Length(logPktFileData) > 0 then
-   if appendFile(logPath+packetslogFilename, logPktFileData)
-      or (Length(logPktFileData) > MByte) then
-    logPktFileData := '';
-end;
 
 {procedure RegisterProto(proto: TRnQProtoHelper);
 var
@@ -1731,19 +1714,6 @@ begin
   i := Length(RnQProtos);
   SetLength(RnQProtos, i+1);
   RnQProtos[i] := proto;
-end;
-
-procedure setProgBar(const proto: TRnQProtocol; v: double);
-begin
-  if Assigned(proto) then
-    proto.progLogon := v
-   else
-    progStart := v;
-//sbar.repaint;
-  if Assigned(RnQMain.PntBar) then
-    rnqMain.PntBar.repaint;
-  if assigned(statusIcon) and assigned(statusIcon.trayIcon) then
-    statusIcon.trayIcon.update;
 end;
 
 {$IFDEF usesDC}

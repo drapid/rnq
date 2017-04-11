@@ -26,9 +26,9 @@ type
     Label1: TLabel;
     Label2: TLabel;
     setawayChk: TCheckBox;
-    awaySpin: TRnQSpinEdit;
+    awaySpin: TRnQSpinEdit;  // autoaway-away-time
     naSpin: TRnQSpinEdit;
-    setnaChk: TCheckBox;
+    setnaChk: TCheckBox;     // autoaway-na
     exitawayChk: TCheckBox;
     automsgBox: TMemo;
     setnaSSChk: TCheckBox;
@@ -50,7 +50,7 @@ implementation
 
 {$R *.dfm}
 uses
-  globalLib;
+  RnQConst, globalLib;
 
 procedure TautoawayFr.applyPage;
 begin

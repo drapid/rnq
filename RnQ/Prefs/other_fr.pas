@@ -62,8 +62,8 @@ implementation
 {$R *.dfm}
 
 uses
-  globalLib, utilLib, langLib, mainDlg,
-  RnQDialogs, RnQLangs, RDUtils, RnQGlobal;
+  RnQDialogs, RnQLangs, RDUtils, RnQGlobal,
+  rnqConst, globalLib, utilLib, langLib, mainDlg;
 
 procedure TotherFr.inactivehideChkClick(Sender: TObject);
 begin updateVisPage end;
@@ -97,7 +97,7 @@ end;
 
 procedure TotherFr.ChkPathBtnClick(Sender: TObject);
 var
-  fpath : String;
+  fpath: String;
 begin
 //  fileIncomePath()
   fpath := template(RcvPathEdit.Text,[

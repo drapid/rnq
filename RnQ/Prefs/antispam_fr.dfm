@@ -32,6 +32,10 @@ object antispamFr: TantispamFr
       TabOrder = 0
       object TabSheet1: TTabSheet
         Caption = 'Filter'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object IgnoreAuthNILChk: TCheckBox
           Left = 6
           Top = 75
@@ -287,6 +291,10 @@ object antispamFr: TantispamFr
       object IgnoreSht: TTabSheet
         Caption = 'Ignore list'
         ImageIndex = 2
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         DesignSize = (
           448
           381)

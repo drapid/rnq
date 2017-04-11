@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit StatusForm;
 {$I RnQConfig.inc}
@@ -10,9 +10,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
- ExtCtrls, RnQButtons, StdCtrls,
- RnQProtocol,
- ComCtrls;
+  ExtCtrls, StdCtrls, ComCtrls, RnQButtons,
+  RnQProtocol;
 
 type
   TStsBtn = TRnQSpeedButton;
@@ -66,7 +65,7 @@ implementation
 uses
   Types,
   RDGlobal, RDUtils, RnQLangs, RQThemes, RnQGraphics32,
-  utilLib, langLib, GlobalLib,
+  utilLib, langLib, RnQConst, GlobalLib,
   Protocols_all,
  {$IFDEF PROTOCOL_ICQ}
   ICQConsts, Protocol_ICQ, icqv9,

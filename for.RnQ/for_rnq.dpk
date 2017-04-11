@@ -1,7 +1,6 @@
 package for_rnq;
 
 {$R *.res}
-{$R 'Flash\ShockwaveFlashObjects_TLB.dcr'}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS ON}
@@ -56,7 +55,6 @@ contains
   RnQLangs in 'RnQLangs.pas',
   RnQPrefsLib in 'RnQPrefsLib.pas',
   RnQFileUtil in 'RnQFileUtil.pas',
-  ShockwaveFlashObjects_TLB in 'Flash\ShockwaveFlashObjects_TLB.pas',
   RnQMenu in 'RnQMenu.pas',
   RQUtil in 'RQUtil.pas',
   RnQSysUtils in 'RnQSysUtils.pas',

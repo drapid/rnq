@@ -19,7 +19,7 @@ uses
     RnQGraphics32,
   {$ENDIF USE_GDIPLUS}
   RnQDialogs, RnQNet,
-  globalLib, RnQProtocol;
+  RnQConst, globalLib, RnQProtocol;
 
 type
 //  TviewinfoFrm = class(TForm)
@@ -1001,7 +1001,7 @@ end;
 
 procedure TviewinfoFrm.mailBtnClick(Sender: TObject);
 begin
-  sendEmailTo(contact)
+  contact.sendEmailTo
 end;
 
 procedure TviewinfoFrm.SetPhtBtnEnb(val : Boolean);

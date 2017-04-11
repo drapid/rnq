@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit addContactDlg;
 {$I RnQConfig.inc}
@@ -32,9 +32,9 @@ type
   private
     menu: TPopupMenu;
     c: TRnQContact;
-    thisProto : TRnQProtocol;
+    thisProto: TRnQProtocol;
   public
-    constructor Create(AOwner: TComponent; proto : TRnQProtocol); reIntroduce;
+    constructor Create(AOwner: TComponent; proto: TRnQProtocol); reIntroduce;
     procedure DestroyHandle; Override;
   end;
 
@@ -59,8 +59,8 @@ end;
 procedure TaddContactFrm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
-destroyHandle;
-Action := caFree;
+  destroyHandle;
+  Action := caFree;
 end;
 
 procedure TaddContactFrm.FormCreate(Sender: TObject);
@@ -98,7 +98,7 @@ begin
       if c.isInRoster then
         begin
          roasterLib.focus(c);
-         msgDlg(getTranslation('%s already exists',[uid]), False, mtWarning)
+         msgDlg(getTranslation('%s already exists', [uid]), False, mtWarning)
         end
        else
         begin
@@ -106,12 +106,12 @@ begin
                          LocalChk.Checked or thisProto.canAddCntOutOfGroup);
   //      applyCommonSettings(menu);
          with clientToScreen(addBtn.BoundsRect.bottomRight) do
-          menu.popup(x,y);
+          menu.popup(x, y);
         end;
   end
 end;
 
-procedure TaddContactFrm.addcontactAction(sender:Tobject);
+procedure TaddContactFrm.addcontactAction(sender: Tobject);
 begin
 //  if LocalChk.Checked then
   addToRoster(c, (sender as Tmenuitem).tag, LocalChk.Checked);
@@ -124,7 +124,7 @@ begin
   inherited create(AOwner);
   thisProto := proto;
   LocalChk.Enabled := thisProto.isSSCL and thisProto.isOnline;
-  LocalChk.Checked := not LocalChk.Enabled;//not (LocalChk.Checked);
+  LocalChk.Checked := not LocalChk.Enabled; //not (LocalChk.Checked);
 end;
 
 procedure TaddContactFrm.destroyHandle;
@@ -136,7 +136,7 @@ procedure TaddContactFrm.FormShow(Sender: TObject);
 begin
 //  theme.getPic(PIC_ADD_CONTACT, addBtn.glyph);
   theme.pic2ico(RQteFormIcon, PIC_ADD_CONTACT, icon);
-  uinbox.text:='';
+  uinbox.text := '';
   uinbox.setFocus;
   applyTaskButton(self);
 end;

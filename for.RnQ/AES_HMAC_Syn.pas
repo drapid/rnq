@@ -123,8 +123,8 @@ function derive_key(const pwd : RawByteString;  // the PASSWORD
                const key_len : Integer)//* and its required length  */
                : RawByteString;
 var
-  i, j, k, n_blk : Integer;
-  uu, ux : array[1..HASH_OUTPUT_SIZE] of Byte;
+  i, j, k, n_blk: Integer;
+  uu, ux: array[1..HASH_OUTPUT_SIZE] of Byte;
   c1, c2, c3: hmac_ctx;
 begin
   SetLength(Result, key_len);
@@ -198,11 +198,11 @@ end;
 //* input the HMAC key (can be called multiple times)    */
 function hmac_sha1_key(const key: RawByteString; key_len: Integer; var cx: hmac_ctx): Integer;
 begin
-    if (cx.klen = HMAC_IN_DATA) then            //* error if further key input   */
-      begin
-        result := HMAC_BAD_MODE;                //* is attempted in data mode    */
-        Exit;
-      end;
+  if (cx.klen = HMAC_IN_DATA) then            //* error if further key input   */
+   begin
+    Result := HMAC_BAD_MODE;                //* is attempted in data mode    */
+    Exit;
+   end;
 
     if(cx.klen + key_len > HASH_INPUT_SIZE) then //* if the key has to be hashed  */
      begin
@@ -308,7 +308,7 @@ begin
     for i := 0 to mac_len-1 do
 //      mac[i+1] := AnsiChar(dig[i]);
 //      mac[i] := Byte(dig[i]);
-      Byte(PByte(Cardinal(mac)+i)^) := Byte(dig[i]);
+      Byte(PByte(IntPtr(mac)+i)^) := Byte(dig[i]);
 end;
 
 //* 'do it all in one go' subroutine     */
@@ -340,8 +340,8 @@ var
 begin
   if(Length(pwd) > MAX_PWD_LENGTH) then
    begin
-     Result := PASSWORD_TOO_LONG;
-     exit;
+    Result := PASSWORD_TOO_LONG;
+    Exit;
    end;
 
   if(mode < 1) or (mode > 3) then
@@ -410,7 +410,7 @@ begin
          cx.aes_ctx.Encrypt(TAESBlock(cx.nonce), TAESBlock(cx.encr_bfr));
          pos := 0;
       end;
-     Byte(Pointer(Cardinal(data)+i)^) := Byte(Pointer(Cardinal(data)+i)^) xor cx.encr_bfr[pos];
+     Byte(Pointer(IntPtr(data)+i)^) := Byte(Pointer(IntPtr(data)+i)^) xor cx.encr_bfr[pos];
      inc(i);
      inc(pos);
    end;

@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RnQLangs;
 {$I ForRnQConfig.inc}
@@ -52,7 +52,7 @@ type
    public
 //    constructor LoadLang(p_fn: String; p_isUTFLang: Boolean);
     constructor Create;
-    destructor Destroy;
+    destructor Destroy; OverRide;
 //    function Trans(const key: AnsiString; const args:array of const):string; overload;
 //    function Trans(const key: AnsiString):string; overload;
 
@@ -1039,9 +1039,11 @@ end;
 procedure ClearLanguage;
 begin
  useLang := false;
- LangVar.ClearLanguage;
  if Assigned(LangVar) then
-   FreeAndNil(LangVar);
+   begin
+     LangVar.ClearLanguage;
+     FreeAndNil(LangVar);
+   end;
 end;
 
 end.

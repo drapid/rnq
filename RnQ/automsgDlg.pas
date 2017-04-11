@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit automsgDlg;
 {$I RnQConfig.inc}
@@ -76,15 +76,15 @@ begin
   msgBox.SelectAll;
 
   predBox.clear;
-for i:=1 to automessages.count-1 do
-  if odd(i) then
-   begin
-    PredBox.BeginUpdate;
-    s := PredBox.GetNodeData(predBox.AddChild(NIL));
-    s.Name := automessages[i];
-    s.Str := automessages[i+1];
-    PredBox.EndUpdate;
-   end;
+  for i := 1 to automessages.count - 1 do
+   if odd(i) then
+    begin
+      PredBox.BeginUpdate;
+      s := PredBox.GetNodeData(predBox.AddChild(NIL));
+      s.Name := automessages[i];
+      s.Str := automessages[i+1];
+      PredBox.EndUpdate;
+    end;
 end;
 
 procedure TautomsgFrm.okBtnClick(Sender: TObject);
@@ -100,7 +100,7 @@ procedure TautomsgFrm.PredBoxChange(Sender: TBaseVirtualTree;
   Node: PVirtualNode);
 begin
  if Node <> NIL then
-  msgBox.text:= TAutMsg(PAutMsg(predBox.getnodedata(Node))^).Str;
+  msgBox.text := TAutMsg(PAutMsg(predBox.getnodedata(Node))^).Str;
 end;
 
 procedure TautomsgFrm.cancelBtnClick(Sender: TObject);
@@ -123,7 +123,7 @@ begin
    begin
     if compareText(automessages[i], nameBox.text)=0 then
       break;
-    inc(i,2);
+    inc(i, 2);
    end;
 if i >= automessages.count then
   begin
@@ -136,7 +136,7 @@ if i >= automessages.count then
   automessages.add(nameBox.text);
   automessages.add('');
   end;
-automessages[i+1] := msgBox.text;
+  automessages[i+1] := msgBox.text;
 end; // saveAutomsg
 
 procedure TautomsgFrm.saveBtnClick(Sender: TObject);
@@ -145,8 +145,8 @@ begin
     saveAutomsg
    else
     begin
-     deleteBtn.enabled:=FALSE;
-     nameBox.visible:=TRUE;
+     deleteBtn.enabled := FALSE;
+     nameBox.visible := TRUE;
      nameBox.setFocus;
     end
 end;
@@ -159,11 +159,11 @@ begin
   if predBox.FocusedNode = NIL then
    exit;
 //if predBox.itemIndex < 0 then exit;
-//name:=predBox.items[predBox.itemIndex];
+//name := predBox.items[predBox.itemIndex];
 //predBox.items.delete(predBox.itemIndex);
-  name:=TAutMsg(PAutMsg(predBox.getnodedata(predBox.FocusedNode))^).Name;
+  name := TAutMsg(PAutMsg(predBox.getnodedata(predBox.FocusedNode))^).Name;
   predBox.DeleteNode(predBox.FocusedNode);
-  i:=1;
+  i := 1;
 while i < automessages.count do
   begin
   if compareText(automessages[i], name)=0 then
@@ -172,13 +172,13 @@ while i < automessages.count do
     automessages.delete(i);
     break;
     end;
-  inc(i,2);
+  inc(i, 2);
   end;
 end;
 
 procedure TautomsgFrm.predBoxClick(Sender: TObject);
 begin
-  msgBox.text:= TAutMsg(PAutMsg(predBox.getnodedata(predBox.FocusedNode))^).Str;
+  msgBox.text := TAutMsg(PAutMsg(predBox.getnodedata(predBox.FocusedNode))^).Str;
   //automessages[succ(predBox.itemIndex)*2]
 end;
 
@@ -202,7 +202,7 @@ begin
 //  inc(x, theme.drawPic(PaintInfo.Canvas, PaintInfo.ContentRect.Left +3, 0,
 //         TlogItem(PLogItem(LogList.getnodedata(PaintInfo.Node)^)^).Img).cx+6);
     SetBkMode(PaintInfo.Canvas.Handle, TRANSPARENT);
-    PaintInfo.Canvas.textout(PaintInfo.ContentRect.Left +x,2, s);
+    PaintInfo.Canvas.textout(PaintInfo.ContentRect.Left + x, 2, s);
 end;
 
 procedure TautomsgFrm.msgBoxKeyPress(Sender: TObject; var Key: Char);
@@ -224,12 +224,12 @@ procedure TautomsgFrm.nameBoxKeyPress(Sender: TObject; var Key: Char);
 begin
 if key=#27 then
   begin
-  deleteBtn.enabled:=TRUE;
-  nameBox.visible:=FALSE;
+  deleteBtn.enabled := TRUE;
+  nameBox.visible := FALSE;
   end;
 if key=#13 then
   begin
-  key:=#0;
+  key := #0;
   saveautomsg;
   end;
 end;

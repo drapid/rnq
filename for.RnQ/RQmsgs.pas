@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RQmsgs;
 {$I ForRnQConfig.inc}
@@ -290,12 +290,10 @@ begin
 {$ENDIF DELPHI9_UP}
 
   menu := TRnQPopupMenu.Create(Self);
-  AddToMenu(menu.Items, 'Copy',
-       'copy', True, copyText);
+  AddToMenu(menu.Items, 'Copy', 'copy', True, copyText);
 //  OpenChatM := AddToMenu(menu.Items, 'Open chat',
 //       PIC_MSG, False, openChat);
-   OpenChatM := AddToMenu(menu.Items, 'Copy UIN',
-          'copy', True, openChat);
+   OpenChatM := AddToMenu(menu.Items, 'Copy UIN', 'copy', True, openChat);
   menu.OnPopup := menuPopup;
   msgList.PopupMenu := menu;
 
@@ -337,7 +335,7 @@ end;
 
 procedure TmsgsFrm.FormShow(Sender: TObject);
 begin
-  caption := getTranslation('R&Q for %s',[rnquser]);
+  Caption := getTranslation('R&Q for %s',[rnquser]);
   OkBtn.Caption := SMsgDlgOK + ' (' + IntToStr(FSeconds) + ')';
   FTimer.Enabled := True;
 end;
@@ -383,14 +381,14 @@ end;
 procedure TmsgsFrm.AddMsg(msg: string; kind: TMsgDlgType; vTime: TDateTime;
   const uid: String);
 var
-  vmsg : Pmsg;
-  n : PVirtualNode;
-  SetFirst : Boolean;
+  vmsg: Pmsg;
+  n: PVirtualNode;
+  SetFirst: Boolean;
 begin
       if msgList.FocusedNode = msgList.GetFirst then
-        setFirst:= True
+        SetFirst := True
        else
-        setFirst:= False;
+        SetFirst := False;
       msgList.BeginUpdate;
       n := msgList.AddChild(nil);
       vmsg := msgList.GetNodeData(n);
@@ -419,7 +417,7 @@ end;
 
 procedure TmsgsFrm.CopyText(Sender: TObject);
 var
-  s : String;
+  s: String;
 begin
   with msgList do
   if focusedNode<>NIL then

@@ -1,6 +1,6 @@
 ﻿{
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RnQGlobal;
 {$I ForRnQConfig.inc}
@@ -54,9 +54,9 @@ var
    end;
   logpref: record
     pkts, evts: record
-      onFile, onWindow, clear: boolean;
+      onFile, onWindow, clear: Boolean;
       end;
-    writehistory: boolean;
+    writehistory: Boolean;
    end;
 
 
@@ -78,7 +78,7 @@ var
   playSounds,
   showBalloons: Boolean;
   audioPresent     : Boolean = false;
-  picDrawFirstLtr  : boolean = false;
+  picDrawFirstLtr  : Boolean = false;
   TranslitList     : TStringList;
   SoundVolume      : Integer;
   TextBGColor      : TColor;

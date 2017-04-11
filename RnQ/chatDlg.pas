@@ -24,8 +24,10 @@ uses
    {$ENDIF CHAT_SCI}
  {$ENDIF CHAT_CEF}
   Commctrl, selectContactsDlg,
+ {$IFDEF FLASH_AVATARS}
   ShockwaveFlashObjects_TLB,
 //    FlashPlayerControl,
+ {$ENDIF FLASH_AVATARS}
   RDGlobal,
   {$IFDEF USE_GDIPLUS}
     RnQGraphics,
@@ -60,7 +62,9 @@ type
       AvtPBox: TPaintBox;
 //      Pic: TRnQBitmap;
       PicAni: TRnQAni;
+ {$IFDEF FLASH_AVATARS}
       swf: TShockwaveFlash;
+ {$ENDIF FLASH_AVATARS}
 //      swf: TFlashPlayerControl;
 //      swf: TTransparentFlashPlayerControl;
     end;
@@ -115,12 +119,17 @@ type
    end; // TchatInfo
 
   Tchats = class(Tlist)
+  protected
+    function Get(Index: Integer): TchatInfo; OverLoad;
+    procedure Put(Index: Integer; Item: TchatInfo); OverLoad;
+  public
     function validIdx(i: Integer): Boolean;
     function idxOf(c: TRnQcontact): Integer;
     function idxOfUIN(const uin: TUID): Integer;
     function byIdx(i: Integer): TchatInfo;
     function byContact(c: TRnQContact): TchatInfo;
     procedure CheckTypingTimeAll;
+    property Items[Index: Integer]: TchatInfo read Get write Put; default;
    end; // Tchats
 {
   TPageControl = class(ComCtrls.TPageControl)
@@ -486,7 +495,7 @@ uses
   math, Types, System.Threading,
   Base64,
   RDFileUtil, RQUtil, RDUtils, RnQSysUtils,
-  globalLib, //searchhistDlg,
+  RnQConst, globalLib, //searchhistDlg,
   outboxlib, utilLib, outboxDlg, RnQTips, RnQPics,
   langLib, roasterLib, ViewHEventDlg, ViewPicDimmedDlg,
   RnQNet.Uploads,
@@ -772,6 +781,17 @@ begin
   if validIdx(i) then
     result := TchatInfo(items[i])
 end; // byIdx
+
+function Tchats.Get(Index: Integer): TchatInfo;
+begin
+  Result := Inherited get(Index);
+end;
+
+procedure Tchats.Put(Index: Integer; Item: TchatInfo);
+begin
+  inherited Put(Index, Item);
+end;
+
     {$WARN UNSAFE_CAST ON}
 
 function Tchats.byContact(c: TRnQcontact): TchatInfo;
@@ -1066,6 +1086,7 @@ begin
     if bool = false then
       exit;
    end;
+
   with pageCtrl do
     if idx < pageCount then
       activePage := pages[idx]
@@ -1243,7 +1264,9 @@ begin
 //pnl.insertControl(chat.historyBox);
 
 
+ {$IFDEF FLASH_AVATARS}
  chat.avtPic.swf := NIL;
+ {$ENDIF FLASH_AVATARS}
  chat.avtPic.PicAni := NIL;
  chat.avtPic.AvtPBox := NIL;
  chat.avtsplitr := NIL;
@@ -1767,9 +1790,12 @@ begin
      ch.input.setFocus;
    
    {$IFDEF PROTOCOL_ICQ}
-      BuzzBtn.Visible := CAPS_big_Buzz in TICQContact(ch.who).capabilitiesBig;
+      BuzzBtn.Visible := ch.who.CanBuzz;
       BuzzBtn.Left := RnQFileBtn.Left + RnQFileBtn.Width;
       stickersBtn.Visible := True;
+   {$ELSE ~PROTOCOL_ICQ}
+      BuzzBtn.Visible := false;
+      stickersBtn.Visible := false;
    {$ENDIF PROTOCOL_ICQ}
 
   //    stickersBtn.Enabled := EnableStickers;
@@ -2564,28 +2590,30 @@ begin
   sbar.Invalidate;
 
  {$IFDEF PROTOCOL_ICQ}
-  if (thisChat.chatType = CT_IM) and not (thisChat.who = nil) and (thisChat.who is TICQContact) then
+  if (thisChat.chatType = CT_IM) and not (thisChat.who = nil) then
   begin
-    BuzzBtn.Visible := CAPS_big_Buzz in TICQContact(thisChat.who).capabilitiesBig;
+    BuzzBtn.Visible := thisChat.who.CanBuzz;
     BuzzBtn.Left := RnQFileBtn.Left + RnQFileBtn.Width;
   end;
 
   {$IFDEF RNQ_AVATARS}
-  if not cnt.icon.IsBmp then
-   with thisChat.avtPic do
-   if Assigned(swf) then
-    // Статусы: stam, smile, laugh, mad, sad, cry, offline, busy, love
-       case cnt.GetStatus of
-         byte(SC_OCCUPIED)..byte(SC_AWAY): swf.TGotoLabel('face', 'busy');
-         byte(SC_F4C)     :    swf.TGotoLabel('face', 'smile');
-         byte(SC_OFFLINE) :    swf.TGotoLabel('face', 'offline');
-         byte(SC_UNK)     :    swf.TGotoLabel('face', 'stam');
-         byte(SC_Evil)    :    swf.TGotoLabel('face', 'mad');
-         byte(SC_Depression) : swf.TGotoLabel('face', 'sad');
-         //swf.TGotoFrame('face', 'stam');
-         else
-            swf.TGotoFrame('face', 0);
-       end;
+  {$IFDEF FLASH_AVATARS}
+    if not cnt.icon.IsBmp then
+     with thisChat.avtPic do
+     if Assigned(swf) then
+      // Статусы: stam, smile, laugh, mad, sad, cry, offline, busy, love
+         case cnt.GetStatus of
+           byte(SC_OCCUPIED)..byte(SC_AWAY): swf.TGotoLabel('face', 'busy');
+           byte(SC_F4C)     :    swf.TGotoLabel('face', 'smile');
+           byte(SC_OFFLINE) :    swf.TGotoLabel('face', 'offline');
+           byte(SC_UNK)     :    swf.TGotoLabel('face', 'stam');
+           byte(SC_Evil)    :    swf.TGotoLabel('face', 'mad');
+           byte(SC_Depression) : swf.TGotoLabel('face', 'sad');
+           //swf.TGotoFrame('face', 'stam');
+           else
+              swf.TGotoFrame('face', 0);
+         end;
+  {$ENDIF FLASH_AVATARS}
   {$ENDIF RNQ_AVATARS}
  {$ENDIF PROTOCOL_ICQ}
 end; // updateSendBtn
@@ -3179,12 +3207,12 @@ end;
 
 procedure TchatFrm.sbarDrawPanel(StatusBar: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
 var
- Details: TThemedElementDetails;
- ch: TchatInfo;
+  Details: TThemedElementDetails;
+  ch: TchatInfo;
 // s: String;
- Arect: TRect;
- agR, r2: TGPRect;
- PPI: Integer;
+  Arect: TRect;
+  agR, r2: TGPRect;
+  PPI: Integer;
 begin
 //  statusbar.canvas.Brush.Color := clBtnFace
  StatusBar.Canvas.Font.Assign(Screen.MenuFont);
@@ -3409,7 +3437,7 @@ begin
         go2end;
  {$ELSE ~CHAT_CEF} // old
         go2end(True);
- {$IFEND ~CHAT_CEF}
+ {$ENDIF ~CHAT_CEF}
         ev := history.getAt(topVisible);
        end;
       if (ev=NIL) or (ev.when > time) then
@@ -3592,8 +3620,8 @@ begin
     msg := grabThisText;
   if trim(msg) = '' then
     begin
-    msgDlg('Can''t send an empty message', True, mtWarning);
-    exit;
+      msgDlg('Can''t send an empty message', True, mtWarning);
+      exit;
     end;
   sawAllhere;
   Proto_Outbox_add(OE_msg, thisChat.who, flags_, msg);
@@ -5228,7 +5256,7 @@ begin
        exit;
      end;
     if Assigned(thisChat.who) then
-      Protos_SendFilesTo(thisChat.who, fn);
+      thisChat.who.SendFilesTo(fn);
   end;
  {$ENDIF usesDC}
 
@@ -5259,7 +5287,7 @@ begin
       try
 //        ServerToUpload := MainPrefs.getPrefIntDef('file-transfer-upload-server', 0);
 //        if ServerToUpload = 0 then
-          url := UploadFileRGhost(fn, OnUploadSendData)
+          url := UploadFileRGhost(NIL, fn, OnUploadSendData)
 //        else
 //          url := UploadFileRnQ(fn, OnUploadSendData);
       finally
@@ -5292,7 +5320,7 @@ begin
     begin
       RnQFileBtn.Enabled := False;
       try
-        url := UploadFileRnQ(fn, OnUploadSendData);
+        url := UploadFileRnQ(NIL, fn, OnUploadSendData);
       finally
         RnQFileBtn.Enabled := True;
       end;
@@ -5983,7 +6011,7 @@ begin
         ss := ss + buffer + CRLF;
         end;
       DragFinish(message.Drop);
-      Protos_SendFilesTo(cnt, ss);
+      cnt.SendFilesTo(ss);
       ss := '';
      end; 
    end;

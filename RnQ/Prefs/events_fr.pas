@@ -64,11 +64,11 @@ type
     evtfileChk: TCheckBox;
     evtclearChk: TCheckBox;
     BDTS: TTabSheet;
-    BD1Chk: TCheckBox;
-    BD1Spin: TRnQSpinEdit;
+    BD1Chk: TCheckBox;     //'is-show-bd-first';
+    BD1Spin: TRnQSpinEdit; //'show-bd-first'
     LDays1: TLabel;
-    BD2Chk: TCheckBox;
-    BD2Spin: TRnQSpinEdit;
+    BD2Chk: TCheckBox;     //'is-show-bd-before'
+    BD2Spin: TRnQSpinEdit; //'show-bd-before'
     LDays2: TLabel;
     ClosedGrpChk: TCheckBox;
     procedure RnQSpeedButton1Click(Sender: TObject);
@@ -113,7 +113,7 @@ implementation
 {$R *.dfm}
 
 uses
-  utilLib, events, globalLib,
+  RnQConst, utilLib, events, globalLib,
   RnQGraphics32, RnQGlobal,
   RnQTips, RnQLangs, Dynamic_BASS,
   Math, pluginutil,
@@ -122,9 +122,9 @@ uses
 type
   PAcItem = ^TAcItem;
   TAcItem = record
-//     s : array[0..1] of string;
-     ac : Tbehaction;
-     s : string;
+//     s: array[0..1] of string;
+     ac: Tbehaction;
+     s: string;
   end;
 
 const
@@ -372,10 +372,10 @@ var
   cnv: Tcanvas;
 //  x, y: integer;
   st: byte;
-  gR : TGPRect;
-//  sp : PStatusProp;
-  picElm : TRnQThemedElementDtls;
-  s : String;
+  gR: TGPRect;
+//  sp: PStatusProp;
+  picElm: TRnQThemedElementDtls;
+  s: String;
 begin
   cnv := statusbox.canvas;
   gR.X := 2 + rect.left;
@@ -520,7 +520,7 @@ end;
   
 procedure TeventsFr.applyPage;
 var
-  st : byte;
+  st: byte;
 begin
 
   behaviour:=tempBeh;
@@ -555,14 +555,14 @@ end;
 
 procedure TeventsFr.resetPage;
 var
-  st : byte;
+  st: byte;
 begin
 
   focuschatpopupChk.checked:=focusOnChatPopup;
-  minOnOffSpin.value:=minOnOffTime;
-  minOnOffChk.checked:=minOnOff;
-  oncomingOnAwayChk.checked:=oncomingOnAway;
-  tempBeh:=behaviour;
+  minOnOffSpin.value := minOnOffTime;
+  minOnOffChk.checked := minOnOff;
+  oncomingOnAwayChk.checked := oncomingOnAway;
+  tempBeh := behaviour;
   if eventBox.itemIndex=-1 then
     eventBox.itemIndex:=0;
   eventBox.onSelect(self);
@@ -572,8 +572,8 @@ begin
    end;}
   BringInfoChk.Checked := BringInfoFrgd;
   SndVolSlider.Position := Soundvolume;
-  autoconsumeChk.checked:=autoconsumeevents;
-  playSnds.checked:=playSounds;
+  autoconsumeChk.checked := autoconsumeevents;
+  playSnds.checked := playSounds;
   for st := Low(Account.AccProto.statuses) to High(Account.AccProto.statuses) do
    begin
     vOnStatusDisable[st].tips     := OnStatusDisable[st].tips;
@@ -581,10 +581,10 @@ begin
     vOnStatusDisable[st].sounds   := OnStatusDisable[st].sounds;
     vOnStatusDisable[st].OpenChat := OnStatusDisable[st].OpenChat;
    end;
-  ClosedGrpChk.Checked := DsblEvnt4ClsdGrp;
   if statusBox.itemIndex=-1 then
     statusBox.itemIndex:=0;
   statusBox.onSelect(self);
+  ClosedGrpChk.Checked := DsblEvnt4ClsdGrp;
   pktwndChk.checked:=logpref.pkts.onWindow;
   pktfileChk.checked:=logpref.pkts.onFile;
   pktclearChk.checked:=logpref.pkts.clear;

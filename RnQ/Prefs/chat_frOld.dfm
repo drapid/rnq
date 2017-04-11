@@ -334,7 +334,6 @@ object chatFr: TchatFr
     object SpellSheet: TTabSheet
       Caption = 'Spell check'
       ImageIndex = 5
-      ExplicitLeft = 0
       DesignSize = (
         408
         389)

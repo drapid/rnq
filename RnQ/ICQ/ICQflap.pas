@@ -9,7 +9,7 @@ unit ICQflap;
 interface
 
 uses
-  sysutils, types, RDGlobal;
+  sysutils, types, RDGlobal, RnQProtocol;
 
 const
 
@@ -48,6 +48,9 @@ function SNAC_shortver(fam, sub, flags: word; ref: integer; ver: word): RawByteS
 // read data
 function getBUIN2(const s: RawByteString; var ofs: integer): RawByteString;
 function getBUIN(const s: RawByteString; var ofs: integer): Integer;
+function getBUIN3(const s: RawByteString; var ofs: integer): TUID;
+
+function Length_B8(const UIN: TUID): RawByteString; OverLoad;
 
 implementation
   uses
@@ -55,7 +58,7 @@ implementation
    AnsiStrings,
  {$ENDIF UNICODE}
    Windows,
-   RnQBinUtils, RQUtil;
+   RnQBinUtils, RQUtil, RDUtils;
 
 // For ICQ
 function getMPservice(const s: RawByteString): word;
@@ -92,6 +95,16 @@ begin
   inc(ofs, 1+ord(s[ofs]));
 end; // getBUIN
 
+function getBUIN3(const s: RawByteString; var ofs: integer): TUID;
+begin
+ {$IFDEF UID_IS_UNICODE}
+  result := UnUTF( copy(s, ofs+1, ord(s[ofs])));
+ {$ELSE ~UID_IS_UNICODE}
+  result := copy(s, ofs+1, ord(s[ofs]));
+ {$ENDIF ~UID_IS_UNICODE}
+  inc(ofs, 1+ord(s[ofs]));
+end; // getBUIN
+
 function getBUIN(const s: RawByteString; var ofs: integer): Integer;
 var
   E: Integer;
@@ -106,6 +119,14 @@ begin
 //result := copy(s,ofs+1,ord(s[ofs]));
   inc(ofs, 1+ byte(s[ofs]));
 end; // getBUIN
+
+function Length_B8(const UIN: TUID): RawByteString;
+var
+  s: RawByteString;
+begin
+  s := UTF8Encode(UIN);
+  result := AnsiChar(byte(length(s))) + RawByteString(s)
+end;
 
 function SNAC(fam, sub, flags: word; ref: integer): RawByteString; overload;
 begin

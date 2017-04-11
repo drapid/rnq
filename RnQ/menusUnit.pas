@@ -38,16 +38,16 @@ var
 
 implementation
 uses
-    mainDlg, globalLib, themesLib, chatDlg,
+    mainDlg, RnQConst, globalLib, themesLib, chatDlg,
     SysUtils, RDGlobal, RDUtils, RnQSysUtils, RnQGlobal,
     RnQLangs, utilLib, RnQPics,
     shlObj,
     iniLib;
 
 var
-  aMainMenu : aTaMenuItem;
-  aStsMenu  : aTaMenuItem;
-  aVisMenu  : aTaMenuItem;
+  aMainMenu: aTaMenuItem;
+  aStsMenu: aTaMenuItem;
+  aVisMenu: aTaMenuItem;
 
 
 //const
@@ -55,9 +55,9 @@ var
 //        ((amiName: 'About'; Ev: TmainFrm.About1Click),
 //        ( ID: 2; Value: 'Male'));
 {
-procedure ClearMenuMass(var mass : aTaMenuItem);
+procedure ClearMenuMass(var mass: aTaMenuItem);
 var
-  i : Byte;
+  i: Byte;
 begin
   if Length(mass) > 0 then
   begin
@@ -74,11 +74,11 @@ begin
   end;
 end;
 
-procedure addToMenuMass(var mass : aTaMenuItem; idx : Integer; const name : String;
-              const Cptn, Hint : String;
-              const ImName : TPicName; Ev, Upd : TNotifyEvent);
+procedure addToMenuMass(var mass: aTaMenuItem; idx: Integer; const name: String;
+              const Cptn, Hint: String;
+              const ImName: TPicName; Ev, Upd: TNotifyEvent);
 var
-  i : Byte;
+  i: Byte;
 begin
   i := length(mass);
   SetLength(mass, i+1);
@@ -96,10 +96,10 @@ end;
 procedure InitMenu;
 //var
 //  I: Integer;
-//  st1 : Tstatus;
-//  vis1 : Tvisibility;
-//  st : TStatusProp;
-//  stArr : TStatusArray;
+//  st1: Tstatus;
+//  vis1: Tvisibility;
+//  st: TStatusProp;
+//  stArr: TStatusArray;
 begin
 { $IFDEF RNQ_FULL}
  addToMenuMass(aMainMenu, MaxInt-20, 'MnuPrefs', 'Preferences', '',

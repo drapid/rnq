@@ -21,7 +21,7 @@ uses
   strutils,
 //    GDIPAPI, GDIPOBJ,
   outboxLib,
-  RnQNet, RnQProtocol, RDGlobal,
+  RnQNet, RnQProtocol, RDGlobal, RnQConst,
   AnsiClasses,
   roasterLib,
   RnQZip,
@@ -47,6 +47,7 @@ function  fileIncomePath(cnt: TRnQContact): String;
 
 function  isAbort(const pluginReply: AnsiString): boolean;
 procedure setupChatButtons;
+procedure setProgBar(const proto: TRnQProtocol; v: double);
 procedure reloadCurrentLang();
 
 function  showUsers(var pass: String): TUID;
@@ -184,79 +185,6 @@ function  CheckType(const lnk: String; var sA: RawByteString; var ext: String): 
 function  CheckType(const lnk: String): Boolean; overload;
 procedure incDBTimer;
 
-// costants for files
-const
-  DBFK_OLDUIN      = 00;
-  DBFK_NICK        = 01;
-  DBFK_FIRST       = 02;
-  DBFK_LAST        = 03;
-  DBFK_EMAIL       = 04;
-  DBFK_CITY        = 05;
-  DBFK_STATE       = 06;
-  DBFK_ABOUT       = 07;
-  DBFK_DISPLAY     = 08;
-  DBFK_QUERY       = 09;
-  DBFK_ZIP         = 10;
-  DBFK_COUNTRY     = 11;
-  DBFK_BIRTH       = 12;
-  DBFK_LANG        = 13;
-  DBFK_HOMEPAGE    = 14;
-  DBFK_CELLULAR    = 15;
-  DBFK_IP          = 16;
-  DBFK_AGE         = 17;
-  DBFK_GMT         = 18;
-  DBFK_GENDER      = 19;
-  DBFK_GROUP       = 20;
-  DBFK_LASTUPDATE  = 21;
-  DBFK_LASTONLINE  = 22;
-//  DBFK_LASTMSG     = 23;   DON'T USE, it was badly updated
-  DBFK_LASTMSG     = 24;
-  DBFK_NOTES       = 25;
-  DBFK_DONTDELETE  = 26;
-  DBFK_ASKEDAUTH   = 27;
-  DBFK_MEMBERSINCE = 28;
-  DBFK_ONLINESINCE = 29;
-  DBFK_SMSABLE     = 30;
-  DBFK_NODB        = 31;
-  DBFK_SENDTRANSL  = 32;
-  DBFK_INTERESTS   = 33;
-
-  DBFK_WORKPAGE    = 34;
-  DBFK_WORKSTNT    = 35; // Должность
-  DBFK_WORKDEPT    = 36; // Департамент
-  DBFK_WORKCOMPANY = 37; // Компания
-  DBFK_WORKCOUNTRY = 38;
-  DBFK_WORKZIP     = 39;
-  DBFK_WORKADDRESS = 40;
-  DBFK_WORKPHONE   = 41;
-  DBFK_WORKSTATE   = 42;
-  DBFK_WORKCITY    = 43;
-
-  DBFK_UID         = 111;
-  DBFK_BIRTHL      = 112;
-  DBFK_SSIID       = 113;
-  DBFK_Authorized  = 114;
-  DBFK_ssNoteStr   = 115;
-  DBFK_ICONSHOW    = 116;
-  DBFK_ICONMD5     = 117;
-  DBFK_ssMail      = 118;
-  DBFK_ssCell      = 119;
-  DBFK_MARSTATUS   = 120;
-  DBFK_lclNoteStr  = 121;
-  DBFK_ZODIAC      = 122;
-  DBFK_qippwd      = 123;
-  DBFK_LASTBDINFORM= 124;
-
-  DBFK_LASTINFOCHG = 125;
-
-  DBFK_ADDRESS = 126;
-  DBFK_BIRTHCOUNTRY = 127;
-  DBFK_BIRTHSTATE = 128;
-  DBFK_BIRTHCITY = 129;
-  DBFK_REGULAR = 130;
-
-  DBFK_ssCell2 = 131;
-  DBFK_ssCell3 = 132;
 
 implementation
 
@@ -599,7 +527,7 @@ begin
        begin
          i := Length(pProxys);
          SetLength(pProxys, i+1);
-         ClearProxy(pProxys[i]);
+         pProxys[i].Clear;
          pProxys[i].name := UnUTF(l);
        end
      else
@@ -615,23 +543,23 @@ begin
       else if h='proxy-user' then pProxys[i].user:= UnUTF(l)
       else if h='proxy-ntlm' then pProxys[i].NTLM := yesno
       else if h='connection-ssl' then pProxys[i].ssl := yesno
-      else if h='proxy-pass' then pProxys[i].pwd:=passDecrypt(l)
-      else if h='proxy-pass64' then pProxys[i].pwd:=passDecrypt(Base64DecodeString(l))
-      else if h='proxy-serv-host' then pProxys[i].serv.host:=l
-      else if h='proxy-serv-port' then pProxys[i].serv.port:=StrToIntDef(l, 0)
-      else if h='proxy-host' then pProxys[i].addr.host:=l
-      else if h='proxy-port' then pProxys[i].addr.port:=StrToIntDef(l, 0)
+      else if h='proxy-pass' then pProxys[i].pwd := UnUTF(passDecrypt(l))
+      else if h='proxy-pass64' then pProxys[i].pwd := UnUTF(passDecrypt(Base64DecodeString(l)))
+      else if h='proxy-serv-host' then pProxys[i].serv.host := UnUTF(l)
+      else if h='proxy-serv-port' then pProxys[i].serv.port := StrToIntDef(l, 0)
+      else if h='proxy-host' then pProxys[i].addr.host := UnUTF(l)
+      else if h='proxy-port' then pProxys[i].addr.port := StrToIntDef(l, 0)
       else if h='proxy-proto' then
          begin
-         ppp:=findInStrings(l, proxyproto2str);
+         ppp := findInStrings(l, proxyproto2str);
          if ppp < 0 then
            begin
-//             pProxys[i].enabled:=FALSE;
-//             pProxys[i].proto:=PP_SOCKS5;
-             pProxys[i].proto:=PP_NONE;
+//             pProxys[i].enabled := FALSE;
+//             pProxys[i].proto := PP_SOCKS5;
+             pProxys[i].proto := PP_NONE;
            end
          else
-           pProxys[i].proto:=TproxyProto(ppp);
+           pProxys[i].proto := TproxyProto(ppp);
          end
 {      else if Pos('proxy-', h)>0 then
        for pp:=low(pp) to high(pp) do
@@ -744,7 +672,7 @@ var
 //  ZIP: TZIPWriter;
   procedure AddFile2Zip(const fn: String; const cfg: RawByteString);
 //  var
-//    fIDX : Integer;
+//    fIDX: Integer;
   begin
 //    if cfg > '' then
      begin
@@ -796,7 +724,7 @@ begin
   AddFile2Zip(dbFileName, cfg);
 
   cfg := AnsiString('protocol=') + AnsiString(pr.ProtoName) +CRLF+
-       AnsiString('account-id=')+ pr.getMyInfo.UID2cmp +CRLF+
+       AnsiString('account-id=')+ StrToUTF8(pr.getMyInfo.UID2cmp) +CRLF+
        AnsiString('account-name=')+ StrToUTF8(pr.getMyInfo.displayed)
  {$IFDEF UseNotSSI}
       +CRLF+ AnsiString('use-ssi=') + yesno[useSSI2]
@@ -914,7 +842,7 @@ begin
    + 'proxy-auth='     + yesno[pProxys[k].auth]+CRLF
    + 'proxy-user='     + StrToUTF8(pProxys[k].user)+CRLF
 //   + 'proxy-pass='     +passCrypt(pProxys[k].pwd)+CRLF
-   + 'proxy-pass64='   +Base64EncodeString(passCrypt(pProxys[k].pwd))+CRLF
+   + 'proxy-pass64='   +Base64EncodeString(passCrypt(UTF8Encode(pProxys[k].pwd)))+CRLF
    + 'proxy-ntlm='     +yesno[pProxys[k].NTLM]+CRLF
    + 'connection-ssl=' +yesno[pProxys[k].ssl]+CRLF
    + 'proxy-proto='    +proxyproto2str[pProxys[k].proto]+CRLF
@@ -973,12 +901,12 @@ function doConnect: boolean;
 var
 // msg: string;
 // evInt: Integer;
- pr: TRnQProtocol;
+  pr: TRnQProtocol;
 begin
- result := FALSE;
- if not Assigned(Account.AccProto) or
-    not Account.AccProto.isOffline then
-   exit;
+  result := FALSE;
+  if not Assigned(Account.AccProto) or
+     not Account.AccProto.isOffline then
+    exit;
 
  result := TRUE;
  if not useLastStatus then
@@ -996,7 +924,7 @@ begin
       then
        MainProxy.serv.host := TicqSession(pr).SSLserver;
  {$ENDIF PROTOCOL_ICQ}
-    CopyProxy(pr.aProxy, MainProxy);
+    pr.aProxy.CopyFrom(MainProxy);
     pr.sock.proxySettings(pr.aProxy);
 
     pr.loginServerAddr := pr.aProxy.serv.host;
@@ -1028,6 +956,7 @@ begin
     //      icq.sock.ThreadAttach
 //          try
             resolving := TRUE;
+          logEvPkt('Resolve IP Host='+ pr.loginServerAddr, '', '', '', false);
           PostMessage(RnQmain.Handle, WM_RESOLVE_DNS, 0, 0);
   {          pr.sock.DnsLookup(pr.aProxy.serv.host);
           except
@@ -1042,10 +971,10 @@ begin
             end
            else
             begin
-              evInt:=WSocket_WSAGetLastError;
+              evInt := WSocket_WSAGetLastError;
               Msg := WSocketErrorDesc(evInt);
               Account.AccProto.disconnect;
-              resolving:= False;
+              resolving := False;
               setProgBar(Account.AccProto, 0);
               msgDlg(getTranslation('DNS error: [%d]\n%s' , [evInt, Msg]), False, mtError);
             end;
@@ -1060,7 +989,7 @@ end; // doConnect
 
 procedure connect_after_dns(const proto: TRnQProtocol);
 //var
-//  icq : TicqSession;
+//  icq: TicqSession;
 begin
    begin
    if lastServerIP > '' then
@@ -1579,7 +1508,7 @@ begin
      if formvisible(RnQmain) then
        RnQmain.toggleVisible;
      exit;
-  end;
+   end;
   frm.hide;
   ShowWindow(application.handle, SW_HIDE)
 end;
@@ -1796,6 +1725,9 @@ var
 begin
   if not Assigned(dest) then
     Exit;
+ {$IFDEF PROTOCOL_ICQ}
+  if not (dest is TICQContact) then
+    Exit;
   wnd := TselectCntsFrm.doAll( RnQmain,
                               getTranslation('To %s',[dest.displayed]),
                               getTranslation('Send selected contacts'),
@@ -1809,6 +1741,7 @@ begin
 //  Theme.getIco2(PIC_CONTACTS, wnd.icon);
   Theme.pic2ico(RQteFormIcon, PIC_CONTACTS, wnd.icon);
   wnd.extra := Tincapsulate.aString(dest.uid);
+ {$ENDIF PROTOCOL_ICQ}
 end; // openSendContacts
 
 function isEmailAddress(const s: string; start: integer): integer;
@@ -1819,31 +1752,35 @@ var
   existsDot: boolean;
 begin
   result := -1;
-  if s[start] in EMAILCHARS then   // chi comincia bene...
+//  if s[start] in EMAILCHARS then   // chi comincia bene...
+  if CharInSet(s[start], EMAILCHARS) then   // chi comincia bene...
   begin
   // try to find the @
     j := start+1;
-    while (j < length(s)) and (s[j] in EMAILCHARS) do
-      inc(j);
-    if s[j]='@' then
+//  while (j < length(s)) and (s[j] in EMAILCHARS) do
+  while (j < length(s)) and CharInSet(s[j], EMAILCHARS) do
+    inc(j);
+  if s[j]='@' then
     begin
     // @ found, now skip the @ and search for .
       inc(j);
       existsDot := FALSE;
-      while (j < length(s)) and (s[j+1] in EMAILCHARS) do
+//    while (j < length(s)) and (s[j+1] in EMAILCHARS) do
+    while (j < length(s)) and CharInSet(s[j+1], EMAILCHARS) do
       begin
         if s[j]='.' then
           begin
-           existsDot := TRUE;
-           break;
+            existsDot := TRUE;
+            break;
           end;
         inc(j);
       end;
-    if existsDot and (s[j] in EMAILCHARS) then // at least a valid char after the . must exists
+//    if existsDot and (s[j] in EMAILCHARS) then // at least a valid char after the . must exists
+    if existsDot and CharInSet(s[j], EMAILCHARS) then // at least a valid char after the . must exists
       begin
         repeat
           inc(j);
-        until (j > length(s)) or not  (s[j] in EMAILCHARS); // go forth till we're out or we meet an invalid char
+        until (j > length(s)) or not  CharInSet(s[j], EMAILCHARS); // go forth till we're out or we meet an invalid char
         result := j-1;
       end;
     end;
@@ -1894,6 +1831,7 @@ var
   send_msg: String;
   fl: Cardinal;
   i: Integer;
+  vThisAcks: Toutbox;
 begin
 //  c:= Tcontact(contactsDB.get( oe.uid));
 
@@ -1961,7 +1899,7 @@ begin
  {$ENDIF ~DB_ENABLED}
   ev := Thevent.new(EK_MSG, oe.whom.fProto.getMyInfo, oe.timeSent, vBin{$IFDEF DB_ENABLED}, vStr{$ENDIF DB_ENABLED}, fl, oe.id);
   ev.fIsMyEvent := True;
-   if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) and ( oe.flags and IF_not_save_hist = 0) then
+  if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) and ( oe.flags and IF_not_save_hist = 0) then
     writeHistorySafely(ev, oe.whom);
 //  if oe.flags and IF_not_show_chat = 0 then
 //    chatFrm.addEvent_openchat(c, ev.clone);
@@ -2047,7 +1985,7 @@ begin
     frm.caption := title
 //   else
      ;
-  frm.txtBox.text := '';
+  frm.txtBox.text := pwd;
   frm.AllowNull := AllowNull;
   bringForeground := frm.handle;
   // setTopMost(frm, True);
@@ -2320,14 +2258,14 @@ begin
 //  ct.uin := uinToUpdate;
  {$IFDEF PROTOCOL_ICQ}
   if Account.AccProto.ProtoName = 'ICQ' then
-  if Account.AccProto.isOnline then
-   begin
-    TicqSession(Account.AccProto.ProtoElem).sendQueryInfo(uinToUpdate);
-    checkupdate.checking := True;
-   end
-  else
-   if not checkupdate.autochecking then
-    OnlFeature(Account.AccProto, false);
+   if Account.AccProto.isOnline then
+     begin
+      TicqSession(Account.AccProto.ProtoElem).sendQueryInfo(uinToUpdate);
+      checkupdate.checking := True;
+     end
+    else
+     if not checkupdate.autochecking then
+      OnlFeature(Account.AccProto, false);
 //  icq.sendSimpleQueryInfo(uinToUpdate);
  {$ENDIF PROTOCOL_ICQ}
 end; // check4update
@@ -3046,7 +2984,7 @@ else
      if ev.flags and IF_no_matter = 0 then
       if not vProto.getStatusDisable.OpenChat then
        if not BossMode.isBossKeyOn and (BE_flashchat in behaviour[ev.kind].trig) then
-          chatFrm.flash;
+         chatFrm.flash;
 // POP UP
 if not BossMode.isBossKeyOn and (BE_popup in behaviour[ev.kind].trig) then
   if not chatFrm.isVisible then
@@ -3113,7 +3051,7 @@ const
     if i > 0 then
      begin
        inc(i, length(lab) + 1);
-       j := PosEx(')', s, i);
+       j := PosEx(AnsiString(')'), s, i);
    //    j:=i;
    //    while (length(s) > j) and (s[j]<>')') do
    //      inc(j);
@@ -3135,7 +3073,7 @@ begin
   try
     tS := extractPar(AnsiString('times'));
     if tS <>'' then
-      result.tiptimeplus := strToInt(ts)
+      result.tiptimeplus := strToIntA(ts)
   except
   end;
   if ansiContainsText(s, tipstr) then
@@ -3143,7 +3081,7 @@ begin
   try
     tS := extractPar(tipstr);
     if tS <>'' then
-      result.tiptime := strToInt(ts)
+      result.tiptime := strToIntA(ts)
   except
   end;
   if ansiContainsText(s, AnsiString('tray')) then include(result.trig, BE_tray);
@@ -3443,7 +3381,7 @@ begin
   for i:=0 to length(a)-1 do
 //    result.add(contactsDB.get(TICQContact, IntToStr(a[i])));
 //    result.add(TRnQProtocol.contactsDB.get(TICQContact, a[i]));
-    result.add(proto.GetContact(Int2UID(a[i])));
+    result.add(proto.getContact(Int2UID(a[i])));
  {$ENDIF PROTOCOL_ICQ}
 end; // ints2cl
 
@@ -3555,7 +3493,7 @@ begin
     applyCommonSettings(c.components[i]);
   if c is Tpopupmenu then
   //    if not (Tpopupmenu(c).Items.Items[i] is TRQMenuItem) then
-   if c.Name <> 'visMenu' then
+  if c.Name <> 'visMenu' then
    begin
     Tpopupmenu(c).OwnerDraw := True;
     for i := 0 to Tpopupmenu(c).Items.Count-1 do
@@ -3675,6 +3613,19 @@ begin
   chatFrm.toolbar.buttonheight := h + gap;
 end; // setupChatButtons
 
+procedure setProgBar(const proto: TRnQProtocol; v: double);
+begin
+  if Assigned(proto) then
+    proto.progLogon := v
+   else
+    progStart := v;
+//sbar.repaint;
+  if Assigned(RnQMain.PntBar) then
+    rnqMain.PntBar.repaint;
+  if assigned(statusIcon) and assigned(statusIcon.trayIcon) then
+    statusIcon.trayIcon.update;
+end;
+
 procedure toggleMainfrmBorder(setBrdr: Boolean = false; IsBrdr: Boolean = True);
 begin
   with RnQmain do
@@ -3781,8 +3732,8 @@ var
       cnv.TextOut(x,y, s);
       x:=cnv.penpos.x;
     end;}
-  if x > maxX then
-    maxX := x;
+    if x > maxX then
+      maxX := x;
   end; // textout
 
   procedure textout(const s: string; a: TFontStyles); overload;
@@ -4041,19 +3992,22 @@ case kind of
      if c.birth <> 0 then
       fieldOutDP('Birthday', DateToStr(c.birth));
     fieldOutDP('Group', groups.id2name(c.group));
+
+    tS := '';
+    if c.GetContactIP <> 0 then
+     if c.fProto.getMyInfo <> NIL then
+      if c.GetContactIP = c.fProto.getMyInfo.GetContactIP then
+        tS := ip2str(c.GetContactIntIP)
+       else
+        tS := ip2str(c.GetContactIP);
+    if tS > '' then
+      fieldOutDP('IP address', tS);
+
  {$IFDEF PROTOCOL_ICQ}
     if Assigned(cnt) then
      begin
-        tS := ifThen(cnt.connection.ip<>0,
-                ifThen(cnt.connection.ip = TICQcontact(c.fProto.getMyInfo).connection.ip,
-                  ip2str(cnt.connection.internal_ip),
-                  ip2str(cnt.connection.ip)
-                )
-              );
-        if tS > '' then
-         fieldOutDP('IP address', tS);
-        if cnt.fServerProto > '' then
-         fieldOutDP('Server proto', cnt.fServerProto);
+      if cnt.fServerProto > '' then
+        fieldOutDP('Server proto', cnt.fServerProto);
      end;
  {$ENDIF PROTOCOL_ICQ}
     if c.isOnline then
@@ -4234,7 +4188,7 @@ var
 begin
   result := 0;
   if not GetKeyboardState(keys) then
-   exit;
+    exit;
   if keys[VK_SHIFT] >= $80 then
     inc(result, 1);
   if keys[VK_CONTROL] >= $80 then
@@ -4266,8 +4220,8 @@ case oe.kind of
      sendICQcontacts( oe.whom, oe.flags, oe.cl);
  {$ENDIF PROTOCOL_ICQ}
     end;
-  OE_AUTH: Protos_auth( oe.whom );
-  OE_AUTHDENIED: Protos_AuthDenied( oe.whom, oe.info );
+  OE_AUTH: oe.whom.auth;
+  OE_AUTHDENIED: oe.whom.AuthDenied( oe.info );
  {$IFDEF PROTOCOL_ICQ}
   OE_ADDEDYOU: sendICQaddedYou(oe.whom);
  {$ENDIF PROTOCOL_ICQ}
@@ -4432,7 +4386,7 @@ end;
 
 procedure ClearSpamFilter;
 //var
-//  q : record q : String; ans : array of String; end;
+//  q: record q: String; ans: array of String; end;
 begin
   spamfilter.badwords := '';
 //  for q in spamfilter.quests do

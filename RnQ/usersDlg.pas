@@ -12,7 +12,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ExtCtrls, RnQButtons, RnQDialogs, VirtualTrees, StdCtrls,
-  RnQProtocol, globallib;
+  RnQProtocol, RnQConst, globallib;
 
 type
   TusersFrm = class(TForm)

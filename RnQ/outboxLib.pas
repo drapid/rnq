@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit outboxLib;
 {$I RnQConfig.inc}
@@ -79,7 +79,7 @@ type
 implementation
 
 uses
-  globalLib, mainDlg, utilLib, chatDlg,
+  RnQConst, globalLib, mainDlg, utilLib, chatDlg,
   roasterLib, RnQCrypt,
   RQUtil, RnQDialogs, RDUtils, RnQBinUtils;
 

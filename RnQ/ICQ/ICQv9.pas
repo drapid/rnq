@@ -614,7 +614,7 @@ type
     procedure getClientPicAndDesc4(cnt: TRnQContact; var pPic: TPicName; var CliDesc: String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  maxCharsFor(const c: TRnQContact; isBin: Boolean = false): integer; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  compareStatusFor(cnt1, Cnt2: TRnqContact) : Smallint; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure sendkeepalive; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure sendKeepalive; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  canAddCntOutOfGroup: Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
   {$IFDEF UNICODE}
@@ -954,13 +954,13 @@ uses
  {$IFDEF UNICODE}
    AnsiStrings, AnsiClasses,
  {$ENDIF UNICODE}
-   RnQZip, OverbyteIcsZLibHigh,
+   RnQZip,
    OverbyteIcsWSocket, OverbyteIcsUtils,
-//   ElAES,
    {$IFDEF USE_SYMCRYPTO}
      SynCrypto,
     {$ELSE not SynCrypto}
-     OverbyteIcsMD5,
+//     OverbyteIcsMD5,
+//   ElAES,
      aes_type, aes_ecb,
    {$ENDIF ~USE_SYMCRYPTO}
    RnQDialogs, RnQLangs, RDUtils, RnQGlobal,
@@ -969,7 +969,7 @@ uses
  {$IFDEF RNQ_AVATARS}
    RnQ_Avatars,
  {$ENDIF}
-   globalLib, UtilLib,
+   RnQConst, globalLib, UtilLib,
    RQ_ICQ, ICQClients, ICQ.Stickers,
   {$IFDEF ICQ_REST_API}
    ICQ.RESTapi,
@@ -1116,7 +1116,7 @@ begin
          with arr[k] do
           begin
             ItemType := Tp;
-            ItemName8 := UID;
+            ItemName8 := StrToUTF8(UID);
             ItemID   := 0;
             ExtData  := '';
             Len1 := Length(SSI_Item2packet(arr[k]));
@@ -1262,7 +1262,7 @@ result :=
  '<destination>'+dest+'</destination>'+
  '<text>'+str2html(msg)+'</text>'+
  '<codepage>1251</codepage>'+
- '<senders_UIN>'+ me.uid +'</senders_UIN>'+
+ '<senders_UIN>'+ AnsiString(me.uid) +'</senders_UIN>'+
  '<senders_name>'+AnsiString(me.displayed)+'</senders_name>'+
  '<delivery_receipt>'+yesno[ack]+'</delivery_receipt>'+
  '<time>'+ AnsiString( formatDatetime('ddd, dd mmm yyyy hh:nn:ss GMT', now-gmtoffset) )+'</time>'+
@@ -2313,7 +2313,7 @@ begin
    pp.addPrefStr('oscar-uid', MyAccount);
   pp.addPrefBool('add-to-vislist-before-msg', addTempVisMsg);
   pp.addPrefBool('add-client-caps', AddExtCliCaps);
-  pp.addPrefStr('add-client-caps-str', Str2hex(ExtClientCaps));
+  pp.addPrefStr('add-client-caps-str', str2hexU(ExtClientCaps));
   pp.addPrefInt('send-balloon-on', sendBalloonOn);
   pp.addPrefDate('send-balloon-on-date', sendBalloonOnDate);
  try
@@ -2337,7 +2337,7 @@ begin
   pp.addPrefBool('avatars-auto-load-flag', AvatarsAutoGet);
   pp.addPrefBool('avatars-auto-swf-flag', AvatarsAutoGetSWF);
   pp.addPrefBool('avatars-not-downloaded-inform-flag', AvatarsNotDnlddInform);
-  pp.addPrefStr('avatar-my', Str2hex(myAvatarHash));
+  pp.addPrefStr('avatar-my', str2hexU(myAvatarHash));
  {$IFDEF CHECK_INVIS}
   pp.addPrefBool('invisibility-flag', CheckInvis.ShowInvisibility);
   pp.addPrefBool('check-invisibility-every', CheckInvis.AutoCheck);
@@ -2392,10 +2392,10 @@ begin
   if not (RnQstartingStatus in [Low(status2Img)..High(status2Img)]) then
     pp.addPrefStr('starting-status', 'last_used')
    else
-    pp.addPrefStr('starting-status', status2Img[RnQstartingStatus]);
-  pp.addPrefStr('starting-visibility', visib2str[TVisibility(RnQstartingVisibility)]);
+    pp.addPrefStr('starting-status', String(status2Img[RnQstartingStatus]));
+  pp.addPrefStr('starting-visibility', String(visib2str[TVisibility(RnQstartingVisibility)]));
 
-  pp.addPrefStr('last-set-status', status2Img[lastStatusUserSet]);
+  pp.addPrefStr('last-set-status', String(status2Img[lastStatusUserSet]));
 
 
   inherited GetPrefs(pp);
@@ -3828,6 +3828,7 @@ begin
   );
 end;
 
+{$IFDEF usesECC}
 procedure TicqSession.sendEccMSGsnac(const cnt: TICQContact; const sn: RawByteString);
 var
   cap: RawByteString;
@@ -3848,74 +3849,23 @@ begin
     +TLV(6, '')  // <--  if (args->flags & AIM_IMFLAGS_OFFLINE)
   );
 end;
+{$ENDIF usesECC}
 
 procedure CalcKey(isEcc: Boolean; const EccKey, u1, u2: RawByteString; l1, l2: Int64; var key: TSHA256Digest);
 var
-    MD5Digest: TMD5Digest;
-   {$IFDEF USE_SYMCRYPTO}
-     MD5: TMD5;
-    {$ELSE not SynCrypto}
-     MD5Context: TMD5Context;
-   {$ENDIF ~USE_SYMCRYPTO}
-  sa: RawByteString;
-  i: Integer;
+  sa, sr: RawByteString;
 begin
   if isEcc then
     PBKDF2_HMAC_SHA256(EccKey, not2Translate[2] + AIM_MD5_STRING + IntToHexA(l1, 2) + u1 + IntToHexA(l2, 2) + u2, 3, Key)
    else
     begin
-         sA := IntToHexA(l1, 2);
-         FillChar(MD5Digest, sizeOf(TMD5Digest), 0);
-   {$IFDEF USE_SYMCRYPTO}
-         MD5.Init;
-         MD5.Update(sa[1], length(sa));
-         MD5.Update((not2Translate[2])[1], length(not2Translate[2]));
-         sA := u1;
-         MD5.Update(sa[1], length(sa));
-         MD5.Update(AIM_MD5_STRING[1], length(AIM_MD5_STRING));
-         MD5.Final(MD5Digest);
-    {$ELSE not SynCrypto}
-         MD5Init(MD5Context);
-         MD5UpdateBuffer(MD5Context, PByte(sa), length(sa));
-         MD5UpdateBuffer(MD5Context, (not2Translate[2])[1], length(not2Translate[2]));
-         sA := u1;
-         MD5UpdateBuffer(MD5Context, PByte(sa), length(sa));
-         MD5UpdateBuffer(MD5Context, PAnsiChar(AIM_MD5_STRING), length(AIM_MD5_STRING));
-         MD5Final(MD5Digest, MD5Context);
-   {$ENDIF ~USE_SYMCRYPTO}
-         for I := 0 to 15 do
-          Key[i] := Byte(MD5Digest[I]);
+         sA := IntToHexA(l1, 2) + (not2Translate[2]) + u1 + AIM_MD5_STRING;
+         sr := MD5Pass2(sA);
+         CopyMemory(@Key[0], @sr[1], SizeOf(TMD5Digest));
 
-         sA := IntToHexA(l2, 2);
-         FillChar(MD5Digest, sizeOf(TMD5Digest), 0);
-   {$IFDEF USE_SYMCRYPTO}
-         MD5.Init;
-         MD5.Update(sa[1], length(sa));
-         MD5.Update((not2Translate[2])[1], length(not2Translate[2]));
-         sA := u2;
-         MD5.Update(sa[1], length(sa));
-         MD5.Update(AIM_MD5_STRING[1], length(AIM_MD5_STRING));
-         MD5.Final(MD5Digest);
-    {$ELSE not SynCrypto}
-         MD5Init(MD5Context);
-         MD5UpdateBuffer(MD5Context, PByte(sa), length(sa));
-         MD5UpdateBuffer(MD5Context, PByte(not2Translate[2]), length(not2Translate[2]));
-         sA := u2;
-         MD5UpdateBuffer(MD5Context, PByte(sa), length(sa));
-         MD5UpdateBuffer(MD5Context, PAnsiChar(AIM_MD5_STRING), length(AIM_MD5_STRING));
-         MD5Final(MD5Digest, MD5Context);
-   {$ENDIF ~USE_SYMCRYPTO}
-         for I := 0 to 15 do
-          Key[i+16] := Byte(MD5Digest[I]);
-{
-         sA := MD5Pass(RawByteString(IntToHexA(eventMsgID, 2)) + not2Translate[2] + RawByteString(thisCnt.UID2cmp) + AIM_MD5_STRING);
-         for I := 1 to 16 do
-          Key[i-1] := Byte(sA[I]);
-
-         sA := MD5Pass(RawByteString(IntToHexA(origMsgLen, 2)) + not2Translate[2] + RawByteString(MyAccount) + AIM_MD5_STRING);
-         for I := 1 to 16 do
-          Key[i+15] := Byte(sA[I]);
-}
+         sA := IntToHexA(l2, 2) + not2Translate[2] + u2 + AIM_MD5_STRING;
+         sr := MD5Pass2(sA);
+         CopyMemory(@Key[16], @sr[1], SizeOf(TMD5Digest));
     end;
 end;
 
@@ -3931,9 +3881,10 @@ var
   c: TICQcontact;
   status: AnsiString;
   sutf: RawByteString;
-  buf, destBuf: TMemoryStream;
+//  buf, destBuf: TMemoryStream;
   Msg2: String;
   Msg2Send: RawByteString;
+  Msg2SendC: RawByteString;
 //  key: TAESKey256;
 //  key: AnsiString;
   key: array [0..31] of byte;
@@ -4038,6 +3989,8 @@ begin
        len := Length(Msg2Send);
        crc := (ZipCrc32($FFFFFFFF, @Msg2Send[1], Len) XOR $FFFFFFFF);
        CompressType := 0;
+       Msg2SendC := zCompressStr(Msg2Send);
+{
        buf := TMemoryStream.create;
        destBuf := TMemoryStream.create;
        buf.Write(Msg2Send[1], Len);
@@ -4053,11 +4006,18 @@ begin
           move(i, Msg2Send[1], 4);
           destBuf.Position := 0;
           destBuf.Read(Msg2Send[5], i);
-//          CopyMemory(@Msg2Send[5], destBuf.Memory, i);
           CompressType := 1;
-//          msg := Msg2Send;
         end;
        destBuf.free;
+}
+
+       i := Length(Msg2SendC);
+
+       if i+4 < Len then
+        begin
+          Msg2Send := int2str(i+4) + Msg2SendC;
+          CompressType := 1;
+        end;
 
        CalcKey(fECCKeys.generated and useEccCryptMsg and c.crypt.supportEcc, c.crypt.EccMsgKey, MyAccount, c.UID2cmp, SNACref, len, TSHA256Digest(key));
 
@@ -4245,10 +4205,10 @@ sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
 );
 end; // sendAddedYou
 
-procedure TicqSession.sendContacts(cnt : TRnQContact;flags:dword; cl:TRnQCList);
+procedure TicqSession.sendContacts(cnt: TRnQContact; flags: dword; cl: TRnQCList);
 var
   s: RawByteString;
-//  c:Tcontact;
+  c: TRnQContact;
 begin
   if not isReady then exit;
   if cl.empty then exit;
@@ -4259,10 +4219,8 @@ begin
      addTemporaryVisible(TICQContact(cnt));
 
   s := IntToStrA(TList(cl).count)+#$FE;
-  cl.resetEnumeration;
-  while cl.hasMore do
-   with cl.getNext do
-    s:=s + uid +#$FE + StrToUTF8(nick) + #$FE;
+  for c in cl do
+    s := s + StrToUTF8(c.UID2cmp) +#$FE + StrToUTF8(c.nick) + #$FE;
 
   sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#4
     + cnt.buin 
@@ -5046,12 +5004,6 @@ end;
 procedure TicqSession.parseAuthKey(const snac: RawByteString);
 var
     I: Integer;
-    MD5Digest: TMD5Digest;
-   {$IFDEF USE_SYMCRYPTO}
-     md5: TMD5;
-    {$ELSE not SynCrypto}
-     MD5Context: TMD5Context;
-   {$ENDIF ~USE_SYMCRYPTO}
     key: RawByteString;
     sendKey: RawByteString;
     ppp: RawByteString;
@@ -5063,24 +5015,7 @@ begin
      else
       ppp := fPwd;
 
-//    sendKey := MD5Pass(key + ppp + AIM_MD5_STRING);
-    FillChar(MD5Digest, sizeOf(TMD5Digest), 0);
- {$IFDEF USE_SYMCRYPTO}
-    MD5.Init;
-    MD5.Update(key[1], length(key));
-    MD5.Update(ppp[1], length(ppp));
-    MD5.Update(AIM_MD5_STRING[1], length(AIM_MD5_STRING));
-    md5.Final(MD5Digest);
-  {$ELSE not SynCrypto}
-    MD5Init(MD5Context);
-    MD5UpdateBuffer(MD5Context, PAnsiChar(key), length(key));
-    MD5UpdateBuffer(MD5Context, PAnsiChar(@ppp[1]), length(ppp));
-    MD5UpdateBuffer(MD5Context, PAnsiChar(AIM_MD5_STRING), length(AIM_MD5_STRING));
-    MD5Final(MD5Digest, MD5Context);
- {$ENDIF ~USE_SYMCRYPTO}
-    sendKey := '';
-    for I := 0 to 15 do
-      sendKey := sendKey + AnsiChar(MD5Digest[I]);
+    sendKey := MD5Pass2(key + ppp + AIM_MD5_STRING);
 //   sendFLAP( LOGIN_CHANNEL, #0#0#0#1
    if saveMD5Pwd then
      key := TLV($4C, '')
@@ -5096,7 +5031,7 @@ begin
       +TLV($25, sendKey)
     // By Rapid D
 //      +TLV($4C, '')
-      +TLV(3, 'ICQBasic')
+      +TLV(3, RawByteString('ICQBasic'))
       +TLV($16, word($010A))
       +TLV($17, word($0014)) // CLIENT_VERSION_MAJOR
       +TLV($18, word($0022)) // CLIENT_VERSION_MINOR
@@ -5284,7 +5219,7 @@ begin
   eventFlags := 0;
   eventTime := now;
   ofs := 1;
-  eventContact := getICQContact(getBUIN2(snac,ofs));
+  eventContact := getICQContact(getBUIN3(snac,ofs));
   inc(ofs, 2);
   TLVCnt := readBEWORD(snac, ofs);
 
@@ -5541,15 +5476,15 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
    ;
 
   cont.crypt.supportEcc := false;
-  i := Pos('RDEC0', cont.extracapabilities);
+  i := Pos(RawByteString('RDEC0'), cont.extracapabilities);
   if i>0 then
     begin
       cont.crypt.EccPubKey := copy(cont.extracapabilities, i+5, 11);
-      i := Pos('RDEC1', cont.extracapabilities);
+      i := Pos(RawByteString('RDEC1'), cont.extracapabilities);
       if i>0 then
        begin
          cont.crypt.EccPubKey := cont.crypt.EccPubKey + copy(cont.extracapabilities, i+5, 11);
-         i := Pos('RDEC2', cont.extracapabilities);
+         i := Pos(RawByteString('RDEC2'), cont.extracapabilities);
          if i>0 then
            begin
             cont.crypt.EccPubKey := cont.crypt.EccPubKey + copy(cont.extracapabilities, i+5, 11);
@@ -5911,7 +5846,7 @@ begin
   l := Length(snac);
   while ofs < l-5 do
   begin
-    cnt := getICQContact(getBUIN2(snac, ofs));
+    cnt := getICQContact(getBUIN3(snac, ofs));
     notMe := True;//not isMyAcc(eventContact);
     if notMe and Assigned(cnt) then
       begin
@@ -6119,7 +6054,7 @@ begin
 {  inc(ofs, 20);
 if pos('Greeting Card', getDLS(snac, ofs))=0 then exit;
 inc(ofs,3);}
-v:= byte(snac[ofs]) shl 8 + Byte(snac[ofs+2]);  // get version
+v := byte(snac[ofs]) shl 8 + Byte(snac[ofs+2]);  // get version
 inc(ofs, i);
 case v of
   $0100,             // 1.0 not tested
@@ -6220,7 +6155,7 @@ begin
     Exit;
   eventMsgID := qword_LEat(@snac[1]);
   ofs := 11;
-  eventContact := getICQContact(getBUIN2(snac,ofs));
+  eventContact := getICQContact(getBUIN3(snac,ofs));
   eventWID := getTLVsafe($09, snac, ofs);
   notifyListeners(IE_serverAck);
 end; // parseServerAck
@@ -6244,8 +6179,7 @@ var
   CompressType: Word;
   priority, msgtype, msgflags, TypeId: byte;
   msgLen, origMsgLen, msgCRC, origMsgCRC: Cardinal;
-//    buf, destBuf: TStringStream;
-  buf, destBuf: TMemoryStream;
+//  buf, destBuf: TMemoryStream;
    {$IFDEF USE_SYMCRYPTO}
      ctx: TAESECB;
      key: TSHA256Digest;
@@ -6656,7 +6590,7 @@ begin
          AES_ECB_Init_Decr(key, 256, ctx);
          AES_ECB_Decrypt(@CrptMsg[1], @msg[1], i, ctx);
    {$ENDIF ~USE_SYMCRYPTO}
-
+{
          setLength(msg, origMsgLen);
 //          buf.Free;
 //          destBuf.Free;
@@ -6676,6 +6610,12 @@ begin
              CopyMemory(@msg[1], destBuf.Memory, destBuf.Size);
              destBuf.free;
            end;
+}
+         if CompressType = 1 then
+           msg := ZDecompressStr(Copy(msg, 5, length(msg)));
+
+         setLength(msg, origMsgLen);
+
           if Length(msg) > 0 then
            begin
             msgCRC := (ZipCrc32($FFFFFFFF, @msg[1], origMsgLen)XOR $FFFFFFFF);
@@ -6758,6 +6698,7 @@ begin
          AES_ECB_Decrypt(@CrptMsg[1], @msg[1], i, ctx);
    {$ENDIF ~USE_SYMCRYPTO}
 
+{
          setLength(msg, origMsgLen);
 //          buf.Free;
 //          destBuf.Free;
@@ -6777,6 +6718,12 @@ begin
              CopyMemory(@msg[1], destBuf.Memory, destBuf.Size);
              destBuf.free;
            end;
+}
+         if CompressType = 1 then
+           msg := ZDecompressStr(Copy(msg, 5, Length(msg)));
+
+         setLength(msg, origMsgLen);
+
           if Length(msg) > 0 then
            begin
             msgCRC := (ZipCrc32($FFFFFFFF, @msg[1], origMsgLen)XOR $FFFFFFFF);
@@ -7007,7 +6954,7 @@ var
 begin
   eventMsgID := qword_LEat(@pkt[1]);
   ofs := 11;
-  thisCnt := getICQContact(getBUIN2(pkt, ofs));
+  thisCnt := getICQContact(getBUIN3(pkt, ofs));
   eventTime := now;
   inc(ofs, 2);
   TLVCnt := readBEWORD(pkt, ofs);
@@ -7055,7 +7002,7 @@ var
 begin
   ofs := 1;
 //  Some := getBEWNTS(pkt, ofs);
-  UIN  := getBUIN2(pkt, ofs);
+  UIN  := getBUIN3(pkt, ofs);
   eventContact := getICQContact(UIN);
   eventTime := now;
 //  contactsDB.get(UIN).
@@ -9435,15 +9382,15 @@ end;
 procedure TicqSession.sendACK(cont: TICQContact; status: integer;
                               const msg: string; DownCnt: word = $FFFF);
 var
-//  s,tlv:string;
-//  ofs:integer;
-  mt : Byte;
-  mtf : AnsiChar;
-  msg2 : String;
-  sutf, msg2Send : RawByteString;
+//  s, tlv: string;
+//  ofs: integer;
+  mt: Byte;
+  mtf: AnsiChar;
+  msg2: String;
+  sutf, msg2Send: RawByteString;
 begin
 //  ofs:=11;
-//  eventContact:=contactsDB.get(getBUIN2(snac,ofs));
+//  eventContact := contactsDB.get(getBUIN3(snac,ofs));
   if not Assigned(cont) or not imVisibleTo(cont) then exit;
 
 // Not answer to somebody not in list
@@ -9539,14 +9486,14 @@ case status of
 
 end; // sendACK
 
-procedure TicqSession.sendMyXStatus(cont : TICQContact; msgID : Int64);
+procedure TicqSession.sendMyXStatus(cont: TICQContact; msgID: Int64);
 //const
 //  ch = '11';
 var
   sR: RawByteString;
-  title, msg : RawByteString;
-  s1 : RawByteString;
-//  ofs:integer;
+  title, msg: RawByteString;
+  s1: RawByteString;
+//  ofs: integer;
 begin
 //ofs:=11;
 //eventContact := cont;
@@ -9576,7 +9523,7 @@ begin
   s1 := '<ret event=''OnRemoteNotification''><srv>'+
          '<id>cAwaySrv</id><val srv_id=''cAwaySrv''>' +
          '<Root><CASXtraSetAwayMessage></CASXtraSetAwayMessage>'+
-           '<uin>' + myAccount +
+           '<uin>' + UTF8Encode(myAccount) +
            '</uin><index>' + AnsiString(intToStr(curXStatus)) + '</index>' +
            '<title>' + title + '</title><desc>'+msg+'</desc>' +
          '</Root>..</val></srv>'+
@@ -9703,17 +9650,17 @@ begin result:=getStatus in [byte(SC_occupied), byte(SC_dnd)] end;
 
 procedure TicqSession.parse010F(const snac: RawByteString);
 var
-//  ofs:integer;
-  s : RawByteString;
+//  ofs: integer;
+  s: RawByteString;
 //  s:string;
-  ofs, t, i, l :integer;
-  TLVCnt : Word;
+  ofs, t, i, l: integer;
+  TLVCnt: Word;
 begin
  ofs := 1;
 //  if snac[ofs] = #0 then
 //    getBEWNTS(snac, ofs);             //I Don't know WHAT IS THAT!!!
 // ofs:=ord(snac[ofs])+5;
- eventContact:= getICQContact(getBUIN2(snac,ofs));
+  eventContact := getICQContact(getBUIN3(snac,ofs));
   inc(ofs, 2);
   TLVCnt := readBEWORD(snac, ofs);
 
@@ -9780,7 +9727,7 @@ begin
   eventFlags:=0;
   eventTime:=now;
   ofs:=1;
-  eventContact:= getICQContact(getBUIN2(snac,ofs));
+  eventContact:= getICQContact(getBUIN3(snac,ofs));
   inc(ofs, 2);
   TLVCnt := readBEWORD(snac, ofs);
   t := ofs;
@@ -9905,14 +9852,14 @@ end;
 
 procedure TicqSession.parse040A(const snac: RawByteString);
 var
-  ofs, i, l:integer;
-//  accept:byte;
-  MissedType : Word;
-  uid : TUID;
+  ofs, i, l: integer;
+//  accept: byte;
+  MissedType: Word;
+  uid: TUID;
 begin
   ofs:=1;
   MissedType := readWORD(snac, ofs);
-  uid := getBUIN2(snac, ofs);
+  uid := getBUIN3(snac, ofs);
   eventFlags := readWORD(snac, ofs);
   eventContact:= getICQContact(uid);
   l := readWORD(snac, ofs);
@@ -9961,7 +9908,7 @@ begin
   eventMsgID := readQWORD(snac, ofs);
 //  ofs := 9;
   channel := readBEWORD(snac, ofs);
-  uin := getBUIN2(snac, ofs);
+  uin := getBUIN3(snac, ofs);
   eventContact := getICQContact(uin);
   //  uin := Copy(snac, 12, ord(snac[11]));
   //inc(ofs, 10+1+ord(snac[11])+2+47);
@@ -10270,7 +10217,7 @@ begin
   begin
    sock.addr := serviceServerAddr;
    sock.port := serviceServerPort;
-   CopyProxy(aProxy, MainProxy);
+   aProxy.CopyFrom(MainProxy);
   end
  else
 
@@ -10420,9 +10367,9 @@ begin
   Result := fDC_Fake_port;
 end;
 
-function TicqSession.CheckInvisibility2(const uin : TUID ) : Integer;
+function TicqSession.CheckInvisibility2(const uin: TUID ): Integer;
 //var
-// id : integer;
+// id: integer;
 begin
 {
   sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
@@ -10470,14 +10417,14 @@ begin
 //  result := 0;
 end;
 
-function TicqSession.CheckInvisibility3(const uin : TUID ) : Integer;
+function TicqSession.CheckInvisibility3(const uin: TUID ): Integer;
 begin
   Result := -1;
 end;
 
-function TicqSession.getUINStatus(const uin : TUID ) : Integer;
+function TicqSession.getUINStatus(const uin: TUID ): Integer;
 //var
-// id : integer;
+// id: integer;
 begin
 {
   sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, qword_LEasStr(SNACref)+#0#2
@@ -10526,7 +10473,7 @@ HTML_INFO	0x00000400	Return HTML formatted Buddy Info page
 //  result := 0;
 end;
 
-procedure TicqSession.SendTYPING(cnt : TRnQContact; notif_type : Word);
+procedure TicqSession.SendTYPING(cnt: TRnQContact; notif_type: Word);
 begin
   if (not isOnline) or (not imVisibleTo(cnt)) then exit;
   sendSNAC(ICQ_MSG_FAMILY, $14, qword_LEasStr(0) + #00#01 + cnt.buin + word_BEasStr(notif_type))
@@ -10537,7 +10484,7 @@ It has no parameters, and always causes SRV_REPLYROSTER (rather than
 SRV_REPLYROSTEROK). My guess is that CLI_REQROSTER is sent instead of
 CLI_CHECKROSTER when the client does not have a cached copy of the contact
 list; ie, the first time a user logs in with a particular client.}
-procedure TicqSession.RequestContactList(isImp : Boolean = True);
+procedure TicqSession.RequestContactList(isImp: Boolean = True);
 begin
   if not isOnline then Exit;
   isImpCL := isImp;
@@ -10552,7 +10499,7 @@ begin
 end;
 
 
-procedure TicqSession.RemoveMeFromHisCL(const uin : TUID);
+procedure TicqSession.RemoveMeFromHisCL(const uin: TUID);
 begin
   sendSNAC(ICQ_LISTS_FAMILY, $16, Length_B(uin));
 end;
@@ -10577,14 +10524,14 @@ end;
 
 procedure TicqSession.parseTYPING_NOTIFICATION(const pkt: RawByteString);
 var
-  ofs : Integer;
+  ofs: Integer;
 begin
  try
   ofs := 1;
   eventMsgID :=
     readQWORD(pkt, ofs);
     readWORD(pkt, ofs);
-  eventContact := getICQContact(getBUIN2(pkt,ofs));
+  eventContact := getICQContact(getBUIN3(pkt,ofs));
   eventInt     := readBEWORD(pkt, ofs);
   eventTime    := now;
   case eventInt of
@@ -10852,17 +10799,17 @@ procedure TicqSession.parseIcon(const pkt: RawByteString);
 //  JPEG_HDR = #$FF#$D8#$FF#$E0;
 var
   tmpStr: RawByteString;
-  ofs : Integer;
-  i : Integer;
+  ofs: Integer;
+  i: Integer;
 begin
   ofs := 1;
   if not Assigned(mainICQ) then
     Exit;
-  eventContact := mainICQ.getICQContact(getBUIN2(pkt,ofs));
+  eventContact := mainICQ.getICQContact(getBUIN3(pkt, ofs));
   readWORD(pkt, ofs);
   readByte(pkt, ofs);
-  i:=byte(pkt[ofs]);
-//  result:=copy(s,ofs+2,i-1);
+  i := byte(pkt[ofs]);
+//  result := copy(s,ofs+2,i-1);
   inc(ofs, 1+i);
 
   readByte(pkt, ofs); // unknown (command ?)
@@ -10872,7 +10819,7 @@ begin
   eventMsgA := Copy(pkt, ofs, i);
   inc(ofs, i);
 //  i := word_BEat(@pkt[ofs]);
-  tmpStr :=getBEWNTS(pkt, ofs);
+  tmpStr := getBEWNTS(pkt, ofs);
   if tmpStr > '' then
   begin
 //  tmpStr:= Copy(snac, pos(JPEG_HDR, snac), length(snac));
@@ -12077,7 +12024,7 @@ begin
     getBEWNTS(pkt, ofs);             //I Don't know WHAT IS THAT!!!
 //    Inc(ofs);
    end;}
-  eventContact := getICQContact(getBUIN2(pkt,ofs));
+  eventContact := getICQContact(getBUIN3(pkt,ofs));
   i := readBYTE(pkt, ofs);
   if i = 1 then
    eventAccept := AC_OK
@@ -12086,10 +12033,10 @@ begin
   eventMsgA := getWNTS(pkt, ofs);
   notifyListeners(IE_authDenied);
 end;
-procedure TicqSession.parse131C(const pkt : RawByteString);
+procedure TicqSession.parse131C(const pkt: RawByteString);
 var
-  ofs : Integer;
-//  i : Integer;
+  ofs: Integer;
+//  i: Integer;
 begin
   ofs := 1;
 {  if pkt[ofs] = #0 then
@@ -12099,7 +12046,7 @@ begin
     getBEWNTS(pkt, ofs);             //I Don't know WHAT IS THAT!!!
 //    Inc(ofs);
    end;}
-  eventContact := getICQContact(getBUIN2(pkt,ofs));
+  eventContact := getICQContact(getBUIN3(pkt,ofs));
   eventTime := Now;
   eventFlags := 0;
   notifyListeners(IE_addedYou);

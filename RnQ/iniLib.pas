@@ -22,7 +22,7 @@ procedure resetCFG;
 
 procedure UpdateProperties;
 function  getCFG: RawByteString;
-procedure loadCFG(zp: TZipFile);
+function loadCFG(zp: TZipFile): Boolean;
 //procedure saveCFG;
 function  getCommonCFG: AnsiString;
 procedure loadCommonCFG;
@@ -49,7 +49,7 @@ uses
   RDUtils, RnQMacros, RnQStrings, RnQCrypt,
   RQUtil, RDGlobal, RQThemes, RDFileUtil,
   roasterlib, usersDlg,
-  utilLib, events, chatDlg, globalLib,
+  utilLib, events, chatDlg, RnQConst, globalLib, RnQProtoUtils,
   RQlog, pluginLib, outboxLib,
   uinlistlib,
   mainDlg,
@@ -447,7 +447,7 @@ begin
   for i:=1 to EK_last do
    begin
     sU := String(event2str[i])+'-behaviour';
-    pp.addPrefStr(sU, beh2str(i));
+    pp.addPrefStr(sU, String(beh2str(i)));
    end;
   if Assigned(RnQmain) then
     begin
@@ -783,11 +783,11 @@ while cfg > '' do
     v := trim(l);
     l := LowerCase(v);
   try
-  if h='auto-start-uin' then autostartUIN   := l else
-  if h='check-read-only' then check4readonly:= yesno else
+  if h='auto-start-uin' then autostartUIN   := UnUTF(l) else
+  if h='check-read-only' then check4readonly := yesno else
   if h='last-server-ip' then lastserverIP   := l else
   if h='last-server-addr' then lastserverAddr   := l else
-  if h='last-user' then lastUser   := l else
+  if h='last-user' then lastUser := UnUTF(l) else
   if h='users-path' then usersPath := UnUTF(v) else
   if h='main-path' then RnQMainPath := UnUTF(v) else
   if h='langs-filename' then gLangFile := UnUTF(v) else
@@ -801,13 +801,13 @@ end; // setcommoncfg
 function getCommonCFG: AnsiString;
 begin
   result:=''
-  +'auto-start-uin='   + autostartUIN + CRLF
+  +'auto-start-uin='   + StrToUTF8(autostartUIN) + CRLF
   +'check-read-only='  + yesno[check4readonly]+CRLF
   +'last-server-ip='   + AnsiString(lastserverIP) + CRLF
   +'last-server-addr=' + AnsiString(lastserverAddr) + CRLF
   +'users-path='       + StrToUTF8(usersPath) + CRLF
   +'main-path='        + StrToUTF8(RnQMainPath) + CRLF
-  +'last-user='        + lastUser  + CRLF
+  +'last-user='        + StrToUTF8(lastUser)  + CRLF
   +'langs-filename='   + StrToUTF8(gLangFile) + CRLF
   +'langs-sub-filename=' + StrToUTF8(gLangSubFile) + CRLF;
 end;
@@ -816,7 +816,7 @@ procedure resetCommonCFG;
 begin
 //  lastServerIP:= '205.188.179.233';
 //  lastserverAddr := TicqSession._getDefHost.host;
-  lastServerIP:= '';
+  lastServerIP := '';
   lastserverAddr := '';
 //  lastserverAddr := '';
   check4readonly:=TRUE;
@@ -1164,9 +1164,9 @@ begin
   pp.getPrefStr('proxy-host', MainProxy.addr.host);
   pp.getPrefInt('proxy-port', MainProxy.addr.port);
   if pp.getPrefBoolDef('proxy-ver5', True) then
-    MainProxy.proto:=PP_SOCKS5
+    MainProxy.proto := PP_SOCKS5
    else
-    MainProxy.proto:=PP_SOCKS4;
+    MainProxy.proto := PP_SOCKS4;
   if not pp.getPrefBoolDef('proxy', False) then
     MainProxy.proto := PP_NONE;
   pp.getPrefStr('proxy-name', MainProxy.name);
@@ -1184,11 +1184,11 @@ begin
     i:=findInStrings(l, proxyproto2str);
     if i < 0 then
       begin
-       MainProxy.proto:=PP_NONE;
+       MainProxy.proto := PP_NONE;
       end
     else
       begin
-       MainProxy.proto:=TproxyProto(i);
+       MainProxy.proto := TproxyProto(i);
       end;
 
   sU := '';
@@ -1236,7 +1236,7 @@ begin
 //   RnQmain.sbar.Repaint;
   if Assigned(RnQmain) and Assigned(RnQmain.PntBar) then
     RnQmain.PntBar.Repaint;
-  histcrypt.pwdKey := calculate_KEY1(histcrypt.pwd);
+  histcrypt.pwdKey := calculate_KEY(histcrypt.pwd);
 
   setVisibility(Account.AccProto, byte(RnQstartingVisibility));
 
@@ -1246,7 +1246,7 @@ begin
 
 end; // setcfg
 
-procedure loadCFG(zp: TZipFile);
+function loadCFG(zp: TZipFile): Boolean;
 var
  fn: String;
  s: RawByteString;
@@ -1272,8 +1272,9 @@ begin
       fn := myPath + defaultsConfigFileName;
     s := loadfileA(fn);
    end;
-
-  MainPrefs.Load(s);
+  if s > '' then
+    MainPrefs.Load(s);
+  Result := s > '';
   s := loadfileA(cmdlinepar.extraini);
   MainPrefs.Load(s);
   s := '';
@@ -1689,11 +1690,11 @@ begin
    {$ENDIF CHECK_INVIS}
   LoadTranslit;
 
-  childWindows:=Tlist.create;
-  resolving:=FALSE;
-  locked:=FALSE;
-  autoaway.time:=0;
-  userTime:=-1;
+  childWindows := Tlist.create;
+  resolving := FALSE;
+  locked := FALSE;
+  autoaway.time := 0;
+  userTime := -1;
   eventQ := TeventQ.create;
   hotkeysEnabled := TRUE;
   plugins := Tplugins.create;
@@ -1730,15 +1731,15 @@ procedure startUser(const UID: TUID = '');
      end;
     while cfg > '' do
       begin
-    //  l:=chop(CRLF,cfg);
-    //  h:=chop('=',l);
-        l:=LowerCase(chop(CRLF,cfg));
-        h:=Trim(chop(AnsiString('='),l));
+    //  l := chop(CRLF,cfg);
+    //  h := chop('=',l);
+        l := LowerCase(chop(CRLF, cfg));
+        h := Trim(chop(RawByteString('='),l));
         l := trim(l);
         try
           if h='account-id' then
             begin
-              UID := l;
+              UID := UnUTF(l);
               Break;
             end;
         finally
@@ -1760,6 +1761,7 @@ var
   zipPrefs: Boolean;
   MyInf: TRnQContact;
   AccUID: TUID;
+  is1stRun: Boolean;
 begin
   if UID > '' then
     uin2Bstarted := UID;
@@ -1840,7 +1842,7 @@ begin
       end;
    end;
 
-  loadCFG(dbZip);
+  is1stRun := loadCFG(dbZip);
   loggaEvtS('CFG: loaded');
 
   AccUID := uin2Bstarted;
@@ -1878,7 +1880,8 @@ begin
   stayconnected := FALSE;
 
 //  MainProto.ProtoElem.listener:= RnQmain.ProtoEvent;
-  Account.AccProto.SetListener(RnQmain.ProtoEvent);
+//  Account.AccProto.SetListener(RnQmain.ProtoEvent);
+  Account.AccProto.SetListener(Protocols_all.ProtoEvent);
   Account.AccProto.ProtoElem.sock.OnDnsLookupDone := RnQmain.dnslookup;
   InitProtoMenus(Account.AccProto);
   resetCFG;
@@ -1911,6 +1914,7 @@ begin
 
   statusIcon := TstatusIcon.create(RnQmain.handle, GUID_NULL);
   statusIcon.OnGetPicTip := Protocols_All.getTrayIconTip;
+  statusIcon.trayIcon.onEvent := RnQmain.onTrayEvent;
   eventQ.onNewTop := statusIcon.update;
 
   if not skipsplash then
@@ -1967,7 +1971,7 @@ begin
          ('"'+AllProxies[i].name+'"' = cmdLinePar.useproxy)  then
        begin
 //         useProxy := i;
-         CopyProxy(MainProxy, AllProxies[i]);
+         MainProxy.CopyFrom(AllProxies[i]);
          break;
        end;
 //     ClearProxyArr(v_proxyes);

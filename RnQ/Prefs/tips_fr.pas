@@ -29,8 +29,8 @@ type
     Label5: TLabel;
     Label6: TLabel;
     traytranspChk: TCheckBox;
-    transpTray: TTrackBar;
-    PosGrp: TRadioGroup;
+    transpTray: TTrackBar; //transparency-vtray
+    PosGrp: TRadioGroup; //'show-tips-align'
     IndGrp: TGroupBox;
     HorIndSpn: TRnQSpinEdit;
     VerIndSpn: TRnQSpinEdit;
@@ -51,7 +51,8 @@ type
 
 implementation
 uses
-     events, RnQTips, RDGlobal, RnQLangs, tipDlg, globalLib;
+   RnQTips, RDGlobal, RnQLangs, tipDlg,
+   RnQConst, events, globalLib;
 {$R *.dfm}
 
 procedure TTipsFr.initPage;

@@ -16,10 +16,10 @@ uses
 
 type
   TconnectionFr = class(TPrefFrame)
-    autoreconnectChk: TCheckBox;
+    autoreconnectChk: TCheckBox; //auto-reconnect
     proxyGroup: TGroupBox;
-    kaChk: TCheckBox;
-    kaSpin: TRnQSpinEdit;
+    kaChk: TCheckBox;     //keep-alive
+    kaSpin: TRnQSpinEdit; //keep-alive-freq
     Label9: TLabel;
     disconnectedChk: TCheckBox;
     conOnConChk: TCheckBox;
@@ -40,7 +40,7 @@ type
     proxyproto: TRadioGroup;
     authChk: TCheckBox;
     ntlmauth: TCheckBox;
-    StopRcnctChk: TCheckBox;
+    StopRcnctChk: TCheckBox; //auto-reconnect-stop
     SSLChk: TCheckBox;
     PortsLEdit: TLabeledEdit;
     RslvIPChk: TCheckBox;
@@ -70,15 +70,15 @@ implementation
 
 uses
   prefDlg, utilLib, mainDlg, RQUtil,
-  globalLib
+  RnQConst, globalLib
   ;
 
 {$R *.dfm}
 
 var
-  lastProxy : Integer;
-  v_proxyes   : TarrProxy;
-//  temp_proxyes   : TarrProxy;
+  lastProxy: Integer;
+  v_proxyes: TarrProxy;
+//  temp_proxyes: TarrProxy;
 
 
 procedure TconnectionFr.authChkClick(Sender: TObject);
@@ -99,8 +99,8 @@ begin onlyDigits(sender) end;
 
 procedure TconnectionFr.ProxyAddBtnClick(Sender: TObject);
 var
-  i  : Integer;
-//  pp : TproxyProto;
+  i: Integer;
+//  pp: TproxyProto;
 begin
   i := Length(v_proxyes);
   SetLength(v_proxyes, i+1);
@@ -114,11 +114,11 @@ begin
 //    addr[PP_SOCKS5].port:='1080';
 //    addr[PP_HTTPS].port:='3128';
     if Assigned(Account.AccProto) then
-     serv := Account.AccProto.ProtoElem._getDefHost;
-    addr.host:='';
-    addr.port:=1080;
-    proto:=PP_NONE;
-    auth:=FALSE;
+     serv := Account.AccProto.getDefHost;
+    addr.host := '';
+    addr.port := 1080;
+    proto := PP_NONE;
+    auth := FALSE;
     rslvIP := True;
     NTLM := False;
     ssl := False;
@@ -129,16 +129,16 @@ end;
 
 procedure TconnectionFr.ProxyDelBtnClick(Sender: TObject);
 var
-  i, j  : Integer;
-  pr : array of Tproxy;
-//  pp : TproxyProto;
+  i, j: Integer;
+  pr: array of Tproxy;
+//  pp: TproxyProto;
 begin
   i := ProxyIDBox.ItemIndex;
   if ProxyIDBox.Items.Count <= 1 then Exit;
 
   if Length(v_proxyes) = i+1 then
     begin
-      ClearProxy(v_proxyes[length(v_proxyes)-1]);
+      v_proxyes[length(v_proxyes)-1].Clear;
       SetLength(v_proxyes, length(v_proxyes)-1);
       ProxyIDBox.Items.Delete(i);
       ProxyIDBox.ItemIndex := i-1;
@@ -171,7 +171,7 @@ begin
 
 //     ProxyIDBox.Items.Strings[lastProxy] := LEProxyName.Text;
 //     CopyProxy(icq.fProxy, v_proxyes[lastProxy]);
-     CopyProxy(MainProxy, v_proxyes[lastProxy]);
+     MainProxy.CopyFrom(v_proxyes[lastProxy]);
    end;
   resetProxy;
 end;
@@ -185,7 +185,7 @@ begin
   if Assigned(Sender) then
     if Tproxyproto(proxyproto.itemIndex)=PP_HTTPS then
 	    if portbox.text='5190' then
-        portBox.text:='443'
+        portBox.text := '443'
        else
 //	  else
 //	    if portbox.text='443' then portBox.text:='5190' else
@@ -205,7 +205,7 @@ begin
   proxypwdBox.onKeyDown := RnQmain.pwdboxKeyDown;
   proxyproto.Items.Clear();
   for pp:=low(pp) to high(pp) do
-    proxyproto.Items.add(proxyproto2str[pp]);
+    proxyproto.Items.add(String(proxyproto2str[pp]));
 
   proxyGroup.Width := ClientWidth - GAP_SIZE2;
 //  portBox.Width := 50; //proxyGroup.Width - portBox.left - GAP_SIZE2;
@@ -233,22 +233,22 @@ end;
 procedure TconnectionFr.ApplyProxy;
 var
 //  pp: TproxyProto;
-  i : Integer;
+  i: Integer;
 begin
   i := ProxyIDBox.ItemIndex;
   if (i < low(v_proxyes)) or (i > High(v_proxyes)) then
    Exit;
-  CopyProxy(MainProxy, v_proxyes[i]);
+  MainProxy.CopyFrom(v_proxyes[i]);
 end;
 
-procedure TconnectionFr.PrefToProxy(var prxy : TProxy);
+procedure TconnectionFr.PrefToProxy(var prxy: TProxy);
 begin
   prxy.serv.host := ServerCBox.Text;// hostBox.text;
   prxy.serv.port := StrToIntDef(portBox.text, 0);
   prxy.name := LEProxyName.Text;
-  prxy.proto:=Tproxyproto(proxyproto.itemIndex);
-  prxy.addr.host:=proxyhostBox.text;
-  prxy.addr.port:=StrToIntDef(proxyportBox.text, 0);
+  prxy.proto := Tproxyproto(proxyproto.itemIndex);
+  prxy.addr.host := proxyhostBox.text;
+  prxy.addr.port := StrToIntDef(proxyportBox.text, 0);
   prxy.user := proxyuserBox.text;
   prxy.pwd  := proxypwdBox.text;
   prxy.auth := authChk.checked;
@@ -256,7 +256,8 @@ begin
   prxy.ssl := SSLChk.Checked;
   prxy.rslvIP := RslvIPChk.Checked;
 end;
-procedure TconnectionFr.ProxyToPref(prxy : TProxy);
+
+procedure TconnectionFr.ProxyToPref(prxy: TProxy);
 begin
   with prxy do
    begin
@@ -264,12 +265,12 @@ begin
     portBox.text    := intToStr(serv.port);
     authGroup.visible:= auth;
     LEProxyName.Text := name;
-    proxyhostBox.text:= addr.host;
-    proxyportBox.text:=intToStr(addr.port);
+    proxyhostBox.text := addr.host;
+    proxyportBox.text := intToStr(addr.port);
     proxyproto.OnClick := NIL;
-    proxyproto.itemIndex:=ord(proto);
+    proxyproto.itemIndex := ord(proto);
     proxyproto.OnClick := proxyprotoClick;
-    proxyuserBox.text:= user;
+    proxyuserBox.text := user;
     proxypwdBox.text := pwd;
     authChk.checked     := auth;
     NTLMauth.Checked := NTLM;
@@ -288,15 +289,15 @@ procedure TconnectionFr.applyPage;
 //var
 //  pp: TproxyProto;
 begin
-  connectOnConnection:=conOnConChk.checked;
-  autoreconnect:=autoreconnectChk.checked;
+  connectOnConnection := conOnConChk.checked;
+  autoreconnect := autoreconnectChk.checked;
   autoReconnectStop := StopRcnctChk.Checked;
   SaveIP := SaveIPChk.Checked;
 
-  keepalive.enabled:=kaChk.checked;
-  keepalive.freq:=round(kaSpin.value);
-  keepalive.timer:=keepalive.freq;
-  showDisconnectedDlg:=disconnectedChk.checked;
+  keepalive.enabled := kaChk.checked;
+  keepalive.freq := round(kaSpin.value);
+  keepalive.timer := keepalive.freq;
+  showDisconnectedDlg := disconnectedChk.checked;
 
 //   ApplyProxy;
 //        CopyProxy(v_proxyes[ProxyIDBox.ItemIndex], icq.proxy);
@@ -306,7 +307,7 @@ begin
      (ProxyIDBox.ItemIndex <= High(v_proxyes)) then
      with v_proxyes[ProxyIDBox.ItemIndex] do
        begin
-        CopyProxy(v_proxyes[ProxyIDBox.ItemIndex], MainProxy);
+        v_proxyes[ProxyIDBox.ItemIndex].CopyFrom(MainProxy);
 {
         PrefToProxy(v_proxyes[ProxyIDBox.ItemIndex]);
 //         ProxyIDBox.Items.Strings[ProxyIDBox.ItemIndex] := name;
@@ -323,7 +324,7 @@ end;
 
 procedure TconnectionFr.resetProxy;
 begin
-//  proxyGroup.visible:=proxy.enabled;
+//  proxyGroup.visible := proxy.enabled;
 // with icq.proxy do
   if (ProxyIDBox.ItemIndex >= low(v_proxyes)) and
      (ProxyIDBox.ItemIndex <= High(v_proxyes)) then
@@ -333,10 +334,10 @@ end;
 
 procedure TconnectionFr.resetPage;
 var
-  foundProxy : Boolean;
+  foundProxy: Boolean;
 //  pp: TproxyProto;
   I: Integer;
-  CurrentProxy : string;
+  CurrentProxy: string;
 begin
   kaChk.checked := keepalive.enabled;
   kaSpin.value  := keepalive.freq;
@@ -361,7 +362,7 @@ begin
 //      ClearProxy(MainProxy);
       MainProxy.name := 'Default';
       if Assigned(Account.AccProto) then
-        MainProxy.serv := Account.AccProto.ProtoElem._getDefHost
+        MainProxy.serv := Account.AccProto.getDefHost
        else
         begin
           MainProxy.serv.host := ServerCBox.Items[0];
@@ -370,7 +371,7 @@ begin
       ProxyIDBox.Items.Add(MainProxy.name);
       ProxyIDBox.ItemIndex := 0;
       SetLength(v_proxyes, 1);
-      CopyProxy(v_proxyes[i], MainProxy);
+      v_proxyes[i].CopyFrom(MainProxy);
     end
    else
     begin

@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RnQLangFrm;
 {$I ForRnQConfig.inc}
@@ -101,7 +101,7 @@ procedure TFrmLangs.BtnOkClick(Sender: TObject);
 begin
   if LangsBox.FocusedNode <> NIL then
 //    SelectedLang := LangsBox.FocusedNode.Index
-    SelectedLang := TRnQLang(PRnQLang(LangsBox.getnodedata(LangsBox.FocusedNode))^).idx
+    SelectedLang := TRnQLang(PRnQLang(LangsBox.GetNodeData(LangsBox.FocusedNode))^).idx
    else
     SelectedLang := -1;
 end;
@@ -124,7 +124,7 @@ var
   x: Integer;
 //  cr: Boolean;
 begin
-  with TRnQLang(PRnQLang(LangsBox.getnodedata(PaintInfo.Node))^) do
+  with TRnQLang(PRnQLang(LangsBox.GetNodeData(PaintInfo.Node))^) do
    begin
     s := '';
     if desc > '' then
@@ -168,7 +168,7 @@ end;
 procedure TFrmLangs.LangsBoxFreeNode(Sender: TBaseVirtualTree;
   Node: PVirtualNode);
 begin
-   with TRnQLang(PRnQLang(LangsBox.getnodedata(Node))^) do
+   with TRnQLang(PRnQLang(LangsBox.GetNodeData(Node))^) do
     begin
      SetLength(path, 0);
      SetLength(fn, 0);

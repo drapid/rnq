@@ -40,7 +40,7 @@ type
 implementation
 
 uses
-  globalLib;
+  RnQConst, globalLib;
 
 {$R *.dfm}
 

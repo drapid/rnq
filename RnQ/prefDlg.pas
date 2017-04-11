@@ -77,7 +77,7 @@ uses
   Themes, Dwmapi,
   RQUtil, RDGlobal, RQThemes, RnQLangs, LangLib,
   RnQSysUtils, RnQGlobal, RnQPics,
-  iniLib, globalLib, utilLib, mainDlg,
+  iniLib, RnQConst, globalLib, utilLib, mainDlg,
   connection_fr,
   antispam_fr,
   design_fr,

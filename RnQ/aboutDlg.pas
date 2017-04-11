@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit aboutDlg;
 {$I RnQConfig.inc}
@@ -58,16 +58,16 @@ type
   private
     AboutPBox: TRnQPntBox;
   {$IFDEF USE_GDIPLUS}
-    rnqicon : TGPBitmap;
+    rnqicon: TGPBitmap;
 //  {$ELSE NOT USE_GDIPLUS}
-    picTok : Integer;
-    PicLoc : TPicLocation;
-    PicIdx : Integer;
+    picTok: Integer;
+    PicLoc: TPicLocation;
+    PicIdx: Integer;
   {$ENDIF USE_GDIPLUS}
-    curAngle : Integer;
-//    curSize : Single;
-    curNapr  : Integer;
-    t1 : TTimer;
+    curAngle: Integer;
+//    curSize: Single;
+    curNapr: Integer;
+    t1: TTimer;
   end;
 
 var
@@ -78,7 +78,7 @@ implementation
 uses
   DwmApi, Math, Types, UITypes,
   RQUtil, RnQLangs, RnQSysUtils, RnQBinUtils, RnQGraphics32, RnQPics,
-  mainDlg, utilLib, globalLib,
+  mainDlg, utilLib, RnQConst, globalLib,
 //  aarotate,
 //  , shellapi
   themesLib;
@@ -111,7 +111,7 @@ end;
 
 procedure TaboutFrm.view;
 var
-  bt : TDateTime;
+  bt: TDateTime;
 begin
 //eggCounter:=0;
 (* {$IFDEF RNQ_FULL}

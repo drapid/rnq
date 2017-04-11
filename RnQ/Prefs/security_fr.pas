@@ -23,14 +23,14 @@ type
     histcryptEnableChk: TCheckBox;
     cryptGroup: TGroupBox;
     histcryptSavePwdChk: TCheckBox;
-    dontsavepwdChk: TCheckBox;
+    dontsavepwdChk: TCheckBox; //dont-save-password
     writeHistoryChk: TCheckBox;
     DelHistChk: TCheckBox;
-    MakeBakChk: TCheckBox;
+    MakeBakChk: TCheckBox;    // make-bakups-on-save
     AddTempVisMsgChk: TCheckBox;
     histcryptChangeBtn: TRnQButton;
     CplPwdChk: TCheckBox;
-    AskPassOnBossChk: TCheckBox;
+    AskPassOnBossChk: TCheckBox; //ask-password-after-bossmode
     SetAccPassBtn: TRnQButton;
     HistCryptBtn: TRnQButton;
     procedure histcryptEnableChkClick(Sender: TObject);
@@ -70,7 +70,7 @@ begin
   if checked and not histcrypt.enabled then
     if messageDlg(getTranslation('You are invited to NOT use this function for now. It''s still under test.\nContinue?'),mtWarning,[mbYes,mbNo],0)=mrNo then
       begin
-      checked:=FALSE;
+      checked := FALSE;
       exit;
       end;
  updateVisPage
@@ -151,8 +151,10 @@ begin
 end;
 
 procedure TsecurityFr.HistCryptBtnClick(Sender: TObject);
+ {$IFDEF DB_ENABLED}
 var
   hp: string;
+ {$ENDIF DB_ENABLED}
 begin
  {$IFDEF DB_ENABLED}
   hp := '';

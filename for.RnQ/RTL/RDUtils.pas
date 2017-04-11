@@ -1644,7 +1644,7 @@ begin
   GetMem(buffer, BufLen); FillChar(buffer^, BufLen, 0);
 //  GetMem(lpBuf, BufLen); FillChar(lpBuf^, BufLen, 0);
   SetLength(Result, BufLen);
-  StringToWideChar(Value, buffer, BufLen);
+  StringToWideChar(String(Value), buffer, BufLen);
   ResLen := WideCharToMultiByte(CP_UTF8, 0, buffer, -1, PAnsiChar(Result), BufLen, nil, nil);
   FreeMem(buffer, BufLen);
 
@@ -1672,7 +1672,7 @@ begin
   buffer := @result[1];
   FillChar(buffer^, BufLen, 0);
 //  GetMem(lpBuf, BufLen); FillChar(lpBuf^, BufLen, 0);
-  StringToWideChar(Value, buffer, BufLen);
+  StringToWideChar(String(Value), buffer, BufLen);
 //  WideCharToMultiByte(CP_UTF8, 0, buffer, -1, lpBuf, BufLen, nil, nil);
 //  SetLength(Result, BufLen);
 //  Result := Copy(PChar(buffer), 0, BufLen);
@@ -1830,10 +1830,10 @@ begin
   if Length(GUID) > 16 then
    begin
      if Length(GUID) = 38 then
-       g := StringToGUID(guid)
+       g := StringToGUID(String(guid))
       else
        if Length(GUID) = 36 then;
-         g := StringToGUID('{'+guid+'}');
+         g := StringToGUID(String('{'+guid+'}'));
      if not (Zero2Empty and IsEqualGUID(g, GUID_NULL)) then
       begin
        SetLength(Result, 16);

@@ -33,6 +33,8 @@ type
   private
     SuggestMenu: TPopupMenu;
   protected
+    procedure WMSetText(var Message: TWMSetText); message WM_SETTEXT;
+    procedure WMPaste(var Message: TWMPaste); message WM_PASTE;
     procedure WMPaint(var Message: TWMPaint); message WM_PAINT;
     procedure WMContextMenu(var Message: TWMContextMenu); message WM_CONTEXTMENU;
     procedure CMFontChanged(var Message: TMessage); message CM_FONTCHANGED;
@@ -86,7 +88,7 @@ type
 implementation
 
 uses
-  RnQGlobal, RQUtil, RnQLangs, globalLib, chatDlg;
+  RnQGlobal, RQUtil, RnQLangs, RnQSysUtils, globalLib, chatDlg, Clipbrd;
 
 const
   CLSID_StdGlobalInterfaceTable: TGUID = '{00000323-0000-0000-C000-000000000046}';
@@ -189,10 +191,14 @@ begin
         if Assigned(isc) then
         begin
           spellGIT.RegisterInterfaceInGlobal(isc, ISpellChecker, cookie);
-          spellLangs.Add(cookie);
+          if spellLanguageMain = lang then
+            spellLangs.Insert(0, cookie)
+           else
+            spellLangs.Add(cookie);
         end;
       end;
     end;
+    spellLanguages2.Free;
   end;
 end;
 
@@ -334,6 +340,7 @@ constructor TMemoEx.Create(AOwner: TComponent);
 begin
   inherited;
   SuggestMenu := TPopupMenu.Create(Self);
+  SuggestMenu.AutoHotkeys := maManual;
 end;
 
 class constructor TMemoEx.Create;
@@ -361,6 +368,18 @@ begin
   inherited;
 end;
 
+procedure TMemoEx.WMSetText(var Message: TWMSetText);
+begin
+  Message.Text := PChar(AdjustLineBreaks(Message.Text));
+  inherited;
+end;
+
+procedure TMemoEx.WMPaste(var Message: TWMPaste);
+begin
+  if Clipboard.HasFormat(CF_TEXT) then
+    SelText := AdjustLineBreaks(Clipboard.AsText);
+end;
+
 procedure TMemoEx.WMPaint(var Message: TWMPaint);
 var
   spellWrongCopy: TList<TArray<Integer>>;
@@ -368,14 +387,10 @@ var
   DC: HDC;
   cnv: TCanvas;
   S, E: TPoint;
-//  ending: String;
-//  chr: Char;
   posST, posEN: LRESULT;
-//  cnt,
-  hgt, add: Integer;
-  ñbrush: LOGBRUSH;
-  ñuserstyle: array of DWORD;
-  fheight: Integer;
+  hgt, add, fheight: Integer;
+  cbrush: LOGBRUSH;
+  cuserstyle: array of DWORD;
 
 //  Freq, StartCount, StopCount: Int64;
 //  TimingSeconds: real;
@@ -393,28 +408,28 @@ begin
   cnv.Lock;
   cnv.Handle := DC;
 
-  ñbrush.lbStyle := BS_SOLID;
-  ñbrush.lbColor := ColorToRGB(spellErrorColor);
-  ñbrush.lbHatch := 0;
+  cbrush.lbStyle := BS_SOLID;
+  cbrush.lbColor := ColorToRGB(spellErrorColor);
+  cbrush.lbHatch := 0;
 
-  SetLength(ñuserstyle, 2);
-  ñuserstyle[0] := 1;
-  ñuserstyle[1] := 1;
+  SetLength(cuserstyle, 2);
+  cuserstyle[0] := 1;
+  cuserstyle[1] := 1;
   hgt := 1; add := 0;
   case spellErrorStyle of
-    0: begin ñuserstyle[0] := 1;  ñuserstyle[1] := 1; hgt := 1; add := 0; end;
-    1: begin ñuserstyle[0] := 1;  ñuserstyle[1] := 1; hgt := 2; add := 1; end;
-    2: begin ñuserstyle[0] := 2;  ñuserstyle[1] := 1; hgt := 1; add := 0; end;
-    3: begin ñuserstyle[0] := 2;  ñuserstyle[1] := 2; hgt := 2; add := 1; end;
-    4: begin ñuserstyle[0] := 1;  ñuserstyle[1] := 0; hgt := 1; add := 0; end;
-    5: begin ñuserstyle[0] := 1;  ñuserstyle[1] := 0; hgt := 2; add := 1; end;
+    0: begin cuserstyle[0] := 1; cuserstyle[1] := 1; hgt := 1; add := 0; end;
+    1: begin cuserstyle[0] := 1; cuserstyle[1] := 1; hgt := 2; add := 1; end;
+    2: begin cuserstyle[0] := 2; cuserstyle[1] := 1; hgt := 1; add := 0; end;
+    3: begin cuserstyle[0] := 2; cuserstyle[1] := 2; hgt := 2; add := 1; end;
+    4: begin cuserstyle[0] := 1; cuserstyle[1] := 0; hgt := 1; add := 0; end;
+    5: begin cuserstyle[0] := 1; cuserstyle[1] := 0; hgt := 2; add := 1; end;
   end;
 
-  cnv.Pen.Handle := ExtCreatePen(PS_GEOMETRIC or PS_USERSTYLE or PS_ENDCAP_FLAT, hgt, ñbrush, 2, ñuserstyle);
+  cnv.Font.Assign(Self.Font);
+  cnv.Pen.Handle := ExtCreatePen(PS_GEOMETRIC or PS_USERSTYLE or PS_ENDCAP_FLAT, hgt, cbrush, 2, cuserstyle);
   spellWrongCopy := GetSpellWrongCopy;
 
   try
-//    cnt := 0;
     if Assigned(spellWrongCopy) then
     for wrong in spellWrongCopy do
     try
@@ -450,7 +465,6 @@ begin
         S.Y := Y;
       end;
 }
-//     Inc(cnt);
     except end;
   finally
     spellWrongCopy.Free;
@@ -489,14 +503,18 @@ var
   spellWrongCopy: TList<TArray<Integer>>;
   wrong: TArray<Integer>;
   c: TPoint;
-  pos: Integer;
+  pos, i: Integer;
   word, suggest: PChar;
   cookie: DWORD;
   spellSuggest: IEnumString;
   fetched: LongWord;
-  mi, md: TMenuItemEx;
+  mi, md, madd: TMenuItemEx;
   msg: tagMSG;
   checker: ISpellChecker;
+  dicStream: TStreamWriter;
+  dicPath, lang: String;
+  dicAction: Boolean;
+  spellLanguages2: TStringList;
 
   procedure AddSuggestion(suggestion: PChar; pos, len: Integer);
   begin
@@ -519,11 +537,16 @@ begin
     inherited
   else
   begin
-    // Convert CaretPos to char index
-    c := Self.ScreenToClient(MousePos);
-    pos := LoWord(Perform(EM_CHARFROMPOS, 0, MakeLParam(c.X, c.Y)));
+    if Message.hWnd = 0 then
+      pos := Self.SelStart
+    else // Convert CaretPos to char index
+    begin
+      c := Self.ScreenToClient(MousePos);
+      pos := LoWord(Perform(EM_CHARFROMPOS, 0, MakeLParam(c.X, c.Y)));
+    end;
     SuggestMenu.Items.Clear;
 
+    word := '';
     spellWrongCopy := GetSpellWrongCopy;
     for wrong in spellWrongCopy do
     if (pos >= wrong[0]) and (pos <= wrong[0] + wrong[1]) then
@@ -537,25 +560,78 @@ begin
         while spellSuggest.RemoteNext(1, suggest, fetched) = S_OK do
         AddSuggestion(suggest, wrong[0], wrong[1]);
       end;
+      Break;
     end;
     spellWrongCopy.Free;
 
-    if SuggestMenu.Items.Count > 0 then
+    if (SuggestMenu.Items.Count > 0) or not (word = '') then
     begin
       md := TMenuItemEx.Create(SuggestMenu);
       SuggestMenu.Items.Add(md);
       md.MenuIndex := SuggestMenu.Items.Count - 1;
       md.Caption := GetTranslation('Default menu');
+      md.Hint := md.Caption;
 
       mi := TMenuItemEx.Create(SuggestMenu);
       SuggestMenu.Items.Add(mi);
       mi.MenuIndex := SuggestMenu.Items.Count - 2;
       mi.Caption := '-';
 
+      madd := TMenuItemEx.Create(SuggestMenu);
+      SuggestMenu.Items.Add(madd);
+      madd.MenuIndex := SuggestMenu.Items.Count - 3;
+      madd.Caption := GetTranslation('Add as correct');
+
+      spellLanguages2 := TStringList.Create;
+      MainPrefs.getPrefStrList('spellcheck-languages', spellLanguages2);
+      for lang in spellLanguages2 do
+      begin
+        mi := TMenuItemEx.Create(SuggestMenu);
+        madd.Add(mi);
+        mi.Caption := lang;
+      end;
+      FreeAndNil(spellLanguages2);
+
+      if SuggestMenu.Items.Count > 0 then
+      begin
+        mi := TMenuItemEx.Create(SuggestMenu);
+        SuggestMenu.Items.Add(mi);
+        mi.MenuIndex := SuggestMenu.Items.Count - 4;
+        mi.Caption := '-';
+      end;
+
       SuggestMenu.Popup(Message.Pos.X, Message.Pos.Y);
       if PeekMessage(Msg, PopupList.Window, WM_COMMAND, WM_COMMAND, PM_NOREMOVE) then
-      if md.Command = LoWord(Msg.wParam) then
-        inherited;
+      begin
+        if md.Command = LoWord(Msg.wParam) then
+          inherited
+        else
+        begin
+          dicAction := False;
+          dicPath := expandEnv('%AppData%') + '\Microsoft\Spelling\';
+
+          for i := 0 to madd.Count - 1 do
+          if madd.Items[i].Command = LoWord(Msg.wParam) then
+          begin
+            dicPath := dicPath + madd.Items[i].Caption + '\default.dic';
+            dicAction := True;
+            Break;
+          end;
+
+          if dicAction then
+          begin
+            dicStream := TStreamWriter.Create(dicPath, True, TEncoding.Unicode);
+            try
+              dicStream.WriteLine(AnsiLowerCase(word));
+            finally
+              dicStream.Free;
+            end;
+            DoInitSpellCheck;
+            DoSpellCheck;
+          end;
+        end;
+      end;
+
       Message.Result := 1;
     end;
 

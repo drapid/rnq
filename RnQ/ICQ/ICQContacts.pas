@@ -202,7 +202,7 @@ uses
     Character, AnsiStrings,
   {$ENDIF UNICODE}
     RQUtil, RnQLangs, RDUtils, RnQBinUtils, RnQDialogs,
-    GlobalLib, ICQv9, viewInfoDlg, mainDlg, utilLib,
+    RnQConst, GlobalLib, ICQv9, viewInfoDlg, mainDlg, utilLib,
     Protocol_ICQ;
 
 ///////////////////////////////////////////////////////////////////////////

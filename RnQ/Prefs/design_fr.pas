@@ -116,7 +116,7 @@ implementation
 
 uses
   utilLib, RQThemes, themesLib, mainDlg, RnQLangs, RnQGlobal,
-  roasterLib, globalLib,
+  roasterLib, RnQConst, globalLib,
   RnQGraphics32, RnQPics
 //  ICQContacts
   ;
@@ -127,11 +127,11 @@ type
   PIcItem = ^TIcItem;
   TIcItem = TRnQCLIcons;
 //  TIcItem = record
-//     s : array[0..1] of string;
+//     s: array[0..1] of string;
 //  end;
 //  TIcItem = string;
 const
-  sb2index:array [TsortBy] of integer=(0,1, 2, 3);
+  sb2index: array [TsortBy] of integer=(0,1, 2, 3);
 
 procedure TdesignFr.transpChange(Sender: TObject);
 begin

@@ -1,7 +1,7 @@
 {
-Copyright (C) 2002-2004  Massimo Melina (www.rejetto.com)
+  Copyright (C) 2002-2004  Massimo Melina (www.rejetto.com)
 
-This file is part of &RQ.
+  This file is part of &RQ.
 
     &RQ is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

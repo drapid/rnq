@@ -36,7 +36,7 @@ var
 implementation
 uses
   RDGlobal, RDFileUtil, RQUtil, RnQDialogs, RnQLangs,
-  selectcontactsDlg, globalLib, mainDlg,
+  selectcontactsDlg, RnQConst, globalLib, mainDlg,
   rnqProtocol, history,
   HistWork, chatDlg, utilLib;
 

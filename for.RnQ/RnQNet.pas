@@ -576,9 +576,9 @@ procedure TRnQSocket.myOnReceived(Sender: TObject; Error: Word);
 const
    socksAuthenticationFailed = 20015;
 var
-  pkt, s : RawByteString;
+  pkt, s: RawByteString;
   i, j: Integer;
-  eventError : word;
+  eventError: word;
 begin
   eventError := 0;
   if http.enabled and not FSocksConnected then

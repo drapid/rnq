@@ -73,20 +73,20 @@ type
   function RARCallbackProc(msg: UINT; UserData, P1, P2: integer) :integer; stdcall;
  {$ENDIF USE_RAR}
 
-  function  loadFile(pt: TThemeSourcePath; fn: string): RawByteString; overload;
-  function  loadFile(pt: TThemeSourcePath; fn: string; var ResStream: TStream): Boolean; overload;
-  function  ExistsFile(pt: TThemeSourcePath; fn: string): Boolean;
+  function loadFile(pt: TThemeSourcePath; fn: String): RawByteString; overload;
+  function loadFile(pt: TThemeSourcePath; fn: String; var ResStream: TStream): Boolean; overload;
+  function ExistsFile(pt: TThemeSourcePath; fn: String): Boolean;
   function  GetStream(const fn: String): TStream;
 //  function  loadFile(fn:string): RawByteString; overload;
-  function  loadFileA(const fn: string): RawByteString; overload;
+  function loadFileA(const fn: String): RawByteString; overload;
   function  loadFile(fs: TStream; const StreamName: String): AnsiString; overload;
-  function  loadFile(const fn: string; from: int64=0; size: int64=-1): RawByteString; overload;
-  function  saveFile2(const fn: string; const data: RawByteString;
+  function  loadFile(const fn: String; from: int64=0; size: int64=-1): RawByteString; overload;
+  function  saveFile2(const fn: String; const data: RawByteString;
                needSafe: Boolean = false; MakeBackups: Boolean = false): boolean;
   function  saveTextFile(const fn: String; const s: String): Boolean;
   function  fileIsWritible(const fn: String): boolean;
-  function  sizeOfFile(const fn: string):int64;
-  function  partDeleteFile(fn: string; from, length: integer): boolean;
+  function  sizeOfFile(const fn: String): int64;
+  function  partDeleteFile(fn: String; from, length: integer): boolean;
   function  CreateDirRecursive(const fpath: String): Boolean;
 
   {$IFDEF USE_ZIP}

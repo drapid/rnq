@@ -40,7 +40,7 @@ implementation
 uses
   Windows, Forms, virtualtrees, SysUtils, Math, StrUtils,
   RQUtil, RnQMenu, RnQbuttons, RnQGlobal, RnQGraphics32, RnQPics,
-  utilLib, globalLib, chatDlg,
+  utilLib, RnQConst, globalLib, chatDlg,
  {$IFDEF CHAT_CEF} // Chromium
   historyCEF,
  {$ELSE ~CHAT_CEF} // 
@@ -58,7 +58,7 @@ uses
  {$ENDIF}
   RnQProtocol,
  {$IFDEF PROTOCOL_ICQ}
-  Protocol_ICQ, ICQClients, icqConsts,
+  ICQClients,
  {$ENDIF PROTOCOL_ICQ}
   Protocols_all,
   roasterlib;

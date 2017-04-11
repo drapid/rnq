@@ -246,6 +246,9 @@ type
   function LoadAGifFromStream(var NonAnimated: boolean;
               Stream: TStream): TRnQBitmap;
 
+  procedure LoadPictureStream2(str: TStream; var bmp: TBitmap);
+  function  JPEGTurbo: Boolean;
+
 const
   icon_size = 16;
 
@@ -357,11 +360,15 @@ var
                  'gif', 'png', 'jpg', 'jpe', 'jpeg');//, 'tif', 'dll')
  isWEBPSupport: Boolean;
  isTIFFSupport: Boolean;
- JPEGTurbo: Boolean;
+ fJPEGTurbo: Boolean;
 
   var
     ThePalette: HPalette;       {the rainbow palette for 256 colors}
 
+function  JPEGTurbo: Boolean;
+begin
+  Result := fJPEGTurbo;
+end;
 
 {----------------TAniFrame.Create}
 constructor TAniFrame.Create;
@@ -681,6 +688,7 @@ end;}
 function OleLoadPicture(stream: IStream; lSize: Longint; fRunmode: BOOL;
     const iid: TGUID; var vObject): HResult; stdcall external 'olepro32.dll' name 'OleLoadPicture';
 {$ENDIF}
+
 procedure LoadPictureStream(str: TStream; var gpPicture: IPicture);
 var
  stra: TStreamAdapter;
@@ -709,6 +717,36 @@ begin
 //   stra.Free;
 //  stra.
  end;
+end;
+
+procedure LoadPictureStream2(str: TStream; var bmp: TBitmap);
+var
+  pic: IPicture;
+  a, b: integer;
+  h, w: integer;
+  r: TRect;
+begin
+  LoadPictureStream(str, pic);
+  if pic <> nil then
+  begin
+    pic.get_Width(a);
+    pic.get_Height(b);
+
+    w := MulDiv(a, GetDeviceCaps(bmp.canvas.Handle, LOGPIXELSX), 2540);
+    h := MulDiv(b, GetDeviceCaps(bmp.canvas.Handle, LOGPIXELSY), 2540);
+    r.Left := 0;
+    r.Top := 0;
+    r.Right := w;
+    r.Bottom := h;
+    if not Assigned(bmp) then
+      begin
+        bmp := TBitmap.Create;
+        bmp.PixelFormat := pf24bit;
+      end;
+    bmp.SetSize(w, h);
+    pic.Render(bmp.canvas.Handle, 0, 0, w, h, 0, b, a, -b, r);
+    pic := NIL;
+  end;
 end;
 
 { $ENDIF ~FPC}
@@ -1033,7 +1071,7 @@ begin
 //         vJpg.LoadOptions := [loTileMode];
          vBmp := NIL;
          try
-           if JPEGTurbo then
+           if fJPEGTurbo then
              begin
               vJpg := TJPEGImage.Create;
               if vJpg.LoadFromStream(str0) then
@@ -4726,7 +4764,7 @@ try
               Inc(Sub);
               end;
     for I := 1 to 24 do
-       if not (I in [7, 15, 21]) then   {these would be duplicates}  
+       if not (I in [7, 15, 21]) then   {these would be duplicates}
           with palPalEntry[Sub] do
             begin
             peBlue := 130 + 5*I;
@@ -4791,7 +4829,6 @@ with result.Canvas do
 end; // traspBmp
 
 
-
 var
   DC: HDC;
   ColorBits: Byte;
@@ -4836,11 +4873,11 @@ initialization
   h := LoadLibrary(PWideChar( modulesPath + 'jpegturbo.dll'));
   if h <> 0 then
   begin
-    JPEGTurbo := True;
+    fJPEGTurbo := True;
     FreeLibrary(h);
     TJpegImage.LibPathName := modulesPath + 'jpegturbo.dll';
   end else
-    JPEGTurbo := False;
+    fJPEGTurbo := False;
 
 finalization
   if ThePalette <> 0 then

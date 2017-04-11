@@ -163,7 +163,7 @@ function ZlibErrMess(code: Integer): String;                        { V6.01 }
 implementation
 
 // --> By Rapid D. Copy from  OverbyteIcsZLibObj
-function zlibVersionDll : AnsiString;
+function zlibVersionDll: AnsiString;
 begin
     Result := zlibVersion ;
 end;

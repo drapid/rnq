@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit mainDlg;
 {$I RnQConfig.inc}
@@ -11,7 +11,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   StdCtrls, ExtCtrls, Menus, ActiveX, ActnList,
-  VirtualTrees, RDGlobal, RQMenuItem, RnQButtons, RnQDialogs,
+  VirtualTrees, RDGlobal, RQMenuItem, RnQButtons, RnQDialogs, RnQtrayLib,
   pluginLib, RnQProtocol, System.Actions;
 
 const
@@ -452,6 +452,7 @@ type
     procedure FormAfterMonitorDpiChanged(Sender: TObject; OldDPI,
       NewDPI: Integer);
     procedure onAeroChanged();
+    procedure onTrayEvent(sender: Tobject; ev: TtrayEvent);
   private
     FMouseInControl : Boolean;
     toggling        : Boolean;
@@ -488,7 +489,6 @@ type
     PntBar: TRnQPntBox;
     procedure ReStart(Sender: TObject);
     procedure splashPaint(Sender: TObject);
-    procedure ProtoEvent(Sender: TRnQProtocol; event: Integer);
     procedure WndProc(var msg: TMessage); override;
     procedure updateCaption;
     function  clickedGroupList: TRnQCList;
@@ -533,7 +533,7 @@ uses
    {$ENDIF}
   aboutDlg, selectContactsDlg,
   incapsulate, visibilityDlg, usersDlg, changePwdDlg,// dbDlg,
-  outboxDlg, automsgDlg, globalLib, authreqDlg,
+  outboxDlg, automsgDlg, RnQConst, globalLib, authreqDlg,
   utilLib, events, roasterLib,
   themesLib,
   history, iniLib,
@@ -550,22 +550,17 @@ uses
  {$ENDIF}
   hook,
   OverbyteIcsWSocket,
-  RnQFileUtil, RDFileUtil, RDUtils, RnQSysUtils, RnQtrayLib, tipDlg,
+  RnQFileUtil, RDFileUtil, RDUtils, RnQSysUtils, tipDlg,
   RQUtil, RQLog, RQThemes, RnQMenu, RnQPics,
   RnQLangs, RnQStrings, RnQNet, RnQGlobal,
   RnQdbDlg, RnQTips, RnQMacros,
-
+  RnQProtoUtils,
   Protocols_all, // ICQ, MRA
-  {$IFDEF usesDC}
-    sendfileDlg,
-  {$ENDIF usesDC}
  {$IFDEF PROTOCOL_ICQ}
-//  viewinfoDlg,
   ICQv9,
-  ICQConsts, //RQ_ICQ,
+  ICQConsts,
   Protocol_icq,
   ICQcontacts,
-  viewSSI,
  {$ENDIF PROTOCOL_ICQ}
 
   {$IFDEF USE_GDIPLUS}
@@ -619,9 +614,41 @@ begin
      TCustomControl(roster).DoubleBuffered := False;
     end;
 end;
+
+procedure TRnQmain.onTrayEvent(sender: Tobject; ev: TtrayEvent);
+begin
+    if not locked and running then
+      case ev of
+        TE_CLICK:
+           begin
+             if (not useSingleClickTray)
+//              or (useSingleClickTray and RnQmain.Visible and not alwaysOnTop and not (RnQmain.handle=getForegroundWindow))
+              then
+               SetForegroundWindow(self.Handle)
+              else
+               begin
+//                mainfrm.toggleVisible
+//                if not mainFrm.Visible then
+//                  mainFrm.toggleVisible;
+                 trayAction;
+               end;
+           end;
+        TE_2CLICK: if (not useSingleClickTray) then trayAction;
+        TE_RCLICK:
+          if GetAsyncKeyState(VK_CONTROL) shr 7 <> 0 then
+            eventQ.clear
+          else
+            begin
+             ForceForegroundWindow(self.handle);
+             with mousePos do
+               menu.Popup(x, y);
+            end;
+        end;
+end;
+
 procedure TRnQmain.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- quit;
+  quit;
 end;
 
 procedure TRnQmain.closeAllChildWindows;
@@ -684,11 +711,6 @@ begin
 
   chatFrm.Caption := RnQmain.Caption+' - '+getTranslation('Chat window');
 end; // updateCaption
-
-procedure TRnQmain.ProtoEvent(Sender: TRnQProtocol; event: Integer);
-begin
-  Protocols_all.Protos_Events(Sender, event);
-end;
 
 procedure TRnQmain.toggleVisible;
 var
@@ -788,13 +810,13 @@ end;
 procedure TRnQmain.StatusMenuClick(Sender: TObject);
 begin
   if sender is TMenuItem then
-    usersetStatus(Account.AccProto, TMenuItem(sender).Tag);
+    Account.AccProto.usersetStatus(TMenuItem(sender).Tag);
 end;
 
 procedure TRnQmain.VisMenuClick(Sender: TObject);
 begin
   if sender is TMenuItem then
-    usersetVisibility(Account.AccProto, TMenuItem(sender).Tag);
+    Account.AccProto.usersetVisibility(TMenuItem(sender).Tag);
 end;
 
 
@@ -810,11 +832,7 @@ if Account.AccProto.isOnline then
    changePwdFrm.showModal
   end
 else
-   {$IFDEF PROTOCOL_ICQ}
-  enterICQpwd(Account.AccProto);
-   {$ELSEIF PROTOCOL_XMP}
-    enterProtoPWD(Account.AccProto);
-   {$ENDIF PROTOCOL_ICQ}
+  Account.AccProto.enterPWD;
 end;
 
 procedure TRnQmain.Delete1Click(Sender: TObject);
@@ -835,7 +853,7 @@ end;
 
 procedure TRnQmain.Whitepages1Click(Sender: TObject);
 begin
-  Protocols_all.Protos_ShowWP;
+  Account.AccProto.ShowWP;
 end;
 
 procedure TRnQmain.Sendmessage1Click(Sender: TObject);
@@ -974,10 +992,7 @@ end; // formkeydown
 
 procedure TRnQmain.Sendcontacts1Click(Sender: TObject);
 begin
- {$IFDEF PROTOCOL_ICQ}
-  if clickedContact is TICQContact then
-   openSendContacts(clickedContact)
- {$ENDIF PROTOCOL_ICQ}
+  openSendContacts(clickedContact)
 end;
 
 procedure TRnQmain.sendContactsAction(sender:Tobject);
@@ -1395,18 +1410,7 @@ end;
 
 procedure TRnQmain.ViewSSI1Click(Sender: TObject);
 begin
-   {$IFDEF PROTOCOL_ICQ}
-  if Assigned(SSIForm) then
-    SSIForm.Show
-   else
-    begin
-      SSIForm := TSSIForm.Create(Application);
-      applyCommonsettings(SSIForm);
-      translateWindow(SSIForm);
-//      SSIForm.Show;
-      showForm(SSIForm);
-    end;
-   {$ENDIF PROTOCOL_ICQ}
+  Account.AccProto.ViewSSI;
 end;
 
 procedure TRnQmain.UIN1Click(Sender: TObject);
@@ -1603,9 +1607,7 @@ end;
 
 procedure TRnQmain.IP1Click(Sender: TObject);
 begin
-   {$IFDEF PROTOCOL_ICQ}
-  clipboard.asText := ip2str(TICQContact(clickedContact).connection.ip)
-   {$ENDIF PROTOCOL_ICQ}
+  clipboard.asText := ip2str(clickedContact.getContactIP);
 end;
 
 procedure TRnQmain.doSearch;
@@ -1853,9 +1855,8 @@ begin
      ss := ss+buffer+CRLF;
     end;
   DragFinish(message.drop);
-  if node.contact is TICQContact then
-//    TsendFileFrm.doAll(self, TICQContact(node.contact), ss);
-    ICQsendfile(TICQContact(node.contact), ss);
+  if node.contact is TRnQContact then
+    node.contact.SendFilesTo(ss);
   ss := '';
 end; // WMDROPFILES
  {$ENDIF usesDC}
@@ -1876,7 +1877,7 @@ end;
 
 procedure TRnQmain.Sendemail1Click(Sender: TObject);
 begin
-  sendEmailTo(clickedContact)
+  clickedContact.sendEmailTo
 end;
 
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
@@ -2191,20 +2192,17 @@ begin
 //menusendaddedyou1.tag:=PIC_ADDEDYOU;
   UIN1.caption := getTranslation('%s (copy UIN)', [clickedContact.uin2Show]);
  {$IFDEF PROTOCOL_ICQ}
-  if (clickedContact is TICQcontact) and (TICQContact(clickedContact).connection.ip <> 0) then
+  if (clickedContact is TRnQContact) and (clickedContact.GetContactIP <> 0) then
     begin
       IP1.visible := TRUE;
-      IP1.caption := getTranslation('%s (copy IP)', [ip2str(TICQContact(clickedContact).connection.ip)] );
+      IP1.caption := getTranslation('%s (copy IP)', [ip2str(clickedContact.GetContactIP)] );
     end
    else
  {$ENDIF PROTOCOL_ICQ}
     IP1.visible := FALSE;
- {$IFDEF PROTOCOL_ICQ}
-  Sendemail1.visible := ((not (clickedContact is TICQcontact)) or (TICQcontact(clickedContact).email > ''));
-//                  or (clickedContact is TMRAcontact);
- {$ENDIF PROTOCOL_ICQ}
+  Sendemail1.visible := clickedContact.CanMail;
 
-  movetogroup1.visible := clickedContact.fProto.readList(LT_ROSTER).exists(clickedContact);
+  movetogroup1.visible := clickedContact.isInRoster;
   if clickedContact.group = 0 then
     movetogroup1.caption := getTranslation('Move to group')
    else
@@ -2389,34 +2387,6 @@ case msg.msg of
         autosizeDelayed := TRUE;
         inherited;
       end;
-  WM_TRAY:
-    if not locked and running then
-      case msg.lParam of
-        WM_LBUTTONUP:
-           begin
-             if (not useSingleClickTray)
-//              or (useSingleClickTray and RnQmain.Visible and not alwaysOnTop and not (RnQmain.handle=getForegroundWindow))
-              then
-               SetForegroundWindow(self.Handle)
-              else
-               begin
-//                mainfrm.toggleVisible
-//                if not mainFrm.Visible then
-//                  mainFrm.toggleVisible;
-                 trayAction;
-               end;
-           end;
-        WM_LBUTTONDBLCLK: if (not useSingleClickTray) then trayAction;
-        WM_RBUTTONUP:
-          if GetAsyncKeyState(VK_CONTROL) shr 7 <> 0 then
-            eventQ.clear
-          else
-            begin
-             ForceForegroundWindow(self.handle);
-             with mousePos do
-               menu.Popup(x, y);
-            end;
-        end;
   WM_MOVING:
     begin
       if not docking.enabled then
@@ -2876,7 +2846,7 @@ if (reconnectdelayCount = 0) and running then
      end;
     if connectOnConnection
       and Account.AccProto.isOffline
-      and not enteringICQpwd
+      and not enteringProtoPWD
       and (lastStatusUserSet<>byte(SC_OFFLINE))
       and connectionAvailable then
      setStatus(Account.AccProto, lastStatus, True);
@@ -3166,14 +3136,14 @@ end;
 
 procedure TRnQmain.Getofflinemessages1Click(Sender: TObject);
 begin
-  Protos_GetOfflineMSGS(Account.AccProto.ProtoElem);
+  Account.AccProto.GetOfflineMSGS;
 end;
 
 procedure TRnQmain.Deleteofflinemessages1Click(Sender: TObject);
 begin
- Protos_DelOfflineMSGS(Account.AccProto.ProtoElem);
+  Account.AccProto.DelOfflineMSGS;
  {$IFDEF PROTOCOL_ICQ}
- Account.AccProto.offlineMsgsChecked := TRUE;
+  Account.AccProto.offlineMsgsChecked := TRUE;
  {$ENDIF PROTOCOL_ICQ}
 end;
 
@@ -3780,7 +3750,7 @@ end;
 
 procedure TRnQmain.MlCntBtnClick(Sender: TObject);
 begin
-  Protos_OpenMailBox;
+  Account.AccProto.OpenMailBox;
 end;
 
 procedure TRnQmain.MMGenErrorClick(Sender: TObject);
@@ -3911,12 +3881,12 @@ end;
 
 procedure TRnQmain.ASendSMSExecute(Sender: TObject);
 begin
-  Protos_SendSMS(self, clickedContact);
+  clickedContact.SendSMS(self);
 end;
 
 procedure TRnQmain.ASendSMSUpdate(Sender: TObject);
 begin
-  TAction(Sender).Visible := Protocols_all.Protos_CanSMS(clickedContact);
+  TAction(Sender).Visible := clickedContact.CanSMS;
 end;
 
 procedure TRnQmain.cmAmovetogroupUpdate(Sender: TObject);
@@ -4396,7 +4366,7 @@ begin
     if Assigned(clickedContact) then
 //      TsendFileFrm.doAll(self, TICQContact(clickedContact), fn);
 //      ICQsendfile(TICQContact(clickedContact), fn);
-      Protos_SendFilesTo(clickedContact, fn);
+      clickedContact.SendFilesTo(fn);
   end;
  {$ENDIF usesDC}
 end;
@@ -4558,7 +4528,7 @@ end;
 procedure TRnQmain.cAMakeLocalExecute(Sender: TObject);
 begin
  if assigned(clickedContact) and clickedContact.fProto.isOnline then
-   Protos_DelCntFromSrv(clickedContact);
+   clickedContact.DelCntFromSrv;
 end;
 
 procedure TRnQmain.cAMakeLocalUpdate(Sender: TObject);

@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit pluginLib;
 {$I RnQConfig.inc}
@@ -100,7 +100,7 @@ implementation
 uses
   forms,
   RQUtil, RnQLangs, RQThemes, RnQDialogs, RQLog, RnQTips, RDUtils, RnQGlobal,
-  mainDlg, chatDlg, outboxLib, globalLib, utilLib, outboxDlg,
+  mainDlg, chatDlg, outboxLib, RnQConst, globalLib, utilLib, outboxDlg,
   themesLib, iniLib,
  { $IFDEF RNQ_FULL}
   prefDlg, RnQPrefsLib, RnQBinUtils,
@@ -289,10 +289,11 @@ case _byte_at(data,1) of
       PC_ADD_MSG: if minimum(2+4 + 8+4) then        // By Rapid D
         begin
  {$IFDEF PROTOCOL_ICQ}
-         if Account.AccProto.ProtoElem is TicqSession then
-         with TICQSession(Account.AccProto.ProtoElem) do
+         if Account.AccProto.ProtoID = ICQProtoID then
+//         with TICQSession(Account.AccProto.ProtoElem) do
+          with Account.AccProto do
           begin
-//           eventContact := Account.AccProto.getContact(IntToStr(_int_at(data,3)));
+//           eventContact := getContact(_int_at(data,3));
            eventContact := getICQContact(_int_at(data,3));
            eventTime := _dt_at(data,7);
            eventFlags := 0;
@@ -366,9 +367,9 @@ case _byte_at(data,1) of
       PC_QUIT: MustQuit := True; //quit;
  {$IFDEF PROTOCOL_ICQ}
       PC_SET_STATUS: if minimum(2+1) then
-        userSetStatus(Account.AccProto, OldStatus2Status[TICQStatus(_byte_at(data,3))], false);
+        Account.AccProto.userSetStatus(OldStatus2Status[TICQStatus(_byte_at(data,3))], false);
       PC_SET_VISIBILITY: if minimum(2+1) then
-        userSetVisibility(Account.AccProto, oldVis2Vis[TVisibility(_byte_at(data,3))]);
+        Account.AccProto.userSetVisibility(oldVis2Vis[TVisibility(_byte_at(data,3))]);
       PC_SET_XSTATUS: if minimum(2+1) then
           begin
             tS := '';
@@ -381,7 +382,7 @@ case _byte_at(data,1) of
           end;
  {$ENDIF PROTOCOL_ICQ}
       PC_CONNECT: doConnect;
-      PC_DISCONNECT: userSetStatus(Account.AccProto, byte(SC_OFFLINE));
+      PC_DISCONNECT: Account.AccProto.userSetStatus(byte(SC_OFFLINE));
       PC_PLAYSOUND: if minimum(2+4) then        // By Rapid D
              theme.PlaySound(_istring_at(data, 3));
       PC_PLAYSOUNDFN: if minimum(2+4) then        // By Rapid D

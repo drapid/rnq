@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RnQTips;
 {$I RnQConfig.inc}
@@ -28,30 +28,37 @@ uses
 
 implementation
 
- uses
-   math, StrUtils, Base64,
-   RDUtils, RnQGraphics32, RnQSysUtils, RnQBinUtils,
-   RQUtil, RDGlobal, RQThemes, RnQLangs, RnQGlobal,
-   globalLib, utilLib, RnQtrayLib, RnQPics,
+uses
+  math, StrUtils, Base64,
+  RDUtils, RnQGraphics32, RnQSysUtils, RnQBinUtils,
+  RQUtil, RDGlobal, RQThemes, RnQLangs, RnQGlobal,
+  RnQConst, globalLib,
+  RnQtrayLib, RnQPics,
  {$IFDEF UNICODE}
    AnsiStrings,
 //   Character,
  {$ENDIF}
- {$IFDEF PROTOCOL_ICQ}
-   protocol_ICQ, ICQConsts,
- {$ENDIF PROTOCOL_ICQ}
    Protocols_all,
    chatDlg, mainDlg;
 
-procedure TipsDraw(Sender: TtipFrm; mode: Tmodes; info: Pointer; pMaxX, pMaxY: Integer; calcOnly : Boolean);
+procedure TipsDraw(Sender: TtipFrm; mode: Tmodes; info: Pointer; pMaxX, pMaxY: Integer; calcOnly: Boolean);
+var
+  hb: HBRUSH;
 begin
   case mode of
     TM_EVENT:
       tipDrawEvent(Sender.Canvas.Handle, Thevent(info), NIL, pMaxX, pMaxY, calcOnly, Sender.CurrentPPI);
     TM_PIC:
-      Sender.Canvas.Draw(0,0, TBitmap(info));
+      Sender.Canvas.Draw(0, 0, TBitmap(info));
     TM_PIC_EX:
-       DrawRbmp(Sender.Canvas.Handle, TRnQBitmap(info));
+      if Assigned(TRnQBitmap(info)) then
+        if Assigned(TRnQBitmap(info).fBmp) then
+        begin
+          hb := CreateSolidBrush(ColorToRGB(theme.GetColor('tip.bg', clInfoBk)));
+          FillRect(Sender.Canvas.Handle, Sender.Canvas.ClipRect, hb);
+          DeleteObject(hb);
+          DrawRbmp(Sender.Canvas.Handle, TRnQBitmap(info));
+        end;
     TM_BDay:
       tipDrawEvent(Sender.Canvas.Handle, NIL, TRnQContact(info), pMaxX, pMaxY, calcOnly, Sender.CurrentPPI);
   end;
@@ -81,7 +88,7 @@ begin
     TM_BDay:
       if Assigned(Sender.info.obj) then
        begin
-//         info.cnt.Free;
+        // info.cnt.Free;
          Sender.info.obj := NIL;
        end;
   end;
@@ -100,7 +107,7 @@ begin
   Result := (Color32 and $00FFFFFF) or (TColor32(NewAlpha) shl 24);
 end;
 var
-//  R:TRect;
+  // R:TRect;
     r, C: Cardinal;
     PC: PColor32;
 begin
@@ -119,10 +126,10 @@ begin
      begin
      for R:=0 to bmp.Height-1 do
       begin
-       PC:=Pointer(Result.ScanLine[r]);
+       PC := Pointer(Result.ScanLine[r]);
        for C:=0 to bmp.Width-1 do
         begin
-          PC^:=SetAlpha(PC^,$FF);
+          PC^ := SetAlpha(PC^, $FF);
           Inc(PC);
         end;
       end;
@@ -279,7 +286,7 @@ begin
 //        Exit;
 
         work  := desktopWorkArea(Application.MainFormHandle);
-        item      := TRnQTip.Create;
+        item  := TRnQTip.Create;
         needW := 0; needH := 0;
 
         tempPic := createBitmap(1, 1, RnQmain.currentPPI);
@@ -505,7 +512,7 @@ var
   work: Trect;
 //  pc: pchar;
   vSize: Tsize;
-  font : TFont;
+  font: TFont;
 
 //  gr: TGPGraphics;
 //  fnt: TGPFont;
@@ -540,15 +547,13 @@ var
 //  proc: Byte;
   RnQPicStream: TMemoryStream;
   vRnQpicEx: TRnQBitmap;
-    b: Byte;
-    st: byte;
+//    b: Byte;
+//    st: byte;
   drawAvt: Boolean;
   thisCnt: TRnQContact;
-  stsArr: TStatusArray;
-//  xStsArr: TXStatStrArr;
 
   p: TPicName;
-//  picN: TPicName;
+  p1, p2: TPicName;
   r2: TGPRect;
   ms: Integer;
   recalcPPI: Boolean;
@@ -586,7 +591,7 @@ begin
    end;
 
 
-  HOldBmp := 0;
+//  HOldBmp := 0;
 //  if not calcOnly then
   try
     DC := CreateCompatibleDC(destDC);
@@ -842,39 +847,26 @@ begin
            sa := ev.getBodyBin;
            if length(sa) >= 4 then
             begin
-              st := (str2int(sa));
+              if Assigned(thisCnt) then
+                thisCnt.fProto.EventExtraPics(ev.kind, sa, p1, p2);
 
               if Assigned(thisCnt) then
               begin
-                 stsArr := thisCnt.fProto.statuses;
-                 if {(st >= Low(stsArr)) and} (st <=High(stsArr)) then
+                if p1 > '' then
                   begin
-                    b := infoToXStatus(sa);
-                    p := status2imgName(st, (length(sa)>4) and boolean(sa[5]));
-      //              if (not XStatusAsMain) and (st <> SC_ONLINE)and (b>0) then
-                    if (st <> byte(SC_ONLINE))or(not XStatusAsMain)or (b=0)  then
-                     begin
                        if calcOnly then
-                         inc(X, theme.GetPicSize(RQteDefault, p, 0, PPI).cx)
+                         inc(X, theme.GetPicSize(RQteDefault, p1, 0, PPI).cx)
                         else
-                         inc(X, theme.drawPic(DC, X+2, Y, p, true, PPI).cx);
+                         inc(X, theme.drawPic(DC, X+2, Y, p1, true, PPI).cx);
                         ;
                        inc(X, 2);
-                     end;
-  //              with statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s)), (length(s)>4) and boolean(s[5])) do
- {$IFDEF PROTOCOL_ICQ}
-                    if (b > 0) then
-                    begin
-                     if {(b >= Low(xStsArr)) and} (b <= High(XStatusArray)) then
-                     begin
-                       p := XStatusArray[b].PicName;
+                  end;
+                if p2 > '' then
+                  begin
                        if calcOnly then
-                         inc(X, theme.GetPicSize(RQteDefault, p, 0, PPI).cx+1)
+                         inc(X, theme.GetPicSize(RQteDefault, p2, 0, PPI).cx+1)
                         else
-                         theme.drawPic(DC, X+1, Y, p, True, PPI);
-                     end;
-                    end;
- {$ENDIF PROTOCOL_ICQ}
+                         theme.drawPic(DC, X+1, Y, p2, True, PPI);
                   end;
               end;
             end;

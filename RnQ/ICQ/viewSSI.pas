@@ -62,7 +62,7 @@ uses
   RDUtils, RQUtil, RDGlobal, RnQBinUtils, RDFileUtil, RnQDialogs,
   RnQSysUtils,
   RnQProtocol, RQ_ICQ, ICQConsts,
-  utilLib, globalLib, mainDlg;
+  utilLib, globalLib;
 
 {$R *.dfm}
 

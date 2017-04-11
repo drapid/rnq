@@ -32,6 +32,10 @@ object designFr: TdesignFr
       TabOrder = 0
       object CommonTab: TTabSheet
         Caption = 'Common'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         DesignSize = (
           400
           372)
@@ -161,6 +165,7 @@ object designFr: TdesignFr
           Top = 121
           Width = 350
           Height = 17
+          HelpKeyword = 'xstatus-as-main'
           Caption = 'Show XStatus as main status'
           TabOrder = 3
         end
@@ -194,6 +199,7 @@ object designFr: TdesignFr
           Top = 52
           Width = 353
           Height = 17
+          HelpKeyword = 'show-uin-delimiter'
           Caption = 'Show UIN-delimiter'
           TabOrder = 9
         end
@@ -232,6 +238,10 @@ object designFr: TdesignFr
       object RstrSheet: TTabSheet
         Caption = 'Roaster'
         ImageIndex = 3
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         DesignSize = (
           400
           372)
@@ -347,6 +357,10 @@ object designFr: TdesignFr
       object TabSheet2: TTabSheet
         Caption = 'Contact list'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         DesignSize = (
           400
           372)
@@ -478,6 +492,10 @@ object designFr: TdesignFr
       object TabSheet3: TTabSheet
         Caption = 'Transparency'
         ImageIndex = 2
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         DesignSize = (
           400
           372)
@@ -573,6 +591,10 @@ object designFr: TdesignFr
       object avtTS: TTabSheet
         Caption = 'Avatars'
         ImageIndex = 4
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object AvtShwChtChk: TCheckBox
           Left = 6
           Top = 6

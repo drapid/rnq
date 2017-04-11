@@ -108,7 +108,8 @@ uses
   viewSSI in 'ICQ\viewSSI.pas' {SSIForm},
   wpDlg in 'ICQ\wpDlg.pas' {wpFrm},
   ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm},
-  MenuSmiles in '..\for.RnQ\MenuSmiles.pas' {FSmiles};
+  MenuSmiles in '..\for.RnQ\MenuSmiles.pas' {FSmiles},
+  RnQConst in 'RnQConst.pas';
 
 {$R *.RES}
 

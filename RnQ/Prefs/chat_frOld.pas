@@ -206,13 +206,15 @@ procedure TchatFr.resetLangs;
 var
   lang: String;
   n: PVirtualNode;
+  d: Pointer;
 begin
   for lang in spellLanguages2 do
   begin
     n := LangList.GetFirst;
     while not (n = nil) do
     begin
-      if PLangItem(LangList.GetNodeData(n)).lang = lang then
+      d := LangList.GetNodeData(n);
+      if (d <> NIL) and (PLangItem(d).lang = lang) then
         n.CheckState := csCheckedNormal;
       n := LangList.GetNext(n);
     end;
@@ -249,10 +251,13 @@ end;
 procedure TchatFr.LangListDrawNode(Sender: TBaseVirtualTree; const PaintInfo: TVTPaintInfo);
 var
   oldMode: Integer;
+  d: Pointer;
 begin
   PaintInfo.Canvas.Font.Color := clWindowText;
   oldMode := SetBKMode(PaintInfo.canvas.Handle, TRANSPARENT);
-  PaintInfo.Canvas.TextOut(PaintInfo.ContentRect.Left, 1, PLangItem(Sender.GetNodeData(PaintInfo.Node)).locale);
+  d := Sender.GetNodeData(PaintInfo.Node);
+  if d <> NIL then
+    PaintInfo.Canvas.TextOut(PaintInfo.ContentRect.Left, 1, PLangItem(d).locale);
   SetBKMode(PaintInfo.Canvas.Handle, oldMode);
 end;
 

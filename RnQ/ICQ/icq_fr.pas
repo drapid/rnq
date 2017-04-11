@@ -107,7 +107,7 @@ implementation
 uses
   utilLib, RnQLangs, RDUtils, RnQCrypt, RnQPics,
   ICQv9, Protocol_ICQ, ICQConsts, RnQProtocol, //contacts,
-  RnQMenu, menusUnit, themesLib, globalLib,
+  RnQMenu, menusUnit, themesLib, RnQConst, globalLib,
   RQUtil, RnQFileUtil, RnQDialogs, mainDlg;
 
 type

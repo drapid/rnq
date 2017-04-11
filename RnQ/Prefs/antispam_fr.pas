@@ -93,11 +93,10 @@ implementation
 
 {$R *.dfm}
 uses
-  StrUtils, utilLib, RDUtils, RnQLangs, Math,
-  RQThemes, RnQPics, themesLib,
-  globalLib, selectcontactsDlg,
-//  menusUnit,
-  RnQMenu,
+  StrUtils, Math,
+  RnQMenu, RDUtils, RnQLangs,
+  RQThemes, RnQPics, utilLib,
+  RnQConst, globalLib, selectcontactsDlg,
   chatDlg;
 
 type
@@ -215,9 +214,9 @@ end;
 
 procedure TantispamFr.MenuPopup(Sender: TObject);
 var
- C : TRnQcontact;
-// i : Integer;
- it : TMenuItem;
+ C: TRnQcontact;
+// i: Integer;
+ it: TMenuItem;
 begin
  c := current; 
  if Sender is TPopupMenu then
@@ -238,7 +237,9 @@ begin
 end;
 
 procedure TantispamFr.Sendmessage1Click(Sender: TObject);
-begin chatFrm.openOn(current) end;
+begin
+  chatFrm.openOn(current)
+end;
 
 
 procedure TantispamFr.initPage;

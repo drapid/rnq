@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit roasterLib;
 {$I RnQConfig.inc}
@@ -167,8 +167,7 @@ uses
   UxTheme, DwmApi, Types, UITypes,
   RnQGraphics32, RQUtil, RQThemes,
   RnQStrings, RnQLangs, RDUtils, RnQSysUtils,
-  mainDlg, sysutils, utilLib, globalLib, groupsLib,
-//  ICQConsts,
+  mainDlg, sysutils, utilLib, RnQConst, globalLib,
  {$IFDEF PROTOCOL_ICQ}
   ICQv9, ICQContacts, ICQconsts, Protocol_ICQ,
  {$ENDIF PROTOCOL_ICQ}
@@ -1544,10 +1543,10 @@ var
   x, y: integer;
   oldCol: TColor;
   FadeColor1, FadeColor2: Cardinal;
-  dd : TDateTime;
-//  gr  : TGPGraphics;
-//  br  : TGPBrush;
-//  pen : TGPPen;
+  dd: TDateTime;
+//  gr: TGPGraphics;
+//  br: TGPBrush;
+//  pen: TGPPen;
    TextLen: Integer;
    TextRect: TRect;
    TextFlags: Cardinal;

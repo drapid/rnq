@@ -26,23 +26,23 @@ var
 
 implementation
 
-procedure AddHistory(OldPath,NewPath: ShortString; uin : LongInt; var s: String);
+procedure AddHistory(OldPath, NewPath: ShortString; uin: LongInt; var s: String);
 var
-    Buf : array[word] of AnsiChar;
+    Buf: array[word] of AnsiChar;
 //    size: word;
 begin
  try
   if @Splicing <> nil then
-    Splicing(OldPath,NewPath, uin, Buf,sizeof(Buf));
+    Splicing(OldPath, NewPath, uin, Buf, sizeof(Buf));
   s := Buf;
  except
   s := 'Error!'
  end;
 end;
 
-procedure AddFile(OldPath,NewPath: ShortString; var s: String);
+procedure AddFile(OldPath, NewPath: ShortString; var s: String);
 var
-    Buf : array[word] of AnsiChar;
+    Buf: array[word] of AnsiChar;
 begin
  try
   if @ReNum <> nil then
