@@ -70,12 +70,12 @@ end; // getMPservice
 
 function getSnacRef(const s: RawByteString): dword;
 begin
-  result := dword_BEat(@s[13])
+  result := dword_BEat(s, 13)
 end;
 
 function getSnacFlags(const s: RawByteString): word;
 begin
- result := word_BEat(@s[11])
+ result := word_BEat(s, 11)
 end;
 
 function getSnacService(const s: RawByteString): word;

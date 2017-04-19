@@ -20,11 +20,11 @@ interface
 
 
   {$IFDEF usesDC}
-//  procedure receiveFile2(thisICQ : TicqSession; evID : Int64; fromCnt : TContact; fn : String);
-//  procedure receiveFile2(d : Tdirect);
+//  procedure receiveFile2(thisICQ: TicqSession; evID: Int64; fromCnt: TContact; fn: String);
+//  procedure receiveFile2(d: Tdirect);
   procedure receiveFile(d: TProtoDirect);
   procedure ICQsendfile(c: TICQContact; const fn: string);
-//  function  sendICQfiles(uin:TUID; files, msg:string):integer;
+//  function  sendICQfiles(uin: TUID; files, msg: string): integer;
   function sendICQfiles(cnt: TRnQContact; files : TICQFilePacket; msg: string;
               useLocProxy: Boolean; ThrSrv: Boolean; var drct: TICQdirect): integer;
   function  findSendFile(id: Int64): TsendfileFrm;
@@ -45,7 +45,7 @@ interface
 
 
   //function  statusName(s: Tstatus): string;
-  function  statusNameExt2(s: byte; extSts : byte = 0; const Xsts: String = ''; const sts6: String = ''): string;
+  function  statusNameExt2(s: byte; extSts: byte = 0; const Xsts: String = ''; const sts6: String = ''): string;
   function  status2imgName(s: byte; inv: boolean=FALSE): TPicName;
   function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts: byte= 0): TPicName;
 //  function  visibility2imgName(vi: Tvisibility): String;
@@ -67,7 +67,7 @@ interface
 
 implementation
 
- uses
+uses
    Forms, SysUtils, DateUtils,
    Types, OverbyteIcsWSocket,
  {$IFDEF UNICODE}
@@ -94,7 +94,7 @@ implementation
 
 procedure sendICQaddedYou(cnt: TRnQContact);
 var
-//  c:Tcontact;
+//  c: Tcontact;
   ev: THevent;
 begin
 //  c:=Tcontact(contactsDB.get(TICQContact, uin));
@@ -111,7 +111,7 @@ end; // sendICQaddedYou
 procedure sendICQcontacts(cnt: TRnQContact; flags: integer; cl: TRnQCList);
 var
   ev: THevent;
-//  c:Tcontact;
+//  c: Tcontact;
 begin
 //  c:=Tcontact(contactsDB.get(TICQContact, uin));
   plugins.castEv( PE_CONTACTS_SENT, cnt.uid, flags, cl);

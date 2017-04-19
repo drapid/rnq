@@ -224,7 +224,7 @@ begin
               else
               if (i = $67)or (i = $160)or(i = $6D) then
                begin
-                bday := UnixToDateTime(dword_BEat(@s0[ofs00 + 4]));
+                bday := UnixToDateTime(dword_BEat(s0, ofs00 + 4));
 //                if i = $6D then // The score; higher means more interactions
 //                  score := dword_BEat(@s0[ofs00 + 8]));
                 if (ItemType = FEEDBAG_CLASS_ID_DELETED)and(i = $6D) then
@@ -371,10 +371,10 @@ end;
 
 procedure TSSIForm.LoadFileBtnClick(Sender: TObject);
 var
-  fn : String;
-  s : RawByteString;
-  thisSSI : Tssi;
-  b : Boolean;
+  fn: String;
+  s: RawByteString;
+  thisSSI: Tssi;
+  b: Boolean;
 begin
 //  fn:=openSavedlg(rnqMain, True, 'ssi', 'Server Side Information');
   fn:=openSavedlg(Self, '', True, 'ssi', 'Server Side Information');

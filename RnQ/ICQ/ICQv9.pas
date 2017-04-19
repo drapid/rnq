@@ -519,7 +519,7 @@ type
     class function _getProtoServers: String; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     class function _getProtoID: Byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     class function _CreateProto(const uid: TUID): TRnQProtocol; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    class function  _RegisterUser(var pUID: TUID; var pPWD : String) : Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function  _RegisterUser(var pUID: TUID; var pPWD: String): Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     class function _MaxPWDLen: Integer; OverRide; final;
 //    class function isValidUid(var uin: TUID): boolean;
 //    function isValidUid(var uin: TUID): boolean;
@@ -2232,7 +2232,7 @@ begin
     proto:=PP_NONE;
     auth:=FALSE;
     NTLM := False;
-    serv := TicqSession._getDefHost;
+    serv := getDefHost;
     ssl := False;
    end;
 
@@ -2852,8 +2852,8 @@ end; // dc_connected
 {$ENDIF usesDC}
 
 procedure TicqSession.goneOffline;
-var
-  i: integer;
+//var
+//  i: integer;
 begin
   if phase=null_ then
     exit;
@@ -4852,7 +4852,7 @@ begin
 }
   savingMyinfo.ACKcount := 0;
 {
-  sendSNAC(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
+  sendSnac(ICQ_EXTENSIONS_FAMILY, CLI_META_REQ,
     TLV(1, Length_LE(myUINle
       + word_LEasStr(CLI_META_INFO_REQ)
       + word_LEasStr($02)
@@ -5066,7 +5066,7 @@ begin
 end;
 
 
-procedure TicqSession.parseCookie(const flap:RawByteString);
+procedure TicqSession.parseCookie(const flap: RawByteString);
 var
   add: RawByteString;
   i:integer;
@@ -5074,7 +5074,7 @@ var
   useSSL : Boolean;
  {$ENDIF USE_SSL}
 begin
-  i:=findTLV(8, flap);
+  i := findTLV(8, flap);
   if i > 0 then
     begin
      eventInt := getTLVwordBE(@flap[i]);
@@ -5190,7 +5190,7 @@ begin
       avt_icq.serviceServerPort := loginServerPort;
      end;
 
-    avt_icq.cookie:=getTLV(6, pkt);
+    avt_icq.cookie := getTLV(6, pkt);
     avt_icq.cookieTime := now;
 //    SSL_CERTNAME := getTLV($8D, pkt);
 //    SSL_STATE    := getTLVbyte($8E, pkt);
@@ -5700,36 +5700,36 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
 
 // if not isMyAcc(cont) then
  begin
-  s:=getTLV($0C, snac,ofs);
+  s := getTLV($0C, snac,ofs);
   if Length(s) > 30 then
     begin
       pS := @s[1];
-    cont.connection.internal_ip:=dword_BEat(pS);
-    cont.connection.port:=dword_BEat(pS + 4);
-{    cont.proto:=word_BEat(@s[10]);
-    cont.connection.dc_cookie:=dword_BEat(@s[12]);
-    cont.lastupdate_dw:=dword_BEat(@s[24]);
-    cont.lastinfoupdate_dw:=dword_BEat(@s[28]);
-    cont.lastStatusUpdate_dw:=dword_BEat(@s[32]);}
-    cont.proto:=word_BEat(pS + 9);
-    cont.connection.dc_cookie:=dword_BEat(pS+11);
-    cont.lastupdate_dw:=dword_BEat(pS+23);
-    cont.lastinfoupdate_dw:=dword_BEat(pS+27);
-    cont.lastStatusUpdate_dw:=dword_BEat(pS+31);
-    cont.lastUpdate:=UnixToDateTime(cont.lastupdate_dw)+GMToffset;
-//    cont.lastInfoUpdate:=UnixToDateTime(cont.lastinfoupdate_dw)+GMToffset;
-    cont.lastStatusUpdate:=UnixToDateTime(cont.laststatusupdate_dw)+GMToffset;
+    cont.connection.internal_ip := dword_BEat(pS);
+    cont.connection.port := dword_BEat(pS + 4);
+{    cont.proto := word_BEat(@s[10]);
+    cont.connection.dc_cookie := dword_BEat(@s[12]);
+    cont.lastupdate_dw := dword_BEat(@s[24]);
+    cont.lastinfoupdate_dw := dword_BEat(@s[28]);
+    cont.lastStatusUpdate_dw := dword_BEat(@s[32]);}
+    cont.proto := word_BEat(pS + 9);
+    cont.connection.dc_cookie := dword_BEat(pS+11);
+    cont.lastupdate_dw := dword_BEat(pS+23);
+    cont.lastinfoupdate_dw := dword_BEat(pS+27);
+    cont.lastStatusUpdate_dw := dword_BEat(pS+31);
+    cont.lastUpdate := UnixToDateTime(cont.lastupdate_dw)+GMToffset;
+//    cont.lastInfoUpdate := UnixToDateTime(cont.lastinfoupdate_dw)+GMToffset;
+    cont.lastStatusUpdate := UnixToDateTime(cont.laststatusupdate_dw)+GMToffset;
     end
   else
    if not isMsg then
     begin
-  //  cont.internal_ip:=0;
-    cont.connection.port:=0;
-    cont.connection.dc_cookie:=0;
-    cont.proto:=0;
-    cont.lastupdate_dw:=0;
-    cont.lastinfoupdate_dw:=0;
-    cont.laststatusupdate_dw:=0;
+  //  cont.internal_ip := 0;
+    cont.connection.port := 0;
+    cont.connection.dc_cookie := 0;
+    cont.proto := 0;
+    cont.lastupdate_dw := 0;
+    cont.lastinfoupdate_dw := 0;
+    cont.laststatusupdate_dw := 0;
     end;
  end;
 // cont.ClientStr := getClientPicFor(cont);
@@ -5916,7 +5916,7 @@ begin
   chop(#$FE, s);      // skippo il numero dei contatti
   while s > '' do
     try
-      vUID := chop(#$FE,s);
+      vUID := chop(#$FE, s);
       c := getICQContact(vUID);
       if c.equals(MyAccount) then
         chop(#$FE,s)
@@ -5986,7 +5986,7 @@ case msgtype of
   MTYPE_URL:
     begin
       mm := msg;
-      eventMsgA := chop(#$FE,RawByteString(mm));
+      eventMsgA := chop(#$FE, RawByteString(mm));
       eventAddress := mm;
       notifyListeners(IE_url);
     end;
@@ -6046,9 +6046,9 @@ begin
 
   ofs:=1;
   inc(ofs, 15);
-  ll := dword_LEat(@snac[ofs]);
+  ll := dword_LEat(snac, ofs);
   inc(ofs, 4);
-  i := dword_LEat(@snac[ofs]);
+  i := dword_LEat(snac, ofs);
   inc(ofs, 4);
 
 {  inc(ofs, 20);
@@ -6088,9 +6088,9 @@ case v of
     inc(ofs,4); // skip version
    end;
 if v>=$3132 then
-  eventAddress := getDLS(snac,ofs)
+  eventAddress := UnUTF(getDLS(snac, ofs))
 else
-  eventAddress := s;
+  eventAddress := UnUTF(s);
 notifyListeners(IE_gcard);
 end; // parseGCdata
 
@@ -6390,7 +6390,7 @@ begin
        eventMsgA := msg;
        sA := getTLVSafe($03, snac, ofs);
        if sA > '' then
-         thisCnt.connection.internal_ip := dword_BEat(@sA[1])
+         thisCnt.connection.internal_ip := dword_BEat(sA, 1)
         else
          thisCnt.connection.internal_ip := 0;
        thisCnt.connection.ft_port := thisCnt.connection.port;
@@ -6439,7 +6439,7 @@ begin
     //          else
     //           if s = 'Unicode'
                ;
-             eventDirect.fileSizeTotal  := dword_BEat(@msg[5]);
+             eventDirect.fileSizeTotal  := dword_BEat(msg, 5);
             end;
 //    {$IFDEF usesDC}
         end
@@ -6870,7 +6870,7 @@ begin
 //            FFSeq2 := word_BEat(@snac[ofs]);
             inc(ofs, 2);
             eventDirect.fileName := UnUTF(getWNTS(snac, ofs));
-            eventDirect.fileSizeTotal := dword_LEat(@snac[ofs]);
+            eventDirect.fileSizeTotal := dword_LEat(snac, ofs);
             inc(ofs, 4);
             if eventDirect.fileName > '' then
               notifyListeners(IE_filereq)
@@ -6886,9 +6886,9 @@ begin
   //            len := dword_LEat(@snac[ofs]);
               inc(ofs, 4);
 
-              msglen := dword_LEat(@snac[ofs]);
+              msglen := dword_LEat(snac, ofs);
               inc(ofs, 4);
-              msg := copy(snac,ofs,msglen);
+              msg := copy(snac, ofs, msglen);
               notificationForMsg(TypeId, msgflags, priority=2, msg);
 
             end
@@ -6989,7 +6989,7 @@ begin
   eventNameA := chop(#$FE, s);
   chop(#$FE, s);
   chop(#$FE, s);
-  eventAddress := chop(#$FE, s);
+  eventAddress := UnUTF(chop(#$FE, s));
   chop(#$FE, s);
   eventMsgA := s;
 end; // parsePagerString
@@ -7143,7 +7143,7 @@ var
             state := unUTF(getTLVSafe(META_COMPAD_HOMES_STATE, Pkt1));
             s := getTLVSafe(META_COMPAD_HOMES_COUNTRY, Pkt1);
             if s <> '' then
-              country := dword_BEat(Pointer(s));
+              country := dword_BEat(s, 1);
            end;
 
         isExstsTLV := existsTLV(META_COMPAD_FROM, snac, ofs);
@@ -7155,7 +7155,7 @@ var
             birthstate := unUTF(getTLVSafe(META_COMPAD_FROM_STATE, Pkt1));
             s := getTLVSafe(META_COMPAD_FROM_COUNTRY, Pkt1);
             if s <> '' then
-              birthCountry := dword_BEat(@s[1]);
+              birthCountry := dword_BEat(s, 1);
            end
              else
            if isExstsTLV then
@@ -7219,7 +7219,7 @@ var
             workfax := '';
             s := getTLVSafe(META_COMPAD_WORKS_COUNTRY, Pkt1);
             if s <> '' then
-              workCountry := dword_BEat(Pointer(s));
+              workCountry := dword_BEat(s, 1);
            end
           else
            if isExstsTLV then

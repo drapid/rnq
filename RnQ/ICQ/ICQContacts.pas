@@ -171,7 +171,7 @@ type
     function  getStatus: byte; OverRide; final;
     procedure SetDisplay(const s: String); OverRide; final;
     function  GetDBrow: RawByteString; OverRide; final;
-    function  ParseDBrow(ItemType: Integer; const item: RawByteString) : Boolean; OverRide; final;
+    function  ParseDBrow(ItemType: Integer; const item: RawByteString): Boolean; OverRide; final;
     procedure ViewInfo; OverRide; final;
     function  isAcceptFile: Boolean; OverRide; final;
     class function trimUID(const sUID: TUID): TUID; OverRide; final;
@@ -706,27 +706,27 @@ begin
       +TLV2U_IFNN(DBFK_BIRTHCITY, birthcity)
 end;
 
-function TICQcontact.ParseDBrow(ItemType : Integer; const item : RawByteString) : Boolean;
-  procedure str2interests(str:RawByteString; var int:Tinterests);  // By Shyr
+function TICQcontact.ParseDBrow(ItemType: Integer; const item: RawByteString): Boolean;
+  procedure str2interests(str: RawByteString; var int: Tinterests);  // By Shyr
   var
-   s1 : RawByteString;
-   s2:string;
+   s1: RawByteString;
+   s2: string;
   begin
-   int.Count:=0;
+   int.Count := 0;
    if str<>'' then
-    str:=str+'';
+     str := str+'';
    while (str<>'')and (int.Count < 4) do begin
-    s1:=chop(AnsiChar(#0), str);
+    s1 := chop(AnsiChar(#0), str);
     if s1 > '' then
      begin
       int.InterestBlock[int.Count].Code := Byte(s1[1]);
-      s1:=Copy(s1,2,length(s1)-1);
-      int.interestblock[int.Count].Names:=TStringList.Create;
+      s1 := Copy(s1,2,length(s1)-1);
+      int.interestblock[int.Count].Names := TStringList.Create;
       while s1<>'' do begin
-       s2:=UnUTF(chop(AnsiChar(','),s1));
+       s2 := UnUTF(chop(AnsiChar(','),s1));
        int.interestblock[int.Count].Names.Add(s2);
       end;
-      int.Count:=int.Count+1;
+      int.Count := int.Count+1;
      end;
    end;
   end;
@@ -735,13 +735,13 @@ begin
   Result := True;
 //        cntICQ := TICQcontact(c);
         case ItemType of
-          DBFK_EMAIL:   self.email:= UnUTF(item);
+          DBFK_EMAIL:   self.email := UnUTF(item);
           DBFK_ADDRESS: self.address := UnUTF(item);
           DBFK_CITY:    self.city := UnUTF(item);
-          DBFK_STATE:   self.state:= UnUTF(item);
-          DBFK_ABOUT:   self.about:= UnUTF(item);
+          DBFK_STATE:   self.state := UnUTF(item);
+          DBFK_ABOUT:   self.about := UnUTF(item);
           DBFK_ZIP:     self.zip  := UnUTF(item);
-          DBFK_NODB:    self.nodb:=boolean(item[1]);
+          DBFK_NODB:    self.nodb := boolean(item[1]);
           DBFK_COUNTRY: system.move(item[1], self.country, 4);
           DBFK_LANG:    system.move(item[1], self.lang, 3);
           DBFK_HOMEPAGE:    self.homepage := UnUTF(item);
@@ -783,7 +783,7 @@ begin
           DBFK_MARSTATUS:   self.MarStatus := str2int(item);
           DBFK_qippwd:      self.crypt.qippwd := str2int(item);
          else
-          Result := False;
+          Result := inherited ParseDBrow(ItemType, item);
         end;
 end;
 
@@ -796,17 +796,17 @@ end;
 ///////////////////////////////////////////////////////////////////
 
 
-function ICQCL_idxBySSID(cl : TRnQCList; ssid:Word):integer;
+function ICQCL_idxBySSID(cl: TRnQCList; ssid: Word): integer;
 var
-//  min,max:integer;
-//  u : TUID;
-//  uid : TUID;
-  c : TRnQContact;
+//  min, max: integer;
+//  u: TUID;
+//  uid: TUID;
+  c: TRnQContact;
 begin
   Result := -1;
   if cl.count = 0 then
    begin
-    result:=-1;
+    result := -1;
     exit;
    end;
 //  max:=count-1;
@@ -822,32 +822,32 @@ begin
 //result:=-1;
 end;
 
-procedure ICQCL_SetStatus(cl : TRnQCList; st:TICQstatus);
+procedure ICQCL_SetStatus(cl: TRnQCList; st: TICQstatus);
 var
-  i:integer;
-  cnt : TRnQContact;
+  i: integer;
+  cnt: TRnQContact;
 begin
   for i:=0 to cl.count-1 do
    begin
     cnt := cl.getAt(i);
     if cnt is TICQContact then
-      TICQContact(cnt).status:=st;
+      TICQContact(cnt).status := st;
    end;
 end; // setStatus
 
-function ICQCL_SSIByGrp(cl : TRnQCList; grID : Integer): AnsiString;
+function ICQCL_SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
 var
-  i:integer;
+  i: integer;
 begin
-  result:='';
+  result := '';
   for i:=0 to cl.count-1 do
 //   with TICQContact(cl.items[i]) do
    with TICQContact(cl.getAt(i)) do
    if (group = grID)and (not CntIsLocal) and (SSIID > 0) then
-    result:=result + word_BEasStr(SSIID);
+    result := result + word_BEasStr(SSIID);
 end;
 
-function ICQCL_C8SSIByGrp(cl : TRnQCList; grID : Integer): AnsiString;
+function ICQCL_C8SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
 begin
   result := TLV($C8, ICQCL_SSIByGrp(cl, grID));
 end;
