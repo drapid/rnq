@@ -43,7 +43,7 @@ type
   private
     { Private declarations }
 //    menu_pic : TBitmap;
-//    menu_btAc, menu_btIn : TBitmap;
+//    menu_btAc, menu_btIn: TBitmap;
     Btn_Width: Integer;
     Btn_Height: Integer;
     fMainPrefs: TRnQPref;
@@ -562,7 +562,7 @@ begin
 
     if ShowAniSmlPanel2 and SmileObj.Animated then
       begin
-       Ani.Draw(DC, MakeRect(r2.Left + (Btn_Width-sz.cx)div 2, r2.Top+(Btn_Height-sz.cy) div 2, sz.cx, sz.cy))
+       Ani.StretchDraw(DC, MakeRect(r2.Left + (Btn_Width-sz.cx)div 2, r2.Top+(Btn_Height-sz.cy) div 2, sz.cx, sz.cy))
       end
      else
        theme.drawPic(DC, r2.Left + (Btn_Width-sz.cx)div 2,
@@ -686,7 +686,7 @@ begin
           then Continue;
  }
 //      if (i > Low(FAniParamList)) and (i < High(FAniParamList)) then
-      paramSmile:= FAniParamList[i];
+      paramSmile := FAniParamList[i];
 //      if paramSmile <> nil then
 //      if paramSmile.ID = -1 then Continue;
      if Assigned(paramSmile.Canvas) then
@@ -712,7 +712,7 @@ begin
                 begin
                   w2 := MulDiv(Width, PPI, fDPI);
                   h2 := MulDiv(Height, PPI, fDPI);
-                  Draw(b2.Canvas.Handle, MakeRect((Btn_Width - w2)div 2,
+                  StretchDraw(b2.Canvas.Handle, MakeRect((Btn_Width - w2)div 2,
                        (Btn_Height - h2) div 2, w2, h2))
                 end
                else
@@ -801,7 +801,7 @@ procedure TFSmiles.ClearAniParams;
 //var
 // i: Integer;
 begin
-  FAniDrawCnt:= 0;
+  FAniDrawCnt := 0;
   SetLength(FAniParamList,0);
 {  for i := 1 to FAniSmls.Count-1 do
   begin

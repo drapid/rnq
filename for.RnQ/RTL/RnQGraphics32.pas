@@ -85,7 +85,7 @@ type
 
 
 type
-  TRnQBitmap = class
+  TRnQBitmap = class(TGraphic)
    protected
     fHI:  HICON;
 //    fBmp32: TBitmap32;
@@ -134,7 +134,13 @@ type
 //    procedure Draw(DC: HDC; DestR: TRect; SrcX, SrcY, SrcW, SrcH: Integer; pEnabled: Boolean= True; isCopy : Boolean= false); Overload;
     procedure Draw(DC: HDC; DestBnd, SrcBnd: TGPRect; pEnabled: Boolean= True; isCopy32: Boolean = false); Overload;
 //    procedure Draw(DC: HDC; DestR, SrcR: TRect); Overload;
-    procedure Draw(DC: HDC; DestR: TGPRect); Overload;
+    procedure DrawBound(DC: HDC; DestR: TGPRect; Bound: Boolean = True; Scale: Boolean = True); Overload;
+    procedure StretchDraw(DC: HDC; DestR: TGPRect); Overload;
+    procedure Draw(ACanvas: TCanvas; const Rect: TRect); Overload; OverRide;
+    procedure DrawTransparent(ACanvas: TCanvas; const Rect: TRect; Opacity: Byte); OverRide;
+    function  GetEmpty: Boolean; OverRide;
+    function  GetPalette: HPALETTE; OverLoad;
+    function  GetTransparent: Boolean; OverRide;
 //    function  Clone(x, y, pWidth, pHeight: Integer): TRnQBitmap;
     function  Clone(bnd: TGPRect): TRnQBitmap;
     function  CloneFrame(frame: Integer): TRnQBitmap;
@@ -142,8 +148,8 @@ type
     procedure SetTransparentColor(clr: cardinal);
     function  bmp2ico32: HIcon;
     procedure GetHICON(var hi: HICON);
-    function  GetWidth: Integer; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
-    function  GetHeight: Integer; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+    function  GetWidth: Integer;  OverRide; //{$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+    function  GetHeight: Integer; OverRide; //{$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
     function  GetSize(PPI: Integer): TSize;
     function  RnQCheckTime: Boolean;
     property  Animated: Boolean read fAnimated;
@@ -2212,16 +2218,43 @@ begin
     end;
 end;
 
-procedure TRnQBitmap.Draw(DC: HDC; DestR: TGPRect);
+procedure TRnQBitmap.DrawBound(DC: HDC; DestR: TGPRect; Bound: Boolean = True; Scale: Boolean = True);
+var
+  Pt: TPoint;
+  r2: TGPRect;
+begin
+  if ((DestR.Width) <> (fWidth))
+     or ((DestR.Height) <> (fHeight)) then
+   begin
+    if not Bound then
+      begin
+       GetBrushOrgEx(dc, pt);
+       SetStretchBltMode(dc, HALFTONE);
+       SetBrushOrgEx(dc, pt.x, pt.y, @pt);
+       Draw(DC, DestR, makerect(0, 0, fWidth, fHeight));
+      end
+     else
+      begin
+       r2 := DestRect(fWidth, fHeight, DestR.Width, DestR.Height, Scale);
+       inc(r2.X, DestR.X);
+       inc(r2.Y, DestR.Y);
+       Draw(DC, r2, makerect(0, 0, fWidth, fHeight));
+      end;
+   end
+  else
+    Draw(DC, DestR, makerect(0, 0, fWidth, fHeight));
+end;
+
+procedure TRnQBitmap.StretchDraw(DC: HDC; DestR: TGPRect);
 begin
   Draw(DC, DestR, makerect(0, 0, fWidth, fHeight));
 end;
 
 procedure TRnQBitmap.Draw(DC: HDC; DX, DY: Integer);
 var
-    blend: BLENDFUNCTION;
-    LeftTop: TPoint;
-    MyDC: HDC;
+  blend: BLENDFUNCTION;
+  LeftTop: TPoint;
+  MyDC: HDC;
 begin
   if fAnimated then
     begin
@@ -2328,6 +2361,32 @@ end;
          else}
           Result := (Color32 and $00FFFFFF) or (NewAlpha shl 24);
     end;
+
+procedure TRnQBitmap.Draw(ACanvas: TCanvas; const Rect: TRect);
+begin
+  StretchDraw(ACanvas.Handle, MakeRect(Rect));
+end;
+
+procedure TRnQBitmap.DrawTransparent(ACanvas: TCanvas; const Rect: TRect; Opacity: Byte);
+begin
+  StretchDraw(ACanvas.Handle, MakeRect(Rect));
+end;
+
+
+function TRnQBitmap.GetEmpty: Boolean;
+begin
+  Result := fWidth = 0;
+end;
+
+function TRnQBitmap.GetPalette: HPALETTE;
+begin
+  Result := 0;
+end;
+
+function TRnQBitmap.GetTransparent: Boolean;
+begin
+  Result := htTransparent;
+end;
 
 function TRnQBitmap.CloneAll: TRnQBitmap;
 begin
@@ -3359,7 +3418,7 @@ begin
 end;
 
 
-procedure DrawRbmp(DC : HDC; VAR bmp : TRnQBitmap; DestR, SrcR : TGPRect); OverLoad;
+procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR, SrcR: TGPRect); OverLoad;
 var
   Pt: TPoint;
 begin
@@ -3373,41 +3432,23 @@ begin
 //   SetStretchBltMode(DC, HALFTONE);
   bmp.Draw(DC, DestR, SrcR);
 end;
+
 procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestR: TGPRect; Bound: Boolean = True); OverLoad;
-var
-  Pt: TPoint;
-  r2: TGPRect;
 begin
-  if ((DestR.Width) <> (bmp.fWidth))
-     and ((DestR.Height) <> (bmp.fHeight)) then
-   begin
-    if not Bound then
-      begin
-       GetBrushOrgEx(dc, pt);
-       SetStretchBltMode(dc, HALFTONE);
-       SetBrushOrgEx(dc, pt.x, pt.y, @pt);
-       bmp.Draw(DC, DestR);
-      end
-     else
-      begin
-       r2 := DestRect(bmp.fWidth, bmp.fHeight, DestR.Width, DestR.Height);
-       inc(r2.X, DestR.X);
-       inc(r2.Y, DestR.Y);
-       bmp.Draw(DC, r2);
-      end;
-   end
-  else
-    bmp.Draw(DC, DestR);
+  bmp.DrawBound(DC, DestR, Bound);
 end;
+
 procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap); OverLoad;
 begin
   bmp.Draw(DC, 0, 0);
 end;
+
 procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; X, Y: Integer); OverLoad;
 begin
   bmp.Draw(DC, x, y);
 end;
-{procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestRect : TRect; SrcX, SrcY, SrcW, SrcH: Integer; pEnabled: Boolean= True);
+
+{procedure DrawRbmp(DC: HDC; VAR bmp: TRnQBitmap; DestRect: TRect; SrcX, SrcY, SrcW, SrcH: Integer; pEnabled: Boolean= True);
 var
   Pt: TPoint;
 begin
@@ -4827,7 +4868,6 @@ with result.Canvas do
   result.transparent := bmp.transparent;
   result.transparentcolor := bmp.transparentcolor;
 end; // traspBmp
-
 
 var
   DC: HDC;

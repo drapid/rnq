@@ -27,20 +27,6 @@ interface
 //  TMsgDlgType = (mtWarning, mtError, mtInformation, mtConfirmation, mtCustom);
 
 
-{function GradientFill(Handle: HDC;
-                      pVertex: Pointer;  dwNumVertex: DWORD;
-                      pMesh: Pointer;  dwNumMesh: DWORD;
-                      dwMode: DWORD): DWORD; stdcall; External 'msimg32.dll';}
-//procedure GPFillGradient(DC: HDC; ARect: TRect; StartColor, EndColor: Cardinal); overload;
-//procedure GPFillGradient(gr : TGPGraphics; ARect: TRect; StartColor, EndColor: Cardinal); overload;
-
-{function FillGradient(DC: HDC; ARect: TRect; ColorCount: Integer;
-  StartColor, EndColor: TColor): Boolean; overload;
-
-function FillGradient2(DC: HDC; ARect: TRect; ColorCount: Integer;
-  StartColor, EndColor: TColor): Boolean; overload;
-}
-
 
   function  str2html(const s: String): String;
   function  strFromHTML(const s: String): String;

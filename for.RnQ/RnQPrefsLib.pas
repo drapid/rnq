@@ -99,10 +99,11 @@ type
     FPixelsPerInch: Integer;
     FTextHeight: Integer;
     fAccIDX: Integer;
+    lPrefs: TRnQPref;
     procedure applyPage; virtual; abstract;
     procedure resetPage; virtual; abstract;
     procedure updateVisPage; virtual;
-    procedure initPage; virtual;
+    procedure initPage(prefs: TRnQPref); virtual;
     procedure unInitPage; virtual;
    published
     property ParentFont default True;
@@ -137,9 +138,9 @@ type
   end;
   TPrefPagesArr = array of TPrefPage;
 
-//  function getPrefString(const key: String; const DefVal : String):string;
+//  function getPrefString(const key: String; const DefVal: String): string;
 
-//  Procedure PrefAddStr(const k: String; v: String; Mas : THashedStringList);
+//  Procedure PrefAddStr(const k: String; v: String; Mas: THashedStringList);
 
 //  procedure ClearPrefs;
 //  procedure resetPrefs;
@@ -186,8 +187,9 @@ procedure TPrefFrame.updateVisPage;
 begin
 end;
 
-procedure TPrefFrame.initPage;
+procedure TPrefFrame.initPage(prefs: TRnQPref);
 begin
+  lPrefs := prefs;
 end;
 
 procedure TPrefFrame.unInitPage;

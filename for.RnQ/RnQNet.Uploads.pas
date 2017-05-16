@@ -401,7 +401,7 @@ begin
   tar := TtarStream.create;
 
  {$WARN CONSTRUCTING_ABSTRACT OFF}
-  str := TStrings.Create;
+  str := TStringList.Create;
 
   str.StrictDelimiter := True;
   str.Delimiter := ';';

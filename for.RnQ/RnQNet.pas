@@ -62,8 +62,8 @@ const
     end; }
    Procedure CopyProxyArr(var pATo: TarrProxy; const pAFrom: TarrProxy);
    Procedure ClearProxyArr(var pa: TarrProxy);
-//procedure proxy_http_Enable(v_icq : TicqSession);
-//   procedure proxy_http_Enable(sock : TRnQSocket);
+//procedure proxy_http_Enable(v_icq: TicqSession);
+//   procedure proxy_http_Enable(sock: TRnQSocket);
 
 
 type
@@ -72,14 +72,14 @@ type
          addr, port: String;
 //         pwd: AnsiString;
          pwd: String;
-         authType : TRnQHttpAuthType;
+         authType: TRnQHttpAuthType;
 {$IFDEF UseNTLMAuthentication}
         FNTLMMsg2Info         : TNTLM_Msg2_Info;
         FProxyNTLMMsg2Info    : TNTLM_Msg2_Info;
         FAuthNTLMState        : TRnQHttpNTLMState;
         FProxyAuthNTLMState   : TRnQHttpNTLMState;
 {$ENDIF}
-        enabled:boolean;
+        enabled: boolean;
       end;
   TDataReceived   = procedure (Sender: TObject; ErrCode: Word; pkt: RawByteString) of object;
   TProxyLogData   = procedure (Sender: TObject; isReceive: Boolean; Data: RawByteString) of object;

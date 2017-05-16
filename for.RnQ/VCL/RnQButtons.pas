@@ -79,6 +79,7 @@ type
     procedure SetChecked(Value: Boolean); override;
   end;
 
+  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
   TRnQSpeedButton = class(TGraphicControl)
   private
     FGroupIndex: Integer;
@@ -89,7 +90,7 @@ type
     FSpacing: Integer;
     FTransparent: Boolean;
     FMargin: Integer;
-    FFlat       : Boolean;
+    FFlat: Boolean;
     FMouseInControl: Boolean;
     FActive     : Boolean;
     FDefault    : Boolean;
@@ -179,13 +180,13 @@ type
     property Transparent: Boolean read FTransparent write SetTransparent default True;
     property Visible;
  {$IFDEF RNQ}
-    property ImageName : TPicName read fImgElm.picName write SetImageName;
-    property ImageElm : TRnQThemedElementDtls read fImgElm;
+    property ImageName: TPicName read fImgElm.picName write SetImageName;
+    property ImageElm: TRnQThemedElementDtls read fImgElm;
  {$ELSE ~RNQ}
-    property ImageName : TPicName read fImgName write SetImageName;
+    property ImageName: TPicName read fImgName write SetImageName;
  {$ENDIF RNQ}
-    property Default : Boolean read FDefault write FDefault default False;
-    property Cancel : Boolean read FCancel write FCancel default False;
+    property Default: Boolean read FDefault write FDefault default False;
+    property Cancel: Boolean read FCancel write FCancel default False;
     property OnClick;
     property OnDblClick;
   {$IFDEF DELPHI9_UP}
@@ -459,6 +460,7 @@ type
     property OnMouseUp;
   end;
 
+  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
   TRnQButton = class(TButton)
   private
     FCanvas: TCanvas;

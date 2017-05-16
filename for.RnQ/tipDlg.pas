@@ -859,7 +859,7 @@ begin
 
 end;
 
-procedure tipsSetCFG(pp : TRnQPref);
+procedure tipsSetCFG(pp: TRnQPref);
 begin
   if Assigned(pp) then
     begin

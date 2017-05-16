@@ -501,7 +501,7 @@ begin
    end
    else
     AniTimer.Enabled := False;
-  images[ShownImage].Draw(Self.Canvas.Handle,
+  images[ShownImage].StretchDraw(Self.Canvas.Handle,
      DestRect(images[ShownImage].Width, images[ShownImage].Height, Self.Width, Self.Height ));
 {
   if Length(images) > 0 then
@@ -527,7 +527,7 @@ end;
 
 procedure TFormDimImg.PaintPic(Sender: TObject);
 begin
-  images[ShownImage].Draw(Self.Canvas.Handle,
+  images[ShownImage].StretchDraw(Self.Canvas.Handle,
      DestRect(images[ShownImage].Width, images[ShownImage].Height, Self.Width, Self.Height ));
 end;
 

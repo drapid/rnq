@@ -21,7 +21,7 @@ function  boundInt(var i: Integer; min, max: Integer): Integer;
 function  bound(i: Integer; min, max: Integer): Integer;
 function  within(pt: Tpoint; x, y, w, h: Integer): boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 function  within(a, b, c: Integer): boolean; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-function  DestRect(const W, H, cw, ch: Integer): TGPRect; overload;
+function  DestRect(const W, H, cw, ch: Integer; Stretch: Boolean = false): TGPRect; overload;
 function  DestRect(const PicSize, DestSize: TGPSize): TGPRect; overload;
 function  BoundsSize(srcSize, maxSize: TSize): TSize; overload;
 function  BoundsSize(srcCX, srcCY, maxCX, maxCY: Longint): TSize; overload;
@@ -388,9 +388,9 @@ begin
     OffsetRect(Result, (cw - w) div 2, (ch - h) div 2);
 end;}
 
-function DestRect(const W, H, cw, ch: Integer): TGPRect;
+function DestRect(const W, H, cw, ch: Integer; Stretch: Boolean = false): TGPRect;
 const
-  Stretch = false;
+//  Stretch = false;
   Proportional = True;
   Center  = True;
 var
@@ -424,7 +424,10 @@ begin
         begin
           Result.Height := ch;
           Result.Width := Trunc(ch * xyaspect);
-        end;
+          end
+        else
+          if Stretch then
+            Result.Width := cw;
       end
       else
       begin
@@ -434,7 +437,10 @@ begin
         begin
           Result.Width := cw;
           Result.Height := Trunc(cw / xyaspect);
-        end;
+          end
+        else
+          if Stretch then
+            Result.Height := ch;
       end;
     end
 {    else

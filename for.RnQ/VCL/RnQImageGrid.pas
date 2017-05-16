@@ -6,7 +6,7 @@ interface
 
 uses
   Windows, Classes, SysUtils, Messages, Controls, Graphics, Forms, StdCtrls, Types,
-  Grids, RTLConsts, Math, Themes, RnQGraphics32;
+  Grids, RTLConsts, Math, Themes;
 
 const
   DefCellSpacing = 5;
@@ -14,6 +14,7 @@ const
   DefCellHeight = 60;
   DefColWidth = DefCellWidth + DefCellSpacing;
   DefRowHeight = DefCellHeight + DefCellSpacing;
+  DefInCellMargin = 3;
   MinThumbSize = 4;
   MinCellSize = 8;
 
@@ -23,7 +24,7 @@ type
     FFileName: TFileName;
     FObject: TObject;
     FImage: TGraphic;
-    FThumb: TRnQBitmap;
+    FThumb: TGraphic;
   end;
 
   PImageGridItemList = ^TImageGridItemList;
@@ -47,12 +48,12 @@ type
     FSorted: Boolean;
     procedure ExchangeItems(Index1, Index2: NativeInt);
     function GetImage(Index: Integer): TGraphic;
-    function GetThumb(Index: Integer): TRnQBitmap;
+    function GetThumb(Index: Integer): TGraphic;
     procedure Grow;
     procedure InsertItem(Index: Integer; const S: String; AObject: TObject;
-      AImage: TGraphic; AThumb: TRnQBitmap);
+      AImage: TGraphic; AThumb: TGraphic);
     procedure PutImage(Index: Integer; AImage: TGraphic);
-    procedure PutThumb(Index: Integer; AThumb: TRnQBitmap);
+    procedure PutThumb(Index: Integer; AThumb: TGraphic);
     procedure QuickSort(L, R: Integer);
     procedure SetSorted(Value: Boolean);
   protected
@@ -65,16 +66,16 @@ type
     function GetObject(Index: Integer): TObject; override;
     procedure Put(Index: Integer; const S: String); override;
     procedure PutObject(Index: Integer; AObject: TObject); override;
-    procedure PutThumbSilently(Index: Integer; AThumb: TRnQBitmap); virtual;
+    procedure PutThumbSilently(Index: Integer; AThumb: TGraphic); virtual;
     procedure SetCapacity(Value: Integer); override;
     procedure SetUpdateState(Updating: Boolean); override;
   public
     function Add(const S: String): Integer; override;
     function AddImage(const S: String; AImage: TGraphic): Integer; virtual;
     function AddItem(const S: String; AObject: TObject; AImage: TGraphic;
-      AThumb: TRnQBitmap): Integer; virtual;
+      AThumb: TGraphic): Integer; virtual;
     function AddObject(const S: String; AObject: TObject): Integer; override;
-    function AddThumb(const S: String; AThumb: TRnQBitmap): Integer; virtual;
+    function AddThumb(const S: String; AThumb: TGraphic): Integer; virtual;
     procedure AddStrings(Strings: TStrings); override;
     procedure Assign(Source: TPersistent); override;
     procedure Clear; override;
@@ -94,7 +95,7 @@ type
     property OnChanging: TNotifyEvent read FOnChanging write FOnChanging;
     property OwnsObjects: Boolean read FOwnsObjects write FOwnsObjects;
     property Sorted: Boolean read FSorted write SetSorted;
-    property Thumbs[Index: Integer]: TRnQBitmap read GetThumb write PutThumb;
+    property Thumbs[Index: Integer]: TGraphic read GetThumb write PutThumb;
   end;
 
 { TBorderControl
@@ -208,6 +209,7 @@ type
     FCellSpacing: Integer;
     FColCount: Integer;
     FColWidth: Integer;
+    FInCellMargin: Integer;
     FDefaultDrawing: Boolean;
     FDesignPreview: Boolean;
     FFileFormats: TStrings;
@@ -233,7 +235,7 @@ type
     function GetImage(Index: Integer): TGraphic;
     function GetRowCount: Integer;
     function GetSorted: Boolean;
-    function GetThumb(Index: Integer): TRnQBitmap;
+    function GetThumb(Index: Integer): TGraphic;
     function IsFileNamesStored: Boolean;
     procedure ItemsChanged(Sender: TObject);
     procedure Rearrange;
@@ -257,7 +259,7 @@ type
     procedure SetRetainUnresolvedItems(Value: Boolean);
     procedure SetSorted(Value: Boolean);
     procedure SetStretch(Value: Boolean);
-    procedure SetThumb(Index: Integer; Value: TRnQBitmap);
+    procedure SetThumb(Index: Integer; Value: TGraphic);
 //    procedure ThumbsUpdated(Sender: TObject);
     procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
@@ -290,6 +292,8 @@ type
       default DefCellSpacing;
     property CellWidth: Integer read GetCellWidth write SetCellWidth
       default DefCellWidth;
+    property InCellMargin: Integer read FInCellMargin write FInCellMargin
+      default DefInCellMargin;
     property ColCount: Integer read FColCount;
     property ColWidth: Integer read FColWidth write SetColWidth
       default DefColWidth;
@@ -322,7 +326,7 @@ type
     property RowCount: Integer read GetRowCount;
     property Sorted: Boolean read GetSorted write SetSorted default False;
     property Stretch: Boolean read FStretch write SetStretch default False;
-    property Thumbs[Index: Integer]: TRnQBitmap read GetThumb write SetThumb;
+    property Thumbs[Index: Integer]: TGraphic read GetThumb write SetThumb;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -357,6 +361,7 @@ type
     property CellLayout;
     property CellSpacing;
     property CellWidth;
+    property InCellMargin;
     property ClientHeight;
     property ClientWidth;
     property Color;
@@ -445,7 +450,8 @@ begin
   try
     Temp.Duplicates := dupIgnore;
     Temp.Sorted := True;
-    s := getSupPicExts;
+//    s := getSupPicExts;
+    s := '*.png;*.gif;*.jpg;*.jpeg';
 {    S := GraphicFileMask(TGraphic);
     if GetImageDecodersSize(Count, Size) =  Ok then
     begin
@@ -474,7 +480,7 @@ begin
 end;
 
 function TImageGridItems.AddItem(const S: String; AObject: TObject;
-  AImage: TGraphic; AThumb: TRnQBitmap): Integer;
+  AImage: TGraphic; AThumb: TGraphic): Integer;
 begin
   if FSorted then
     Find(S, Result)
@@ -510,7 +516,7 @@ begin
     inherited AddStrings(Strings);
 end;
 
-function TImageGridItems.AddThumb(const S: String; AThumb: TRnQBitmap): Integer;
+function TImageGridItems.AddThumb(const S: String; AThumb: TGraphic): Integer;
 begin
   Result := AddItem(S, nil, nil, AThumb);
 end;
@@ -695,7 +701,7 @@ begin
   Result := FList^[Index].FObject;
 end;
 
-function TImageGridItems.GetThumb(Index: Integer): TRnQBitmap;
+function TImageGridItems.GetThumb(Index: Integer): TGraphic;
 begin
   if (Index < 0) or (Index >= FCount) then
     Error(@SListIndexError, Index);
@@ -730,7 +736,7 @@ begin
 end;
 
 procedure TImageGridItems.InsertItem(Index: Integer; const S: String;
-  AObject: TObject; AImage: TGraphic; AThumb: TRnQBitmap);
+  AObject: TObject; AImage: TGraphic; AThumb: TGraphic);
 begin
   Changing;
   if FCount = FCapacity then
@@ -798,7 +804,7 @@ begin
   end;
 end;
 
-procedure TImageGridItems.PutThumb(Index: Integer; AThumb: TRnQBitmap);
+procedure TImageGridItems.PutThumb(Index: Integer; AThumb: TGraphic);
 begin
   if (Index < 0) or (Index >= FCount) then
     Error(@SListIndexError, Index);
@@ -810,7 +816,7 @@ begin
   end;
 end;
 
-procedure TImageGridItems.PutThumbSilently(Index: Integer; AThumb: TRnQBitmap);
+procedure TImageGridItems.PutThumbSilently(Index: Integer; AThumb: TGraphic);
 begin
   if (Index >= 0) and (Index < FCount) then
     FList^[Index].FThumb := AThumb;
@@ -1478,7 +1484,7 @@ begin
   Result := FItems.Sorted;
 end;
 
-function TCustomImageGrid.GetThumb(Index: Integer): TRnQBitmap;
+function TCustomImageGrid.GetThumb(Index: Integer): TGraphic;
 begin
   Result := FItems.Thumbs[Index];
 end;
@@ -1615,12 +1621,18 @@ var
   Row: Integer;
   Index: Integer;
 //  TempThumb: TRnQBitmap;
-  Thumb: TRnQBitmap;
+  Thumb: TGraphic;
+  pic: TGraphic;
+  Pt: TPoint;
+  r2: TRect;
+  DestR: TGPRect;
+  w, h: Integer;
+  ppi: Integer;
 //  ThumbWidth: Integer;
 //  ThumbHeight: Integer;
 begin
 //  DrawParentBackGround := ParentBackground and (Parent <> nil) and StyleServices.Enabled;
-
+  ppi := GetParentCurrentDpi;
   Canvas.Brush.Color := Color;
   Canvas.Brush.Style := bsSolid;
   if FMarkerStyle = psClear then
@@ -1656,7 +1668,34 @@ begin
       begin
         Thumb := Thumbs[Index];
         if Thumb = nil then
-          Canvas.Rectangle(R)
+          begin
+            pic := Images[Index];
+            if Assigned(pic) then
+              begin
+                if Focused and (not Scrolling) and (FItemIndex = Index) then
+                  begin
+                    if (GetAsyncKeyState(VK_LBUTTON) <> 0) then
+                      Canvas.Brush.Color := $00DEDEDE
+                    else
+                      Canvas.Brush.Color := $00E3E3E3;
+
+                    Canvas.Brush.Style := bsSolid;
+                    Canvas.RoundRect(R.Left + 2, R.Top + 2, R.Right - 2, R.Bottom - 2, 10, 10);
+                    Canvas.Brush.Color := Color;
+                  end;
+                begin
+                  r2.Left := R.Left + InCellMargin;
+                  r2.Top := R.Top + InCellMargin;
+                  r2.Right := R.Right - InCellMargin;
+                  r2.Bottom := R.Bottom - InCellMargin;
+                  SetStretchBltMode(Canvas.Handle, HALFTONE);
+                  Canvas.StretchDraw(r2, pic);
+                end;
+
+              end
+             else
+              Canvas.Rectangle(R)
+          end
         else
         begin
 //          ThumbWidth := Min(Thumb.Width, CellWidth);
@@ -1704,8 +1743,38 @@ begin
           DrawRbmp(Canvas.Handle, TempThumb, R.Left + Offset.X, R.Top + Offset.Y);
           TempThumb.Free;
           *)
-          SetStretchBltMode(Canvas.Handle, HALFTONE);
-          DrawRbmp(Canvas.Handle, Thumb, MakeRect(R));
+          begin
+              w := R.Right - R.Left - InCellMargin-InCellMargin;
+              h := R.Bottom - R.Top - InCellMargin-InCellMargin;
+              r2.Left := R.Left + InCellMargin;
+              r2.Top := R.Top + InCellMargin;
+              if (w <> (Thumb.Width))
+                 or (h <> (Thumb.Height)) then
+               begin
+                if not Stretch then
+                  begin
+                   GetBrushOrgEx(Canvas.Handle, pt);
+                   SetStretchBltMode(Canvas.Handle, HALFTONE);
+                   SetBrushOrgEx(Canvas.Handle, pt.x, pt.y, @pt);
+                   Canvas.Draw(r2.Left, r2.Top, Thumb);
+                  end
+                 else
+                  begin
+                   DestR := DestRect(thumb.Width, thumb.Height, w, h, True);
+                   r2.Left := R.Left + InCellMargin + DestR.X;
+                   r2.Top := R.Top + InCellMargin + DestR.Y;
+                   r2.Right := r2.Left + DestR.Width;
+                   r2.Bottom := r2.Top + DestR.Height;
+                   SetStretchBltMode(Canvas.Handle, HALFTONE);
+                   Canvas.StretchDraw(R2, Thumb);
+                  end;
+               end
+              else
+                Canvas.Draw(r2.Left, r2.Top, Thumb);
+          end;
+//          SetStretchBltMode(Canvas.Handle, HALFTONE);
+//          Canvas.StretchDraw(R, Thumb);
+//          DrawRbmp(Canvas.Handle, Thumb, MakeRect(R));
         end;
       end
       else if csDesigning in ComponentState then
@@ -1963,7 +2032,7 @@ begin
     FStretch := Value;
 end;
 
-procedure TCustomImageGrid.SetThumb(Index: Integer; Value: TRnQBitmap);
+procedure TCustomImageGrid.SetThumb(Index: Integer; Value: TGraphic);
 begin
   FItems.Thumbs[Index] := Value;
 end;

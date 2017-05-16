@@ -18,7 +18,7 @@ uses
 type
   ToLangInfo = Class(TObject)
    public
-//  Tthemeinfo=record
+//  Tthemeinfo = record
      fn, subFile, desc: string;
 //     isUTF: Boolean;
 //     Ver: byte;
