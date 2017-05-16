@@ -45,7 +45,7 @@ type
   private
     { Private declarations }
   public
-    procedure initPage; Override; final;
+    procedure initPage(prefs: TRnQPref); Override; final;
     procedure applyPage; Override; final;
     procedure resetPage; Override; final;
 //    procedure updateVisible;
@@ -199,6 +199,7 @@ var
   ch: Char;
 //  vi: Tvisibility;
 begin
+  Inherited;
   startingStatusBox.Items.Add(' '); // Last used status
   for b in Account.AccProto.getStatusMenu do
    begin

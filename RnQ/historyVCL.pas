@@ -254,6 +254,7 @@ uses
   RQUtil, RnQButtons, RnQGlobal, RnQCrypt, RnQPics,
   RnQConst, globalLib, mainDlg, chatDlg, utilLib,
   ViewPicDimmedDlg,
+  EmojiConst,
   roasterLib,
   {$IFDEF USE_GDIPLUS}
 //  KOLGDIPV2,
@@ -393,14 +394,14 @@ begin
 end;
 
 
-class procedure ThistoryBox.InitMenu(var pm : TPopupMenu; Own: TComponent);
+class procedure ThistoryBox.InitMenu(var pm: TPopupMenu; Own: TComponent);
 begin
 //  createMenuAs(aHistMenu, pm, Own);
 end;
 
 procedure ThistoryBox.paintOn(cnv: Tcanvas; vR: TRect; const PPI: Integer; const JustCalc: Boolean = false);
 var
-//  vCnvHandle : HDC;
+//  vCnvHandle: HDC;
   lineHeight, bodySkipCounter, skippedLines,
   evIdx, Nitems: Integer;
   rightLimit, bottomLimit: Integer;
@@ -422,6 +423,7 @@ var
   Nrows: integer;
   MaxChatImgWidthVal: Integer;// = 100;
   MaxChatImgHeightVal: Integer;// = 100;
+  EmojiAsPic: Boolean;
 
   procedure newLineH(var x, y: Integer);
   begin
@@ -562,6 +564,8 @@ var
     fndSmileI: Integer;
     fndSmile: String;
     fndSmileN: TPicName;
+    fndEmoji: String;
+    fndEmojiN: TPicName;
     foundPicSize: Integer;
     RnQPicStream: TMemoryStream;
     BodyText: String;
@@ -684,7 +688,6 @@ var
         fndSmileI := -1;
     //    foundSmileIdx := -1;
         if theme.SmilesCount > 0 then
-//        if rqSmiles.SmilesCount > 0 then
         for k := 0 to theme.SmilesCount-1 do
          begin
           SmileObj := theme.GetSmileObj(k);
@@ -715,6 +718,40 @@ var
            end;
          end;
       end; // findSmile
+
+      function findEmoji(): boolean;
+      var
+        k, l: integer;
+      begin
+         result := False;
+         if (Length(BodyCurMChar)=1) and (i+1 <= Length(BodyText))
+           and (CharInSet(BodyCurChar, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '*'])
+              and (ord(BodyText[i+1]) = $20E3)) then
+          begin
+             fndEmojiN := TE2Str[RQteEmoji]+ UTF8Encode(BodyCurMChar + BodyText[i+1]);
+             if theme.picExists(RQteDefault, fndEmojiN) then
+               begin
+                 fndEmoji := BodyCurMChar + BodyText[i+1];
+                 Result := True;
+               end
+              else
+               fndEmojiN := '';
+          end;
+         if result then
+           Exit;
+         k := EmojiList.IndexOf(BodyCurMChar);
+         if k >=0 then
+           begin
+             fndEmojiN := TE2Str[RQteEmoji]+ UTF8Encode(BodyCurMChar);
+             if theme.picExists(RQteDefault, fndEmojiN) then
+               begin
+                 fndEmoji := BodyCurMChar;
+                 Result := True;
+               end
+              else
+               fndEmojiN := '';
+           end;
+      end; // findEmoji
 
       function findRnQPic(): boolean;
       var
@@ -875,7 +912,8 @@ var
         theme.applyFont('history.link', cnv.font);
     end; // applyFont
   var
-    whatFound: ( _nothing, _wrap, _return, _smile, _link, _bold, _underline, _RnQPic, _RnQPicEx, _aniSmile );
+    whatFound: ( _nothing, _wrap, _return, _smile, _link, _bold, _underline,
+                 _RnQPic, _RnQPicEx, _aniSmile, _emoji );
     tempColor: TColor;
     chunkStart: Integer;
     len, smileCount: integer;
@@ -1047,6 +1085,11 @@ var
                   if useSmiles and findSmile() then
                   begin
                     whatFound := _smile;
+                    break
+                  end;
+                  if EmojiAsPic and findEmoji() then
+                  begin
+                    whatFound := _emoji;
                     break
                   end;
   //            if findRnQPic() then begin whatFound:=_RnQPic; break end;
@@ -1226,10 +1269,6 @@ var
           fndSmileN := fndSmlT2;
           fndSmileI := fndSmlIT;
           foundAniSmile := fndAniSmlT;
-//        vDBPic := TBitmap.Create;
-//        theme.GetPic(theme.GetSmileName(foundSmileIdx), vDBPic);
-//        vPicName := ;
-//        pic:=theme.GetSmile(foundSmileIdx); //smiles.pics[foundSmileIdx];
             tempSize := theme.GetPicSize(RQteSmile, fndSmileN, 0, PPI);
             newLineHeight(tempSize.cy+2);
 
@@ -1281,11 +1320,10 @@ var
     //                       gpColorFromAlphaColor($FF, tempColor)
                            tempColor, canvas, cnv, tempColor <> color);
 
-    //                    theme.
     //                    theme.drawPic(cnv, x, y+(lineHeight-size.cy) div 2, )
                         SetStretchBltMode(Cnv.Handle, HALFTONE);
                         with theme.GetAniPic(fndSmileI) do
-                          Draw(Cnv.Handle, MakeRect(x, y+(lineHeight-size.cy) div 2, size.cx, size.cy));
+                          StretchDraw(Cnv.Handle, MakeRect(x, y+(lineHeight-size.cy) div 2, size.cx, size.cy));
                        end;
                       end
                        else
@@ -1305,6 +1343,31 @@ var
           dec(smileCount);
           end;
 //         freeAndNil(vDBPic);
+        end;
+      _emoji:
+        begin
+          tempSize := theme.GetPicSize(RQteDefault, fndEmojiN, 0, PPI);
+          k := length(fndEmoji);
+          inc(i, k);
+          newLineHeight(tempSize.cy+2);
+
+         // paint
+            size := tempSize;
+            inc(size.cx);
+            if not JustCalc then
+              begin
+                cnv.brush.color := selectedClr;
+                r := rect(x, y, x+size.cx, y+size.cy + 1);
+                if bodySkipCounter<=0 then
+                  begin
+                    addItem( PK_SMILE, chunkStart, k, r);
+                    if withinTheSelection(chunkStart) then
+                        cnv.fillRect(r);
+                   theme.drawPic(Cnv.Handle, x, y+(lineHeight-size.cy) div 2, fndEmojiN, True, PPI);
+                  end;
+              end; // endif not JustCalc
+          inc(chunkStart, k);
+          inc(x, size.cx);
         end;
       _wrap:
         begin
@@ -1831,6 +1894,7 @@ begin
   firstEvent := True;
   skippedLines := 0;
   pleaseDontDrawUpwardArrows := False;
+  EmojiAsPic := MainPrefs.getPrefBoolDef('hist-emoji-draw', True);
 
   while (y < bottomLimit) and (evIdx < history.Count) do
     begin
@@ -2636,15 +2700,15 @@ end; // mouseMove
 procedure ThistoryBox.go2end(const calcOnly: Boolean = False; const precalc: Boolean = False);
 var
   bmp: Tbitmap;
-//  secs : Cardinal;
-//  s : String;
+//  secs: Cardinal;
+//  s: String;
   oldTopOfs: Integer;
   oldTopVis: Integer;
   safeLastEventIsFullyVisible: Boolean;
 begin
 //  bmp := createBitmap(canvas.ClipRect.Right ClientWidth, ClientHeight);
 //  bmp := createBitmap(canvas.ClipRect.Right, canvas.ClipRect.Bottom);
-  if history.count <= offset then
+  if not Assigned(history) or (history.count <= offset) then
     Exit;
   if (dStyle = dsGlobalBuffer)or(dStyle = dsGlobalBuffer2) then
     begin

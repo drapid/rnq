@@ -33,7 +33,7 @@ type
   private
     procedure fillPluginsGrid;
   public
-    procedure initPage; Override;
+    procedure initPage(prefs: TRnQPref); Override;
     procedure applyPage; Override;
     procedure resetPage; Override;
 //    procedure updateVisible;
@@ -165,6 +165,7 @@ end;
 
 procedure TpluginsFr.initPage;
 begin
+  Inherited;
 //  theme.getPic(PIC_PREFERENCES, prefBtn.glyph);
 //  theme.getPic(PIC_REFRESH, reloadBtn.glyph);
   PluginsList.NodeDataSize := SizeOf(TPlItem);

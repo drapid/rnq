@@ -11,12 +11,13 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   StdCtrls, ExtCtrls, ComCtrls, VirtualTrees, Menus,
-  RnQButtons,RnQSpin, RDGlobal,
+  RnQButtons, RnQSpin, RDGlobal,
  {$IFDEF PREF_IN_DB}
   DBPrefsLib,
  {$ELSE ~PREF_IN_DB}
   RnQPrefsLib,
  {$ENDIF PREF_IN_DB}
+  RnQConst,
   RnQProtocol;
 
 type
@@ -68,9 +69,9 @@ type
     procedure AddIgnBtnClick(Sender: TObject);
     procedure AddIgnSrvBtnClick(Sender: TObject);
   private
-    lastqst : Integer;
-    qst : array of record q : String; a : array of String; end;
-    menu : TPopupMenu;
+    lastqst: Integer;
+    qst: TQuestAnsArr;
+    menu: TPopupMenu;
     { Private declarations }
     procedure LoadQuests;
     procedure SaveQuests;
@@ -84,7 +85,7 @@ type
   public
     procedure applyPage; Override;
     procedure resetPage; Override;
-    procedure initPage; Override;
+    procedure initPage(prefs: TRnQPref); Override;
     procedure updateVisPage; Override;
     { Public declarations }
   end;
@@ -96,8 +97,9 @@ uses
   StrUtils, Math,
   RnQMenu, RDUtils, RnQLangs,
   RQThemes, RnQPics, utilLib,
-  RnQConst, globalLib, selectcontactsDlg,
-  chatDlg;
+  globalLib, selectcontactsDlg,
+  chatDlg
+  ;
 
 type
   PIgnItem = ^TIgnItem;
@@ -125,7 +127,6 @@ var
   PlItem: PIgnItem;
   n: PVirtualNode;
   cnt: tRnQcontact;
-//  pl: Tplugin;
 begin
   IgnoreTree.Clear;
 // if prefPages[thisPrefIdx].frame = NIL then exit;
@@ -143,7 +144,7 @@ begin
 //      else
 //       PlItem.s0 := s;
      PlItem.s1 := cnt.UID;
-     PlItem.isSrv := Account.AccProto.isInList(LT_SPAM, cnt);
+     PlItem.isSrv := cnt.isInList(LT_SPAM);
 //     PlItem.Pl   := pl;
 //     n.CheckType := ctCheckBox;
 {     if 0=pos(pl.filename, disabledPlugins) then
@@ -167,8 +168,8 @@ end;
 procedure TantispamFr.IgnoreTreeDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-  PItem : PIgnItem;
-  x, OldMode : Integer;
+  PItem: PIgnItem;
+  x, OldMode: Integer;
 begin
 //  if PaintInfo.Column in [0..1] then
   begin
@@ -200,16 +201,21 @@ begin
    end;
 end;
 
-// fillPluginsGrid
+// fillIgnoreGrid
 
-function TantispamFr.current:TRnQcontact;
+function TantispamFr.current: TRnQcontact;
+var
+  d: Pointer;
 begin
-  result:=NIL;
-  if IgnoreTree.FocusedNode = NIL then exit;
+  result := NIL;
+  if IgnoreTree.FocusedNode = NIL then
+    exit;
 //  if TIgnItem(PListItem(IgnoreTree.getnodedata(IgnoreTree.FocusedNode))^).kind = LI_group then
 //   result := NIL
 //  else
-   result := Account.AccProto.getContact(TIgnItem(PIgnItem(IgnoreTree.getnodedata(IgnoreTree.FocusedNode))^).s1);
+   d := IgnoreTree.getnodedata(IgnoreTree.FocusedNode);
+   if d <> NIL then
+     result := Account.AccProto.getContact(TIgnItem(PIgnItem(d)^).s1);
 end;
 
 procedure TantispamFr.MenuPopup(Sender: TObject);
@@ -229,7 +235,7 @@ begin
 end;
 procedure TantispamFr.Viewinfo1Click(Sender: TObject);
 var
-  cnt : TRnQContact;
+  cnt: TRnQContact;
 begin
   cnt := current;
   if Assigned(cnt) then
@@ -244,11 +250,12 @@ end;
 
 procedure TantispamFr.initPage;
 begin
-  badwordsBox.Width:= gb.Width - GAP_SIZE2;
-  badwordsBox.left:= GAP_SIZE;;
+  Inherited;
+  badwordsBox.Width := gb.Width - GAP_SIZE2;
+  badwordsBox.left := GAP_SIZE;;
 
-  uingSpin.left:= GAP_SIZE + 150;
-  uingSpin.Width:= gb.Width - GAP_SIZE2 - 150;
+  uingSpin.left := GAP_SIZE + 150;
+  uingSpin.Width := gb.Width - GAP_SIZE2 - 150;
   IgnoreTree.NodeDataSize := SizeOf(TIgnItem);
   menu := TPopupMenu.Create(self);
   AddToMenu(menu.Items, 'View info', PIC_INFO, True, Viewinfo1Click);
@@ -270,8 +277,8 @@ end;
 
 procedure TantispamFr.AddIgnSrvBtnClick(Sender: TObject);
 var
-  n : PVirtualNode;
-  cnt : TRnQcontact;
+  n: PVirtualNode;
+  cnt: TRnQcontact;
 begin
   n := IgnoreTree.FocusedNode;
   if (n = NIL)
@@ -335,22 +342,24 @@ end;
 
 procedure TantispamFr.applyPage;
 begin
-  enableIgnorelist:=UseIgnChk.checked;
-  spamfilter.warn:=warnChk.checked;
+  enableIgnorelist := UseIgnChk.checked;
+  spamfilter.warn := warnChk.checked;
   spamfilter.addToHist := AddSpamToHistChk.Checked;
-  spamfilter.ignoreNIL:=ignorenilChk.checked;
-  spamfilter.ignorepagers:=ignorepagersChk.checked;
+  spamfilter.ignoreNIL := ignorenilChk.checked;
+  spamfilter.ignorepagers := ignorepagersChk.checked;
 //  spamfilter.
-  spamfilter.ignoreauthNIL:=IgnoreAuthNILChk.checked;
-  spamfilter.multisend:=multisendChk.checked;
-  spamfilter.notnil:=notnilChk.checked;
-  spamfilter.notEmpty:=notemptyChk.checked;
-  spamfilter.noBadwords:=badwordsChk.checked;
-  spamfilter.badwords:=AnsiReplaceStr(badwordsBox.text,CRLF,';');
+  spamfilter.ignoreauthNIL := IgnoreAuthNILChk.checked;
+  spamfilter.multisend := multisendChk.checked;
+  spamfilter.notnil := notnilChk.checked;
+  spamfilter.notEmpty := notemptyChk.checked;
+  spamfilter.noBadwords := badwordsChk.checked;
+  spamfilter.badwords := AnsiReplaceStr(badwordsBox.text, CRLF, ';');
   if TrCntBox.ItemIndex in [0..4] then
    spamfilter.BotTryesCount := TrCntBox.ItemIndex + 2;
-  if uingtChk.checked then spamfilter.uingt:=round(uingSpin.value)
-  else spamfilter.uingt:=0;
+  if uingtChk.checked then
+    spamfilter.uingt := round(uingSpin.value)
+   else
+    spamfilter.uingt := 0;
 // Bot
   spamfilter.useBot := UseBotChk.Checked;
   spamfilter.useBotInInvis := BotInInvisChk.Checked;
@@ -360,20 +369,22 @@ end;
 
 procedure TantispamFr.resetPage;
 begin
-  UseIgnChk.checked:=enableIgnorelist;
-  ignorenilChk.checked:=spamfilter.ignoreNIL;
-  ignorepagersChk.checked:=spamfilter.ignorePagers;
-  warnChk.checked:=spamfilter.warn;
+  UseIgnChk.checked := enableIgnorelist;
+  ignorenilChk.checked := spamfilter.ignoreNIL;
+  ignorepagersChk.checked := spamfilter.ignorePagers;
+  warnChk.checked := spamfilter.warn;
   AddSpamToHistChk.Checked := spamfilter.addToHist;
-  IgnoreAuthNILChk.checked:=spamfilter.ignoreauthNIL;
-  notnilChk.checked:=spamfilter.notNil;
-  notemptyChk.checked:=spamfilter.notEmpty;
-  multisendChk.checked:=spamfilter.multisend;
-  badwordsChk.checked:=spamfilter.noBadwords;
-  badwordsBox.lines.text:=AnsiReplaceStr(spamfilter.badwords,';',CRLF);
-  uingtChk.checked:=spamfilter.uingt > 0;
-  if spamfilter.uingt=0 then uingSpin.value:=150000000
-  else uingSpin.value:=spamfilter.uingt;
+  IgnoreAuthNILChk.checked := spamfilter.ignoreauthNIL;
+  notnilChk.checked := spamfilter.notNil;
+  notemptyChk.checked := spamfilter.notEmpty;
+  multisendChk.checked := spamfilter.multisend;
+  badwordsChk.checked := spamfilter.noBadwords;
+  badwordsBox.lines.text := AnsiReplaceStr(spamfilter.badwords,';',CRLF);
+  uingtChk.checked := spamfilter.uingt > 0;
+  if spamfilter.uingt=0 then
+    uingSpin.value := 150000000
+   else
+    uingSpin.value := spamfilter.uingt;
 
 // Bot
   UseBotChk.Checked := spamfilter.useBot;
@@ -395,8 +406,8 @@ end;
 
 procedure TantispamFr.RmvIgnBtnClick(Sender: TObject);
 var
-  n : PVirtualNode;
-  cnt : TRnQcontact;
+  n: PVirtualNode;
+  cnt: TRnQcontact;
 begin
   n := IgnoreTree.FocusedNode;
   if n = NIL then
@@ -414,7 +425,8 @@ begin
 //    PPlItem(IgnoreTree.GetNodeData(n)).Pl.cast_preferences;
 end;
 
-procedure Answers0(var ans : array of string);
+procedure Answers0(var ans: array of string);
+// Init ans array
   var
     I: Integer;
   begin
@@ -425,43 +437,47 @@ procedure Answers0(var ans : array of string);
 
 procedure TantispamFr.LoadQuests;
 var
-//  cfg, l, h : string;
-  i,j : Integer;
-//  function yesno:boolean;
-//  begin result:=comparetext(l,'yes')=0 end;
+//  cfg, l, h: string;
+  i: Integer;
 begin
   SetLength(qst, Length(spamfilter.quests));
   QuestBox.Items.Clear;
-  for I := 0 to Length(spamfilter.quests) - 1 do
+  qst := Copy(spamfilter.quests);
+  for i := 0 to Length(spamfilter.quests) - 1 do
     begin
+//     qst[i] := spamfilter.quests[i];
+{
      qst[i].q := spamfilter.quests[i].q;
      Answers0(qst[i].a);
      SetLength(qst[i].a, length(spamfilter.quests[i].ans));
      for j := 0 to Length(spamfilter.quests[i].ans) - 1 do
        qst[i].a[j] := spamfilter.quests[i].ans[j];
+}
      QuestBox.Items.Add(getTranslation('Question') + IntToStr(i+1));
     end;
 end;
 
 procedure TantispamFr.SaveQuests;
 var
-//  cfg : string;
-  I, J: Integer;
+//  cfg: string;
+  I: Integer;
 begin
   if QuestBox.ItemIndex >=0 then
      with qst[QuestBox.ItemIndex] do
        begin
          q := QuestMemo.Text;
-         Answers0(a);
-         SetLength(a, 0);
+         Answers0(ans);
+         SetLength(ans, 0);
          for I := 0 to AnsMemo.Lines.Count - 1 do
           if Trim(AnsMemo.Lines.Strings[i]) > '' then
            begin
-            SetLength(a, length(a)+1);
-            a[Length(a)-1] := Trim(AnsMemo.Lines.Strings[i]);
+            SetLength(ans, length(ans)+1);
+            ans[Length(ans)-1] := Trim(AnsMemo.Lines.Strings[i]);
            end;
        end;
   SetLength(spamfilter.quests, Length(qst));
+  spamfilter.quests := Copy(qst);
+{
 //  QuestBox.Items.Clear;
   for I := 0 to Length(qst) - 1 do
     begin
@@ -469,13 +485,13 @@ begin
 //     spamfilter.quests[i].a := qst[i].a;
      Answers0(spamfilter.quests[i].ans);
      SetLength(spamfilter.quests[i].ans, 0);
-     for J := 0 to Length(qst[i].a) - 1 do
+     for J := 0 to Length(qst[i].ans) - 1 do
        begin
         SetLength(spamfilter.quests[i].ans, length(spamfilter.quests[i].ans)+1);
-        spamfilter.quests[i].ans[Length(spamfilter.quests[i].ans)-1] := qst[i].a[J];
+        spamfilter.quests[i].ans[Length(spamfilter.quests[i].ans)-1] := qst[i].ans[J];
        end;
 //      QuestBox.Items.Add('Question' + IntToStr(i+1));
-    end;
+    end;}
   saveListsDelayed := True;
 //  SaveSpamQuests;
 end;
@@ -483,7 +499,7 @@ end;
 
 procedure TantispamFr.QuestAddBtnClick(Sender: TObject);
 var
-  i  : Integer;
+  i: Integer;
 begin
   i := Length(qst);
   SetLength(qst, i+1);
@@ -491,8 +507,8 @@ begin
   with qst[i] do
    begin
     q := '';
-    Answers0(a);
-    SetLength(a, 0);
+    Answers0(ans);
+    SetLength(ans, 0);
    end;
   QuestBox.ItemIndex := i;
   QuestBoxChange(QuestBox);
@@ -500,7 +516,7 @@ end;
 
 procedure TantispamFr.QuestBoxChange(Sender: TObject);
 var
-  I : Integer;
+  I: Integer;
 begin
   if lastqst <> QuestBox.ItemIndex then
    begin
@@ -509,13 +525,13 @@ begin
        begin
          q := QuestMemo.Text;
 //         a := AnsEdit.Text;
-         Answers0(a);
-         SetLength(a, 0);
+         Answers0(ans);
+         SetLength(ans, 0);
          for I := 0 to AnsMemo.Lines.Count - 1 do
           if Trim(AnsMemo.Lines.Strings[i]) > '' then
            begin
-            SetLength(a, length(a)+1);
-            a[Length(a)-1] := Trim(AnsMemo.Lines.Strings[i]);
+            SetLength(ans, length(ans)+1);
+            ans[Length(ans)-1] := Trim(AnsMemo.Lines.Strings[i]);
            end;
        end;
      if QuestBox.ItemIndex = -1 then
@@ -531,58 +547,37 @@ begin
         lastqst := QuestBox.ItemIndex;
         QuestMemo.Text := qst[lastqst].q;
         AnsMemo.Text   := '';
-        for I := 0 to Length(qst[lastqst].a) - 1 do
-          AnsMemo.Lines.Add(qst[lastqst].a[i]);
+        for I := 0 to Length(qst[lastqst].ans) - 1 do
+          AnsMemo.Lines.Add(qst[lastqst].ans[i]);
         QuestMemo.Enabled := True;
         AnsMemo.Enabled := True;
       end;
    end;
-//  resetProxy;
 end;
 
 procedure TantispamFr.QuestDelBtnClick(Sender: TObject);
 var
-  i, j, k  : Integer;
-  pr : array of record q : String; a : array of String; end;
+  i, j: Integer;
 begin
   i := QuestBox.ItemIndex;
-  if (QuestBox.Items.Count <= 0) or (i = -1) then Exit;
+  if (QuestBox.Items.Count <= 0) or (i = -1) then
+    Exit;
 
-  if Length(qst) = i+1 then
-    begin
-      SetLength(qst, length(qst)-1);
+  if Length(qst) <> i+1 then
+    for j := i + 1 to Length(qst) - 1 do
+      qst[j - 1] := qst[j];
+  SetLength(qst, Length(qst) - 1);
+
       QuestBox.Items.Delete(i);
-      QuestBox.ItemIndex := i-1;
-      QuestBoxChange(QuestBox);
-      QuestBox.Repaint;
-    end
+  if Length(qst) = i then
+    QuestBox.ItemIndex := i-1
    else
     begin
-      SetLength(pr, length(qst) - i-1);
-      for j := i+1 to length(qst)-1 do
-       begin
-        pr[j-i-1].q := qst[j].q;
-//        pr[j-i-1].a := qst[j].a;
-         Answers0(pr[j-i-1].a);
-         SetLength(pr[j-i-1].a, length(qst[j].a));
-         for k := 0 to Length(qst[j].a) - 1 do
-           pr[j-i-1].a[k] := qst[j].a[k];
-       end;
-      SetLength(qst, length(qst)-1);
-      for j := i to length(qst)-1 do
-       begin
-        qst[j].q := pr[j-i].q;
-//        qst[j].a := pr[j-i].a;
-         Answers0(qst[j].a);
-         SetLength(qst[j].a, length(pr[j-i].a));
-         for k := 0 to Length(pr[j-i].a) - 1 do
-           qst[j].a[k] := pr[j-i].a[k];
-       end;
       lastqst := -1;
-      QuestBox.Items.Delete(i);
       QuestBox.ItemIndex := i;
-      QuestBoxChange(QuestBox);
     end;
+  QuestBoxChange(QuestBox);
+  QuestBox.Repaint;
 end;
 
 end.

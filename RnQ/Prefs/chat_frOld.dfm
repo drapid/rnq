@@ -32,14 +32,14 @@ object chatFr: TchatFr
         389)
       object sendonenterLbl: TLabel
         Left = 36
-        Top = 132
+        Top = 99
         Width = 39
         Height = 13
         Caption = 'Send ...'
       end
       object sendonenterSpin: TRnQSpinButton
         Left = 6
-        Top = 128
+        Top = 95
         Width = 20
         Height = 20
         HelpKeyword = 'send-on-enter'
@@ -47,139 +47,166 @@ object chatFr: TchatFr
         OnDownClick = sendonenterSpinBottomClick
         OnUpClick = sendonenterSpinTopClick
       end
-      object autocopyChk: TCheckBox
-        Left = 6
-        Top = 6
-        Width = 452
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Auto-copy in clipboard'
-        TabOrder = 1
-      end
-      object autodeselectChk: TCheckBox
-        Left = 6
-        Top = 51
-        Width = 452
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Auto-deselect'
-        TabOrder = 2
-      end
       object singleChk: TCheckBox
         Left = 6
-        Top = 76
+        Top = 28
         Width = 452
         Height = 17
         HelpKeyword = 'single-message-by-default'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Single-message by default'
-        TabOrder = 3
+        TabOrder = 1
       end
       object statusontabChk: TCheckBox
         Left = 6
-        Top = 101
+        Top = 50
         Width = 452
         Height = 17
         HelpKeyword = 'show-status-on-tabs'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Show contact status on tabs'
-        TabOrder = 4
+        TabOrder = 2
       end
       object cursorbelowChk: TCheckBox
         Left = 6
-        Top = 155
+        Top = 122
         Width = 452
         Height = 17
         HelpKeyword = 'quoting-cursor-below'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Place cursor below quoted text'
-        TabOrder = 5
+        TabOrder = 3
       end
       object quoteselectedChk: TCheckBox
         Left = 6
-        Top = 178
+        Top = 145
         Width = 452
         Height = 17
         HelpKeyword = 'quote-selected'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Quote selected text (if any)'
-        TabOrder = 6
-      end
-      object stylecodesChk: TCheckBox
-        Left = 6
-        Top = 201
-        Width = 452
-        Height = 17
-        HelpKeyword = 'font-style-codes'
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Font style codes'
-        TabOrder = 7
+        TabOrder = 4
       end
       object chatOnTopChk: TCheckBox
         Left = 6
-        Top = 224
+        Top = 170
         Width = 452
         Height = 17
         HelpKeyword = 'chat-always-on-top'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Chat window is always on top'
-        TabOrder = 8
+        TabOrder = 5
       end
       object ChkDefCP: TCheckBox
         Left = 6
-        Top = 28
+        Top = 5
         Width = 452
         Height = 17
         HelpKeyword = 'system-cp-flag'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use system default codepage for clipboard'
-        TabOrder = 9
+        TabOrder = 6
       end
       object PlugPanelChk: TCheckBox
         Left = 6
-        Top = 247
+        Top = 193
         Width = 452
         Height = 17
         HelpKeyword = 'use-plugin-panel'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use plugin-panel in center'
-        TabOrder = 10
+        TabOrder = 7
       end
       object HintsShowChk: TCheckBox
         Left = 6
-        Top = 270
+        Top = 72
         Width = 350
         Height = 17
         HelpKeyword = 'chat-hints-show'
         Caption = 'Show hints on chat tabs'
-        TabOrder = 11
+        TabOrder = 8
       end
       object msgWrapBox: TCheckBox
         Left = 6
-        Top = 293
+        Top = 217
         Width = 350
         Height = 17
         HelpKeyword = 'hist-msg-view-wrap'
         Caption = 'Wrap text in separate preview window'
-        TabOrder = 12
+        TabOrder = 9
       end
       object ClsSndChk: TCheckBox
         Left = 6
-        Top = 316
+        Top = 240
         Width = 371
         Height = 17
         HelpKeyword = 'chat-close-on-send'
         Caption = 'Close on send empty string'
-        TabOrder = 13
+        TabOrder = 10
       end
       object ClsPgOnSnglChk: TCheckBox
         Left = 6
-        Top = 337
-        Width = 323
+        Top = 261
+        Width = 371
         Height = 17
         HelpKeyword = 'chat-close-page-on-single'
         Caption = 'Close page instead of window on single'
-        TabOrder = 14
+        TabOrder = 11
+      end
+    end
+    object TSHistory: TTabSheet
+      Caption = 'History'
+      ImageIndex = 4
+      DesignSize = (
+        408
+        389)
+      object stylecodesChk: TCheckBox
+        Left = 6
+        Top = 3
+        Width = 285
+        Height = 17
+        HelpKeyword = 'font-style-codes'
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 'Font style codes'
+        TabOrder = 0
+      end
+      object autodeselectChk: TCheckBox
+        Left = 6
+        Top = 47
+        Width = 332
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 'Auto-deselect'
+        TabOrder = 1
+      end
+      object autocopyChk: TCheckBox
+        Left = 6
+        Top = 24
+        Width = 332
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 'Auto-copy in clipboard'
+        TabOrder = 2
+      end
+      object DrawEmojiChk: TCheckBox
+        Left = 6
+        Top = 91
+        Width = 385
+        Height = 17
+        HelpType = htKeyword
+        HelpKeyword = 'hist-emoji-draw'
+        Caption = 'Draw Emoji'
+        TabOrder = 3
+      end
+      object SmilesChk: TCheckBox
+        Left = 6
+        Top = 69
+        Width = 97
+        Height = 17
+        HelpType = htKeyword
+        HelpKeyword = 'use-smiles'
+        Caption = 'Draw Smiles'
+        TabOrder = 4
       end
     end
     object SmileSheet: TTabSheet

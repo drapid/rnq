@@ -573,7 +573,7 @@ begin
      PrefList.EndUpdate;
 //     pg := nil;
      Application.ProcessMessages;
-     arrPages[i].frame.initPage;
+     arrPages[i].frame.initPage(MainPrefs);
      Application.ProcessMessages;
      applyCommonsettings(arrPages[i].frame);
      translateComponent(arrPages[i].frame, Self);

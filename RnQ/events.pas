@@ -115,7 +115,7 @@ Type
     txt        : String;
  {$ELSE ~DB_ENABLED}
     f_info: RawByteString;
-    fpos: integer;
+    fpos: Integer;
     fLen: Integer;
  {$ENDIF ~DB_ENABLED}
 

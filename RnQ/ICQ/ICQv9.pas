@@ -4627,7 +4627,7 @@ begin
 
   msg := '<HTML><BODY dir="ltr"><FONT face="Arial" color="#000000" size="2">' + msg + '</FONT></BODY></HTML>';
   msg := StrToUnicode(msg);
-
+{
   OutputDebugString(PChar(hexdumps(msg)));
 
   req := qword_LEasStr(SNACref) + word_BEasStr(MTYPE_PLAIN)
@@ -4648,6 +4648,7 @@ begin
 
   sendSNAC(ICQ_MSG_FAMILY, CLI_META_MSG, req);
   addRef(REF_sms, '');
+}
 end; // sendSMS2
 
 procedure TicqSession.sendsaveMyInfoNew(c: TICQcontact);

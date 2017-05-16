@@ -93,7 +93,7 @@ type
     { Public declarations }
     procedure CloseAction(Sender: Tobject);
 
-    procedure initPage; Override; final;
+    procedure initPage(prefs: TRnQPref); Override; final;
     procedure unInitPage; Override; final;
     procedure applyPage; Override; final;
     procedure resetPage; Override; final;
@@ -132,6 +132,7 @@ procedure TicqFr.initPage;
 var
   I: Integer;
 begin
+  Inherited;
   pwdBox.onKeyDown := RnQmain.pwdboxKeyDown;
 //  pwdBox.Width := ServerCBox.Width;
   pwdBox.Width := TS1.Clientwidth - GAP_SIZE2 - pwdBox.Left;

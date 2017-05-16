@@ -76,6 +76,7 @@ object prefFrm: TprefFrm
     OnChange = PrefListChange
     OnDrawNode = PrefListDrawNode
     OnFreeNode = PrefListFreeNode
+    OnGetNodeWidth = PrefListGetNodeWidth
     Columns = <>
   end
   object resetBtn: TRnQButton

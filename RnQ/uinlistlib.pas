@@ -131,19 +131,11 @@ begin
        begin
          n :=  integer((@s[9])^);
 //         PuinList(last)^.cl.add(contactsDB.get(IntToStr(n)));
-   {$IFDEF UID_IS_UNICODE}
-         PuinList(last)^.cl.add(pr.contactsDB.add(pr, IntToStr(n)));
-   {$else ansi}
-         PuinList(last)^.cl.add(pr.contactsDB.add(pr, IntToStrA(n)));
-   {$ENDIF UID_IS_UNICODE}
+         PuinList(last)^.cl.add(pr.contactsDB.add(pr, Int2UID(n)));
        end;
     FK_UID:
        begin
-   {$IFDEF UID_IS_UNICODE}
-         U := UnUTF(copy(s,9,l));
-   {$else ansi}
-         U := copy(s,9,l);
-   {$ENDIF UID_IS_UNICODE}
+         U := Raw2UID(copy(s,9,l));
          PuinList(last)^.cl.add(pr.contactsDB.add(pr, u));
        end;
    end;

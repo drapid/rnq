@@ -80,7 +80,7 @@ object chatFrm: TchatFrm
     object toolbar: TToolBar
       Left = 190
       Top = 8
-      Width = 234
+      Width = 257
       Height = 19
       Align = alNone
       AutoSize = True
@@ -142,8 +142,19 @@ object chatFrm: TchatFrm
         ImageName = 'smiles'
         OnClick = smilesBtnClick
       end
-      object stickersBtn: TRnQSpeedButton
+      object emojiBtn: TRnQSpeedButton
         Left = 54
+        Top = 0
+        Width = 23
+        Height = 19
+        Hint = 'Show emoji'#39's panel'
+        Flat = True
+        Transparent = False
+        ImageName = 'emoji'
+        OnClick = emojiBtnClick
+      end
+      object stickersBtn: TRnQSpeedButton
+        Left = 77
         Top = 0
         Width = 18
         Height = 19
@@ -159,7 +170,7 @@ object chatFrm: TchatFrm
         OnClick = stickersBtnClick
       end
       object prefBtn: TRnQSpeedButton
-        Left = 72
+        Left = 95
         Top = 0
         Width = 18
         Height = 19
@@ -175,7 +186,7 @@ object chatFrm: TchatFrm
         OnMouseDown = prefBtnMouseDown
       end
       object autoscrollBtn: TRnQSpeedButton
-        Left = 90
+        Left = 113
         Top = 0
         Width = 18
         Height = 19
@@ -191,7 +202,7 @@ object chatFrm: TchatFrm
         OnClick = autoscrollBtnClick
       end
       object infoBtn: TRnQSpeedButton
-        Left = 108
+        Left = 131
         Top = 0
         Width = 18
         Height = 19
@@ -206,7 +217,7 @@ object chatFrm: TchatFrm
         OnClick = infoBtnClick
       end
       object quoteBtn: TRnQSpeedButton
-        Left = 126
+        Left = 149
         Top = 0
         Width = 18
         Height = 19
@@ -221,7 +232,7 @@ object chatFrm: TchatFrm
         OnMouseDown = quoteBtnMouseDown
       end
       object singleBtn: TRnQSpeedButton
-        Left = 144
+        Left = 167
         Top = 0
         Width = 18
         Height = 19
@@ -239,7 +250,7 @@ object chatFrm: TchatFrm
         OnClick = singleBtnClick
       end
       object btnContacts: TRnQSpeedButton
-        Left = 162
+        Left = 185
         Top = 0
         Width = 18
         Height = 19
@@ -253,7 +264,7 @@ object chatFrm: TchatFrm
         OnClick = btnContactsClick
       end
       object RnQPicBtn: TRnQSpeedButton
-        Left = 180
+        Left = 203
         Top = 0
         Width = 18
         Height = 19
@@ -267,7 +278,7 @@ object chatFrm: TchatFrm
         OnClick = RnQPicBtnClick
       end
       object RnQFileBtn: TRnQSpeedButton
-        Left = 198
+        Left = 221
         Top = 0
         Width = 18
         Height = 19
@@ -282,7 +293,7 @@ object chatFrm: TchatFrm
         OnMouseDown = RnQFileBtnMouseDown
       end
       object BuzzBtn: TRnQSpeedButton
-        Left = 216
+        Left = 239
         Top = 0
         Width = 18
         Height = 19

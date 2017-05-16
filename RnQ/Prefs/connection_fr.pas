@@ -56,10 +56,10 @@ type
     { Private declarations }
     procedure ApplyProxy;
     procedure resetProxy;
-    procedure PrefToProxy(var prxy : TProxy);
-    procedure ProxyToPref(prxy : TProxy);
+    procedure PrefToProxy(var prxy: TProxy);
+    procedure ProxyToPref(prxy: TProxy);
   public
-    procedure initPage; Override;
+    procedure initPage(prefs: TRnQPref); Override;
     procedure applyPage; Override;
     procedure resetPage; Override;
     procedure updateVisPage; Override;
@@ -196,6 +196,7 @@ procedure TconnectionFr.initPage;
 var
   pp: Tproxyproto;
 begin
+  Inherited;
   if Assigned(Account.AccProto) then
     begin
      ServerCBox.Items.Text := Account.AccProto.ProtoElem._getProtoServers

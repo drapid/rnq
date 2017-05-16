@@ -71,6 +71,7 @@ begin
  {$IFDEF PROTOCOL_ICQ}
   LoadClientsDefs;
  {$ENDIF PROTOCOL_ICQ}
+  theme.initEmojiPics;
 
 if (chatFrm<>NIL) then
   begin

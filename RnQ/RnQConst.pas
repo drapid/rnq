@@ -8,7 +8,8 @@ unit RnQConst;
 
 interface
 uses
-  Winapi.Messages, RDGlobal, RnQGlobal, events, roasterLib, sysutils;
+  Winapi.Messages, sysutils,
+  RDGlobal, RnQGlobal;
 
 const
 //  PREVIEWversion = True;
@@ -64,23 +65,7 @@ type
 //    doFlashChat: Boolean;
 //    flash
     end;
-  Tbehaviours = array [1..EK_last] of Tbehaviour;
 
-  pTCE = ^TCE;
-  TCE = packed record
-//    history0: Tobject;  // a probably wanted history, won't be saved to disk
-    notes: string;
-    lastAutoMsg: string;
-    lastEventTime: Tdatetime;
-    lastMsgTime: TdateTime;
-    lastOncoming: Tdatetime;
-    lastPriority: integer;
-    node: Tnode;
-    keylay: integer;
-    askedAuth: boolean;
-    dontdelete: boolean;
-    toquery: boolean;
-   end;
 
 
 const
@@ -93,6 +78,7 @@ const
 //  UID_CHARS       = ['a'..'z','A'..'Z','0','1'..'9','-','_','.', '@'];
   UID_CHARS       = ['a'..'z','A'..'Z','0','1'..'9','_','.','@'];
   BreakChars      = [' ', ';', ',', #10, #13];
+  BreakCharsS     = [';', ',', #10, #13];
   FTPURLCHARS     = [#33,#35..#38,#40..#59, #61, #63..#90, #92, #94..#255];
   WEBURLCHARS     = FTPURLCHARS;
   EDURLCHARS      = WEBURLCHARS;
@@ -419,6 +405,12 @@ const
 
 const
    ChkInvisDiv = 64;
+type
+  TQuestAns = record
+              q: String;
+              ans: array of String;
+           end;
+  TQuestAnsArr = array of TQuestAns;
 
 
 implementation

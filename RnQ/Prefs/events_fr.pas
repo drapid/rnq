@@ -100,7 +100,7 @@ type
     vOnStatusDisable : array of TOnStatusDisable;
     function currentStatus: byte;
   public
-    procedure initPage; Override;
+    procedure initPage(prefs: TRnQPref); Override;
     procedure unInitPage; Override;
     procedure applyPage; Override;
     procedure resetPage; Override;
@@ -452,6 +452,7 @@ var
 //  st: TStatusProp;
 //  sp: PStatusProp;
 begin
+  Inherited;
   TrigList.NodeDataSize := SizeOf(TAcItem);
   for i:=1 to EK_last do
 //    eventBox.Items.AddObject('',Tobject(i));
@@ -523,7 +524,7 @@ var
   st: byte;
 begin
 
-  behaviour:=tempBeh;
+  behaviour := tempBeh;
 
   focusOnChatPopup:=focuschatpopupChk.checked;
   minOnOff:=minOnOffChk.checked;

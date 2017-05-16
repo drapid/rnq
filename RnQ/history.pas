@@ -38,7 +38,7 @@ type
     function  getByID(pID: int64): Thevent;
     function  getByTime(time: TDateTime): Thevent;
     function  getIdxBeforeTime(time: TDateTime; inclusive: Boolean = True): Integer;
-    class function UIDHistoryFN(UID: TUID): String;
+    class function UIDHistoryFN(const UID: TUID): String;
     procedure reset;
 //    function Clear;
     procedure deleteFromTo(const uid: TUID; st, en: integer);
@@ -83,7 +83,7 @@ const
   Max_Event_ID = 1000000;
 
  {$IFNDEF DB_ENABLED}
-class function Thistory.UIDHistoryFN(UID: TUID): String;
+class function Thistory.UIDHistoryFN(const UID: TUID): String;
 begin
   Result := Account.ProtoPath + historyPath + String(UID);
 end;
@@ -141,10 +141,11 @@ var
 //  Stmt: TSQLiteStmt;
   stmt: sqlite3_stmt_ptr;
   ev: Thevent;
-  whom, from: AnsiString;
+  whom, from: String;
 //  sql : String;
   sql: AnsiString;
   ss: AnsiString;
+  uu: TUID;
   Tail: PAnsiChar;
   resU8: PUTF8Char;
 //  cnt: TRnQContact;
@@ -171,7 +172,7 @@ begin
 //   i := sqlite3_prepare_v2(MineDB, PAnsiChar(sql), Length(sql), @Stmt, @Tail);
    i := sqlite3_prepare_v2(histDB, Putf8Char(sql), Length(sql), Stmt, Putf8Char(Tail));
 //    Stmt := MineDB.Prepare16(sql);
-   if Stmt <> NIL then
+   if (i = SQLITE_OK) and (Stmt <> NIL) then
 //   if Stmt <> 0 then
     try
      if not isMyHist then
@@ -205,21 +206,21 @@ begin
             ev.fIsMyEvent := i = 1;
 //            from := Stmt.Column_Str(4);
 //            whom := Stmt.Column_Str(5);
-            from := Sqlite3_Column_Text(Stmt, 3);
-            whom := Sqlite3_Column_Text(Stmt, 4);
+            from := UTF8ToString(Sqlite3_Column_Text(Stmt, 3));
+            whom := UTF8ToString(Sqlite3_Column_Text(Stmt, 4));
 
 {            if i = 1 then
               ss := whom
              else
               ss := from;}
-            ss := from;
-            if cnt.equals(ss) then
+            uu := from;
+            if cnt.equals(uu) then
                ev.who := cnt
             else
-            if cnt.fProto.getMyInfo.equals(ss) then
+            if cnt.fProto.getMyInfo.equals(uu) then
                ev.who := cnt.fProto.getMyInfo
              else
-               ev.who := cnt.fProto.getContact(ss);
+               ev.who := cnt.fProto.getContact(uu);
 
 //            ev.info := Stmt.Column_Text(8);
 //            ev.binfo := Sqlite3_ColumnText(Stmt, 7);
@@ -398,11 +399,7 @@ var
         EI_UID:
           begin
   //          s := str.re
-      {$IFDEF UID_IS_UNICODE}
-            uid := UnUTF(getString);
-      {$ELSE ansi}
-            uid := getString;
-      {$ENDIF UID_IS_UNICODE}
+            uid := Raw2UID(getString);
             if Length(uid) > 0 then
             if Assigned(thisCnt) and thisCnt.equals(uid) then
               ev.who       := thisCnt
@@ -1033,7 +1030,7 @@ begin
 //  i := SQLite3_Prepare16_v2(MineDB, PWideChar(SQLInsertHistory),  +1) * 2, Stmt, Tail);
 //  i := SQLite3_Prepare_v2(MineDB, PAnsiChar(sql),  Length(sql), @Stmt, @Tail);
   i := SQLite3_Prepare_v2(histDB, PUTF8Char(sql),  Length(sql), Stmt, PUTF8Char(Tail));
-  if Stmt <> NIL then
+  if (i=SQLITE_OK) and (Stmt <> NIL) then
 //  if Stmt <> 0 then
   while writingQ.count > 0 do
   begin

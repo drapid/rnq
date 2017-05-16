@@ -87,6 +87,8 @@ type
 const
    ChkInvisDiv = 64;
 
+type
+  Tbehaviours = array [1..EK_last] of Tbehaviour;
 
 var
   outboxprocessChk: Boolean = True;
@@ -233,11 +235,7 @@ var
      BotTryesCount: Integer;
     uingt: integer;
     badwords: string;
-//    quests: array of record q : String; ans : String; end;
-    quests: array of record
-       q: String;
-       ans: array of String;
-     end;
+    quests: TQuestAnsArr;
    end;
   histCrypt: record
     enabled: boolean;
@@ -443,6 +441,23 @@ var
 
   procedure AddPrefPage1(index: Byte; cl: TPrefFrameClass; Cpt: String);
   procedure ClearPrefPages;
+
+ type
+  pTCE = ^TCE;
+  TCE = packed record
+//    history0: Tobject;  // a probably wanted history, won't be saved to disk
+    notes: string;
+    lastAutoMsg: string;
+    lastEventTime: Tdatetime;
+    lastMsgTime: TdateTime;
+    lastOncoming: Tdatetime;
+    lastPriority: integer;
+    node: Tnode;
+    keylay: integer;
+    askedAuth: boolean;
+    dontdelete: boolean;
+    toquery: boolean;
+   end;
 
 type
 TUpdateLayeredWindow = function(Handle: THandle;

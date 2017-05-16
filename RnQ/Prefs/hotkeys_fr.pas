@@ -48,7 +48,7 @@ type
   private
     function winkey():integer;
   public
-    procedure initPage; Override;
+    procedure initPage(prefs: TRnQPref); Override;
     procedure applyPage; Override;
     procedure resetPage; Override;
     procedure unInitPage; Override;
@@ -150,8 +150,9 @@ end;
 
 procedure ThotkeysFr.initPage;
 var
-  i : Integer;
+  i: Integer;
 begin
+  Inherited;
   HKTree.NodeDataSize := SizeOf(THKItem);
 //  for i := 0 to HKList.Columns.Count-1 do
 //    HKList.Columns.Items[i].Caption :=
@@ -161,35 +162,35 @@ begin
     actionBox.items.add(macroopcodeName(i));
 
 
-  HKTree.width:= Clientwidth - GAP_SIZE2;
-  HKTree.left:= GAP_SIZE;
-  HKTree.top:= GAP_SIZE;
+  HKTree.width := Clientwidth - GAP_SIZE2;
+  HKTree.left := GAP_SIZE;
+  HKTree.top := GAP_SIZE;
 
-  hotkey.left:= 75;
-  hotkey.width:= Clientwidth - hotkey.left - GAP_SIZE;
-  hotkey.top:= HKTree.top + HKTree.Height + GAP_SIZE;
+  hotkey.left := 75;
+  hotkey.width := Clientwidth - hotkey.left - GAP_SIZE;
+  hotkey.top := HKTree.top + HKTree.Height + GAP_SIZE;
 
-  swChk.left:= hotkey.left;
-  swChk.top:= hotkey.top + hotkey.Height + GAP_SIZE;
+  swChk.left := hotkey.left;
+  swChk.top := hotkey.top + hotkey.Height + GAP_SIZE;
 
-  winkeyChk.left:= (hotkey.width div 2) + swChk.left;
-  winkeyChk.top:= swChk.top;
+  winkeyChk.left := (hotkey.width div 2) + swChk.left;
+  winkeyChk.top := swChk.top;
 
-  actionBox.left:= hotkey.left;
-  actionBox.top:= swChk.top + swChk.Height + GAP_SIZE;
-  actionBox.width:= hotkey.width;
+  actionBox.left := hotkey.left;
+  actionBox.top := swChk.top + swChk.Height + GAP_SIZE;
+  actionBox.width := hotkey.width;
 
-  btnDefault.top:= actionBox.top + actionBox.Height + GAP_SIZE;
-  btnDefault.left:= GAP_SIZE;
+  btnDefault.top := actionBox.top + actionBox.Height + GAP_SIZE;
+  btnDefault.left := GAP_SIZE;
 
-  replaceBtn.top:=  btnDefault.top;
-  replaceBtn.left:=  Clientwidth - replaceBtn.width - GAP_SIZE;
+  replaceBtn.top :=  btnDefault.top;
+  replaceBtn.left :=  Clientwidth - replaceBtn.width - GAP_SIZE;
 
-  deleteBtn.top:=  btnDefault.top;
-  deleteBtn.left:=  replaceBtn.left - deleteBtn.width - GAP_SIZE;
+  deleteBtn.top :=  btnDefault.top;
+  deleteBtn.left :=  replaceBtn.left - deleteBtn.width - GAP_SIZE;
 
-  saveBtn.top:=  btnDefault.top;
-  saveBtn.left:=  deleteBtn.left - saveBtn.width - GAP_SIZE;
+  saveBtn.top :=  btnDefault.top;
+  saveBtn.left :=  deleteBtn.left - saveBtn.width - GAP_SIZE;
 
   Label2.top := hotkey.top + 4;
   Label3.top := actionBox.top + 4;

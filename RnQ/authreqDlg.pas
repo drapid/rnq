@@ -34,7 +34,7 @@ type
     Label1: TLabel;
     msgBox: TMemo;
     addmenu: TPopupMenu;
-    closeChk: TCheckBox;
+    closeChk: TCheckBox; // close-auth-after-reply
     Label2: TLabel;
     AuthBtn: TRnQButton;
     noBtn: TRnQButton;

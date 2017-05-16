@@ -200,6 +200,7 @@ type
     chatshowlsb1: TMenuItem;
     chatpopuplsb1: TMenuItem;
     chatShowDevTools: TMenuItem;
+    emojiBtn: TRnQSpeedButton;
     procedure closemenuPopup(Sender: TObject);
     procedure prefBtnMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -323,6 +324,7 @@ type
     procedure InitScale(Sender: TObject; NewDPI: Integer);
     procedure FormAfterMonitorDpiChanged(Sender: TObject; OldDPI,
       NewDPI: Integer);
+    procedure emojiBtnClick(Sender: TObject);
   {$IFDEF usesDC}
     procedure WMDROPFILES(var Message: TWMDROPFILES);  message WM_DROPFILES;
   {$ENDIF usesDC}
@@ -518,9 +520,9 @@ uses
    Character,
  {$ENDIF UNICODE}
   RnQMenu, RnQLangs, RnQDialogs, menusUnit, RnQGlobal,
-  MenuSmiles, mainDlg;
+  MenuSmiles, menuEmoji, mainDlg;
  {$IFDEF SEND_FILE}
-  uses
+uses
     RnQ_FAM;
  {$ENDIF}
 
@@ -3180,7 +3182,7 @@ begin
   ch := thisChat;
   if ch = nil then
     exit;
-  ShowStickersMenu(ch.who, stickersBtn.ClientOrigin);
+  ShowStickersMenu(ch.who, Self, stickersBtn.ClientOrigin);
  {$ENDIF PROTOCOL_ICQ}
 end;
 
@@ -3524,6 +3526,16 @@ begin
   thisChat.historyBox.DeleteSelected;
 end;
 
+procedure TchatFrm.emojiBtnClick(Sender: TObject);
+var
+  ch: TchatInfo;
+begin
+  ch := thisChat;
+  if ch = nil then
+    exit;
+  ShowEmojiMenu(ch.who, Self, emojiBtn.ClientOrigin);
+end;
+
 procedure TchatFrm.Closeall1Click(Sender: TObject);
 begin
   closeAllPages
@@ -3826,11 +3838,7 @@ begin
       i := Len+1;
     s1 := copy(s, ofs, i-ofs);
     try
- {$IFDEF UID_IS_UNICODE}
-      u := UTF8ToStr(s1);
- {$else ansi}
-      u := s1;
- {$ENDIF ~UID_IS_UNICODE}
+      u := Raw2UID(s1);
       openOn(proto.getContact(u), True, False);
      except
 //      result:=FALSE
@@ -4284,7 +4292,7 @@ begin
   ch := thisChat;
   if ch = nil then
     exit;
-  ShowStickersMenu(thisChat.who, toolbar.ClientToScreen(Types.point(TRnQSpeedButton(Sender).Left, TRnQSpeedButton(Sender).Top)));
+  ShowStickersMenu(thisChat.who, Self, toolbar.ClientToScreen(Types.point(TRnQSpeedButton(Sender).Left, TRnQSpeedButton(Sender).Top)));
   enterCount := 0;
  {$ENDIF PROTOCOL_ICQ}
 end;
@@ -5795,7 +5803,7 @@ begin
           b2.Canvas.FillRect(b2.Canvas.ClipRect);
 //           DrawRbmp(b2.Canvas.Handle, ch.avtPic.PicAni);
 //           ch.avtPic.PicAni.Draw(b2.Canvas.Handle, 0, 0);
-           ch.avtPic.PicAni.Draw(b2.Canvas.Handle, paramSmile.Bounds);
+           ch.avtPic.PicAni.DrawBound(b2.Canvas.Handle, paramSmile.Bounds);
           if Assigned(paramSmile.Canvas)
 //           and (paramSmile.Canvas.HandleAllocated )
           then

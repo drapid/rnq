@@ -50,7 +50,7 @@ type
     procedure PathInfoBtnClick(Sender: TObject);
     procedure ChkPathBtnClick(Sender: TObject);
    public
-    procedure initPage; Override;
+    procedure initPage(prefs: TRnQPref); Override;
     procedure applyPage; Override;
     procedure resetPage; Override;
     procedure updateVisPage; Override;
@@ -85,6 +85,7 @@ end;
 
 procedure TotherFr.initPage;
 begin
+  Inherited;
   fnBoxButton.Left := fnBox.Left + fnBox.Width + 2;
 end;
 
@@ -112,14 +113,14 @@ end;
 
 procedure TotherFr.applyPage;
 begin
-  quitconfirmation:=quitChk.checked;
-  minimizeroster:=minimizeroasterChk.checked;
-  browserCmdLine:=fnBox.text;
-  useDefaultBrowser:=defaultbrowserChk.checked;
-  autoswitchKL:=switchklChk.checked;
+  quitconfirmation := quitChk.checked;
+  minimizeroster := minimizeroasterChk.checked;
+  browserCmdLine := fnBox.text;
+  useDefaultBrowser := defaultbrowserChk.checked;
+  autoswitchKL := switchklChk.checked;
   NILdoWith := 2 - NILdoGrp.ItemIndex;
-  showOncomingDlg:=oncomingDlgChk.checked;
-  doFixWindows:=fixwindowsChk.checked;
+  doFixWindows := fixwindowsChk.checked;
+  wheelVelocity := round(wheel.value);
   wheelVelocity:=round(wheel.value);
   inactivehideTime:=round(inactivehideSpin.value*10);
   inactiveHide:=inactivehideChk.checked;

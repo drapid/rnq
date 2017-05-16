@@ -39,23 +39,26 @@ type
     procedure FormHide(Sender: TObject);
     procedure NextExtExecute(Sender: TObject);
     procedure PrevExtExecute(Sender: TObject);
+    constructor Create(parent: TWinControl); OverLoad;
   private
     { Private declarations }
 //    DrawLines, DrawStickers: Integer;
 //    curHint: String;
+    parentWnd: TWinControl;
+    procedure GoToChat;
   public
     { Public declarations }
-    procedure CreateParams( var Params: TCreateParams );override;
+    procedure CreateParams( var Params: TCreateParams ); override;
   end;
-  procedure ShowStickersMenu(rnqcon: TRnQContact; t: tpoint);
+  procedure ShowStickersMenu(rnqcon: TRnQContact; parent: TWinControl; t: tpoint);
 
 var
   rnqContact: TRnQContact;
   FStickers: TFStickers;
-  StickerToken : Integer;
-  prefBtnWidth, prefBtnHeight : Integer;
-  prefSmlAutoSize : Boolean;
-  DrawStickerGrid : Boolean;
+  StickerToken: Integer;
+  prefBtnWidth, prefBtnHeight: Integer;
+  prefSmlAutoSize: Boolean;
+  DrawStickerGrid: Boolean;
 
 implementation
 
@@ -65,7 +68,7 @@ uses
   ICQv9, ICQ.Stickers,
   RnQLangs, RnQGlobal, RQUtil, RQThemes, RDUtils,
   events, history,
-  chatDlg, globalLib;
+  globalLib, chatDlg;
 
 var
   stickerGrids: TDictionary<Integer, TAwImageGrid>;
@@ -79,9 +82,10 @@ const
 
 {$R *.dfm}
 
-procedure GoToChat;
+procedure TFStickers.GoToChat;
 begin
-  SetForegroundWindow(chatFrm.Handle);
+  if Assigned(parentWnd) then
+    SetForegroundWindow(parentWnd.Handle);
 end;
 
 procedure TFStickers.CreateParams(var Params: TCreateParams);
@@ -91,7 +95,8 @@ begin
   begin
     Style := Style or WS_OVERLAPPED;
     Style := Style and not WS_CLIPCHILDREN;
-    WndParent := chatFrm.Handle;
+    if Assigned(parentWnd) then
+      WndParent := parentWnd.Handle;
     ExStyle := ExStyle or WS_EX_LAYERED;
   end;
 end;
@@ -178,9 +183,11 @@ begin
     stickerGrid.CellHeight := stickerHeight;
     stickerGrid.CellWidth := stickerWidth;
     stickerGrid.CellSpacing := 0;
+    stickerGrid.InCellMargin := 6;
     stickerGrid.Color := clBtnFace;
     stickerGrid.WheelScrollLines := 1;
     stickerGrid.Sorted := True;
+    stickerGrid.Stretch := True;
     stickerGrid.DragScroll := False;
     stickerGrid.MarkerStyle := psClear;
     stickerGrid.Cursor := crHandPoint;
@@ -348,6 +355,12 @@ begin
   end;
 end;
 
+constructor TFStickers.Create(parent: TWinControl);
+begin
+  parentWnd := parent;
+  Inherited Create(TComponent(NIL));
+end;
+
 procedure TFStickers.FormCreate(Sender: TObject);
 var
   a: Integer;
@@ -498,7 +511,7 @@ begin
   ReleaseDC(Handle, DC);
 end;
 
-procedure ShowStickersMenu(rnqcon: TRnQContact; t: tpoint);
+procedure ShowStickersMenu(rnqcon: TRnQContact; parent: TWinControl; t: tpoint);
 var
   ar: array[1..4] of TRect;
   scr, intr, a: Trect;
@@ -507,7 +520,7 @@ begin
   rnqContact := rnqcon;
 
   if not Assigned(fStickers) then
-    fStickers := TFStickers.Create(nil);
+    fStickers := TFStickers.Create(parent);
   fStickers.Height := (stickerHeight + 5) * 3 + fStickers.exts.Height;
   fStickers.Width := (stickerWidth + 8) * 4;
 

@@ -25,13 +25,10 @@ type
     SmileSheet: TTabSheet;
     sendonenterLbl: TLabel;
     sendonenterSpin: TRnQSpinButton;
-    autocopyChk: TCheckBox;
-    autodeselectChk: TCheckBox;
     singleChk: TCheckBox;
     statusontabChk: TCheckBox;
     cursorbelowChk: TCheckBox;
     quoteselectedChk: TCheckBox;
-    stylecodesChk: TCheckBox;
     chatOnTopChk: TCheckBox;
     ChkDefCP: TCheckBox;
     PlugPanelChk: TCheckBox;
@@ -64,6 +61,12 @@ type
     GroupBox2: TGroupBox;
     underSize: TComboBox;
     ColorBtn: TColorPickerButton;
+    TSHistory: TTabSheet;
+    stylecodesChk: TCheckBox;
+    autodeselectChk: TCheckBox;
+    autocopyChk: TCheckBox;
+    DrawEmojiChk: TCheckBox;
+    SmilesChk: TCheckBox;
     procedure sendonenterSpinTopClick(Sender: TObject);
     procedure sendonenterSpinBottomClick(Sender: TObject);
     procedure SmlUseSizeChkClick(Sender: TObject);
@@ -79,7 +82,7 @@ type
     procedure resetLangs;
  {$ENDIF CHAT_SPELL_CHECK}
   public
-    procedure initPage; Override; final;
+    procedure initPage(prefs: TRnQPref); Override; final;
     procedure applyPage; Override; final;
     procedure resetPage; Override; final;
     procedure updateVisPage; Override; final;
@@ -143,7 +146,7 @@ end;
 
 procedure TchatFr.manageBtnClick(Sender: TObject);
 var
-  res: Cardinal;
+//  res: Cardinal;
   path, localS, localE: String;
   len: Integer;
 begin
@@ -225,6 +228,7 @@ end;
 
 procedure TchatFr.initPage;
 begin
+  Inherited;
  {$IFDEF CHAT_SPELL_CHECK}
   spellLanguages2 := TStringList.Create;
   spellLanguages2.Delimiter := ',';
@@ -278,6 +282,8 @@ var
   prefSmlAutoSize: Boolean;
   n: PVirtualNode;
 begin
+  lPrefs.addPrefArrParam([DrawEmojiChk]);
+
   fontstylecodes.enabled := stylecodesChk.checked;
   autoCopyHist := autocopyChk.checked;
   autodeselect := autodeselectChk.checked;
@@ -293,21 +299,21 @@ begin
   closeChatOnSend := ClsSndChk.Checked;
   ClosePageOnSingle := ClsPgOnSnglChk.Checked;
   ShowSmileCaption := ChkShowSmileCptn.Checked;
-  lShowAniSmlPanel := MainPrefs.getPrefBoolDef('smiles-show-panel', True);
+  lShowAniSmlPanel := lPrefs.getPrefBoolDef('smiles-show-panel', True);
   if lShowAniSmlPanel <> SmlPnlChk.Checked then
    begin
      lShowAniSmlPanel := SmlPnlChk.Checked;
-     MainPrefs.addPrefBool('smiles-show-panel', lShowAniSmlPanel);
+     lPrefs.addPrefBool('smiles-show-panel', lShowAniSmlPanel);
      chatFrm.SetSmilePopup(not lShowAniSmlPanel);
    end;
 
-  MainPrefs.addPrefArrParam([msgWrapBox, SmlGridChk]);
+  lPrefs.addPrefArrParam([msgWrapBox, SmlGridChk]);
 
-  prefSmlAutoSize := MainPrefs.getPrefBoolDef(SmlUseSizeChk.HelpKeyword, True);
+  prefSmlAutoSize := lPrefs.getPrefBoolDef(SmlUseSizeChk.HelpKeyword, True);
   if prefSmlAutoSize <> not SmlUseSizeChk.Checked then
    begin
 //    prefSmlAutoSize := not SmlUseSizeChk.Checked;
-    MainPrefs.addPrefBool(SmlUseSizeChk.HelpKeyword, not SmlUseSizeChk.Checked);
+    lPrefs.addPrefBool(SmlUseSizeChk.HelpKeyword, not SmlUseSizeChk.Checked);
 //    SmileToken := -1;
    end;
 //
@@ -317,8 +323,8 @@ begin
     prefSmlAutoSize := not SmlUseSizeChk.Checked;
 //    SmileToken := -1;
    end;
-  MainPrefs.addPrefInt(SmlBtnWidthTrk.HelpKeyword, SmlBtnWidthTrk.Position);
-  MainPrefs.addPrefInt(SmlBtnHeightTrk.HelpKeyword, SmlBtnHeightTrk.Position);
+  lPrefs.addPrefInt(SmlBtnWidthTrk.HelpKeyword, SmlBtnWidthTrk.Position);
+  lPrefs.addPrefInt(SmlBtnHeightTrk.HelpKeyword, SmlBtnHeightTrk.Position);
 
  {$IFDEF CHAT_SPELL_CHECK}
   EnableSpellCheck := SpellCheckActive.Checked;
@@ -330,7 +336,7 @@ begin
     n := LangList.GetNextChecked(n);
   end;
 
-  MainPrefs.addPrefStrList('spellcheck-languages', spellLanguages2);
+  lPrefs.addPrefStrList('spellcheck-languages', spellLanguages2);
 
   spellErrorColor := ColorBtn.SelectionColor;
   spellErrorStyle := underSize.ItemIndex;
@@ -346,6 +352,8 @@ end;
 
 procedure TchatFr.resetPage;
 begin
+  lPrefs.getPrefArrParam([DrawEmojiChk]);
+
   stylecodesChk.checked := fontstylecodes.enabled;
   autocopyChk.checked := autoCopyHist;
   autodeselectChk.checked := autodeselect;
@@ -362,16 +370,16 @@ begin
   ChkShowSmileCptn.Checked := ShowSmileCaption;
   ClsPgOnSnglChk.Checked := ClosePageOnSingle;
 
-  MainPrefs.getPrefArrParam([msgWrapBox, SmlGridChk]);
+  lPrefs.getPrefArrParam([msgWrapBox, SmlGridChk]);
 
-  SmlBtnWidthTrk.Position  := MainPrefs.getPrefIntDef(SmlBtnWidthTrk.HelpKeyword, Btn_Max_Width);;
-  SmlBtnHeightTrk.Position := MainPrefs.getPrefIntDef(SmlBtnHeightTrk.HelpKeyword, Btn_Max_Height);
-  SmlUseSizeChk.Checked := not MainPrefs.getPrefBoolDef(SmlUseSizeChk.HelpKeyword, True);
+  SmlBtnWidthTrk.Position := lPrefs.getPrefIntDef(SmlBtnWidthTrk.HelpKeyword, Btn_Max_Width);;
+  SmlBtnHeightTrk.Position := lPrefs.getPrefIntDef(SmlBtnHeightTrk.HelpKeyword, Btn_Max_Height);
+  SmlUseSizeChk.Checked := not lPrefs.getPrefBoolDef(SmlUseSizeChk.HelpKeyword, True);
 
-  SmlPnlChk.Checked  := MainPrefs.getPrefBoolDef('smiles-show-panel', True); //ShowAniSmlPanel
+  SmlPnlChk.Checked := lPrefs.getPrefBoolDef('smiles-show-panel', True); //ShowAniSmlPanel
 
  {$IFDEF CHAT_SPELL_CHECK}
-  MainPrefs.getPrefStrList('spellcheck-languages', spellLanguages2);
+  lPrefs.getPrefStrList('spellcheck-languages', spellLanguages2);
   SpellCheckActive.Checked := EnableSpellCheck;
   ColorBtn.SelectionColor := spellErrorColor;
   underSize.ItemIndex := spellErrorStyle;

@@ -43,7 +43,7 @@ type
   private
     { Private declarations }
   public
-    procedure initPage; Override; final;
+    procedure initPage(prefs: TRnQPref); Override; final;
     procedure applyPage; Override; final;
     procedure resetPage; Override; final;
     { Public declarations }
@@ -57,8 +57,9 @@ uses
 
 procedure TTipsFr.initPage;
 begin
-  TranspTrayGroup.left:= GAP_SIZE;
-  TranspTrayGroup.width:= Self.Clientwidth - GAP_SIZE2;
+  Inherited;
+  TranspTrayGroup.left := GAP_SIZE;
+  TranspTrayGroup.width := Self.Clientwidth - GAP_SIZE2;
 
   PosGrp.left  := GAP_SIZE;
   PosGrp.width := TranspTrayGroup.width div 2 - GAP_SIZE;

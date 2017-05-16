@@ -138,7 +138,7 @@ type
 
   Tdirects = class(Tlist)
     proto: TRnQProtocol;
-    constructor create(sess_ : TRnQProtocol);
+    constructor create(sess_: TRnQProtocol);
     destructor Destroy; override;
     function  newFor(c: TRnQContact): TProtoDirect;
     function  findID(id: UInt64): TProtoDirect;
@@ -147,10 +147,10 @@ type
 //  TDirectMode = (dm_init, dm_bin_direct, dm_bin_proxy_init, dm_bin_proxy);
   TDirectMode = (dm_bin_direct, dm_bin_proxy);
   TDirectDataAvailable     = procedure (Sender: TObject; ErrCode: Word) of object;
-  TDirectDataNext          = procedure (Sender: TObject; var Data : RawByteString;
-                                        var IsLast : Boolean) of object;
+  TDirectDataNext          = procedure (Sender: TObject; var Data: RawByteString;
+                                        var IsLast: Boolean) of object;
   TDirectNotification      = procedure (Sender: TObject; ErrCode: Word;
-                                        msg : String) of object;
+                                        msg: String) of object;
 
   TProtoDirect=class
   protected
@@ -200,16 +200,6 @@ type
 //    function  myinfo:TRnQContact;
 
     procedure sendPkt(const s: RawByteString);
-{    function  sendProxyCMD(cmd, flags :word; const data: RawByteString):boolean;
-
-    procedure connected2cli;
-    function  parseFileDC0101(s : RawByteString) : Boolean;
-    function  parseFileDC0205(s : RawByteString) : Boolean; // Resume request
-    procedure sendFilePrompt; // 0101
-    procedure sendACK_File;   // 0202
-    procedure sendDone_File;  // 0204
-//    procedure parseVcard(s : RawByteString);
-}
    public
 //    destructor Destroy;
 {    procedure connect;
@@ -256,23 +246,23 @@ type
     function  getStatusMenu : TStatusMenu;
     function  getVisMenu    : TStatusMenu;
     function  getContactClass : TRnQCntClass;
-    function  getContact(const UID : TUID) : TRnQContact;
+    function  getContact(const UID: TUID): TRnQContact;
       { Get the algorithm name }
-    function  ProtoName : String;
-    function  ProtoElem : TRnQProtocol;
-    procedure GetPrefs(var pp : TRnQPref);
-    procedure SetPrefs(pp : TRnQPref);
+    function  ProtoName: String;
+    function  ProtoElem: TRnQProtocol;
+    procedure GetPrefs(var pp: TRnQPref);
+    procedure SetPrefs(pp: TRnQPref);
     procedure ResetPrefs;
     procedure Clear;
 
     procedure disconnect;
 //    procedure setStatus(s:Tstatus; inv:boolean);
 //    function  getStatus:Tstatus;
-    function  isOnline:boolean;
-    function  isOffline:boolean;
-    function  isReady:boolean;     // we can send commands
-    function  isConnecting:boolean;
-    function  getStatus:byte;
+    function  isOnline: boolean;
+    function  isOffline: boolean;
+    function  isReady: boolean;     // we can send commands
+    function  isConnecting: boolean;
+    function  getStatus: byte;
     procedure setStatus(st : Byte);
     function  getVisibility : byte;
     function  IsInvisible  : Boolean;
@@ -280,21 +270,21 @@ type
     function  getStatusImg : TPicName;
     function  getXStatus:byte;
 
-    function  imVisibleTo(c:TRnQContact):boolean;
-    procedure getClientPicAndDesc4(c:TRnQContact; var pPic : TPicName; var CliDesc : String);
+    function  imVisibleTo(c: TRnQContact): boolean;
+    procedure getClientPicAndDesc4(c: TRnQContact; var pPic : TPicName; var CliDesc : String);
     function  isMyAcc(c : TRnQContact) : Boolean;
     function  getMyInfo : TRnQContact;
-    function  maxCharsFor(const c:TRnQContact):integer;
-//    function  canSendMsgFor(c:TRnQContact; msg : String):integer;
+    function  maxCharsFor(const c: TRnQContact): integer;
+//    function  canSendMsgFor(c: TRnQContact; msg: String):integer;
 
 
     // manage contact lists
-    function  readList(l : TLIST_TYPES):TRnQCList;
-    procedure AddToList(l : TLIST_TYPES; cl:TRnQCList); overLoad;
-    procedure RemFromList(l : TLIST_TYPES; cl:TRnQCList); OverLoad;
+    function  readList(l: TLIST_TYPES):TRnQCList;
+    procedure AddToList(l: TLIST_TYPES; cl:TRnQCList); overLoad;
+    procedure RemFromList(l: TLIST_TYPES; cl:TRnQCList); OverLoad;
     // manage contacts
-    procedure AddToList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad;
-    procedure RemFromList(l : TLIST_TYPES; cnt:TRnQContact); OverLoad;
+    procedure AddToList(l: TLIST_TYPES; cnt: TRnQContact); OverLoad;
+    procedure RemFromList(l: TLIST_TYPES; cnt: TRnQContact); OverLoad;
 
     function  addContact(c: TRnQContact; isLocal: Boolean = false):boolean;
     function  removeContact(c: TRnQContact): boolean;
@@ -347,7 +337,7 @@ type
 //    procedure setMyInfo(cnt: TRnQContact);
     function  getStatusDisable: TOnStatusDisable;
     function  getPrefPage: TPrefFrameClass;
-    property  pwd:String read getPwd write setPwd;
+    property  pwd: String read getPwd write setPwd;
 //    property  MyInfo: TRnQContact read getMyInfo write setMyInfo;
     property  statuses: TStatusArray read getStatuses;
    end; // IRnQProtocol
@@ -372,7 +362,7 @@ type
     aProxy              : Tproxy;
     AccIDX              : Integer;
 {$IFDEF usesDC}
-//    server              :Twsocket;
+//    server              : Twsocket;
     directs             : Tdirects;
 {$ENDIF usesDC}
     SupportTypingNotif,
@@ -611,7 +601,7 @@ type
     property Current: TRnQContact read GetCurrent;
   end;
 
-  TcontactProc=procedure(c: TRnQContact);
+  TcontactProc = procedure(c: TRnQContact);
 {$IFDEF DELPHI9_UP}
   TRnQContactType = type of TRnQContact;
 {$ELSE DELPHI_9_DOWN}
@@ -684,7 +674,7 @@ var
 //  function ActiveProto: IRnQProtocol; Inline;
 
   function  Int2UID(const i: Integer): TUID; Inline;
-
+  function  Raw2UID(const s: RawByteString): TUID;
 const
  // Flags for messages
   IF_multiple = 1 shl 0;      // multiple recipients
@@ -1863,6 +1853,14 @@ begin
  {$ENDIF UID_IS_UNICODE}
 end;
 
+function  Raw2UID(const s: RawByteString): TUID;
+begin
+ {$IFDEF UID_IS_UNICODE}
+   Result := unUTF(s)
+ {$ELSE ansi}
+   Result := s
+ {$ENDIF UID_IS_UNICODE}
+end;
 
 var
   TZinfo: TTimeZoneInformation;

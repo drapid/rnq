@@ -102,7 +102,7 @@ type
     function ApplyIconsGrid : Boolean;
     procedure ResetIconsGrid;
   public
-    procedure initPage; Override; final;
+    procedure initPage(prefs: TRnQPref); Override; final;
     procedure applyPage; Override; final;
     procedure resetPage; Override; final;
     { Public declarations }
@@ -115,7 +115,8 @@ type
 implementation
 
 uses
-  utilLib, RQThemes, themesLib, mainDlg, RnQLangs, RnQGlobal,
+  utilLib, RQThemes, themesLib, mainDlg,
+  RnQLangs, RnQGlobal,
   roasterLib, RnQConst, globalLib,
   RnQGraphics32, RnQPics
 //  ICQContacts
@@ -260,6 +261,7 @@ end; // ResetIconsGrid
 
 procedure TdesignFr.initPage;
 begin
+  Inherited;
 {  with theme.GetPicSize(RQteDefault, PIC_MSG, 10) do
    begin
 //    blinkImg.Picture.Bitmap.SetSize(cy, cx);
@@ -272,34 +274,34 @@ begin
  {$ELSE}
    ShXstChk.visible := False;
  {$ENDIF}
-  GrBox2.width:= CommonTab.Clientwidth - GAP_SIZE2;
-  sortbyGrp.width:= GrBox2.width;
+  GrBox2.width := CommonTab.Clientwidth - GAP_SIZE2;
+  sortbyGrp.width := GrBox2.width;
   IconsGrp.Width := GrBox2.width;
   autosizeGrp.left := GAP_SIZE;
   autosizeGrp.width := (CommonTab.Clientwidth - autosizeGrp.left) div 2 - GAP_SIZE;
   //dockGrp.left:= autosizeGrp.left + autosizeGrp.width + GAP_SIZE;
-  dockGrp.width:= autosizeGrp.width;
-  dockGrp.left:= GrBox2.width - dockGrp.width + GAP_SIZE;
+  dockGrp.width := autosizeGrp.width;
+  dockGrp.left := GrBox2.width - dockGrp.width + GAP_SIZE;
 
-  italicGrp.top:=  autosizeGrp.top + autosizeGrp.height + GAP_SIZE;
-  italicGrp.left:= autosizeGrp.left;
-  italicGrp.width:= autosizeGrp.width;
+  italicGrp.top :=  autosizeGrp.top + autosizeGrp.height + GAP_SIZE;
+  italicGrp.left := autosizeGrp.left;
+  italicGrp.width := autosizeGrp.width;
 
-  roasterbarGrp.top:= italicGrp.top;
-  roasterbarGrp.left:= dockGrp.left;
-  roasterbarGrp.width:= dockGrp.width div 2 - 2;
+  roasterbarGrp.top := italicGrp.top;
+  roasterbarGrp.left := dockGrp.left;
+  roasterbarGrp.width := dockGrp.width div 2 - 2;
 
   filterbarGrp.top  := italicGrp.top;
   filterbarGrp.left := roasterbarGrp.left + roasterbarGrp.width + 4;
-  filterbarGrp.width:= roasterbarGrp.width;
+  filterbarGrp.width := roasterbarGrp.width;
 
   TtlGrBox.top  := italicGrp.top + italicGrp.height + GAP_SIZE;
   TtlGrBox.left := italicGrp.left;
-  TtlGrBox.width:= GrBox2.width;
+  TtlGrBox.width := GrBox2.width;
 
-  transpGr.top:=  GAP_SIZE;
-  transpGr.left:= GAP_SIZE;
-  transpGr.width:= GrBox2.width;
+  transpGr.top :=  GAP_SIZE;
+  transpGr.left := GAP_SIZE;
+  transpGr.width := GrBox2.width;
   IconsList.NodeDataSize := SizeOf(TIcItem);
   fillIconsGrid;
 
@@ -308,9 +310,9 @@ begin
 end;
 
 procedure TdesignFr.applyPage;
-  function index2sb(i:integer):TsortBy;
+  function index2sb(i: integer): TsortBy;
   begin
-    result:=low(TsortBy);
+    result := low(TsortBy);
     while result <= high(TsortBy) do
       if i = sb2index[result] then
         exit
@@ -322,15 +324,15 @@ var
   needApplyTransp,
   needRebuildCL,
   needRepaintCL,
-  needUpdCapt : Boolean;
+  needUpdCapt: Boolean;
 begin
   needApplyTransp := False;
   needRebuildCL := False;
   needRepaintCL := false;
 
-  rosterbarOnTop:= roasterbarGrp.ItemIndex=0;
+  rosterbarOnTop := roasterbarGrp.ItemIndex=0;
   filterBarOnTop := filterbarGrp.ItemIndex=0;
-  animatedRoster:=aniroasterChk.checked;
+  animatedRoster := aniroasterChk.checked;
 
  {$IFDEF RNQ_FULL}
 //   showXStatus    := ShXstChk.Checked;
@@ -353,7 +355,7 @@ begin
   if sortBy <> index2sb(sortbyGrp.itemIndex) then
    begin
     needRebuildCL := True;
-    sortBy:=index2sb(sortbyGrp.itemIndex);
+    sortBy := index2sb(sortbyGrp.itemIndex);
    end;
 
   needRepaintCL := needRepaintCL

@@ -65,6 +65,7 @@ object authreqFrm: TauthreqFrm
     Top = 174
     Width = 16
     Height = 17
+    HelpKeyword = 'close-auth-after-reply'
     Anchors = [akLeft, akBottom]
     TabOrder = 1
     OnClick = closeChkClick

@@ -1441,7 +1441,7 @@ begin
           b2.Canvas.FillRect(b2.Canvas.ClipRect);
 //           DrawRbmp(b2.Canvas.Handle, ch.avtPic.PicAni);
 //           ch.avtPic.PicAni.Draw(b2.Canvas.Handle, 0, 0);
-          contactAvt.Draw(b2.Canvas.Handle, paramSmile.Bounds);
+          contactAvt.DrawBound(b2.Canvas.Handle, paramSmile.Bounds);
           if Assigned(paramSmile.Canvas)
 //           and (paramSmile.Canvas.HandleAllocated )
           then

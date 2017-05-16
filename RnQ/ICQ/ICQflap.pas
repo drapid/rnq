@@ -51,6 +51,7 @@ function getBUIN(const s: RawByteString; var ofs: integer): Integer;
 function getBUIN3(const s: RawByteString; var ofs: integer): TUID;
 
 function Length_B8(const UIN: TUID): RawByteString; OverLoad;
+function Length_B(const UIN: TUID): RawByteString; OverLoad;
 
 implementation
   uses
@@ -126,6 +127,11 @@ var
 begin
   s := UTF8Encode(UIN);
   result := AnsiChar(byte(length(s))) + RawByteString(s)
+end;
+
+function Length_B(const UIN: TUID): RawByteString;
+begin
+  result := AnsiChar(byte(length(UIN))) + RawByteString(UIN)
 end;
 
 function SNAC(fam, sub, flags: word; ref: integer): RawByteString; overload;

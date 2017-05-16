@@ -152,6 +152,8 @@ object startFr: TstartFr
         Top = 234
         Width = 213
         Height = 18
+        HelpType = htKeyword
+        HelpKeyword = 'use-last-status'
         Caption = 'only for the 1st connection'
         TabOrder = 11
       end

@@ -61,7 +61,7 @@ type
    public
     procedure applyPage; Override; final;
     procedure resetPage; Override; final;
-    procedure initPage; Override; final;
+    procedure initPage(prefs: TRnQPref); Override; final;
     procedure unInitPage; Override; final;
 
 //    procedure applyPage;
@@ -299,6 +299,7 @@ procedure TthemeditFr.InitPage;
 var
   i: integer;
 begin
+  Inherited;
   textBox.Width := Self.Width - textBox.Left * 2;
   propsBox.items.clear();
   Theme.getprops(themeprops);
