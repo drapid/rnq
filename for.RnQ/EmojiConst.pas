@@ -60,7 +60,9 @@ var
   emojiContents: TDictionary<Integer, TArray<Integer>>;
   emojis: TDictionary<TPair<Cardinal, Cardinal>, Integer>;
   EmojiList: TDictionary<String, TPicName>;
+  singles: array of word;
 
+{
 const
   singles: array [0..163] of word = ($00A9, $00AE, $203C, $2049, $2122, $2139, $2194, $2195, $2196, $2197, $2198, $2199,
   $21A9, $21AA, $231A, $231B, $2328, $23CF, $23E9, $23EA, $23EB, $23EC, $23ED, $23EE, $23EF, $23F0, $23F1, $23F2, $23F3,
@@ -72,6 +74,7 @@ const
   $26F8, $26F9, $26FA, $26FD, $2702, $2705, $2708, $2709, $270A, $270B, $270C, $270D, $270F, $2712, $2714, $2716, $271D,
   $2721, $2728, $2733, $2734, $2744, $2747, $274C, $274E, $2753, $2754, $2755, $2757, $2763, $2764, $2795, $2796, $2797,
   $27A1, $27B0, $27BF, $2934, $2935, $2B05, $2B06, $2B07, $2B1B, $2B1C, $2B50, $2B55, $3030, $303D, $3297, $3299);
+}
 
   function GetEmojiStr(num: Integer): String;
   function GetEmojiPicName(num: Integer): TPicName;
@@ -102,6 +105,7 @@ end;
 
 var
   i: Integer;
+  key: TPair<Cardinal, Cardinal>;
 initialization
 
   emojiContents := TDictionary<Integer, TArray<Integer>>.Create;
@@ -124,6 +128,13 @@ initialization
   emojis := TDictionary<TPair<Cardinal, Cardinal>, Integer>.Create;
   for i := 0 to emojisCount-1 do
     emojis.Add(TPair<Cardinal, Cardinal>.Create(emojiCodePoints[i][1], emojiCodePoints[i][2]), i);
+
+  for key in emojis.Keys do
+  if (key.Value = 0) and (key.Key <= $ffff) then
+  begin
+    SetLength(singles, Length(singles) + 1);
+    singles[Length(singles) - 1] := key.Key;
+  end;
 {
   emojis.Add(TPair<Cardinal, Cardinal>.Create($1f62c, 0), 977); // people, grimacing
   emojis.Add(TPair<Cardinal, Cardinal>.Create($1f601, 0), 934); // people, grin

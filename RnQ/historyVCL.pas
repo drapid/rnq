@@ -731,6 +731,14 @@ var
              fndEmoji := BodyCurMChar + BodyText[i+1];
            end
          else
+         if (Length(BodyCurMChar)=2) and (i+3 <= Length(BodyText))
+           and IsSurrogate(BodyText, i+2) and IsSurrogatePair(BodyText, i+2)
+           and (IsHighSurrogate(BodyText, i+2)) and (IsLowSurrogate(BodyText, i+3))
+           and ((InRange(ord(ConvertToUtf32(BodyText, i)), $1f100, $1f1ff) and InRange(ord(ConvertToUtf32(BodyText, i+2)), $1f100, $1f1ff))
+               or (ord(ConvertToUtf32(BodyText, i+2)) = $1f5e8))
+          then
+             fndEmoji := BodyCurMChar + BodyText[i+2] + BodyText[i+3]
+         else
             fndEmoji := BodyCurMChar;
          if EmojiList.TryGetValue(fndEmoji, fndEmojiN) then
            begin
