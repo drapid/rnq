@@ -59,7 +59,7 @@ const
 var
   emojiContents: TDictionary<Integer, TArray<Integer>>;
   emojis: TDictionary<TPair<Cardinal, Cardinal>, Integer>;
-  EmojiList: TList<String>;
+  EmojiList: TDictionary<String, TPicName>;
 
 const
   singles: array [0..163] of word = ($00A9, $00AE, $203C, $2049, $2122, $2139, $2194, $2195, $2196, $2197, $2198, $2199,
@@ -82,19 +82,22 @@ uses
 
 function GetEmojiStr(num: Integer): String;
 begin
-  Result := Char.ConvertFromUtf32(emojiCodePoints[num][1]);
+  Result := TCharacter.ConvertFromUtf32(emojiCodePoints[num][1]);
   if not (emojiCodePoints[num][2] = 0) then
-    Result := Result + Char.ConvertFromUtf32(emojiCodePoints[num][2]);
+    Result := Result + TCharacter.ConvertFromUtf32(emojiCodePoints[num][2]);
 end;
 
 function GetEmojiPicName(num: Integer): TPicName;
-var
-  cp: String;
+//var
+//  cp: String;
 begin
-  cp := Char.ConvertFromUtf32(emojiCodePoints[num][1]);
+{
+  cp := TCharacter.ConvertFromUtf32(emojiCodePoints[num][1]);
   if not (emojiCodePoints[num][2] = 0) then
-    cp := cp + Char.ConvertFromUtf32(emojiCodePoints[num][2]);
-  Result := StrToUTF8(cp);
+    cp := cp + TCharacter.ConvertFromUtf32(emojiCodePoints[num][2]);
+  Result := str2hex( StrToUTF8(cp));
+}
+  Result := IntToStrA(num);
 end;
 
 var
@@ -113,10 +116,10 @@ initialization
   emojiContents.Add(8, TArray<Integer>.Create(31, 34, 37, 95, 32, 39, 36, 35, 41, 38, 45, 44, 43, 47, 63, 54, 50, 49, 67, 51, 68, 56, 58, 64, 60, 48, 66, 62, 59, 53, 52, 55, 84, 153, 78, 69, 160, 72, 252, 77, 79, 80, 155, 73, 71, 82, 133, 83, 87, 88, 92, 91, 93, 94, 97, 99, 246, 123, 101, 98, 103, 107, 109, 106, 105, 110, 211, 111, 120, 114, 89, 117, 118, 124, 119, 113, 127, 126, 121, 128, 129, 134, 132, 130, 135, 145, 141, 137, 144, 143, 138, 139, 146, 75, 148, 150, 147, 149, 161, 151, 154, 282, 159, 152, 162, 171, 163, 168, 167, 172, 165, 169, 170, 184, 180, 178, 192, 194, 191, 181, 189, 179, 187, 190, 193, 108, 175, 174, 183, 176, 188, 173, 195, 182, 196, 205, 204, 202, 197, 207, 201, 198, 200, 206, 157, 203, 208, 214, 221, 219, 209, 212, 222, 210, 213, 215, 220, 218, 223, 225, 227, 228, 235, 156, 164, 274, 281, 240, 245, 229, 241, 226, 231, 239, 234, 238, 236, 230, 242, 285, 158, 102, 166, 232, 243, 249, 233, 74, 248, 265, 256, 266, 255, 258, 254, 261, 263, 260, 262, 259, 264, 268, 267, 33,
                                               112, 270, 277, 271, 272, 279, 273, 275, 278, 280, 100, 283, 286, 287, 224, 46, 250, 142, 61, 86, 70, 116, 140, 284, 199, 217, 57, 216, 125, 257, 65, 131, 237, 269, 136, 96, 81, 90, 42, 40, 276, 76, 85, 104, 115, 253, 122, 186, 185, 247, 244, 251, 177));
 
-  EmojiList := TList<String>.Create;
+  EmojiList := TDictionary<String, TPicName>.Create;
   for i := 0 to emojisCount-1 do
-    EmojiList.Add(GetEmojiStr(i));
-  EmojiList.Sort;
+    EmojiList.Add(GetEmojiStr(i), GetEmojiPicName(i));
+//  EmojiList.Sort;
 
   emojis := TDictionary<TPair<Cardinal, Cardinal>, Integer>.Create;
   for i := 0 to emojisCount-1 do

@@ -5154,12 +5154,10 @@ var
   var
     row, column: Integer;
   begin
-    begin
-      column := num mod inarow;
-      row := floor(num / inarow);
-      Result.X := column * emojiSize;
-      Result.Y := row * emojiSize;
-    end;
+    column := num mod inarow;
+    row := floor(num / inarow);
+    Result.X := column * emojiSize;
+    Result.Y := row * emojiSize;
   end;
 var
   I: Integer;
@@ -5179,8 +5177,7 @@ begin
     if not (tmp = '') then
       emojiSize := StrToIntDef(tmp, 22);
     inarow := StrToIntDef(theme.GetString('emoji.inarow'), 1);
-    with TThemePic(FThemePics.Objects[i]) do
-      LastPicIDX := PicIDX;
+    LastPicIDX := TThemePic(FThemePics.Objects[i]).PicIDX;
 
 
       for I := Low(emojiCodePoints) to High(emojiCodePoints) do

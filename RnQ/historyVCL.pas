@@ -727,29 +727,21 @@ var
          if (Length(BodyCurMChar)=1) and (i+1 <= Length(BodyText))
            and (CharInSet(BodyCurChar, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '*'])
               and (ord(BodyText[i+1]) = $20E3)) then
-          begin
-             fndEmojiN := TE2Str[RQteEmoji]+ UTF8Encode(BodyCurMChar + BodyText[i+1]);
-             if theme.picExists(RQteDefault, fndEmojiN) then
-               begin
-                 fndEmoji := BodyCurMChar + BodyText[i+1];
-                 Result := True;
-               end
-              else
-               fndEmojiN := '';
-          end;
-         if result then
-           Exit;
-         k := EmojiList.IndexOf(BodyCurMChar);
-         if k >=0 then
            begin
-             fndEmojiN := TE2Str[RQteEmoji]+ UTF8Encode(BodyCurMChar);
+             fndEmoji := BodyCurMChar + BodyText[i+1];
+           end
+         else
+            fndEmoji := BodyCurMChar;
+         if EmojiList.TryGetValue(fndEmoji, fndEmojiN) then
+           begin
+             fndEmojiN := TE2Str[RQteEmoji]+ fndEmojiN;
              if theme.picExists(RQteDefault, fndEmojiN) then
-               begin
-                 fndEmoji := BodyCurMChar;
-                 Result := True;
-               end
-              else
-               fndEmojiN := '';
+               Result := True;
+           end;
+         if not Result then
+           begin
+             fndEmoji := '';
+             fndEmojiN := '';
            end;
       end; // findEmoji
 

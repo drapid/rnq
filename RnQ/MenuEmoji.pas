@@ -34,8 +34,6 @@ type
     procedure RefreshExtBtnStates;
     procedure PutEmoji(FExt, FEmoji: Integer);
     function GetEmoji(num: Integer): TGraphic;
-    function GetEmojiPicName(num: Integer): TPicName;
-    function GetOffset(num: Integer): TPoint;
     procedure NextExtExecute(Sender: TObject);
     procedure PrevExtExecute(Sender: TObject);
     procedure FormHide(Sender: TObject);
@@ -47,7 +45,7 @@ type
     procedure  GoToChat;
   public
     { Public declarations }
-    procedure CreateParams( var Params: TCreateParams );override;
+    procedure CreateParams( var Params: TCreateParams ); override;
     property  currentPPI: Integer read GetParentCurrentDpi;
   end;
   procedure ShowEmojiMenu(rnqcon: TRnQContact; parent: TWinControl; t: tpoint);
@@ -59,7 +57,8 @@ var
 implementation
 
 uses
-  RnQLangs, RnQGlobal, RQUtil, RQThemes, chatDlg, EmojiConst;
+  RnQLangs, RnQGlobal, RQUtil, RQThemes, chatDlg,
+  EmojiConst;
 
 var
   emojiGrids: TDictionary<Integer, TAwImageGrid>;
@@ -126,11 +125,7 @@ begin
     emojiGrid := emojiGrids.Items[FExt];
     if not (emojiGrid = nil) then
     begin
-
-      cp := Char.ConvertFromUtf32(emojiCodePoints[FEmoji][1]);
-      if not (emojiCodePoints[FEmoji][2] = 0) then
-        cp := cp + Char.ConvertFromUtf32(emojiCodePoints[FEmoji][2]);
-
+      cp := GetEmojiStr(FEmoji);
       emojiGrid.Items.AddThumb(cp, png);
     end;
   end;
@@ -225,33 +220,10 @@ begin
   Add2Input((Sender as TAwImageGrid).FileNames[Index]);
 end;
 
-function TEmojiFrm.GetOffset(num: Integer): TPoint;
-var
-  inarow, row, column: Integer;
-begin
-  if TryStrToInt(theme.GetString('emoji.inarow'), inarow) then
-  begin
-    column := num mod inarow;
-    row := floor(num / inarow);
-		Result.X := column * emojiSize;
-    Result.Y := row * emojiSize;
-  end;
-end;
-
 
 function TEmojiFrm.GetEmoji(num: Integer): TGraphic;
 begin
   Result := TRnQThemeBitmap.Create(GetEmojiPicName(num), RQteEmoji);
-end;
-
-function TEmojiFrm.GetEmojiPicName(num: Integer): TPicName;
-var
-  cp: String;
-begin
-  cp := Char.ConvertFromUtf32(emojiCodePoints[num][1]);
-  if not (emojiCodePoints[num][2] = 0) then
-    cp := cp + Char.ConvertFromUtf32(emojiCodePoints[num][2]);
-  Result := UTF8Encode(cp);
 end;
 
 procedure TEmojiFrm.CreateExtBtns();

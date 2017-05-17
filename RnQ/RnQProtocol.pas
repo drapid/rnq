@@ -134,7 +134,7 @@ type
     IE_msg
    );
 {$IFDEF usesDC}
-  TProtoDirect=class;
+  TProtoDirect = class;
 
   Tdirects = class(Tlist)
     proto: TRnQProtocol;
