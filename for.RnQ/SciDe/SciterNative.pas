@@ -14,8 +14,7 @@ unit SciterNative;
 interface
                                                                                   
 uses
-  Windows, Messages, Classes, Variants, Contnrs, SciterApi, TiScriptApi, SysUtils,
-  ComObj, ActiveX;
+  Windows, Messages, Classes, Variants, Contnrs, SciterApi, TiScriptApi, SysUtils;
 
 type
   TMethodType = (Method, NonIndexedProperty, IndexedProperty);
@@ -83,8 +82,6 @@ type
     FTypeName: AnsiString;
     function SelectMethods: ISciterMethodInfoList;
     function SelectProperties: ISciterMethodInfoList;
-  protected
-    FSciterClassDef: ptiscript_class_def;
     function GetFinalizerHandler: tiscript_finalizer;
     function GetGCCopyHandler: tiscript_on_gc_copy;
     function GetGetItemHandler: tiscript_get_item;
@@ -105,6 +102,8 @@ type
     procedure SetSetItemHandler(const Value: tiscript_set_item);
     procedure SetSetterHandler(const Value: tiscript_tagged_set_prop);
     procedure SetTypeName(const Value: WideString);
+  protected
+    FSciterClassDef: ptiscript_class_def;
     property FinalizerHandler: tiscript_finalizer read GetFinalizerHandler write SetFinalizerHandler;
     property GCCopyHandler: tiscript_on_gc_copy read GetGCCopyHandler write SetGCCopyHandler;
     property GetItemHandler: tiscript_get_item read GetGetItemHandler write SetGetItemHandler;
@@ -377,7 +376,7 @@ begin
     StrDispose(pMethods.name);
     Inc(pMethods);
   end;
-  CoTaskMemFree(FSciterClassDef.methods);
+  FreeMem(FSciterClassDef.methods, SizeOf(tiscript_method_def) * FSciterClassDef.methodsc);
 
   // Dispose properties
   pProps := FSciterClassDef.props;
@@ -386,7 +385,7 @@ begin
     StrDispose(pProps.name);
     Inc(pProps);
   end;
-  CoTaskMemFree(FSciterClassDef.props);
+  FreeMem(FSciterClassDef.props, SizeOf(tiscript_prop_def) * FSciterClassDef.propsc);
 end;
 
 procedure TSciterClassInfo.BuildClassDef;
@@ -412,20 +411,20 @@ begin
   FSciterClassDef.iterator   := FIteratorHandler;
   FSciterClassDef.on_gc_copy := FGCCopyHandler;
   FSciterClassDef.prototype  := 0;   // Not implemented
-  FSciterClassDef.name       := StrNew(PAnsiChar(Self.FTypeName));
+  FSciterClassDef.name       := PAnsiChar(Self.FTypeName);
 
   // Methods
   pMethods := Self.SelectMethods;
   FSciterClassDef.methodsc := pMethods.Count + 1;
   szMethods := SizeOf(tiscript_method_def) * FSciterClassDef.methodsc; // 1 - "null-terminating record"
-  pclass_methods := CoTaskMemAlloc(szMethods);
+  GetMem(pclass_methods, szMethods);
   FSciterClassDef.methods := pclass_methods;
 
   for i := 0 to pMethods.Count - 1 do
   begin
     pInfo := pMethods[i];
     smethod_name := AnsiString(pInfo.Name);
-    pclass_methods.name := StrNew(PAnsiChar(smethod_name));
+    pclass_methods.name := PAnsiChar(smethod_name);
     pclass_methods.handler := @FMethodHandler;
     pclass_methods.dispatch := nil;
     pclass_methods.tag := Pointer(pInfo);
@@ -442,14 +441,14 @@ begin
   pProps := Self.SelectProperties;
   FSciterClassDef.propsc := pProps.Count + 1;
   szProps := SizeOf(tiscript_prop_def) * FSciterClassDef.propsc; // 1 - "null-terminating record"
-  pclass_props := CoTaskMemAlloc(szProps);
+  GetMem(pclass_props, szProps);
   FSciterClassDef.props := pclass_props;
   for i := 0 to pProps.Count - 1 do
   begin
     pInfo := pProps[i];
     sprop_name := AnsiString(pInfo.Name);
     pclass_props.dispatch := nil;
-    pclass_props.name := StrNew(PAnsiChar(sprop_name));
+    pclass_props.name := PAnsiChar(sprop_name);
 
     // non-indexed property getter
     if (pInfo.HasGetter) and (pInfo.GetArgsCount = 0) then

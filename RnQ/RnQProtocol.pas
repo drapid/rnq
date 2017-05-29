@@ -10,7 +10,7 @@ interface
 uses
    Windows, Classes, Types, SysUtils,
    RnQNet, RDGlobal,
-   RnQPrefsLib,
+   RnQPrefsLib, RnQPrefsTypes,
    RnQGraphics32, RDUtils
    ;
 //    contacts;

@@ -8,7 +8,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ComCtrls, StdCtrls, ExtCtrls, RnQButtons, RnQSpin, RDGlobal,
   selectcontactsDlg,
-  RnQPrefsLib,
+  RnQPrefsInt, RnQPrefsTypes,
   Mask, Menus;
 
 type
@@ -93,7 +93,7 @@ type
     { Public declarations }
     procedure CloseAction(Sender: Tobject);
 
-    procedure initPage(prefs: TRnQPref); Override; final;
+    procedure initPage(prefs: IRnQPref); Override; final;
     procedure unInitPage; Override; final;
     procedure applyPage; Override; final;
     procedure resetPage; Override; final;

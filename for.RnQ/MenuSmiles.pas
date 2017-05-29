@@ -11,11 +11,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ExtCtrls, RDGlobal, RQThemes,
- {$IFDEF PREF_IN_DB}
-  DBPrefsLib,
- {$ELSE ~PREF_IN_DB}
-  RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
+  RnQPrefsInt,
   RnQGraphics32;
 
 type
@@ -46,7 +42,7 @@ type
 //    menu_btAc, menu_btIn: TBitmap;
     Btn_Width: Integer;
     Btn_Height: Integer;
-    fMainPrefs: TRnQPref;
+    fMainPrefs: IRnQPref;
     fLastMousePos: TPoint;
     FAniParamList: TAniSmileParamsArray;
     FAniDrawCnt: Integer;
@@ -70,7 +66,7 @@ type
     procedure CreateParams( var Params: TCreateParams ); override;
   end;
 
-  procedure ShowSmileMenu(pp: TRnQPref; t: tpoint; AOwner: TComponent; const ChatFrmGetHNDL: TOnGetHNDL; const onSelect: TGetStrProc);
+  procedure ShowSmileMenu(pp: IRnQPref; t: tpoint; AOwner: TComponent; const ChatFrmGetHNDL: TOnGetHNDL; const onSelect: TGetStrProc);
 
 const
   Btn_Max_Width   = 45;
@@ -811,7 +807,7 @@ begin
 //    FAniTimer.Enabled := false;
 end;
 
-procedure ShowSmileMenu(pp: TRnQPref; t: tpoint; AOwner: TComponent; const ChatFrmGetHNDL: TOnGetHNDL; const onSelect: TGetStrProc);
+procedure ShowSmileMenu(pp: IRnQPref; t: tpoint; AOwner: TComponent; const ChatFrmGetHNDL: TOnGetHNDL; const onSelect: TGetStrProc);
 var
   ar: array[1..4] of TRect;
   scr, intr, a: Trect;

@@ -41,6 +41,7 @@ uses
   controls, types, strutils, SysConst, iniFiles,
   ThemesLib,
   RnQDialogs, RnQLangs, RnQNet, RnQtrayLib, RnQGlobal,
+  RnQPrefsTypes,
  {$IFDEF PREF_IN_DB}
   DBPrefsLib,
  {$ELSE ~PREF_IN_DB}

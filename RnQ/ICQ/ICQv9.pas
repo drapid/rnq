@@ -19,7 +19,7 @@ uses
   RnQProtocol,
   ICQContacts, strutils,
   RQThemes, RDGlobal, RQUtil,
-  RnQPrefsLib,
+  RnQPrefsLib, RnQPrefsTypes,
 {$IFDEF usesECC}
      SynEcc,
 {$ENDIF usesECC}
@@ -5284,11 +5284,11 @@ begin
 
   i := findTLV($02, snac, ofs);
   if i > 0 then
-    cont.createTime:=UnixToDateTime(getTLVdwordBE(@snac[i]));
+    cont.createTime := UnixToDateTime(getTLVdwordBE(snac, i));
 
   i := findTLV($03, snac, ofs); // Signon time
   if i > 0 then
-    cont.onlineSince:=UnixToDateTime(getTLVdwordBE(@snac[i]))+GMToffset
+    cont.onlineSince := UnixToDateTime(getTLVdwordBE(snac, i))+GMToffset
   else
     cont.onlineSince := 0;
 //  if existsTLV(3, snac, ofs) then
@@ -5296,21 +5296,21 @@ begin
 
   i := findTLV($04, snac, ofs); // Idle time in minutes
   if i>0 then
-    cont.IdleTime := getTLVwordBE(@snac[i])
+    cont.IdleTime := getTLVwordBE(snac, i)
    else
     cont.IdleTime := 0;
 
   i := findTLV($05, snac, ofs); // Approximation of AIM membership
   if i>0 then
-    cont.memberSince := UnixToDateTime(getTLVdwordBE(@snac[i]));
+    cont.memberSince := UnixToDateTime(getTLVdwordBE(snac, i));
 
   i := findTLV($0A, snac, ofs); // Network byte order IP address
   if i>0 then
-   cont.connection.ip := getTLVdwordBE(@snac[i]);
+   cont.connection.ip := getTLVdwordBE(snac, i);
 
   i := findTLV($0F, snac, ofs); // Online time in seconds
   if i>0 then
-    cont.OnlineTime := getTLVdwordBE(@snac[i])
+    cont.OnlineTime := getTLVdwordBE(snac, i)
    else
     cont.OnlineTime := 0;
 
@@ -5318,7 +5318,7 @@ begin
 
   i := findTLV($01, snac, ofs); // NICK_FLAGS - Flags that represent the user's state
    if i>0 then
-     nickFlags := getTLVwordBE(@snac[i])
+     nickFlags := getTLVwordBE(snac, i)
     else
      nickFlags := 0;
   cont.isMobile := nickFlags and $0080 > 0;
@@ -5414,7 +5414,7 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
      t := 0;
       while s > '' do
         begin
-        cap := copy(s,1,16);
+        cap := copy(s, 1,16);
         delete(s, 1, 16);
         found := FALSE;
         for i:=1 to length(BigCapability) do
@@ -5456,9 +5456,12 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
         icq2go := True;
       if (CAPS_big_CryptMsg in capabilitiesBig) then
         icq2go := False;
-     if CAPS_big_Tril in capabilitiesBig then icq2go := true;
-     if (proto = 8) and (CAPS_big_Lite in capabilitiesBig) then icq2go := true;
-     if CAPS_big_MTN in capabilitiesBig then cont.typing.bSupport := True;
+     if CAPS_big_Tril in capabilitiesBig then
+       icq2go := true;
+     if (proto = 8) and (CAPS_big_Lite in capabilitiesBig) then
+       icq2go := true;
+     if CAPS_big_MTN in capabilitiesBig then
+       cont.typing.bSupport := True;
 
 {     if xStatus <> t then
        begin
@@ -5551,7 +5554,7 @@ FORWARD_MOBILE	0x00080000	If no active instances forward to mobile
                  t := Byte(s[4]);
                  if t > 0 then
                  begin
-                  i := word_BEat(@s[5]);
+                  i := word_BEat(s, 5);
                   if (i + 6) <= length(s) then
                    begin
                      if i >0 then
@@ -5781,27 +5784,27 @@ if (not cont.isAIM) and (not existsTLV(6, snac,ofs)) then
 
   cont.prevStatus  := cont.status;
   eventOldStatus   := cont.status;
-  eventOldInvisible:= cont.invisible;
+  eventOldInvisible := cont.invisible;
   i := findTLV($06, snac, ofs);
   if i > 0 then
-    code := getTLVdwordBE(@snac[i])
+    code := getTLVdwordBE(snac, i)
    else
     code := 0;
-  newStatus:=code2status(code);
-  newInvis :=code and flag_invisible>0;
+  newStatus := code2status(code);
+  newInvis := code and flag_invisible>0;
 
   cont.birthFlag := code and flag_birthday>0;
 
  if (cont.status = SC_OFFLINE)
   or (cont.invisibleState = 2) then
   begin
-  cont.status:=newStatus;
-  cont.invisible:=newInvis;
+  cont.status := newStatus;
+  cont.invisible := newInvis;
   if isInvis then
    begin
     if (newStatus <> eventOldStatus) or (newInvis<> eventOldInvisible) then
     begin
-//    cont.status:=newStatus;
+//    cont.status := newStatus;
       cont.invisibleState := 2;
       eventContact := cont;
       notifyListeners(IE_statuschanged);
@@ -5818,8 +5821,8 @@ if (not cont.isAIM) and (not existsTLV(6, snac,ofs)) then
 else
   if (newStatus <> eventOldStatus) or (newInvis<> eventOldInvisible) then
     begin
-    cont.status:=newStatus;
-    cont.invisible:=newInvis;
+    cont.status := newStatus;
+    cont.invisible := newInvis;
     eventContact := cont;
     notifyListeners(IE_statuschanged);
     end
@@ -5841,9 +5844,9 @@ var
   s: RawByteString;
   cnt: TICQcontact;
 begin
-  eventFlags:=0;
-  eventTime:=now;
-  ofs:=1;
+  eventFlags := 0;
+  eventTime := now;
+  ofs := 1;
   l := Length(snac);
   while ofs < l-5 do
   begin
@@ -5867,8 +5870,8 @@ begin
 
          if (cnt.prevStatus <> cnt.status) then
           begin
-            cnt.lastTimeSeenOnline:=eventTime;
-            eventContact:= cnt;
+            cnt.lastTimeSeenOnline := eventTime;
+            eventContact := cnt;
             notifyListeners(IE_offgoing);
           end;
       end;
@@ -5924,9 +5927,9 @@ begin
       else
        begin
             if not fRoster.exists(c) then
-              c.nick := UnUTF(chop(#$FE,s))
+              c.nick := UnUTF(chop(#$FE, s))
              else
-              chop(#$FE,s);
+              chop(#$FE, s);
         eventContacts.add(c);
        end;
     except
@@ -5935,24 +5938,24 @@ end; // parseContactsString
 
 procedure TicqSession.parseAuthString(s: RawByteString);
 var
-  sU : String;
+  sU: String;
 begin
  with eventContact do
   begin
-    sU := UnUTF(chop(#$FE,s));
+    sU := UnUTF(chop(#$FE, s));
     if nick='' then
       nick := sU;
-    sU := UnUTF(chop(#$FE,s));
+    sU := UnUTF(chop(#$FE, s));
     if first='' then
       first := sU;
-    sU := UnUTF(chop(#$FE,s));
+    sU := UnUTF(chop(#$FE, s));
     if last='' then
       last := sU;
-    sU := UnUTF(chop(#$FE,s));
+    sU := UnUTF(chop(#$FE, s));
     if email='' then
       email := sU;
   end;
- chop(#$FE,s);   // skip unknown char
+ chop(#$FE, s);   // skip unknown char
 //s := UTF8ToStrSmart(s);
 // eventMsg:= unUTF(s);
  eventMsgA := s;
@@ -6189,6 +6192,7 @@ var
      key: array [0..31] of byte;
    {$ENDIF ~USE_SYMCRYPTO}
    CrptMsg: RawByteString;
+  pubKey, msgKey: RawByteString;
   PlugNameLen: longWord;
   Plugin: AnsiString;
   Cap: RawByteString;
@@ -6205,7 +6209,7 @@ begin
       i := findTLV($16, snac, ofs);
       if i>0 then
 //        eventTime:= UnixToDateTime(getTLVdwordBE(@snac[i])) + GMToffset0;
-        eventTime:= UnixToDateTime(getTLVdwordBE(@snac[i])) + GMToffset;
+        eventTime:= UnixToDateTime(getTLVdwordBE(snac, i)) + GMToffset;
      end;
     sA := getTLVSafe($02, snac, ofs);
     isTzer := false;
@@ -6337,21 +6341,21 @@ begin
     inc(ofs, 16);
     i := findTLV($04, snac, ofs);
     if i>0 then
-      thisCnt.connection.ip := getTLVdwordBE(@snac[i]);
+      thisCnt.connection.ip := getTLVdwordBE(snac, i);
     i := findTLV($05, snac, ofs);
     if i>0 then
-      thisCnt.connection.port := getTLVwordBE(@snac[i]);
+      thisCnt.connection.port := getTLVwordBE(snac, i);
     if existsTLV($06, snac, ofs) then
      begin
       i := findTLV($16, snac, ofs);
       if i>0 then
-        eventTime := UnixToDateTime(getTLVdwordBE(@snac[i])) + GMToffset0;
+        eventTime := UnixToDateTime(getTLVdwordBE(snac, i)) + GMToffset0;
      end;
     if existsTLV($24, snac, ofs) then
     begin
       i := findTLV($24, snac, ofs);
       if i > 0 then
-        eventWID := getTLV(@snac[i])
+        eventWID := getTLV(snac, i)
       else
         eventWID := '';
     end;
@@ -6366,7 +6370,7 @@ begin
       i := findTLV($0A, snac, ofs);
       t := 0;
       if i > 0 then
-        t := getTLVwordBE(@snac[i]);
+        t := getTLVwordBE(snac, i);
 
       sA := getTLVSafe($0D, snac, ofs);
       msgEnc := getTLVSafe($2711, snac, ofs);
@@ -6403,7 +6407,7 @@ begin
        i := findTLV($0A, snac, ofs);
        t := 0;
        if i > 0 then
-        t := getTLVwordBE(@snac[i]);
+        t := getTLVwordBE(snac, i);
        if t=1 then // First request
         begin
           eventDirect := directTo(thisCnt);
@@ -6456,10 +6460,10 @@ begin
                i := findTLV($02, snac,ofs);
                eventDirect.stage := t;
                if i > 0 then
-                 eventDirect.AOLProxy.ip := getTLVdwordBE(@snac[i]);
+                 eventDirect.AOLProxy.ip := getTLVdwordBE(snac, i);
                i := findTLV($05, snac,ofs);
                if i > 0 then
-                 eventDirect.AOLProxy.port := getTLVwordBE(@snac[i]);
+                 eventDirect.AOLProxy.port := getTLVwordBE(snac, i);
                if t>1 then
                begin
                  if eventDirect.mode <> dm_bin_proxy then
@@ -6506,7 +6510,7 @@ begin
                    i := findTLV($02, snac,ofs);
                    eventDirect.AOLProxy.ip := $FFFFFFFF;
                    if i > 0 then
-                     eventDirect.AOLProxy.ip := getTLVdwordBE(@snac[i]);
+                     eventDirect.AOLProxy.ip := getTLVdwordBE(snac, i);
                    if eventDirect.AOLProxy.ip = 0 then
                     begin
                      if messageDlg(getTranslation('Do you want to send files through server?'), mtConfirmation, [mbYes,mbNo],0, mbYes, 20) = mrYes then
@@ -6549,8 +6553,8 @@ begin
     if Cap = BigCapability[CAPS_big_CryptMsg].v then
      begin
       ofs := findTLV($2711, snac, ofs)+4;
-      msgDwnCnt := word_LEat(@snac[ofs]);
-      msgDwnCnt := word_LEat(@snac[ofs + msgDwnCnt]);
+      msgDwnCnt := word_LEat(snac, ofs);
+      msgDwnCnt := word_LEat(snac, ofs + msgDwnCnt);
       inc(ofs, byte(snac[ofs])+2);
       inc(ofs, byte(snac[ofs])+2);
   //    priority := ord(snac[ofs+4]);
@@ -6591,27 +6595,6 @@ begin
          AES_ECB_Init_Decr(key, 256, ctx);
          AES_ECB_Decrypt(@CrptMsg[1], @msg[1], i, ctx);
    {$ENDIF ~USE_SYMCRYPTO}
-{
-         setLength(msg, origMsgLen);
-//          buf.Free;
-//          destBuf.Free;
-         if CompressType = 1 then
-           begin
-//             msg := ZDecompressStrEx(msg);
-             Buf := TMemoryStream.create;
-             destBuf := TMemoryStream.create;
-             buf.Write(msg[5], origMsgLen);
-             buf.Position := 0;
-             ZlibDecompressStream(buf, destBuf);
-             buf.free;
-      //       Msg2Send :=  ZCompressStrEx(msg, clMax);
-      //       if Length(Msg2Send) < Len then
-             setLength(msg, destBuf.Size);
-             destBuf.Position := 0;
-             CopyMemory(@msg[1], destBuf.Memory, destBuf.Size);
-             destBuf.free;
-           end;
-}
          if CompressType = 1 then
            msg := ZDecompressStr(Copy(msg, 5, length(msg)));
 
@@ -6641,21 +6624,30 @@ begin
     if Copy(Cap, 1, 5) = 'RDEC0' then
      // Ecc encrypted msg
      begin
-      if not (thisCnt.crypt.supportEcc and (thisCnt.crypt.EccMsgKey>'')) then
+      pubKey := getTLVSafe($EC, snac, ofs);
+      if not (thisCnt.crypt.supportEcc
+              and (thisCnt.crypt.EccPubKey = pubKey)
+              and (thisCnt.crypt.EccMsgKey>'')) then
         begin
           // Need to calculate key
-          thisCnt.crypt.EccPubKey := getTLVSafe($EC, snac, ofs);
-          if thisCnt.crypt.EccPubKey > '' then
+          msgKey := '';
+          if pubKey > '' then
             begin
-              SetLength(thisCnt.crypt.EccMsgKey, sizeof(TECCSecretKey));
-              if not ecdh_shared_secret(PECCPublicKey(thisCnt.crypt.EccPubKey)^, fECCKeys.pk, PECCSecretKey(thisCnt.crypt.EccMsgKey)^) then
-                thisCnt.crypt.EccMsgKey := '';
+              SetLength(msgKey, sizeof(TECCSecretKey));
+              if not ecdh_shared_secret(PECCPublicKey(pubKey)^, fECCKeys.pk, PECCSecretKey(msgKey)^) then
+                msgKey := '';
             end;
+            begin
+              thisCnt.crypt.EccPubKey := pubKey;
+              thisCnt.crypt.EccMsgKey := msgKey;
+            end;
+        end
+       else
+        msgKey := thisCnt.crypt.EccMsgKey;
 
-        end;
       ofs := findTLV($2711, snac, ofs)+4;
-      msgDwnCnt := word_LEat(@snac[ofs]);
-      msgDwnCnt := word_LEat(@snac[ofs + msgDwnCnt]);
+      msgDwnCnt := word_LEat(snac, ofs);
+      msgDwnCnt := word_LEat(snac, ofs + msgDwnCnt);
       inc(ofs, byte(snac[ofs])+2);
       inc(ofs, byte(snac[ofs])+2);
   //    priority := ord(snac[ofs+4]);
@@ -6673,7 +6665,7 @@ begin
       if not (CompressType in [0,1]) then
          msg := getTranslation('R&Q error: Unknown type of compress [%d]', [CompressType])
        else
-      if not (thisCnt.crypt.EccMsgKey > '') then
+      if not (msgKey > '') then
          msg := getTranslation('R&Q error: Unknown key for encription')
        else
        begin
@@ -6685,7 +6677,7 @@ begin
          eventFlags := eventFlags or IF_Encrypt;
 
          CrptMsg := Base64DecodeString(msg);
-         CalcKey(True, thisCnt.crypt.EccMsgKey, thisCnt.UID2cmp, MyAccount, eventMsgID, origMsgLen, key);
+         CalcKey(True, msgKey, thisCnt.UID2cmp, MyAccount, eventMsgID, origMsgLen, key);
 
          i := Length(CrptMsg);
          SetLength(Msg, i+AESBLKSIZE);
@@ -8442,8 +8434,8 @@ begin
    end
 end; // removeContact
 
-//procedure TicqSession.setStatus(s:Tstatus; inv:boolean);
-procedure TicqSession.setStatus(s:TICQstatus; vis: Tvisibility);
+//procedure TicqSession.setStatus(s: Tstatus; inv: boolean);
+procedure TicqSession.setStatus(s: TICQstatus; vis: Tvisibility);
 begin
   if s = SC_OFFLINE then
    begin
@@ -8475,7 +8467,7 @@ begin
     connect;
 end; // setStatus
 
-procedure TicqSession.setStatus(st:byte);
+procedure TicqSession.setStatus(st: byte);
 begin
   if st = byte(SC_OFFLINE) then
    begin

@@ -11,11 +11,7 @@ interface
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   StdCtrls,
- {$IFDEF PREF_IN_DB}
-  DBPrefsLib,
- {$ELSE ~PREF_IN_DB}
-  RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
+  RnQPrefsInt, RnQPrefsTypes,
   RnQButtons, VirtualTrees;
 
 type
@@ -33,7 +29,7 @@ type
   private
     procedure fillPluginsGrid;
   public
-    procedure initPage(prefs: TRnQPref); Override;
+    procedure initPage(prefs: IRnQPref); Override;
     procedure applyPage; Override;
     procedure resetPage; Override;
 //    procedure updateVisible;

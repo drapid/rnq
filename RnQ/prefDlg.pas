@@ -11,11 +11,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Forms,
   Controls, ExtCtrls,
- {$IFDEF PREF_IN_DB}
-  DBPrefsLib,
- {$ELSE ~PREF_IN_DB}
-  RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
+  RnQPrefsTypes,
   RnQButtons, RnQDialogs, VirtualTrees, StdCtrls;
 
 type

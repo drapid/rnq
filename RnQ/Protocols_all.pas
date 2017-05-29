@@ -14,7 +14,7 @@ uses
   Protocol_icq, ICQcontacts,
  {$ENDIF PROTOCOL_ICQ}
   automsgDlg,
-  RnQPrefsLib,
+  RnQPrefsTypes,
   RnQPics,
   RDGlobal, outboxLib;
 

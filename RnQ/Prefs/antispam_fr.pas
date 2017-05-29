@@ -12,11 +12,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   StdCtrls, ExtCtrls, ComCtrls, VirtualTrees, Menus,
   RnQButtons, RnQSpin, RDGlobal,
- {$IFDEF PREF_IN_DB}
-  DBPrefsLib,
- {$ELSE ~PREF_IN_DB}
-  RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
+  RnQPrefsInt, RnQPrefsTypes,
   RnQConst,
   RnQProtocol;
 
@@ -85,7 +81,7 @@ type
   public
     procedure applyPage; Override;
     procedure resetPage; Override;
-    procedure initPage(prefs: TRnQPref); Override;
+    procedure initPage(prefs: IRnQPref); Override;
     procedure updateVisPage; Override;
     { Public declarations }
   end;

@@ -41,7 +41,7 @@ function DispatchInvoke(const Dispatch: IDispatch; const DispID: integer;
   const AParams: array of OleVariant): OleVariant; overload;
 
 function DispatchInvoke(const Dispatch: IDispatch; const MethodName: WideString;
-  const AParams: array of OleVariant): OleVariant; overload;
+  const AParams: array of Variant): Variant; overload;
 
 function DispatchGetItem(const Dispatch: IDispatch; const Index: OleVariant): OleVariant;
 
@@ -149,7 +149,7 @@ begin
 end;
 
 function DispatchInvoke(const Dispatch: IDispatch; const MethodName: WideString;
-  const AParams: array of OleVariant): OleVariant; overload;
+  const AParams: array of Variant): Variant; overload;
 var
   Argc: integer;
   ArgErr: integer;
@@ -527,7 +527,7 @@ var
   arg: tiscript_value;
   pthis: tiscript_object;
   sarg: TSciterValue;
-  oargs: array of OleVariant;
+  oargs: array of Variant;
   i: Integer;
   oresult: OleVariant;
 begin

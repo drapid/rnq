@@ -13,8 +13,8 @@ unit SciterApi;
 
 interface
 
-uses Windows, Messages, Dialogs, Classes, Forms, Controls, SysUtils, ComObj, ActiveX,
-  Variants, ExtCtrls, TiScriptApi;
+uses
+  Windows, Classes, SysUtils, TypInfo, ActiveX, RTTI, Variants, TiScriptApi;
 
 const
   SIH_REPLACE_CONTENT      = 0;
@@ -62,12 +62,14 @@ type
 
   HELEMENT = Pointer;
 
+  HSARCHIVE = Pointer;
+
   LPVOID   = Pointer;
 
   UINT_PTR = UINT;
 
 
-  LPCSTR_RECEIVER = procedure(str: PAnsiChar; str_length: UINT; param : Pointer); stdcall;
+  LPCSTR_RECEIVER = procedure(str: PAnsiChar; str_length: UINT; param: Pointer); stdcall;
   PLPCSTR_RECEIVER = ^LPCSTR_RECEIVER;
 
   LPCWSTR_RECEIVER = procedure(str: PWideChar; str_length: UINT; param: Pointer); stdcall;
@@ -98,7 +100,9 @@ type
     RT_DATA_CURSOR = 3,
     RT_DATA_SCRIPT = 4,
     RT_DATA_RAW    = 5,
-    SciterResourceTypeDummy = MaxInt
+    RT_DATA_FONT,
+    RT_DATA_SOUND,
+    RT_DATA_FORCE_DWORD = MAXINT
   );
 
   SciterGFXLayer =
@@ -106,7 +110,9 @@ type
     GFX_LAYER_GDI      = 1,
     GFX_LAYER_WARP     = 2,
     GFX_LAYER_D2D      = 3,
-    GFX_LAYER_AUTO     = 65535
+    GFX_LAYER_SKIA = 4,
+    GFX_LAYER_SKIA_OPENGL = 5,
+    GFX_LAYER_AUTO = $FFFF
   );
 
   SCITER_RT_OPTIONS { NB: UINT_PTR } = (
@@ -222,6 +228,28 @@ type
     T_DUMMY = MAXINT
   );
 
+  TSciterValueUnitTypeInt =
+  (
+    UTI_INT = 0,
+    UTI_EM = 1,
+    UTI_EX = 2,
+    UTI_PR = 3,
+    UTI_SP = 4,
+    Reserved1 = 5,
+    Reserved2 = 6,
+    UTI_PX = 7,
+    UTI_IN = 8,
+    UTI_CM = 9,
+    UTI_MM = 10,
+    UTI_PT = 11,
+    UTI_PC = 12,
+    UTI_DIP = 13,
+    Reserved3 = 14,
+    UTI_COLOR = 15,
+    UTI_URL   = 16,
+    UTI_DUMMY = MAXINT
+  );
+
   TSciterValueUnitTypeObject =
   (
     UT_OBJECT_ARRAY,
@@ -231,6 +259,15 @@ type
     UT_OBJECT_FUNCTION,
     UT_OBJECT_ERROR,
     UT_DUMMY = MAXINT
+  );
+
+  TSciterValueUnitTypeString =
+  (
+    UTS_STRING_STRING = 0,
+    UTS_STRING_ERROR  = 1,
+    UTS_STRING_SECURE = 2,
+    UTS_STRING_SYMBOL = $ffff,
+    UTS_DUMMY = MAXINT
   );
 
   EVENT_GROUPS =
@@ -311,8 +348,7 @@ type
   TSciterValue = record
     t: UINT;
     u: UINT;
-    //d: UInt64;
-    d: Int64; // For D6 compatibility
+    d: UInt64;
   end;
   PSciterValue = ^TSciterValue;
 
@@ -432,21 +468,22 @@ type
     CONTENT_CHANGED = $15,
     HYPERLINK_CLICK = $80,
     ELEMENT_COLLAPSED = $90,
-    ELEMENT_EXPANDED,
-    ACTIVATE_CHILD,
-    INIT_DATA_VIEW,
-    ROWS_DATA_REQUEST,
-    UI_STATE_CHANGED,
-    FORM_SUBMIT,
-    FORM_RESET,
-    DOCUMENT_COMPLETE,
-    HISTORY_PUSH,
-    HISTORY_DROP,
-    HISTORY_PRIOR,
-    HISTORY_NEXT,
-    HISTORY_STATE_CHANGED,
-    CLOSE_POPUP,
-    REQUEST_TOOLTIP,
+    ELEMENT_EXPANDED = $91,
+    ACTIVATE_CHILD = $91,
+    //DO_SWITCH_TAB = ACTIVATE_CHILD
+    //INIT_DATA_VIEW,
+    //ROWS_DATA_REQUEST,
+    UI_STATE_CHANGED = $95,
+    FORM_SUBMIT = $96,
+    FORM_RESET = $97,
+    DOCUMENT_COMPLETE = $98,
+    HISTORY_PUSH = $99,
+    HISTORY_DROP = $9A,
+    HISTORY_PRIOR = $9B,
+    HISTORY_NEXT = $9C,
+    HISTORY_STATE_CHANGED = $9D,
+    CLOSE_POPUP = $9E,
+    REQUEST_TOOLTIP = $9F,
     ANIMATION         = $A0,
     DOCUMENT_CREATED  = $C0,
     VIDEO_INITIALIZED = $D1,
@@ -457,11 +494,12 @@ type
     BEHAVIOR_EVENTS_DUMMY = MAXINT // doesn't exist in sciter api, used for sizeof(uint) alignment
   );
 
-  EVENT_REASON =
+  CLICK_REASON =
   (
     BY_MOUSE_CLICK,
     BY_KEY_CLICK,
     SYNTHESIZED,
+    BY_MOUSE_ON_ICON,
     EVENT_REASON_DUMMY = MAXINT
   );
 
@@ -471,6 +509,7 @@ type
     BY_INS_CHARS,
     BY_DEL_CHAR,
     BY_DEL_CHARS,
+    BY_UNDO_REDO,
     EDIT_CHANGED_REASON_DUMMY = MAXINT
   );
 
@@ -570,13 +609,13 @@ type
     SciterSetMediaVars: function(hWndSciter: HWINDOW; const mediaVars: PSciterValue): BOOL; stdcall;
     SciterGetMinWidth: function(hwnd: HWINDOW): UINT; stdcall;
     SciterGetMinHeight: function(hwnd: HWINDOW; width: UINT): UINT; stdcall;
-    SciterCall: function(hWnd: HWINDOW; functionName: PAnsiChar; argc: UINT; argv: PSciterValue; var retval: TSciterValue): BOOL; stdcall;
-    SciterEval: function(hwnd: HWINDOW; script: PWideChar; scriptLength: UINT; var pretval: TSciterValue): BOOL; stdcall;
+    SciterCall: function(hWnd: HWINDOW; functionName: PAnsiChar; argc: UINT; const argv: PSciterValue; var retval: TSciterValue): BOOL; stdcall;
+    SciterEval: function(hwnd: HWINDOW; script: PWideChar; scriptLength: UINT; var retval: TSciterValue): BOOL; stdcall;
     SciterUpdateWindow: procedure(hwnd: HWINDOW); stdcall;
     SciterTranslateMessage: function(var lpMsg: TMsg): BOOL; stdcall;
     SciterSetOption: function(hwnd: HWINDOW; option: SCITER_RT_OPTIONS; value: UINT_PTR): BOOL; stdcall;
     SciterGetPPI: procedure(hWndSciter: HWINDOW; var px: UINT; var py: UINT); stdcall;
-    SciterGetViewExpando: function( hwnd: HWINDOW; pval: PSciterValue ): BOOL; stdcall;
+    SciterGetViewExpando: function( hwnd: HWINDOW; pval: PSciterValue): BOOL; stdcall;
     SciterRenderD2D: TProcPointer;
     SciterD2DFactory: TProcPointer;
     SciterDWFactory: TProcPointer;
@@ -657,8 +696,8 @@ type
     SciterSortElements: TProcPointer;
     SciterSwapElements: function( he1: HELEMENT; he2: HELEMENT ): SCDOM_RESULT; stdcall;
     SciterTraverseUIEvent: function( evt: UINT; eventCtlStruct: LPVOID ; var bOutProcessed: BOOL): SCDOM_RESULT; stdcall;
-    SciterCallScriptingMethod: function(he: HELEMENT; name: PAnsiChar; argv: PSciterValue; argc: UINT; var retval: TSciterValue): SCDOM_RESULT; stdcall;
-    SciterCallScriptingFunction: function(he: HELEMENT; name: PAnsiChar; argv: PSciterValue; argc: UINT; var retval: TSciterValue): SCDOM_RESULT; stdcall;
+    SciterCallScriptingMethod: function(he: HELEMENT; name: PAnsiChar; const argv: PSciterValue; argc: UINT; var retval: TSciterValue): SCDOM_RESULT; stdcall;
+    SciterCallScriptingFunction: function(he: HELEMENT; name: PAnsiChar; const argv: PSciterValue; argc: UINT; var retval: TSciterValue): SCDOM_RESULT; stdcall;
     SciterEvalElementScript: function(he: HELEMENT; script: PWideChar; scriptLength: UINT; var retval: TSciterValueType): SCDOM_RESULT; stdcall;
     SciterAttachHwndToElement: function(he: HELEMENT; hwnd: HWINDOW): SCDOM_RESULT; stdcall;
     SciterControlGetType: TProcPointer;
@@ -706,16 +745,16 @@ type
     ValueBinaryData: function(Value: PSciterValue; var bytes: PByte; var pnBytes: UINT): UINT; stdcall; 
     ValueBinaryDataSet: function(Value: PSciterValue; bytes: PByte; nBytes: UINT; pType: TSciterValueType; units: UINT): UINT; stdcall;
     ValueElementsCount: function(Value: PSciterValue; var pData: UINT): UINT; stdcall;
-    ValueNthElementValue : function(Value: PSciterValue; n: Integer; pretval: PSciterValue): UINT; stdcall;
+    ValueNthElementValue: function(Value: PSciterValue; n: Integer; var retval: TSciterValue): UINT; stdcall;
     ValueNthElementValueSet: function(pval: PSciterValue; n: Integer; pval_to_set: PSciterValue): UINT; stdcall;
-    ValueNthElementKey: TProcPointer;
-    ValueEnumElements: TProcPointer;
-    ValueSetValueToKey: TProcPointer;
-    ValueGetValueOfKey: TProcPointer;
+    ValueNthElementKey: function(Value: PSciterValue; n: Integer; var retval: TSciterValue): UINT; stdcall;
+    ValueEnumElements: function(Value: PSciterValue; penum, param: Pointer): UINT; stdcall;
+    ValueSetValueToKey: function(Value: PSciterValue; const pKey: PSciterValue; const pValToSte: PSciterValue): UINT; stdcall;
+    ValueGetValueOfKey: function(Value: PSciterValue; const pKey: PSciterValue; var retval: TSciterValue): UINT; stdcall;
     ValueToString: function(Value: PSciterValue; How: VALUE_STRING_CVT_TYPE): UINT; stdcall;
     ValueFromString: function(Value: PSciterValue; str: PWideChar; strLength: UINT; how: VALUE_STRING_CVT_TYPE): UINT; stdcall;
-    ValueInvoke: TProcPointer;
-    ValueNativeFunctorSet: TProcPointer;
+    ValueInvoke: function(Value: PSciterValue; this: PSciterValue; argc: UINT; const agrv: PSciterValue; var retval: TSciterValue; url: LPCWSTR): UINT; stdcall;
+    ValueNativeFunctorSet: function(Value: PSciterValue; pinvoke, prelease, tag: Pointer): UINT; stdcall;
     ValueIsNativeFunctor: TProcPointer;
 
     // tiscript VM API
@@ -727,9 +766,9 @@ type
     Sciter_T2S: function(vm: HVM; script_value: tiscript_value; var sciter_value: TSciterValue; isolate: BOOL): BOOL; stdcall;
     Sciter_S2T: function(vm: HVM; value: PSciterValue; var out_script_value: tiscript_value): BOOL; stdcall;
 
-    SciterOpenArchive: TProcPointer;
-    SciterGetArchiveItem: TProcPointer;
-    SciterCloseArchive: TProcPointer;
+    SciterOpenArchive: function(archiveData: PByte; archiveDataLength: UINT): HSARCHIVE; stdcall;
+    SciterGetArchiveItem: procedure(harc: HSARCHIVE; path: PWideChar; var pdata: PByte; var pdataLength: UINT); stdcall;
+    SciterCloseArchive: procedure(harc: HSARCHIVE); stdcall;
 
     SciterFireEvent: function(var evt: BEHAVIOR_EVENT_PARAMS; post: BOOL; var handled: BOOL): SCDOM_RESULT; stdcall;
 
@@ -974,11 +1013,31 @@ type
   ESciterNotImplementedException = class(ESciterException)
   end;
 
+  TRecordData = class(TPersistent)
+  public
+    RecObj: Pointer;
+    RecType: Pointer;
+  end;
+
+  TRecordVarData = packed record
+    VType: TVarType;
+    Reserved1, Reserved2, Reserved3: Word;
+    VRecord: TRecordData;
+    Reserved4: NativeInt;
+  end;
+
+  TRecordVariantType = class(TCustomVariantType)
+  public
+    procedure Copy(var Dest: TVarData; const Source: TVarData; const Indirect: Boolean); override;
+    procedure Clear(var V: TVarData); override;
+    function IsClear(const V: TVarData): Boolean; override;
+  end;
+
 { Conversion functions. Mnemonics are: T - tiscript_value, S - TSciterValue, V - VARIANT }
-function  S2V(Value: PSciterValue; var OleValue: OleVariant): UINT;
-function  V2S(const Value: OleVariant; SciterValue: PSciterValue): UINT;
-function  T2V(const vm: HVM; Value: tiscript_value): OleVariant;
-function  V2T(const vm: HVM; const Value: OleVariant): tiscript_value;
+function S2V(Value: PSciterValue; var OutValue: Variant): UINT;
+function V2S(const Value: Variant; SciterValue: PSciterValue): UINT;
+function T2V(const vm: HVM; Value: tiscript_value): Variant;
+function V2T(const vm: HVM; const Value: Variant): tiscript_value;
 
 function  API: PSciterApi;
 function NI: ptiscript_native_interface;
@@ -999,6 +1058,8 @@ procedure ThrowError(const vm: HVM; const Message: AnsiString); overload;
 procedure ThrowError(const vm: HVM; const Message: WideString); overload;
 function GetNativeObjectJson(const Value: PSciterValue): WideString;
 
+var
+  varRecordEx: Word = 0;
 implementation
 uses
   RnQGlobal;
@@ -1007,6 +1068,31 @@ var
   FAPI: PSciterApi;
   FNI: ptiscript_native_interface;
   HSCITER: HMODULE;
+  RecordVariantType: TRecordVariantType;
+
+{ TRecordVariantType }
+
+procedure TRecordVariantType.Copy(var Dest: TVarData; const Source: TVarData; const Indirect: Boolean);
+begin
+  with TRecordVarData(Dest) do
+  begin
+    VType := VarType;
+    VRecord := TRecordData.Create;
+    VRecord.RecObj := TRecordVarData(Source).VRecord.RecObj;
+    VRecord.RecType := TRecordVarData(Source).VRecord.RecType;
+  end;
+end;
+
+procedure TRecordVariantType.Clear(var V: TVarData);
+begin
+  V.VType := varEmpty;
+  FreeAndNil(TRecordVarData(V).VRecord);
+end;
+
+function TRecordVariantType.IsClear(const V: TVarData): Boolean;
+begin
+  Result := not Assigned(TRecordVarData(V).VRecord);
+end;
 
 function GetNativeObjectJson(const Value: PSciterValue): WideString;
 var
@@ -1068,15 +1154,13 @@ end;
 { Returns true if an object (class, variable, constant etc) exists in local or global namespace, false otherwise }
 function IsNameExists(const vm: HVM; ns: tiscript_value; const Name: WideString): boolean;
 var
-  var_name: tiscript_string;
-  var_value: tiscript_object;
-  zns: tiscript_value;
+  var_name, var_value, zns: tiscript_value;
 begin
   if ns = 0 then
     zns := NI.get_global_ns(vm)
    else
     zns := ns;
-  var_name  := NI.string_value(vm, PWideChar(Name), Length(Name));
+  var_name := NI.string_value(vm, PWideChar(Name), Length(Name));
   var_value := NI.get_prop(vm, zns, var_name);
   Result := not NI.is_undefined(var_value);
 end;
@@ -1128,9 +1212,7 @@ function RegisterNativeFunction(const vm: HVM; ns: tiscript_value; const Name: W
 var
   method_def: ptiscript_method_def;
   smethod_name: AnsiString;
-  func_def: tiscript_value;
-  func_name: tiscript_value;
-  zns: tiscript_value;
+  func_def, func_name, zns: tiscript_value;
 begin
   if IsNameExists(vm, ns, Name) and ThrowIfExists then
     raise ESciterException.CreateFmt('Failed to register native function %s. Object with same name already exists.', [Name]);
@@ -1146,29 +1228,23 @@ begin
 
   if NI.is_undefined(func_def) then
   begin
-    New(method_def);
+    New(method_def); // record leaks!
     method_def.dispatch := nil;
-    method_def.name := StrNew(PAnsiChar(smethod_name));
+    method_def.name := PAnsiChar(smethod_name);
     method_def.handler := Handler;
-    method_def.tag := Tag;
+    method_def.tag := tag;
     method_def.payload := 0;
     func_def := NI.native_function_value(vm, method_def);
     if not NI.is_native_function(func_def) then
-    begin
       raise Exception.CreateFmt('Failed to register native function "%s".', [Name]);
-    end;
     NI.set_prop(vm, zns, func_name, func_def);
     Result := True;
   end
     else
   if NI.is_native_function(func_def) then
-  begin
-    Result := False;
-  end
-    else
-  begin
+    Result := False
+   else
     raise ESciterException.CreateFmt('Cannot register native function "%s" (unexpected error). Seems that object with same name already exists.', [Name]);
-  end;
 end;
 
 function RegisterNativeClass(const vm: HVM; ClassDef: ptiscript_class_def; ThrowIfExists: Boolean; ReplaceClassDef: Boolean): tiscript_class;
@@ -1291,7 +1367,7 @@ begin
 end;
 
 { SciterValue to Variant conversion }
-function S2V(Value: PSciterValue; var OleValue: OleVariant): UINT;
+function S2V(Value: PSciterValue; var OutValue: Variant): UINT;
 var
   pType: TSciterValueType;
   pUnits: UINT;
@@ -1308,23 +1384,24 @@ var
   pDispValue: IDispatch;
   arrSize: UINT;
   sArrItem: TSciterValue;
-  oArrItem: OleVariant;
+  oArrItem: Variant;
   j: Integer;
 begin
-  API.ValueInit(@sArrItem);
   if API.ValueType(Value, pType, pUnits) <> HV_OK then
     raise ESciterException.Create('Unknown Sciter value type.');
   case pType of
     T_ARRAY:
       begin
         API.ValueElementsCount(Value, arrSize);
-        OleValue := VarArrayCreate([0, arrSize], varVariant);
+        OutValue := VarArrayCreate([0, arrSize], varVariant);
         for j := 0 to arrSize - 1 do
         begin
           oArrItem := Unassigned;
-          API.ValueNthElementValue(Value, j, @sArrItem);
+          API.ValueInit(@sArrItem);
+          API.ValueNthElementValue(Value, j, sArrItem);
           S2V(@sArrItem, oArrItem);
-          VarArrayPut(Variant(OleValue), oArrItem, [j]);
+          API.ValueClear(@sArrItem);
+          VarArrayPut(Variant(OutValue), oArrItem, [j]);
         end;
         Result := HV_OK;
       end;
@@ -1332,14 +1409,10 @@ begin
       begin
         Result := API.ValueIntData(Value, iResult);
         if Result = HV_OK then
-        begin
-          OleValue := iResult <> 0;
-        end
+          OutValue := iResult <> 0
           else
-        begin
-          OleValue := False;
+          OutValue := False;
         end;
-      end;
     T_BYTES:
       begin
         raise ESciterNotImplementedException.CreateFmt('Cannot convert T_BYTES to Variant (not implemented).', []);
@@ -1349,7 +1422,7 @@ begin
         // TODO: ?
         Result := API.ValueInt64Data(Value, i64Result);
         cResult := PCurrency(@i64Result)^;
-        OleValue := cResult;
+        OutValue := cResult;
       end;
     T_DATE:
       begin
@@ -1357,7 +1430,7 @@ begin
         ft := TFileTime(i64Result);
         FileTimeToSystemTime(ft, st);
         SystemTimeToVariantTime(st, dResult);
-        OleValue := TDateTime(dResult);
+        OutValue := TDateTime(dResult);
       end;
     T_DOM_OBJECT:
       begin
@@ -1366,17 +1439,17 @@ begin
     T_FLOAT:
       begin
         Result := API.ValueFloatData(Value, dResult);
-        OleValue := dResult;
+        OutValue := dResult;
       end;
     T_STRING:
       begin
         Result := API.ValueStringData(Value, pWStr, iNum);
         sWStr := WideString(pWStr);
-        OleValue := sWStr;
+        OutValue := sWStr;
       end;
     T_MAP:
       begin
-        OleValue := GetNativeObjectJson(Value);
+        OutValue := GetNativeObjectJson(Value);
         Result := HV_OK;
       end;
     T_FUNCTION:
@@ -1386,7 +1459,7 @@ begin
     T_INT:
       begin
         Result := API.ValueIntData(Value, iResult);
-        OleValue := iResult;
+        OutValue := iResult;
       end;
     T_LENGTH:
       begin
@@ -1395,11 +1468,11 @@ begin
     
     T_NULL:
       begin
-        OleValue := Null;
+        OutValue := Null;
         Result := HV_OK;
       end;
     T_OBJECT:
-      // TODO: returns OleVariant if Object wraps IDispatch, JSON otherwise 
+      // TODO: returns Variant if Object wraps IDispatch, JSON otherwise
       begin
         pbResult := nil;
         Result := API.ValueBinaryData(Value, pbResult, iNum);
@@ -1411,16 +1484,16 @@ begin
             try
               pDispValue._AddRef;
               pDispValue._Release;
-              OleValue := OleVariant(pDispValue);
+              OutValue := OleVariant(pDispValue);
             except
               // not an IDispatch, probably native tiscript object
-              OleValue := GetNativeObjectJson(Value);
+              OutValue := GetNativeObjectJson(Value);
               Result := HV_OK;
             end;
           end
             else
           begin
-            OleValue := Unassigned;
+            OutValue := Unassigned;
           end;
         end
           else
@@ -1430,18 +1503,18 @@ begin
             UT_OBJECT_ARRAY, UT_OBJECT_OBJECT, UT_OBJECT_ERROR:
               begin
                 Result := API.ValueIsolate(Value);
-                Result := S2V(Value, OleValue);
+                Result := S2V(Value, OutValue);
                 Exit;
               end;
           end;
 
-          OleValue := GetNativeObjectJson(Value);
+          OutValue := GetNativeObjectJson(Value);
           Result := HV_OK;
         end;
       end;
     T_UNDEFINED:
       begin
-        OleValue := Unassigned;
+        OutValue := Unassigned;
         Result := HV_OK;
       end;
     else
@@ -1452,7 +1525,7 @@ begin
 end;
 
 { Variant to SciterValue conversion }
-function V2S(const Value: OleVariant; SciterValue: PSciterValue): UINT;
+function V2S(const Value: Variant; SciterValue: PSciterValue): UINT;
 var
   sWStr: WideString;
   i64: Int64;
@@ -1463,11 +1536,13 @@ var
   pDisp: IDispatch;
   cCur: Currency;
   vt: Word;
-  i: Integer;
+  i, j: Integer;
   oArrItem: Variant;
   sArrItem: TSciterValue;
+  key, val, elem: TSciterValue;
+  valfields: TArray<TRttiField>;
+  rval, aval: TValue;
 begin
-  API.ValueInit(SciterValue);
   vt := VarType(Value);
 
   if (vt and varArray) = varArray then
@@ -1475,6 +1550,7 @@ begin
     for i := VarArrayLowBound(Value, 1) to VarArrayHighBound(Value, 1) do
     begin
       oArrItem := VarArrayGet(Value, [i]);
+      API.ValueInit(@sArrItem);
       V2S(oArrItem, @sArrItem);
       API.ValueNthElementValueSet(SciterValue, i, @sArrItem);
     end;
@@ -1485,23 +1561,18 @@ begin
   case vt of
     varEmpty:
       begin
-        API.ValueInit(SciterValue);
         Result := 0;
       end;
     varNull:
       begin
-        API.ValueInit(SciterValue);
         Result := 0;
       end;
-    varString:
-      begin
-        sWStr := Value;
-        Result:= API.ValueStringDataSet(SciterValue, PWideChar(sWStr), Length(sWStr), 0);
-      end;
+    varString,
+    varUString,
     varOleStr:
       begin
         sWStr := Value;
-        Result:= API.ValueStringDataSet(SciterValue, PWideChar(sWStr), Length(sWStr), 0);
+        Result := API.ValueStringDataSet(SciterValue, PWideChar(sWStr), Length(sWStr), 0);
       end;
     varBoolean:
       begin
@@ -1512,12 +1583,11 @@ begin
       end;
     varByte,
     varSmallInt,
+    varShortInt,
     varInteger,
     varWord,
     varLongWord:
-      begin
         Result := API.ValueIntDataSet(SciterValue, Integer(Value), T_INT, 0);
-      end;
     varInt64:
       begin
         i64 := Value;
@@ -1525,9 +1595,7 @@ begin
       end;
     varSingle,
     varDouble:
-      begin
         Result := API.ValueFloatDataSet(SciterValue, Double(Value), T_FLOAT, 0);
-      end;
     varCurrency:
       begin
         cCur := Value;
@@ -1549,25 +1617,89 @@ begin
         //pDisp._AddRef;
         Result := API.ValueBinaryDataSet(SciterValue, PByte(pDisp), 1, T_OBJECT, 0);
       end;
-    else
+    else if vt = varRecordEx then
       begin
+        valfields := TRTTIContext.Create.GetType(TRecordVarData(Value).VRecord.RecType).GetFields;
+        for i := Low(valfields) to High(valfields) do
+        begin
+          API.ValueInit(@key);
+          API.ValueInit(@val);
+          API.ValueStringDataSet(@key, PWideChar(valfields[i].Name), Length(valfields[i].Name), UINT(UTS_STRING_SYMBOL));
+
+          rval := valfields[i].GetValue(TRecordVarData(Value).VRecord.RecObj);
+          if rval.Kind = tkInteger then
+            API.ValueIntDataSet(@val, rval.AsInteger, T_INT, 0)
+          else if rval.Kind = tkEnumeration then
+          begin
+            if valfields[i].FieldType.Name = 'Boolean' then
+            begin
+              if rval.AsOrdinal = 1 then
+                API.ValueIntDataSet(@val, 1, T_BOOL, 0)
+    else
+                API.ValueIntDataSet(@val, 0, T_BOOL, 0)
+            end else
+              API.ValueIntDataSet(@val, rval.AsOrdinal, T_INT, 0)
+          end
+          else if (rval.Kind = tkString) or (rval.Kind = tkWString) or (rval.Kind = tkUString) or (rval.Kind = tkLString) then
+            API.ValueStringDataSet(@val, PWideChar(rval.AsString), Length(rval.AsString), 0)
+          else if rval.Kind = tkFloat then
+      begin
+            date := TDateTime(rval.AsExtended);
+            d := Double(date);
+            VariantTimeToSystemTime(d, st);
+            SystemTimeToFileTime(st, ft);
+            i64 := Int64(ft);
+            Result := API.ValueInt64DataSet(@val, i64, T_DATE, UINT(True));
+          end else if (rval.Kind = tkArray) or (rval.Kind = tkDynArray) then
+          begin
+            for j := 0 to rval.GetArrayLength - 1 do
+            begin
+              API.ValueInit(@elem);
+              aval := rval.GetArrayElement(j);
+              if aval.Kind = tkInteger then
+                API.ValueIntDataSet(@elem, aval.AsInteger, T_INT, 0)
+              else if aval.Kind = tkEnumeration then
+              begin
+                if aval.AsBoolean then
+                  API.ValueIntDataSet(@elem, 1, T_BOOL, 0)
+                else
+                  API.ValueIntDataSet(@elem, 0, T_BOOL, 0)
+              end else if aval.Kind = tkUString then
+              begin
+                sWStr := aval.AsString;
+                API.ValueStringDataSet(@elem, PWideChar(sWStr), Length(sWStr), 0);
+              end else
+                raise ESciterNotImplementedException.CreateFmt('Cannot convert array element of type %d to Sciter value.', [Integer(aval.Kind)]);
+              API.ValueNthElementValueSet(@val, j, @elem);
+              API.ValueClear(@elem);
+            end;
+          end else
+            raise ESciterNotImplementedException.CreateFmt('Cannot convert record field of type %d to Sciter value.', [Integer(rval.Kind)]);
+
+          Result := API.ValueSetValueToKey(SciterValue, @key, @val);
+
+          API.ValueClear(@key);
+          API.ValueClear(@val);
+        end;
+      end
+    else
         raise ESciterNotImplementedException.CreateFmt('Cannot convert VARIANT of type %d to Sciter value.', [vt]);
       end;
-  end;
 end;
 
 { tiscript value to Variant conversion }
-function T2V(const vm: HVM; Value: tiscript_value): OleVariant;
+function T2V(const vm: HVM; Value: tiscript_value): Variant;
 var
   sValue: TSciterValue;
 begin
   API.ValueInit(@sValue);
   API.Sciter_T2S(vm, Value, sValue, False);
   S2V(@sValue, Result);
+  API.ValueClear(@sValue);
 end;
 
 { Variant to tiscript value conversion }
-function V2T(const vm: HVM; const Value: OleVariant): tiscript_value;
+function V2T(const vm: HVM; const Value: Variant): tiscript_value;
 var
   sValue: TSciterValue;
   tResult: tiscript_value;
@@ -1576,6 +1708,7 @@ begin
   V2S(Value, @sValue);
   API.Sciter_S2T(vm, @sValue, tResult);
   Result := tResult;
+  API.ValueClear(@sValue);
 end;
 
 { ESciterNullPointerException }
@@ -1594,8 +1727,11 @@ end;
 
 initialization
   HSCITER := 0;
+  RecordVariantType := TRecordVariantType.Create;
+  varRecordEx := RecordVariantType.VarType;
 
 finalization
+  FreeAndNil(RecordVariantType);
   if HSCITER <> 0 then
     FreeLibrary(HSCITER);
 

@@ -214,7 +214,7 @@ uses
    {$ENDIF}
   // лайт версия будет без окна настроек!!!
 // {$IFNDEF RNQ_LITE}
-  prefDlg, RnQPrefsLib,
+  prefDlg, RnQPrefsInt, RnQPrefsTypes,
 //   ignore_fr,
   design_fr,
 // {$ENDIF RNQ_LITE}

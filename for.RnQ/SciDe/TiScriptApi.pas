@@ -63,7 +63,7 @@ type
   end;
   ptiscript_method_def = ^tiscript_method_def;
 
-  tiscript_method_def_array = array[0..0] of tiscript_method_def;
+  tiscript_method_def_array = array of ptiscript_method_def;
   ptiscript_method_def_array = ^tiscript_method_def_array;
 
   tiscript_get_prop = function(c: HVM; this: tiscript_value): tiscript_value; cdecl;
@@ -198,8 +198,8 @@ type
     pin: procedure(vm: HVM; value: ptiscript_pvalue); cdecl;
     unpin: procedure(value: ptiscript_pvalue); cdecl;
 
-    native_function_value: function(pvm: HVM; method: ptiscript_method_def): tiscript_value; cdecl;
-    native_property_value: function(pvm: HVM; prop: ptiscript_prop_def): tiscript_value; cdecl;
+    native_function_value: function(pvm: HVM; const method: ptiscript_method_def): tiscript_value; cdecl;
+    native_property_value: function(pvm: HVM; const prop: ptiscript_prop_def): tiscript_value; cdecl;
 
     post: procedure; cdecl;   // 70
 

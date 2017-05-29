@@ -7,11 +7,7 @@ interface
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ExtCtrls, StdCtrls, RnQSpin, RDGlobal,
- {$IFDEF PREF_IN_DB}
-  DBPrefsLib,
- {$ELSE ~PREF_IN_DB}
-  RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
+  RnQPrefsInt, RnQPrefsTypes,
   RnQButtons, RnQNet;
 
 type
@@ -59,7 +55,7 @@ type
     procedure PrefToProxy(var prxy: TProxy);
     procedure ProxyToPref(prxy: TProxy);
   public
-    procedure initPage(prefs: TRnQPref); Override;
+    procedure initPage(prefs: IRnQPref); Override;
     procedure applyPage; Override;
     procedure resetPage; Override;
     procedure updateVisPage; Override;

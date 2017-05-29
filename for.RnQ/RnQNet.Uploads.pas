@@ -100,12 +100,7 @@ implementation
 uses
   Windows, SysUtils, StrUtils, DateUtils, math,
   Base64, RDFileUtil, RDUtils,
-//  iniLib, utilLib, globalLib,
- {$IFDEF PREF_IN_DB}
-  DBPrefsLib,
- {$ELSE ~PREF_IN_DB}
-  RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
+  RnQPrefsInt,
 {$IFDEF UNICODE}
   AnsiStrings,
 {$ENDIF UNICODE}

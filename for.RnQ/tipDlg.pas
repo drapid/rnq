@@ -17,12 +17,8 @@ uses
   {$ELSE}
     RnQGraphics32,
   {$ENDIF USE_GDIPLUS}
- {$IFDEF PREF_IN_DB}
-  DBPrefsLib,
- {$ELSE ~PREF_IN_DB}
-  RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
-   Types;
+  RnQPrefsInt,
+  Types;
 
 type
    Tmodes = (TM_EVENT, TM_PIC, TM_PIC_EX, TM_BDay);
@@ -120,7 +116,7 @@ type
   procedure MoveTips(ParentHandle: HWND = 0);
   function AddTip(var item: TRnQTip; ti: TTipInfo; needW, needH: Integer; ParentHandle: HWND = 0): Boolean;
 
-  procedure tipsSetCFG(pp: TRnQPref);
+  procedure tipsSetCFG(pp: IRnQPref);
 
 const
   TipsMaxTop: Integer = 200;
@@ -859,7 +855,7 @@ begin
 
 end;
 
-procedure tipsSetCFG(pp: TRnQPref);
+procedure tipsSetCFG(pp: IRnQPref);
 begin
   if Assigned(pp) then
     begin

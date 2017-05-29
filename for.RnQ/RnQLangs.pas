@@ -31,7 +31,7 @@ type
 type
   TRnQLang = class
    private
-//    LangPath : TThemePath;
+//    LangPath: TThemePath;
     LangsStr: TLangList;
   {$IFDEF LANGDEBUG}
 //    hLangsStr: TLangList;
@@ -39,7 +39,7 @@ type
   {$ENDIF}
 
     langFN0, langFN1: String;
-//    langIsUTF : Boolean;
+//    langIsUTF: Boolean;
     function TranslateString(const Str: AnsiString): String; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;
  {$IFDEF UNICODE}
     function TranslateString(const Str: UnicodeString): String; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;

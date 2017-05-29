@@ -11,11 +11,7 @@ interface
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   StdCtrls, utilLib, RDGlobal,
- {$IFDEF PREF_IN_DB}
-  DBPrefsLib,
- {$ELSE ~PREF_IN_DB}
-  RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
+  RnQPrefsInt, RnQPrefsTypes,
   RnQSpin, ComCtrls, VirtualTrees, RnQButtons;
 
 type
@@ -82,7 +78,7 @@ type
     procedure resetLangs;
  {$ENDIF CHAT_SPELL_CHECK}
   public
-    procedure initPage(prefs: TRnQPref); Override; final;
+    procedure initPage(prefs: IRnQPref); Override; final;
     procedure applyPage; Override; final;
     procedure resetPage; Override; final;
     procedure updateVisPage; Override; final;

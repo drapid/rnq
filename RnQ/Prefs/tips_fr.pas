@@ -11,11 +11,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, 
   StdCtrls, ComCtrls, ExtCtrls,
- {$IFDEF PREF_IN_DB}
-  DBPrefsLib,
- {$ELSE ~PREF_IN_DB}
-  RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
+  RnQPrefsInt, RnQPrefsTypes,
   RnQSpin, RnQButtons;
 
 type
@@ -43,7 +39,7 @@ type
   private
     { Private declarations }
   public
-    procedure initPage(prefs: TRnQPref); Override; final;
+    procedure initPage(prefs: IRnQPref); Override; final;
     procedure applyPage; Override; final;
     procedure resetPage; Override; final;
     { Public declarations }

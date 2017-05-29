@@ -12,11 +12,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ComCtrls, StdCtrls, VirtualTrees,
   RnQButtons,
- {$IFDEF PREF_IN_DB}
-  DBPrefsLib,
- {$ELSE ~PREF_IN_DB}
-  RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
+  RnQPrefsInt, RnQPrefsTypes,
   RnQMacros, RDGlobal;
 
 type
@@ -46,9 +42,9 @@ type
     procedure HKTreeFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure ClearAll(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
   private
-    function winkey():integer;
+    function winkey(): integer;
   public
-    procedure initPage(prefs: TRnQPref); Override;
+    procedure initPage(prefs: IRnQPref); Override;
     procedure applyPage; Override;
     procedure resetPage; Override;
     procedure unInitPage; Override;

@@ -10,7 +10,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, ComCtrls, ExtCtrls, RnQButtons, RDGlobal, RnQPrefsLib;
+  StdCtrls, ComCtrls, ExtCtrls, RnQButtons,
+  RnQPrefsInt, RnQPrefsTypes,
+  RDGlobal;
 
 type
   TstartFr = class(TPrefFrame)
@@ -45,7 +47,7 @@ type
   private
     { Private declarations }
   public
-    procedure initPage(prefs: TRnQPref); Override; final;
+    procedure initPage(prefs: IRnQPref); Override; final;
     procedure applyPage; Override; final;
     procedure resetPage; Override; final;
 //    procedure updateVisible;

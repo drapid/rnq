@@ -199,13 +199,9 @@ var
 implementation
 
 uses
-    Windows, Base64, SysUtils, StrUtils,
-    RDUtils,
- {$IFDEF PREF_IN_DB}
-  DBPrefsLib,
- {$ELSE ~PREF_IN_DB}
-  RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
+  Windows, Base64, SysUtils, StrUtils,
+  RDUtils,
+  RnQPrefsInt,
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}

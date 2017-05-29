@@ -27,6 +27,10 @@ object chatFr: TchatFr
     TabOrder = 0
     object CommonSheet: TTabSheet
       Caption = 'Common'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         408
         389)
@@ -157,6 +161,10 @@ object chatFr: TchatFr
     object TSHistory: TTabSheet
       Caption = 'History'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         408
         389)
@@ -212,6 +220,10 @@ object chatFr: TchatFr
     object SmileSheet: TTabSheet
       Caption = 'Smiles'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object SmlPnlChk: TCheckBox
         Left = 6
         Top = 6
@@ -308,6 +320,10 @@ object chatFr: TchatFr
       Caption = 'Buttons'
       ImageIndex = 2
       TabVisible = False
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         408
         389)
@@ -361,6 +377,10 @@ object chatFr: TchatFr
     object SpellSheet: TTabSheet
       Caption = 'Spell check'
       ImageIndex = 5
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         408
         389)

@@ -11,11 +11,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   StdCtrls, ComCtrls, ExtCtrls, RnQButtons, RnQSpin,
- {$IFDEF PREF_IN_DB}
-  DBPrefsLib,
- {$ELSE ~PREF_IN_DB}
-  RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
+  RnQPrefsInt, RnQPrefsTypes,
   RDGlobal;
 
 type
@@ -50,7 +46,7 @@ type
     procedure PathInfoBtnClick(Sender: TObject);
     procedure ChkPathBtnClick(Sender: TObject);
    public
-    procedure initPage(prefs: TRnQPref); Override;
+    procedure initPage(prefs: IRnQPref); Override;
     procedure applyPage; Override;
     procedure resetPage; Override;
     procedure updateVisPage; Override;

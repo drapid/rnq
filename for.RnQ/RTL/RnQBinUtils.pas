@@ -67,13 +67,15 @@ function dword_BEat(const s: RawByteString; ofs: Integer): Integer; overload; {$
 function dword_BEat(p: Pointer): LongWord; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 function dword_LEat(p: Pointer): LongWord; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 function dword_LEat(const s: RawByteString; ofs: integer): integer; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
-function word_LEat(p: Pointer): word; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function word_LEat(p: Pointer): word; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 function word_BEat(p: Pointer): word; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 function ptrWNTS(p: Pointer): RawByteString;
 
-function word_BEat(const s: RawByteString; ofs: Integer): Word; overload;
+function word_LEat(const s: RawByteString; ofs: integer): word; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function word_BEat(const s: RawByteString; ofs: Integer): Word; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 //function word_BEat(s: string; ofs: integer): word; overload;
 
+// Read value and increment ofs
   function readQWORD(const snac: RawByteString; var ofs: Integer): Int64;
   function readWORD(const snac: RawByteString; var ofs: Integer): Word;
   function readBEWORD(const snac: RawByteString; var ofs: Integer): Word; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
@@ -91,6 +93,10 @@ function getBEWNTS(const s: RawByteString; var ofs: integer): RawByteString;
 function getTLV(p: pointer): RawByteString; overload;
 function getTLVwordBE(p: pointer): word; overload;
 function getTLVdwordBE(p: pointer): dword; overload;
+
+function getTLV(const s: RawByteString; ofs: integer=1): RawByteString; INLINE; overload;
+function getTLVwordBE(const s: RawByteString; ofs: integer=1): word; INLINE; overload;
+function getTLVdwordBE(const s: RawByteString; ofs: integer=1): dword; INLINE; overload;
 
 function getTLV(idx: integer; const s: RawByteString; ofs: integer=1): RawByteString; overload;
 function getTLVwordBE(idx: integer; const s: RawByteString; ofs: integer=1): word; overload;
@@ -411,6 +417,21 @@ begin
   inc(pw, 2);
   //result := BSwapInt(pd^);
   result := IcsSwap32(pd^);
+end;
+
+function getTLV(const s: RawByteString; ofs: integer=1): RawByteString;
+begin
+  Result := getTLV(@s[ofs]);
+end;
+
+function getTLVwordBE(const s: RawByteString; ofs: integer=1): word;
+begin
+  Result := getTLVwordBE(@s[ofs]);
+end;
+
+function getTLVdwordBE(const s: RawByteString; ofs: integer=1): dword;
+begin
+  Result := getTLVdwordBE(@s[ofs]);
 end;
 
 function getTLV(idx: integer; const s: RawByteString; ofs: integer): RawByteString;
@@ -912,6 +933,11 @@ end;
 function word_LEat(p: pointer): word; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 begin
   result := word(p^)
+end;
+
+function word_LEat(const s: RawByteString; ofs: integer): word; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+begin
+  result := word_LEat(@s[ofs])
 end;
 
 function word_BEat(p: pointer): word; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
