@@ -91,6 +91,7 @@ uses
   tipDlg in '..\For.rnq\tipDlg.pas',
   RnQLangFrm in '..\For.rnq\RnQLangFrm.pas' {FrmLangs},
   RDUtils in '..\for.RnQ\RTL\RDUtils.pas',
+  {$IFDEF PROTOCOL_ICQ}
   filetransferDlg in 'ICQ\filetransferDlg.pas' {filetransferFrm},
   ICQ.Stickers in 'ICQ\ICQ.Stickers.pas',
   icq_fr in 'ICQ\icq_fr.pas' {icqFr},
@@ -107,6 +108,7 @@ uses
   viewinfoDlg in 'ICQ\viewinfoDlg.pas' {viewinfoFrm},
   viewSSI in 'ICQ\viewSSI.pas' {SSIForm},
   wpDlg in 'ICQ\wpDlg.pas' {wpFrm},
+  {$ENDIF PROTOCOL_ICQ}
   ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm},
   MenuSmiles in '..\for.RnQ\MenuSmiles.pas' {FSmiles},
   RnQConst in 'RnQConst.pas';

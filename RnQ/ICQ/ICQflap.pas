@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit ICQflap;
 {$I RnQConfig.inc}
@@ -46,15 +46,15 @@ function SNAC_ver(fam, sub, flags: word; ref: integer; ver: word): RawByteString
 function SNAC_shortver(fam, sub, flags: word; ref: integer; ver: word): RawByteString; overload;
 
 // read data
-function getBUIN2(const s: RawByteString; var ofs: integer): RawByteString;
-function getBUIN(const s: RawByteString; var ofs: integer): Integer;
-function getBUIN3(const s: RawByteString; var ofs: integer): TUID;
+function readBUIN2(const s: RawByteString; var ofs: integer): RawByteString;
+function readBUIN(const s: RawByteString; var ofs: integer): Integer;
+function readBUIN8(const s: RawByteString; var ofs: integer): TUID;
 
 function Length_B8(const UIN: TUID): RawByteString; OverLoad;
 function Length_B(const UIN: TUID): RawByteString; OverLoad;
 
 implementation
-  uses
+uses
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
@@ -89,14 +89,14 @@ begin
   result := Byte(s[2])
 end;
 
-function getBUIN2(const s: RawByteString; var ofs: integer): RawByteString;
+function readBUIN2(const s: RawByteString; var ofs: integer): RawByteString;
 begin
 //result:=strToInt(copy(s,ofs+1,ord(s[ofs])));
   result := copy(s, ofs+1, ord(s[ofs]));
   inc(ofs, 1+ord(s[ofs]));
 end; // getBUIN
 
-function getBUIN3(const s: RawByteString; var ofs: integer): TUID;
+function readBUIN8(const s: RawByteString; var ofs: integer): TUID;
 begin
  {$IFDEF UID_IS_UNICODE}
   result := UnUTF( copy(s, ofs+1, ord(s[ofs])));
@@ -106,7 +106,7 @@ begin
   inc(ofs, 1+ord(s[ofs]));
 end; // getBUIN
 
-function getBUIN(const s: RawByteString; var ofs: integer): Integer;
+function readBUIN(const s: RawByteString; var ofs: integer): Integer;
 var
   E: Integer;
 //  ss: AnsiString;

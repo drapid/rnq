@@ -5042,7 +5042,7 @@ begin
 //           b1.Free;
 //           grb.Free;
               SetStretchBltMode(b2DC, HALFTONE);
-              if (picDPI <> cDefaultDPI)and (picDPI > 36) then
+              if ((picDPI <> cDefaultDPI)and (picDPI > 36)) or (AnibgPicPPI<> cDefaultDPI) then
                 StretchDraw(b2DC, MakeRectI(0, 0, sz2.cx, sz2.cy))
                else
                 Draw(b2DC, 0, 0);

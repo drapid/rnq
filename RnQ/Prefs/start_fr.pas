@@ -259,7 +259,7 @@ begin
 //
 //  val(autostart1.text,i,code);
 //  if (code=0) and validUIN(autostart1.text) then
-//    autostartUIN:=autostart1.text
+//    autostartUIN := autostart1.text
 //  else
     autostartUIN := '';
 }

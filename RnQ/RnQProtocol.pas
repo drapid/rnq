@@ -8,9 +8,9 @@ unit RnQProtocol;
 
 interface
 uses
-   Windows, Classes, Types, SysUtils,
-   RnQNet, RDGlobal,
-   RnQPrefsLib, RnQPrefsTypes,
+  Windows, Classes, Types, SysUtils,
+  RnQNet, RDGlobal,
+  RnQPrefsInt, RnQPrefsTypes,
    RnQGraphics32, RDUtils
    ;
 //    contacts;
@@ -387,17 +387,18 @@ type
     procedure SetListener(l: TProtoNotify); Virtual;
 
 
-    function  getStatuses    : TStatusArray; Virtual; Abstract;
-    function  getVisibilitis : TStatusArray; Virtual; Abstract;
-    function  getStatusMenu : TStatusMenu; Virtual; Abstract;
-    function  getVisMenu    : TStatusMenu; Virtual; Abstract;
+    function  getStatuses: TStatusArray; Virtual; Abstract;
+    function  getVisibilitis: TStatusArray; Virtual; Abstract;
+    function  getStatusMenu: TStatusMenu; Virtual; Abstract;
+    function  getVisMenu: TStatusMenu; Virtual; Abstract;
     function  getContactClass: TRnQCntClass; Virtual; Abstract;
-    function  getContact(const UID: TUID): TRnQContact; Virtual; Abstract;
+    function  getContact(const I: Integer): TRnQContact; OverLoad; Virtual;
+    function  getContact(const UID: TUID): TRnQContact; OverLoad; Virtual; Abstract;
 //    function  ProtoName: String; Virtual; Abstract;
     function  ProtoName: String; inline;
     function  ProtoElem: TRnQProtocol; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-    procedure GetPrefs(var pp: TRnQPref); Virtual;
-    procedure SetPrefs(pp: TRnQPref); Virtual;
+    procedure GetPrefs(pp: IRnQPref); Virtual;
+    procedure SetPrefs(pp: IRnQPref); Virtual;
     procedure ResetPrefs; Virtual;
     procedure Clear; Virtual; Abstract;
     function  getDefHost: Thostport; virtual;
@@ -787,6 +788,11 @@ begin
   listener := l;
 end;
 
+function TRnQProtocol.getContact(const I: Integer): TRnQContact;
+begin
+  Result := getContact(IntToStr(i));
+end;
+
 function TRnQProtocol.ProtoName: String;
 begin
   Result := _GetProtoName;
@@ -819,7 +825,7 @@ begin
   Result := '(' + _GetProtoName + ') ' + Result;
 end;
 
-procedure TRnQProtocol.GetPrefs(var pp: TRnQPref);
+procedure TRnQProtocol.GetPrefs(pp: IRnQPref);
 begin
   pp.addPrefStr('last-server-ip', lastserverIP);
   pp.addPrefStr('last-server-addr', lastserverAddr);
@@ -839,7 +845,7 @@ begin
   pp.DeletePref('crypted-password');
 end;
 
-procedure TRnQProtocol.SetPrefs(pp: TRnQPref);
+procedure TRnQProtocol.SetPrefs(pp: IRnQPref);
 begin
   if pp.prefExists('crypted-password64') then
     pwd := UnUTF(passDecrypt(pp.getPrefBlob64Def('crypted-password64')))

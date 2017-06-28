@@ -7,8 +7,8 @@ unit Protocol_ICQ;
 {$I NoRTTI.inc}
 
 interface
- uses
-   Windows, Classes,
+uses
+  Windows, Classes,
    outboxlib, events, RDGlobal,
   {$IFDEF usesDC}
      filetransferDlg,

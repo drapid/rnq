@@ -80,6 +80,8 @@ procedure getTrayIconTip(var vPic: TPicName; var vTip: String);
 
 
 var
+  ToUploadAvatarFN: String;
+Const
   AntiSpamMsgs: array[0..6] of String =
    (
 //   (
@@ -118,12 +120,10 @@ uses
  {$ENDIF PROTOCOL_MRA}
  {$IFDEF PROTOCOL_XMP}
   Protocol_XMP, XMPPcontacts,
-//  MRASMSDlg, MRA_proto,
   XMPPv1,
  {$ENDIF PROTOCOL_XMP}
  {$IFDEF PROTOCOL_BIM}
   Protocol_BIM, BIMcontacts,
-//  MRASMSDlg,
   BIM_proto,
   BIMv1,
  {$ENDIF PROTOCOL_BIM}
@@ -364,16 +364,20 @@ begin
                    pic1 := status2imgName(st, (length(evBody)>4) and boolean(evBody[5]))
 //                   pic1 := Self.Statuses[st].ImageName;
                  end;
+   {$IFDEF PROTOCOL_ICQ}
                 if (b > 0) and (b <= high(XStatusArray)) then
                  pic2 := XStatusArray[b].PicName;
+   {$ENDIF PROTOCOL_ICQ}
               end;
              end;
          end;
        EK_XstatusMsg:
          begin
+   {$IFDEF PROTOCOL_ICQ}
            if length(evBody) >= 1 then
             if (byte(evBody[1]) <= High(XStatusArray)) then
               pic1 := XStatusArray[byte(evBody[1])].PicName;
+   {$ENDIF PROTOCOL_ICQ}
 //            statusDrawExt(cnv.Handle, x+2,y, SC_UNK, false, ord(s[1]));
 //            statusDrawExt(cnv.Handle, curX+2, curY, Tstatus(str2int(s), false, ord(s[1]));
  //            vPicName := status2imgName(Tstatus(str2int(s)), (length(s)>4) and boolean(s[5]));
@@ -383,24 +387,6 @@ begin
      end;
 end;
 
-{
-                   pic1 := Self.status2imgName(st, (length(evBody)>4) and boolean(evBody[5]))
-                 end;
-                if (b > 0) and (b <= high(Self.xStsStringArray)) then
-                 pic2 := Self.xStsStringArray[b].PicName;
-              end;
-             end;
-         end;
-       EK_XstatusMsg:
-         begin
-           if length(evBody) >= 1 then
-            if (byte(evBody[1]) <= High(Self.xStsStringArray)) then
-              pic1 := Self.xStsStringArray[byte(evBody[1])].PicName;
-         end;
-       EK_OFFGOING:
-         pic1 := Self.status2imgName(byte(SC_OFFLINE));
-     end;
-end;}
 
 function TRnQProtoHelper.enterPWD: boolean;
 var

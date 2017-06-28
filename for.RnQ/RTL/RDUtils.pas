@@ -1093,7 +1093,6 @@ begin
 //        delete(s, 1, i);
        end;
     until i = 0;
-    // BY Rapid
     if (p>1) and (p <= length(s)) then
 //      if s <> '' then
      inc(result, strToInt(String(copy(s, p, length(s)))))

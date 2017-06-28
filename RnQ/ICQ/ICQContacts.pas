@@ -12,7 +12,7 @@ unit ICQContacts;
 interface
 
 uses
-  classes, sysutils,
+  Classes, SysUtils,
    {$IFDEF RNQ_AVATARS}
     Graphics,
    {$ENDIF RNQ_AVATARS}
@@ -23,8 +23,8 @@ uses
   {$ELSE}
     RnQGraphics32,
   {$ENDIF USE_GDIPLUS}
-   ICQConsts,
-   types, RDGlobal, RnQProtocol;
+  ICQConsts,
+  Types, RDGlobal, RnQProtocol;
 
 type
 //  TvisStatus = set
@@ -112,12 +112,12 @@ type
     lastUpdate,           // local time
     lastInfoUpdate,       // local time
     lastStatusUpdate,     // local time
-    infoUpdatedTo: TdateTime;        // local time
-    proto: integer;
+    infoUpdatedTo: TDateTime;        // local time
+    proto: Integer;
     fServerProto: String;
     connection: record
       port, ft_port: integer;
-      ip,internal_ip: DWord;
+      ip, internal_ip: DWord;
       proxy_ip: DWord;
       dc_cookie: DWord;
      end;

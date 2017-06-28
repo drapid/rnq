@@ -490,9 +490,11 @@ var
 //  sr:TsearchRec;
   hasAvatar, b: Boolean;
 begin
+ {$IFDEF PROTOCOL_ICQ}
   result := false;
-  if not Account.AccProto.AvatarsSupport then
+  if not TicqSession(cnt.fProto).AvatarsSupport then
     Exit;
+ {$ENDIF PROTOCOL_ICQ}
   hasAvatar := cnt.icon.ToShow <> IS_AVATAR;
 
   if not hasAvatar then
@@ -712,7 +714,7 @@ end;
 }
 
 
-procedure updateAvatar(c: TRnQcontact; var hash_safe: RawByteString{; pWriteLog : boolean = false});
+procedure updateAvatar(c: TRnQcontact; var hash_safe: RawByteString{; pWriteLog: boolean = false});
 var
   sr: TsearchRec;
 //  path,
@@ -731,7 +733,8 @@ begin
     hasAvatar := False;
     loaded    := False;
 //    hsh := TICQcontact(c).ICQIcon.hash_safe;
-    if hash_safe <> z+z+z+z then
+//    if hash_safe <> z+z+z+z then
+    if hash_safe <> #0#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0 then
     begin
      loaded := False;
      if (c.icon.ToShow = IS_AVATAR) then
