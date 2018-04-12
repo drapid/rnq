@@ -214,7 +214,7 @@ Type
     procedure fromString(const Qs: RawByteString);
     function  toString: RawByteString; reIntroduce;
     procedure removeExpiringEvents;
-    property Items[Index: Integer]: Thevent read Get write Put; default;
+    property  Items[Index: Integer]: Thevent read Get write Put; default;
    end; // TeventQ
 
   function  event2imgName(e: integer): TPicName;

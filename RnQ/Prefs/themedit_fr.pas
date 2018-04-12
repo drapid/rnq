@@ -300,7 +300,7 @@ begin
   propsBox.items.clear();
   Theme.getprops(themeprops);
   for i:=0 to length(themeprops)-1 do
-    propsBox.items.add(format('[%s] %s',[themeprops[i].section,themeprops[i].name]));
+    propsBox.items.add(format('[%s] %s',[themeprops[i].section, UnUTF(themeprops[i].name)]));
 
  propsBox.itemIndex := 0;
  propsBoxChange(self);

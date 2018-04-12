@@ -130,8 +130,9 @@ implementation
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
+   SynCommons,
  {$IFNDEF FPC}
-   OverbyteIcsUtils,
+//   OverbyteIcsUtils,
  {$ENDIF ~FPC}
    Windows,
    RDUtils
@@ -416,7 +417,8 @@ var
 begin
   inc(pw, 2);
   //result := BSwapInt(pd^);
-  result := IcsSwap32(pd^);
+//  result := IcsSwap32(pd^);
+  result := bswap32(pd^);
 end;
 
 function getTLV(const s: RawByteString; ofs: integer=1): RawByteString;
@@ -531,8 +533,8 @@ begin
   begin
   inc(pw);
 //  setLength(result, swap(pw^));
-//  a := BSwapInt(pw^);
-  a := IcsSwap32(pw^);
+//  a := IcsSwap32(pw^);
+  a := BSwap32(pw^);
   setLength(result, a);
   inc(pw);
   move(pw^, result[1], a);
@@ -556,8 +558,8 @@ var
   pd: pinteger absolute p;
 begin
   inc(pw, 2);
-//  result := BSwapInt(pd^);
-  result := IcsSwap32(pd^);
+//  result := IcsSwap32(pd^);
+  result := BSwap32(pd^);
 end;
 
 function getTLV3wordBE(p: pointer): dword;
@@ -573,8 +575,8 @@ function getwTLD(const s: RawByteString; var ofs: integer): RawByteString;
 var
   i: integer;
 begin
-//i := BSwapInt(integer((@s[ofs+4])^));
-  i := IcsSwap32(integer((@s[ofs+4])^));
+//  i := IcsSwap32(integer((@s[ofs+4])^));
+  i := BSwap32(cardinal((@s[ofs+4])^));
   if i > 100*1024 then
     result := ''
    else
@@ -589,8 +591,8 @@ var
   i: integer;
 begin
   inc(ofs, 4);
-//  i := BSwapInt(integer((@s[ofs])^));
-  i := IcsSwap32(LongWord((@s[ofs])^));
+//  i := IcsSwap32(LongWord((@s[ofs])^));
+  i := BSwap32(cardinal((@s[ofs])^));
   if i <> 4 then
     result := 0
    else
@@ -742,14 +744,14 @@ begin
   ps := Pointer(s);
 //  a := BSwapInt(code);
 //  Move(a, ps^, 4);
-//  PInteger(ps)^ := BSwapInt(code);
-  PInteger(ps)^ := IcsSwap32(code);
+//  PInteger(ps)^ := IcsSwap32(code);
+  PInteger(ps)^ := BSwap32(code);
 
   inc(PByte(ps), 4);
 //  a := BSwapInt(i);
 //  Move(a, ps^, 4);
-//  PInteger(ps)^ := BSwapInt(i);
-  PInteger(ps)^ := IcsSwap32(i);
+//  PInteger(ps)^ := IcsSwap32(i);
+  PInteger(ps)^ := BSwap32(i);
 
   inc(PByte(ps), 4);
   if i > 0 then
@@ -905,14 +907,14 @@ end;
 
 function Qword_BEat(p: pointer): int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 begin
-//  result := invert64(int64(p^))
-  result := IcsSwap64(int64(p^))
+//  result := IcsSwap64(int64(p^))
+  result := BSwap64(int64(p^))
 end;
 
 function dword_BEat(p: pointer): LongWord; OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 begin
-//  result := BSwapInt(integer(p^))
-  result := IcsSwap32(LongWord(p^))
+//  result := IcsSwap32(LongWord(p^))
+  result := BSwap32(integer(p^))
 end;
 
 function dword_BEat(const s: RawByteString; ofs: integer): integer; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
@@ -991,8 +993,8 @@ end; // qword_LEasStr
 function qword_BEasStr(d: int64): RawByteString;
 begin
   setLength(result, 8);
-//  d := Invert64(d);
-  d := IcsSwap64(d);
+//  d := IcsSwap64(d);
+  d := BSwap64(d);
   move(d, Pointer(result)^, 8);
 end; // qword_LEasStr
 

@@ -1,6 +1,6 @@
 ﻿{
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit prefDlg;
 {$I RnQConfig.inc}
@@ -10,9 +10,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Forms,
-  Controls, ExtCtrls,
+  Controls, ExtCtrls, VirtualTrees, StdCtrls,
   RnQPrefsTypes,
-  RnQButtons, RnQDialogs, VirtualTrees, StdCtrls;
+  RnQButtons, RnQDialogs;
 
 type
 

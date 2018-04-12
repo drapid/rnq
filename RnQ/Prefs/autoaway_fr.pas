@@ -84,8 +84,8 @@ begin updateVisPage end;
 
 procedure TautoawayFr.updateVisPage;
 begin
-  awaySpin.enabled:=setawayChk.checked;
-  naSpin.enabled:=setnaChk.checked;
+  awaySpin.enabled := setawayChk.checked;
+  naSpin.enabled := setnaChk.checked;
 end;
 
 end.

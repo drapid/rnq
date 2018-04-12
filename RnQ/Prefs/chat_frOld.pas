@@ -23,23 +23,23 @@ type
     sendonenterSpin: TRnQSpinButton;
     singleChk: TCheckBox;
     statusontabChk: TCheckBox;
-    cursorbelowChk: TCheckBox;
+    cursorbelowChk: TCheckBox;  //quoting-cursor-below
     quoteselectedChk: TCheckBox;
     chatOnTopChk: TCheckBox;
     ChkDefCP: TCheckBox;
-    PlugPanelChk: TCheckBox;
-    HintsShowChk: TCheckBox;
-    msgWrapBox: TCheckBox;
+    PlugPanelChk: TCheckBox; //use-plugin-panel
+    HintsShowChk: TCheckBox; //chat-hints-show
+    msgWrapBox: TCheckBox;   // hist-msg-view-wrap
     ClsSndChk: TCheckBox;
     SmlPnlChk: TCheckBox;
     ChkShowSmileCptn: TCheckBox;
     GroupBox1: TGroupBox;
     BtnWidthLabel: TLabel;
-    SmlUseSizeChk: TCheckBox;
+    SmlUseSizeChk: TCheckBox; //smiles-panel-btn-autosize
     SmlGridChk: TCheckBox;
-    SmlBtnWidthTrk: TTrackBar;
+    SmlBtnWidthTrk: TTrackBar; //smiles-panel-btn-width
     BtnHeightLabel: TLabel;
-    SmlBtnHeightTrk: TTrackBar;
+    SmlBtnHeightTrk: TTrackBar; //smiles-panel-btn-height
     ClsPgOnSnglChk: TCheckBox;
     SepSmilesChk: TCheckBox;
     TSBtns: TTabSheet;

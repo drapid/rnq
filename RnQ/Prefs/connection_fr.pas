@@ -269,7 +269,7 @@ begin
     proxyproto.OnClick := proxyprotoClick;
     proxyuserBox.text := user;
     proxypwdBox.text := pwd;
-    authChk.checked     := auth;
+    authChk.checked  := auth;
     NTLMauth.Checked := NTLM;
     SSLChk.Checked   := prxy.ssl;
     RslvIPChk.Checked := rslvIP;

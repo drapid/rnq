@@ -27,7 +27,8 @@ function  BoundsSize(srcSize, maxSize: TSize): TSize; overload;
 function  BoundsSize(srcCX, srcCY, maxCX, maxCY: Longint): TSize; overload;
 // strings
 function  isURL(const s: string; ofs: Integer=1): boolean;
-function  ipos(const ss: string; const s: string): Integer;
+//function  ipos(const ss: string; const s: string): Integer; OverLoad;
+function  ipos(const ss, s: string; ofs: integer=1): integer; OverLoad;
 function  capitalize(const s: string): string;
 procedure convertAllNewlinesToCRLF(var s: string);
 function  separated(const sep: string; ss: array of string): string;
@@ -135,6 +136,8 @@ function  bool2str(const b: Boolean): RawByteString;
 
  function IsEqualGUID(const guid1, guid2: TGUID): Boolean; stdcall;
 {$EXTERNALSYM IsEqualGUID}
+ function CreateGUID: RawByteString;
+ function CreaterGUID: RawByteString;
  function SGUID2rGUID(const guid: RawByteString; Zero2Empty: Boolean = True): RawByteString;
  function GUID2rGUID(const guid: TGUID): RawByteString;
 
@@ -421,9 +424,9 @@ begin
 //        Result.Width := cw;
         Result.Height := Trunc(cw / xyaspect);
         if Result.Height > ch then  // woops, too big
-        begin
-          Result.Height := ch;
-          Result.Width := Trunc(ch * xyaspect);
+          begin
+            Result.Height := ch;
+            Result.Width := Trunc(ch * xyaspect);
           end
         else
           if Stretch then
@@ -434,9 +437,9 @@ begin
 //        h := ch;
         Result.Width := Trunc(ch * xyaspect);
         if Result.Width > cw then  // woops, too big
-        begin
-          Result.Width := cw;
-          Result.Height := Trunc(cw / xyaspect);
+          begin
+            Result.Width := cw;
+            Result.Height := Trunc(cw / xyaspect);
           end
         else
           if Stretch then
@@ -554,6 +557,7 @@ begin
 result:= copy(s,ofs,3) = '://' ;
 end; // isURL
 
+{
 function ipos(const ss: string; const s: string): Integer;
 begin
   for result:=1 to length(s) do
@@ -561,6 +565,15 @@ begin
       exit;
   result:=0;
 end; // ipos
+}
+// case insensitive version
+function ipos(const ss, s: string; ofs: integer=1): integer;
+var
+  s0: PWideChar;
+begin
+  s0 := PWideChar(s);
+  Result := TextPos(s0, PWideChar(@ss[ofs])) - s0;
+end;
 
 function capitalize(const s: string): string;
 begin
@@ -1095,7 +1108,7 @@ begin
     until i = 0;
     if (p>1) and (p <= length(s)) then
 //      if s <> '' then
-     inc(result, strToInt(String(copy(s, p, length(s)))))
+      inc(result, strToInt(String(copy(s, p, length(s)))))
     else
       result := 0;
    except
@@ -1824,6 +1837,25 @@ end;
 
  function IsEqualGUID;                   external ole32 name 'IsEqualGUID';
 {$EXTERNALSYM IsEqualGUID}
+
+ function CoCreateGuid(out guid: TGUID): HResult; stdcall; external 'ole32.dll';
+
+function CreaterGUID: RawByteString;
+var
+ guid: TGUID;
+begin
+ CoCreateGuid(guid);
+ SetLength(Result, SizeOf(guid));
+ move(guid, Result[1], SizeOf(guid));
+end;
+
+function CreateGUID: RawByteString;
+var
+ guid: TGUID;
+begin
+ CoCreateGuid(guid);
+ Result := GUIDToString(guid);
+end;
 
 function SGUID2rGUID(const guid: RawByteString; Zero2Empty: Boolean = True): RawByteString;
 var

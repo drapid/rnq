@@ -52,7 +52,7 @@ type
     procedure Notify(Ptr: Pointer; Action: TListNotification); OverRide;
    private
 //    function  RepaireHistoryStream(str: TMemoryStream; var rslt: String): boolean;
-//    function  fromString(s: AnsiString; quite: Boolean = false): boolean;
+//    function  fromString(s: AnsiString; quiet: Boolean = false): boolean;
    end; // Thistory
 
   function  DelHistWith(uid: TUID): Boolean;
@@ -303,7 +303,7 @@ var
   ev: Thevent;
   thisCnt, thisCnt2: TRnQcontact;
   Cnt1I, Cnt2I: Int64;
-//  cur:integer;
+//  cur: integer;
 
   function getByte: byte;
   begin
@@ -478,7 +478,7 @@ begin
           if Assigned(thisCnt2) and thisCnt2.equals(i) then
             begin
               inc(Cnt2I);
-              ev.who       := thisCnt2
+              ev.who := thisCnt2
             end
            else
                 begin

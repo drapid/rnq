@@ -34,14 +34,14 @@ type
   TPAFormat = (PA_FORMAT_UNK, PA_FORMAT_BMP, PA_FORMAT_JPEG,
                PA_FORMAT_GIF, PA_FORMAT_PNG, PA_FORMAT_XML,
                PA_FORMAT_SWF, PA_FORMAT_ICO,
-               PA_FORMAT_TIF, PA_FORMAT_WEBP // From WIC
+               PA_FORMAT_TIF, PA_FORMAT_WEBP, PA_FORMAT_HEIF, PA_FORMAT_HEIC // From WIC
                );
 
 const
-  PAFormat: array [TPAFormat] of string = ('.dat','.bmp','.jpeg','.gif','.png', '.xml', '.swf', '.ico', '.tif', '.webp');
-  PAFormatString: array [TPAFormat] of string = ('Unknown', 'Bitmap', 'JPEG', 'GIF', 'PNG', 'XML', 'SWF', 'ICON', 'TIF', 'WEBP');
+  PAFormat: array [TPAFormat] of string = ('.dat','.bmp','.jpeg','.gif','.png', '.xml', '.swf', '.ico', '.tif', '.webp', '.heif', '.heic');
+  PAFormatString: array [TPAFormat] of string = ('Unknown', 'Bitmap', 'JPEG', 'GIF', 'PNG', 'XML', 'SWF', 'ICON', 'TIF', 'WEBP', 'HEIF', 'HEIC');
   PAFormatMime: array [TPAFormat] of string = ('image/x-icon', 'image/bmp', 'image/jpeg',
-          'image/gif','image/png', 'text/xml', 'application/x-shockwave-flash', 'image/x-icon', 'image/tiff', 'image/webp');
+          'image/gif','image/png', 'text/xml', 'application/x-shockwave-flash', 'image/x-icon', 'image/tiff', 'image/webp', 'image/heif', 'image/heic');
 
 type
   TAniDisposalType = (dtUndefined,   {Take no action}
@@ -1416,7 +1416,7 @@ begin
           Result := True;
        exit;
      end;
-    PA_FORMAT_TIF, PA_FORMAT_WEBP:
+    PA_FORMAT_TIF, PA_FORMAT_WEBP, PA_FORMAT_HEIF,  PA_FORMAT_HEIC:
       begin
         WICpic := TWICImage.Create;
         try

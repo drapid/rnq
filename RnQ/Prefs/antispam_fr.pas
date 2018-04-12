@@ -16,6 +16,7 @@ uses
   RnQConst,
   RnQProtocol;
 
+
 type
   TantispamFr = class(TPrefFrame)
     plBg: TPanel;
@@ -351,7 +352,7 @@ begin
   spamfilter.noBadwords := badwordsChk.checked;
   spamfilter.badwords := AnsiReplaceStr(badwordsBox.text, CRLF, ';');
   if TrCntBox.ItemIndex in [0..4] then
-   spamfilter.BotTryesCount := TrCntBox.ItemIndex + 2;
+    spamfilter.BotTryesCount := TrCntBox.ItemIndex + 2;
   if uingtChk.checked then
     spamfilter.uingt := round(uingSpin.value)
    else
@@ -564,7 +565,7 @@ begin
       qst[j - 1] := qst[j];
   SetLength(qst, Length(qst) - 1);
 
-      QuestBox.Items.Delete(i);
+  QuestBox.Items.Delete(i);
   if Length(qst) = i then
     QuestBox.ItemIndex := i-1
    else

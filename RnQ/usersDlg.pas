@@ -86,7 +86,7 @@ implementation
 {$R *.DFM}
 
 uses
-  UxTheme, DwmApi, Themes, strutils, UITypes,
+  UxTheme, DwmApi, Themes, StrUtils, UITypes,
   ShlObj,
    NewAccount,
    { $IFDEF RNQ_FULL}

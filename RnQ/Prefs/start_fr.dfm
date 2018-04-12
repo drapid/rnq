@@ -26,10 +26,6 @@ object startFr: TstartFr
     TabStop = False
     object MainTab: TTabSheet
       Caption = 'Common'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         394
         340)

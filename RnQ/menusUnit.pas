@@ -1,14 +1,14 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit menusUnit;
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 
 interface
- uses
-   Classes, Menus, RQThemes, RQMenuItem, RnQMenu, RnQProtocol;
+uses
+  Classes, Menus, RQThemes, RQMenuItem, RnQMenu, RnQProtocol;
 
   procedure InitMenu;
   procedure InitProtoMenus(pProto: TRnQProtocol);

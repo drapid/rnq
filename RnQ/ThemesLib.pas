@@ -243,7 +243,8 @@ end;
 
 procedure repaintAllWindows;
 
-  procedure repaintRecur(c: Tcontrol);
+//  procedure repaintRecur(c: Tcontrol);
+  procedure repaintRecur(c: TComponent);
   var
     i: integer;
   begin
@@ -253,8 +254,14 @@ procedure repaintAllWindows;
      with c as Twincontrol do
       for i:=controlCount-1 downto 0 do
        repaintRecur(controls[i]);
-    ApplyThemeComponent(c);
-    c.repaint;
+    if c is TDataModule then
+      for i:=TDataModule(c).ComponentCount -1 downto 0 do
+       repaintRecur(c.Components[i]);
+    if c is Tcontrol then
+      begin
+        ApplyThemeComponent(c as Tcontrol);
+        Tcontrol(c).repaint;
+      end;
   end; // repaintRecur
 
 var
@@ -262,6 +269,9 @@ var
 begin
   for i:=0 to Screen.FormCount-1 do
     repaintRecur(screen.forms[i]);
+  for i:=0 to Screen.DataModuleCount-1 do
+    repaintRecur(screen.DataModules[i]);
+
 end;
 
 

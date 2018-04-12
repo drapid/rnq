@@ -71,18 +71,18 @@ procedure translateComponent(c: Tcomponent; window: Tform);
         recurMenu(items[i]);
   end; // recurMenu
 
-{  procedure recurTree(t:Ttreenode); overload;
+{  procedure recurTree(t: Ttreenode); overload;
   var
-    i:integer;
+    i: integer;
   begin
-  t.text:=trans(t.text);
+  t.text := trans(t.text);
   for i:=0 to t.count-1 do
     recurTree(t.item[i]);
   end; // recurTree
 }
-{  procedure recurTree(t:Ttreenodes); overload;
+{  procedure recurTree(t: Ttreenodes); overload;
   var
-    i:integer;
+    i: integer;
   begin
   for i:=0 to t.count-1 do
     recurTree(t.item[i]);
@@ -200,6 +200,13 @@ begin
   while i < screen.formCount do
     begin
       translateWindow(screen.forms[i]);
+      inc(i);
+    end;
+
+  i := 0;
+  while i < screen.DataModuleCount do
+    begin
+      translateComponent(screen.DataModules[i], NIL);
       inc(i);
     end;
 end; // translateWindows

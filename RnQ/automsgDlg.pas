@@ -125,7 +125,7 @@ begin
       break;
     inc(i, 2);
    end;
-if i >= automessages.count then
+  if i >= automessages.count then
   begin
     PredBox.BeginUpdate;
     s := PredBox.GetNodeData(predBox.AddChild(NIL));
@@ -133,8 +133,8 @@ if i >= automessages.count then
     s.Str := msgBox.text;
     PredBox.EndUpdate;
 //  predBox.items.add(nameBox.text);
-  automessages.add(nameBox.text);
-  automessages.add('');
+    automessages.add(nameBox.text);
+    automessages.add('');
   end;
   automessages[i+1] := msgBox.text;
 end; // saveAutomsg

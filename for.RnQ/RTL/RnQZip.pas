@@ -180,7 +180,7 @@ type
     procedure SaveToStream(ZipFileStream: TStream);
     procedure LoadFromFile(const filename: string; pPreview: Boolean = false);
     procedure LoadFromStream(const ZipFileStream: TStream; pPreview: Boolean = false);
-    function  IndexOf(const s: String) : Integer;
+    function  IndexOf(const s: String): Integer;
     Function  ExtractToStream(const fn: String; Stream: TStream): Boolean; Overload;
     function  ExtractToStream(i: Integer; Stream: TStream): Boolean; Overload;
     function  IsEncrypted(i: Integer): Boolean;
@@ -189,8 +189,8 @@ type
 //    property Uncompressed[i: integer]: AnsiString read GetUncompressed;
                                                   //write SetUncompressed;
     property Data[i: integer]: RawByteString read  GetUncompressed
-                                          write SetUncompressed;
-//    property CompressionLevel : Integer read fCompressionLevel write fCompressionLevel;
+                                             write SetUncompressed;
+//    property CompressionLevel: Integer read fCompressionLevel write fCompressionLevel;
     property DateTime[i: integer]: TDateTime read GetDateTime write SetDateTime;
     property Name[i: integer]: string read GetName write SetName;
     property UTF8Support: Boolean read aUTF8Support default True;

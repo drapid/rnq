@@ -10,9 +10,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, ComCtrls, ExtCtrls, RnQButtons,
+  StdCtrls, ComCtrls, ExtCtrls,
   RnQPrefsInt, RnQPrefsTypes,
-  RDGlobal;
+  RnQButtons, RDGlobal;
 
 type
   TstartFr = class(TPrefFrame)

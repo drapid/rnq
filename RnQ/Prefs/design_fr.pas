@@ -128,7 +128,7 @@ type
 //  end;
 //  TIcItem = string;
 const
-  sb2index: array [TsortBy] of integer=(0,1, 2, 3);
+  sb2index: array [TsortBy] of integer=(0, 1, 2, 3);
 
 procedure TdesignFr.transpChange(Sender: TObject);
 begin
@@ -158,23 +158,23 @@ procedure TdesignFr.prefToggleShowGroups;
 begin
 // if prefPages[thisPrefIdx].frame <> NIL then
 //  with TdesignFr(prefPages[thisPrefIdx].frame) do
-    groupsChk.checked:=showGroups;
+    groupsChk.checked := showGroups;
 end;
 
 procedure TdesignFr.preftoggleOnlyOnline;
 begin
 // if prefPages[thisPrefIdx].frame <> NIL then
 //  with TdesignFr(prefPages[thisPrefIdx].frame) do
-    onlyonlineChk.checked:=showOnlyOnline;
+    onlyonlineChk.checked := showOnlyOnline;
 end;
 
 procedure TdesignFr.fillIconsGrid();
 var
-//  i:integer;
-  ico : TRnQCLIconsSet;
-  icIt : TRnQCLIcons;
-  IcItem : PIcItem;
-  n : PVirtualNode;
+//  i: integer;
+  ico: TRnQCLIconsSet;
+  icIt: TRnQCLIcons;
+  IcItem: PIcItem;
+  n: PVirtualNode;
 begin
   IconsList.Clear;
 // if prefPages[thisPrefIdx].frame = NIL then exit;
@@ -186,8 +186,8 @@ begin
      icIt := RnQCLIcons[ico];
      n := IconsList.AddChild(nil);
      IcItem := IconsList.GetNodeData(n);
-     IcItem.IDX   := icIt.IDX;
-     IcItem.Name  := gettranslation(icIt.Name);
+     IcItem.IDX  := icIt.IDX;
+     IcItem.Name := gettranslation(icIt.Name);
      IcItem.IconName := icIt.IconName;
      if icIt.IDX = CNT_TEXT then
        begin
@@ -204,11 +204,11 @@ begin
   IconsList.EndUpdate;
 end; // fillIconsGrid
 
-Function TdesignFr.ApplyIconsGrid : Boolean;
+Function TdesignFr.ApplyIconsGrid: Boolean;
 var
-  IcItem : PIcItem;
-  n : PVirtualNode;
-  b : Boolean;
+  IcItem: PIcItem;
+  n: PVirtualNode;
+  b: Boolean;
 begin
   Result := False;
   n := IconsList.GetFirst;
@@ -235,12 +235,12 @@ end; // ApplyIconsGrid
 
 procedure TdesignFr.ResetIconsGrid;
 const
-//  csBool : array[false..true] of TCheckState = (csCheckedNormal, csUncheckedNormal);
-  csBool : array[Boolean] of TCheckState = (csUncheckedNormal, csCheckedNormal);
+//  csBool: array[false..true] of TCheckState = (csCheckedNormal, csUncheckedNormal);
+  csBool: array[Boolean] of TCheckState = (csUncheckedNormal, csCheckedNormal);
 var
-//  i:integer;
-  IcItem : PIcItem;
-  n : PVirtualNode;
+//  i: integer;
+  IcItem: PIcItem;
+  n: PVirtualNode;
 begin
   n := IconsList.GetFirst;
   IconsList.BeginUpdate;
@@ -287,11 +287,11 @@ begin
   roasterbarGrp.left := dockGrp.left;
   roasterbarGrp.width := dockGrp.width div 2 - 2;
 
-  filterbarGrp.top  := italicGrp.top;
+  filterbarGrp.top := italicGrp.top;
   filterbarGrp.left := roasterbarGrp.left + roasterbarGrp.width + 4;
   filterbarGrp.width := roasterbarGrp.width;
 
-  TtlGrBox.top  := italicGrp.top + italicGrp.height + GAP_SIZE;
+  TtlGrBox.top := italicGrp.top + italicGrp.height + GAP_SIZE;
   TtlGrBox.left := italicGrp.left;
   TtlGrBox.width := GrBox2.width;
 
@@ -331,7 +331,7 @@ begin
   animatedRoster := aniroasterChk.checked;
 
  {$IFDEF RNQ_FULL}
-//   showXStatus    := ShXstChk.Checked;
+//   showXStatus := ShXstChk.Checked;
    showXStatusMnu := ShXstInMnuChk.Checked;
  {$ENDIF}
   needRepaintCL := ApplyIconsGrid or needRepaintCL;
@@ -372,7 +372,7 @@ begin
   needUpdCapt := ShowUINDelimiter <> UINDelimChk.Checked;
 
   ShowUINDelimiter := UINDelimChk.Checked;
-  rosterItalic    := italicGrp.itemindex;
+  rosterItalic := italicGrp.itemindex;
   showVisAndLevelling := EyeLevChk.Checked;
 //  UseContactThemes := CntThmChk.Checked;
   SetContactsThemeUse(CntThmChk.Checked);
@@ -388,17 +388,17 @@ begin
 
   blinkSpeed  := blinkSlider.position;
 
-  RnQmain.roster.ShowHint:=showcontacttipChk.Checked;
-  texturizedWindows:=textureChk.checked;
+  RnQmain.roster.ShowHint := showcontacttipChk.Checked;
+  texturizedWindows := textureChk.checked;
   case autosizeGrp.ItemIndex of
     0: autosizeRoster:=FALSE;
     1:begin
-      autosizeRoster:=TRUE;
-      autosizeFullRoster:=FALSE;
+      autosizeRoster := TRUE;
+      autosizeFullRoster := FALSE;
       end;
     2:begin
-      autosizeRoster:=TRUE;
-      autosizeFullRoster:=TRUE;
+      autosizeRoster := TRUE;
+      autosizeFullRoster := TRUE;
       end;
     end;
   autosizeUp := AutoSzUpChk.Checked;

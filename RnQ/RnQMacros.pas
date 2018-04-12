@@ -39,8 +39,8 @@ type
   function  addMacro(hk: Tshortcut; sw: boolean; op: integer): boolean;
   procedure executeMacro(m: integer);
 // convert
-  procedure str2macros(s: RawByteString; var m: Tmacros);
-  function  str2macro(s: RawByteString): Tmacro;
+  procedure str2macros(const s: RawByteString; var m: Tmacros);
+  function  str2macro(const s: RawByteString): Tmacro;
   function  macros2str(m: Tmacros): RawByteString;
 
   procedure popupMenu(m: Tpopupmenu);
@@ -303,31 +303,52 @@ const
   MFK_SW=2;
   MFK_OP=3;
 
-function macro2str(m:Tmacro):RawByteString;
+function macro2strf(m: Tmacro): RawByteString;
 begin
 result:=
   TLV2(MFK_HK, int2str(m.hk))
  +TLV2(MFK_SW, bool2str(m.sw))
  +TLV2(MFK_OP, int2str(m.opcode))
-end; // macro2str
+end; // macro2strf
 
-function str2macro(s: RawByteString):Tmacro;
+function str2macro(const s: RawByteString): Tmacro;
 var
-  t, l: integer;
-  d: AnsiString;
+  t,l:integer;
+//  d:RawByteString;
+  i : Integer;
+  p : Pointer;
+  sl : Integer;
 begin
+  i := Low(s);
+  sl := length(s)-7;
+  while i < (sl) do
+    begin
+      p := @s[i]; // 1234
+      t:=dword_LEat(p); // 1234
+      inc(INT_PTR(p), 4);
+      l:=dword_LEat( p ); // 5678
+      inc(INT_PTR(p), 4);
+      case t of
+        MFK_HK: result.hk := str2int(p);
+        MFK_SW: result.sw := boolean(PAnsiChar(p)^);
+        MFK_OP: result.opcode:=str2int(p);
+       end;
+      inc(i, 8+l);
+    end;
+{
   while s > '' do
-   begin
-    t := dword_LEat(@s[1]); // 1234
-    l := dword_LEat(@s[5]); // 5678
-    d := copy(s,9,l);
-    case t of
-      MFK_HK: result.hk := str2int(d);
-      MFK_SW: result.sw := boolean(d[1]);
-      MFK_OP: result.opcode := str2int(d);
-      end;
-    delete(s,1,8+l);
-   end;
+  begin
+  t:=dword_LEat(@s[1]); // 1234
+  l:=dword_LEat(@s[5]); // 5678
+  d:=copy(s,9,l);
+  case t of
+    MFK_HK: result.hk := str2int(d);
+    MFK_SW: result.sw := boolean(d[1]);
+    MFK_OP: result.opcode:=str2int(d);
+    end;
+  delete(s,1,8+l);
+  end;
+}
 end; // str2macro
 
 function macros2str(m: Tmacros): RawByteString;
@@ -338,24 +359,38 @@ begin
  result := '';
  for i:=0 to length(m)-1 do
   begin
-   s := macro2str(m[i]);
+   s := macro2strf(m[i]);
    result := result+int2str(length(s))+s;
   end;
 end; // macros2str
 
-procedure str2macros(s: RawByteString; var m: Tmacros);
+procedure str2macros(const s: RawByteString; var m: Tmacros);
 var
   l, n: integer;
+  i: Integer;
+  sl: Integer;
 begin
   n := 0;
-  while length(s) > 0 do
+  setLength(m, n);
+  sl := length(s);
+  if sl > 3 then
+   begin
+    i := Low(s);
+    while i < sl-3 do
     begin
-      l := str2int(s);
-      inc(n);
-      setLength(m, n);
-      m[n-1] := str2macro( copy(s,5,l) );
-      delete(s, 1, 4+l);
+      l := str2int(@s[i]);
+      if l > 0  then
+        begin
+          inc(n);
+          setLength(m, n);
+          m[n-1] := str2macro( copy(s,i+4,l) );
+          inc(i, 4+l);
+        end
+       else
+        i := sl;
+//      delete(s, 1, 4+l);
     end;
+   end;
 end; // str2macros
 
 

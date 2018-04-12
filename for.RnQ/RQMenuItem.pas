@@ -78,14 +78,15 @@ type
 
     public
 //      FCaptionW: WideString;
-      CanTranslate : Boolean;
-      PluginProc : Pointer;
-//      ProtoLink  : Pointer;
-      ProtoLink  : TObject;
-//      ProcIdx : Integer;
+      CanTranslate: Boolean;
+      PluginProc: Pointer;
+//      ProtoLink: Pointer;
+      ProtoLink: TObject;
+      ProtoLinkI: IInterface;
+//      ProcIdx: Integer;
 //      procedure OnPluginMenuClick(Sender: TObject);
     {$ifdef RNQ_SERVICES}
-      ServiceName : AnsiString;
+      ServiceName: AnsiString;
       procedure OnMenuClick(Sender: TObject);
     {$endif}
       constructor Create(AOwner: TComponent); override;
@@ -93,16 +94,16 @@ type
       property  ImageName: TPicName read FImageName write SetImageName;
       property  DevicePPI: Integer read GetDevicePPI2;
   end;
-//  function drawMenuItemR(ACanvas : TCanvas; Amenu:Tmenu; item:Tmenuitem;
-//                    r:Trect; onlysize:boolean=FALSE;
-//                    drawbar : Boolean = True; Selected : Boolean = false):Tpoint;
+//  function drawMenuItemR(ACanvas: TCanvas; Amenu: Tmenu; item: Tmenuitem;
+//                    r: Trect; onlysize: boolean=FALSE;
+//                    drawbar: Boolean = True; Selected: Boolean = false): Tpoint;
 
   function GPdrawmenuitemR7(ACanvas: TCanvas; Amenu: Tmenu; item: Tmenuitem; r: Trect;
            onlysize: boolean = FALSE; drawbar: Boolean = True; Selected: Boolean = false): Tpoint;
 
  {$IFNDEF NO_WIN98}
-//  function drawmenuitemR98(cnv : TCanvas; Amenu:Tmenu; item:Tmenuitem; r:Trect;
-//           onlysize:boolean=FALSE; drawbar : Boolean = True; Selected : Boolean = false):Tpoint;
+//  function drawmenuitemR98(cnv : TCanvas; Amenu:Tmenu; item: Tmenuitem; r: Trect;
+//           onlysize: boolean=FALSE; drawbar: Boolean = True; Selected: Boolean = false): Tpoint;
  {$ENDIF NO_WIN98}
   procedure Register;
 

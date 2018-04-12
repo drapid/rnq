@@ -1108,7 +1108,7 @@ begin
   ch := thisChat;
   if (ch=NIL) then
     Exit;
-  if c.fProto.isMyAcc(c) then
+  if c.isMyAcc then
    begin
     ch.repaint();
 //  ch.repaintAndUpdateAutoscroll();
@@ -2363,7 +2363,7 @@ var
 //  sl, sn: TStringList;
   ch: TchatInfo;
 
-  function addquote(s: String): String;
+  function addquote(const s: String): String;
   begin
    if (length(leading)>0) and (leading[1] = '>') then
      result := '>' + s
@@ -2423,10 +2423,13 @@ begin
 end; // quote
 
 procedure TchatFrm.FormActivate(Sender: TObject);
+var
+  ch: TChatInfo;
 begin
  {$IFDEF RNQ_FULL}
- if thisChat <> NIL then
-   thisChat.repaint;
+  ch := thisChat;
+ if ch <> NIL then
+   ch.repaint;
  {$ENDIF RNQ_FULL}
 end;
 
@@ -2580,9 +2583,11 @@ end;
 procedure TchatFrm.updateContactStatus;
 var
   cnt: TRnQContact;
+  ch: TChatInfo;
 begin
+  ch := thisChat;
   cnt := thisContact;
-  if cnt=NIL then
+  if (cnt=NIL) or (ch = NIL) then
    begin
     sendBtn.ImageName := status2imgName(byte(SC_UNK), FALSE);
     exit;
@@ -2592,16 +2597,16 @@ begin
   sbar.Invalidate;
 
  {$IFDEF PROTOCOL_ICQ}
-  if (thisChat.chatType = CT_IM) and not (thisChat.who = nil) then
+  if (ch.chatType = CT_IM) and not (cnt = nil) then
   begin
-    BuzzBtn.Visible := thisChat.who.CanBuzz;
+    BuzzBtn.Visible := cnt.CanBuzz;
     BuzzBtn.Left := RnQFileBtn.Left + RnQFileBtn.Width;
   end;
 
   {$IFDEF RNQ_AVATARS}
   {$IFDEF FLASH_AVATARS}
     if not cnt.icon.IsBmp then
-     with thisChat.avtPic do
+     with ch.avtPic do
      if Assigned(swf) then
       // Статусы: stam, smile, laugh, mad, sad, cry, offline, busy, love
          case cnt.GetStatus of
@@ -2705,8 +2710,9 @@ begin
 end;
 
 procedure TchatFrm.FormShow(Sender: TObject);
-//var
+var
 //  i:integer;
+  ch: TChatInfo;
 begin
 //  theme.getIco2(PIC_MSG, icon);
   theme.pic2ico(RQteFormIcon, PIC_MSG, icon);
@@ -2714,8 +2720,9 @@ begin
   applyFormXY;
   lastContact := NIL;
   updateContactStatus;
-  if thisChat <> NIL then
-   thisChat.repaint();
+  ch := thisChat;
+  if ch <> NIL then
+    ch.repaint();
 //  toolbar.buttonheight := panel.Height -18+5;
 //  toolbar.buttonheight := 21;
   if plugBtns.PluginsTB <> toolbar then
@@ -2732,6 +2739,8 @@ begin
 end;
 
 procedure TchatFrm.findBtnClick(Sender: TObject);
+var
+  ch: TchatInfo;
 begin
 {  if not Assigned(searchHistFrm) then
    begin
@@ -2745,8 +2754,9 @@ begin
   caseChk.Visible := findBtn.Down;
   reChk.visible := findBtn.Down;
   SBSearch.Visible := findBtn.Down;
-  if thisChat <> NIL then
-   thisChat.historyBox.w2s := '';
+  ch := thisChat;
+  if ch <> NIL then
+    ch.historyBox.w2s := '';
   fp.Visible := findBtn.Down;
 //  SearchPnl.Visible := findBtn.Down;
   if not (historyBtn.Down) and (findBtn.Down) then
@@ -2757,8 +2767,8 @@ begin
   if w2sBox.Visible then
     ActiveControl := w2sBox
    else
-    if thisChat <> NIL then
-     ActiveControl := thisChat.input;
+    if ch <> NIL then
+     ActiveControl := ch.input;
 end;
 
 procedure TchatFrm.findBtnMouseDown(Sender: TObject; Button: TMouseButton;
@@ -3130,7 +3140,7 @@ end; // updatechatfrmXY
 
 procedure TchatFrm.historyAllShowChange(ch: TchatInfo; histBtnDown: Boolean);
 begin
-//  ch:=thisChat;
+//  ch := thisChat;
   if ch=NIL then
     exit;
 
@@ -3175,8 +3185,10 @@ begin
 end;
 
 procedure TchatFrm.ShowStickersExecute(Sender: TObject);
+ {$IFDEF PROTOCOL_ICQ}
 var
   ch: TchatInfo;
+ {$ENDIF PROTOCOL_ICQ}
 begin
  {$IFDEF PROTOCOL_ICQ}
   ch := thisChat;
@@ -3869,7 +3881,7 @@ end;
 
 procedure TchatFrm.prefBtnClick(Sender: TObject);
 //var
-//  i : Byte;
+//  i: Byte;
 begin
   showForm(WF_PREF, 'Chat', vmShort);
 
@@ -4292,7 +4304,7 @@ begin
   ch := thisChat;
   if ch = nil then
     exit;
-  ShowStickersMenu(thisChat.who, Self, toolbar.ClientToScreen(Types.point(TRnQSpeedButton(Sender).Left, TRnQSpeedButton(Sender).Top)));
+  ShowStickersMenu(ch.who, Self, toolbar.ClientToScreen(Types.point(TRnQSpeedButton(Sender).Left, TRnQSpeedButton(Sender).Top)));
   enterCount := 0;
  {$ENDIF PROTOCOL_ICQ}
 end;
@@ -5179,11 +5191,15 @@ end;}
 procedure TchatFrm.BuzzBtnClick(Sender: TObject);
 var
   ch: TchatInfo;
+ {$IFDEF PROTOCOL_ICQ}
   ev: THevent;
+ {$ENDIF PROTOCOL_ICQ}
 begin
-  if not OnlFeature(thisChat.who.fProto) then Exit;
-
   ch := thisChat;
+
+  if not OnlFeature(ch.who.fProto) then
+    Exit;
+
   if (ch = nil) or (ch.who = nil) then
     exit;
 
@@ -5248,8 +5264,10 @@ begin
 end;
 
 procedure TchatFrm.RnQFileBtnClick(Sender: TObject);
+ {$IFDEF usesDC}
 var
   fn: String;
+ {$ENDIF usesDC}
 begin
  {$IFDEF usesDC}
   fn := openSaveDlg(self, 'Select file to transfer', True);
@@ -5276,6 +5294,7 @@ end;
 procedure TchatFrm.RnQFileUploadClick(Sender: TObject);
 var
   fn, url: String;
+  ch: TChatInfo;
 //  ServerToUpload: Integer;
 begin
   fn := openSaveDlg(self, 'Select file to transfer', true);
@@ -5289,7 +5308,8 @@ begin
       msgDlg('File doesn''t exist', true, mtError);
       Exit;
     end;
-    if Assigned(thisChat.who) then
+    ch := thisChat;
+    if Assigned(ch.who) then
     begin
       RnQFileBtn.Enabled := False;
       try
@@ -5302,8 +5322,8 @@ begin
         RnQFileBtn.Enabled := True;
       end;
 
-      if not (trim(url) = '') and not (thisChat = nil) and Assigned(thisChat.input) then
-        thisChat.input.SelText := trim(url);
+      if not (trim(url) = '') and not (ch = nil) and Assigned(ch.input) then
+        ch.input.SelText := trim(url);
     end;
   end;
 end;
@@ -5311,6 +5331,7 @@ end;
 procedure TchatFrm.RnQFileUploadRClick(Sender: TObject);
 var
   fn, url: String;
+  ch: TChatInfo;
 //  ServerToUpload: Integer;
 begin
   fn := openSaveDlg(self, 'Select file to transfer', true);
@@ -5324,7 +5345,8 @@ begin
       msgDlg('File doesn''t exist', true, mtError);
       Exit;
     end;
-    if Assigned(thisChat.who) then
+    ch := thisChat;
+    if Assigned(ch.who) then
     begin
       RnQFileBtn.Enabled := False;
       try
@@ -5333,8 +5355,8 @@ begin
         RnQFileBtn.Enabled := True;
       end;
 
-      if not (trim(url) = '') and not (thisChat = nil) and Assigned(thisChat.input) then
-        thisChat.input.SelText := trim(url);
+      if not (trim(url) = '') and not (ch = nil) and Assigned(ch.input) then
+        ch.input.SelText := trim(url);
     end;
   end;
 end;
@@ -5343,6 +5365,7 @@ procedure TchatFrm.RnQFileUploadMClick(Sender: TObject);
 // MultiFile upload
 var
   fn, url: String;
+  ch: TChatInfo;
 begin
   fn := openSaveDlg(self, 'Select several files to transfer', true, '', '', '', True);
   if fn > '' then
@@ -5352,7 +5375,8 @@ begin
 //      msgDlg('File doesn''t exist', true, mtError);
 //      Exit;
 //    end;
-    if Assigned(thisChat.who) then
+    ch := thisChat;
+    if Assigned(ch.who) then
     begin
       RnQFileBtn.Enabled := False;
       try
@@ -5361,8 +5385,8 @@ begin
         RnQFileBtn.Enabled := True;
       end;
 
-      if not (trim(url) = '') and not (thisChat = nil) and Assigned(thisChat.input) then
-        thisChat.input.SelText := trim(url);
+      if not (trim(url) = '') and not (ch = nil) and Assigned(ch.input) then
+        ch.input.SelText := trim(url);
     end;
   end;
 end;
@@ -5524,11 +5548,11 @@ begin
 //    c.nick:= TabCaption;
 //    c.status:= SC_OFFLINE;
     c := NIL;
-    chat:=TchatInfo.create;
-//    chat.who:=c;
-    chat.who:= NIL;
+    chat := TchatInfo.create;
+//    chat.who := c;
+    chat.who := NIL;
     chat.chatType := CT_PLUGING;
-    chat.single:=singleDefault;
+    chat.single := singleDefault;
 //    if not assigned(pTCE(c.data).history) then
 //      pTCE(c.data).history:=Thistory.create;
 
@@ -5559,7 +5583,7 @@ begin
     resize;
 //    savePages;
     saveListsDelayed := True;
-    pageCtrl.ActivePageIndex:=sheet.pageIndex;
+    pageCtrl.ActivePageIndex := sheet.pageIndex;
 
     chatFrm.setCaption(sheet.pageIndex);
 
@@ -5600,12 +5624,12 @@ begin
     theme.addHIco('plugintab' + intToStrA(chat.id), iIcon, True);
   end;
     chat.lastInputText := TabCaption;
-//    pageCtrl.ActivePageIndex:=sheet.pageIndex;
+//    pageCtrl.ActivePageIndex := sheet.pageIndex;
    chatFrm.setCaption(curIdx);
 //  chatFrm.pagectrl.Pages[i].
 //  chatFrm.pagectrlChange(NIL);
 
-//    result:= Integer(pnl2);
+//    result := Integer(pnl2);
 end;
 
 procedure CHAT_TAB_DELETE(Control: Integer);
@@ -5645,7 +5669,7 @@ end;
 
 procedure TchatFrm.WMEXITSIZEMOVE(var Message: TMessage);
 var
-  ch:TchatInfo;
+  ch: TchatInfo;
 begin
   inherited;
   ch := thisChat;
@@ -5668,8 +5692,8 @@ end;
 
 procedure TchatFrm.AvtPBoxPaint(Sender: TObject);
 var
-//  gr : TGPGraphics;
-//  ia : TGPImageAttributes;
+//  gr: TGPGraphics;
+//  ia: TGPImageAttributes;
   cnt: TRnQContact;
   ch: TchatInfo;
   sz: TSize;
@@ -5678,6 +5702,7 @@ begin
   ch  := thisChat;
   cnt := thisContact;
   if Assigned(cnt) then
+  if sender is TPaintBox then
    if Assigned(cnt.icon.Bmp) and not Assigned(ch.avtPic.PicAni) then
    begin
 //          TPaintBox(sender).Canvas.Brush.Color := paramSmile.color;
@@ -5697,7 +5722,8 @@ begin
    end
    else
     if Assigned(ch.avtPic.PicAni) then
-     TickAniTimer(Sender);
+//     TickAniTimer(Sender);
+      DrawAniAvatar(ch.avtPic.AvtPBox, ch.avtPic.PicAni, True);
   {$ENDIF RNQ_AVATARS}
 end;
 {
@@ -5758,73 +5784,19 @@ end;
 
 procedure TchatFrm.TickAniTimer(Sender: TObject);
 var
-  b2 : TBitmap;
-  paramSmile: TAniPicParams;
-//  w, h : Integer;
-  resW, resH : Integer;
-  ch : TchatInfo;
-{  PaintRect: TRect;
-  PaintBuffer: HPAINTBUFFER;
-  MemDC: HDC;
-  br1 : HBRUSH;
-}
+  ch: TchatInfo;
 begin
 //  if not UseAnime then Exit;
 //  checkGifTime;
   ch := thisChat;
 //  if (ch = NIL)or (ch.chatType <> CT_ICQ)or not (Assigned(ch.avtPic.Pic))  then
   if (ch = NIL)or (ch.chatType <> CT_IM)or not (Assigned(ch.avtPic.PicAni))  then
-   Exit;
+    Exit;
   if not Assigned(ch.avtPic.AvtPBox) then
     Exit;
   if not ch.avtPic.PicAni.RnQCheckTime then
     Exit;
-//  w := ch.avtPic.PicAni.Width;
-//  h := ch.avtPic.PicAni.Height;
-  resW := ch.avtPic.AvtPBox.ClientWidth;
-  resH := ch.avtPic.AvtPBox.ClientHeight;
-  paramSmile.Bounds := DestRect(//w, h,
-                  ch.avtPic.PicAni.Width, ch.avtPic.PicAni.Height,
-//                  ch.avtPic.AvtPBox.ClientWidth, ch.avtPic.AvtPBox.ClientHeight);
-                  resW, resH);
-  paramSmile.Canvas := ch.avtPic.AvtPBox.Canvas;
-  paramSmile.Color := ch.avtPic.AvtPBox.Color;
-  paramSmile.selected := false;
-  begin
-     if Assigned(paramSmile.Canvas) then
-      begin
-//        gr := TGPGraphics.Create(paramSmile.Canvas.Handle);
-//        if gr.IsVisible(MakeRect(paramSmile.Bounds)) then
-
-//         bmp:= TGPBitmap.Create(Width, Height, PixelFormat32bppRGB);
-
-          b2 := createBitmap(resW, resH);
-          b2.Canvas.Brush.Color := paramSmile.color;
-          b2.Canvas.FillRect(b2.Canvas.ClipRect);
-//           DrawRbmp(b2.Canvas.Handle, ch.avtPic.PicAni);
-//           ch.avtPic.PicAni.Draw(b2.Canvas.Handle, 0, 0);
-           ch.avtPic.PicAni.DrawBound(b2.Canvas.Handle, paramSmile.Bounds);
-          if Assigned(paramSmile.Canvas)
-//           and (paramSmile.Canvas.HandleAllocated )
-          then
-           BitBlt(paramSmile.Canvas.Handle, 0, 0, //paramSmile.Bounds.Left, paramSmile.Bounds.Top,
-           resW, resH,
-//            w, h,
-            b2.Canvas.Handle, 0, 0, SRCCOPY);
-        b2.Free;
-{
-         PaintRect := paramSmile.Canvas.ClipRect;
-         PaintBuffer := BeginBufferedPaint(paramSmile.Canvas.Handle, PaintRect, BPBF_TOPDOWNDIB, nil, MemDC);
-         BufferedPaintClear(PaintBuffer, @PaintRect);
-         br1 := CreateSolidBrush(ColorToRGB(paramSmile.Color));
-         FillRect(memDC, PaintRect, br1);
-//         ch.avtPic.PicAni.Draw(paramSmile.Canvas.Handle, paramSmile.Bounds);
-         ch.avtPic.PicAni.Draw(MemDC, paramSmile.Bounds);
-//         BufferedPaintMakeOpaque(PaintBuffer, @PaintRect);
-         EndBufferedPaint(PaintBuffer, True);
-}
-      end;
-  end;
+  DrawAniAvatar(ch.avtPic.AvtPBox, ch.avtPic.PicAni, True);
 end;
 
 procedure TchatFrm.WMWINDOWPOSCHANGING(var Msg: TWMWINDOWPOSCHANGING);
@@ -5932,21 +5904,24 @@ begin
 //  cpp.
 end;
  {$ENDIF USE_SECUREIM}
+
 procedure TchatFrm.EncryptSetPWD(Sender: TObject);
+ {$IFDEF PROTOCOL_ICQ}
 var
   ch: TchatInfo;
   s: String;
   sA: AnsiString;
+ {$ENDIF PROTOCOL_ICQ}
 begin
  {$IFDEF PROTOCOL_ICQ}
   ch := thisChat;
-//  if (ch = NIL)or (ch.chatType <> CT_ICQ)or not (Assigned(ch.avtPic.Pic))  then
+//  if (ch = NIL)or (ch.chatType <> CT_ICQ) or not (Assigned(ch.avtPic.Pic))  then
   if (ch = NIL)or (ch.chatType <> CT_IM) then
     Exit;
   if not (ch.who is TICQcontact) then
     Exit;
 
-  if enterPwdDlg(s, getTranslation('Enter password for %s', [ch.who.displayed]), 32, True) then
+  if enterPwdDlg(s, getTranslation('Enter password for %s', [ch.who.displayed]), 255, True) then
     begin
       sA := AnsiString(s);
       TICQcontact(ch.who).crypt.qippwd := qip_str2pass(sA);
@@ -5958,8 +5933,10 @@ begin
 end;
 
 procedure TchatFrm.EncryptClearPWD(Sender: TObject);
+ {$IFDEF PROTOCOL_ICQ}
 var
   ch: TchatInfo;
+ {$ENDIF PROTOCOL_ICQ}
 begin
  {$IFDEF PROTOCOL_ICQ}
   ch := thisChat;

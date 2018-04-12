@@ -137,12 +137,12 @@ begin
       if n <> NIL then
       if n.CheckState = csCheckedNormal then
         begin
-        pluginsOn:=pluginsOn+filename+';';
+        pluginsOn := pluginsOn+filename+';';
         activate;
         end
       else
         begin
-        pluginsOff:=pluginsOff+filename+';';
+        pluginsOff := pluginsOff+filename+';';
         disactivate;
         end;
 //      inc(i);
@@ -196,7 +196,7 @@ begin
   plugins.resetEnumeration;
   while plugins.hasMore do
    begin
-     pl:=plugins.getNext;
+     pl := plugins.getNext;
      n := PluginsList.AddChild(nil);
      PlItem := PluginsList.GetNodeData(n);
      if pl.screenname='' then
@@ -226,7 +226,7 @@ end; // fillPluginsGrid
 
 procedure TpluginsFr.resetPage;
 //var
-//  pl:Tplugin;
+//  pl: Tplugin;
 begin
 
   //ignoreBox.width:= clientWidth - GAP_SIZE2;
@@ -236,7 +236,7 @@ begin
 plugins.resetEnumeration;
 while plugins.hasMore do
   begin
-  pl:=plugins.getNext;
+  pl := plugins.getNext;
   PluginsList.add
   with list do
     begin
@@ -245,7 +245,7 @@ while plugins.hasMore do
     else
       items.add(pl.screenName);
     items.objects[items.count-1]:=Tobject(pl);
-    checked[items.count-1]:= 0=pos(pl.filename, disabledPlugins);
+    checked[items.count-1] := 0=pos(pl.filename, disabledPlugins);
     end;
   end;
 }

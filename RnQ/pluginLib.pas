@@ -61,6 +61,7 @@ type
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; cl: TRnQCList): RawByteString;  overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime): RawByteString; overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; const s1: AnsiString): RawByteString; overload;
+    function castEV(ev_id: byte; const uin: TUID; flags: integer; when: Tdatetime; const s1: String): RawByteString; overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; const s1, s2: AnsiString): RawByteString; overload;
     function castEv(ev_id: byte; when: Tdatetime; const name, addr, text: AnsiString): RawByteString; overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; const s1: AnsiString): RawByteString; overload;
@@ -199,7 +200,7 @@ function _contactinfo(c: TRnQcontact): RawByteString;
 begin
 if c=NIL then
   begin
-  result:='';
+  result := '';
   exit;
   end;
  {$IFDEF PROTOCOL_ICQ}
@@ -766,7 +767,6 @@ begin
    loggaEvtS(filename+': disactivating');
    cast(_event(PE_FINALIZE));
    Application.ProcessMessages;
-   Application.ProcessMessages;
   except
    loggaEvtS(filename+': ERROR on disactivating!!!!', IconNames[mtError]);
   end;
@@ -919,6 +919,9 @@ begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0
 
 function Tplugins.castEV(ev_id: byte; const uin: TUID; flags: integer; when: Tdatetime; const s1: AnsiString): RawByteString;
 begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_dt(when)+_istring(s1) ) end;
+
+function Tplugins.castEV(ev_id: byte; const uin: TUID; flags: integer; when: Tdatetime; const s1: String): RawByteString;
+begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_dt(when)+_istring(UTF8Encode(s1)) ) end;
 
 function Tplugins.castEv(ev_id: byte; const uin: TUID; flags: integer; when: Tdatetime; const s1, s2: AnsiString): RawByteString;
 begin result := cast( AnsiChar(PM_EVENT)+AnsiChar(ev_id)+_int(StrToIntDef(uin, 0))+_int(flags)+_dt(when)+_istring(s1)+_istring(s2) ) end;

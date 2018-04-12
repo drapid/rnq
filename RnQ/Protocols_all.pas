@@ -81,6 +81,7 @@ procedure getTrayIconTip(var vPic: TPicName; var vTip: String);
 
 var
   ToUploadAvatarFN: String;
+
 Const
   AntiSpamMsgs: array[0..6] of String =
    (
@@ -366,7 +367,7 @@ begin
                  end;
    {$IFDEF PROTOCOL_ICQ}
                 if (b > 0) and (b <= high(XStatusArray)) then
-                 pic2 := XStatusArray[b].PicName;
+                  pic2 := XStatusArray[b].PicName;
    {$ENDIF PROTOCOL_ICQ}
               end;
              end;
@@ -386,7 +387,6 @@ begin
          pic1 := status2imgName(byte(SC_OFFLINE));
      end;
 end;
-
 
 function TRnQProtoHelper.enterPWD: boolean;
 var

@@ -41,7 +41,9 @@ uses
 {$R *.dfm}
 
 procedure TupdateFr.updateChkClick(Sender: TObject);
-begin updateVisPage end;
+begin
+  updateVisPage
+end;
 
 procedure TupdateFr.applyPage;
 begin
@@ -54,14 +56,14 @@ procedure TupdateFr.resetPage;
 begin
   updateGrp.width:= ClientWidth - GAP_SIZE2;
   
-  betaChk.checked:=checkupdate.betas;
-  updateChk.checked:=checkupdate.enabled or PREVIEWversion;
-  checkSpin.value:=checkupdate.every;
+  betaChk.checked := checkupdate.betas;
+  updateChk.checked := checkupdate.enabled or PREVIEWversion;
+  checkSpin.value := checkupdate.every;
 end;
 
 procedure TupdateFr.updateVisPage;
 begin
-  updateGrp.visible:=updateChk.checked;
+  updateGrp.visible := updateChk.checked;
   LoginUpdChk.Visible := PREVIEWversion;
   updateChk.Enabled := not PREVIEWversion;
 end;

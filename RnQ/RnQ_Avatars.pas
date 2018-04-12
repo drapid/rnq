@@ -52,7 +52,9 @@ function  try_load_avatar(cnt: TRnQContact;
 //function try_load_avatar3(var bmp: TRnQBitmap; const hash: AnsiString) :Boolean;
 function LoadAvtByHash(const hash: RawByteString; var bmp: TRnQBitmap;
                        var hasAvatar: Boolean; var pPicFile: String) : Boolean;
-procedure updateAvatar(c: TRnQContact; var hash_safe: RawByteString{; pWriteLog : boolean = false});
+procedure updateAvatar(c: TRnQContact; var hash_safe: RawByteString{; pWriteLog: boolean = false});
+
+procedure DrawAniAvatar(PaintBox: TPaintBox; var pic: TRnQAni; ForceDraw: Boolean = false);
 
  {$IFDEF PROTOCOL_MRA}
 const
@@ -95,7 +97,7 @@ implementation
    StrUtils, math,
    RQUtil, RnQLangs, RnQDialogs, RnQNet, RnQFileUtil, RDUtils, RnQGlobal,
    cgJpeg,
-   RnQConst, utilLib, globalLib,
+   RnQConst, utilLib, globalLib, RQThemes,
    Protocols_all,
  {$IFDEF PROTOCOL_ICQ}
    ICQConsts, ICQv9,
@@ -714,7 +716,7 @@ end;
 }
 
 
-procedure updateAvatar(c: TRnQcontact; var hash_safe: RawByteString{; pWriteLog: boolean = false});
+procedure updateAvatar(c: TRnQcontact; var hash_safe: RawByteString);
 var
   sr: TsearchRec;
 //  path,
@@ -1178,6 +1180,69 @@ begin
     params.proc(fn, 0, params.cnt);
 end;
  {$ENDIF PROTOCOL_ICQ}
+
+procedure DrawAniAvatar(PaintBox: TPaintBox; var pic: TRnQAni; ForceDraw: Boolean = false);
+var
+  b2: TBitmap;
+  paramSmile: TAniPicParams;
+  resW, resH: Integer;
+  sz: TSize;
+{  PaintRect: TRect;
+  PaintBuffer: HPAINTBUFFER;
+  MemDC: HDC;
+  br1: HBRUSH;
+}
+begin
+  if not (Assigned(pic))  then
+    Exit;
+  if not Assigned(PaintBox) then
+    Exit;
+  if (not pic.RnQCheckTime) and (not ForceDraw) then
+    Exit;
+  resW := PaintBox.ClientWidth;
+  resH := PaintBox.ClientHeight;
+  sz := pic.GetSize(PaintBox.Canvas.Font.PixelsPerInch);
+  paramSmile.Bounds := DestRect(sz.cx, sz.cy, resW, resH);
+  paramSmile.Canvas := PaintBox.Canvas;
+  paramSmile.Color := PaintBox.Color;
+  paramSmile.selected := false;
+  begin
+     if Assigned(paramSmile.Canvas) then
+      begin
+//        gr := TGPGraphics.Create(paramSmile.Canvas.Handle);
+//        if gr.IsVisible(MakeRect(paramSmile.Bounds)) then
+
+//         bmp := TGPBitmap.Create(Width, Height, PixelFormat32bppRGB);
+
+          b2 := createBitmap(resW, resH);
+          b2.Canvas.Brush.Color := paramSmile.color;
+          b2.Canvas.FillRect(b2.Canvas.ClipRect);
+//           DrawRbmp(b2.Canvas.Handle, ch.avtPic.PicAni);
+//           ch.avtPic.PicAni.Draw(b2.Canvas.Handle, 0, 0);
+           pic.DrawBound(b2.Canvas.Handle, paramSmile.Bounds);
+//           pic.StretchDraw(b2.Canvas.Handle, paramSmile.Bounds);
+          if Assigned(paramSmile.Canvas)
+//           and (paramSmile.Canvas.HandleAllocated )
+          then
+           BitBlt(paramSmile.Canvas.Handle, 0, 0, //paramSmile.Bounds.Left, paramSmile.Bounds.Top,
+           resW, resH,
+//            w, h,
+            b2.Canvas.Handle, 0, 0, SRCCOPY);
+        b2.Free;
+{
+         PaintRect := paramSmile.Canvas.ClipRect;
+         PaintBuffer := BeginBufferedPaint(paramSmile.Canvas.Handle, PaintRect, BPBF_TOPDOWNDIB, nil, MemDC);
+         BufferedPaintClear(PaintBuffer, @PaintRect);
+         br1 := CreateSolidBrush(ColorToRGB(paramSmile.Color));
+         FillRect(memDC, PaintRect, br1);
+//         ch.avtPic.PicAni.Draw(paramSmile.Canvas.Handle, paramSmile.Bounds);
+         ch.avtPic.PicAni.Draw(MemDC, paramSmile.Bounds);
+//         BufferedPaintMakeOpaque(PaintBuffer, @PaintRect);
+         EndBufferedPaint(PaintBuffer, True);
+}
+      end;
+  end;
+end;
 
 
 {

@@ -61,6 +61,8 @@ uses
 
   procedure applyTaskButton(frm: Tform);
 
+  procedure WaitOrKill(var Thread: THandle; Time: cardinal);
+
 implementation
 
 uses
@@ -737,7 +739,7 @@ type
 
 function DelayedFailureHook(dliNotify: dliNotification; pdli: PDelayLoadInfo): Pointer; stdcall;
 var
-  s : String;
+  s: String;
 begin
   Result := nil;
   case dliNotify of
@@ -748,7 +750,9 @@ begin
      begin
       s := Format('Failed to load library "%0:s".'#13#10' Error (%1:d) %2:s', [AnsiString(pdli.szDll),
           pdli.dwLastError, SysErrorMessage(pdli.dwLastError)]);
+ {$IFDEF RNQ}
       RQLog.loggaEvtS(s, PIC_ASTERISK);
+ {$ENDIF RNQ}
       raise EAbort.Create(s);
 //      raise ELoadLibraryError.CreateFmt(
 //        'Failed to load library "%0:s".'#13#10' Error (%1:d) %2:s',[AnsiString(pdli.szDll),
@@ -763,7 +767,9 @@ begin
            AnsiString(pdli.szDll),
            pdli.dwLastError,
            SysErrorMessage(pdli.dwLastError)]);
+ {$IFDEF RNQ}
          RQLog.loggaEvtS(s, PIC_ASTERISK);
+ {$ENDIF RNQ}
          raise EAbort.Create(s);
 //         raise EGetProcAddressError.CreateFmt(
 //            'Failed to load function "%0:s" from "%1:s"'#13#10' Error (%2:d) %3:s',[
@@ -775,7 +781,9 @@ begin
          s := Format('Failed to load function #%0:d from "%1:s"'#13#10' Error (%2:d) %3:s',[
            pdli.dlp.dwOrdinal, AnsiString(pdli.szDll),
           pdli.dwLastError, SysErrorMessage(pdli.dwLastError)]);
+ {$IFDEF RNQ}
          RQLog.loggaEvtS(s, PIC_ASTERISK);
+ {$ENDIF RNQ}
          raise EAbort.Create(s);
 //         raise EGetProcAddressError.CreateFmt(
 //            'Failed to load function #%0:d from "%1:s"'#13#10' Error (%2:d) %3:s',[
@@ -975,6 +983,17 @@ begin
   i:=getWindowLong(frm.handle, GWL_EXSTYLE);
   setWindowLong(frm.handle, GWL_EXSTYLE, i or WS_EX_APPWINDOW);
 end;
+
+procedure WaitOrKill(var Thread: THandle; Time: cardinal);
+begin
+ if Thread=0 then exit;
+ if WaitForSingleObject(Thread,Time)=WAIT_TIMEOUT then begin
+  TerminateThread(Thread,0);
+  CloseHandle(Thread);
+  Thread:=0;
+ end;
+end;
+
 
 
 (*

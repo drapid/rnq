@@ -683,7 +683,7 @@ begin
         text := ''
        else
         text := items[0];
-	  msgDlg('Done', True, mtInformation)
+      msgDlg('Done', True, mtInformation)
     end
    else
 	msgDlg('Failed', True, mtError)

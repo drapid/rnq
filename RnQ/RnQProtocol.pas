@@ -11,7 +11,7 @@ uses
   Windows, Classes, Types, SysUtils,
   RnQNet, RDGlobal,
   RnQPrefsInt, RnQPrefsTypes,
-   RnQGraphics32, RDUtils
+  RnQGraphics32, RDUtils
    ;
 //    contacts;
 
@@ -581,6 +581,7 @@ type
     function  imVisibleTo: Boolean;
     function  isInRoster: Boolean;
     function  isInList(l: TLIST_TYPES): Boolean;
+    function  isMyAcc: Boolean;
 //   public
 //    function  GetProto: IRnQProtocol;
     procedure SetGroupName(const pName: String);
@@ -1147,6 +1148,11 @@ begin
   Result := fProto.isInList(l, self);
 end;
 
+function TRnQcontact.isMyAcc: Boolean;
+begin
+  Result := fProto.isMyAcc(Self);
+end;
+
 function TRnQcontact.GetBDay: TDateTime;
 begin
   if birthL > 0 then
@@ -1507,7 +1513,7 @@ begin
   for i:=0 to count-1 do
 //  result:=result + TRnQContact(items[i]).uid + CRLF;
 //  result:=result + PRnQContact(List^[I]).uid + CRLF;
-//  result:=result + StrToUTF8(TRnQContact(List^[I]).UID) + CRLF;
+//    result:=result + StrToUTF8(TRnQContact(List^[I]).UID) + CRLF;
     result:=result + StrToUTF8(TRnQContact(List[I]).UID) + CRLF;
 end;
 
@@ -1609,11 +1615,11 @@ var
 begin
   i := 0;
   while i < count do
-    begin
+  begin
   //  p(PRnQContact(items[i])^);
     p(TRnQContact(items[i]));
     inc(i);
-    end;
+  end;
 end;
 
 function TRnQCList.buinlist: RawByteString;
@@ -1623,11 +1629,11 @@ begin
   result := '';
   i := 0;
   while i < count do
-    begin
+  begin
   //    result := result+ PRnQContact(items[i]).buin;
       result := result+ TRnQContact(items[i]).buin;
-      inc(i);
-    end;
+    inc(i);
+  end;
 end; // buinList
 
 function TRnQCList.toIntArray: TIntegerDynArray;

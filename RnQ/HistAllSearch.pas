@@ -37,8 +37,8 @@ type
 //      Shift: TShiftState);
   private
     { Private declarations }
-    stop2search : Boolean;
-    thisProto : TRnQProtocol;
+    stop2search: Boolean;
+    thisProto: TRnQProtocol;
   public
     { Public declarations }
   end;
@@ -63,11 +63,11 @@ implementation
 type
   PHSItem = ^THSItem;
   THSItem = record
-     NodeType : (NT_UID, NT_POSITION);
-     sUID : TUID;
-     pos  : Integer;
-     time : TDateTime;  
-//     Pl : Tplugin;
+     NodeType: (NT_UID, NT_POSITION);
+     sUID: TUID;
+     pos: Integer;
+     time: TDateTime;
+//     Pl: Tplugin;
   end;
 
 
@@ -100,8 +100,8 @@ end;
 
 procedure TAllHistSrchForm.HistPosTreeDblClick(Sender: TObject);
 var
-  n : PVirtualNode;
-  cnt : TRnQContact;
+  n: PVirtualNode;
+  cnt: TRnQContact;
 begin
   n := HistPosTree.FocusedNode;
   if n <> NIL then
@@ -120,9 +120,9 @@ end;
 procedure TAllHistSrchForm.HistPosTreeDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-  hsItem : PHSItem;
-  OldMode : Integer;
-//  s : string;
+  hsItem: PHSItem;
+  OldMode: Integer;
+//  s: string;
 begin
      if vsSelected in PaintInfo.Node.States then
        paintinfo.canvas.Font.Color := clHighlightText
@@ -172,8 +172,8 @@ end;
 
 procedure TAllHistSrchForm.HistPosTreeKeyPress(Sender: TObject; var Key: Char);
 var
-  n : PVirtualNode;
-  cnt : TRnQContact;
+  n: PVirtualNode;
+  cnt: TRnQContact;
 begin
   if key = #13 then
    begin
@@ -192,13 +192,13 @@ end;
 
 procedure TAllHistSrchForm.SchBtnClick(Sender: TObject);
  {$IFNDEF DB_ENABLED}
-  procedure processHistory(hist : Thistory; uid : TUID);
+  procedure processHistory(hist: Thistory; uid: TUID);
    var
-    ParentNode : PVirtualNode;
-      procedure addPosition(pos : Integer; time : TDateTime);
+    ParentNode: PVirtualNode;
+      procedure addPosition(pos: Integer; time: TDateTime);
       var
-        N : PVirtualNode;
-        hsItem : PHSItem;
+        N: PVirtualNode;
+        hsItem: PHSItem;
       begin
        if ParentNode = NIL then
         begin
@@ -242,9 +242,9 @@ procedure TAllHistSrchForm.SchBtnClick(Sender: TObject);
          else
           Exclude(l_RE_opt, roIgnoreCase)
         ;
-        re:= TRegEx.Create(SearchEdit.Text, l_RE_opt);
+        re := TRegEx.Create(SearchEdit.Text, l_RE_opt);
       end;
-    i:=0;
+    i := 0;
     while (i >= 0) and (i < hist.Count) do
       begin
         if stop2search then
@@ -252,7 +252,7 @@ procedure TAllHistSrchForm.SchBtnClick(Sender: TObject);
 //        s := Thevent(hist[i]).decrittedInfo;
         s := Thevent(hist[i]).getBodyText;
         if reChk.Checked then
-//          found:=re.exec(s)
+//          found := re.exec(s)
           found := re.IsMatch(s)
          else
           begin
@@ -260,12 +260,12 @@ procedure TAllHistSrchForm.SchBtnClick(Sender: TObject);
             found := AnsiContainsText(s, SearchEdit.Text)
            else
     //        s:=uppercase(s);
-            found:=pos(SearchEdit.Text,s) > 0;
-    //      found:=AnsiPos(w2s,s) > 0;
+            found := pos(SearchEdit.Text,s) > 0;
+    //      found := AnsiPos(w2s,s) > 0;
           end;
         if found then
           begin
-    //      historyBox.rsb_position:=i-historyBox.offset;
+    //      historyBox.rsb_position := i-historyBox.offset;
            addPosition(i, Thevent(hist[i]).when);
           end;
         inc(i);
@@ -278,10 +278,12 @@ procedure TAllHistSrchForm.SchBtnClick(Sender: TObject);
  {$ENDIF ~DB_ENABLED}
 var
   sr: TsearchRec;
+ {$IFNDEF DB_ENABLED}
   hist: Thistory;
   cnt: TRnQContact;
   fn: string;
   fnUID: TUID;
+ {$ENDIF ~DB_ENABLED}
 begin
   if stop2search then
    begin
@@ -290,9 +292,9 @@ begin
     HistPosTree.Clear;
  {$IFDEF DB_ENABLED}
  {$ELSE ~DB_ENABLED}
-       if FindFirst(Account.ProtoPath+historyPath  +'*.*', faAnyFile, sr) = 0 then
+       if FindFirst(Account.ProtoPath+historyPath  + '*.*', faAnyFile, sr) = 0 then
        repeat
-        if (sr.name<>'.') and (sr.name<>'..') then
+        if (sr.name<>'.') and (sr.name <> '..') then
          if (sr.Attr and faDirectory = 0) then
         begin
          if stop2search then

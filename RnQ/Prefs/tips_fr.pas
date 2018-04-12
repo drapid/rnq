@@ -9,7 +9,7 @@ unit tips_fr;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, 
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   StdCtrls, ComCtrls, ExtCtrls,
   RnQPrefsInt, RnQPrefsTypes,
   RnQSpin, RnQButtons;

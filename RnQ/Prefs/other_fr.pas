@@ -146,7 +146,7 @@ end;
 
 procedure TotherFr.updateVisPage;
 begin
-  inactivehideSpin.enabled:=inactivehideChk.checked;
+  inactivehideSpin.enabled := inactivehideChk.checked;
 end;
 
 procedure TotherFr.FrameResize(Sender: TObject);

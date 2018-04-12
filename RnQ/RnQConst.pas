@@ -404,7 +404,10 @@ const
   sortby2str: array [TsortBy] of RawByteString=('none','alpha','event', 'status');
 
 const
-   ChkInvisDiv = 64;
+  ChkInvisDiv = 64;
+
+  ClrHistBG = 'history.bg';
+
 type
   TQuestAns = record
               q: String;
