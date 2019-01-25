@@ -63,7 +63,6 @@ const
  {$ENDIF PROTOCOL_MRA}
 
 
- {$IFDEF PROTOCOL_ICQ}
 const
   ICQ_AVATAR_URL = 'http://api.icq.net/expressions/get?f=native&type=floorOriginalBuddyIcon&t='; // floorLargeBuddyIcon
   ICQ_PHOTO_AVATAR = 'http://www.icq.com/img/show_photo.php?th_type=1&uin=%s&gender=%d';
@@ -71,6 +70,7 @@ const
   ICQ_PHOTO_THUMB_URL = 'http://www.icq.com/img/show_thumb.php?uin=';
 //  ICQ_PHOTO_AVATAR = 'http://c.icq.com/people/img/show_photo.phpc?uin=%s&th_type=1&gender=%d';
   ICQ_PHOTO_USER_URL = 'http://www.icq.com/img/whitepages/show_user_photo.php?uin=';
+ { $IFDEF PROTOCOL_ICQ}
 type
 //  TOnDownloadedProc = Procedure(fn: String; size: Int64; proto: TRnQProtocol; uid: TUID);
   TOnDownloadedProc = Procedure(fn: String; size: Int64; cnt: TRnQContact);
@@ -88,7 +88,7 @@ type
   function LoadFromURL2(params: TLoadURLParams): Boolean;
   procedure OnPhotoDownLoaded(fn: String; size: Int64; cnt: TRnQContact);
 //  procedure OnPhotoDownLoaded(fn: String; size: Int64; uid: AnsiString);
- {$ENDIF PROTOCOL_ICQ}
+ { $ENDIF PROTOCOL_ICQ}
 
 var
    AvatarPath: String;
@@ -1144,29 +1144,33 @@ begin
  {$ENDIF PROTOCOL_ICQ}
 end;
 
- {$IFDEF PROTOCOL_ICQ}
 procedure OnPhotoDownLoaded(fn: String; size: Int64; cnt: TRnQContact);
 // This function is of type TOnDownloadedProc
 var
- frm: TviewInfoFrm;
+ frm: TRnQViewInfoForm;
 // cnt: TICQcontact;
 begin
 //  cnt := TICQcontact(proto.getContact(uid));
   if cnt = NIL then
     Exit;
-  frm := TviewInfoFrm(findViewInfo(cnt));
+//  frm := TviewInfoFrm(findViewInfo(cnt));
+  frm := findViewInfo(cnt);
   if Assigned(frm) then
    begin
+ {$IFDEF PROTOCOL_ICQ}
      try
-      if Assigned(frm.contactPhoto) then
-       frm.contactPhoto.Free;
+      if Assigned(TviewInfoFrm(frm).contactPhoto) then
+       TviewInfoFrm(frm).contactPhoto.Free;
       except
      end;
-     frm.contactPhoto := NIL;
-     loadPic2(fn, frm.contactPhoto);
-     if Assigned(frm.PhotoPBox) then
+     TviewInfoFrm(frm).contactPhoto := NIL;
+     loadPic2(fn, TviewInfoFrm(frm).contactPhoto);
+     if Assigned(TviewInfoFrm(frm).PhotoPBox) then
 //       frm.PhotoPBox.Repaint;
-       frm.PhotoPBox.Invalidate;
+       TviewInfoFrm(frm).PhotoPBox.Invalidate;
+ {$else ~PROTOCOL_ICQ}
+     frm.UpdateCntAvatar;
+ {$ENDIF PROTOCOL_ICQ}
    end;
   if cnt.icon.ToShow = IS_PHOTO then
     updateAvatar(cnt, cnt.Icon.Hash_safe);
@@ -1181,7 +1185,6 @@ begin
   if Result then
     params.proc(fn, 0, params.cnt);
 end;
- {$ENDIF PROTOCOL_ICQ}
 
 procedure DrawAniAvatar(PaintBox: TPaintBox; var pic: TRnQAni; ForceDraw: Boolean = false);
 var

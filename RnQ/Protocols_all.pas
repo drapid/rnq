@@ -820,7 +820,7 @@ end; // setStatusFull
 procedure setVisibility(const proto: TRnQProtocol; vi: byte);
  {$IFDEF PROTOCOL_ICQ}
 var
-//  changeStatus:boolean;
+//  changeStatus: boolean;
   icq: TicqSession;
  {$ENDIF PROTOCOL_ICQ}
 begin

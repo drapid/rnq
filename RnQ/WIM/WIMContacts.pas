@@ -4,6 +4,7 @@
 }
 unit WIMContacts;
 {$I RnQConfig.inc}
+{$I NoRTTI.inc}
 {$I-}
 {$X+}
 interface
@@ -17,24 +18,18 @@ uses
   WIMConsts,
   Types, RDGlobal, RnQProtocol;
 
-{$I NoRTTI.inc}
-
 type
   TLanguages = array [1..3] of String;
-  TinterestBlock=record // By Shyr
-             Code:integer;
-//             Str : String;
-             Names:Tstrings;
+  TinterestBlock = record // By Shyr
+             Code: integer;
+//             Str: String;
+             Names: Tstrings;
             end;
-  Tinterests=record
-//              InterestBlock:array of TinterestBlock;
-              InterestBlock:array[0..3] of TinterestBlock;
-              Count:integer;
+  Tinterests = record
+//              InterestBlock: array of TinterestBlock;
+              InterestBlock: array[0..3] of TinterestBlock;
+              Count: integer;
              end;
-//  TAvatarTypes =
-
-//  TWIMContact=class;
-//  TcontactProc=procedure(c:Tcontact);
 
   TWIMContact = class(TRnQContact)
   public
@@ -105,14 +100,14 @@ type
     LastInfoUpdate,       // local time
     LastStatusUpdate,     // local time
     InfoUpdatedTo: TDateTime;        // local time
-    Proto:integer;
+    Proto: integer;
     fServerProto: String;
     Connection: record
       port, ft_port: Integer;
-      ip,internal_ip: DWord;
+      ip, internal_ip: DWord;
       proxy_ip: DWord;
       dc_cookie: DWord;
-    end;
+     end;
     SMSable,
     NoDB,
 //    Authorized,
@@ -125,7 +120,7 @@ type
     CapabilitiesXTraz: set of 1..50;
     ExtraCapabilities: RawByteString;
     InfoToken: RawByteString;
-//    Interests: Array of record code : Integer; Str : String; end;
+//    Interests: Array of record code: Integer; Str: String; end;
     Cookie: RawByteString;
     LastAccept: TICQAccept;
 
@@ -133,72 +128,74 @@ type
     xStatusStr: String;
     xStatusDesc: String;
     xStatus: Byte;
-//    xStatusOld : Byte;
+//    xStatusOld: Byte;
     IconID: String;
     Interests: TInterests; // By Shyr
-//    data : tce;
+//    data: tce;
    public
-    constructor Create(pProto : TRnQProtocol; const uin_: TUID); override;
+    constructor Create(pProto: TRnQProtocol; const uin_: TUID); override;
     destructor Destroy; override;
-//     class operator Implicit(const a: AnsiString) : TContact; inline;// Implicit conversion of an Integer to type TMyClass
+//     class operator Implicit(const a: AnsiString): TContact; inline;// Implicit conversion of an Integer to type TMyClass
     procedure clear; override;
     procedure clearInterests;
     procedure setOffline;
     procedure OfflineClear;
-    function  isOnline : Boolean; override; final;
-    function  isInvisible : Boolean; override;
-    function  isOffline : Boolean; override; final;
-    function  canEdit : Boolean; override;
-    function  getGMT:TdateTime;
-    function  GMTavailable:boolean;
-    function  uinAsStr:string; inline;
-    function  uin2Show:string; OverRide; Final;
-    function  getStatusName : String; OverLoad; OverRide; final;
-    function  statusImg : TPicName; OverRide; final;
-    function  getStatus : byte; OverRide; final;
-    procedure SetDisplay(const s : String); OverRide; final;
-    function  GetDBrow : RawByteString; OverRide; final;
-    function  ParseDBrow(ItemType : Integer; const item : RawByteString) : Boolean; OverRide; final;
+    function  isOnline: Boolean; override; final;
+    function  isInvisible: Boolean; override;
+    function  isOffline: Boolean; override; final;
+    function  canEdit: Boolean; override;
+    function  getGMT: TdateTime;
+    function  GMTavailable: boolean;
+    function  uinAsStr: string; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+    function  uin2Show: string; OverRide; Final;
+    function  getStatusName: String; OverLoad; OverRide; final;
+    function  statusImg: TPicName; OverRide; final;
+    function  getStatus: byte; OverRide; final;
+    procedure SetDisplay(const s: String); OverRide; final;
+    function  GetDBrow: RawByteString; OverRide; final;
+    function  ParseDBrow(ItemType: Integer; const item: RawByteString): Boolean; OverRide; final;
     procedure ViewInfo; OverRide; final;
-    function  isAcceptFile : Boolean; OverRide; final;
-    class function trimUID(const sUID : TUID) : TUID; OverRide; final;
+    function  isAcceptFile: Boolean; OverRide; final;
+    class function trimUID(const sUID: TUID): TUID; OverRide; final;
     procedure AddInterest(idx: byte; code: Integer; str: String);
    end; // TWIMContact
 //  Tcontact = TWIMContact;
 //  function  ICQCL_buinlist(cl: TRnQCList; Proto: IRnQProtocol): string;
   procedure ICQCL_setStatus(cl: TRnQCList; st: TWIMStatus);
-  function  ICQCL_idxBySSID(cl: TRnQCList; ssid:Word): integer;
+  function  ICQCL_idxBySSID(cl: TRnQCList; ssid: Word): integer;
   function  ICQCL_C8SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
   function  ICQCL_SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
 
   function unFakeUIN(uin: int64): TUID;
 
 //var
-//  ICQContactsDB : TcontactList;
-//  statusPics : array[Tstatus, boolean] of TRnQThemedElementDtls;
+//  ICQContactsDB: TcontactList;
+//  statusPics: array[Tstatus, boolean] of TRnQThemedElementDtls;
 {    record
-      ImgElm : TRnQThemedElementDtls;
-//      tkn : Integer;
-//      idx : Integer;
-//      Loc : TPicLocation;
+      ImgElm: TRnQThemedElementDtls;
+//      tkn: Integer;
+//      idx: Integer;
+//      Loc: TPicLocation;
     end;}
 
 implementation
 
 uses
-  GlobalLib, RQUtil, RnQLangs, RDUtils, RnQBinUtils, WIM,
-//  viewinfoDlg,
-  RnQConst,
-  mainDlg, utilLib, RnQDialogs, Protocol_WIM;
+  {$IFDEF UNICODE}
+    Character, AnsiStrings,
+  {$ENDIF UNICODE}
+  RQUtil, RnQLangs, RDUtils, RnQBinUtils, RnQDialogs,
+  RnQConst, GlobalLib, mainDlg, utilLib,
+  WIM, viewWIMinfoDlg, Protocol_WIM;
 
 ///////////////////////////////////////////////////////////////////////////
 
-constructor TWIMContact.create(pProto : TRnQProtocol; const uin_: TUID);
+constructor TWIMContact.create(pProto: TRnQProtocol; const uin_: TUID);
 begin
   inherited create(pProto, uin_);
   clear;
 //  iProto := Account.AccProto;
-//  uid:=uin_;
+//  uid := uin_;
 //  UID2cmp := AnsiLowerCase(trimUID(uid));
   isAIM := not isOnlyDigits(UID);
   if isAIM then
@@ -209,7 +206,8 @@ begin
   icon.Bmp := nil;
   icon.cache := nil;
    {$ENDIF RNQ_AVATARS}
-  if assigned(onContactCreation) then onContactCreation(self);
+  if assigned(onContactCreation) then
+    onContactCreation(self);
 end; // create
 
 destructor TWIMContact.Destroy;
@@ -222,17 +220,17 @@ end; // destroy
 
 procedure TWIMContact.clear;
 begin
-//uid:='';
-//nick:='';
-//first:='';
-//last:='';
-{$IFDEF RNQ_AVATARS}
+  //uid := '';
+  //nick := '';
+  //first := '';
+  //last := '';
+   {$IFDEF RNQ_AVATARS}
   if Assigned(icon.Bmp) then
-  try
-    icon.Bmp.Free;
-  except
-    msgDlg(getTranslation('Error on destroying avatar of contact: %s', [uid]), False, mtError, uinAsStr);
-  end;
+   try
+     icon.Bmp.Free;
+    except
+     msgDlg(getTranslation('Error on destroying avatar of contact: %s', [uid]), False, mtError, uinAsStr);
+   end;
   icon.Bmp := nil;
   icon.ToShow := 0;
   FreeAndNil(icon.cache);
@@ -281,7 +279,7 @@ begin
   fDisplay := '';
   email := '';
   city := '';
-  state :=' ';
+  state := '';
   about := '';
   zip := '';
   homepage := '';
@@ -304,7 +302,7 @@ end; // clear
 
 procedure TWIMContact.clearInterests;
 var
-  i : Integer;
+  i: Integer;
 begin
   for i := Low(interests.InterestBlock) to High(interests.InterestBlock) do
    begin
@@ -337,10 +335,10 @@ begin
   IdleTime := 0;
 end;
 
-function TWIMContact.getGMT:TdateTime;
+function TWIMContact.getGMT: TdateTime;
 begin result := -GMThalfs/48 end;
 
-function TWIMContact.GMTavailable:boolean;
+function TWIMContact.GMTavailable: boolean;
 begin result := abs(GMThalfs) < 100 end;
 
 function TWIMContact.isOnline: Boolean;
@@ -353,17 +351,17 @@ begin
   Result := False;
 end;
 
-function TWIMContact.isInvisible : Boolean;
+function TWIMContact.isInvisible: Boolean;
 begin
   Result := InvisibleState > 0;
 end;
 
-function TWIMContact.isOffline : Boolean;
+function TWIMContact.isOffline: Boolean;
 begin
   result := status = WIMConsts.SC_OFFLINE;
 end;
 
-function TWIMContact.canEdit : Boolean;
+function TWIMContact.canEdit: Boolean;
 begin
   result := CntIsLocal or
  {$IFDEF UseNotSSI}
@@ -387,7 +385,7 @@ begin
   vi := findViewInfo(Self);
   if vi = nil then
     try
-//    TInfoDlg.doAll(RnQmain, self)
+      TviewinfoFrm.doAll(RnQmain, self)
      except
     end
    else
@@ -399,8 +397,8 @@ begin result := uid end;
 
 function TWIMContact.uin2Show: String;
 var
-  i, m, n, l : byte;
-  s : String;
+  i, m, n, l: byte;
+  s: String;
 begin
  s := uinAsStr;
  if (not isAIM) and ShowUINDelimiter then
@@ -426,9 +424,9 @@ begin
    result := s
 end;
 
-function TWIMContact.getStatusName : String;
+function TWIMContact.getStatusName: String;
 var
-  s1 : String;
+  s1: String;
 begin
   s1 := '';
   if fProto.isOnline then
@@ -451,7 +449,7 @@ begin
     result := getTranslation(status2ShowStr[status]);
 end;
 
-function TWIMContact.statusImg : TPicName;
+function TWIMContact.statusImg: TPicName;
 begin
 //  result := status2ImgName(byte(status), invisible);
   if False{XStatusAsMain} and (xStatus > 0) then
@@ -462,12 +460,12 @@ begin
     end;
 end;
 
-function TWIMContact.getStatus : byte;
+function TWIMContact.getStatus: byte;
 begin
   result := byte(status);
 end;
 
-class function TWIMContact.trimUID(const sUID : TUID) : TUID;
+class function TWIMContact.trimUID(const sUID: TUID): TUID;
 var
   i: Word;
   t: Word;
@@ -526,7 +524,7 @@ begin
     Result := s2
 end;
 
-procedure TWIMContact.AddInterest(idx : byte; code : Integer; str : String);
+procedure TWIMContact.AddInterest(idx: byte; code: Integer; str: String);
 begin
   Interests.InterestBlock[idx].Code := code;
   if (Interests.InterestBlock[idx].Names <> NIL)
@@ -539,14 +537,14 @@ begin
 //                 Interests.InterestBlock[i].Count:=int.Count+1;
 end;
 
-function  TWIMContact.GetDBrow : RawByteString;
-  function interests2str(int:Tinterests):RawByteString;  // By Shyr
+function  TWIMContact.GetDBrow: RawByteString;
+  function interests2str(int: Tinterests): RawByteString;  // By Shyr
   var
-   i,j:integer;
+   i, j: integer;
    s: RawByteString;
-   present : Boolean;
+   present: Boolean;
   begin
-   s:='';
+   s := '';
    present := False;
 //   p := '';
    for i:=0 to int.Count-1 do
@@ -560,25 +558,25 @@ function  TWIMContact.GetDBrow : RawByteString;
       begin
        if j<>0 then
          s := s + ',';
-       s:= s + UTF(int.interestBlock[i].Names.Strings[j]);
+       s:= s + StrToUTF8(int.interestBlock[i].Names.Strings[j]);
       end;
     except
      s := '';
     end;
 //     s:=s+int.interestBlock[i].Str;
-    s:=s+#0;
+    s := s+#0;
    end;
    if present then
-     Result:=s
+     Result := s
     else
-     Result:='';
+     Result := '';
 //   p := '';
   end;
 
 var
-  tuin : Integer;
+  tuin: Integer;
 begin
-  if not TryStrToInt(UID2cmp, tuin) then
+  if not TryStrToInt(String(UID2cmp), tuin) then
     tuin := 0;
   with TCE(data^) do
     Result := //TLV2(DBFK_OLDUIN, int2str(tuin))
@@ -598,7 +596,7 @@ begin
       +TLV2U_IFNN(DBFK_ABOUT, about)
       +TLV2U_IFNN(DBFK_ZIP, zip)
       +TLV2(DBFK_NODB, nodb)
-      +TLV2U_IFNN(DBFK_COUNTRY, country)
+      +TLV2U_IFNN(DBFK_COUNTRY_CODE, country)
       +TLV2_IFNN(DBFK_LANG1, lang[1])
       +TLV2_IFNN(DBFK_LANG2, lang[2])
       +TLV2_IFNN(DBFK_LANG3, lang[3])
@@ -652,34 +650,34 @@ begin
       +TLV2_IFNN(DBFK_MARSTATUS, MarStatus)
       +TLV2_IFNN(DBFK_qippwd, crypt.qippwd)
 
-      +TLV2U_IFNN(DBFK_BIRTHCOUNTRY, BirthCountry)
+      +TLV2U_IFNN(DBFK_BIRTHCOUNTRY_CODE, BirthCountry)
       +TLV2U_IFNN(DBFK_BIRTHSTATE, BirthState)
       +TLV2U_IFNN(DBFK_BIRTHCITY, BirthCity)
       +TLV2U_IFNN(DBFK_BIRTHADDRESS, BirthAddress)
       +TLV2U_IFNN(DBFK_BIRTHZIP, BirthZIP)
 end;
 
-function TWIMContact.ParseDBrow(ItemType : Integer; const item : RawByteString) : Boolean;
-  procedure str2interests(str:RawByteString; var int:Tinterests);  // By Shyr
+function TWIMContact.ParseDBrow(ItemType: Integer; const item : RawByteString): Boolean;
+  procedure str2interests(str: RawByteString; var int: Tinterests);  // By Shyr
   var
-   s1 : RawByteString;
-   s2:string;
+   s1: RawByteString;
+   s2: string;
   begin
-   int.Count:=0;
+   int.Count := 0;
    if str<>'' then
-    str:=str+'';
+     str := str+'';
    while (str<>'')and (int.Count < 4) do begin
-    s1:=chop(AnsiChar(#0), str);
+    s1 := chop(AnsiChar(#0), str);
     if s1 > '' then
      begin
       int.InterestBlock[int.Count].Code := Byte(s1[1]);
-      s1:=Copy(s1,2,length(s1)-1);
-      int.interestblock[int.Count].Names:=TStringList.Create;
+      s1 := Copy(s1,2,length(s1)-1);
+      int.interestblock[int.Count].Names := TStringList.Create;
       while s1<>'' do begin
-       s2:=UnUTF(chop(AnsiChar(','),s1));
+       s2 := UnUTF(chop(AnsiChar(','),s1));
        int.interestblock[int.Count].Names.Add(s2);
       end;
-      int.Count:=int.Count+1;
+      int.Count := int.Count+1;
      end;
    end;
   end;
@@ -693,8 +691,8 @@ begin
     DBFK_STATE: self.state:= UnUTF(item);
     DBFK_ABOUT: self.about:= UnUTF(item);
     DBFK_ZIP: self.zip  := UnUTF(item);
-    DBFK_NODB: self.nodb:=boolean(item[1]);
-    DBFK_COUNTRY: self.country := UnUTF(item);
+    DBFK_NODB: self.nodb := boolean(item[1]);
+    DBFK_COUNTRY_CODE: self.country := UnUTF(item);
     DBFK_LANG1: self.lang[1] := UnUTF(item);
     DBFK_LANG2: self.lang[2] := UnUTF(item);
     DBFK_LANG3: self.lang[3] := UnUTF(item);
@@ -725,7 +723,7 @@ begin
     DBFK_WORKSTATE: self.workstate := UnUTF(item);
     DBFK_WORKCITY: self.workcity  := UnUTF(item);
 
-    DBFK_BIRTHCOUNTRY: self.BirthCountry := UnUTF(item);
+    DBFK_BIRTHCOUNTRY_CODE: self.BirthCountry := UnUTF(item);
     DBFK_BIRTHSTATE: self.BirthState := UnUTF(item);
     DBFK_BIRTHCITY: self.BirthCity := UnUTF(item);
     DBFK_BIRTHADDRESS: self.BirthAddress := UnUTF(item);
@@ -754,17 +752,17 @@ end;
 ///////////////////////////////////////////////////////////////////
 
 
-function ICQCL_idxBySSID(cl : TRnQCList; ssid:Word):integer;
+function ICQCL_idxBySSID(cl: TRnQCList; ssid: Word): integer;
 var
-//  min,max:integer;
-//  u : TUID;
-//  uid : TUID;
-  c : TRnQContact;
+//  min, max: integer;
+//  u: TUID;
+//  uid: TUID;
+  c: TRnQContact;
 begin
   Result := -1;
   if cl.count = 0 then
    begin
-    result:=-1;
+    result := -1;
     exit;
    end;
 //  max:=count-1;
@@ -789,7 +787,7 @@ begin
    begin
     cnt := cl.getAt(i);
     if cnt is TWIMContact then
-      TWIMContact(cnt).status:=st;
+      TWIMContact(cnt).status := st;
    end;
 end; // setStatus
 

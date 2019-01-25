@@ -115,14 +115,15 @@ uses
 
  {$IFDEF PROTOCOL_ICQ}
 const
-  Status2OldStatus : array [TICQStatus] of byte = (0, 6, 7, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12);
-  OldStatus2Status : array [TICQStatus] of byte = (0, 3, 4, 5, 6, 7, 1, 2, 8, 9, 10, 11, 12);
-  vis2OldVis : array[Tvisibility] of byte = (2, 0, 1, 3, 4);
-  OldVis2Vis : array[Tvisibility] of byte = (1, 2, 0, 3, 4);
+  Status2OldStatus: array [TICQStatus] of byte = (0, 6, 7, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12);
+  OldStatus2Status: array [TICQStatus] of byte = (0, 3, 4, 5, 6, 7, 1, 2, 8, 9, 10, 11, 12);
+  vis2OldVis: array[Tvisibility] of byte = (2, 0, 1, 3, 4);
+  OldVis2Vis: array[Tvisibility] of byte = (1, 2, 0, 3, 4);
  {$ENDIF PROTOCOL_ICQ}
 
+
 var
-//  outBuffer:RawByteString;   // callback result buffer
+//  outBuffer: RawByteString;   // callback result buffer
   outBuffer00: RawByteString;   // callback result buffer
 
 
@@ -614,9 +615,9 @@ case _byte_at(data,1) of
           end;
       PG_STATUS:
           begin
- {$IFDEF PROTOCOL_ICQ}
             if Assigned(Account.AccProto) then
              begin
+ {$IFDEF PROTOCOL_ICQ}
               if Account.AccProto.ProtoElem is TICQSession then
                 begin
                   resStr := AnsiChar(PM_DATA) + AnsiChar(Status2OldStatus[TICQStatus(Account.AccProto.getStatus)])
@@ -630,13 +631,15 @@ case _byte_at(data,1) of
                     resStr := resStr + _istring('') + _istring('');
                 end
                else
-                  resStr := AnsiChar(PM_DATA) + AnsiChar(Status2OldStatus[TICQStatus(Account.AccProto.getStatus)])
-                     + AnsiChar(vis2OldVis[Tvisibility(Account.AccProto.getVisibility)])
-                     + AnsiChar(0) + _istring('') + _istring('');
+ {$ENDIF PROTOCOL_ICQ}
+                  resStr := AnsiChar(PM_DATA) + AnsiChar(Account.AccProto.getStatus)
+                     + AnsiChar(Account.AccProto.getVisibility)
+                     + AnsiChar(Account.AccProto.getXStatus)
+                     + _istring(Account.AccProto.getStatusName)
+                     + _istring('');
 
              end
             else
- {$ENDIF PROTOCOL_ICQ}
              resStr := AnsiChar(PM_ERROR);
           end;
       PG_XSTATUS:
@@ -658,8 +661,8 @@ case _byte_at(data,1) of
   else resStr := AnsiChar(PM_ERROR)+AnsiChar(PERR_UNK_REQ);
   end;//case
  finally
-//   result:=resStr;
-   res:=resStr;
+//   result := resStr;
+   res := resStr;
  end;
 end; // callbackStr
 

@@ -669,6 +669,7 @@ uses
   themesLib, mainDlg, chatDlg,
   RnQStrings, outboxLib,
   Protocol_WIM, NetEncoding,
+  viewWIMinfodlg,
   ICQ.Stickers;//, outboxLib;
 
 var

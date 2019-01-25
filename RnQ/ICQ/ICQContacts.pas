@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit ICQContacts;
 {$I RnQConfig.inc}
@@ -133,7 +133,7 @@ type
     capabilitiesXTraz: set of 1..50;
     extracapabilities: RawByteString;
     InfoToken: RawByteString;
-//    Interests: Array of record code : Integer; Str : String; end;
+//    Interests: Array of record code: Integer; Str: String; end;
     cookie: RawByteString;
     lastAccept: TicqAccept;
 
@@ -149,11 +149,11 @@ type
        Hash: RawByteString;
       end;
     interests: Tinterests; // By Shyr
-//    data : tce;
+//    data: tce;
    public
     constructor Create(pProto: TRnQProtocol; const uin_: TUID); override;
     destructor Destroy; override;
-//     class operator Implicit(const a: AnsiString) : TContact; inline;// Implicit conversion of an Integer to type TMyClass
+//     class operator Implicit(const a: AnsiString): TContact; inline;// Implicit conversion of an Integer to type TMyClass
     procedure clear; override;
     procedure clearInterests;
     procedure setOffline;
@@ -178,21 +178,21 @@ type
     procedure AddInterest(idx: byte; code: Integer; str: String);
    end; // TICQcontact
 //  Tcontact = TICQcontact;
-//  function  ICQCL_buinlist(cl : TRnQCList; Proto : IRnQProtocol):string;
+//  function  ICQCL_buinlist(cl: TRnQCList; Proto: IRnQProtocol):string;
   procedure ICQCL_setStatus(cl: TRnQCList; st: TICQStatus);
-  function  ICQCL_idxBySSID(cl: TRnQCList; ssid: Word):integer;
+  function  ICQCL_idxBySSID(cl: TRnQCList; ssid: Word): integer;
   function  ICQCL_C8SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
   function  ICQCL_SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
 
 
 //var
-//  ICQContactsDB : TcontactList;
-//  statusPics : array[Tstatus, boolean] of TRnQThemedElementDtls;
+//  ICQContactsDB: TcontactList;
+//  statusPics: array[Tstatus, boolean] of TRnQThemedElementDtls;
 {    record
-      ImgElm : TRnQThemedElementDtls;
-//      tkn : Integer;
-//      idx : Integer;
-//      Loc : TPicLocation;
+      ImgElm: TRnQThemedElementDtls;
+//      tkn: Integer;
+//      idx: Integer;
+//      Loc: TPicLocation;
     end;}
 
 IMPLEMENTATION
@@ -212,7 +212,7 @@ begin
   inherited create(pProto, uin_);
   clear;
 //  iProto := Account.AccProto;
-//  uid:=uin_;
+//  uid := uin_;
 //  UID2cmp := AnsiLowerCase(trimUID(uid));
   isAIM := not isOnlyDigits(UID);
   if isAIM then
@@ -420,8 +420,8 @@ begin
    vi := findViewInfo(self);
    if vi = NIL then
     try
-     TviewinfoFrm.doAll(RnQmain, self)
-    except
+      TviewinfoFrm.doAll(RnQmain, self)
+     except
     end
    else
     vi.bringToFront;
@@ -464,7 +464,7 @@ end;
 
 function TICQcontact.getStatusName: String;
 var
-  s1 : String;
+  s1: String;
 begin
   s1 := '';
   if fProto.isOnline then
@@ -562,7 +562,7 @@ begin
     Result := s2
 end;
 
-procedure TICQcontact.AddInterest(idx : byte; code : Integer; str : String);
+procedure TICQcontact.AddInterest(idx: byte; code: Integer; str: String);
 begin
   Interests.InterestBlock[idx].Code := code;
   if (Interests.InterestBlock[idx].Names <> NIL)

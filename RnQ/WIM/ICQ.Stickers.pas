@@ -30,6 +30,9 @@ type
 
   function getStickerURL(const ext, sticker: RawByteString; const forceSize: String = ''): RawByteString;
 
+  function make_sticker_url(set_id: Integer; sticker_id: Integer; const size: String): String;
+  function make_big_icon_url(set_id: Integer): String;
+
 implementation
 
 uses
@@ -135,5 +138,73 @@ begin
 
   Result := 'http://www.icq.com/store/stickers/' + ext + '/' + sticker + '/' + size;
 end;
+
+function make_sticker_url(set_id: Integer; sticker_id: Integer; size: String): String;
+begin
+  Result := 'https://c.icq.com/store/stickers/' + set_id + '/' + sticker_id + '/' + size + '.png';
+end;
+
+function make_big_icon_url(set_id: Integer): String;
+begin
+  Result := 'https://c.icq.com/store/stickers/'+ set_id + '/icon/large.png';
+end;
+
+(*
+procedure parse_StickerFile(node: TJSONObject);
+begin
+  node.
+            auto iter_id = _node.FindMember("id");
+            if (iter_id == _node.MemberEnd() || !iter_id->value.IsInt())
+                return false;
+
+            set_id(iter_id->value.GetInt());
+
+            auto iter_name = _node.FindMember("name");
+            if (iter_name != _node.MemberEnd() && iter_name->value.IsString())
+                set_name(rapidjson_get_string(iter_name->value));
+
+            auto iter_show = _node.FindMember("is_enabled");
+            if (iter_show != _node.MemberEnd() && iter_show->value.IsBool())
+                set_show(iter_show->value.GetBool());
+
+            auto iter_purchased = _node.FindMember("purchased");
+            if (iter_purchased != _node.MemberEnd() && iter_purchased->value.IsBool())
+                set_purchased(iter_purchased->value.GetBool());
+
+            auto iter_usersticker = _node.FindMember("usersticker");
+            if (iter_usersticker != _node.MemberEnd() && iter_usersticker->value.IsBool())
+                set_user(iter_usersticker->value.GetBool());
+
+            auto iter_store_id = _node.FindMember("store_id");
+            if (iter_store_id != _node.MemberEnd() && iter_store_id->value.IsString())
+                set_store_id(rapidjson_get_string(iter_store_id->value));
+
+            auto iter_description = _node.FindMember("description");
+            if (iter_description != _node.MemberEnd() && iter_description->value.IsString())
+                set_description(rapidjson_get_string(iter_description->value));
+
+            auto iter_icons = _node.FindMember("contentlist_sticker_picker_icon");
+            if (iter_icons != _node.MemberEnd() && iter_icons->value.IsObject())
+            {
+                auto iter_icon_20 = iter_icons->value.FindMember("xsmall");
+                if (iter_icon_20 != iter_icons->value.MemberEnd() && iter_icon_20->value.IsString())
+                    put_icon(set_icon(set_icon_size::_20, rapidjson_get_string(iter_icon_20->value)));
+
+                auto iter_icon_32 = iter_icons->value.FindMember("small");
+                if (iter_icon_32 != iter_icons->value.MemberEnd() && iter_icon_32->value.IsString())
+                    put_icon(set_icon(set_icon_size::_32, rapidjson_get_string(iter_icon_32->value)));
+
+                auto iter_icon_48 = iter_icons->value.FindMember("medium");
+                if (iter_icon_48 != iter_icons->value.MemberEnd() && iter_icon_48->value.IsString())
+                    put_icon(set_icon(set_icon_size::_48, rapidjson_get_string(iter_icon_48->value)));
+
+                auto iter_icon_64 = iter_icons->value.FindMember("large");
+                if (iter_icon_64 != iter_icons->value.MemberEnd() && iter_icon_64->value.IsString())
+                    put_icon(set_icon(set_icon_size::_64, rapidjson_get_string(iter_icon_64->value)));
+            }
+
+            auto iter_content = _node.FindMember("content");
+end;
+*)
 
 end.
