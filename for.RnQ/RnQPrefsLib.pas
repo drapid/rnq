@@ -93,8 +93,10 @@ type
 
      procedure BeginUpdate;
      procedure EndUpdate;
+     function  getSelfInterface: IRnQPref;
 
      property  isUpdating: Boolean read fInUpdate;
+     property  PrefInterface: IRnQPref read getSelfInterface;
   end;
 
 
@@ -210,6 +212,11 @@ end;
 *)
 
 { TRnQPref }
+
+function TRnQPref.getSelfInterface: IRnQPref;
+begin
+  Result := Self;
+end;
 
 procedure TRnQPref.addPrefBlobOld(const key: String;
   const Val: RawByteString);

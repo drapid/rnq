@@ -20,7 +20,7 @@
 
  { $DEFINE USE_SMILE_MENU} // allow use menu but not only panel
 
- {$DEFINE ICQ_ONLY} // Use only ICQ!
+ { $DEFINE ICQ_ONLY} // Use only ICQ!
 
  {$IFDEF ICQ_ONLY}
    {$DEFINE PROTOCOL_ICQ} // OSCAR protocol
@@ -29,8 +29,9 @@
    {$DEFINE UID_IS_UNICODE}
    { $DEFINE PROTOCOL_ICQ} // OSCAR protocol
    { $DEFINE PROTOCOL_MRA} // Mail.ru Agent protocol
-   {$DEFINE PROTOCOL_XMP} // XMPP
-//   {$DEFINE PROTOCOL_BIM} // Obimp protocol
+   { $DEFINE PROTOCOL_XMP} // XMPP
+   { $DEFINE PROTOCOL_BIM} // Obimp protocol
+   {$DEFINE PROTOCOL_WIM} // ICQ Rest protocol
  {$ENDIF ~ICQ_ONLY}
 
 

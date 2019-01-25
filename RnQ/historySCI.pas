@@ -12,11 +12,77 @@ uses
   Windows, Controls, Classes, Generics.Collections,
   SysUtils, Graphics, Forms, StdCtrls, ExtCtrls,
   Messages, StrUtils, System.UITypes, NetEncoding,
+  System.Threading, System.Types, PerlRegEx,
+  Menus, System.Actions, Vcl.ActnList,
   RDGlobal, history, RnQProtocol, events, Variants,
   Sciter, SciterApi, TiScriptApi, SciterNative, RnQZip;
 
 
 type
+  ThistoryBox = class;
+
+  THistoryData = class(TDataModule)
+    histmenu: TPopupMenu;
+    add2rstr: TMenuItem;
+    copylink2clpbd: TMenuItem;
+    copy2clpb: TMenuItem;
+    savePicMnu: TMenuItem;
+    selectall1: TMenuItem;
+    viewmessageinwindow1: TMenuItem;
+    saveas1: TMenuItem;
+    txt1: TMenuItem;
+    html1: TMenuItem;
+    addlink2fav: TMenuItem;
+    del1: TMenuItem;
+    N1: TMenuItem;
+    toantispam: TMenuItem;
+    N2: TMenuItem;
+    Openchatwith1: TMenuItem;
+    ViewinfoM: TMenuItem;
+    N3: TMenuItem;
+    chtShowSmiles: TMenuItem;
+    chatShowDevTools: TMenuItem;
+    ActList1: TActionList;
+    hAaddtoroaster: TAction;
+    hAsaveas: TAction;
+    hAdelete: TAction;
+    hACopy: TAction;
+    hASelectAll: TAction;
+    hAViewInfo: TAction;
+    hAShowSmiles: TAction;
+    ShowStickers: TAction;
+    hAShowDevTools: TAction;
+    hAOpenChatWith: TAction;
+    procedure histmenuPopup(Sender: TObject);
+    procedure ANothingExecute(Sender: TObject);
+    procedure hAdeleteExecute(Sender: TObject);
+    procedure copylink2clpbdClick(Sender: TObject);
+    procedure hACopyExecute(Sender: TObject);
+    procedure hASelectAllExecute(Sender: TObject);
+    procedure hAViewInfoExecute(Sender: TObject);
+    procedure savePicMnuClick(Sender: TObject);
+    procedure viewmessageinwindow1Click(Sender: TObject);
+    procedure txt1Click(Sender: TObject);
+    procedure html1Click(Sender: TObject);
+    procedure addlink2favClick(Sender: TObject);
+    procedure toantispamClick(Sender: TObject);
+    procedure chatShowDevToolsClick(Sender: TObject);
+    procedure hAShowSmilesExecute(Sender: TObject);
+    procedure hAShowSmilesUpdate(Sender: TObject);
+    procedure hAOpenChatWithExecute(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    selectedUIN: TUID;
+    currentHB: THistoryBox;
+    function getCurrentHistBox: THistoryBox;
+    procedure onTimer(hb: ThistoryBox);
+    procedure addcontactAction(sender: Tobject);
+    procedure showHistMenu(Sender: TObject; const Data: String; clickedTime: TDateTime; msgPreview, linkClicked, imgClicked: Boolean);
+  end;
+
+
   TlinkKind = (LK_FTP, LK_EMAIL, LK_WWW, LK_UIN, LK_ED);
   THistSearchDirection = (hsdFromBegin, hsdAhead, hsdBack, hsdFromEnd);
   TAutoScrollState = (ASS_FULLSCROLL, // fAutoscroll = True, not2go2end = false
@@ -84,6 +150,7 @@ type
 //    P_topEventNrows, P_bottomEvent: integer;
     fAutoScrollState: TAutoScrollState; // auto scrolls along messages
     FOnScroll: TNotifyEvent;
+    checkTask: ITask;
 
     // For Active History!
     lastTimeClick: TdateTime;
@@ -145,8 +212,8 @@ type
     procedure InitSettings;
     procedure InitSettingsOnce;
     procedure InitSettingsMsgPreview;
-    procedure InitSmiles;
     procedure InitAll;
+    procedure InitSmiles;
     procedure UpdateSmiles;
     procedure RememberScrollPos;
     procedure RestoreScrollPos;
@@ -198,6 +265,14 @@ type
     procedure requestQuote;
     procedure updateMsgStatus(hev: Thevent);
     procedure InitRequest(ASender: TObject; const url: WideString; resType: SciterResourceType; requestId: Pointer; out discard: Boolean; out delay: Boolean);
+
+    function ParseMessageBody(body: String): String;
+    procedure ReplaceSmileMatch(Sender: TObject; var ReplaceWith: PCREString);
+    procedure ReplaceOtherMatch(Sender: TObject; var ReplaceWith: PCREString);
+    function GetReplacement(args: TStringDynArray): PCREString;
+    function ReplaceEmoji(const msg: String): String;
+    procedure updateGraphics;
+
     procedure ReturnFocus(Sender: TObject);
     property  Color;
     property  whole: Boolean read getWhole;
@@ -226,11 +301,16 @@ var
   hisBGColor, myBGColor: TColor;
 //  renderInit: Boolean = False;
 
+var
+  HistoryData: THistoryData;
+
 implementation
 
+{$R *.dfm}
+
 uses
-  clipbrd, Types, math,
-  JSON, System.Threading, VarUtils,
+  clipbrd, math,
+  JSON, VarUtils,
 {$IFDEF UNICODE}
   Character,
   AnsiStrings, AnsiClasses,
@@ -239,7 +319,9 @@ uses
   RnQSysUtils, RnQLangs, RnQFileUtil, RDUtils, RnQBinUtils,
   RQUtil, RQThemes, RnQButtons, RnQGlobal, RnQCrypt, RnQPics, RnQNet,
   globalLib, mainDlg, utilLib, Protocols_all,
+  RnQConst,
 //  chatDlg,
+  ViewPicDimmedDlg, ViewHEventDlg,
   roasterLib,
   // historyRnQ,
   Base64,
@@ -249,7 +331,7 @@ uses
 {$ELSE}
   RnQGraphics32,
 {$ENDIF USE_GDIPLUS}
-  themesLib, menusUnit, ViewPicDimmedDlg, Murmur2;
+  themesLib, menusUnit, Murmur2;
 
 var
 //  lastBGCnt: TRnQContact;
@@ -646,7 +728,7 @@ end;
 
 procedure ThistoryBox.select(from, to_: TDateTime);
 var
-  args: array of OleVariant;
+  args: array of Variant;
   f: TFormatSettings;
 begin
   startSel.ofs := -1;
@@ -824,6 +906,10 @@ procedure ThistoryBox.DoOnScroll;
 begin
   if Assigned(FOnScroll) then
     FOnScroll(Self);
+end;
+
+procedure ThistoryBox.updateGraphics;
+begin
 end;
 
 function ThistoryBox.getQuoteByIdx(var pQuoteIdx: integer): String;
@@ -1758,7 +1844,7 @@ end;
 
 procedure ThistoryBox.InitSettingsOnce;
 var
-  args: array of OleVariant;
+  args: array of Variant;
 begin
   SetLength(args, 1);
 //  args[0] := ShowHistoryRanges;
@@ -1775,7 +1861,7 @@ end;
 
 procedure ThistoryBox.InitSettingsMsgPreview;
 var
-  args: array of OleVariant;
+  args: array of Variant;
 begin
   SetLength(args, 1);
   args[0] := GetTranslation('Select message to render its full version here');
@@ -2489,6 +2575,379 @@ begin
     end;
     Args.Handled := True;
   end;
+end;
+
+
+function THistoryData.getCurrentHistBox: THistoryBox;
+begin
+//  Result := ThisChat.HistoryBox;
+  Result := currentHB;
+end;
+
+procedure THistoryData.onTimer(hb: ThistoryBox);
+var
+  h: ThistoryBox;
+begin
+  if hb = NIL then
+    h := getCurrentHistBox
+   else
+    h := hb;
+end;
+
+procedure THistoryData.savePicMnuClick(Sender: TObject);
+var
+ pic: AnsiString;
+ p: string;
+ i, k: Integer;
+ RnQPicStream //, RnQPicStream2
+   : TMemoryStream;
+// fmt: TGUID;
+  hb: THistoryBox;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+  {$IFNDEF CHAT_SCI}
+  with hb do
+//   if pointedItem.kind=PK_RQPICEX then
+   if clickedItem.kind=PK_RQPICEX then
+    begin
+      pic := clickedItem.ev.getBodyBin;
+      i := Pos(RnQImageExTag, pic);
+      k := PosEx(RnQImageExUnTag, pic, i+12);
+      if (i > 0) and (k > 5) then
+      begin
+            pic := Base64DecodeString(Copy(pic, i+12, k-i-12));
+//            pic := '';
+            RnQPicStream := TMemoryStream.Create;
+ {$WARN UNSAFE_CODE OFF}
+            RnQPicStream.Write(pic[1], Length(pic));
+ {$WARN UNSAFE_CODE ON}
+            pic := '';
+            p := PAFormat[DetectFileFormatStream(RnQPicStream)];
+           Delete(p, 1, 1);
+           p := openSavedlg(Application.mainForm, '', false, p);
+           if p > '' then
+             RnQPicStream.SaveToFile(p);
+           RnQPicStream.Free;
+      end
+    end
+   else
+   if clickedItem.kind=PK_RQPIC then
+    begin
+      pic := clickedItem.ev.getBodyBin;
+      i := Pos(RnQImageTag, pic);
+      k := PosEx(RnQImageUnTag, pic, i+10);
+      if (i > 0) and (k > 5) then
+      begin
+        p := openSavedlg(Application.mainForm, '', false, 'wbmp');
+        if p > '' then
+         begin
+           RnQPicStream := TMemoryStream.Create;
+ {$WARN UNSAFE_CODE OFF}
+           RnQPicStream.Write(pic[i+10], k-i-10);
+ {$WARN UNSAFE_CODE ON}
+           RnQPicStream.SaveToFile(p);
+           RnQPicStream.Free;
+         end;
+      end
+    end;
+  {$ENDIF ~CHAT_SCI}
+end;
+
+procedure THistoryData.toantispamClick(Sender: TObject);
+var
+  hb: THistoryBox;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+  if spamfilter.badwords <> '' then
+   spamfilter.badwords := spamfilter.badwords + ';';
+  spamfilter.badwords := spamfilter.badwords + hb.getSelText;
+end;
+
+procedure THistoryData.txt1Click(Sender: TObject);
+var
+  fn: string;
+  hb: THistoryBox;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+  fn := openSavedlg(Application.mainForm, 'Save text as UTF-8 file', false, 'txt');
+  if fn = '' then
+    exit;
+  saveTextFile(fn, hb.getSelText);
+end;
+
+procedure THistoryData.viewmessageinwindow1Click(Sender: TObject);
+var
+  hb: THistoryBox;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+  with hb do
+    if somethingIsSelected then
+      viewTextWindow(MainPrefs, getTranslation('selection'), getSelText)
+ {$IFNDEF CHAT_CEF} // Chromium
+ {$IFNDEF CHAT_SCI}
+  else
+//    if pointedItem.kind<>PK_NONE then
+    if clickedItem.kind<>PK_NONE then
+      if ((clickedItem.Kind = PK_RQPIC) or (clickedItem.Kind = PK_RQPICEX)) and not (clickedItem.ev.getBodyBin = '')then
+        viewImageDimmed(hb.parent, clickedItem.ev.getBodyBin, clickedItem.ofs)
+      else
+        viewHeventWindow(clickedItem.ev);
+ {$ENDIF ~CHAT_SCI}
+ {$ENDIF ~CHAT_CEF} // Chromium
+end;
+
+procedure THistoryData.addcontactAction(sender: Tobject);
+var
+  hb: THistoryBox;
+  cnt: TRnQContact;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+  cnt := hb.who;
+  if Assigned(cnt) then
+    cnt := cnt.fProto.getContact(selectedUIN);
+  if Assigned(cnt) then
+    addToRoster(cnt, (sender as Tmenuitem).tag, cnt.CntIsLocal)
+end;
+
+function stripProtocol(const stringData: String): String;
+begin
+  if StartsText('uin:', stringData) then
+    Result := copy(stringData, 5, length(stringData))
+  else if StartsText('link:', stringData) then
+    Result := copy(stringData, 6, length(stringData))
+  else if StartsText('mailto:', stringData) then
+    Result := copy(stringData, 8, length(stringData))
+  else
+    Result := stringData;
+end;
+
+procedure THistoryData.addlink2favClick(Sender: TObject);
+var
+  hb: THistoryBox;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+ {$IFDEF CHAT_SCI}
+  with hb.clickedItem do
+    if Kind = PK_LINK then
+      addLinkToFavorites(stripProtocol(stringData));
+ {$ELSE ~CHAT_SCI}
+//with thisChat.historyBox.pointedItem do
+ with hb.clickedItem do
+  if kind=PK_LINK then
+    addLinkToFavorites(link.str);
+ {$ENDIF ~CHAT_SCI}
+end;
+
+procedure THistoryData.ANothingExecute(Sender: TObject);
+begin
+  ;;;
+end;
+
+procedure THistoryData.chatShowDevToolsClick(Sender: TObject);
+var
+  hb: THistoryBox;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+  hb.ShowDebug;
+end;
+
+procedure THistoryData.copylink2clpbdClick(Sender: TObject);
+var
+  hb: THistoryBox;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+ {$IFDEF CHAT_SCI}
+  with hb.clickedItem do
+    if Kind = PK_LINK then
+      clipboard.asText := stripProtocol(stringData);
+ {$ELSE}
+//with thisChat.historyBox do
+//  if pointedItem.kind=PK_LINK then
+//    clipboard.asText := pointedItem.link.str;
+//with thisChat.historyBox.pointedItem do
+  with hb.ClickedItem do
+  if kind=PK_LINK then
+    clipboard.asText := link.str;
+ {$ENDIF ~CHAT_SCI}
+end;
+
+procedure THistoryData.hACopyExecute(Sender: TObject);
+var
+  hb: THistoryBox;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+  hb.copySel2Clpb;
+end;
+
+procedure THistoryData.hAdeleteExecute(Sender: TObject);
+var
+  hb: THistoryBox;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+  hb.DeleteSelected;
+end;
+
+procedure THistoryData.hAOpenChatWithExecute(Sender: TObject);
+var
+//  uid: TUID;
+  hb: THistoryBox;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+{
+  if Assigned(hb.who) then
+    if enterUinDlg(hb.who.fProto, uid, getTranslation('Open chat with...')) then
+//      if who.fProto.validUid1(uid) then
+      ChatFrm.openOn(hb.who.fProto.getContact(uid));
+}
+end;
+
+procedure THistoryData.hASelectAllExecute(Sender: TObject);
+var
+  hb: THistoryBox;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+  hb.SelectAll;
+end;
+
+procedure THistoryData.hAShowSmilesExecute(Sender: TObject);
+var
+//  ch: TchatInfo;
+  b: Boolean;
+var
+  hb: THistoryBox;
+begin
+//  useSmiles := TAction(Sender).Checked;
+  b := MainPrefs.getPrefBoolDef('use-smiles', True);
+  MainPrefs.addPrefBool('use-smiles', not b);
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+{$IFDEF CHAT_SCI}
+  UpdateChatSettings;
+  UpdateChatSmiles;
+{$ELSE ~CHAT_SCI}
+  hb.ManualRepaint;
+{$ENDIF ~CHAT_SCI}
+end;
+
+procedure THistoryData.hAShowSmilesUpdate(Sender: TObject);
+begin
+ with TAction(Sender) do
+  begin
+    Checked := MainPrefs.getPrefBoolDef('use-smiles', True);
+    if Checked then
+       HelpKeyword := PIC_RIGHT
+     else
+       HelpKeyword := '';
+  end;
+end;
+
+procedure THistoryData.hAViewInfoExecute(Sender: TObject);
+var
+  hb: THistoryBox;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+{$IFNDEF CHAT_SCI}
+  with hb do
+  if Assigned(clickedItem.ev) and Assigned(clickedItem.ev.who) then
+    clickedItem.ev.who.ViewInfo;
+{$ENDIF ~CHAT_SCI}
+end;
+
+procedure THistoryData.histmenuPopup(Sender: TObject);
+begin
+  chatShowDevTools.Visible := cmdLinePar.Debug;
+end;
+
+procedure THistoryData.html1Click(Sender: TObject);
+var
+  fn: string;
+  hb: THistoryBox;
+begin
+  hb := getCurrentHistBox;
+  if hb=NIL then
+    exit;
+  fn := openSavedlg(Application.mainForm, '', false, 'html');
+  if fn = '' then
+    exit;
+  saveTextFile(fn, hb.getSelHtml(FALSE));
+end;
+
+procedure THistoryData.showHistMenu(Sender: TObject; const Data: String; clickedTime: TDateTime; msgPreview, linkClicked, imgClicked: Boolean);
+var
+  hb: THistoryBox;
+begin
+  if not (Sender is THistoryBox) then
+   Exit;
+  hb := Sender as THistoryBox;
+
+  hb.clickedItem.timeData := clickedTime;
+  with hb do
+  if linkClicked then
+  begin
+    clickedItem.kind := PK_LINK;
+    clickedItem.stringData := Data;
+  end else if imgClicked then
+  begin
+    if StartsText('embedded:', Data) then
+      clickedItem.kind := PK_RQPIC
+    else if StartsText('download:', Data) then
+      clickedItem.kind := PK_RQPICEX;
+    clickedItem.stringData := Data;
+  end else
+    clickedItem.kind := PK_NONE;
+
+  del1.enabled := hb.wholeEventsAreSelected;
+  saveas1.enabled := hb.somethingIsSelected;
+  copy2clpb.visible := hb.somethingIsSelected;
+  toantispam.visible := hb.somethingIsSelected;
+  N2.visible := hb.somethingIsSelected;
+  copylink2clpbd.visible := linkClicked;
+  addlink2fav.visible := linkClicked and StartsText('url:', Data);
+  savePicMnu.visible := imgClicked;
+  ViewinfoM.visible := clickedTime > 0;
+  viewmessageinwindow1.enabled := hb.somethingIsSelected or (clickedTime > 0);
+  selectall1.enabled := hb.hasEvents;
+
+  add2rstr.visible := linkClicked and StartsText('uin:', Data);
+  if add2rstr.visible then
+  try
+    selectedUIN := copy(Data, 5, length(Data));
+    addGroupsToMenu(Self, add2rstr, addcontactAction, not hb.who.fProto.isOnline
+      or hb.who.fProto.canAddCntOutOfGroup); // false);
+  except
+    add2rstr.visible := false;
+  end;
+
+//  lastClickedItem := pointedItem;
+//  popupHistmenu(MousePos.X, MousePos.Y);
+  histmenu.popup(mousePos.X, mousePos.Y);
 end;
 
 initialization

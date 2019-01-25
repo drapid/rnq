@@ -121,6 +121,7 @@ type
     function  balloon(msg: string; secondsTimeout: real=3; kind: TBalloonIconType=bitNONE; title: string=''):boolean;
  {$ENDIF Use_Baloons}
       procedure setIcon(icon: Ticon); overload;
+      procedure setIcon(icon: HIcon); overload;
 {$IFDEF RNQ}
       procedure setIcon(const iName: TPicName); overload;
 {$ENDIF RNQ}
@@ -448,6 +449,17 @@ begin
     data.hBalloonIcon := Ico.Handle;
   update;
 end; { setIcon }
+
+procedure TtrayIcon.setIcon(icon: HIcon);
+begin
+  if ico = NIL then
+    ico := TIcon.Create;
+  ico.Handle := icon;
+  data.hIcon := icon;
+  if TrayIconDataVersion = 4 then
+    data.hBalloonIcon := Ico.Handle;
+  update;
+end;
 
 {$IFDEF RNQ}
 procedure TtrayIcon.setIcon(const iName: TPicName);

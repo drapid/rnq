@@ -447,7 +447,7 @@ begin
     parse1306(s, 0);
     //HSnac1306(@Pkt);
 }
-    FillTree(Account.AccProto.serverSSI);
+    FillTree(TicqSession(Account.AccProto).serverSSI);
     loadedServerSSI := True;
 //    Caption := 'Server Contact List' + ' ( '+ fn + ' )';
 //  end

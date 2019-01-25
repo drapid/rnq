@@ -158,7 +158,7 @@ begin
 ////////////// Vis Menu \\\\\\\\\\\\\\\\\
   ClearMenuMass(aVisMenu);
   i := 1;
-  visArr := pProto.getVisibilitis;
+  visArr := pProto.getVisibilities;
   if Assigned(visArr) then
     begin
      RnQmain.visibilityBtn.Visible := True;

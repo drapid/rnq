@@ -72,13 +72,13 @@ type
     FMail: String;
     FFirstMsg: TDateTime;
     isNIL: Boolean; // In Not-In-List group
-    function   Clone: TOSSIItem;
+    function Clone: TOSSIItem;
   end;
 
   Tssi = record
     itemCnt: Integer;
     modTime: TDateTime;
-    items:   TStringList;
+    items: TStringList;
   end;
 
 type
@@ -104,9 +104,9 @@ type
 //    filepos: Integer;
     constructor Create;// override;
     destructor Destroy; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-//    function   toString: String;
-//    procedure  fromString(s: String);
-    function   Clone: TSSIEvent;
+//    function toString: String;
+//    procedure fromString(s: String);
+    function Clone: TSSIEvent;
    end; // TSSIEvent
 
   TSSIacks = class(Tlist)
@@ -512,7 +512,7 @@ type
     class function NewInstance: TObject; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    class function GetId: Word; override;
     class function _GetProtoName: String; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-//    class function _isValidUid(var uin:TUID): Boolean; OverRide; final;
+//    class function _isValidUid(var uin: TUID): Boolean; OverRide; final;
     class function _isProtoUid(var uin: TUID): Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     class function _isValidUid1(const uin: TUID): Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     class function _getDefHost: Thostport; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -893,7 +893,7 @@ type
     function  getMyInfo: TRnQContact; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    procedure setMyInfo(cnt: TRnQContact);
     function  getStatuses: TStatusArray; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  getVisibilitis: TStatusArray; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getVisibilities: TStatusArray; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  getStatusMenu: TStatusMenu; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  getVisMenu: TStatusMenu; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  getStatusDisable: TOnStatusDisable; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -1257,7 +1257,7 @@ end; // str2html
 
 function xml_sms(me: TRnQcontact; const dest, msg: AnsiString; ack: boolean): AnsiString;
 const
-  yesno: array [boolean] of AnsiString=('No', 'Yes');
+  yesno: array [boolean] of AnsiString = ('No', 'Yes');
 begin
 result :=
  '<icq_sms_message>'+
@@ -2298,9 +2298,9 @@ begin
     localSSI.items    := nil;}
   showInvisSts := True;
   addTempVisMsg := False;
-  sendBalloonOn:=BALLOON_NEVER;
-  onStatusDisable[byte(SC_dnd)].blinking:=TRUE;
-  onStatusDisable[byte(SC_dnd)].sounds:=TRUE;
+  sendBalloonOn := BALLOON_NEVER;
+  onStatusDisable[byte(SC_dnd)].blinking := TRUE;
+  onStatusDisable[byte(SC_dnd)].sounds := TRUE;
   for I := low(XStatusArray) to High(XStatusArray) do
    begin
      ExtStsStrings[i].Cap := getTranslation(XStatusArray[i].Caption);
@@ -2539,7 +2539,7 @@ begin
     end
    else
     begin
-      pwd:= UnUTF(l);
+      pwd := UnUTF(l);
       fPwdHash := '';
     end;
   l := '';
@@ -2576,7 +2576,7 @@ begin
     lastStatusUserSet := str2status(l);
 
 //  setVisibility(self, byte(RnQstartingVisibility));
-    visibility:=Tvisibility(RnQstartingVisibility);
+    visibility := Tvisibility(RnQstartingVisibility);
    {$IFDEF UseNotSSI}
     updateVisibility;
    {$ENDIF UseNotSSI}
@@ -12354,7 +12354,7 @@ begin
   Result := ICQstatuses;
 end;
 
-function TicqSession.getVisibilitis: TStatusArray;
+function TicqSession.getVisibilities: TStatusArray;
 begin
   Result := icqVis;
 end;

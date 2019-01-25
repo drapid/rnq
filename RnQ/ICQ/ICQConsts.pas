@@ -1,6 +1,6 @@
 ﻿{
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit ICQConsts;
 {$I RnQConfig.inc}
@@ -12,9 +12,9 @@ interface
     themesLib;
 
 type
-//  Tstatus=(SC_ONLINE, SC_OCCUPIED, SC_DND, SC_NA, SC_AWAY, SC_F4C, SC_OFFLINE, SC_UNK,
+//  Tstatus = (SC_ONLINE, SC_OCCUPIED, SC_DND, SC_NA, SC_AWAY, SC_F4C, SC_OFFLINE, SC_UNK,
 //           SC_Evil, SC_Depression);
-  TICQStatus=(SC_ONLINE = 0, SC_OFFLINE, SC_UNK, SC_OCCUPIED, SC_DND, SC_NA,
+  TICQStatus = (SC_ONLINE = 0, SC_OFFLINE, SC_UNK, SC_OCCUPIED, SC_DND, SC_NA,
            SC_AWAY, SC_F4C, SC_Evil, SC_Depression, SC_home, SC_work, SC_Lunch
            );
 const
@@ -700,9 +700,9 @@ Packet dump:
 
 
 type
-  TicqAccept=( AC_OK, AC_DENIED, AC_AWAY );
+  TicqAccept = ( AC_OK, AC_DENIED, AC_AWAY );
 
-  TicqError=(
+  TicqError = (
     EC_rateExceeded,
     EC_cantConnect,
     EC_socket,
@@ -725,7 +725,7 @@ type
   );
 
 const
-  icqerror2str:array [TicqError] of string=(
+  icqerror2str:array [TicqError] of string = (
     'Server says you''re reconnecting too fastly, try later or change user.', //'rate exceeded',
     'Cannot connect\n[%d]\n%s',         // 'can''t connect',
     'Disconnected\n[%d]\n%s',           // 'disconnected',

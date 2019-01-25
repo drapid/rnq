@@ -65,6 +65,12 @@ uses
  {$ENDIF UNICODE}
  {$IFDEF CHAT_CEF} // Chromium
   historyCEF,
+  {$ELSE}
+   {$IFDEF CHAT_SCI} // Sciter
+    historySCI,
+   {$ELSE ~CHAT_CEF and ~CHAT_SCI} // old
+    historyVCL,
+   {$ENDIF CHAT_SCI}
  {$ENDIF CHAT_CEF} // Chromium
  {$IFDEF PROTOCOL_ICQ}
    RQ_ICQ, icqv9, ICQConsts,
@@ -272,8 +278,10 @@ minimizeRoster := TRUE;
 
 ShowHintsInChat := True;
 {$IFDEF CHAT_USE_LSB}
-chatFrm.showLSB := TRUE;
-chatFrm.popupLSB := TRUE;
+//chatFrm.showLSB := TRUE;
+//chatFrm.popupLSB := TRUE;
+HistoryData.showLSB := TRUE;
+HistoryData.popupLSB := TRUE;
 {$ENDIF CHAT_USE_LSB}
 closeChatOnSend := True;
 ClosePageOnSingle := False;
@@ -659,8 +667,8 @@ begin
   pp.addPrefBool('history-crypt-enabled', histcrypt.enabled);
   pp.addPrefBool('history-crypt-save-password', histcrypt.savePwd);
 {$IFDEF CHAT_USE_LSB}
-  pp.addPrefBool('chat-lsb-popup', chatFrm.popupLSB);
-  pp.addPrefBool('chat-lsb-show', chatFrm.showLSB);
+  pp.addPrefBool('chat-lsb-popup', HistoryData.popupLSB);
+  pp.addPrefBool('chat-lsb-show', HistoryData.showLSB);
 {$ENDIF CHAT_USE_LSB}
   pp.addPrefBool('chat-hints-show', ShowHintsInChat);
   pp.addPrefBool('chat-close-on-send', closeChatOnSend);
@@ -934,8 +942,8 @@ begin
   pp.getPrefBool('auto-check-update', checkupdate.enabled);
   pp.getPrefBool('lock-on-start', lockOnStart);
 {$IFDEF CHAT_USE_LSB}
-  pp.getPrefBool('chat-lsb-popup', chatFrm.popupLSB);
-  pp.getPrefBool('chat-lsb-show', chatFrm.showLSB);
+  pp.getPrefBool('chat-lsb-popup', HistoryData.popupLSB);
+  pp.getPrefBool('chat-lsb-show', HistoryData.showLSB);
 {$ENDIF CHAT_USE_LSB}
   pp.getPrefBool('chat-hints-show', ShowHintsInChat);
   pp.getPrefBool('chat-close-on-send', closeChatOnSend);

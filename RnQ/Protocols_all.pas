@@ -32,6 +32,8 @@ type
     procedure EventExtraPics(evKind: Integer;
                              const evBody: RawByteString;
                              var pic1, pic2: TPicName);
+    function  status2imgName(s: byte; inv: boolean=FALSE): TPicName;
+    function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts: byte= 0): TPicName;
     function  enterPWD: boolean;
   end;
 
@@ -133,6 +135,10 @@ uses
   ICQConsts, RQ_ICQ,
   viewSSI,
  {$ENDIF PROTOCOL_ICQ}
+ {$IFDEF PROTOCOL_WIM}
+  Protocol_WIM, WIMcontacts,
+  WIM,
+ {$ENDIF PROTOCOL_WIM}
 
   outboxDlg,
   events, pluginutil, pluginLib, history,
@@ -174,6 +180,10 @@ begin
   {$IFDEF PROTOCOL_BIM}
     OBIMProtoID: ProcessBIMEvents(TBIMSession(Self), TBIMEvent(event));
   {$ENDIF PROTOCOL_BIM}
+
+  {$IFDEF PROTOCOL_WIM}
+    WIMProtoID: ProcessWIMEvents(TWIMSession(Self), TWIMEvent(event));
+  {$ENDIF PROTOCOL_WIM}
   end;
  {$ENDIF ICQ_ONLY}
 end;
@@ -386,6 +396,34 @@ begin
        EK_OFFGOING:
          pic1 := status2imgName(byte(SC_OFFLINE));
      end;
+end;
+
+function TRnQProtoHelper.status2imgName(s: byte; inv: boolean=FALSE): TPicName;
+//const
+//  prefix = 'status.';
+var
+  st: TStatusArray;
+begin
+  st := Self.statuses;
+ if s in [byte(LOW(st)).. byte(HIGH(st))] then
+//   result := prefix + st[s].ImageName
+   result := st[s].ImageName
+//   result := sta 'status.' + status2str[s]
+  else
+   result := PIC_STATUS_UNK;
+
+ if inv then
+//  inc(result, PIC_INVISIBLE_STATUS_ONLINE-PIC_STATUS_ONLINE);
+   result := INVIS_PREFIX + result;
+end;
+
+function TRnQProtoHelper.status2imgNameExt(s: byte; inv: boolean=FALSE; extSts: byte= 0): TPicName;
+begin
+ {$IFDEF ICQ_ONLY}
+  Result := protocol_icq.status2imgNameExt(s, inv, extSts);
+ {$ELSE ~ICQ_ONLY}
+   Result := status2imgName(s, inv)
+ {$ENDIF ICQ_ONLY}
 end;
 
 function TRnQProtoHelper.enterPWD: boolean;
@@ -943,6 +981,9 @@ begin
   {$IFDEF PROTOCOL_BIM}
     OBIMProtoID: Result := TBIMSession;
   {$ENDIF PROTOCOL_BIM}
+  {$IFDEF PROTOCOL_WIM}
+    WIMProtoID: Result := TWIMSession;
+  {$ENDIF PROTOCOL_WIM}
    else
     Result := NIL;
   end;

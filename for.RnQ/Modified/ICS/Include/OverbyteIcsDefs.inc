@@ -3,11 +3,11 @@
 Author:       François PIETTE
 Description:  Version defines for ICS (Internet Component Suite)
 Creation:     2003
-Version:      8.42
+Version:      8.58
 EMail:        francois.piette@overbyte.be  http://www.overbyte.be
 Support:      Use the mailing list twsocket@elists.org
               Follow "support" link at http://www.overbyte.be for subscription.
-Legal issues: Copyright (C) 1996-2016 by François PIETTE
+Legal issues: Copyright (C) 1996-2018 by François PIETTE
               Rue de Grady 24, 4053 Embourg, Belgium.
               <francois.piette@overbyte.be>
 
@@ -64,8 +64,9 @@ Feb 2015 - V8.06 - Angus XE8
 Jun 2015 - V8.07 - Angus XE9
 Aug 2015 - V8.08 - Angus XE9 is now Delphi 10 Seattle
 Apr 2016 - V8.09 - Angus Delphi 10.1 and 10.2, USE_SSL now enabled
-Mar 2017 - V8.42 - Angus couple more BCBs, added BDS numbers 
-
+Mar 2017 - V8.42 - Angus couple more BCBs, added BDS numbers
+Jul 2018 - V8.55 - Angus added NO_DEBUG_LOG as disabled but used for testing
+Oct 2018 - V8.58 - Angus Delphi 10.3 Rio, updated BDB for 10.1 and later
 
   SYMBOL           Compiler version
   ===============  ======================================
@@ -108,6 +109,7 @@ Mar 2017 - V8.42 - Angus couple more BCBs, added BDS numbers
   DELPHI23_UP      Delphi 23 or higher  (Delphi 10 Seattle - Aitana - BDS17)
   DELPHI24_UP      Delphi 24 or higher  (Delphi 10.1 Berlin - BigBen - BDS18)
   DELPHI25_UP      Delphi 25 or higher  (Delphi 10.2 Tokyo - Godzilla - BDS19)
+  DELPHI26_UP      Delphi 26 or higher  (Delphi 10.3 ? - Carnival - BDS20)
 
   BCB1             C++ Builder 1
   BCB3             C++ Builder 3
@@ -134,6 +136,7 @@ Mar 2017 - V8.42 - Angus couple more BCBs, added BDS numbers
   BCB23_UP         C++ Builder 10 Seattle  or higher
   BCB24_UP         C++ Builder 10.1 Berlin or higher
   BCB25_UP         C++ Builder 10.2 Tokyo or higher
+  BCB26_UP         C++ Builder 10.3 Rio or higher
 
   COMPILER1        Delphi 1
   COMPILER2        Delphi 2  or C++ Builder 1
@@ -160,6 +163,7 @@ Mar 2017 - V8.42 - Angus couple more BCBs, added BDS numbers
   COMPILER23       Delphi or C++ Builder 10 Seattle
   COMPILER24       Delphi or C++ Builder 10.1 Berlin
   COMPILER25       Delphi or C++ Builder 10.2 Tokyo
+  COMPILER26       Delphi or C++ Builder 10.3 Rio
 
   COMPILER1_UP     Delphi 1  or higher
   COMPILER2_UP     Delphi 2  or C++ Builder 1 or higher
@@ -186,6 +190,7 @@ Mar 2017 - V8.42 - Angus couple more BCBs, added BDS numbers
   COMPILER23_UP    Delphi or C++ Builder 10 Seattle or higher (Aitana)
   COMPILER24_UP    Delphi or C++ Builder 10.1 Berlin or higher (BigBen)
   COMPILER25_UP    Delphi or C++ Builder 10.2 Tokyo or higher (Godzilla)
+  COMPILER26_UP    Delphi or C++ Builder 10.3 Rio or higher (Carnival)
 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * }
 
@@ -208,12 +213,14 @@ Mar 2017 - V8.42 - Angus couple more BCBs, added BDS numbers
 { disables all the inherited RTTI options and sets the new ones to not emit  }
 { any extended RTTI information.                                             }
 {$DEFINE NO_EXTENDED_RTTI}
-{$DEFINE NO_DEBUG_LOG} // By Rapid D
 {$DEFINE NO_HTTP_TUNNEL_AUTHDIGEST}// By Rapid D
 
 { Next symbols include extra features.                                       }
 {$DEFINE BUILTIN_TIMEOUT}
 {$DEFINE BUILTIN_THROTTLE}
+
+{ Next symbol removes a lot of debug logging code, to save space }
+{$DEFINE NO_DEBUG_LOG}  // remove dot By Rapid D
 
 
 { Do not change anything below this line !                                   }
@@ -250,6 +257,17 @@ Mar 2017 - V8.42 - Angus couple more BCBs, added BDS numbers
 {$ENDIF}
 
 {$DEFINE VER_UNKNOWN}
+
+{$IFDEF VER330}
+  {$UNDEF VER_UNKNOWN}
+  {$DEFINE COMPILER26}
+  {$IFDEF BCB}
+    {$DEFINE BCB26}
+  {$ELSE}
+    {$DEFINE DELPHI26}
+    {$DEFINE DELPHI}
+  {$ENDIF}
+{$ENDIF}
 
 {$IFDEF VER320}
   {$UNDEF VER_UNKNOWN}
@@ -521,6 +539,34 @@ Mar 2017 - V8.42 - Angus couple more BCBs, added BDS numbers
     {$DEFINE DELPHI23}
     {$DEFINE DELPHI}
   {$ENDIF}
+{$ENDIF}
+
+{$IFDEF DELPHI26}
+  {$DEFINE DELPHI26_UP}
+  {$DEFINE DELPHI25_UP}
+  {$DEFINE DELPHI24_UP}
+  {$DEFINE DELPHI23_UP}
+  {$DEFINE DELPHI22_UP}
+  {$DEFINE DELPHI21_UP}
+  {$DEFINE DELPHI20_UP}
+  {$DEFINE DELPHI19_UP}
+  {$DEFINE DELPHI18_UP}
+  {$DEFINE DELPHI17_UP}
+  {$DEFINE DELPHI16_UP}
+  {$DEFINE DELPHI15_UP}
+  {$DEFINE DELPHI14_UP}
+  {$DEFINE DELPHI12_UP}
+  {$DEFINE DELPHI11_UP}
+  {$DEFINE DELPHI10_UP}
+  {$DEFINE DELPHI9_UP}
+  {$DEFINE DELPHI8_UP}
+  {$DEFINE DELPHI7_UP}
+  {$DEFINE DELPHI6_UP}
+  {$DEFINE DELPHI5_UP}
+  {$DEFINE DELPHI4_UP}
+  {$DEFINE DELPHI3_UP}
+  {$DEFINE DELPHI2_UP}
+  {$DEFINE DELPHI1_UP}
 {$ENDIF}
 
 {$IFDEF DELPHI25}
@@ -893,6 +939,35 @@ Mar 2017 - V8.42 - Angus couple more BCBs, added BDS numbers
 
 {$IFDEF DELPHI1}
   {$DEFINE DELPHI1_UP}
+{$ENDIF}
+
+{$IFDEF COMPILER26}
+  {$DEFINE COMPILER26_UP}
+  {$DEFINE COMPILER25_UP}
+  {$DEFINE COMPILER24_UP}
+  {$DEFINE COMPILER23_UP}
+  {$DEFINE COMPILER22_UP}
+  {$DEFINE COMPILER21_UP}
+  {$DEFINE COMPILER20_UP}
+  {$DEFINE COMPILER19_UP}
+  {$DEFINE COMPILER18_UP}
+  {$DEFINE COMPILER17_UP}
+  {$DEFINE COMPILER16_UP}
+  {$DEFINE COMPILER15_UP}
+  {$DEFINE COMPILER14_UP}
+  {$DEFINE COMPILER12_UP}
+  {$DEFINE COMPILER11_UP}
+  {$DEFINE COMPILER10_UP}
+  {$DEFINE COMPILER9_UP}
+  {$DEFINE COMPILER8_UP}
+  {$DEFINE COMPILER7_UP}
+  {$DEFINE COMPILER6_UP}
+  {$DEFINE COMPILER5_UP}
+  {$DEFINE COMPILER4_UP}
+  {$DEFINE COMPILER35_UP}
+  {$DEFINE COMPILER3_UP}
+  {$DEFINE COMPILER2_UP}
+  {$DEFINE COMPILER1_UP}
 {$ENDIF}
 
 {$IFDEF COMPILER25}
@@ -1295,7 +1370,76 @@ Mar 2017 - V8.42 - Angus couple more BCBs, added BDS numbers
   {$DEFINE COMPILER1_UP}
 {$ENDIF}
 
+{$IFDEF BCB26}
+  {$DEFINE BCB26_UP}
+  {$DEFINE BCB25_UP}
+  {$DEFINE BCB24_UP}
+  {$DEFINE BCB23_UP}
+  {$DEFINE BCB22_UP}
+  {$DEFINE BCB21_UP}
+  {$DEFINE BCB20_UP}
+  {$DEFINE BCB19_UP}
+  {$DEFINE BCB18_UP}
+  {$DEFINE BCB17_UP}
+  {$DEFINE BCB16_UP}
+  {$DEFINE BCB15_UP}
+  {$DEFINE BCB14_UP}
+  {$DEFINE BCB12_UP}
+  {$DEFINE BCB11_UP}
+  {$DEFINE BCB10_UP}
+  {$DEFINE BCB6_UP}
+  {$DEFINE BCB5_UP}
+  {$DEFINE BCB4_UP}
+  {$DEFINE BCB3_UP}
+  {$DEFINE BCB1_UP}
+{$ENDIF}
+
+{$IFDEF BCB25}
+  {$DEFINE BCB25_UP}
+  {$DEFINE BCB24_UP}
+  {$DEFINE BCB23_UP}
+  {$DEFINE BCB22_UP}
+  {$DEFINE BCB21_UP}
+  {$DEFINE BCB20_UP}
+  {$DEFINE BCB19_UP}
+  {$DEFINE BCB18_UP}
+  {$DEFINE BCB17_UP}
+  {$DEFINE BCB16_UP}
+  {$DEFINE BCB15_UP}
+  {$DEFINE BCB14_UP}
+  {$DEFINE BCB12_UP}
+  {$DEFINE BCB11_UP}
+  {$DEFINE BCB10_UP}
+  {$DEFINE BCB6_UP}
+  {$DEFINE BCB5_UP}
+  {$DEFINE BCB4_UP}
+  {$DEFINE BCB3_UP}
+  {$DEFINE BCB1_UP}
+{$ENDIF}
+
+{$IFDEF BCB24}
+  {$DEFINE BCB23_UP}
+  {$DEFINE BCB22_UP}
+  {$DEFINE BCB21_UP}
+  {$DEFINE BCB20_UP}
+  {$DEFINE BCB19_UP}
+  {$DEFINE BCB18_UP}
+  {$DEFINE BCB17_UP}
+  {$DEFINE BCB16_UP}
+  {$DEFINE BCB15_UP}
+  {$DEFINE BCB14_UP}
+  {$DEFINE BCB12_UP}
+  {$DEFINE BCB11_UP}
+  {$DEFINE BCB10_UP}
+  {$DEFINE BCB6_UP}
+  {$DEFINE BCB5_UP}
+  {$DEFINE BCB4_UP}
+  {$DEFINE BCB3_UP}
+  {$DEFINE BCB1_UP}
+{$ENDIF}
+
 {$IFDEF BCB23}
+  {$DEFINE BCB24_UP}
   {$DEFINE BCB23_UP}
   {$DEFINE BCB22_UP}
   {$DEFINE BCB21_UP}

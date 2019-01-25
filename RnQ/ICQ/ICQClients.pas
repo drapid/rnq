@@ -75,19 +75,19 @@ const
 type
   TArr = array of RawByteString;
   TCliDefRec = record
-    name : String;
-    protoVer : Int32;
+    name: String;
+    protoVer: Int32;
     DCInfo1,
     DCInfo2,
-    DCInfo3 : UInt32;
-    Caps, NoCaps : TArr;
-    checkBy : set of (CB_proto, CB_DC1, CB_DC2, CB_DC3, CB_MatchCaps, CB_Caps, CB_NoCaps);
-    Version : String;
-    PicName : TPicName;
+    DCInfo3: UInt32;
+    Caps, NoCaps: TArr;
+    checkBy: set of (CB_proto, CB_DC1, CB_DC2, CB_DC3, CB_MatchCaps, CB_Caps, CB_NoCaps);
+    Version: String;
+    PicName: TPicName;
    end;
 
 var
-  CliDefs : array of TCliDefRec;
+  CliDefs: array of TCliDefRec;
 
 
 procedure LoadClientsDefs;

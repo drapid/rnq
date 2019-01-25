@@ -65,19 +65,19 @@ uses
 
 procedure TlockFrm.FormShow(Sender: TObject);
 begin
-pwdBox.onKeyDown:=RnQmain.pwdBoxKeyDown;
-applyTaskButton(self);
-if formVisible(RnQmain) then
-  RnQmain.toggleVisible;
-chatFrm.close;
-locked:=TRUE;
-if not startingLock then
+  pwdBox.onKeyDown := RnQmain.pwdBoxKeyDown;
+  applyTaskButton(self);
+  if formVisible(RnQmain) then
+    RnQmain.toggleVisible;
+  chatFrm.close;
+  locked := TRUE;
+  if not startingLock then
 //  saveCFG;  // eventually delete password from file
-  saveCfgDelayed := True;
+    saveCfgDelayed := True;
 //tipFrm.hide();
-bringForeground:=handle;
-pwdBox.Text:='';
-pwdBox.SetFocus();
+  bringForeground := handle;
+  pwdBox.Text := '';
+  pwdBox.SetFocus();
 end;
 
 procedure TlockFrm.OkBtnClick(Sender: TObject);

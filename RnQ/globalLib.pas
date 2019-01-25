@@ -391,6 +391,7 @@ var
   singleDefault,
   texturizedWindows,
   showGroups,
+  showEmptyGroups,
   autoCopyHist,
 //  bViewTextWrap,
   indentRoster,

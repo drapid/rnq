@@ -107,7 +107,7 @@
         <PreBuildEvent><![CDATA[BuiltTime.exe
 $(PreBuildEvent)]]></PreBuildEvent>
         <Icon_MainIcon>Res\MAINICON_Lite.ico</Icon_MainIcon>
-        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\Flash;..\For.rnq\RTL;..\For.rnq\VCL;..\For.rnq\SQLite;.\ICQ;.\MRA;.\Prefs;.\xmpp;..\For.rnq\XML;.\DB;..\For.rnq\External\mORMot;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\Flash;..\For.rnq\RTL;..\For.rnq\VCL;..\For.rnq\SQLite;.\ICQ;.\MRA;.\Prefs;.\xmpp;..\For.rnq\XML;.\DB;..\For.rnq\External\mORMot;.\WIM;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <SanitizedProjectName>RnQx64</SanitizedProjectName>
         <DCC_UsePackage>rtl;$(DCC_UsePackage)</DCC_UsePackage>
         <Manifest_File>Res\rnq.manifest1</Manifest_File>
@@ -280,7 +280,10 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCCReference Include="changepwddlg.pas">
             <Form>changePwdFrm</Form>
         </DCCReference>
-        <DCCReference Include="historyVCL.pas"/>
+        <DCCReference Include="historyVCL.pas">
+            <Form>HistoryData</Form>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
         <DCCReference Include="chatDlg.pas">
             <Form>chatFrm</Form>
         </DCCReference>
@@ -385,42 +388,6 @@ $(PreBuildEvent)]]></PreBuildEvent>
             <Form>FrmLangs</Form>
         </DCCReference>
         <DCCReference Include="..\for.RnQ\RTL\RDUtils.pas"/>
-        <DCCReference Include="ICQ\filetransferDlg.pas">
-            <Form>filetransferFrm</Form>
-        </DCCReference>
-        <DCCReference Include="ICQ\ICQ.Stickers.pas"/>
-        <DCCReference Include="ICQ\icq_fr.pas">
-            <Form>icqFr</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="ICQ\ICQClients.pas"/>
-        <DCCReference Include="ICQ\ICQConsts.pas"/>
-        <DCCReference Include="ICQ\ICQContacts.pas"/>
-        <DCCReference Include="ICQ\ICQflap.pas"/>
-        <DCCReference Include="ICQ\ICQv9.pas"/>
-        <DCCReference Include="ICQ\MenuStickers.pas">
-            <Form>FStickers</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="ICQ\Protocol_ICQ.pas"/>
-        <DCCReference Include="ICQ\RQ_ICQ.pas"/>
-        <DCCReference Include="ICQ\RQCodes.pas"/>
-        <DCCReference Include="ICQ\sendfileDlg.pas">
-            <Form>sendfileFrm</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="ICQ\viewinfoDlg.pas">
-            <Form>viewinfoFrm</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="ICQ\viewSSI.pas">
-            <Form>SSIForm</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="ICQ\wpDlg.pas">
-            <Form>wpFrm</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="ViewHEventDlg.pas">
             <Form>HEventFrm</Form>
         </DCCReference>
@@ -428,6 +395,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
             <Form>FSmiles</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="RnQConst.pas"/>
         <None Include="..\For.rnq\RnQConfig.inc"/>
         <None Include="RnQConfig.inc"/>
         <None Include="..\for.RnQ\ForRnQConfig.inc"/>
@@ -495,8 +463,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
                     <VersionInfoKeys Name="Comments"/>
                 </VersionInfoKeys>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k240.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp240.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k260.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp260.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>

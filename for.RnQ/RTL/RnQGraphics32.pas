@@ -137,7 +137,7 @@ type
     procedure DrawBound(DC: HDC; DestR: TGPRect; Bound: Boolean = True; Scale: Boolean = True); Overload;
     procedure StretchDraw(DC: HDC; DestR: TGPRect); Overload;
     procedure Draw(ACanvas: TCanvas; const Rect: TRect); Overload; OverRide;
-    procedure DrawTransparent(ACanvas: TCanvas; const Rect: TRect; Opacity: Byte); OverRide;
+    procedure DrawTransparent(ACanvas: TCanvas; const Rect: TRect; Opacity: Byte); {$IFNDEF FPC}OverRide; {$ENDIF}
     function  GetEmpty: Boolean; OverRide;
     function  GetPalette: HPALETTE; OverLoad;
     function  GetTransparent: Boolean; OverRide;
@@ -261,13 +261,15 @@ const
 implementation
  uses
    StrUtils,
-   math, mmSystem, Themes, UxTheme, UITypes,
+   math, mmSystem, Themes, UxTheme,
  {$IFDEF DELPHI9_UP}
+   UITypes,
    DwmApi,
+   wincodec,
+   {$IFDEF UNICODE}
+     AnsiStrings,
+   {$ENDIF UNICODE}
  {$ENDIF DELPHI9_UP}
- {$IFDEF UNICODE}
-   AnsiStrings,
- {$ENDIF UNICODE}
 //  {$IFNDEF RNQ_LITE}
    {$IFDEF USE_FLASH}
     ShockwaveFlashObjects_TLB,
@@ -275,7 +277,6 @@ implementation
     ExtCtrls,
    {$ENDIF RNQ_FULL}
     CommCtrl,
-    wincodec,
     ActiveX,
     RnQpngImage,
    RDUtils,
@@ -357,15 +358,20 @@ const
   TIF_HDR: array [0..3] of AnsiChar = #$49#$49#$2A#$00;
   TIF_HDR2: array [0..3] of AnsiChar = #$4D#$4D#$00#$2A;
   CLSID_WICWEBPDecoder: TGUID = '{C747A836-4884-47B8-8544-002C41BD63D2}';
+  CLSID_WICHeifDecoder: TGUID = '{e9a4a80a-44fe-4de4-8971-7150b10a5199}';
+  GUID_ContainerFormatHeif: TGUID = '{e1e62521-6787-405b-a339-500715b5763f}';
 
 const
  IID_IPicture: TGUID = '{7BF80980-BF32-101A-8BBB-00AA00300CAB}';
 
 var
- supExts: array[0..9] of string = ('bmp', 'wbmp', 'wbm', 'ico','icon',
-                 'gif', 'png', 'jpg', 'jpe', 'jpeg');//, 'tif', 'dll')
+// supExts: array[0..9] of string = ('bmp', 'wbmp', 'wbm', 'ico','icon',
+//                 'gif', 'png', 'jpg', 'jpe', 'jpeg');//, 'tif', 'dll')
+ supExts: array[0..10] of string = ('bmp', 'wbmp', 'wbm', 'ico','icon',
+                 'gif', 'png', 'jpg', 'jpe', 'jpeg', 'heic');//, 'tif', 'dll')
  isWEBPSupport: Boolean;
  isTIFFSupport: Boolean;
+ isHEIFSupport: Boolean;
  fJPEGTurbo: Boolean;
 
   var
@@ -3228,6 +3234,7 @@ var
 begin
   isTIFFSupport := false;
   isWEBPSupport := false;
+  isHEIFSupport := false;
 
   if Succeeded( CoCreateInstance(CLSID_WICImagingFactory, nil, CLSCTX_INPROC_SERVER or
       CLSCTX_LOCAL_SERVER, IUnknown, FImagingFactory)) then
@@ -3237,6 +3244,12 @@ begin
       begin
        ctInfo := NIL;
        isWEBPSupport := true;
+      end;
+
+    if Succeeded( FImagingFactory.CreateComponentInfo(CLSID_WICHeifDecoder, ctInfo) ) then
+      begin
+       ctInfo := NIL;
+       isHEIFSupport := true;
       end;
   end;
 
@@ -3258,6 +3271,8 @@ begin
     s := S + '*.tif; *.tiff; ';
   if isWEBPSupport then
     s := S + '*.webp; ';
+//  if isHEIFSupport then
+//    s := S + '*.heic; *.heif; ';
 
   result := 'All images' + '|' + s; // + '|';
 //  result := FileFormatList.GetGraphicFilter([], fstDescription,
@@ -3280,6 +3295,7 @@ begin
         (fn = 'ico')or(fn = 'icon')or(fn='png')or(fn='jpg')or(fn='jpeg')or
         (fn='dll')or
         (isWEBPSupport and (fn='webp'))or
+//        (isHEIFSupport and ((fn='heic')or (fn='heif'))) or
         (isTIFFSupport and ((fn='tiff')or (fn='tiff')))
     then
      begin

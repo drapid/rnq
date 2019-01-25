@@ -18,8 +18,8 @@ This file is part of &RQ.
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit groupsLib;
 {$I RnQConfig.inc}
@@ -47,6 +47,7 @@ type
    public
     a: array of Tgroup;
     procedure clear;
+    procedure MakeAllLocal;
 //    procedure save;
 //    procedure load(s : AnsiString);
     procedure fromString(s: RawByteString);
@@ -57,7 +58,9 @@ type
     function  get(id: integer): Pgroup;
     function  exists(id: integer): boolean;
     function  count: integer;
-    procedure rename(id: integer; const newname: string);
+    procedure rename(id: integer; const newname: string; onlyLocal: Boolean = false);
+    procedure setNode(id: integer; divisor: TDivisor; node: TNode);
+//    function  RenameLocal(ID: Integer; const NewName: String): TPair<String, TGroup>;
     function  delete(id: integer): boolean;
 //    procedure changeId(oldId, newId: integer; db: TRnQCList);
     function  name2id(const name_: string): integer;
@@ -228,13 +231,34 @@ end;
 function Tgroups.exists(id: integer): boolean;
 begin result:=idxOf(id) >= 0 end;
 
-procedure Tgroups.rename(id: integer; const newname: string);
+procedure Tgroups.rename(id: integer; const newname: string; onlyLocal: Boolean = false);
 begin
   with a[idxOf(id)] do
    begin
-     name:=newname;
+     name := newname;
      ServerUpdate;
    end;
+end;
+
+procedure TGroups.setNode(id: integer; divisor: TDivisor; node: TNode);
+var
+  i: Integer;
+begin
+  i := idxOf(id);
+  if (i >= 0) and (divisor in [Low(TDivisor)..High(TDivisor)]) then
+    a[i].node[divisor] := node;
+end;
+
+procedure Tgroups.MakeAllLocal;
+var
+  p: TGroup;
+begin
+  for p in a do
+  begin
+//    p := g.Value;
+//    p.IsLocal := True;
+//    SaveGroup(p);
+  end;
 end;
 
 function Tgroups.delete(id: integer): boolean;

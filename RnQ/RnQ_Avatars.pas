@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit RnQ_Avatars;
 {$I RnQConfig.inc}
@@ -65,9 +65,11 @@ const
 
  {$IFDEF PROTOCOL_ICQ}
 const
+  ICQ_AVATAR_URL = 'http://api.icq.net/expressions/get?f=native&type=floorOriginalBuddyIcon&t='; // floorLargeBuddyIcon
+  ICQ_PHOTO_AVATAR = 'http://www.icq.com/img/show_photo.php?th_type=1&uin=%s&gender=%d';
   ICQ_PHOTO_URL = 'http://www.icq.com/img/show_photo.php?uin=';
   ICQ_PHOTO_THUMB_URL = 'http://www.icq.com/img/show_thumb.php?uin=';
-  ICQ_PHOTO_AVATAR = 'http://c.icq.com/people/img/show_photo.phpc?uin=%s&th_type=1&gender=%d';
+//  ICQ_PHOTO_AVATAR = 'http://c.icq.com/people/img/show_photo.phpc?uin=%s&th_type=1&gender=%d';
   ICQ_PHOTO_USER_URL = 'http://www.icq.com/img/whitepages/show_user_photo.php?uin=';
 type
 //  TOnDownloadedProc = Procedure(fn: String; size: Int64; proto: TRnQProtocol; uid: TUID);
@@ -800,7 +802,7 @@ procedure loadAvatars(const proto: TRnQProtocol; path: String);
 begin
  {$IFDEF PROTOCOL_ICQ}
 //  path := userPath + avtPath;
-  if not Account.AccProto.AvatarsSupport then
+  if not TicqSession(Account.AccProto).AvatarsSupport then
     Exit;
  {$ENDIF PROTOCOL_ICQ}
 
@@ -1107,7 +1109,7 @@ var
   sr: TsearchRec;
 begin
  {$IFDEF PROTOCOL_ICQ}
-  if not Account.AccProto.AvatarsSupport then
+  if not TicqSession(Account.AccProto).AvatarsSupport then
     Exit;
  {$IFDEF UseNotSSI}
 //  if icq.useSSI then

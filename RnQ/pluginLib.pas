@@ -16,7 +16,7 @@ unit pluginLib;
 interface
 
 uses
-  windows, Graphics, classes, Controls, sysutils, RnQProtocol, //contacts, 
+  windows, Graphics, classes, Controls, sysutils, RnQProtocol, //contacts,
   events, types, strutils, RDGlobal,
  {$IFDEF PROTOCOL_ICQ}
   ICQConsts,
@@ -58,7 +58,7 @@ type
     procedure load;
     procedure unload;
     function cast(const data: RawByteString): RawByteString; overload;
-    function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; cl: TRnQCList): RawByteString;  overload;
+    function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; cl: TRnQCList): RawByteString; overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime): RawByteString; overload;
     function castEv(ev_id: byte; const uin: TUID; flags: Integer; when: Tdatetime; const s1: AnsiString): RawByteString; overload;
     function castEV(ev_id: byte; const uin: TUID; flags: integer; when: Tdatetime; const s1: String): RawByteString; overload;
@@ -249,7 +249,7 @@ var
   end; // minimum
 
 const
-  tenthsPerDay=10*60*60*24;
+  tenthsPerDay = 10*60*60*24;
 
 var
   b: boolean;
@@ -292,7 +292,7 @@ case _byte_at(data,1) of
  {$IFDEF PROTOCOL_ICQ}
          if Account.AccProto.ProtoID = ICQProtoID then
 //         with TICQSession(Account.AccProto.ProtoElem) do
-          with Account.AccProto do
+          with TicqSession(Account.AccProto) do
           begin
 //           eventContact := getContact(_int_at(data,3));
            eventContact := getICQContact(_int_at(data,3));
@@ -504,43 +504,43 @@ case _byte_at(data,1) of
                  begin
                     i := _int_at(data,3);
 //                   tS := IntToStrA(_int_at(data,3));
-//                   outBuffer:=AnsiChar(PM_DATA)+_icontactinfo( Account.AccProto.getContact(tS) );
-                   resStr := AnsiChar(PM_DATA)+_icontactinfo( Account.AccProto.getICQContact(i) );
+//                   outBuffer := AnsiChar(PM_DATA)+_icontactinfo( Account.AccProto.getContact(tS) );
+                   resStr := AnsiChar(PM_DATA)+_icontactinfo(TicqSession(Account.AccProto).getICQContact(i) );
                  end;
  {$ENDIF PROTOCOL_ICQ}
       PG_LIST: if minimum(3) then
         begin
-        cl:=whatlist(_byte_at(data,3));
+        cl := whatlist(_byte_at(data,3));
         if cl=NIL then
-          resStr :=AnsiChar(PM_ERROR)+AnsiChar(PERR_UNEXISTENT)
+          resStr := AnsiChar(PM_ERROR)+AnsiChar(PERR_UNEXISTENT)
         else
-          resStr :=AnsiChar(PM_DATA)+_intlist(cl.toIntArray);
+          resStr := AnsiChar(PM_DATA)+_intlist(cl.toIntArray);
         end;
 
       PG_CHAT_XYZ:
         begin
           //ShowMessage('chat coord request');
           if chatFrm.pagectrl.pagecount = 0 then
-           resStr :=AnsiChar(PM_DATA)+_intlist([0,0,0,0])
+           resStr := AnsiChar(PM_DATA)+_intlist([0,0,0,0])
           else
           begin
-            rct:= chatFrm.pagectrl.activepage.boundsrect;
+            rct := chatFrm.pagectrl.activepage.boundsrect;
 //            if chatFrm.fp.Visible then
             inc(rct.Top, chatFrm.pagectrl.Top);
-            //rct.topleft:=  chatFrm.pagectrl.activepage.ClientToScreen(rct.topleft);
-            //rct.bottomright:=  chatFrm.pagectrl.activepage.ClientToScreen(rct.bottomright);
-            resStr :=AnsiChar(PM_DATA)+_intlist([rct.top,rct.left,rct.right,rct.bottom]);
+            //rct.topleft := chatFrm.pagectrl.activepage.ClientToScreen(rct.topleft);
+            //rct.bottomright := chatFrm.pagectrl.activepage.ClientToScreen(rct.bottomright);
+            resStr := AnsiChar(PM_DATA)+_intlist([rct.top,rct.left,rct.right,rct.bottom]);
           end;
         end;
 
       PG_NOF_UINLISTS: resStr := AnsiChar(PM_DATA)+_int( uinlists.count );
       PG_UINLIST: if minimum(2+4) then
         begin
-        i:=_int_at(data,3);
+        i :=_int_at(data,3);
         if (i >= 0) and (i < uinlists.count) then
-          resStr:=AnsiChar(PM_DATA)+_intlist( uinlists.getAt(i).cl.toIntArray )
+          resStr := AnsiChar(PM_DATA)+_intlist( uinlists.getAt(i).cl.toIntArray )
         else
-          resStr:=AnsiChar(PM_ERROR)+ AnsiChar(PERR_UNEXISTENT);
+          resStr := AnsiChar(PM_ERROR)+ AnsiChar(PERR_UNEXISTENT);
         end;
       PG_AWAYTIME:
         if Account.AccProto.getMyInfo=NIL then
@@ -568,11 +568,11 @@ case _byte_at(data,1) of
             resStr := AnsiChar(PM_DATA)+AnsiChar( PCS_CONNECTING );
       PG_WINDOW:
         begin
-        w:=whatwindow(_byte_at(data,3));
-        if w=NIL then
-          resStr := AnsiChar(PM_ERROR)+AnsiChar(PERR_UNEXISTENT)
-        else
-          resStr := AnsiChar(PM_DATA)+_int([ w.handle, w.left, w.top, w.width, w.height ]);
+          w := whatwindow(_byte_at(data,3));
+          if w=NIL then
+            resStr := AnsiChar(PM_ERROR)+AnsiChar(PERR_UNEXISTENT)
+           else
+            resStr := AnsiChar(PM_DATA)+_int([ w.handle, w.left, w.top, w.width, w.height ]);
         end;
       PG_AUTOMSG: resStr := AnsiChar(PM_DATA)+_istring(automessages[0]);
       PG_CHAT_UIN:

@@ -62,6 +62,7 @@ function  bool2str(const b: Boolean): RawByteString;
   function str2color(const s: AnsiString): Tcolor;
   function color2str(color: Tcolor): AnsiString;
   function color2strU(color: Tcolor): String;
+  function Color2HTML(Color: TColor): String;
   function IntToHexA(Value: Integer; Digits: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}
   function IntToStrA(Value: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}  overload;
   function intToStrA(i, d: Integer): AnsiString; overload;
@@ -88,11 +89,9 @@ function  bool2str(const b: Boolean): RawByteString;
 // function UTF8ToStrSmart(Value: String): String;
 // function UnWideStr(s : String) : String;
 //procedure StrSwapByteOrder(Str: PWideChar);
- {$IFDEF UNICODE} {$IF CompilerVersion >= 24}
-  function RnQEndsText(const ASubText, AText: UnicodeString): Boolean;
-{$ELSE}
-  function RnQEndsText(const ASubText, AText: UnicodeString): Boolean; inline;
- {$IFEND ver} {$ENDIF UNICODE}
+ {$IFDEF UNICODE}
+  function RnQEndsText(const ASubText, AText: UnicodeString): Boolean; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+ {$ENDIF UNICODE}
 
   function TBytesToString(B: TBytes; CodePage: Integer = CP_UTF8): string;
   function StringToTBytes(S: string; CodePage: Integer = CP_UTF8): TBytes;
@@ -183,7 +182,10 @@ implementation
   uses
     StrUtils, Math,
   {$IFDEF UNICODE}
-    Character, AnsiStrings,
+    Character,
+    {$IFDEF DELPHI9_UP}
+     AnsiStrings,
+    {$ENDIF DELPHI9_UP}
   {$ENDIF UNICODE}
     RnQBinUtils;
 
@@ -837,6 +839,12 @@ begin
        else
         result := ABCD_ADCB(stringToColor('$' + String(s)))
 end; // str2color
+
+function Color2HTML(Color: TColor): String;
+begin
+  Color := ABCD_ADCB(ColorToRGB(Color));
+  Result := '#' + IntToHex(Color, 6);
+end;
 
 
  {$IF DEFINED(WIN64) OR DEFINED(FPC)}

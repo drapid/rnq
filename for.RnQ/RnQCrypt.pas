@@ -28,12 +28,14 @@ function  MD5Pass2(const s: RawByteString): RawByteString;
 //  function qip_msg_crypt(s1, s2: AnsiString; n: integer): RawByteString;
   function qip_str2pass(const s: RawByteString): Integer;
 
-function HMAC_MD5(Text, Key: RawByteString): RawByteString;
-function SHA1Pass(const s: RawBytestring): RawByteString;
-function HMAC_SHA1_EX( const Data: RawByteString;
+  function HMAC_MD5(Text, Key: RawByteString): RawByteString;
+  function SHA1Pass(const s: RawBytestring): RawByteString;
+  function HMAC_SHA1_EX( const Data: RawByteString;
                        const Key : RawByteString ): RawByteString;
 
-function DigestToString(digest: THash256): RawByteString;
+  function DigestToString(digest: THash256): RawByteString;
+
+  function Hash256String(key, str: RawByteString): RawByteString;
 
 implementation
 uses
@@ -486,5 +488,12 @@ begin
   SetString(Result, PAnsiChar(@digest[0]), Length(digest));
 end;
 
+function Hash256String(key, str: RawByteString): RawByteString;
+var
+  digest: TSHA256Digest;
+begin
+  HMAC_SHA256(key, str, digest);
+  Result := Base64EncodeString(DigestToString(digest));
+end;
 
 end.

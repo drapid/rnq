@@ -46,7 +46,7 @@ uses
   changepwddlg in 'changepwddlg.pas' {changePwdFrm},
   {$IFNDEF CHAT_CEF}
   {$IFNDEF CHAT_SCI}
-  historyVCL in 'historyVCL.pas',
+  historyVCL in 'historyVCL.pas' {HistoryData: TDataModule},
   {$ENDIF CHAT_SCI}
   {$ENDIF CHAT_CEF}
   chatDlg in 'chatDlg.pas' {chatFrm},
@@ -92,22 +92,6 @@ uses
   RnQLangFrm in '..\For.rnq\RnQLangFrm.pas' {FrmLangs},
   RDUtils in '..\for.RnQ\RTL\RDUtils.pas',
   {$IFDEF PROTOCOL_ICQ}
-  filetransferDlg in 'ICQ\filetransferDlg.pas' {filetransferFrm},
-  ICQ.Stickers in 'ICQ\ICQ.Stickers.pas',
-  icq_fr in 'ICQ\icq_fr.pas' {icqFr},
-  ICQClients in 'ICQ\ICQClients.pas',
-  ICQConsts in 'ICQ\ICQConsts.pas',
-  ICQContacts in 'ICQ\ICQContacts.pas',
-  ICQflap in 'ICQ\ICQflap.pas',
-  ICQv9 in 'ICQ\ICQv9.pas',
-  MenuStickers in 'ICQ\MenuStickers.pas' {FStickers},
-  Protocol_ICQ in 'ICQ\Protocol_ICQ.pas',
-  RQ_ICQ in 'ICQ\RQ_ICQ.pas',
-  RQCodes in 'ICQ\RQCodes.pas',
-  sendfileDlg in 'ICQ\sendfileDlg.pas' {sendfileFrm},
-  viewinfoDlg in 'ICQ\viewinfoDlg.pas' {viewinfoFrm},
-  viewSSI in 'ICQ\viewSSI.pas' {SSIForm},
-  wpDlg in 'ICQ\wpDlg.pas' {wpFrm},
   {$ENDIF PROTOCOL_ICQ}
   ViewHEventDlg in 'ViewHEventDlg.pas' {HEventFrm},
   MenuSmiles in '..\for.RnQ\MenuSmiles.pas' {FSmiles},
@@ -157,6 +141,7 @@ begin
   theme.addHIco('rnq', application.Icon.Handle, True);
 //   loggaEvt('Before main');
   Application.CreateForm(TRnQmain, RnQmain);
+  Application.CreateForm(THistoryData, HistoryData);
   //  loggaEvt('Before chat');
   Application.CreateForm(TchatFrm, chatFrm);
 //   loggaEvt('Before msgs');

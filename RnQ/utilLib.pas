@@ -16,7 +16,7 @@ interface
 uses
   windows, sysutils, graphics, classes, extctrls,
   forms, stdctrls, controls, menus,
-  comctrls, messages, types,
+  comctrls, messages, types, JSON,
   VirtualTrees,
   strutils,
 //    GDIPAPI, GDIPOBJ,
@@ -185,6 +185,11 @@ function  CheckType(const lnk: String; var sA: RawByteString; var ext: String): 
 function  CheckType(const lnk: String): Boolean; overload;
 procedure incDBTimer;
 
+function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: String): Boolean; overload;
+function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: RawByteString): Boolean; overload;
+function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Integer): Boolean; overload;
+function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Boolean): Boolean; overload;
+
 
 implementation
 
@@ -208,7 +213,7 @@ uses
   RQMenuItem, RQThemes, RQLog, RnQDialogs,
   RnQLangs, RnQButtons, RnQBinUtils, RnQGlobal, RnQCrypt, RnQPics,
   RnQtrayLib, RnQTips, Hook,
-  Murmur2, json,
+  Murmur2,
    {$IFDEF RNQ_FULL2}
      converthistoriesDlg,
    {$ENDIF}
@@ -4047,7 +4052,7 @@ case kind of
       fieldOut('', 'Need authorization', True);
    {$IFDEF RNQ_AVATARS}
  {$IFDEF PROTOCOL_ICQ}
-    if Account.AccProto.AvatarsSupport and
+    if TicqSession(Account.AccProto).AvatarsSupport and
        avatarShowInHint then
      if Assigned(c.icon.Bmp) then
        if calcOnly then
@@ -4534,6 +4539,53 @@ begin
     inc(saveDBtimer2, saveDBdelay);
 
 end;
+
+function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: String): Boolean;
+begin
+  Data := '';
+  Result := False;
+  if Assigned(Val) and Assigned(Val.GetValue(Key)) then
+  begin
+    Result := Val.GetValue(Key).TryGetValue(Data);
+    Data := UnUTF(Data);
+  end;
+end;
+
+
+// Keep UTF8
+
+function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: RawByteString): Boolean;
+var
+  s: String;
+begin
+  Data := '';
+  Result := False;
+  if Assigned(Val) and Assigned(Val.GetValue(Key)) then
+  begin
+    Result := Val.GetValue(Key).TryGetValue(s);
+    Data := s;
+  end;
+end;
+
+
+function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Integer): Boolean;
+begin
+  Data := 0;
+  Result := False;
+  if Assigned(Val) and Assigned(Val.GetValue(Key)) then
+    Result := Val.GetValue(Key).TryGetValue(Data);
+end;
+
+
+function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Boolean): Boolean;
+begin
+  Data := False;
+  Result := False;
+  if Assigned(Val) and Assigned(Val.GetValue(Key)) then
+    Result := Val.GetValue(Key).TryGetValue(Data);
+end;
+
+
 
 INITIALIZATION
 

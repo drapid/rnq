@@ -19,11 +19,6 @@ object SSIForm: TSSIForm
     Align = alClient
     BorderWidth = 1
     Header.AutoSizeIndex = 0
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
     Header.Options = [hoColumnResize, hoDrag, hoVisible, hoAutoSpring]
     Header.PopupMenu = VTHeaderPopupMenu1
     TabOrder = 0

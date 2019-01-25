@@ -99,11 +99,11 @@ begin
   res := '';  // file version
   if count > 0 then
     begin
-     for i:=0 to count-1 do
-      begin
-       s := getAt(i).toString;
-       res := res + int2str(length(s))+s;
-      end;
+      for i:=0 to count-1 do
+       begin
+        s := getAt(i).toString;
+        res := res + int2str(length(s))+s;
+       end;
       i := StrToIntDef(String(Account.AccProto.getContactClass.trimUID(Account.AccProto.ProtoElem.MyAccNum)), 0);
       critt(res, i);
       result := 'VER'+int2str(1)+res;

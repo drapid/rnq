@@ -107,13 +107,19 @@ type
 
   SciterGFXLayer =
   (
-    GFX_LAYER_GDI      = 1,
-    GFX_LAYER_WARP     = 2,
-    GFX_LAYER_D2D      = 3,
+    GFX_LAYER_GDI = 1,
+    GFX_LAYER_WARP = 2,
+    GFX_LAYER_D2D = 3,
     GFX_LAYER_SKIA = 4,
     GFX_LAYER_SKIA_OPENGL = 5,
     GFX_LAYER_AUTO = $FFFF
   );
+  SCRIPT_RUNTIME_FEATURES =
+   ( ALLOW_FILE_IO = 1,
+     ALLOW_SOCKET_IO = 2,
+     ALLOW_EVAL  = 4,
+     ALLOW_SYSINFO = 8
+   );
 
   SCITER_RT_OPTIONS { NB: UINT_PTR } = (
    SCITER_SMOOTH_SCROLL = 1,      // value:TRUE - enable, value:FALSE - disable, enabled by default
@@ -194,7 +200,7 @@ type
   PDEBUG_OUTPUT_PROC = ^DEBUG_OUTPUT_PROC;
 
 
-  SciterElementCallback = function(he: HELEMENT; Param: Pointer ): BOOL; stdcall;
+  SciterElementCallback = function(he: HELEMENT; Param: Pointer): BOOL; stdcall;
   PSciterElementCallback = ^SciterElementCallback;
 
 
@@ -230,24 +236,24 @@ type
 
   TSciterValueUnitTypeInt =
   (
-    UTI_INT = 0,
-    UTI_EM = 1,
-    UTI_EX = 2,
-    UTI_PR = 3,
-    UTI_SP = 4,
-    Reserved1 = 5,
-    Reserved2 = 6,
-    UTI_PX = 7,
-    UTI_IN = 8,
-    UTI_CM = 9,
-    UTI_MM = 10,
-    UTI_PT = 11,
-    UTI_PC = 12,
-    UTI_DIP = 13,
-    Reserved3 = 14,
-    UTI_COLOR = 15,
-    UTI_URL   = 16,
-    UTI_DUMMY = MAXINT
+    UT_INT_INT = 0,
+    UT_INT_EM = 1,
+    UT_INT_EX = 2,
+    UT_INT_PR = 3,
+    UT_INT_SP = 4,
+    UT_INT_RESERVED1 = 5,
+    UT_INT_RESERVED2 = 6,
+    UT_INT_PX = 7,
+    UT_INT_IN = 8,
+    UT_INT_CM = 9,
+    UT_INT_MM = 10,
+    UT_INT_PT = 11,
+    UT_INT_PC = 12,
+    UT_INT_DIP = 13,
+    UT_INT_RESERVED3 = 14,
+    UT_INT_COLOR = 15,
+    UT_INT_URL   = 16,
+    UT_INT_DUMMY = MAXINT
   );
 
   TSciterValueUnitTypeObject =
@@ -258,16 +264,16 @@ type
     UT_OBJECT_NATIVE,
     UT_OBJECT_FUNCTION,
     UT_OBJECT_ERROR,
-    UT_DUMMY = MAXINT
+    UT_OBJECT_DUMMY = MAXINT
   );
 
   TSciterValueUnitTypeString =
   (
-    UTS_STRING_STRING = 0,
-    UTS_STRING_ERROR  = 1,
-    UTS_STRING_SECURE = 2,
-    UTS_STRING_SYMBOL = $ffff,
-    UTS_DUMMY = MAXINT
+    UT_STRING_STRING = 0,
+    UT_STRING_ERROR  = 1,
+    UT_STRING_SECURE = 2,
+    UT_STRING_SYMBOL = $ffff,
+    UT_STRING_DUMMY = MAXINT
   );
 
   EVENT_GROUPS =
@@ -615,13 +621,13 @@ type
     SciterTranslateMessage: function(var lpMsg: TMsg): BOOL; stdcall;
     SciterSetOption: function(hwnd: HWINDOW; option: SCITER_RT_OPTIONS; value: UINT_PTR): BOOL; stdcall;
     SciterGetPPI: procedure(hWndSciter: HWINDOW; var px: UINT; var py: UINT); stdcall;
-    SciterGetViewExpando: function( hwnd: HWINDOW; pval: PSciterValue): BOOL; stdcall;
+    SciterGetViewExpando: function(hwnd: HWINDOW; var pval: TSciterValue): BOOL; stdcall;
     SciterRenderD2D: TProcPointer;
     SciterD2DFactory: TProcPointer;
     SciterDWFactory: TProcPointer;
     SciterGraphicsCaps: function(var pcaps: UINT): BOOL; stdcall;
     SciterSetHomeURL: function(hWndSciter: HWINDOW; baseUrl: PWideChar): BOOL; stdcall;
-    SciterCreateWindow: function( creationFlags: UINT; var frame: TRect; delegate: PSciterWindowDelegate; delegateParam: LPVOID; parent: HWINDOW): HWINDOW; stdcall;
+    SciterCreateWindow: function(creationFlags: UINT; var frame: TRect; delegate: PSciterWindowDelegate; delegateParam: LPVOID; parent: HWINDOW): HWINDOW; stdcall;
     SciterSetupDebugOutput: procedure(hwndOrNull: HWINDOW; param: Pointer; pfOutput: PDEBUG_OUTPUT_PROC); stdcall;
 
 //|
@@ -636,7 +642,7 @@ type
     SciterGetChildrenCount: function(he: HELEMENT; var count: UINT): SCDOM_RESULT; stdcall;
     SciterGetNthChild: function(he: HELEMENT; index: UINT; var retval: HELEMENT): SCDOM_RESULT; stdcall;
     SciterGetParentElement: function(he: HELEMENT; var p_parent_he: HELEMENT): SCDOM_RESULT; stdcall;
-    SciterGetElementHtmlCB: function(he: HELEMENT; Outer: BOOL; Callback: PLPCBYTE_RECEIVER; Param: Pointer ): SCDOM_RESULT; stdcall;
+    SciterGetElementHtmlCB: function(he: HELEMENT; Outer: BOOL; Callback: PLPCBYTE_RECEIVER; Param: Pointer): SCDOM_RESULT; stdcall;
     SciterGetElementTextCB: function(he: HELEMENT; callback: PLPCWSTR_RECEIVER; Param: Pointer): SCDOM_RESULT; stdcall;
     SciterSetElementText: function(he: HELEMENT; Value: PWideChar; Len: UINT): SCDOM_RESULT; stdcall;
     SciterGetAttributeCount: function(he: HELEMENT; var Count: UINT): SCDOM_RESULT; stdcall;
@@ -656,7 +662,7 @@ type
     SciterRefreshElementArea: function(he: HELEMENT; rc: TRect): SCDOM_RESULT; stdcall;
     SciterSetCapture: function(he: HELEMENT): SCDOM_RESULT; stdcall;
     SciterReleaseCapture: function(he: HELEMENT): SCDOM_RESULT; stdcall;
-    SciterGetElementHwnd: function(he: HELEMENT; var p_hwnd: HWND; rootWindow: BOOL): SCDOM_RESULT; stdcall;  
+    SciterGetElementHwnd: function(he: HELEMENT; var p_hwnd: HWINDOW; rootWindow: BOOL): SCDOM_RESULT; stdcall;
     SciterCombineURL: function(he: HELEMENT; szUrlBuffer: PWideChar; UrlBufferSize: UINT): SCDOM_RESULT; stdcall;
     SciterSelectElements: function(he: HELEMENT; CSS_selectors: PAnsiChar; Callback: PSciterElementCallback; Param: Pointer): SCDOM_RESULT; stdcall;
     SciterSelectElementsW: function(he: HELEMENT; CSS_selectors: PWideChar; Callback: PSciterElementCallback; Param: Pointer): SCDOM_RESULT; stdcall;
@@ -664,7 +670,7 @@ type
     SciterSelectParentW: function(he: HELEMENT; selector: PWideChar; depth: UINT; var heFound: HELEMENT): SCDOM_RESULT; stdcall;
     SciterSetElementHtml: function(he: HELEMENT; html: PByte; htmlLength: UINT; where: UINT): SCDOM_RESULT; stdcall;
     SciterGetElementUID: function(he: HELEMENT; var puid: UINT): SCDOM_RESULT; stdcall;
-    SciterGetElementByUID: function(hwnd: HELEMENT; uid: UINT; var phe: HELEMENT): SCDOM_RESULT; stdcall;
+    SciterGetElementByUID: function(hwnd: HWINDOW; uid: UINT; var phe: HELEMENT): SCDOM_RESULT; stdcall;
     SciterShowPopup: function(popup: HELEMENT; Anchor: HELEMENT; placement: UINT): SCDOM_RESULT; stdcall;
     SciterShowPopupAt: function(Popup: HELEMENT; pos: TPoint; animate: BOOL): SCDOM_RESULT; stdcall;
     SciterHidePopup: function(he: HELEMENT): SCDOM_RESULT; stdcall;
@@ -675,7 +681,7 @@ type
     SciterInsertElement: function(he: HELEMENT; hparent: HELEMENT; index: UINT): SCDOM_RESULT; stdcall;
     SciterDetachElement: function(he: HELEMENT): SCDOM_RESULT; stdcall;
     SciterDeleteElement: function(he: HELEMENT): SCDOM_RESULT; stdcall;
-    SciterSetTimer: function(he: HELEMENT; milliseconds: UINT; var timer_id: UINT ): SCDOM_RESULT; stdcall;
+    SciterSetTimer: function(he: HELEMENT; milliseconds: UINT; var timer_id: UINT): SCDOM_RESULT; stdcall;
     SciterDetachEventHandler: function(he: HELEMENT; pep: LPELEMENT_EVENT_PROC; tag: Pointer): SCDOM_RESULT; stdcall;
     SciterAttachEventHandler: function(he: HELEMENT; pep: LPELEMENT_EVENT_PROC; tag: Pointer): SCDOM_RESULT; stdcall;
     SciterWindowAttachEventHandler: function(hwndLayout: HWINDOW; pep: LPELEMENT_EVENT_PROC; tag: LPVOID; subscription: UINT): SCDOM_RESULT; stdcall;
@@ -683,8 +689,8 @@ type
     SciterSendEvent: function(he: HELEMENT; appEventCode: UINT; heSource: HELEMENT; reason: PUINT; var handled: BOOL): SCDOM_RESULT; stdcall;
     SciterPostEvent: function(he: HELEMENT; appEventCode: UINT; heSource: HELEMENT; reason: PUINT): SCDOM_RESULT; stdcall;
     SciterCallBehaviorMethod: function(he: HELEMENT; params: PMETHOD_PARAMS): SCDOM_RESULT; stdcall;
-    SciterRequestElementData: function(he: HELEMENT; url: PWideChar; dataType: UINT; initiator: HELEMENT ): SCDOM_RESULT; stdcall;
-    SciterHttpRequest: function( he: HELEMENT; url: PWideChar; dataType: UINT;
+    SciterRequestElementData: function(he: HELEMENT; url: PWideChar; dataType: UINT; initiator: HELEMENT): SCDOM_RESULT; stdcall;
+    SciterHttpRequest: function(he: HELEMENT; url: PWideChar; dataType: UINT;
       requestType: REQUEST_TYPE; requestParams: PREQUEST_PARAM;
       nParams: UINT): SCDOM_RESULT; stdcall;
     SciterGetScrollInfo: function(he: HELEMENT; var scrollPos: TPoint; var viewRect:TRect; var contentSize: TSize): SCDOM_RESULT; stdcall;
@@ -694,8 +700,8 @@ type
     SciterIsElementVisible: function(he: HELEMENT; var pVisible: BOOL): SCDOM_RESULT; stdcall;
     SciterIsElementEnabled: function(he: HELEMENT; var pEnabled: BOOL): SCDOM_RESULT; stdcall;
     SciterSortElements: TProcPointer;
-    SciterSwapElements: function( he1: HELEMENT; he2: HELEMENT ): SCDOM_RESULT; stdcall;
-    SciterTraverseUIEvent: function( evt: UINT; eventCtlStruct: LPVOID ; var bOutProcessed: BOOL): SCDOM_RESULT; stdcall;
+    SciterSwapElements: function(he1: HELEMENT; he2: HELEMENT): SCDOM_RESULT; stdcall;
+    SciterTraverseUIEvent: function(evt: UINT; eventCtlStruct: LPVOID ; var bOutProcessed: BOOL): SCDOM_RESULT; stdcall;
     SciterCallScriptingMethod: function(he: HELEMENT; name: PAnsiChar; const argv: PSciterValue; argc: UINT; var retval: TSciterValue): SCDOM_RESULT; stdcall;
     SciterCallScriptingFunction: function(he: HELEMENT; name: PAnsiChar; const argv: PSciterValue; argc: UINT; var retval: TSciterValue): SCDOM_RESULT; stdcall;
     SciterEvalElementScript: function(he: HELEMENT; script: PWideChar; scriptLength: UINT; var retval: TSciterValueType): SCDOM_RESULT; stdcall;
@@ -1039,7 +1045,7 @@ function V2S(const Value: Variant; SciterValue: PSciterValue): UINT;
 function T2V(const vm: HVM; Value: tiscript_value): Variant;
 function V2T(const vm: HVM; const Value: Variant): tiscript_value;
 
-function  API: PSciterApi;
+function API: PSciterApi;
 function NI: ptiscript_native_interface;
 function IsNameExists(const vm: HVM; ns: tiscript_value; const Name: WideString): boolean;
 function IsNameExistsCurr(const vm: HVM; const Name: WideString): boolean;
@@ -1059,6 +1065,7 @@ procedure ThrowError(const vm: HVM; const Message: WideString); overload;
 function GetNativeObjectJson(const Value: PSciterValue): WideString;
 
 var
+  SCITER_DLL_DIR: String = '';
   varRecordEx: Word = 0;
 implementation
 uses
@@ -1144,7 +1151,7 @@ begin
   Result := False;
 
   zns := NI.get_global_ns(vm);
-  var_name  := NI.string_value(vm, PWideChar(Name), Length(Name));
+  var_name := NI.string_value(vm, PWideChar(Name), Length(Name));
   var_value := NI.get_prop(vm, zns, var_name);
   
   if NI.is_class(vm, var_value) then
@@ -1158,8 +1165,9 @@ var
 begin
   if ns = 0 then
     zns := NI.get_global_ns(vm)
-   else
+  else
     zns := ns;
+
   var_name := NI.string_value(vm, PWideChar(Name), Length(Name));
   var_value := NI.get_prop(vm, zns, var_name);
   Result := not NI.is_undefined(var_value);
@@ -1184,7 +1192,7 @@ var
   zns: tiscript_value;
 begin
   zns := NI.get_global_ns(vm);
-  var_name  := NI.string_value(vm, PWideChar(Name), Length(Name));
+  var_name := NI.string_value(vm, PWideChar(Name), Length(Name));
   var_value := NI.get_prop(vm, zns, var_name);
   Result := var_value;
 end;
@@ -1197,8 +1205,8 @@ var
   class_def: tiscript_class;
 begin
   zns := NI.get_global_ns(vm);
-  tclass_name  := NI.string_value(vm, PWideChar(ClassName), Length(ClassName));
-  class_def    := NI.get_prop(vm, zns, tclass_name);
+  tclass_name := NI.string_value(vm, PWideChar(ClassName), Length(ClassName));
+  class_def := NI.get_prop(vm, zns, tclass_name);
   if NI.is_class(vm, class_def) then
     Result := class_def
   else
@@ -1219,7 +1227,7 @@ begin
     
   if ns = 0 then
     zns := NI.get_global_ns(vm)
-    else
+  else
     zns := ns;
 
   smethod_name := AnsiString(Name);
@@ -1243,7 +1251,7 @@ begin
     else
   if NI.is_native_function(func_def) then
     Result := False
-   else
+  else
     raise ESciterException.CreateFmt('Cannot register native function "%s" (unexpected error). Seems that object with same name already exists.', [Name]);
 end;
 
@@ -1256,9 +1264,9 @@ var
 begin
   zns := NI.get_global_ns(vm);
 
-  wclass_name  := WideString(AnsiString(ClassDef.name));
-  tclass_name  := NI.string_value(vm, PWideChar(wclass_name), Length(wclass_name));
-  class_def    := NI.get_prop(vm, zns, tclass_name);
+  wclass_name := WideString(AnsiString(ClassDef.name));
+  tclass_name := NI.string_value(vm, PWideChar(wclass_name), Length(wclass_name));
+  class_def := NI.get_prop(vm, zns, tclass_name);
 
   if NI.is_undefined(class_def) then
   begin
@@ -1352,7 +1360,7 @@ begin
     {$ENDIF CPUX64}
     if HSCITER = 0 then
       begin
-        HSCITER := LoadLibrary(modulesPath + 'sciter.dll');
+        HSCITER := LoadLibrary(PWideChar(SCITER_DLL_DIR + 'sciter.dll'));
         if HSCITER = 0 then
           raise ESciterException.Create('Failed to load Sciter DLL.');
       end;
@@ -1410,9 +1418,9 @@ begin
         Result := API.ValueIntData(Value, iResult);
         if Result = HV_OK then
           OutValue := iResult <> 0
-          else
+        else
           OutValue := False;
-        end;
+      end;
     T_BYTES:
       begin
         raise ESciterNotImplementedException.CreateFmt('Cannot convert T_BYTES to Variant (not implemented).', []);
@@ -1529,6 +1537,7 @@ function V2S(const Value: Variant; SciterValue: PSciterValue): UINT;
 var
   sWStr: WideString;
   i64: Int64;
+  c32: Cardinal;
   d: Double;
   date: TDateTime;
   st: SYSTEMTIME;
@@ -1560,13 +1569,9 @@ begin
 
   case vt of
     varEmpty:
-      begin
-        Result := 0;
-      end;
+      Result := 0;
     varNull:
-      begin
-        Result := 0;
-      end;
+      Result := 0;
     varString,
     varUString,
     varOleStr:
@@ -1585,17 +1590,18 @@ begin
     varSmallInt,
     varShortInt,
     varInteger,
-    varWord,
-    varLongWord:
-        Result := API.ValueIntDataSet(SciterValue, Integer(Value), T_INT, 0);
-    varInt64:
+    varWord:
+      Result := API.ValueIntDataSet(SciterValue, Integer(Value), T_INT, 0);
+    varUInt32:
       begin
-        i64 := Value;
-        Result := API.ValueInt64DataSet(SciterValue, i64, T_INT, 0);
+        c32 := Value;
+        Result := API.ValueIntDataSet(SciterValue, c32, T_INT, 0);
       end;
+    varInt64:
+      Result := API.ValueInt64DataSet(SciterValue, Value, T_INT, 0);
     varSingle,
     varDouble:
-        Result := API.ValueFloatDataSet(SciterValue, Double(Value), T_FLOAT, 0);
+      Result := API.ValueFloatDataSet(SciterValue, Double(Value), T_FLOAT, 0);
     varCurrency:
       begin
         cCur := Value;
@@ -1624,7 +1630,7 @@ begin
         begin
           API.ValueInit(@key);
           API.ValueInit(@val);
-          API.ValueStringDataSet(@key, PWideChar(valfields[i].Name), Length(valfields[i].Name), UINT(UTS_STRING_SYMBOL));
+          API.ValueStringDataSet(@key, PWideChar(valfields[i].Name), Length(valfields[i].Name), UINT(UT_STRING_SYMBOL));
 
           rval := valfields[i].GetValue(TRecordVarData(Value).VRecord.RecObj);
           if rval.Kind = tkInteger then
@@ -1635,7 +1641,7 @@ begin
             begin
               if rval.AsOrdinal = 1 then
                 API.ValueIntDataSet(@val, 1, T_BOOL, 0)
-    else
+              else
                 API.ValueIntDataSet(@val, 0, T_BOOL, 0)
             end else
               API.ValueIntDataSet(@val, rval.AsOrdinal, T_INT, 0)
@@ -1643,7 +1649,7 @@ begin
           else if (rval.Kind = tkString) or (rval.Kind = tkWString) or (rval.Kind = tkUString) or (rval.Kind = tkLString) then
             API.ValueStringDataSet(@val, PWideChar(rval.AsString), Length(rval.AsString), 0)
           else if rval.Kind = tkFloat then
-      begin
+          begin
             date := TDateTime(rval.AsExtended);
             d := Double(date);
             VariantTimeToSystemTime(d, st);
@@ -1683,8 +1689,8 @@ begin
         end;
       end
     else
-        raise ESciterNotImplementedException.CreateFmt('Cannot convert VARIANT of type %d to Sciter value.', [vt]);
-      end;
+      raise ESciterNotImplementedException.CreateFmt('Cannot convert VARIANT of type %d to Sciter value.', [vt]);
+  end;
 end;
 
 { tiscript value to Variant conversion }

@@ -508,11 +508,7 @@ var
   i: word;
   t: word;
 //  pp: PAnsiChar;
- {$IFDEF ICQ_ONLY}
-  ch: AnsiChar;
- {$ELSE ~ICQ_ONLY}
-  ch: Char;
- {$ENDIF ~ICQ_ONLY}
+  ch: TUID_Char;
   s1, s2: TUID;
   isAIM: Boolean;
 begin

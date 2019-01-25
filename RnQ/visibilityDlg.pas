@@ -1,6 +1,6 @@
 {
-This file is part of R&Q.
-Under same license
+  This file is part of R&Q.
+  Under same license
 }
 unit visibilityDlg;
 {$I RnQConfig.inc}
@@ -57,7 +57,7 @@ type
     procedure normal2inv;
     procedure vis2normal;
     procedure vis2inv;
-    procedure selectAll(lb:TBaseVirtualTree);
+    procedure selectAll(lb: TBaseVirtualTree);
     procedure unselect(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
     procedure select(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
   public
@@ -86,7 +86,7 @@ var
 
 function what2display(c: TRnQContact): string;
 begin
-  result:=c.displayed+'  '+c.uid
+  result := c.displayed+'  '+c.uid
 end;
 
 procedure fillUp(lb: TBaseVirtualTree; cl: TRnQCList);
@@ -94,12 +94,12 @@ var
   i: integer;
   p: PVisRec;
 begin
-lb.Clear;
-for i:=0 to TList(cl).count-1 do
+  lb.Clear;
+  for i:=0 to TList(cl).count-1 do
   begin
    lb.BeginUpdate;
    p := lb.GetNodeData(lb.AddChild(NIL));
-   p.cnt:=cl.getAt(i);
+   p.cnt := cl.getAt(i);
    p.s := what2display(p.cnt);
    lb.EndUpdate;
   end;
@@ -108,8 +108,8 @@ end; // fillUp
 procedure TvisibilityFrm.setUpBoxes;
 begin
   fillUp(visibleBox, thisProto.readList(LT_VISIBLE));
-  fillUp(normalBox,  normal);
-  fillUp(invisBox,   thisProto.readList(LT_INVISIBLE));
+  fillUp(normalBox, normal);
+  fillUp(invisBox, thisProto.readList(LT_INVISIBLE));
 end; // setUpBoxes
 
 class procedure TvisibilityFrm.ShowVis(owner_: TWinControl;
@@ -129,7 +129,7 @@ end;
 procedure TvisibilityFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   normal.free;
-  saveListsDelayed:=TRUE;
+  saveListsDelayed := TRUE;
   destroyHandle;
   Action := caFree;
   visibilityFrm := nil;
@@ -159,8 +159,8 @@ end; // clFromBox
 procedure TvisibilityFrm.InvisBoxDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-  s : String;
-  x : Integer;
+  s: String;
+  x: Integer;
 begin
   s := TVisRec(PVisRec(Sender.getnodedata(PaintInfo.Node))^).s;
   if vsSelected in PaintInfo.Node.States then
@@ -184,9 +184,9 @@ end;
 
 procedure TvisibilityFrm.inv2normal;
 var
-  cl:TRnQCList;
+  cl: TRnQCList;
 begin
-  cl:=clFromBox(invisBox);
+  cl := clFromBox(invisBox);
   normal.add(cl);
  {$IFDEF UseNotSSI}
   if (thisProto.ProtoElem is TicqSession) and  not TicqSession(thisProto.ProtoElem).useSSI then
@@ -202,9 +202,9 @@ end; // inv2normal
 
 procedure TvisibilityFrm.inv2vis;
 var
-  cl:TRnQCList;
+  cl: TRnQCList;
 begin
-  cl:=clFromBox(invisBox);
+  cl := clFromBox(invisBox);
  {$IFDEF UseNotSSI}
   if (thisProto.ProtoElem is TicqSession) and  not TicqSession(thisProto.ProtoElem).useSSI then
     begin
@@ -224,9 +224,9 @@ end;
 
 procedure TvisibilityFrm.normal2vis;
 var
-  cl:TRnQCList;
+  cl: TRnQCList;
 begin
-  cl:=clFromBox(normalBox);
+  cl := clFromBox(normalBox);
  {$IFDEF UseNotSSI}
   if (thisProto.ProtoElem is TicqSession) and  not TicqSession(thisProto.ProtoElem).useSSI then
 //    thisICQ.readVisible.add(cl)
@@ -240,9 +240,9 @@ end; // normal2vis
 
 procedure TvisibilityFrm.normal2inv;
 var
-  cl:TRnQCList;
+  cl: TRnQCList;
 begin
-  cl:=clFromBox(normalBox);
+  cl := clFromBox(normalBox);
  {$IFDEF UseNotSSI}
   if (thisProto.ProtoElem is TicqSession) and  not TicqSession(thisProto.ProtoElem).useSSI then
 //    thisICQ.readInvisible.add(cl)
@@ -332,14 +332,14 @@ end;
 
 procedure TvisibilityFrm.invisibleBoxClick(Sender: TObject);
 begin
- VisibleBox.IterateSubtree(NIL, unselect, NIL);
- normalbox.IterateSubtree(NIL, unselect, NIL);
+  VisibleBox.IterateSubtree(NIL, unselect, NIL);
+  normalbox.IterateSubtree(NIL, unselect, NIL);
 end;
 
 procedure TvisibilityFrm.visibleBoxClick(Sender: TObject);
 begin
- invisbox.IterateSubtree(NIL, unselect, NIL);
- normalbox.IterateSubtree(NIL, unselect, NIL);
+  invisbox.IterateSubtree(NIL, unselect, NIL);
+  normalbox.IterateSubtree(NIL, unselect, NIL);
 end;
 
 procedure TvisibilityFrm.move2invClick(Sender: TObject);
@@ -365,7 +365,7 @@ begin
     TicqSession(thisProto.ProtoElem).updateVisibility;
 //  ICQ.updateVisibility;
  {$ENDIF UseNotSSI}
-  saveListsDelayed:=TRUE;
+  saveListsDelayed := TRUE;
   RnQmain.roster.repaint;
 end;
 
@@ -392,7 +392,7 @@ begin
     TicqSession(thisProto.ProtoElem).updateVisibility;
 //  ICQ.updateVisibility;
  {$ENDIF UseNotSSI}
-  saveListsDelayed:=TRUE;
+  saveListsDelayed := TRUE;
   RnQmain.roster.repaint;
 end;
 
@@ -419,13 +419,13 @@ begin
     TicqSession(thisProto.ProtoElem).updateVisibility;
 //  ICQ.updateVisibility;
  {$ENDIF UseNotSSI}
-  saveListsDelayed:=TRUE;
+  saveListsDelayed := TRUE;
   RnQmain.roster.repaint;
 end;
 
 procedure TvisibilityFrm.selectAll(lb:TBaseVirtualTree);
 //var
-//  i:integer;
+//  i: integer;
 begin
   if lb<>normalBox then
     normalbox.IterateSubtree(NIL, unselect, NIL);

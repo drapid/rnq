@@ -60,7 +60,10 @@ const
 // Use UTF-8 in Delphi 2009 and later, so Unicode strings are handled correctly.
 // PCRE does not support UTF-16
 type
-  PCREString = UTF8String;
+//  PCREString = UTF8String;
+// For Delphi 10.3 ->
+  PCREString = WideString;
+  PCREChar = WideChar;
 {$ELSE UNICODE}
 // Use AnsiString in Delphi 2007 and earlier
 type
@@ -98,7 +101,7 @@ type
     OffsetCount: Integer;
     pcreOptions: Integer;
     pattern, hints, chartable: Pointer;
-    FSubjectPChar: PAnsiChar;
+    FSubjectPChar: PCRE_STR;
     FHasStoredGroups: Boolean;
     FStoredGroups: array of PCREString;
     function GetSubjectLeft: PCREString;
@@ -322,7 +325,7 @@ begin
   if FRegEx = '' then
     raise Exception.Create('TPerlRegEx.Compile() - Please specify a regular expression in RegEx first');
   CleanUp;
-  Pattern := pcre_compile(PAnsiChar(FRegEx), pcreOptions, @Error, @ErrorOffset, chartable);
+  Pattern := pcre_compile(PCRE_STR(FRegEx), pcreOptions, @Error, @ErrorOffset, chartable);
   if Pattern = nil then
     raise Exception.Create(Format('TPerlRegEx.Compile() - Error in regex at offset %d: %s', [ErrorOffset, AnsiString(Error)]));
   FCompiled := True
@@ -344,7 +347,7 @@ $$          "$"           "$"       error      "$"
 
 function TPerlRegEx.ComputeReplacement: PCREString;
 var
-  Mode: AnsiChar;
+  Mode: PCREChar;
   S: PCREString;
   I, J, N: Integer;
 
@@ -658,7 +661,7 @@ end;
 
 function TPerlRegEx.NamedGroup(const Name: PCREString): Integer;
 begin
-  Result := pcre_get_stringnumber(Pattern, PAnsiChar(Name));
+  Result := pcre_get_stringnumber(Pattern, PCRE_STR(Name));
 end;
 
 function TPerlRegEx.Replace: PCREString;
@@ -671,7 +674,7 @@ begin
   // Perform substitution
   Delete(FSubject, MatchedOffset, MatchedLength);
   if Result <> '' then Insert(Result, FSubject, MatchedOffset);
-  FSubjectPChar := PAnsiChar(FSubject);
+  FSubjectPChar := PCRE_STR(FSubject);
   // Position to continue search
   FStart := FStart - MatchedLength + Length(Result);
   FStop := FStop - MatchedLength + Length(Result);
@@ -735,7 +738,7 @@ end;
 procedure TPerlRegEx.SetSubject(const Value: PCREString);
 begin
   FSubject := Value;
-  FSubjectPChar := PAnsiChar(Value);
+  FSubjectPChar := PCRE_STR(Value);
   FStart := 1;
   FStop := Length(Subject);
   if not FHasStoredGroups then OffsetCount := 0;

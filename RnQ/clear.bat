@@ -15,4 +15,6 @@
 @IF EXIST "ICQ\*.dcu" del /q ICQ\*.dcu
 @IF EXIST "MRA\__history\*" rd /q MRA\__history\
 @IF EXIST "xmpp\__history\*" rd /q xmpp\__history\
+@IF EXIST "WIM\__history\*" rd /q WIM\__history\
+@IF EXIST "WIM\*.dcu" del /q WIM\*.dcu
 @exit

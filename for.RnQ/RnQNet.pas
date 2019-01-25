@@ -163,6 +163,9 @@ type
 const
   ProxyUnkError = 'PROXY: Unknown reply\n[%d]\n%s';
   SSLError = 'SSL: libeay32.dll or ssleay32.dll not found\n%s';
+  ConnectionError = 'Connection error\n%s\n[%d] %s';
+  UploadError = 'Failed to upload file! Server response';
+
   ImageContentTypes: array [0 .. 25] of string = (
     'image/bmp', 'image/x-bmp', 'image/x-bitmap', 'image/x-xbitmap', 'image/x-win-bitmap', 'image/x-windows-bmp', 'image/ms-bmp', 'image/x-ms-bmp', 'application/bmp', 'application/x-bmp', 'application/x-win-bitmap',
     'image/jpeg', 'image/jpg', 'application/jpg', 'application/x-jpg',
@@ -191,6 +194,10 @@ const
                        DoPOST: boolean = false; POSTData: RawByteString = ''; showErrors: boolean = true): boolean; overload;
   function LoadFromURL(const URL: String; var fs: TMemoryStream; Threshold: LongInt = 0; ExtByContent: boolean = false;
                        DoPOST: boolean = false; POSTData: RawByteString = ''; showErrors: boolean = true): boolean; overload;
+
+  function LoadFromURLAsString(const URL: String; var str: RawByteString; POSTData: RawByteString = ''): Boolean;
+
+  procedure HandleError(E: EHttpException; URL: String; ErrText: String = ''; Quiet: Boolean = True);
 
 var
   MainProxy: Tproxy;
@@ -1090,6 +1097,21 @@ begin
   end;
 end;
 
+procedure HandleError(E: EHttpException; URL: String; ErrText: String = ''; Quiet: Boolean = True);
+begin
+  if Assigned(E) then
+  TThread.Synchronize(nil, procedure begin
+    if E.ErrorCode = 3 then
+      msgDlg(getTranslation(SSLError, [E.Message]), False, mtError)
+    else if (E.ErrorCode <> 404) or not Quiet then
+    if not (ErrText = '') then
+      msgDlg(getTranslation(UploadError) + ': ' + #13#10 + ErrText, False, mtError)
+    else
+      msgDlg(getTranslation(ConnectionError, [URL, E.ErrorCode, E.Message]), False, mtError);
+  end);
+end;
+
+
 function LoadFromURL(const URL: String; var fn: String; Threshold: LongInt = 0; ExtByContent: boolean = false;
   DoPOST: boolean = false; POSTData: RawByteString = ''; showErrors: boolean = true): boolean;
 var
@@ -1320,6 +1342,27 @@ begin
 end;
 // {$ENDIF RNQ_LITE} *)
  {$ENDIF RNQ_FULL}
+
+function LoadFromURLAsString(const URL: String; var str: RawByteString; POSTData: RawByteString = ''): Boolean;
+var
+  fs: TMemoryStream;
+begin
+  fs := nil;
+  str := '';
+  fs := TMemoryStream.Create;
+  Result := LoadFromURL(URL, fs, 0, False, POSTData>'', POSTData, True);
+  if Result and Assigned(fs) then
+    begin
+      SetLength(str, fs.Size);
+      fs.Seek(0, soFromBeginning);
+      fs.Read(str[1], Length(str));
+    end;
+  if Assigned(fs) then
+    fs.Free;
+
+end;
+
+
 
 function HeaderFromURL(const URL: String): String;
 var

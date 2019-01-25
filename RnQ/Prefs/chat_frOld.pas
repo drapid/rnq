@@ -295,6 +295,8 @@ begin
   closeChatOnSend := ClsSndChk.Checked;
   ClosePageOnSingle := ClsPgOnSnglChk.Checked;
   ShowSmileCaption := ChkShowSmileCptn.Checked;
+  useSmiles := SmilesChk.Checked;
+
   lShowAniSmlPanel := lPrefs.getPrefBoolDef('smiles-show-panel', True);
   if lShowAniSmlPanel <> SmlPnlChk.Checked then
    begin
@@ -365,6 +367,7 @@ begin
   ClsSndChk.Checked    := closeChatOnSend;
   ChkShowSmileCptn.Checked := ShowSmileCaption;
   ClsPgOnSnglChk.Checked := ClosePageOnSingle;
+  SmilesChk.Checked := useSmiles;
 
   lPrefs.getPrefArrParam([msgWrapBox, SmlGridChk]);
 

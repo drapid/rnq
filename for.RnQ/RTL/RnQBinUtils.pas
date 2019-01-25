@@ -127,11 +127,11 @@ function getwTLD_DWORD(const s: RawByteString; var ofs: integer): LongWord;
 
 implementation
   uses
- {$IFDEF UNICODE}
-   AnsiStrings,
- {$ENDIF UNICODE}
    SynCommons,
  {$IFNDEF FPC}
+   {$IFDEF UNICODE}
+     AnsiStrings,
+   {$ENDIF UNICODE}
 //   OverbyteIcsUtils,
  {$ENDIF ~FPC}
    Windows,

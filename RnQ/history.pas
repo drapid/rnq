@@ -36,10 +36,12 @@ type
     function  toString: RawByteString; reIntroduce;
     function  getAt(idx: integer): Thevent;
     function  getByID(pID: int64): Thevent;
+    function  getByWID(pWID: RawByteString): Thevent;
     function  getByTime(time: TDateTime): Thevent;
     function  getIdxBeforeTime(time: TDateTime; inclusive: Boolean = True): Integer;
     class function UIDHistoryFN(const UID: TUID): String;
     procedure reset;
+    procedure WriteToHistory(ev: Thevent);
 //    function Clear;
     procedure deleteFromTo(const uid: TUID; st, en: integer);
     procedure deleteFromToTime(const uid: TUID; const st, en: TDateTime);
@@ -610,6 +612,30 @@ begin
    end;
 end;
 
+function Thistory.getByWID(pWID: RawByteString): Thevent;
+var
+  i: integer;
+begin
+  i := Count-1;
+  Result := NIL;
+  if pWID = '' then
+    Exit;
+
+  while i >= 0 do
+   with Thevent(items[i]) do
+   begin
+    if WID = pWID then
+      begin
+       Result := Thevent(items[i]);
+       break;
+      end
+     else
+      if ID = Max_Event_ID then
+        Exit;
+    dec(i);
+   end;
+end;
+
 function Thistory.getByTime(time: TDateTime): Thevent;
 var
   i: integer;
@@ -707,6 +733,13 @@ for i:=en downto st do
 }
  {$ENDIF ~DB_ENABLED}
 end; // deleteFromTo
+
+procedure Thistory.WriteToHistory(ev: Thevent);
+begin
+  Add(ev);
+  writeHistorySafely(ev);
+end;
+
 
 procedure Thistory.deleteFromToTime(const uid: TUID; const st, en: TDateTime);
 var

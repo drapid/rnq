@@ -48,6 +48,7 @@ type
   procedure popupHintByMacro();
   procedure toggleAutosize;
   procedure toggleShowGroups;
+  procedure ToggleShowEmptyGroups;
   procedure startMenuViaMacro;
   procedure stopMenuViaMacro;
   procedure MacroBossMode;
@@ -126,14 +127,14 @@ case m of
   OP_CHAT:
     if chatFrm.isVisible then
       begin
-      chatFrm.close;
-      restoreForeWindow;
+        chatFrm.close;
+        restoreForeWindow;
       end
     else
       if chatFrm.chats.count > 0 then
         begin
-        oldForeWindow:=getForegroundWindow;
-        bringForeground:=chatFrm.handle;
+        oldForeWindow := getForegroundWindow;
+        bringForeground := chatFrm.handle;
         chatFrm.open;
         end;
   OP_ROSTER: RnQmain.toggleVisible;
@@ -238,7 +239,7 @@ case m of
   end;
 end; // executeMacro
 
-function  InitMacroses : Boolean;
+function InitMacroses: Boolean;
 begin
   setlength(macros, 0);
   addMacro(TextToShortCut('ctrl+shift+i'), TRUE, OP_TRAY);
@@ -254,70 +255,70 @@ begin
   result := True;
 end;
 
-function removeMacro(i:integer):boolean;
+function removeMacro(i: integer): boolean;
 begin
-result:=(i>=0) and (i<length(macros));
-if result then
-  begin
-  while i<length(macros)-1 do
+  result := (i>=0) and (i<length(macros));
+  if result then
     begin
-    macros[i]:=macros[i+1];
-    inc(i);
+      while i<length(macros)-1 do
+        begin
+          macros[i] := macros[i+1];
+          inc(i);
+        end;
+      setLength(macros, i);
     end;
-  setLength(macros, i);
-  end;
 end; // removeMacro
 
-function findHK(hk:Tshortcut):integer;
+function findHK(hk: Tshortcut): integer;
 begin
-for result:=0 to length(macros)-1 do
-  if macros[result].hk = hk then
-    exit;
-result:=-1;
+  for result:=0 to length(macros)-1 do
+    if macros[result].hk = hk then
+      exit;
+  result := -1;
 end; // findHK
 
-function addMacro(hk:Tshortcut; sw:boolean; op:integer):boolean;
+function addMacro(hk: Tshortcut; sw: boolean; op: integer): boolean;
 var
-  i:integer;
+  i: integer;
 begin
-if hk=0 then
+  if hk=0 then
   begin
-  result:=FALSE;
-  exit;
+    result := FALSE;
+    exit;
   end;
-i:=findHK(hk);
-result:=i<0;
-if result then
-  begin
-  i:=length(macros);
-  setLength(macros, i+1);
-  end;
+  i := findHK(hk);
+  result := i<0;
+  if result then
+    begin
+      i := length(macros);
+      setLength(macros, i+1);
+    end;
 
-macros[i].hk:=hk;
-macros[i].sw:=sw;
-macros[i].opcode:=op;
+  macros[i].hk := hk;
+  macros[i].sw := sw;
+  macros[i].opcode := op;
 end; // addMacro
 
 const
-  MFK_HK=1;
-  MFK_SW=2;
-  MFK_OP=3;
+  MFK_HK = 1;
+  MFK_SW = 2;
+  MFK_OP = 3;
 
 function macro2strf(m: Tmacro): RawByteString;
 begin
-result:=
-  TLV2(MFK_HK, int2str(m.hk))
- +TLV2(MFK_SW, bool2str(m.sw))
- +TLV2(MFK_OP, int2str(m.opcode))
+  result:=
+    TLV2(MFK_HK, int2str(m.hk))
+   +TLV2(MFK_SW, bool2str(m.sw))
+   +TLV2(MFK_OP, int2str(m.opcode))
 end; // macro2strf
 
 function str2macro(const s: RawByteString): Tmacro;
 var
-  t,l:integer;
-//  d:RawByteString;
-  i : Integer;
-  p : Pointer;
-  sl : Integer;
+  t, l: integer;
+//  d: RawByteString;
+  i: Integer;
+  p: Pointer;
+  sl: Integer;
 begin
   i := Low(s);
   sl := length(s)-7;
@@ -356,7 +357,7 @@ var
   i: integer;
   s: RawByteString;
 begin
- result := '';
+  result := '';
  for i:=0 to length(m)-1 do
   begin
    s := macro2strf(m[i]);
@@ -445,22 +446,29 @@ end; // toggleAutosize
 
 procedure toggleShowGroups;
 begin
-  showGroups:=not showGroups;
+  showGroups := not showGroups;
   saveCfgDelayed := True;
 //design_fr.prefToggleShowGroups;
   rosterRebuildDelayed := TRUE;
 end;
 
+procedure ToggleShowEmptyGroups;
+begin
+  showEmptyGroups := not showEmptyGroups;
+  saveCfgDelayed := True;
+  rosterRebuildDelayed := True;
+end;
+
 procedure startMenuViaMacro;
 begin
- menuViaMacro := TRUE;
- ShowWindow(application.handle, SW_SHOW);
- application.bringtofront;
+  menuViaMacro := TRUE;
+  ShowWindow(application.handle, SW_SHOW);
+  application.bringtofront;
 end; // startMenuViaMacro
 
 procedure stopMenuViaMacro;
 begin
-  menuViaMacro:=FALSE
+  menuViaMacro := FALSE
 end;
 
 procedure MacroBossMode;

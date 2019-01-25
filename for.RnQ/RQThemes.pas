@@ -211,6 +211,8 @@ type
   PBigPicsArr = ^TBigPicsArr;
   TBigPicsArr = array of TPicObj;
 
+  TThemeLoadedEvent = procedure (Sender: TObject; subClass: TThemeSubClass) of object;
+
 type
   TRQtheme = class
    private
@@ -238,7 +240,8 @@ type
     FdrawCS: TCriticalSection;
  {$ENDIF SMILES_ANI_ENGINE}
  {$ENDIF RNQ_FULL}
-//    addProp : procedure (name: TPicName; kind:TthemePropertyKind; s: String);
+    FOnThemeLoaded: TThemeLoadedEvent;
+//    addProp : procedure (name: TPicName; kind: TthemePropertyKind; s: String);
     procedure addProp(name: TPicName; ts: TThemeSourcePath; kind: TthemePropertyKind; const s: String); overload;
 //    procedure addProp(name: TPicName; ico: TIcon); overload;
 //    procedure addProp(name: TPicName; fnt: TFont); overload;
@@ -255,7 +258,7 @@ type
     function  GetPic13(name: TPicName; var pic: TGPImage; AddPic: Boolean = True): boolean;
   {$ENDIF USE_GDIPLUS}
     function GetSmlCnt: Integer;
-//    procedure GetPic(name : String; var pic : TRnQBitmap); overload;
+//    procedure GetPic(name: String; var pic: TRnQBitmap); overload;
  {$IFDEF SMILES_ANI_ENGINE}
     procedure TickAniTimer(Sender: TObject);
  {$ENDIF SMILES_ANI_ENGINE}
@@ -1348,6 +1351,10 @@ begin
 // if useAnimated then
 //   CreateWaitableTimer()
  inc(curToken);
+
+  if Assigned(FOnThemeLoaded) then
+    FOnThemeLoaded(Self, subClass);
+
 end; // loadTheme
 
 

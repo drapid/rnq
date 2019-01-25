@@ -155,7 +155,7 @@ begin
   gr.y := rect.top;
   st := byte(TComboBox(Control).items.objects[index]);
   cnv.fillrect(rect);
-  visArr := Account.AccProto.getVisibilitis;
+  visArr := Account.AccProto.getVisibilities;
   if Assigned(visArr) then
    with visArr[st] do
    begin
@@ -185,7 +185,7 @@ begin
   if (index >=0) and (TComboBox(Control).items.Count >= index) then
    begin
     st := byte(TComboBox(Control).items.objects[index]);
-    visArr := Account.AccProto.getVisibilitis;
+    visArr := Account.AccProto.getVisibilities;
     if Assigned(visArr) then
      with visArr[st] do
       begin

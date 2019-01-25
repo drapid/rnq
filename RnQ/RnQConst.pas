@@ -168,6 +168,7 @@ const
   DBFK_WORKSTATE   = 42;
   DBFK_WORKCITY    = 43;
 
+  DBFK_UTYPE = 110;
   DBFK_UID         = 111;
   DBFK_BIRTHL      = 112;
   DBFK_SSIID       = 113;
@@ -193,6 +194,17 @@ const
 
   DBFK_ssCell2 = 131;
   DBFK_ssCell3 = 132;
+
+  // New types
+  DBFK_SMSMOBILE = 44;
+//  DBFK_COUNTRY = 45;
+  DBFK_LANG1 = 46;
+  DBFK_LANG2 = 47;
+  DBFK_LANG3 = 48;
+
+  DBFK_BIRTHADDRESS = 134;
+  DBFK_BIRTHZIP = 135;
+
 
   // rosterItalic values
   RI_none = 0;
@@ -419,3 +431,4 @@ type
 implementation
 
 end.
+

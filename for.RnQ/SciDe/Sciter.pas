@@ -957,6 +957,7 @@ var
   pArgs: TSciterOnMessageEventArgs;
 begin
   FSciter := TSciter(param);
+  if Assigned(text) then OutputDebugString(PChar(Trim(text)));
   if Assigned(FSciter.FOnMessage) then
   begin
     pArgs := TSciterOnMessageEventArgs.Create;
@@ -975,7 +976,7 @@ begin
   end
     else
   begin
-    if ( SR = SCDOM_OK_NOT_HANDLED) and (AllowNotHandled) then
+    if (SR = SCDOM_OK_NOT_HANDLED) and (AllowNotHandled) then
     begin
       Result := SR;
       Exit;
@@ -1361,7 +1362,7 @@ function TSciter.Call(const FunctionName: WideString;
   const Args: array of Variant): Variant;
 begin
   if not TryCall(FunctionName, Args, Result) then
-    raise ESciterCallException.Create(FunctionName);
+     raise ESciterCallException.Create(FunctionName);
 end;
 
 procedure TSciter.FireRoot(cmd: UINT; data: Variant; async: Boolean = True);
@@ -1449,13 +1450,13 @@ begin
 end;
 
 procedure TSciter.DestroyWnd;
-//var
-//  pbHandled: BOOL;
+var
+  pbHandled: BOOL;
 begin
   API.SciterSetCallback(Handle, nil, nil);
-  API.SciterWindowAttachEventHandler(Handle, nil, nil, UINT(HANDLE_ALL));
+  API.SciterWindowDetachEventHandler(Handle, LPELEMENT_EVENT_PROC(@_SciterViewEventProc), Self);
   API.SciterSetupDebugOutput(Handle, nil, nil);
-//  API.SciterProcND(Handle, WM_DESTROY, 0, 0, pbHandled);
+  API.SciterProcND(Handle, WM_DESTROY, 0, 0, pbHandled);
   inherited;
 end;
 
@@ -1843,8 +1844,7 @@ begin
   end;
 end;
 
-function TSciter.HandlePostedNotification(
-  var data: SCN_POSTED_NOTIFICATION): UINT;
+function TSciter.HandlePostedNotification(var data: SCN_POSTED_NOTIFICATION): UINT;
 begin
   Result := 0;
 end;
@@ -2496,6 +2496,7 @@ destructor TElement.Destroy;
 begin
   API.SciterDetachEventHandler(Self.FElement, LPELEMENT_EVENT_PROC(@_SciterElementEventProc), Self);
   API.Sciter_UnuseElement(FElement);
+  if Assigned(FSciter.ManagedElements) then
   if FSciter.ManagedElements.IndexOf(Self) <> - 1 then
     FSciter.ManagedElements.Remove(Self);
   inherited;

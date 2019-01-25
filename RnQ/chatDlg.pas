@@ -12,7 +12,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ComCtrls, StdCtrls, Menus, ExtCtrls, ToolWin, ActnList, RnQButtons,
   VirtualTrees, StrUtils, System.Actions,
-  history, 
+  history,
  {$IFDEF CHAT_CEF} // Chromium
   ceflib,
   historyCEF,
@@ -38,26 +38,14 @@ uses
   SpellCheck,
  {$ENDIF CHAT_SPELL_CHECK}
   RnQProtocol,
+  RnQPrefsLib,
   incapsulate, events,
   pluginLib, RQMenuItem;
 
 const
-  minimizedScroll = 5;
-  maximizedScroll = 16;
-  ClrHistBG = 'history.bg';
   HintTimer = 1;
 
 type
-  TscrollBarEx = class(Tscrollbar)
-   protected
-    P_entering: boolean;
-    procedure CMMouseEnter(var msg: TMessage); message CM_MOUSEENTER;
-    procedure CMMouseLeave(var msg: TMessage); message CM_MOUSELEAVE;
-   public
-    onEnter, onLeave: procedure of object;
-    property entering: boolean read P_entering;
-  end;
-
   TAvatr = record
       AvtPBox: TPaintBox;
 //      Pic: TRnQBitmap;
@@ -104,11 +92,6 @@ type
     btnPnl: TPanel;
     avtsplitr: Tsplitter;
     avtPic: TAvatr;
-{$IFDEF CHAT_USE_LSB}
-//    rsb: TscrollBar;
-    lsb: TscrollBarEx;
-    procedure updateLSB;
-{$ENDIF CHAT_USE_LSB}
 
     constructor create;
     procedure setAutoscroll(v: boolean);
@@ -141,14 +124,6 @@ type
     pagectrl: TPageControl;
     panel: TPanel;
     sbar: TStatusBar;
-    ActList1: TActionList;
-    hAaddtoroaster: TAction;
-    hAsaveas: TAction;
-    hAdelete: TAction;
-    hAchatshowlsb: TAction;
-    hAchatpopuplsb: TAction;
-    hACopy: TAction;
-    hASelectAll: TAction;
     sendBtn: TRnQToolButton;
     closeBtn: TRnQToolButton;
     toolbar: TToolBar;
@@ -172,34 +147,8 @@ type
     SBSearch: TRnQButton;
     CLPanel: TPanel;
     CLSplitter: TSplitter;
-    hAViewInfo: TAction;
-    hAShowSmiles: TAction;
     stickersBtn: TRnQSpeedButton;
-    ShowStickers: TAction;
     BuzzBtn: TRnQSpeedButton;
-    hAShowDevTools: TAction;
-    histmenu: TPopupMenu;
-    add2rstr: TMenuItem;
-    copylink2clpbd: TMenuItem;
-    copy2clpb: TMenuItem;
-    savePicMnu: TMenuItem;
-    selectall1: TMenuItem;
-    viewmessageinwindow1: TMenuItem;
-    saveas1: TMenuItem;
-    txt1: TMenuItem;
-    html1: TMenuItem;
-    addlink2fav: TMenuItem;
-    del1: TMenuItem;
-    N1: TMenuItem;
-    N2: TMenuItem;
-    N3: TMenuItem;
-    toantispam: TMenuItem;
-    Openchatwith1: TMenuItem;
-    ViewinfoM: TMenuItem;
-    chtShowSmiles: TMenuItem;
-    chatshowlsb1: TMenuItem;
-    chatpopuplsb1: TMenuItem;
-    chatShowDevTools: TMenuItem;
     emojiBtn: TRnQSpeedButton;
     procedure closemenuPopup(Sender: TObject);
     procedure prefBtnMouseDown(Sender: TObject; Button: TMouseButton;
@@ -208,7 +157,6 @@ type
     procedure SBSearchClick(Sender: TObject);
     procedure FormHide(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
-    procedure toantispamClick(Sender: TObject);
     procedure RnQFileBtnClick(Sender: TObject);
     procedure RnQPicBtnClick(Sender: TObject);
     procedure RnQFileUploadClick(Sender: TObject);
@@ -229,10 +177,6 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
-    procedure selectall1Click(Sender: TObject);
-    procedure viewmessageinwindow1Click(Sender: TObject);
-    procedure txt1Click(Sender: TObject);
-    procedure html1Click(Sender: TObject);
     procedure infoBtnClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure findBtnClick(Sender: TObject);
@@ -240,19 +184,15 @@ type
     procedure smilesBtnClick(Sender: TObject);
     procedure autoscrollBtnClick(Sender: TObject);
     procedure singleBtnClick(Sender: TObject);
-    procedure copylink2clpbdClick(Sender: TObject);
-    procedure copy2clpbClick(Sender: TObject);
     procedure btnContactsClick(Sender: TObject);
     procedure chatDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
     procedure chatDragDrop(Sender, Source: TObject; X, Y: Integer);
-    procedure addlink2favClick(Sender: TObject);
     procedure historyBtnClick(Sender: TObject);
     procedure sbarDrawPanel(StatusBar: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
     procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure sbarMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure Sendwhenimvisibletohimher1Click(Sender: TObject);
     procedure Sendmultiple1Click(Sender: TObject);
-    procedure del1Click(Sender: TObject);
     procedure Closeall1Click(Sender: TObject);
     procedure Closeallbutthisone1Click(Sender: TObject);
     procedure CloseallOFFLINEs1Click(Sender: TObject);
@@ -261,14 +201,6 @@ type
     procedure chatcloseignore1Click(Sender: TObject);
     procedure closeBtnClick(Sender: TObject);
     procedure prefBtnClick(Sender: TObject);
-  {$IFDEF USE_SMILE_MENU}
-    procedure smilesMenuPopup(Sender: TObject);
-    procedure smilesMenuClose(Sender: TObject);
-  {$ENDIF USE_SMILE_MENU}
-    procedure histmenuPopup(Sender: TObject);
-    procedure chatshowlsb1Click(Sender: TObject);
-    procedure chathide1Click(Sender: TObject);
-    procedure chatpopuplsb1Click(Sender: TObject);
     procedure FormMouseWheelUp(Sender: TObject; Shift: TShiftState;
       MousePos: TPoint; var Handled: Boolean);
     procedure FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
@@ -278,14 +210,11 @@ type
     procedure pagectrlDrawTab(Control: TCustomTabControl;
       TabIndex: Integer; const Rect: TRect; Active: Boolean);
     procedure ANothingExecute(Sender: TObject);
-    procedure hAchatshowlsbUpdate(Sender: TObject);
-    procedure hAchatpopuplsbUpdate(Sender: TObject);
     procedure pagectrlDragOver(Sender, Source: TObject; X, Y: Integer;
       State: TDragState; var Accept: Boolean);
     procedure pagectrlMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure pagectrlDragDrop(Sender, Source: TObject; X, Y: Integer);
-    procedure savePicMnuClick(Sender: TObject);
     procedure pagectrlMouseLeave(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -301,7 +230,6 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure smilesBtnMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure hAViewInfoExecute(Sender: TObject);
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
  {$IFDEF USE_SECUREIM}
@@ -309,8 +237,6 @@ type
  {$ENDIF USE_SECUREIM}
     procedure EncryptSetPWD(Sender: TObject);
     procedure EncryptClearPWD(Sender: TObject);
-    procedure hAShowSmilesUpdate(Sender: TObject);
-    procedure hAShowSmilesExecute(Sender: TObject);
     procedure sbarDblClick(Sender: TObject);
     procedure StopTimer(ID: Integer);
     procedure stickersBtnClick(Sender: TObject);
@@ -319,7 +245,6 @@ type
     procedure RnQFileBtnMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,
       Y: Integer);
     procedure OnUploadSendData(Sender: TObject; Buffer: Pointer; Len: Integer);
-    procedure chatShowDevToolsClick(Sender: TObject);
     procedure RnQSpeedButton1Click(Sender: TObject);
     procedure InitScale(Sender: TObject; NewDPI: Integer);
     procedure FormAfterMonitorDpiChanged(Sender: TObject; OldDPI,
@@ -385,12 +310,9 @@ type
     procedure onHistoryRepaint(Sender: TObject);
   {$ENDIF ~CHAT_SCI}
 {$ENDIF CHAT_CEF}
-{$IFDEF CHAT_SCI}
-    procedure showHistMenu(Sender: TObject; const Data: String; clickedTime: TDateTime; msgPreview, linkClicked, imgClicked: Boolean);
-{$ENDIF CHAT_SCI}
   public
     chats: Tchats;
-    poppedup: TPoint;
+//    poppedup: TPoint;
     selectedUIN: TUID;
     plugBtns: TPlugButtons;
     histPM: TPopupMenu;
@@ -407,11 +329,6 @@ type
     MainFormWidth: Integer;
 //    favMenuExt: TPopupMenu;
     FileSendMenu: TPopupMenu;
-  {$IFDEF CHAT_USE_LSB}
-    popupLSB,
-    showLSB: Boolean;
-    hideScrollTimer: integer;
-  {$ENDIF CHAT_USE_LSB}
 
     procedure SetSmilePopup(pIsMenu: Boolean);
 {$IFDEF CHAT_SCI}
@@ -462,16 +379,11 @@ type
     function  grabThisText: String;
     function  Pages2String: RawByteString;
 //    procedure savePages;
+    procedure InitPrefs(pp: TRnQPref);
     procedure loadPages(proto: TRnQProtocol; const s: RawByteString); OverLoad;
     procedure loadPages(const cl: TRnQCList); OverLoad;
     procedure updateGraphics;
     procedure addSmileAction(Sender: TObject);
-  {$IFDEF CHAT_USE_LSB}
-    procedure lsbScroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
-    procedure lsbEnter;
-    procedure setLeftSB(visible: Boolean);
-  {$ENDIF CHAT_USE_LSB}
-    procedure addcontactAction(Sender: TObject);
     procedure AvtPBoxPaint(Sender: TObject);
     procedure onTimer;
     property  currentPPI: Integer read GetParentCurrentDpi;
@@ -499,7 +411,8 @@ uses
   RDFileUtil, RQUtil, RDUtils, RnQSysUtils,
   RnQConst, globalLib, //searchhistDlg,
   outboxlib, utilLib, outboxDlg, RnQTips, RnQPics,
-  langLib, roasterLib, ViewHEventDlg, ViewPicDimmedDlg,
+  langLib, roasterLib,
+//  ViewPicDimmedDlg,
   RnQNet.Uploads,
 //  prefDlg,
  {$IFDEF RNQ_AVATARS}
@@ -687,20 +600,6 @@ begin
 
 end;
 *)
-
-procedure TscrollBarEx.CMMouseEnter(var msg: TMessage);
-begin
-  P_entering := True;
-  if Assigned(onEnter) then
-    onEnter
-end;
-
-procedure TscrollBarEx.CMMouseLeave(var msg: TMessage);
-begin
-  P_entering := False;
-  if Assigned(onLeave) then
-    onLeave
-end;
 
 procedure TPanel.WMEraseBkgnd(var msg: TWMEraseBkgnd);
 begin
@@ -1220,11 +1119,11 @@ begin
    OnScroll := chat.updateAutoscroll;
 {$IFDEF CHAT_CEF}
     OnPreKeyEvent := preKeyEvent;
-    OnBeforeContextMenu := showHistMenu;
+    OnBeforeContextMenu := HistoryData.showHistMenu;
     OnBeforeBrowse := customBrowsing;
 {$ELSE ~CHAT_CEF}
   {$IFDEF CHAT_SCI}
-      OnShowMenu := showHistMenu;
+      OnShowMenu := HistoryData.showHistMenu;
 //      InitSmiles;
   {$ELSE OLD VCL}
      onPainted := onHistoryRepaint;
@@ -1233,31 +1132,6 @@ begin
     InitAll;
   end;
 
- {$IFDEF CHAT_USE_LSB}
-  chat.lsb := TscrollbarEx.create(pnl);
-  with chat.lsb do
-  begin
-    parent := pnl;
-    align := alLeft;
-    tabStop := False;
-    onScroll := lsbScroll;
-    onEnter := lsbEnter;
-    onLeave := lsbEnter;
-    Kind := sbVertical;
-    position := 0;
-    min := 0;
-    max := 0;
-    if popupLSB then
-      width := minimizedScroll
-     else
-      width := maximizedScroll;
-    smallChange := 1;
-    largeChange := 5;
-    enabled := False;
-    visible := showLSB;
-    hint := getTranslation('Scrolls the message line by line');
-  end;
- {$ENDIF CHAT_USE_LSB}
 
  {$IFDEF SMILES_ANI_ENGINE}
 //  rqSmiles.ClearAniParams;
@@ -1407,83 +1281,6 @@ begin
   chat.historyBox.updateRSB(false);
  {$ENDIF ~CHAT_SCI}
 end; // newIMchannel
-
- {$IFDEF CHAT_USE_LSB}
-procedure TchatFrm.lsbScroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
-var
-  ch: TchatInfo;
-begin
- with sender as Tscrollbar do
- begin
-  if position = scrollpos then
-    exit;
-  ch := thisChat;
-  if ch=NIL then
-    exit;
-  ch.historyBox.topOfs := scrollpos;
-  if ScrollPos > 0 then
-    hideScrollTimer := 0;
-  ch.historyBox.repaint();
-  ch.updateAutoscroll(nil);
- end;
-end; // lsbScroll
-
-procedure Tchatinfo.updateLSB;
-begin
-//if ch=NIL then exit;
-  if (historyBox.topEventNrows<2) then
-    begin
-     lsb.enabled := False;
-     if chatFrm.popupLSB then
-       lsb.width := minimizedScroll;
-//   updateAutoscroll(nil);
-    end
-   else
-    begin
-     lsb.min := 0;
-     lsb.max := historyBox.topEventNrows-1;
-     lsb.pagesize := 1;
-     if lsb.position <> historyBox.topOfs then
-       lsb.position := historyBox.topOfs;
-
-     if lsb.Position > 0 then
-       lsb.width := maximizedScroll
-      else
-       if not lsb.MouseInClient then
-         chatFrm.hideScrollTimer := 10;
- //  if lsb.Position = 0 then
-    lsb.enabled := True;
-  end;
-end; // updateLSB
-
-procedure TchatFrm.lsbEnter;
-begin
-  if not popupLSB then
-    exit;
-  with thisChat.lsb do
-   if not entering then
-     begin
-      if position = 0 then
-        hideScrollTimer := 10
-     end
-   else
-     begin
-      hideScrollTimer := 0;
-      width := maximizedScroll;
-     end;
-end;
-
-procedure TchatFrm.setLeftSB(visible: boolean);
-var
-  ch: TChatInfo;
-begin
-  showLSB := visible;
-  ch := thisChat;
-  if (ch <> NIL)and(ch.lsb <> NIL) then
-    ch.lsb.visible := showLSB;
-end;
-
- {$ENDIF CHAT_USE_LSB}
 
 procedure Tchatinfo.CheckTypingTime;
 begin
@@ -1695,15 +1492,7 @@ begin
      ch.btnPnl.Visible := plugBtns.btnCnt > 0
     else
      ch.btnPnl.Visible := false;
-  {$IFDEF CHAT_USE_LSB}
-  if popupLSB then
-    if ch.lsb.Enabled and (ch.lsb.Position > ch.lsb.Min) then
-      ch.lsb.width := maximizedScroll
-     else
-      ch.lsb.width := minimizedScroll
-   else
-    ch.lsb.width := maximizedScroll;
-  {$ENDIF CHAT_USE_LSB}
+  ch.historyBox.updateGraphics;
   ch.historyBox.color := ch.input.color;
   if chatFrm.visible and not IsIconic(chatFrm.handle) then
     ch.historyBox.repaint;
@@ -1734,6 +1523,7 @@ begin
 //  rqSmiles.ClearAniParams;
   theme.ClearAniParams;
  {$ENDIF SMILES_ANI_ENGINE}
+  historyData.currentHB := NIl;
   ch := thisChat;
   if ch=NIL then
     exit;
@@ -1741,9 +1531,7 @@ begin
     begin
      lastClick := 0;
      inputChange(self);    // update char counter
-   {$IFDEF CHAT_USE_LSB}
-     setLeftSB(showLSB);
-   {$ENDIF CHAT_USE_LSB}
+     historyData.currentHB := ch.historyBox;
      if autoSwitchKL
         and assigned(lastContact)
         and (lastContact<>ch.who)
@@ -1806,8 +1594,8 @@ begin
    else
     if (ch.chatType = CT_PLUGING) then
     begin
-  //    ch.input.visible:= false;
-  //    ch.splitter.visible:= false;
+  //    ch.input.visible := false;
+  //    ch.splitter.visible := false;
       if usePlugPanel then
        begin
         if plugBtns.PluginsTB <> toolbar then
@@ -1823,7 +1611,7 @@ begin
           plugBtns.btns[i].Enabled := False;
       SBSearch.Enabled := False;
 
-  //    fp.Visible:= false;
+  //    fp.Visible := false;
       plugins.castEv(PE_SELECTTAB, ch.id);
       BuzzBtn.Visible := False;
       stickersBtn.Enabled := False;
@@ -2134,7 +1922,7 @@ if (shift = [ssAlt]) and (ch.chatType = CT_IM) then
       begin
 //       with smilesBtn do down:=not down;
 //       smilesBtnClick(self);
-        hAShowSmilesExecute(Self);
+        historyData.hAShowSmilesExecute(Self);
       end;
     VK_BACK: ch.input.Undo();
     VK_S: begin send; key := 0; end;
@@ -2238,7 +2026,7 @@ if shift = [ssCtrl] then
         if (ActiveControl= ch.input) then
           ch.input.SelectAll
          else
-          selectall1Click(self);
+          historyData.hASelectAllExecute(self);
         Key := 0;
        end;
     VK_F:
@@ -2517,60 +2305,6 @@ begin
   //  searchhistFrm.Close;
 end; // form close
 
-procedure TchatFrm.selectall1Click(Sender: TObject);
-var
-  ch: TchatInfo;
-begin
-  ch := thischat;
-  if ch=NIL then
-    exit;
-  ch.historyBox.SelectAll;
-end; // select all
-
-procedure TchatFrm.viewmessageinwindow1Click(Sender: TObject);
-begin
-  if thisChat=NIL then
-    exit;
-  with thisChat.historyBox do
-    if somethingIsSelected then
-      viewTextWindow(MainPrefs, getTranslation('selection'), getSelText)
- {$IFNDEF CHAT_CEF} // Chromium
- {$IFNDEF CHAT_SCI}
-  else
-//    if pointedItem.kind<>PK_NONE then
-    if clickedItem.kind<>PK_NONE then
-      if ((clickedItem.Kind = PK_RQPIC) or (clickedItem.Kind = PK_RQPICEX)) and not (clickedItem.ev.getBodyBin = '')then
-        viewImageDimmed(self, clickedItem.ev.getBodyBin, clickedItem.ofs)
-      else
-        viewHeventWindow(clickedItem.ev);
- {$ENDIF ~CHAT_SCI}
- {$ENDIF ~CHAT_CEF} // Chromium
-end; // open
-
-procedure TchatFrm.txt1Click(Sender: TObject);
-var
-  fn: string;
-begin
-  if thisChat=NIL then
-    exit;
-  fn := openSavedlg(self, 'Save text as UTF-8 file', false, 'txt');
-  if fn = '' then
-    exit;
-  saveTextFile(fn, thisChat.historyBox.getSelText);
-end; // txt
-
-procedure TchatFrm.html1Click(Sender: TObject);
-var
-  fn: string;
-begin
-  if thisChat=NIL then
-    exit;
-  fn := openSavedlg(self, '', false, 'html');
-  if fn = '' then
-    exit;
-  saveTextFile(fn, thisChat.historyBox.getSelHtml(FALSE));
-end; // html
-
 procedure TchatFrm.infoBtnClick(Sender: TObject);
 var
   cnt: TRnQContact;
@@ -2589,7 +2323,7 @@ begin
   cnt := thisContact;
   if (cnt=NIL) or (ch = NIL) then
    begin
-    sendBtn.ImageName := status2imgName(byte(SC_UNK), FALSE);
+    sendBtn.ImageName := Account.Accproto.status2imgName(byte(SC_UNK), FALSE);
     exit;
    end;
   sendBtn.ImageName := rosterImgNameFor(cnt);
@@ -2951,21 +2685,25 @@ var
 // ti: TTCItem;
   P: TPoint;
   tabindex: Integer;
+  ch: TchatInfo;
 begin
  case message.msg of
   WM_SYSCOMMAND:
     updatechatfrmXY;
 
   WM_mousewheel, WM_VSCROLL:
-   if (Assigned(chats)) and (thisChat <> NIL) and (thisChat.chatType = CT_IM) then
- {$IFDEF CHAT_CEF} // Chromium
-    SendMessage(thisChat.historyBox.Handle, message.msg, message.WParam, message.LParam);
- {$ELSE ~CHAT_CEF} // old
-    if message.wparam shr 31 > 0 then
-      thisChat.historyBox.histScrollEvent(+wheelVelocity)
-    else
-      thisChat.historyBox.histScrollEvent(-wheelVelocity);
- {$ENDIF ~CHAT_CEF}
+    begin
+      ch := thisChat;
+      if (Assigned(chats)) and (ch <> NIL) and (ch.chatType = CT_IM) then
+     {$IFDEF CHAT_CEF} // Chromium
+        SendMessage(ch.historyBox.Handle, message.msg, message.WParam, message.LParam);
+     {$ELSE ~CHAT_CEF} // old
+        if message.wparam shr 31 > 0 then
+          ch.historyBox.histScrollEvent(+wheelVelocity)
+         else
+          ch.historyBox.histScrollEvent(-wheelVelocity);
+     {$ENDIF ~CHAT_CEF}
+    end;
 {  WM_VSCROLL:
    if (Assigned(chats))and(thisChat <> NIL) and (thisChat.chatType = CT_IM) then
     if message.wparam shr 31 > 0 then
@@ -2985,25 +2723,28 @@ begin
 //     begin
 //     end;
   WM_KEYDOWN:
-     if (thisChat <> nil) and (thisChat.chatType = CT_PLUGING) then
-      begin
- {$WARN UNSAFE_CAST OFF}
-       TControl(thisChat.ID).WindowProc(Message);
- {$WARN UNSAFE_CAST ON}
-//       Perform(WM_KEYDOWN, )
-      end;
-{
-    with TWMKey(Message) do
-      begin
-        ShiftState := KeyDataToShiftState(KeyData);
-        if (ssCtrl in ShiftState) and (CharCode = VK_F4) then
-          try
-            sawAllHere;
-            closeThisPage;
-            Exit;
-          except
-          end;
-      end;}
+    begin
+      ch := thisChat;
+       if (ch <> nil) and (ch.chatType = CT_PLUGING) then
+        begin
+   {$WARN UNSAFE_CAST OFF}
+         TControl(ch.ID).WindowProc(Message);
+   {$WARN UNSAFE_CAST ON}
+  //       Perform(WM_KEYDOWN, )
+        end;
+  {
+      with TWMKey(Message) do
+        begin
+          ShiftState := KeyDataToShiftState(KeyData);
+          if (ssCtrl in ShiftState) and (CharCode = VK_F4) then
+            try
+              sawAllHere;
+              closeThisPage;
+              Exit;
+            except
+            end;
+        end;}
+    end;
   WM_HELP:
     begin
       exit;
@@ -3052,40 +2793,6 @@ begin
   inherited;
 end; // WMmouseWheel
 
-function stripProtocol(const stringData: String): String;
-begin
-  if StartsText('uin:', stringData) then
-    Result := copy(stringData, 5, length(stringData))
-  else if StartsText('link:', stringData) then
-    Result := copy(stringData, 6, length(stringData))
-  else if StartsText('mailto:', stringData) then
-    Result := copy(stringData, 8, length(stringData))
-  else
-    Result := stringData;
-end;
-
-procedure TchatFrm.copylink2clpbdClick(Sender: TObject);
-begin
- {$IFDEF CHAT_SCI}
-  with thisChat.historyBox.clickedItem do
-    if Kind = PK_LINK then
-      clipboard.asText := stripProtocol(stringData);
- {$ELSE}
-//with thisChat.historyBox do
-//  if pointedItem.kind=PK_LINK then
-//    clipboard.asText := pointedItem.link.str;
-//with thisChat.historyBox.pointedItem do
-  with thisChat.historyBox.ClickedItem do
-  if kind=PK_LINK then
-    clipboard.asText := link.str;
- {$ENDIF ~CHAT_SCI}
-end;
-
-procedure TchatFrm.copy2clpbClick(Sender: TObject);
-begin
-  thisChat.historyBox.copySel2Clpb;
-end;
-
 procedure TchatFrm.btnContactsClick(Sender: TObject);
 begin
   openSendContacts(thisContact)
@@ -3106,20 +2813,6 @@ begin
   cl.add(clickedContact);
    Proto_Outbox_add(OE_contacts, thisContact, 0, cl);
   cl.free;
-end;
-
-procedure TchatFrm.addlink2favClick(Sender: TObject);
-begin
- {$IFDEF CHAT_SCI}
-  with thisChat.historyBox.clickedItem do
-    if Kind = PK_LINK then
-      addLinkToFavorites(stripProtocol(stringData));
- {$ELSE ~CHAT_SCI}
-//with thisChat.historyBox.pointedItem do
- with thisChat.historyBox.clickedItem do
-  if kind=PK_LINK then
-    addLinkToFavorites(link.str);
- {$ENDIF ~CHAT_SCI}
 end;
 
 procedure TchatFrm.updatechatfrmXY;
@@ -3533,11 +3226,6 @@ begin
   cl.free;
 end; // sendmessage action
 
-procedure TchatFrm.del1Click(Sender: TObject);
-begin
-  thisChat.historyBox.DeleteSelected;
-end;
-
 procedure TchatFrm.emojiBtnClick(Sender: TObject);
 var
   ch: TchatInfo;
@@ -3734,14 +3422,6 @@ begin
   thisChat.input.setFocus;
 end;
 
-procedure TchatFrm.chatShowDevToolsClick(Sender: TObject);
-var
-  ch: TchatInfo;
-begin
-  ch := thisChat;
-  ch.historyBox.ShowDebug;
-end;
-
 procedure TchatFrm.chatcloseignore1Click(Sender: TObject);
 begin
   sawAllHere;
@@ -3773,61 +3453,17 @@ begin
     end;
 end;
 
-procedure TchatFrm.savePicMnuClick(Sender: TObject);
-var
- pic: AnsiString;
- p: string;
- i, k: Integer;
- RnQPicStream //, RnQPicStream2
-   : TMemoryStream;
-// fmt : TGUID;
+procedure TchatFrm.InitPrefs(pp: TRnQPref);
 begin
-  {$IFNDEF CHAT_SCI}
-  with thisChat.historyBox do
-//   if pointedItem.kind=PK_RQPICEX then
-   if clickedItem.kind=PK_RQPICEX then
-    begin
-      pic := clickedItem.ev.getBodyBin;
-      i := Pos(RnQImageExTag, pic);
-      k := PosEx(RnQImageExUnTag, pic, i+12);
-      if (i > 0) and (k > 5) then
-      begin
-            pic := Base64DecodeString(Copy(pic, i+12, k-i-12));
-//            pic := '';
-            RnQPicStream := TMemoryStream.Create;
- {$WARN UNSAFE_CODE OFF}
-            RnQPicStream.Write(pic[1], Length(pic));
- {$WARN UNSAFE_CODE ON}
-            pic := '';
-            p := PAFormat[DetectFileFormatStream(RnQPicStream)];
-           Delete(p, 1, 1);
-           p := openSavedlg(self, '', false, p);
-           if p > '' then
-             RnQPicStream.SaveToFile(p);
-           RnQPicStream.Free;
-      end
-    end
-   else
-   if clickedItem.kind=PK_RQPIC then
-    begin
-      pic := clickedItem.ev.getBodyBin;
-      i := Pos(RnQImageTag, pic);
-      k := PosEx(RnQImageUnTag, pic, i+10);
-      if (i > 0) and (k > 5) then
-      begin
-        p := openSavedlg(self, '', false, 'wbmp');
-        if p > '' then
-         begin
-           RnQPicStream := TMemoryStream.Create;
- {$WARN UNSAFE_CODE OFF}
-           RnQPicStream.Write(pic[i+10], k-i-10);
- {$WARN UNSAFE_CODE ON}
-           RnQPicStream.SaveToFile(p);
-           RnQPicStream.Free;
-         end;
-      end
-    end;
-  {$ENDIF ~CHAT_SCI}
+  pp.initPrefBool('use-smiles', True);
+  pp.initPrefBool('chat-images-enable-stickers', True);
+  pp.initPrefBool('chat-images-limit', True);
+  pp.initPrefInt('chat-images-width-value', 300);
+  pp.initPrefInt('chat-images-height-value', 300);
+  pp.initPrefBool('hist-emoji-draw', True);
+  pp.initPrefBool('auto-copy', True);
+  pp.initPrefBool('auto-deselect', False);
+
 end;
 
 procedure TchatFrm.loadPages(proto: TRnQProtocol; const s: RawByteString);
@@ -3926,42 +3562,6 @@ procedure TchatFrm.addSmileAction(sender: Tobject);
 begin
 // thisChat.input.SelText := TRQmenuitem(sender).ImageName;
   thisChat.input.SelText := TRQmenuitem(sender).Caption;
-end;
-
-procedure TchatFrm.histmenuPopup(Sender: TObject);
-begin
-  chatShowDevTools.Visible := cmdLinePar.Debug;
- {$IFDEF CHAT_USE_LSB}
-  chatshowlsb1.checked := showLSB;
-  chatpopuplsb1.visible := showLSB;
-  chatpopuplsb1.checked := popupLSB;
- {$ELSE CHAT_USE_LSB}
-  chatshowlsb1.Visible := false;
-  chatpopuplsb1.visible := false;
-//  chatShowDevTools.Visible := True;
- {$ENDIF ~CHAT_USE_LSB}
-end;
-
-procedure TchatFrm.chatshowlsb1Click(Sender: TObject);
-begin
- {$IFDEF CHAT_USE_LSB}
-  setLeftSB(not showLSB)
- {$ENDIF ~CHAT_USE_LBM}
-end;
-
-procedure TchatFrm.chathide1Click(Sender: TObject);
-begin
- {$IFDEF CHAT_USE_LSB}
-  setLeftSB(false)
- {$ENDIF CHAT_CEF}
-end;
-
-procedure TchatFrm.chatpopuplsb1Click(Sender: TObject);
-begin
- {$IFDEF CHAT_USE_LSB}
-  popupLSB := not popupLSB;
- {$ENDIF CHAT_CEF}
-  updateGraphics;
 end;
 
 procedure TchatFrm.FormMouseWheelUp(Sender: TObject; Shift: TShiftState;
@@ -4146,77 +3746,26 @@ end;
 
 {$ELSE ~CHAT_CEF}
 
-{$IFDEF CHAT_SCI}
-procedure TchatFrm.showHistMenu(Sender: TObject; const Data: String; clickedTime: TDateTime; msgPreview, linkClicked, imgClicked: Boolean);
-var
-  hb: THistoryBox;
-begin
-  if not (Sender is THistoryBox) then
-   Exit;
-  hb := Sender as THistoryBox;
-
-  hb.clickedItem.timeData := clickedTime;
-  with hb do
-  if linkClicked then
-  begin
-    clickedItem.kind := PK_LINK;
-    clickedItem.stringData := Data;
-  end else if imgClicked then
-  begin
-    if StartsText('embedded:', Data) then
-      clickedItem.kind := PK_RQPIC
-    else if StartsText('download:', Data) then
-      clickedItem.kind := PK_RQPICEX;
-    clickedItem.stringData := Data;
-  end else
-    clickedItem.kind := PK_NONE;
-
-  del1.enabled := hb.wholeEventsAreSelected;
-  saveas1.enabled := hb.somethingIsSelected;
-  copy2clpb.visible := hb.somethingIsSelected;
-  toantispam.visible := hb.somethingIsSelected;
-  N2.visible := hb.somethingIsSelected;
-  copylink2clpbd.visible := linkClicked;
-  addlink2fav.visible := linkClicked and StartsText('url:', Data);
-  savePicMnu.visible := imgClicked;
-  ViewinfoM.visible := clickedTime > 0;
-  viewmessageinwindow1.enabled := hb.somethingIsSelected or (clickedTime > 0);
-  selectall1.enabled := hb.hasEvents;
-
-  add2rstr.visible := linkClicked and StartsText('uin:', Data);
-  if add2rstr.visible then
-  try
-    selectedUIN := copy(Data, 5, length(Data));
-    addGroupsToMenu(Self, add2rstr, addcontactAction, not hb.who.fProto.isOnline
-      or hb.who.fProto.canAddCntOutOfGroup); // false);
-  except
-    add2rstr.visible := false;
-  end;
-
-//  lastClickedItem := pointedItem;
-//  popupHistmenu(MousePos.X, MousePos.Y);
-  histmenu.popup(mousePos.X, mousePos.Y);
-end;
-{$ELSE ~CHAT_SCI}
-
+{$IFNDEF CHAT_SCI}
 procedure TchatFrm.onHistoryRepaint(sender: TObject);
 var
   ch: TchatInfo;
 begin
-  ch := thischat;
-  if Assigned(ch) then
-  if ch.chatType = CT_IM then
-  begin
-    autoscrollBtn.down := ch.historyBox.autoScrollVal;
-    ch.historyBox.updateRSB(false);
- {$IFDEF CHAT_USE_LSB}
-    ch.updateLSB;
- {$ENDIF CHAT_USE_LSB}
-  end;
-end;
-
-// onHistoryRepaint
-{$ENDIF CHAT_SCI}
+  if Sender is THistoryBox then
+    begin
+      autoscrollBtn.down := THistoryBox(Sender).autoScrollVal;
+    end
+   else
+    begin
+      ch := thischat;
+      if Assigned(ch) then
+      if ch.chatType = CT_IM then
+      begin
+        autoscrollBtn.down := ch.historyBox.autoScrollVal;
+      end;
+    end;
+end; // onHistoryRepaint
+{$ENDIF ~CHAT_SCI}
 
 {$ENDIF CHAT_CEF}
 
@@ -4233,32 +3782,9 @@ end;
 
 procedure TchatFrm.onTimer;
 begin
-{$IFDEF CHAT_USE_LSB}
-  // hide message scrollbar
-  if popupLSB and (hideScrollTimer>0) then
-    begin
-     dec(hideScrollTimer);
-     if hideScrollTimer=0 then
-      with chatFrm do
-        if thisChat<>NIL then
-         with thisChat do
-         if Assigned(lsb) then
-           lsb.width := minimizedScroll;
-    end;
-{$ENDIF CHAT_USE_LSB}
+  historyData.onTimer(NIL);
 end;
 
-
-procedure TchatFrm.addcontactAction(sender: Tobject);
-var
-  cnt: TRnQContact;
-begin
-  cnt := thisContact;
-  if Assigned(cnt) then
-    cnt := cnt.fProto.getContact(selectedUIN);
-  if Assigned(cnt) then
-    addToRoster(cnt, (sender as Tmenuitem).tag, cnt.CntIsLocal)
-end;
 
 procedure TchatFrm.pagectrl00MouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
@@ -4994,75 +4520,6 @@ begin
 //
 end;
 
-procedure TchatFrm.hAchatshowlsbUpdate(Sender: TObject);
-begin // 3011
- {$IFDEF CHAT_USE_LSB}
-  with TAction(Sender) do
-   if showLSB then
-     HelpKeyword := PIC_RIGHT
-    else
-     HelpKeyword := '';
- {$ENDIF CHAT_CEF}
-//    TAction(Sender).HelpKeyword := PIC_CHECKED
-//   else
-//    TAction(Sender).HelpKeyword := PIC_UNCHECKED;
-//  TAction(Sender).HelpKeyword := PIC_CHECK_UN[showLSB];
-end;
-
-procedure TchatFrm.hAShowSmilesExecute(Sender: TObject);
-var
-  ch: TchatInfo;
-begin
-//  useSmiles := TAction(Sender).Checked;
-  useSmiles := not useSmiles;
-{$IFDEF CHAT_SCI}
-  UpdateChatSettings;
-  UpdateChatSmiles;
-{$ELSE ~CHAT_SCI}
-  ch := thisChat;
-  if ch=NIL then
-    exit;
-  ch.historyBox.ManualRepaint;
-{$ENDIF ~CHAT_SCI}
-end;
-
-procedure TchatFrm.hAShowSmilesUpdate(Sender: TObject);
-begin
- with TAction(Sender) do
-  begin
-    Checked := useSmiles;
-    if useSmiles then
-       HelpKeyword := PIC_RIGHT
-     else
-       HelpKeyword := '';
-  end;
-end;
-
-procedure TchatFrm.hAViewInfoExecute(Sender: TObject);
-begin
-{$IFNDEF CHAT_SCI}
-  with thisChat.historyBox do
-  if Assigned(clickedItem.ev) and Assigned(clickedItem.ev.who) then
-    clickedItem.ev.who.ViewInfo;
-{$ENDIF ~CHAT_SCI}
-end;
-
-procedure TchatFrm.hAchatpopuplsbUpdate(Sender: TObject);
-begin // 3012
- {$IFDEF CHAT_USE_LSB}
-  with TAction(Sender) do
-   if popupLSB then
-     HelpKeyword := PIC_RIGHT
-    else
-     HelpKeyword := '';
- {$ENDIF CHAT_CEF}
-//    TAction(Sender).HelpKeyword := PIC_CHECKED
-//   else
-//    TAction(Sender).HelpKeyword := PIC_UNCHECKED;}
-//  TAction(Sender).HelpKeyword := PIC_CHECK_UN[popupLSB];
-end;
-
-
 procedure TchatFrm.CloseallandAddtoIgnorelist1Click(Sender: TObject);
 var
   i: Integer;
@@ -5408,13 +4865,6 @@ begin
         FileSendMenu.Popup(x,y);
 end;
 
-procedure TchatFrm.toantispamClick(Sender: TObject);
-begin
-  if spamfilter.badwords <> '' then
-   spamfilter.badwords := spamfilter.badwords + ';';
-  spamfilter.badwords := spamfilter.badwords+thisChat.historyBox.getSelText;
-end;
-
 procedure TchatFrm.FormDeactivate(Sender: TObject);
 begin
  {$IFDEF RNQ_FULL}
@@ -5511,9 +4961,6 @@ begin
     if Assigned(chatFrm)and Assigned(chatFrm.autoscrollBtn) then
       chatFrm.autoscrollBtn.down := historyBox.autoScrollVal;
 //    historyBox.autoscroll := historyBox.autoscroll;
-   {$IFDEF CHAT_USE_LSB}
-    updateLSB();
-   {$ENDIF CHAT_CEF}
   end;
 end;
 

@@ -76,12 +76,12 @@ end;
 
 function getSnacFlags(const s: RawByteString): word;
 begin
- result := word_BEat(s, 11)
+  result := word_BEat(s, 11)
 end;
 
 function getSnacService(const s: RawByteString): word;
 begin
-  result := byte(s[8]) shl 8+ byte(s[10])
+  result := byte(s[8]) shl 8 + byte(s[10])
 end;
 
 function getFlapChannel(const s: RawByteString): byte;
@@ -94,7 +94,7 @@ begin
 //result:=strToInt(copy(s,ofs+1,ord(s[ofs])));
   result := copy(s, ofs+1, ord(s[ofs]));
   inc(ofs, 1+ord(s[ofs]));
-end; // getBUIN
+end; // readBUIN
 
 function readBUIN8(const s: RawByteString; var ofs: integer): TUID;
 begin
@@ -104,7 +104,7 @@ begin
   result := copy(s, ofs+1, ord(s[ofs]));
  {$ENDIF ~UID_IS_UNICODE}
   inc(ofs, 1+ord(s[ofs]));
-end; // getBUIN
+end; // readBUIN8
 
 function readBUIN(const s: RawByteString; var ofs: integer): Integer;
 var
@@ -119,7 +119,7 @@ begin
     Result := 0;
 //result := copy(s,ofs+1,ord(s[ofs]));
   inc(ofs, 1+ byte(s[ofs]));
-end; // getBUIN
+end; // readBUIN
 
 function Length_B8(const UIN: TUID): RawByteString;
 var
@@ -220,7 +220,7 @@ begin
     result := '';
     exit;
    end;
-  i := FLAP_HEAD_SIZE+bodysize;
+  i := FLAP_HEAD_SIZE + bodysize;
   result := copy(buff, 1, i);
   delete(buff, 1, i);
 end; // pop

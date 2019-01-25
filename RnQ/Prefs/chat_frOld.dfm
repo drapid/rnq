@@ -27,10 +27,6 @@ object chatFr: TchatFr
     TabOrder = 0
     object CommonSheet: TTabSheet
       Caption = 'Common'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         408
         389)
@@ -161,10 +157,6 @@ object chatFr: TchatFr
     object TSHistory: TTabSheet
       Caption = 'History'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         408
         389)
@@ -209,7 +201,7 @@ object chatFr: TchatFr
       object SmilesChk: TCheckBox
         Left = 6
         Top = 69
-        Width = 97
+        Width = 332
         Height = 17
         HelpType = htKeyword
         HelpKeyword = 'use-smiles'
@@ -220,10 +212,6 @@ object chatFr: TchatFr
     object SmileSheet: TTabSheet
       Caption = 'Smiles'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object SmlPnlChk: TCheckBox
         Left = 6
         Top = 6
@@ -320,10 +308,6 @@ object chatFr: TchatFr
       Caption = 'Buttons'
       ImageIndex = 2
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         408
         389)
@@ -358,11 +342,6 @@ object chatFr: TchatFr
           DragType = dtVCL
           Header.AutoSizeIndex = 0
           Header.DefaultHeight = 17
-          Header.Font.Charset = DEFAULT_CHARSET
-          Header.Font.Color = clWindowText
-          Header.Font.Height = -11
-          Header.Font.Name = 'Tahoma'
-          Header.Font.Style = []
           Header.Height = 17
           Header.MainColumn = -1
           Header.Options = [hoColumnResize, hoDrag]
@@ -377,10 +356,6 @@ object chatFr: TchatFr
     object SpellSheet: TTabSheet
       Caption = 'Spell check'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         408
         389)
@@ -447,11 +422,6 @@ object chatFr: TchatFr
         Colors.SelectionRectangleBorderColor = cl3DLight
         Header.AutoSizeIndex = 0
         Header.DefaultHeight = 17
-        Header.Font.Charset = DEFAULT_CHARSET
-        Header.Font.Color = clWindowText
-        Header.Font.Height = -11
-        Header.Font.Name = 'Tahoma'
-        Header.Font.Style = []
         Header.Height = 17
         Header.MainColumn = -1
         Header.Options = [hoColumnResize, hoDrag]

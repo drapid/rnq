@@ -94,9 +94,9 @@ const
   EI_UID = 11;
   EI_WID = 12;
 
-  HI_event=-1;
-  HI_hashed=-2;
-  HI_cryptMode=-3;
+  HI_event = -1;
+  HI_hashed = -2;
+  HI_cryptMode = -3;
 
 Type
   THeventHeader = record
@@ -233,7 +233,6 @@ uses
  {$ENDIF UNICODE}
   RQUtil, RDFileUtil, RDUtils, RnQBinUtils, RnQFileUtil,
   RnQLangs, RnQCrypt, RnQGlobal, RnQPics,
-//  prefDlg,
   outboxDlg, utilLib, chatDlg, history,
   themesLib, pluginutil, RnQConst, globalLib, mainDlg,
   Protocols_all,
@@ -266,17 +265,18 @@ begin
   Result.fImgElm.ThemeToken := -1;
   try
    if cl <> NIL then // By Rapid !
-    result.cl:=cl.clone
+    Result.cl := cl.clone
    else
-    result.cl:=NIL;
+    Result.cl := NIL;
   except
-    result.cl:=NIL
+    result.cl := NIL
   end;
   result.expires := expires;
 end; // clone
 
 destructor Thevent.Destroy;
 begin
+  HistoryToken := 0;
   if Assigned(cl) then
    cl.free;
  {$IFDEF DB_ENABLED}
@@ -312,7 +312,9 @@ begin
 end;
 
 function Thevent.urgent: boolean;
-begin result := flags and IF_urgent > 0 end;
+begin
+  Result := flags and IF_urgent > 0
+end;
 
 procedure Thevent.applyFont(font: Tfont);
 begin
@@ -977,14 +979,14 @@ begin
           dec(i);
         if i <= 0 then
           begin
-            Result := String(sa);
+            Result := unUTF(sa);
             exit;
           end;
     //    s:=sa; result:='';
         while sa > '' do
           begin
             chop(#2, sa);
-            result := result + String(chop(', ', sa)) + CrLfS;
+            result := result + unUTF(chop(', ', sa)) + CrLfS;
           end;
       end;
     EK_URL:
@@ -1064,8 +1066,8 @@ case kind of
     end;
   EK_MSG:
     begin
-//      sa:=decrittedInfoAnsi;
-      sa:=decrittedInfoOrg;
+//      sa := decrittedInfoAnsi;
+      sa := decrittedInfoOrg;
       i := Pos(RnQImageTag, sa);
       while i > 0 do
        begin
@@ -1141,7 +1143,7 @@ begin
   f_Who := w;
 
  {$IFNDEF DB_ENABLED}
-  fIsMyEvent := (not Assigned(f_Who)) or f_Who.fProto.isMyAcc(w);
+  fIsMyEvent := (not Assigned(f_Who)) or f_Who.isMyAcc;
  {$ENDIF DB_ENABLED}
 end;
 
@@ -1168,12 +1170,12 @@ function TeventQ.find(kind_: integer; c: TRnQcontact): integer;
 begin
   result := count;
   while result > 0 do
-    begin
+   begin
     dec(result);
     with Thevent(items[result]) do
       if (kind = kind_) and isHis(c) then
         exit;
-    end;
+   end;
   result := -1;
 end; // find
 
@@ -1260,10 +1262,10 @@ function TeventQ.chop: boolean;
 begin
   result := FALSE;
   if not empty then
-    begin
+   begin
     pop.free;
     result := TRUE;
-    end;
+   end;
 end; // chop
 
 function TeventQ.removeAt(i: integer): boolean;
@@ -1350,14 +1352,14 @@ begin
   result := FALSE;
   i := count;
   while i > 0 do
-    begin
+   begin
      dec(i);
      if Thevent(items[i]).isHis(c) then
       begin
        result := TRUE;
        removeAt(i)
       end
-    end;
+   end;
 end; // removeEvent
 
 const
@@ -1403,18 +1405,18 @@ begin
       inc(ofs, l);
       case t of
         FK_KIND: begin
-                if Assigned(e) then
-                 try
-                   if Not Assigned(e.who) then
-                    begin
-                     Remove(e);
-                     e.Free;
-//                     e := NIL;
-                    end;
-                  except
-                 end;
-                e := add(integer((@s[1])^), Account.AccProto.getmyInfo, 0, 0);
-             end;
+                  if Assigned(e) then
+                   try
+                     if Not Assigned(e.who) then
+                      begin
+                       Remove(e);
+                       e.Free;
+//                       e := NIL;
+                      end;
+                    except
+                   end;
+                  e := add(integer((@s[1])^), Account.AccProto.getmyInfo, 0, 0);
+               end;
         FK_EXPIRES: e.expires := integer((@s[1])^);
         FK_WHO:
       begin
@@ -1511,7 +1513,7 @@ begin
   while i < count do
     if Thevent(items[i]).expires >= 0 then
       removeAt(i)
-    else
+     else
       inc(i);
 end; // removeExpiringEvents
 

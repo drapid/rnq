@@ -509,7 +509,7 @@ case kind of
     contactsPool.remove(self);
     TCE(contact.data^).node := NIL;
     end;
-  NODE_GROUP: groups.a[groups.idxOf(groupId)].node[divisor]:=NIL;
+  NODE_GROUP: groups.setNode(groupId, divisor, NIL);
   NODE_DIV: divs[divisor] := NIL;
   end;
 inherited;
@@ -610,7 +610,10 @@ var
   idx: integer;
 begin
   idx := groups.idxOf(id);
-  result := groups.a[idx].node[d];
+  if idx < 0 then
+    Exit(NIL)
+   else
+    Result := groups.a[idx].node[d];
   if assigned(result) then
     exit;
   insertNode(d); // ensure divisor existence

@@ -52,10 +52,11 @@ const
   XMPProtoID = 3; //!!! Jabber
   OBIMProtoID = 4;
 //  AIMProtoID = 4; //!!! AIM
-  MAXProtoID  = 4;
+  WIMProtoID = 5;
+  MAXProtoID  = 5;
 
 //  ProtosDesc: array[1..4] of String = ('ICQ', 'AIM', 'Mail.ru Agent', 'XMPP');
-  cProtosDesc: array[MinProtoID..MAXProtoID] of String = ('ICQ', 'Mail.ru Agent', 'XMPP', 'OBIMP');
+  cProtosDesc: array[MinProtoID..MAXProtoID] of String = ('ICQ', 'Mail.ru Agent', 'XMPP', 'OBIMP', 'ICQ Rest');
  {$ENDIF ICQ_ONLY}
 
 const
@@ -70,6 +71,9 @@ const
    {$IFDEF PROTOCOL_BIM}
       ,OBIMProtoID
    {$ENDIF PROTOCOL_BIM}
+   {$IFDEF PROTOCOL_WIM}
+      ,WIMProtoID
+   {$ENDIF PROTOCOL_WIM}
  {$ENDIF ICQ_ONLY}
    ];
 
@@ -86,6 +90,9 @@ const
    {$IFDEF PROTOCOL_BIM}
       1+
    {$ENDIF PROTOCOL_BIM}
+   {$IFDEF PROTOCOL_WIM}
+      1+
+   {$ENDIF PROTOCOL_WIM}
       0;
 
 
@@ -95,17 +102,20 @@ const
  {$ELSE ~ICQ_ONLY}
     (
    {$IFDEF PROTOCOL_ICQ}
-      ICQProtoID,
+      ICQProtoID
    {$ENDIF PROTOCOL_ICQ}
    {$IFDEF PROTOCOL_MRA}
-      MRAProtoID,
+      MRAProtoID
    {$ENDIF PROTOCOL_MRA}
    {$IFDEF PROTOCOL_BIM}
-      OBIMProtoID,
+      OBIMProtoID
    {$ENDIF PROTOCOL_BIM}
    {$IFDEF PROTOCOL_XMP}
       XMPProtoID
    {$ENDIF PROTOCOL_XMP}
+   {$IFDEF PROTOCOL_WIM}
+      WIMProtoID
+   {$ENDIF PROTOCOL_WIM}
  {$ENDIF ICQ_ONLY}
    );
 
@@ -242,7 +252,7 @@ type
 //    procedure connect(createUIN:boolean); overload;
 //   public
     function  getStatuses    : TStatusArray;
-    function  getVisibilitis : TStatusArray;
+    function  GetVisibilities : TStatusArray;
     function  getStatusMenu : TStatusMenu;
     function  getVisMenu    : TStatusMenu;
     function  getContactClass : TRnQCntClass;
@@ -381,21 +391,21 @@ type
     class function _MaxPWDLen: Integer; virtual; abstract;
 
 //    class function _CreateProto(const uid: TUID): IRnQProtocol; Virtual; Abstract;
-    class function _CreateProto(const uid: TUID) : TRnQProtocol; Virtual; Abstract;
+    class function _CreateProto(const uid: TUID): TRnQProtocol; Virtual; Abstract;
     class function _RegisterUser(var pUID: TUID; var pPWD: String): Boolean; Virtual; Abstract;
 //    Constructor Create(uid: TUID); Virtual; Abstract;
     procedure SetListener(l: TProtoNotify); Virtual;
 
 
     function  getStatuses: TStatusArray; Virtual; Abstract;
-    function  getVisibilitis: TStatusArray; Virtual; Abstract;
+    function  GetVisibilities: TStatusArray; Virtual; Abstract;
     function  getStatusMenu: TStatusMenu; Virtual; Abstract;
     function  getVisMenu: TStatusMenu; Virtual; Abstract;
     function  getContactClass: TRnQCntClass; Virtual; Abstract;
     function  getContact(const I: Integer): TRnQContact; OverLoad; Virtual;
     function  getContact(const UID: TUID): TRnQContact; OverLoad; Virtual; Abstract;
 //    function  ProtoName: String; Virtual; Abstract;
-    function  ProtoName: String; inline;
+    function  ProtoName: String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
     function  ProtoElem: TRnQProtocol; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
     procedure GetPrefs(pp: IRnQPref); Virtual;
     procedure SetPrefs(pp: IRnQPref); Virtual;
@@ -404,8 +414,8 @@ type
     function  getDefHost: Thostport; virtual;
 
     procedure disconnect; Virtual; Abstract;
-//    procedure setStatus(s:Tstatus; inv:boolean);
-//    function  getStatus:Tstatus;
+//    procedure setStatus(s: Tstatus; inv: boolean);
+//    function  getStatus: Tstatus;
     function  isOnline: boolean; Virtual; Abstract;
     function  isOffline: boolean; Virtual; Abstract;
     function  isReady: boolean;  Virtual; Abstract;    // we can send commands
@@ -442,7 +452,7 @@ type
 //    function  getContact(uid: TUID): TRnQContact;
     function  ContactExists(const UID: TUID): Boolean;
 
-    function  sendMsg(cnt: TRnQContact; var flags: dword; const msg:string; var requiredACK:boolean):integer; Virtual; Abstract; // returns handle
+    function  sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK: boolean): integer; Virtual; Abstract; // returns handle
     procedure UpdateGroupOf(cnt: TRnQContact); Virtual; Abstract;
 {$IFDEF usesDC}
     function getNewDirect: TProtoDirect; Virtual; Abstract;

@@ -2271,7 +2271,7 @@ begin
   if Assigned(Account.AccProto) then
     begin
       i := Account.AccProto.getVisibility;
-      sa := Account.AccProto.getVisibilitis;
+      sa := Account.AccProto.getVisibilities;
       if Assigned(sa) then
         begin
          if (i >= Low(sa)) and
@@ -2689,7 +2689,7 @@ if usertime mod 20=0 then
     end;
  {$IFDEF PROTOCOL_ICQ}
     {$IFDEF RNQ_AVATARS}
-    if assigned(reqAvatarsQ) and Account.AccProto.AvatarsSupport and Account.AccProto.isOnline and not reqAvatarsQ.empty then
+    if assigned(reqAvatarsQ) and TicqSession(Account.AccProto).AvatarsSupport and Account.AccProto.isOnline and not reqAvatarsQ.empty then
      begin
        cnt1 := reqAvatarsQ.getAt(0);
        if try_load_avatar(cnt1, TICQContact(cnt1).ICQIcon.hash,
@@ -3143,7 +3143,7 @@ procedure TRnQmain.Deleteofflinemessages1Click(Sender: TObject);
 begin
   Account.AccProto.DelOfflineMSGS;
  {$IFDEF PROTOCOL_ICQ}
-  Account.AccProto.offlineMsgsChecked := TRUE;
+  TicqSession(Account.AccProto).offlineMsgsChecked := TRUE;
  {$ENDIF PROTOCOL_ICQ}
 end;
 
@@ -3957,7 +3957,7 @@ begin
  {$IFDEF PROTOCOL_ICQ}
   {$IFDEF RNQ_AVATARS}
   if clickedContact <> nil then
-    TAction(Sender).visible := Account.AccProto.AvatarsSupport and //avt_icq.isOnline and
+    TAction(Sender).visible := TicqSession(Account.AccProto).AvatarsSupport and //avt_icq.isOnline and
          (clickedContact is TICQContact) and
          (length(TICQContact(clickedContact).ICQIcon.hash) = 16)
          and (TICQContact(clickedContact).ICQIcon.hash <> clickedContact.Icon.hash_safe);
@@ -4189,7 +4189,7 @@ begin // tag = 3005
   b := True;
   if Assigned(Account.AccProto) then
     begin
-     visArr := Account.AccProto.getVisibilitis;
+     visArr := Account.AccProto.getVisibilities;
      if Assigned(visArr) then
       begin
        b := False;
@@ -4216,7 +4216,7 @@ end;
 procedure TRnQmain.mAgetofflinemsgsUpdate(Sender: TObject);
 begin
  {$IFDEF PROTOCOL_ICQ}
-  TAction(Sender).visible := not Account.AccProto.offlineMsgsChecked and
+  TAction(Sender).visible := not TicqSession(Account.AccProto).offlineMsgsChecked and
            not getOfflineMsgs and not delOfflineMsgs;
  {$ENDIF PROTOCOL_ICQ}
 end;
@@ -4236,7 +4236,7 @@ procedure TRnQmain.mAdeleteofflinemsgsUpdate(Sender: TObject);
 begin
  {$IFDEF PROTOCOL_ICQ}
   if Assigned( Account.AccProto ) then
-    TAction(Sender).visible:=not Account.AccProto.offlineMsgsChecked and not delOfflineMsgs;
+    TAction(Sender).visible := not TicqSession(Account.AccProto).offlineMsgsChecked and not delOfflineMsgs;
  {$ENDIF PROTOCOL_ICQ}
 end;
 

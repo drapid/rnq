@@ -1000,7 +1000,7 @@ procedure refreshAvailableUsers;
       if s > '' then
        begin
         Result := True;
-        db:=str2db(protoClass._getContactClass, s);
+        db := str2db(protoClass._getContactClass, s);
         cnt := db.get(protoClass._getContactClass, uid);
         if Assigned(cnt) then
           nick := cnt.nick;
