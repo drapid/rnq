@@ -279,7 +279,8 @@ var
   c: TWIMcontact;
   b: Boolean;
   i: Integer;
-  sU, Temp: String;
+  sU: String;
+  rS: RawByteString;
   e, TempEv: Thevent;
   TempCh: TchatInfo;
   TempHist: Thistory;
@@ -298,7 +299,8 @@ begin
   if ev in [TWIMEvent(IE_msg), IE_url, IE_buzz, IE_contacts, IE_authReq, IE_addedyou,
       TWIMEvent(IE_incoming), TWIMEvent(IE_outgoing), IE_auth, IE_authDenied,
       IE_automsgreq, IE_statuschanged, IE_gcard, IE_ack,
-      IE_email, IE_webpager, IE_fromMirabilis, IE_TYPING, IE_ackXStatus, IE_XStatusReq, IE_MultiChat] then
+      IE_email, IE_webpager, IE_fromMirabilis, IE_TYPING, //IE_ackXStatus,
+      IE_XStatusReq, IE_MultiChat] then
   begin
     e := Thevent.new(EK_null, c, thisWIM.eventTime, '', thisWIM.eventFlags, thisWIM.eventMsgID, thisWIM.eventWID);
     e.otherpeer := c;
@@ -356,8 +358,8 @@ case ev of
          if kind = OE_MSG then
         	begin
          {$IFDEF CHECK_INVIS}
-//          c:=TWIMContact(contactsDB.get(TWIMContact, uid));
-          c:=TWIMContact(whom);
+//          c := TWIMContact(contactsDB.get(TWIMContact, uid));
+          c := TWIMContact(whom);
            if (not c.isOnline)
              or (c.invisibleState = 2) then
              if (c.invisibleState = 0) then
@@ -405,7 +407,7 @@ case ev of
         if kind = OE_MSG then
         	begin
          {$IFDEF CHECK_INVIS}
-//          c:=TWIMContact(contactsDB.get(uid));
+//          c := TWIMContact(contactsDB.get(uid));
           c := TWIMContact(whom);
           if (not c.isOnline)
              or (c.invisibleState = 2) then
@@ -656,9 +658,11 @@ case ev of
      end;
   IE_fileDenied: msgDlg('File transfer denied', True, mtWarning);
 //  IE_wpResult: if (wpFrm <> nil) then wpFrm.addResult(thisWIM.eventWP);
-  IE_serverSent: LoggaWIMPkt(thisWIM.eventNameA, WL_rcvd_text, thisWIM.eventData);
-  IE_serverGot: LoggaWIMPkt(thisWIM.eventNameA, WL_sent_text, thisWIM.eventData);
-  IE_connecting:
+  IE_serverSent: LoggaWIMPkt(thisWIM.eventNameA, WL_rcvd_text, thisWIM.eventMsgA);
+  IE_serverSentU:  LoggaWIMPkt(thisWIM.eventNameA, WL_rcvd_text8, UTF8Encode(thisWIM.eventString));
+  IE_serverGot: LoggaWIMPkt(thisWIM.eventNameA, WL_sent_text, thisWIM.eventMsgA);
+  IE_serverGotU: LoggaWIMPkt(thisWIM.eventNameA, WL_sent_text8, UTF8Encode(thisWIM.eventString));
+    IE_connecting:
     begin
      LoggaWIMPkt('', WL_connecting, thisWIM.eventAddress);
      DisableSounds := False;
@@ -682,7 +686,7 @@ case ev of
       else
     begin
       plugins.castEv(PE_VISIBILITY_CHANGED, '');
-      rosterRepaintDelayed:=TRUE;
+      rosterRepaintDelayed := TRUE;
      end;
   IE_error:
     if thisWIM.eventError = EC_Login_Seq_Failed then
@@ -691,6 +695,8 @@ case ev of
       msgDlg(getTranslation(ICQError2Str[thisWIM.eventError], [thisWIM.eventMsgA]), False, mtError)
     end else if thisWIM.eventError = EC_MalformedMsg then
       msgDlg(getTranslation(ICQError2Str[thisWIM.eventError], [thisWIM.eventMsgA]), False, mtError)
+    else if thisWIM.eventError = EC_FailedDecrypt then
+      msgDlg(GetTranslation(icqerror2str[thisWIM.eventError], [thisWIM.eventMsgA]), False, mtError)
     else if thisWIM.eventError = EC_AddContact_Error then
     begin
       DlgType := mtError;
@@ -749,6 +755,7 @@ case ev of
          end
         else if thisWIM.eventError = EC_other then
         begin
+          var Temp: String;
           case TICQAuthError(thisWIM.eventInt) of
             EAC_Not_Enough_Data: Temp := 'Failed to get all the data required for starting a new session';
             EAC_Unknown: Temp := 'Unknown error';
@@ -756,8 +763,10 @@ case ev of
             EAC_Invalid_Request: Temp := 'Invalid request';
             EAC_Auth_Required: Temp := 'Authorization required';
             EAC_Req_Timeout: Temp := 'Request timeout';
+            EAC_Wrong_DevKey: Temp := 'Wrong DevId key';
             EAC_Missing_Param: Temp := 'Missing required parameter';
             EAC_Param_Error: Temp := 'Parameter error';
+            EAC_Rate_Limit: Temp := 'Request was rate limited';
           end;
           Temp := GetTranslation(Temp);
           if not (thisWIM.eventMsgA = '') then
@@ -836,7 +845,7 @@ case ev of
         redraw(c);
      end;
   {$ENDIF RNQ_AVATARS}
-  IE_ackXStatus:
+(*  IE_ackXStatus:
     begin
       c.xStatusStr := excludeTrailingCRLF(UnUTF(thisWIM.eventMsgA));
       c.xStatusDesc := excludeTrailingCRLF(unUTF(thisWIM.eventData));
@@ -858,6 +867,7 @@ case ev of
       updateViewInfo(c);
 
     end;
+*)
   IE_XStatusReq:
     if not isAbort(plugins.castEv( PE_XSTATUS_REQ_GOT, cuid)) then
     begin
@@ -1091,33 +1101,37 @@ case ev of
        if (ev = IE_MultiChat) and (thisWIM.eventAddress > '') then
          e.who := thisWIM.getWIMContact(thisWIM.eventAddress);
 
-       if thisWIM.eventEncoding = TEncoding.BigEndianUnicode then
+{       if thisWIM.eventEncoding = TEncoding.BigEndianUnicode then
        begin
          Temp := WideBEToStr(thisWIM.eventMsgA);
          vS := plugins.castEv(PE_MSG_GOT, cuid, e.flags, e.when, Temp);
        end else if thisWIM.eventEncoding = TEncoding.UTF8 then
+}
        begin
-         Temp := UnUTF(thisWIM.eventMsgA);
-         vS := plugins.castEv(PE_MSG_GOT, cuid, e.flags, e.when, Temp);
+//         Temp := UnUTF(thisWIM.eventMsgA);
+         rS := UTF8Encode(thisWIM.eventString);
+         vS := plugins.castEv(PE_MSG_GOT, cuid, e.flags, e.when, rS);
+{
        end else
        begin
         Temp := thisWIM.eventData;
         vS := plugins.castEv(PE_MSG_GOT, cuid, e.flags, e.when, thisWIM.eventData);
+}
        end;
 
        if not isAbort(vS) then
        begin
          if (vS > '') and (ord(vS[1]) = PM_DATA) then
          begin
-         Temp := _istring_at(vS, 2);
+           rS := _istring_at(vS, 2);
            e.flags := e.flags and not IF_CODEPAGE_MASK; // Clear Encodings flags
            e.flags := e.flags and not IF_Bin; // Clear bin flag
          end;
 
         if e.flags and IF_CODEPAGE_MASK = 0 then
-         if IsUTF8String(thisWIM.eventMsgA) then
+         if IsUTF8String(rS) then
           e.flags := e.flags or IF_UTF8_TEXT;
-        e.ParseMsgStr(thisWIM.eventMsgA);
+        e.ParseMsgStr(rS);
         if behave(e, EK_msg) then
           NILifNIL(c);
 
@@ -1168,6 +1182,11 @@ case ev of
 //      TempCh := chatFrm.chats.byContact(c);
 //      if TempCh <> nil then
 //        TempCh.historyBox.ShowServerHistoryNotif;
+    end;
+  IE_UpdatePrefsFrm:
+    begin
+//      if Assigned(PrefSheetFrm) then
+//        PrefSheetFrm.Reset;
     end;
   end;
  if thisWIM.eventFlags and IF_offline > 0 then

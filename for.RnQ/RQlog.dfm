@@ -19,17 +19,18 @@ object logFrm: TlogFrm
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 0
-    Top = 155
+    Top = 165
     Width = 602
     Height = 3
     Cursor = crVSplit
     Align = alBottom
+    ExplicitTop = 155
   end
   object dumpBox: TMemo
     Left = 0
-    Top = 158
+    Top = 168
     Width = 602
-    Height = 183
+    Height = 173
     Align = alBottom
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText

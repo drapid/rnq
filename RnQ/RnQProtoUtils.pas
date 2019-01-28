@@ -14,16 +14,21 @@ type
   TwhatLog = (WL_connected, WL_disconnected,
               WL_serverGot, WL_serverSent,
               WL_heSent, WL_meSent, WL_connecting,
-              WL_sent_text, WL_rcvd_text);
+              WL_sent_text, WL_rcvd_text,
+              WL_sent_text8, WL_rcvd_text8 // Data in UTF8
+            );
 
 const
   LogWhatNames: array [TwhatLog] of string=('CONNECTED', 'DISCONNECTED',
                                             'CLIENT', 'SERVER', 'DC RCVD', 'DC SENT',
-                                            'CONNECTING', 'CLIENT', 'SERVER');
+                                            'CONNECTING', 'CLIENT', 'SERVER',
+                                            'CLIENT', 'SERVER');
   LogPics: array[TwhatLog] of TPicName = (PIC_CONNECTING, PIC_OFFGOING,
             PIC_LEFT, PIC_RIGHT,
             PIC_RIGHT, PIC_LEFT, PIC_CONNECTING,
-            PIC_LEFT, PIC_RIGHT );
+            PIC_LEFT, PIC_RIGHT,
+            PIC_LEFT, PIC_RIGHT
+             );
 
 
 procedure logProtoPkt(what: TwhatLog; const head: String; const data: RawByteString='');
@@ -45,7 +50,7 @@ var
   sU: String;
   needHash: Boolean;
 begin
-  needHash := not (what in [WL_sent_text, WL_rcvd_text]);
+  needHash := not (what in [WL_sent_text, WL_rcvd_text, WL_sent_text8, WL_rcvd_text8]);
   if needHash then
     begin
       sA := data;
@@ -54,7 +59,10 @@ begin
    else
     begin
       sA := '';
-      sU := String(data);
+      if what in [WL_sent_text8, WL_rcvd_text8] then
+        sU := UTF8Decode(data)
+       else
+        sU := String(data);
     end;
 
   if (logpref.pkts.onwindow) then

@@ -550,7 +550,7 @@ with TWIMContact(contact) do
     clientBox.text:=getTranslation(Str_unk);
   if contact.fProto.isMyAcc(contact) then
    begin
-    protoBox.text:='ver.'+intToStr(My_proto_ver);
+//    protoBox.text:='ver.'+intToStr(My_proto_ver);
 //    loginMailEdt.Text := Attached_login_email;
    end
   else

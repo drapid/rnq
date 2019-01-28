@@ -217,6 +217,9 @@ function zCompressStr(const sa: RawByteString; Level: TCompressionLevel = clMax;
 function ZDecompressStr(const sa: RawByteString): RawByteString;
 function ZDecompressStr3(const sa: RawByteString; StreamType: TZStreamType = zsZLib): RawByteString;
 
+function ZCompressBytes(const sa: TBytes; StreamType: TZStreamType = zsZLib): TBytes;
+function ZDecompressBytes(const sa: TBytes): TBytes;
+
 implementation
   uses
 //     zlibEx,
@@ -1070,7 +1073,7 @@ var
 //  Cont_Size: Integer;
  {$ENDIF ZIP_AES}
 begin
-  Result := -1;
+//  Result := -1;
   SetLength(Files, High(Files) + 2);
   SetLength(CentralDirectory, length(Files));
   h := High(Files);
@@ -1427,6 +1430,49 @@ function ZDecompressStr3(const sa: RawByteString; StreamType: TZStreamType = zsZ
 begin
   Result := ZDecompressStr(sa);
 end;
+
+function ZCompressBytes(const sa: TBytes; StreamType: TZStreamType = zsZLib): TBytes;
+var
+  Buf, DestBuf: TMemoryStream;
+begin
+  if Length(sa) = 0 then
+  begin
+    SetLength(Result, 0);
+    Exit;
+  end;
+  Buf := TMemoryStream.Create;
+  DestBuf := TMemoryStream.Create;
+  Buf.WriteBuffer(sa[0], Length(sa));
+  Buf.Position := 0;
+  ZlibCompressStreamEx(Buf, DestBuf, OverbyteIcsZLibHigh.clMax, StreamType, False);
+  Buf.Free;
+  SetLength(Result, DestBuf.Size);
+  DestBuf.Position := 0;
+  DestBuf.Read(Result[0], DestBuf.Size);
+  DestBuf.Free;
+end;
+
+function ZDecompressBytes(const sa: TBytes): TBytes;
+var
+  Buf, DestBuf: TMemoryStream;
+begin
+  if Length(sa) = 0 then
+  begin
+    SetLength(Result, 0);
+    Exit;
+  end;
+  Buf := TMemoryStream.create;
+  DestBuf := TMemoryStream.create;
+  Buf.WriteBuffer(sa[0], Length(sa));
+  Buf.Position := 0;
+  ZlibDecompressStream(Buf, DestBuf);
+  Buf.free;
+  SetLength(Result, DestBuf.Size);
+  DestBuf.Position := 0;
+  CopyMemory(@Result[0], DestBuf.Memory, DestBuf.Size);
+  DestBuf.free;
+end;
+
 
 end.
 

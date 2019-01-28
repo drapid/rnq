@@ -1,6 +1,6 @@
 // Freepascal
 {$ifdef FPC}
-  {$MODE DELPHI}
+  {$MODE DELPHIUNICODE}
   {$define D7UP}
 {$endif FPC}
 
@@ -48,7 +48,6 @@
  {$DEFINE Use_Baloons}
 
 {$IFNDEF FPC}
-
   {$DEFINE USE_ZIP}
    { $DEFINE USE_7Z}
   {$DEFINE USE_RAR}
@@ -63,9 +62,9 @@
  // { $DEFINE EUREKALOG}
 // { $DEFINE EUREKALOG_VER5}
 
- {$I Include\OverbyteIcsDefs.inc}
 
 {$IFNDEF FPC}
+  {$I Include\OverbyteIcsDefs.inc}
 
   { $IFDEF DELPHI9_UP}
    {$INLINE AUTO}

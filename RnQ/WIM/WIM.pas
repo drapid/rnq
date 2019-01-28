@@ -162,6 +162,8 @@ type
 
     IE_serverSent,
     IE_serverGot,
+    IE_serverSentU,
+    IE_serverGotU,
 
     IE_creatingUIN,
     IE_newUin,
@@ -181,7 +183,7 @@ type
     IE_msgError,
     IE_Missed_MSG,
     IE_sendingXStatus,
-    IE_ackXStatus,
+//    IE_ackXStatus,
     IE_XStatusReq,
 
     IE_fileReq,
@@ -200,7 +202,8 @@ type
     IE_srvSomeInfo,
     IE_MultiChat,
 
-    IE_serverHistoryReady
+    IE_serverHistoryReady,
+    IE_UpdatePrefsFrm
   );
 
   TwimPhase = (
@@ -208,7 +211,7 @@ type
     connecting_,         // trying to reach the login server
     login_,              // performing login on login server
     reconnecting_,       // trying to reach the service server
-    relogin_,               // performing login on service server
+    relogin_,            // performing login on service server
     settingup_,          // setting up things
     online_
   );
@@ -273,18 +276,14 @@ type
     CurStatus: TWIMStatus;
     fVisibility: TVisibility;
 
-//    Q: TflapQueue;
-//    FLAPseq: Word;
     SNACref: TmsgID;
     cookie: RawByteString;
     waitingNewPwd: RawByteString;
-    fSSLServer: String;
-    fOscarProxyServer: String;
     refs: array [1..maxRefs] of record
       kind: TrefKind;
       uid: TUID;
     end;
-    SSIacks: TSSIacks;
+//    SSIacks: TSSIacks;
     lastMsgIds: TStringList;
 //    SSI_InServerTransaction: Boolean;
     SSI_InServerTransaction: Integer;
@@ -349,7 +348,7 @@ type
     eventMsgA: RawByteString;
     eventAddress: String;
     eventNameA: AnsiString;
-    eventData: String;
+    eventString: String;
     eventBinData: RawByteString;
 //    eventBinData: TBytes;
 //    eventFilename: String;
@@ -360,7 +359,7 @@ type
     eventMsgID: TmsgID;
     eventStream: TMemoryStream;
     eventWID: RawByteString;
-    eventEncoding: TEncoding;
+//    eventEncoding: TEncoding;
 
 //    acceptKey: String;
 //    ConnectSSL: Boolean;
@@ -422,32 +421,40 @@ type
     procedure GetPrefs(pp: IRnQPref); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure SetPrefs(pp: IRnQPref); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure Clear; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function RequestPasswordIfNeeded(DoConnect: Boolean = True): Boolean;
     procedure Connect;
     procedure Disconnect;
-//    procedure SetStatus(st: Byte; vi: Byte); override; final;
+    procedure SetStatusAndVis(st: Byte; vi: Byte);
     procedure SetStatus(st: Byte); override; final;
     function getPwd: String; override; final;
     procedure setPwd(const value: String); override; final;
     function MakeParams(const Method, BaseURL: String; const Params: TDictionary<String, String>; Sign: Boolean = True): String;
+    procedure OpenICQURL(URL: String);
     function ClientLogin: Boolean;
     function StartSession: Boolean;
+    function PingSession: Boolean;
+    procedure AfterSessionStarted;
     procedure ResetSession;
     procedure EndSession(EndToken: Boolean = False);
+    procedure PollError(const ExtraError: String = '');
     procedure StartPolling;
     procedure RestartPolling(Delay: Integer = 1);
     procedure AbortPolling(Sender: TObject);
     procedure PollURL(const URL: String);
     procedure PollRequestDone(Sender: TObject; RqType: THttpRequest; ErrCode: Word);
+    procedure ProcessContactList(const CL: TJSONArray);
     function ProcessContact(const Buddy: TJSONObject; GroupToAddTo: Integer = -1): TWIMContact;
     procedure ProcessNewStatus(var Cnt: TWIMContact; NewStatus: TWIMStatus; CheckInvis: Boolean = False; XStatusStrChanged: Boolean = False; NoNotify: Boolean = False);
-    procedure ProcessContactList(const CL: TJSONArray);
+    procedure ProcessUsersAndGroups(const JSON: TJSONObject);
     procedure ProcessDialogState(const Dlg: TJSONObject; IsOfflineMsg: Boolean = False);
-    procedure ProcessIMData(const Data: TJSONObject);
+//    procedure ProcessIMData(const Data: TJSONObject);
     procedure ProcessIMState(const Data: TJSONObject);
     procedure ProcessTyping(const Data: TJSONObject);
+    procedure ProcessAddedYou(const Data: TJSONObject);
+    procedure ProcessPermitDeny(const Data: TJSONObject);
     procedure InitWebRTC;
-    procedure checkServerHistory(uid: TUID);
-    procedure getServerHistory(uid: TUID);
+    procedure checkServerHistory(const uid: TUID);
+    procedure getServerHistory(const uid: TUID);
     function RequiresLogin: Boolean;
     function RESTAvailable: Boolean;
     function getSession(updateIfReq: Boolean = True): TSessionParams;
@@ -499,8 +506,8 @@ type
     function CreateNewGUID: String;
 
   public // ICQ Only
-    property SSLserver: String read fSSLServer;
-    property ProxyServer: String read fOscarProxyServer;
+//    property SSLserver: String read fSSLServer;
+//    property ProxyServer: String read fOscarProxyServer;
     property getProtoType: TWIMSessionSubType read protoType;
     property WebAware: Boolean read P_webaware write SetWebAware;
     property AuthNeeded: Boolean read P_authNeeded write SetAuthNeeded;
@@ -529,32 +536,35 @@ type
     function SendSticker(const Cnt: TWIMContact; const sticker: String): Integer;
     procedure SendPrivacy(Details: Word; ShareWeb: Boolean; AuthReq: Boolean); deprecated;
     procedure SendContacts(Cnt: TRnQContact; flags: DWord; cl: TRnQCList); deprecated;
-    procedure SendQueryInfo(uid: TUID); deprecated;
+    procedure SendQueryInfo(const uid: TUID); deprecated;
 //    procedure SendAddedYou(const uin: TUID);
     procedure SendStatusCode(SendVis: Boolean = True); deprecated;
+    function GetMyCaps: RawByteString;
 
-    function SendAutoMsgReq(const uin: TUID): Integer;
+    function SendAutoMsgReq(const uin: TUID): Integer; deprecated;
 
     procedure add2visible(cl: TRnQCList; OnlyLocal: Boolean = False); overload;
     procedure add2invisible(cl: TRnQCList; OnlyLocal: Boolean = False); overload;
 
-    procedure GetProfile(uid: TUID);
-    procedure GetContactInfo(uid: TUID; IncludeField: String);
+    procedure GetProfile(const UID: TUID);
+    procedure GetContactInfo(const UID: TUID; const IncludeField: String);
+    procedure GetContactAttrs(const UID: TUID);
     procedure GetCL;
     procedure FindContact;
     procedure ValidateSid;
-    procedure GetExpressions;
+    procedure GetExpressions(const uid: TUID);
+    procedure GetAllCaps;
     procedure Test;
     function SendSessionRequest(IsPOST: Boolean; const BaseURL: String; Query: String;
-                                const Header: AnsiString = ''; const ErrMsg: String = ''; ErrProc: TErrorProc = nil): Boolean; overload;
+                                const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean; overload;
     function SendSessionRequest(IsPOST: Boolean; const BaseURL: String; Query: String; Ret: TReturnData;
-                                var JSON: TJSONObject; const Header: AnsiString = ''; const ErrMsg: String = ''; ErrProc: TErrorProc = nil): Boolean; overload;
+                                var JSON: TJSONObject; const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean; overload;
     function SendRequest(IsPOST: Boolean; const BaseURL, Query: String;
-                         const Header: AnsiString = ''; const ErrMsg: String = ''; ErrProc: TErrorProc = nil): Boolean; overload;
+                         const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean; overload;
     function SendRequest(IsPOST: Boolean; const BaseURL, Query: String; Ret: TReturnData;
-                         var JSON: TJSONObject; const Header: AnsiString = ''; const ErrMsg: String = ''; ErrProc: TErrorProc = nil): Boolean; overload;
-    procedure SendMessageAsync(const BaseURL, Query: String);
-    function SendStatusAndVis: Boolean;
+                         var JSON: TJSONObject; const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean; overload;
+    procedure SendRequestAsync(const BaseURL, Query: String; const Header: AnsiString = '');
+    function SendPresenceState: Boolean;
     procedure SendStatusStr(const st: Byte; const StText: String = '');
 
   protected
@@ -572,8 +582,11 @@ type
 
     procedure sendACK(cont: TWIMContact; status: Integer; const msg: String; DownCnt: Word = $FFFF);
 
-    procedure sendMyXStatus(cont: TWIMContact; msgID: Int64);
   private
+    procedure GetPermitDeny;
+    procedure SetPermitDenyMode(const Mode: String);
+    procedure AddToBlock(const c: String);
+    procedure RemFromBlock(const c: String);
     function Add2Visible(c: TWIMContact): Boolean; overload;
     function Add2Ignore(c: TWIMContact): Boolean; //overload;
     function RemFromIgnore(c: TWIMContact): Boolean;
@@ -590,19 +603,20 @@ type
 
     procedure parseGCdata(const snac: RawByteString; offline: Boolean = False);
     procedure GoneOffline; // called going offline
-    procedure OnProxyError(Sender: TObject; Error: Integer; Msg: String);
+    procedure OnProxyError(Sender: TObject; Error: Integer; const Msg: String);
     procedure parsePagerString(s: RawByteString);
 
     function dontBotherStatus: boolean;
     function myUINle: RawByteString;
 
   public // All
+    function CreateDataPayload(Caps: TArray<String>; const Data: TBytes = nil; Compressed: Integer = -1; CRC: Cardinal = 0; Len: Integer = 0): String;
     function SendMsgOrSticker(Cnt: TRnQContact; var Flags: dword; const Msg: String; MsgType: TMsgType; var RequiredACK: Boolean): Integer; // returns handle
     function SendMsg(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): Integer; override; final; // returns handle
     function SendSticker2(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): Integer;
     function SendBuzz(Cnt: TRnQContact): Boolean;
     procedure SetListener(l: TProtoNotify); override; final;
-    procedure AuthGrant(c: TWIMContact); deprecated;
+    procedure AuthGrant(c: TWIMContact; Grant: Boolean = True); deprecated;
     procedure AuthRequest(c: TWIMContact; Reason: String); deprecated;
 
     function AddRef(k: TRefKind; const uin: TUID): Integer;
@@ -620,8 +634,8 @@ type
     procedure ApplyBalloon;
     property Statuses: TStatusArray read GetStatuses;
     property MyInfo: TRnQContact read getMyInfo;
-    procedure SendSMS(Dest, Msg: String; Ack: Boolean);
-    procedure SendSMS2(Dest, Msg: String; Ack: Boolean);
+    procedure SendSMS(const Dest, Msg: String; Ack: Boolean);
+    procedure SendSMS2(const Dest, Msg: String; Ack: Boolean);
   end; // TWIMSession
 
   TWIMProtoClass = class of TWIMSession;
@@ -670,7 +684,7 @@ uses
   RnQStrings, outboxLib,
   Protocol_WIM, NetEncoding,
   viewWIMinfodlg,
-  ICQ.Stickers;//, outboxLib;
+  ICQ.Stickers;
 
 var
   lastSendedFlap: TDateTime;
@@ -787,19 +801,6 @@ begin
   list.modTime := 0;
 end;
 
-function code2status(code: dword): TWIMStatus;
-begin
-  code := code and ($FFFF-8-flag_invisible);
-  case code of
-    $10: begin result := SC_OCCUPIED; exit end;
-    4: begin result := SC_NA; exit end;
-   end;
-  for result:=low(result) to high(result) do
-    if status2code[result] = code then
-      exit;
-  result := SC_ONLINE;
-end; // code2status
-
 function sameMethods(a, b: TWIMNotify): boolean;
 begin result := double((@a)^) = double((@b)^) end;
 
@@ -817,24 +818,6 @@ while i > 0 do
   dec(i);
   end;
 end; // encrypted
-
-{
-function str2url(const s: string): string;
-var
-  i: integer;
-  ss: string;
-begin
-  result := '';
-for i:=1 to length(s) do
-  begin
-  case s[i] of
-    ' ':ss:='%20';
-    'A'..'Z','a'..'z','0'..'9':ss:=s[i];
-    else ss:='%'+intToHex(ord(s[i]),2);
-    end;
-  result := result+ss;
-  end;
-end; // str2url}
 
 function str2url(const s: AnsiString): AnsiString;
 var
@@ -879,19 +862,6 @@ begin
   end;
 end; // str2html
 
-{
-function str2html2(const s: string): string;
-begin
-  result := template(s, [
-    '<', '&lt;',
-    '>', '&gt;'
-//    CRLF, '<br/>',
-//    #13, '<br/>',
-//    #10, '<br/>',
-//    '&', '&amp;'
-  ]);
-end; // str2html
-}
 function str2html2(const s: AnsiString): AnsiString;
 begin
   result := template(s, [
@@ -1009,23 +979,10 @@ begin
   end;
 end;
 
-class function TWIMSession._RegisterUser(var pUID : TUID; var pPWD : String) : Boolean;
+class function TWIMSession._RegisterUser(var pUID: TUID; var pPWD: String): Boolean;
 begin
-{$IFDEF USE_REGUIN}
-  newaccountFrm := TnewaccountFrm.create(NIL);
-  translateWindow(newaccountFrm);
-  if newaccountFrm.showModal = mrOk then
-    begin
-      Result := True;
-      pUID := ...
-//      pUID :=
-    end;
-//  ForceForegroundWindow(handle);
-  freeAndNIL(newaccountFrm);
-{$ELSE}
   Result := False;
   openURL('https://icq.com/join/');
-{$ENDIF USE_REGUIN}
 end;
 
 class function TWIMSession._CreateProto(const uid: TUID): TRnQProtocol;
@@ -1092,7 +1049,7 @@ begin
     tempVisibleList := TRnQCList.create;
     spamList := TRnQCList.Create;
 
-    SSIacks := TSSIacks.Create;
+//    SSIacks := TSSIacks.Create;
     savingmyinfo.running := False;
     fECCKeys.generated := ecc_make_key(fECCKeys.pubEccKey, fECCKeys.pk);
 
@@ -1186,13 +1143,6 @@ begin
   pp.addPrefStr('avatar-my', str2hexU(myAvatarHash));
  {$IFDEF CHECK_INVIS}
   pp.addPrefBool('support-invis-check', supportInvisCheck);
-//  pp.addPrefBool('check-invisibility-every', CheckInvis.AutoCheck);
-//  pp.addPrefInt('check-invisibility-interval', CheckInvis.AutoCheckInterval);
-//  pp.addPrefInt('check-invis-interval', Round(CheckInvis.ChkInvisInterval*10));
-//  pp.addPrefBool('check-invisibility-on-send', CheckInvis.AutoCheckOnSend);
-//  pp.addPrefBool('check-invisibility-on-offl', CheckInvis.AutoCheckGoOfflineUsers);
-//  pp.addPrefInt('check-invisibility-method', CheckInvis.Method);
-//  pp.addPrefBool('show-checked-offlines', showCheckedInvOfl);
  {$ENDIF}
   pp.addPrefBool('show-invis-status', showInvisSts);
   pp.addPrefBool('use-lsi', False);
@@ -1219,12 +1169,7 @@ begin
     pp.addPrefBool('show-client-id', ShowClientID);
     pp.addPrefInt('xstatus', self.curXStatus);
     pp.addPrefInt('icq-showinfo', self.showInfo);
-//      +'proxy='+yesno[ICQ.proxy.enabled]+CRLF
-//      +'proxy='+yesno[false]+CRLF // for old R&Q
       ;
-      //for pp:=low(pp) to high(pp) do result:=result
-      //  +'proxy-'+proxyproto2str[pp]+'-host='+proxy.addr[pp].host+CRLF
-      //  +'proxy-'+proxyproto2str[pp]+'-port='+proxy.addr[pp].port+CRLF;
   if not (RnQstartingStatus in [Low(status2Img)..High(status2Img)]) then
     pp.addPrefStr('starting-status', 'last_used')
    else
@@ -1325,20 +1270,13 @@ begin
   pp.getPrefBool('add-to-vislist-before-msg', addTempVisMsg);
  {$IFDEF CHECK_INVIS}
   pp.getPrefBool('support-invis-check', supportInvisCheck);
-//  pp.getPrefBool('check-invisibility-every', CheckInvis.AutoCheck);
-//  pp.getPrefInt('check-invisibility-interval', CheckInvis.AutoCheckInterval);
-//  CheckInvis.ChkInvisInterval := pp.getPrefIntDef('check-invis-interval', trunc(CheckInvis.ChkInvisInterval * 10)) / 10;
-//  pp.getPrefBool('check-invisibility-on-send', CheckInvis.AutoCheckOnSend);
-//  pp.getPrefBool('check-invisibility-on-offl', CheckInvis.AutoCheckGoOfflineUsers);
-//  CheckInvis.Method := pp.getPrefIntDef('check-invisibility-method', CheckInvis.Method);
-//  pp.getPrefBool('show-checked-offlines', showCheckedInvOfl);
  {$ENDIF}
   pp.getPrefBool('save-token', SaveToken);
   if pp.prefExists('crypted-password64') then
     l := passDecrypt(pp.getPrefBlob64Def('crypted-password64'))
    else
     l := passDecrypt(pp.getPrefBlobDef('crypted-password'));
-    pwd := UnUTF(l);
+  pwd := UnUTF(l);
   l := '';
   pp.getPrefBool('typing-notify-flag', SupportTypingNotif);
   pp.getPrefBool('show-typing', isSendTypingNotif);
@@ -1364,11 +1302,11 @@ begin
 
   l := pp.getPrefBlobDef('starting-status');
     if l='last_used' then
-      RnQstartingStatus:=-1
+      RnQstartingStatus := -1
      else
-      RnQstartingStatus:= str2status(l);
+      RnQstartingStatus := str2status(l);
   l := pp.getPrefBlobDef('starting-visibility');
-    RnQStartingVisibility:= Byte(str2visibility(l));
+    RnQStartingVisibility := Byte(str2visibility(l));
 
   l := pp.getPrefBlobDef('last-set-status');
     lastStatusUserSet := str2status(l);
@@ -1385,10 +1323,10 @@ begin
 
   ApplyBalloon();
 
-  fSSLServer := pp.getPrefStrDef('oscar-ssl-server',
-                             ICQ_SECURE_LOGIN_SERVER0);
-  fOscarProxyServer := pp.getPrefStrDef('oscar-proxy-server',
-                             AOL_FILE_TRANSFER_SERVER0);
+//  fSSLServer := pp.getPrefStrDef('oscar-ssl-server',
+//                             ICQ_SECURE_LOGIN_SERVER0);
+//  fOscarProxyServer := pp.getPrefStrDef('oscar-proxy-server',
+//                             AOL_FILE_TRANSFER_SERVER0);
 end;
 
 
@@ -1415,7 +1353,7 @@ begin
   fInvisibleList.free;
   tempvisibleList.free;
   spamList.Free;
-  SSIacks.Free;
+//  SSIacks.Free;
   FreeAndNil(pollStream);
   timeout.Enabled := False;
   FreeAndNil(timeout);
@@ -1445,7 +1383,7 @@ end;
 
 function TWIMSession.canAddCntOutOfGroup: Boolean;
 begin
-   result := false;
+  result := false;
 end;
 
 function TWIMSession.pwdEqual(const pass: String): Boolean;
@@ -1545,7 +1483,7 @@ begin
   Result := phase in [settingup_, online_]
 end;
 
-function TWIMSession.isSSCL:boolean;
+function TWIMSession.isSSCL: boolean;
 begin
   Result :=
        True;
@@ -1583,16 +1521,16 @@ begin
 end; // SendStatusCode
 
 function TWIMSession.SendSessionRequest(IsPOST: Boolean; const BaseURL: String; Query: String; const Header: AnsiString = '';
-                                        const ErrMsg: String = ''; ErrProc: TErrorProc = nil): Boolean;
+                                        const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean;
 begin
   if fSession.aimsid = '' then
     Exit(False);
-  Query := 'f=json&aimsid=' + fSession.aimsid + '&' + Query;
+  Query := 'f=json&aimsid=' + fSession.aimsid + '&r=' + CreateNewGUID + Query;
   Result := SendRequest(IsPOST, BaseURL, Query, Header, ErrMsg, ErrProc);
 end;
 
 function TWIMSession.SendSessionRequest(IsPOST: Boolean; const BaseURL: String; Query: String; Ret: TReturnData;
-                                        var JSON: TJSONObject; const Header: AnsiString = ''; const ErrMsg: String = ''; ErrProc: TErrorProc = nil): Boolean;
+                                        var JSON: TJSONObject; const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean;
 begin
   if fSession.aimsid = '' then
     Exit(False);
@@ -1601,7 +1539,7 @@ begin
 end;
 
 function TWIMSession.SendRequest(IsPOST: Boolean; const BaseURL, Query: String; const Header: AnsiString = '';
-                                 const ErrMsg: String = ''; ErrProc: TErrorProc = nil): Boolean;
+                                 const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean;
 var
   JSON: TJSONObject;
 begin
@@ -1610,10 +1548,10 @@ begin
 end;
 
 function TWIMSession.SendRequest(IsPOST: Boolean; const BaseURL, Query: String; Ret: TReturnData; var JSON: TJSONObject;
-                                 const Header: AnsiString = ''; const ErrMsg: String = ''; ErrProc: TErrorProc = nil): Boolean;
+                                 const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean;
 var
   Prefix: String;
-  RespStr: RawByteString;
+  RespStrR: RawByteString;
   Resp: TPair<Integer, String>;
   TmpJSON: TJSONValue;
 begin
@@ -1621,17 +1559,18 @@ begin
 
   Prefix := IfThen(IsPOST, '[POST] ', '[GET] ');
   eventNameA := Prefix + Header;
-  eventData := BaseURL + '?' + Query;
-  notifyListeners(IE_serverGot);
+  eventString := BaseURL + '?' + Query;
+  notifyListeners(IE_serverGotU);
   if IsPOST then
-    LoadFromURLAsString(BaseURL, RespStr, Query)
+    LoadFromURLAsString(BaseURL, RespStrR, Query)
   else
-    LoadFromURLAsString(BaseURL + '?' + Query, RespStr);
+    LoadFromURLAsString(BaseURL + '?' + Query, RespStrR);
+
   eventNameA := Prefix + Header;
-  eventData := RespStr;
+  eventMsgA := RespStrR;
   notifyListeners(IE_serverSent);
 
-  TmpJSON := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RespStr), 0);
+  TmpJSON := TJSONObject.ParseJSONValue(UTF8String(RespStrR));
   if not Assigned(TmpJSON) then
     Exit;
   if TmpJSON is TJSONObject then
@@ -1653,15 +1592,14 @@ begin
   end;
 end;
 
-procedure TWIMSession.SendMessageAsync(const BaseURL, Query: String);
+procedure TWIMSession.SendRequestAsync(const BaseURL, Query: String; const Header: AnsiString = '');
 var
-  Prefix, Header: String;
+  Prefix: String;
 begin
-  Header := 'Send message';
   Prefix := '[POST] ';
   eventNameA := Prefix + Header;
-  eventData := BaseURL + '?' + Query;
-  notifyListeners(IE_serverGot);
+  eventString := BaseURL + '?' + Query;
+  notifyListeners(IE_serverGotU);
 
   TTask.Create(procedure
   var
@@ -1671,21 +1609,23 @@ begin
     TThread.Synchronize(nil, procedure
     begin
       eventNameA := Prefix + Header;
-      eventData := RespStr;
+      eventMsgA := RespStr;
       notifyListeners(IE_serverSent);
     end);
   end).Start;
 end;
 
-function TWIMSession.SendStatusAndVis: Boolean;
+function TWIMSession.SendPresenceState: Boolean;
 var
   Query: UTF8String;
   BaseURL: String;
 begin
   Result := False;
   BaseURL := WIM_HOST + 'presence/setState';
-  Query := '&view=' + status2Img[Byte(curStatus)] +
-           '&invisible=' + IfThen(fVisibility = VI_invisible, 'true', 'false');
+  Query := '&view=' + IfThen(Visibility = VI_invisible, 'invisible', status2Img[Byte(curStatus)]) +
+           '&invisible=' + IfThen(Visibility = VI_invisible, '1', '0') +
+           '&assertCaps=' + GetMyCaps;
+           //IfThen(curStatus = SC_AWAY, '&away=Seeya', ''); // Not really useful, only you receive your awayMsg :)
   if SendSessionRequest(False, BaseURL, Query, 'Set status and visibility', 'Failed to set status') then
   begin
     // Not needed, same info as in myInfo in fetched event
@@ -1726,6 +1666,7 @@ begin
   SaveCfgDelayed := True;
 
   if IsReady then
+  if not (Visibility = VI_invisible) then // Do not change msg if invisible, it generates "offline" presence event
   begin
     BaseURL := WIM_HOST + 'presence/setStatus';
     Query := '&statusMsg=' + ParamEncode(curXStatusStr.Desc);
@@ -1737,10 +1678,10 @@ begin
   end;
 end; // SendWebStatusStr
 
-//procedure TWIMSession.setStatusStr(s : String; Pic : String = '');
-procedure TWIMSession.setStatusStr(xSt : byte; stStr : TXStatStr);
+//procedure TWIMSession.setStatusStr(s: String; Pic: String = '');
+procedure TWIMSession.setStatusStr(xSt: byte; stStr: TXStatStr);
 var
-  s : String;
+  s: String;
 begin
   eventContact := NIL;
   if not (xSt in [Low(XStatusArray)..High(XStatusArray)]) then
@@ -1882,14 +1823,13 @@ const
   AESBLKSIZE = SizeOf(TAESBlock);
 var
   c: TWIMContact;
-  Msg2, Msg2Enc: String;
-  Key: array [0..31] of byte;
+  Msg2, Msg2Enc, CrptMsg: TBytes;
+  ReadyMsg: String;
+  Key: TSHA256Digest;
   Ctx: TAESECB;
-  CrptMsg: RawByteString;
   i, Len, Len2, Compressed, Encrypted: Integer;
   crc: Cardinal;
   ShouldEncrypt, IsBin, IsSticker: Boolean;
-
   Params: TDictionary<String, String>;
   BaseURL: String;
 begin
@@ -1904,13 +1844,13 @@ begin
 
 //  if not imVisibleTo(c) then
 //    if addTempVisMsg then
-//      addTemporaryVisible(c); // Needs new proto implementation
+//      AddTemporaryVisible(c); // TODO: New proto implementation
 
   IsSticker := MsgType = MSG_STICKER;
   if c.SendTransl and not isBin and not IsSticker then
-    Msg2 := Translit(msg)
+    ReadyMsg := Translit(Msg)
   else
-    Msg2 := msg;
+    ReadyMsg := Msg;
 
   Encrypted := 0;
   RequiredACK := True;
@@ -1918,30 +1858,13 @@ begin
   ShouldEncrypt := (UseCryptMsg and (c.Crypt.supportCryptMsg or (fECCKeys.generated and UseEccCryptMsg and c.crypt.supportEcc))) and not isBin;
   if ShouldEncrypt and not IsSticker then
   begin
+    Msg2 := TEncoding.UTF8.GetBytes(ReadyMsg);
     Len := Length(Msg2);
-    crc := (ZipCrc32($FFFFFFFF, @Msg2[1], Len) XOR $FFFFFFFF);
+    CRC := ZipCrc32($FFFFFFFF, @Msg2[0], Len) XOR $FFFFFFFF;
     Compressed := 0;
-    Msg2Enc := ZCompressStr(Msg2);
-{
-    buf := TMemoryStream.create;
-    destBuf := TMemoryStream.create;
-    buf.Write(Msg2Send[1], Len);
-    buf.Position := 0;
-    ZlibCompressStreamEx(buf, destBuf, clMax, zsZLib, false);
-    buf.free;
-//    Msg2Send :=  ZCompressStrEx(msg, clMax);
-//    if Length(Msg2Send) < Len then
-    i := destBuf.Size;
-    if i+4 < Len then
-    begin
-      setLength(Msg2Send, i+4);
-      move(i, Msg2Send[1], 4);
-      destBuf.Position := 0;
-      destBuf.Read(Msg2Send[5], i);
-      CompressType := 1;
-    end;
-    destBuf.free;
-}
+    Msg2Enc := ZCompressBytes(Msg2);
+
+    if Assigned(Msg2Enc) then
     if Length(Msg2Enc) < Len then
     begin
       Msg2 := Msg2Enc;
@@ -1949,27 +1872,37 @@ begin
       Compressed := 1;
     end;
 
-    CalcKey(fECCKeys.generated and UseEccCryptMsg and c.Crypt.SupportEcc, c.Crypt.EccMsgKey, MyAccount, c.UID2cmp, SNACref, Len, TSHA256Digest(Key));
-    Ctx := TAESECB.Create(key[0], 256);
+    CalcKey(fECCKeys.Generated and UseEccCryptMsg and c.Crypt.SupportEcc, c.Crypt.EccMsgKey, MyAccount, c.UID2cmp, 0, Len, Key);
 
     i := Len mod AESBLKSIZE;
     if (i > 0) then
     begin
       Len2 := Len + AESBLKSIZE - i;
       SetLength(Msg2, Len2);
-      FillChar(Msg2[Len + 1], AESBLKSIZE - i, 0);
+      FillChar(Msg2[Len], AESBLKSIZE - i, 0);
     end else
       Len2 := Len;
 
     SetLength(CrptMsg, Len2);
-    Ctx.Encrypt(@Msg2[1], @CrptMsg[1], Len2);
+    Ctx := TAESECB.Create(key[0], 256);
+    Ctx.Encrypt(@Msg2[0], @CrptMsg[0], Len2);
     Ctx.Free;
-    Msg2 := Base64EncodeString(CrptMsg);
+    SetLength(Msg2, 0);
+    Base64EncodeBytes(CrptMsg, Msg2);
     if fECCKeys.generated and UseEccCryptMsg and c.crypt.supportEcc then
       Encrypted := 2
     else
       Encrypted := 1;
     flags := flags or IF_Encrypt;
+
+    if Encrypted = 2 then
+      ReadyMsg := CreateDataPayload([
+        String2Hex('RDEC0' + Copy(c.Crypt.EccPubKey, 1, 11)),
+        String2Hex('RDEC1' + Copy(c.Crypt.EccPubKey, 12, 11)),
+        String2Hex('RDEC2' + Copy(c.Crypt.EccPubKey, 23, 11))
+      ], Msg2, Compressed, CRC, Len)
+    else if Encrypted = 1 then
+      ReadyMsg := CreateDataPayload([String2Hex(BigCapability[CAPS_big_CryptMsg].v)], Msg2, Compressed, CRC, Len);
   end else
   if UseCryptMsg and (CAPS_big_QIP_Secure in c.capabilitiesBig) and (c.Crypt.qippwd > 0) and not isBin then
   begin  // QIP crypt message
@@ -1982,44 +1915,23 @@ begin
 *)
   end;
 
-  if Encrypted > 0 then
-  begin
-    msgDlg('Encrypted messages are not yet supported', True, mtInformation);
-    Encrypted := 0;
-  end;
-
   Result := addRef(REF_msg, c.UID2Cmp);
 
-  if Encrypted > 0 then
-  begin
-    // TODO: Send dataIM request with encrypted payload
-  end
-    else
-  begin
-    Params := TDictionary<String, String>.Create;
-    Params.Add('f', 'json');
-    Params.Add('aimsid', fSession.aimsid);
-    Params.Add('t', c.UID2cmp);
-    Params.Add('r', IntToStr(Result));
-    // parts[quotes], mentions
-    Params.Add(IfThen(IsSticker, 'stickerId', 'message'), Msg2);
-    // (is_sms)
-    // 'displaySMSSegmentData':  'true'
-    // else
-    Params.Add('offlineIM', '1');
-    Params.Add('notifyDelivery', 'true');
-    BaseURL := WIM_HOST + IfThen(IsSticker, 'im/sendSticker', 'im/sendIM');
-    SendMessageAsync(BaseURL, MakeParams('POST', BaseURL, Params, False));
-
-//    json := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RespStr), 0) as TJSONObject;
-//    if not Assigned(json) then
-//      Exit;
-
-//    Resp := CheckResponseData(json);
-//    if not (Resp.Key = 200) then
-//      Exit;
-    Params.Free;
-  end;
+  Params := TDictionary<String, String>.Create;
+  Params.Add('f', 'json');
+  Params.Add('aimsid', fSession.aimsid);
+  Params.Add('t', c.UID2cmp);
+  Params.Add('r', IntToStr(Result));
+  // parts[quotes], mentions
+  Params.Add(IfThen(IsSticker, 'stickerId', 'message'), ReadyMsg);
+  // (is_sms)
+  // 'displaySMSSegmentData':  'true'
+  // else
+  Params.Add('offlineIM', '1');
+  Params.Add('notifyDelivery', 'true');
+  BaseURL := WIM_HOST + IfThen(IsSticker, 'im/sendSticker', 'im/sendIM');
+  SendRequestAsync(BaseURL, MakeParams('POST', BaseURL, Params, False), 'Send ' + IfThen(IsSticker, 'sticker', 'message'));
+  Params.Free;
 end; // SendMsg
 
 function TWIMSession.SendSticker(const Cnt: TWIMContact; const sticker: String): Integer;
@@ -2032,9 +1944,41 @@ begin
     Result := SendMsgOrSticker(Cnt, f, sticker, MSG_STICKER, ack);
 end;
 
+function TWIMSession.CreateDataPayload(Caps: TArray<String>; const Data: TBytes = nil; Compressed: Integer = -1; CRC: Cardinal = 0; Len: Integer = 0): String;
+var
+  JSON: TJSONObject;
+  CapsArr: TJSONArray;
+  Cap: String;
+begin
+  Result := TEncoding.UTF8.GetString(Data);
+  JSON := TJSONObject.Create;
+  try
+    CapsArr := TJSONArray.Create;
+    for Cap in Caps do
+    CapsArr.Add(Cap);
+
+    JSON.AddPair(TJSONPair.Create('type', 'RnQDataIM'));
+    JSON.AddPair(TJSONPair.Create('caps', CapsArr));
+    if Assigned(Data) then
+      JSON.AddPair(TJSONPair.Create('data', TEncoding.ANSI.GetString(Data)));
+    if not (Compressed = -1) then
+      JSON.AddPair(TJSONPair.Create('compressed', TJSONNumber.Create(Compressed)));
+    if not (CRC = 0) then
+      JSON.AddPair(TJSONPair.Create('crc', TJSONNumber.Create(CRC)));
+    if not (Len = 0) then
+      JSON.AddPair(TJSONPair.Create('length', TJSONNumber.Create(Len)));
+    Result := JSON.ToString;
+  finally
+    JSON.Free;
+  end;
+end;
+
 function TWIMSession.SendBuzz(Cnt: TRnQContact): Boolean;
 var
+  Params: TDictionary<String, String>;
+  Pair: TJSONPair;
   c: TWIMContact;
+  BaseURL: String;
 begin
   Result := False;
   if not IsReady or (SecondsBetween(Now, buzzedLastTime) < 15) then
@@ -2043,19 +1987,31 @@ begin
   BuzzedLastTime := Now;
   c := TWIMContact(Cnt);
 
-  // TODO: Send using BigCapability[CAPS_big_Buzz].v
-
-  Result := True;
+  Params := TDictionary<String, String>.Create;
+  try
+    Params.Add('f', 'json');
+    Params.Add('aimsid', fSession.aimsid);
+    Params.Add('t', c.UID2Cmp);
+    Params.Add('r', IntToStr(AddRef(REF_msg, c.UID2Cmp)));
+    Params.Add('message', CreateDataPayload([String2Hex(BigCapability[CAPS_big_Buzz].v)]));
+    Params.Add('offlineIM', '1');
+    Params.Add('notifyDelivery', 'true');
+    BaseURL := WIM_HOST + 'im/sendIM';
+    SendRequestAsync(BaseURL, MakeParams('POST', BaseURL, Params, False), 'Send buzz');
+    Result := True;
+  finally
+    Params.Free;
+  end;
 end;
 
-function TWIMSession.SendAutoMsgReq(const uin:TUID):integer;
+function TWIMSession.SendAutoMsgReq(const uin: TUID): integer;
 var
   c: TWIMContact;
   msgType: Byte;
   s: TWIMStatus;
 begin
   Result := -1;
-  c := GeTWIMContact(uin);
+  c := GetWIMContact(uin);
   if c.status <> SC_ONLINE then
     s := c.status
   else
@@ -2072,22 +2028,7 @@ begin
   //sendMSGsnac(uin, AnsiChar(msgType) + AnsiChar(#3) + Z + WNTS(''));
   Result := addRef(REF_msg, uin);
 end; // sendAutoMsgReq
-{
-procedure TWIMSession.SendAddedYou(const uin: TUID);
-var
-  c: TWIMContact;
-begin
-  if not IsReady then
-    Exit;
 
-  c := GeTWIMContact(uin);
-  if not ImVisibleTo(c) then
-    if AddTempVisMsg then
-      AddTemporaryVisible(c);
-
-// Not in a new protocol
-end; // SendAddedYou
-}
 procedure TWIMSession.SendContacts(Cnt: TRnQContact; flags: DWord; cl: TRnQCList);
 var
   s: RawByteString;
@@ -2104,11 +2045,9 @@ begin
   s := IntToStr(TList(cl).count)+#$FE;
   for c in cl do
     s := s + UTF(c.UID2cmp) +#$FE + UTF(c.nick) + #$FE;
-
-
 end; // SendContacts
 
-procedure TWIMSession.SendQueryInfo(uid: TUID);
+procedure TWIMSession.SendQueryInfo(const uid: TUID);
 var
   wpS: TWpSearch;
   c: TWIMContact;
@@ -2116,7 +2055,7 @@ begin
   if not IsReady then
     Exit;
 
-  c := GeTWIMContact(uid);
+  c := GetWIMContact(uid);
   if not Assigned(c) then
     Exit;
 OutputDebugString(PChar('SendQueryInfo'));
@@ -2136,7 +2075,7 @@ begin
 end; // sendQueryInfo}
 
 
-procedure TWIMSession.GetProfile(uid: TUID);
+procedure TWIMSession.GetProfile(const uid: TUID);
 var
   JSON: TJSONObject;
   Query: UTF8String;
@@ -2149,24 +2088,46 @@ begin
 
   BaseURL := WIM_HOST + 'presence/get';
   Query := '&mdir=1' +
-           '&t=' + String(uid);
-  Query := Query + '&' + String.Join('=1&', SupportedPresenceFields) + '=1';
+           '&t=' + ParamEncode(String(UID)) +
+           AllFieldsAsQuery;
   if SendSessionRequest(False, BaseURL, Query, RT_JSON, JSON, 'Contact info') then
   try
-    groups := JSON.GetValue('groups');
-    if Assigned(groups) and (groups is TJSONArray) then
-      ProcessContactList(groups as TJSONArray);
+    ProcessUsersAndGroups(JSON);
+  finally
+    JSON.Free;
+  end;
 
-    users := JSON.GetValue('users') as TJSONArray;
-    if Assigned(users) then
-    for user in users do
-      ProcessContact(TJSONObject(user));
+  GetContactAttrs(UID);
+end;
+
+procedure TWIMSession.GetContactAttrs(const UID: TUID);
+var
+  c: TWIMContact;
+  JSON: TJSONObject;
+  Query: UTF8String;
+  BaseURL: String;
+begin
+  BaseURL := WIM_HOST + 'buddylist/getBuddyAttribute';
+  Query := '&buddy=' + ParamEncode(String(UID));
+  if SendSessionRequest(False, BaseURL, Query, RT_JSON, JSON, 'Get contact [' + String(UID) + '] attributes') then
+  try
+    c := GetWIMContact(UID);
+    if Assigned(c) then
+    begin
+      GetSafeJSONValue(JSON, 'note', c.ssImportant);
+      GetSafeJSONValue(JSON, 'smsNumber', c.ssCell);
+      GetSafeJSONValue(JSON, 'workNumber', c.ssCell2);
+      GetSafeJSONValue(JSON, 'homeNumber', c.ssCell3);
+//      GetSafeJSONValue(JSON, 'otherNumber', c.ssCell4);
+//      GetSafeJSONValue(JSON, 'friendly', Tmp)
+      c.ssMail := '';
+    end;
   finally
     JSON.Free;
   end;
 end;
 
-procedure TWIMSession.GetContactInfo(uid: TUID; IncludeField: String);
+procedure TWIMSession.GetContactInfo(const uid: TUID; const IncludeField: String);
 var
   JSON: TJSONObject;
   Query: UTF8String;
@@ -2178,14 +2139,11 @@ begin
     Exit;
 
   BaseURL := WIM_HOST + 'presence/get';
-  Query := '&mdir=0&' + IncludeField + '=1' + // No profile, but still all other fields are there
-           '&t=' + String(uid);
-  if SendSessionRequest(False, BaseURL, Query, RT_JSON, JSON, 'Contact ' + IncludeField) then
+  Query := '&mdir=0&t=' + ParamEncode(String(UID)) +
+           '&' + IncludeField + '=1'; // No profile, but still some other fields are there
+  if SendSessionRequest(False, BaseURL, Query, RT_JSON, JSON, 'Get contact [' + String(UID) + '] info [' + IncludeField + ']') then
   try
-    users := JSON.GetValue('users') as TJSONArray;
-    if Assigned(users) then
-    for user in users do
-      ProcessContact(TJSONObject(user));
+    ProcessUsersAndGroups(JSON);
   finally
     JSON.Free;
   end;
@@ -2200,10 +2158,13 @@ begin
   if not IsReady then
     Exit;
 
+//  BaseURL := WIM_HOST + 'buddylist/get';
+//  Query := '&includeBuddies=0'; // groups+users or groups only
+
   BaseURL := WIM_HOST + 'presence/get';
   Query := '&mdir=1' +
-           '&bl=1';
-  Query := Query + '&' + String.Join('=1&', SupportedPresenceFields) + '=1';
+           '&bl=1' +
+           AllFieldsAsQuery;
   if SendSessionRequest(False, BaseURL, Query, RT_JSON, JSON, 'Get CL', 'Failed to get CL') then
   try
     ProcessContactList(JSON.GetValue('groups') as TJSONArray);
@@ -2226,12 +2187,7 @@ begin
   if SendSessionRequest(False, BaseURL, Query, 'Find contact') then
 {
   try
-    users := json.GetValue('users') as TJSONArray;
-    if Assigned(users) then
-    for user in users do
-      ProcessContaсt(TJSONObject(user));
-
-    ProcessContactList(json.GetValue('groups') as TJSONArray);
+    ProcessUsersAndGroups(JSON);
   finally
     JSON.Free;
   end;
@@ -2250,29 +2206,63 @@ begin
   SendSessionRequest(False, BaseURL, '', 'Validate AimSid');
 end;
 
-procedure TWIMSession.GetExpressions; // Avatars only?
+procedure TWIMSession.GetExpressions(const uid: TUID); // Avatars only?
 var
   Query: UTF8String;
   BaseURL: String;
 begin
   BaseURL := WIM_HOST + 'expressions/get2'; // expressions/get
   Query := 'f=json' +
-           '&t=' + String('230490');
+           '&t=' + ParamEncode(String(uid));
   SendRequest(False, BaseURL, Query, 'Get expressions');
 end;
 
+procedure TWIMSession.GetAllCaps;
+var
+  JSON: TJSONObject;
+  Query: UTF8String;
+  BaseURL: String;
+  Cnt: TRnQContact;
+  user: TJSONValue;
+  users: TJSONArray;
+begin
+  if not IsReady then
+    Exit;
+
+  BaseURL := WIM_HOST + 'presence/get';
+  Query := '&capabilities=1';
+  if fRoster.Count > 0 then
+    for Cnt in fRoster do
+      if not (TWIMContact(cnt).Status in [SC_OFFLINE, SC_UNK]) then
+        Query := Query + '&t=' + String(Cnt.UID2cmp);
+  if SendSessionRequest(True, BaseURL, Query, RT_JSON, JSON, 'Get caps for all online contacts') then
+  try
+    ProcessUsersAndGroups(JSON);
+  finally
+    JSON.Free;
+  end;
+end;
 
 procedure TWIMSession.Test;
 var
   Query: UTF8String;
   BaseURL: String;
+//  Params: TDictionary<String, String>;
 begin
-  BaseURL := WIM_HOST + 'buddylist/getBuddyAttribute';
-  Query := '&buddy=' + String('230490');
-  if SendSessionRequest(False, BaseURL, Query, 'Get contact attributes') then
+  BaseURL := WIM_HOST + 'aim/getSMSInfo';
+  Query := '&phone=911';
+  SendSessionRequest(True, BaseURL, Query, 'Test');
+
+//  Params := TDictionary<String, String>.Create();
+//  Params.Add('f', 'json');
+//  Params.Add('k', fDevId);
+//  Params.Add('a', fAuthToken);
+//  Params.Add('ts', IntToStr(DateTimeToUnix(Now, False) - fHostOffset));
+//  SendSessionRequest(False, BaseURL, MakeParams('GET', BaseURL, Params), 'Test', '');
+//  Params.Free;
 end;
 
-procedure TWIMSession.SendSMS(Dest, Msg: String; Ack: Boolean);
+procedure TWIMSession.SendSMS(const Dest, Msg: String; Ack: Boolean);
 begin
   if not IsReady then
      Exit;
@@ -2280,21 +2270,21 @@ begin
   // TODO?
 end; // sendSMS
 
-procedure TWIMSession.sendSMS2(dest, msg: String; ack: Boolean);
+procedure TWIMSession.sendSMS2(const dest, msg: String; ack: Boolean);
 var
   req: RawByteString;
 begin
   if not IsReady then
     Exit;
 
-  msg := '<HTML><BODY dir="ltr"><FONT face="Arial" color="#000000" size="2">' + msg + '</FONT></BODY></HTML>';
-  msg := StrToUnicode(msg);
+//  msg := '<HTML><BODY dir="ltr"><FONT face="Arial" color="#000000" size="2">' + msg + '</FONT></BODY></HTML>';
+//  msg := StrToUnicode(msg);
 
-  OutputDebugString(PChar(hexdumps(msg)));
+//  ODS(hexdumps(msg));
 
   req := qword_LEasStr(SNACref) + word_BEasStr(MTYPE_PLAIN)
     + Length_B(dest)
-    + TLV(CLI_META_MSG_DATA,
+{    + TLV(CLI_META_MSG_DATA,
       AnsiChar(CLI_META_REQ_CAPS_BYTE)
       + AnsiChar(CLI_META_FRAG_VERSION_BYTE)
       + Length_BE(#$01) // no caps
@@ -2303,10 +2293,10 @@ begin
       + Length_BE(word_BEasStr(CLI_META_MSG_CHARSET) + word_BEasStr(CLI_META_MSG_LANGUAGE) + msg))
     + TLV(CLI_META_STORE_IF_OFFLINE, '')
     + TLV(CLI_META_MSG_OWNER, '230490')
-    + TLV(CLI_META_MSG_UNK, #$00#$00#$00#$01);
+    + TLV(CLI_META_MSG_UNK, #$00#$00#$00#$01)};
 
-  if ack then
-    req := req + TLV(CLI_META_MSG_ACK, '');
+//  if ack then
+//    req := req + TLV(CLI_META_MSG_ACK, '');
 
   // TODO??
 
@@ -2452,6 +2442,7 @@ begin
     MTYPE_PLAIN:
       begin
         eventMsgA := msg;
+        eventString := UnUTF(msg);
         notifyListeners(IE_msg);
       end;
     MTYPE_URL:
@@ -2600,25 +2591,16 @@ begin
 end; // parsePagerString
 
 
- {$IFDEF USE_REGUIN}
-procedure TWIMSession.parseNewUIN(const snac: RawByteString);
-begin
-  if Length(snac) > 50 then
-   begin
-    eventContact:= GeTWIMContact(dword_LEat(@snac[47]));
-    notifyListeners(IE_newUIN);
-   end;
-end; // parseNewUIN
- {$ENDIF USE_REGUIN}
 
-procedure TWIMSession.OnProxyError(Sender : TObject; Error : Integer; Msg : String);
+
+procedure TWIMSession.OnProxyError(Sender : TObject; Error : Integer; const Msg : String);
 begin
 // if not isAva then
 
  if error <> 0 then
   begin
     GoneOffline;
-//    eventInt:=WSocket_WSAGetLastError;
+//    eventInt := WSocket_WSAGetLastError;
 //    if eventInt=0 then
      eventInt:=error;
     eventMsgA := msg;
@@ -2628,6 +2610,53 @@ begin
   end;
 end;
 
+
+function TWIMSession.GetMyCaps: RawByteString;
+var
+  s: RawByteString;
+begin
+  Result := String2Hex(CAPS_sm2big(CAPS_sm_UniqueID));
+  Result := Result + ',' + String2Hex(CAPS_sm2big(CAPS_sm_Emoji));
+  Result := Result + ',' + String2Hex(CAPS_sm2big(CAPS_sm_MailNotify));
+//  Result := Result + ',' + String2Hex(CAPS_sm2big(CAPS_sm_IntroDlgStates)); // intro/tail messages
+  Result := Result + ',' + String2Hex(CAPS_sm2big(CAPS_sm_UTF8));
+  Result := Result + ',' + Str2Hex(BigCapability[CAPS_big_Buzz].v);
+
+  if ShowClientID then
+    Result := Result + ',' + Str2Hex(BigCapability[CAPS_big_Build].v);
+  if SupportTypingNotif then
+    Result := Result + ',' + String2Hex(BigCapability[CAPS_big_MTN].v);
+  if AvatarsSupport then
+    Result := Result + ',' + String2Hex(CAPS_sm2big(CAPS_sm_Avatar));
+
+  // What are thoooooose?!
+  //Result := Result + ',' + '094613584C7F11D18222444553540000';
+  //Result := Result + ',' + '0946135C4C7F11D18222444553540000';
+  //Result := Result + ',' + '0946135E4C7F11D18222444553540000';
+
+  if fECCKeys.Generated then
+  begin
+    SetLength(s, 11);
+    CopyMemory(@s[1], @fECCKeys.pubEccKey[0], Length(s));
+    Result := Result + ',' + String2Hex('RDEC0' + s);
+    CopyMemory(@s[1], @fECCKeys.pubEccKey[11], Length(s));
+    Result := Result + ',' + String2Hex('RDEC1' + s);
+    CopyMemory(@s[1], @fECCKeys.pubEccKey[22], Length(s));
+    Result := Result + ',' + String2Hex('RDEC2' + s);
+  end;
+
+  if UseCryptMsg then
+  begin
+    Result := Result + ',' + String2Hex(BigCapability[CAPS_big_CryptMsg].v);
+//    Result := Result + ',' + String2Hex(BigCapability[CAPS_big_QIP_Secure].v); // QIP protect message
+  end;
+
+//  if (curXStatus > 0) and not (XStatusArray[curXStatus].pidOld = '') then
+//    Result := Result + ',' + String2Hex(XStatusArray[curXStatus].pidOld);
+
+  if AddExtCliCaps and (Length(ExtClientCaps) = 16) then
+    Result := Result + ',' + String2Hex(ExtClientCaps);
+end;
 
 function TWIMSession.RemoveContact(c: TWIMContact): Boolean;
 var
@@ -2711,7 +2740,7 @@ begin
   begin
     CurStatus := TWIMStatus(st);
 //    Visibility := TVisibility(vi);
-    if SendStatusAndVis then
+    if SendPresenceState then
     begin
       eventContact := nil;
       if not (eventOldStatus = CurStatus) then
@@ -2723,6 +2752,46 @@ begin
   end else
     Connect;
 end; // SetStatus
+
+procedure TWIMSession.SetStatusAndVis(st: Byte; vi: Byte);
+begin
+  if st = Byte(SC_OFFLINE) then
+  begin
+    Disconnect;
+    Exit;
+  end;
+
+  if (st = Byte(CurStatus)) and (vi = Byte(Visibility)) then
+    Exit;
+
+  if not (st = Byte(CurStatus)) then
+  begin
+    eventOldStatus := CurStatus;
+    StartingStatus := TWIMStatus(st);
+  end;
+
+  if not (vi = Byte(Visibility)) then
+  begin
+    eventOldInvisible := IsInvisible;
+    StartingVisibility := TVisibility(vi);
+  end;
+
+  if IsReady then
+  begin
+    CurStatus := TWIMStatus(st);
+    Visibility := TVisibility(vi);
+    if SendPresenceState then
+    begin
+      eventContact := nil;
+      if not (eventOldStatus = CurStatus) then
+        notifyListeners(IE_statuschanged);
+      if not (eventOldInvisible = IsInvisible) then
+        notifyListeners(IE_visibilityChanged);
+    end; // else restore status and vis?
+    SendStatusStr(CurXStatus, ExtStsStrings[CurXStatus].Desc);
+  end else
+    Connect;
+end;
 
 function TWIMSession.GetStatus: Byte;
 begin
@@ -2752,7 +2821,7 @@ begin
       result := getTranslation(status2ShowStr[curStatus])
 end;
 
-function TWIMSession.getStatusImg : TPicName;
+function TWIMSession.getStatusImg: TPicName;
 begin
   if False{XStatusAsMain} and (curXStatus > 0) then
     Result := XStatusArray[curXStatus].PicName
@@ -2798,6 +2867,7 @@ end;
 begin
   result := 0;
 end;}
+
 class function TWIMSession._GetProtoName: string;
 begin
   result := 'WIM';
@@ -2938,24 +3008,24 @@ end; // AddContact
 
 function TWIMSession.ReadList(l: TLIST_TYPES): TRnQCList;
 begin
- case l of
-   LT_ROSTER:    result := fRoster;
-   LT_VISIBLE:   result := fVisibleList;
-   LT_INVISIBLE: result := fInvisibleList;
-   LT_TEMPVIS:   result := tempvisibleList;
-   LT_SPAM:      result := spamList;
-  else
-   Result := NIL;
- end;
+  case l of
+    LT_ROSTER:    result := fRoster;
+    LT_VISIBLE:   result := fVisibleList;
+    LT_INVISIBLE: result := fInvisibleList;
+    LT_TEMPVIS:   result := tempvisibleList;
+    LT_SPAM:      result := spamList;
+   else
+    Result := NIL;
+  end;
 end;
 
 procedure TWIMSession.AddToList(l: TLIST_TYPES; cl: TRnQCList);
 begin
- case l of
-   LT_ROSTER:    AddContactsToCL(cl);
-   LT_VISIBLE:   add2visible(cl);
-   LT_INVISIBLE: add2invisible(cl);
-   LT_TEMPVIS:   addTemporaryVisible(cl);
+  case l of
+    LT_ROSTER:    AddContactsToCL(cl);
+    LT_VISIBLE:   add2visible(cl);
+    LT_INVISIBLE: add2invisible(cl);
+    LT_TEMPVIS:   addTemporaryVisible(cl);
 //   LT_SPAM:      ;
 //  else
 //   Result := NIL;
@@ -3047,17 +3117,95 @@ cl.free;
 end; // add2visible
 
 function TWIMSession.add2ignore(c: TWIMContact): boolean;
+var
+  Query: UTF8String;
+  BaseURL: String;
 begin
-  Result := True;
+  Result := False;
   if IsReady then
-    //SSI_AddVisItem(c.UID, FEEDBAG_CLASS_ID_IGNORE_LIST)
+  begin
+    BaseURL := WIM_HOST + 'preference/setPermitDeny';
+    Query := '&pdIgnore=' + ParamEncode(String(c.UID2Cmp));
+    Result := SendSessionRequest(False, BaseURL, Query, 'setPermitDeny');
+  end;
 end;
 
 function TWIMSession.remFromIgnore(c: TWIMContact): boolean;
+var
+  Query: UTF8String;
+  BaseURL: String;
 begin
-  Result := True;
+  Result := False;
   if IsReady then
-    //SSI_DelVisItem(c.UID, FEEDBAG_CLASS_ID_IGNORE_LIST)
+  begin
+    BaseURL := WIM_HOST + 'preference/setPermitDeny';
+    Query := '&pdIgnoreRemove=' + ParamEncode(String(c.UID2Cmp));
+    Result := SendSessionRequest(False, BaseURL, Query, 'setPermitDeny');
+  end;
+end;
+
+procedure TWIMSession.GetPermitDeny;
+var
+  JSON: TJSONObject;
+  Query: UTF8String;
+  BaseURL: String;
+begin
+  if not IsReady then
+    Exit;
+
+  BaseURL := WIM_HOST + 'preference/getPermitDeny';
+  Query := '';
+  if SendSessionRequest(False, BaseURL, Query, RT_JSON, JSON, 'Get permit/deny lists') then
+  try
+    ProcessPermitDeny(JSON);
+  finally
+    JSON.Free;
+  end;
+end;
+
+procedure TWIMSession.SetPermitDenyMode(const Mode: String);
+var
+  JSON: TJSONObject;
+  Query: UTF8String;
+  BaseURL: String;
+begin
+  if not IsReady then
+    Exit;
+
+  BaseURL := WIM_HOST + 'preference/setPermitDeny';
+  Query := '&pdMode=' + Mode;
+  if SendSessionRequest(False, BaseURL, Query, RT_JSON, JSON, 'Set permit/deny mode') then
+  try
+    //ProcessPermitDeny(JSON);
+  finally
+    JSON.Free;
+  end;
+end;
+
+procedure TWIMSession.AddToBlock(const c: String); // Unused
+var
+  Query: UTF8String;
+  BaseURL: String;
+begin
+  if not IsReady then
+    Exit;
+
+  BaseURL := WIM_HOST + 'preference/setPermitDeny';
+  Query := '&pdBlock=' + ParamEncode(c);
+  SendSessionRequest(False, BaseURL, Query, 'Add contact to block list');
+end;
+
+procedure TWIMSession.RemFromBlock(const c: String); // Unused
+var
+  Query: UTF8String;
+  BaseURL: String;
+begin
+  if IsReady then
+  begin
+    BaseURL := WIM_HOST + 'preference/setPermitDeny';
+    Query := '&pdBlockRemove=' + ParamEncode(c);
+    SendSessionRequest(False, BaseURL, Query, 'Remove contact from block list');
+  end;
 end;
 
 function TWIMSession.RemoveFromVisible(c:TWIMContact):boolean;
@@ -3074,11 +3222,12 @@ begin
   end;
 end; // removeFromVisible
 
-procedure TWIMSession.removeFromVisible(const cl:TRnQCList);
+procedure TWIMSession.removeFromVisible(const cl: TRnQCList);
 var
-  cl1 : TRnQCList;
+  cl1: TRnQCList;
 begin
-  if cl=NIL then exit;
+  if cl=NIL then
+    exit;
   removeTemporaryVisible(cl);
     begin
       cl1 := cl.clone.intersect(fVisibleList);
@@ -3088,13 +3237,13 @@ begin
    not cl1.empty then
     begin
     //sendRemoveVisible(cl1);
-    eventContact:=NIL;
+    eventContact := NIL;
     notifyListeners(IE_visibilityChanged);
     end;
   cl1.free;
 end; // removeFromVisible
 
-function TWIMSession.add2invisible(c:TWIMContact):boolean;
+function TWIMSession.add2invisible(c: TWIMContact): boolean;
 begin
   Result := False;
   if c = nil then
@@ -3109,10 +3258,12 @@ begin
   end;
 end; // add2invisible
 
-procedure TWIMSession.add2invisible(cl:TRnQCList; OnlyLocal : Boolean = false);
+procedure TWIMSession.add2invisible(cl: TRnQCList; OnlyLocal: Boolean = false);
 begin
-  if cl=NIL then exit;
-  if TList(cl).count = 0 then exit;
+  if cl=NIL then
+    exit;
+  if TList(cl).count = 0 then
+    exit;
   removeTemporaryVisible(cl);
   cl:= cl.clone.remove(fInvisibleList);
   removeFromVisible(cl);
@@ -3121,13 +3272,13 @@ begin
   begin
       fInVisibleList.add(cl);
     //sendAddInvisible(cl);
-    eventContact:=NIL;
+    eventContact := NIL;
     notifyListeners(IE_visibilityChanged);
   end;
-cl.free;
+  cl.free;
 end; // add2invisible
 
-function TWIMSession.RemoveFromInvisible(c:TWIMContact):boolean;
+function TWIMSession.RemoveFromInvisible(c: TWIMContact): boolean;
 begin
   Result := False;
   if c = nil then
@@ -3138,11 +3289,12 @@ begin
     //SSI_DelVisItem(c.UID, FEEDBAG_CLASS_ID_DENY);
 end; // RemoveFromInvisible
 
-procedure TWIMSession.removeFromInvisible(const cl:TRnQCList);
+procedure TWIMSession.removeFromInvisible(const cl: TRnQCList);
 var
-  cl1 : TRnQCList;
+  cl1: TRnQCList;
 begin
-  if cl=NIL then exit;
+  if cl=NIL then
+    exit;
   removeTemporaryVisible(cl);
     begin
       cl1 := cl.clone.intersect(fInvisibleList);
@@ -3152,7 +3304,7 @@ if IsReady and
  not cl1.empty then
   begin
   //sendRemoveInvisible(cl1);
-  eventContact:=NIL;
+  eventContact := NIL;
   notifyListeners(IE_visibilityChanged);
   end;
  cl1.free;
@@ -3160,12 +3312,13 @@ end; // removeFromInvisible
 
 function TWIMSession.AddTemporaryVisible(c: TWIMContact): Boolean;
 begin
-  result:=FALSE;
-  if not IsReady then exit;
-  result:=TRUE;
+  result := FALSE;
+  if not IsReady then
+    exit;
+  result := TRUE;
   tempvisibleList.add(c);
 // TODO: Server side
-  eventContact:=c;
+  eventContact := c;
   notifyListeners(IE_visibilityChanged);
 end; // AddTemporaryVisible
 
@@ -3185,7 +3338,7 @@ begin
   cl.free;
 end; // AddTemporaryVisible
 
-function TWIMSession.RemoveTemporaryVisible(c:TWIMContact):boolean;
+function TWIMSession.RemoveTemporaryVisible(c: TWIMContact): boolean;
 begin
   Result := tempvisibleList.remove(c);
   if not Result or not IsReady then
@@ -3195,7 +3348,7 @@ begin
   notifyListeners(IE_visibilityChanged);
 end; // RemoveTemporaryVisible
 
-function TWIMSession.RemoveTemporaryVisible(cl:TRnQCList):boolean;
+function TWIMSession.RemoveTemporaryVisible(cl: TRnQCList): boolean;
 begin
   Result := True;
   cl:= cl.clone.intersect(tempVisibleList);
@@ -3214,7 +3367,7 @@ begin
   RemoveTemporaryVisible(tempVisibleList)
 end;
 
-function TWIMSession.useMsgType2for(c:TWIMContact):boolean;
+function TWIMSession.useMsgType2for(c: TWIMContact): boolean;
 begin
   Result := (not (c.status in [SC_OFFLINE, SC_UNK])) //and (not c.invisible)
              and (not c.icq2go)
@@ -3232,7 +3385,7 @@ begin
   // TODO? New proto can do this?
 end; // sendCreateUIN
 
-function TWIMSession.maxCharsFor(const c:TRnQcontact; isBin : Boolean = false):integer;
+function TWIMSession.maxCharsFor(const c: TRnQcontact; isBin: Boolean = false): integer;
 begin
 {  if not c.isOnline then
 //  Result := 450
@@ -3252,18 +3405,12 @@ begin
   end;
 end; // maxCharsFor
 
-function TWIMSession.imVisibleTo(c:TRnQcontact):boolean;
+function TWIMSession.imVisibleTo(c: TRnQcontact): boolean;
 begin
-     result:= //isOnline and
-      ((visibility = VI_all) or tempvisibleList.exists(c) or
-         ((visibility = VI_privacy) and (fVisibleList.exists(c)))
-      or
-        ((visibility = VI_normal) and (not fInvisibleList.exists(c)))
-      or
-        ((visibility = VI_CL) and (fRoster.exists(c)))// not c.CntIsLocal)
-//      or
-//        ((visibility = VI_invisible) and tempvisibleList.exists(c))
-       )
+  Result := ((Visibility = VI_all) or TempVisibleList.exists(c) or
+            ((Visibility = VI_privacy) and (fVisibleList.exists(c))) or
+            ((Visibility = VI_normal) and (not fInvisibleList.exists(c))) or
+            ((Visibility = VI_CL) and (fRoster.exists(c))));// not c.CntIsLocal))
 end; // imVisibleTo
 
 function TWIMSession.GetLocalIPStr: String;
@@ -3275,7 +3422,7 @@ begin
 //  end;
 end; // getLocalIPstr
 
-function TWIMSession.getLocalIP:integer;
+function TWIMSession.getLocalIP: integer;
 begin
   try
     Result := 0;
@@ -3366,66 +3513,6 @@ sendSNAC(ICQ_MSG_FAMILY, $B, copy(snac, 1, 11+ord(snac[11]))+#0#3 +s);
 
 end; // sendACK
 
-procedure TWIMSession.sendMyXStatus(cont : TWIMContact; msgID : Int64);
-//const
-//  ch = '11';
-var
-  sR: RawByteString;
-  title, msg : RawByteString;
-  s1 : RawByteString;
-//  ofs:integer;
-begin
-//ofs:=11;
-//eventContact := cont;
- if curXStatus = 0 then exit;
-
-//if (title ='') and (msg = '') then exit;
- if not imVisibleTo(cont) then exit;
-
-    eventInt := curXStatus;
-//    title := strToUtf8(getTranslation(ExtStsStrings[curXStatus].Cap));
-//    eventNameA := strToUtf8(ExtStsStrings[curXStatus].Cap);
-    eventNameA := '';
-    eventMsgA := UTF(curXStatusStr.Desc);
-//    msg := AnsiToUtf8( applyVars(cont, curXStatusDesc));
-
-//    msg := strToUtf8( getXStatusMsgFor(cont));
-    msg := '';
-    eventContact := cont;
-    notifyListeners(IE_sendingXStatus);
-
-//    title := eventNameA;
-    title := '';
-    msg   := eventMsgA;
-
- if (title ='') and (msg = '') then exit;
-
-  s1 := '<ret event=''OnRemoteNotification''><srv>' +
-         '<id>cAwaySrv</id><val srv_id=''cAwaySrv''>' +
-         '<Root><CASXtraSetAwayMessage></CASXtraSetAwayMessage>' +
-           '<uin>' + UTF(myAccount) +
-           '</uin><index>' + AnsiString(IntToStr(curXStatus)) + '</index>' +
-           '<title>' + title + '</title><desc>' + msg + '</desc>' +
-         '</Root>..</val></srv>' +
-         '<srv><id>cRandomizerSrv</id>' +
-           '<val srv_id=''cRandomizerSrv''>undefined</val>' +
-         '</srv></ret>'
- ;
-//  s := #0#2 +BUIN(cont.uid) + #00#03
-  sR := #0#2 + cont.buin + #00#03
-        + header2711_1+ AnsiChar(MTYPE_PLUGIN)+#00
-        +#00#00
-        +WNTS('')
-        + Length_LE(MsgCapabilities[1]
-           + #$08#$00
-           + Length_DLE(Plugin_Script)
-           + #$00#$00#$01 + z+z+z)
-        + Length_DLE(Length_DLE(
-         '<NR><RES>'+ str2html2(s1) +'</RES></NR>'+CRLF))
-    ;
-
-end; // sendACK10
-
 procedure TWIMSession.SetWebAware(value:boolean);
 begin
   P_webaware := value;
@@ -3436,7 +3523,7 @@ begin
   P_authNeeded := value;
 end; // setAuthNeeded
 
-function TWIMSession.IsInvisible : Boolean;
+function TWIMSession.IsInvisible: Boolean;
 begin
    case fVisibility of
     VI_invisible,
@@ -3449,7 +3536,7 @@ begin
    end;
 end;
 
-function TWIMSession.AddRef(k: TRefKind; const uin: TUID):integer;
+function TWIMSession.AddRef(k: TRefKind; const uin: TUID): integer;
 begin
   Result := SNACref;
   refs[SNACref].kind := k;
@@ -3460,7 +3547,9 @@ begin
 end; // addRef
 
 function TWIMSession.dontBotherStatus: boolean;
-begin result := getStatus in [byte(SC_occupied)] end;
+begin
+  result := getStatus in [byte(SC_occupied)]
+end;
 
 function TWIMSession.serverPort: word;
 begin
@@ -3472,17 +3561,25 @@ begin
   Result := serverPort;
 end; // serverStart
 
+function TWIMSession.RequestPasswordIfNeeded(DoConnect: Boolean = True): Boolean;
+begin
+  Result := False;
+  if RequiresLogin and ((fPwd = '') or (MyAccount = '')) then
+  begin
+    eventString := IfThen(DoConnect, '', 'pwdonly');
+    eventError := EC_missingLogin;
+    NotifyListeners(IE_error);
+    Result := True;
+  end;
+end;
+
 procedure TWIMSession.Connect;
 begin
   if not IsOffline then
     Exit;
-  if (protoType = SESS_IM) and RequiresLogin and ((fPwd = '') or (MyAccount = '')) then
-  begin
-OutputDebugString(PChar('TRIGGER! ' + String(fPwd) + ' | ' + String(MyAccount)));
-    eventError := EC_missingLogin;
-    notifyListeners(IE_error);
+
+  if RequestPasswordIfNeeded then
     Exit;
-  end;
 
   phase := connecting_;
   eventAddress := WIM_HOST;
@@ -3490,28 +3587,19 @@ OutputDebugString(PChar('TRIGGER! ' + String(fPwd) + ' | ' + String(MyAccount)))
   SNACref := 1;
 
   if StartSession then
-  begin
-{
-  eventTime := now;
-  if not (Error = 0) then
-  begin
+    AfterSessionStarted
+  else
     GoneOffline;
-    eventInt := Error;
-    eventMsgA := ErrorStr;
-    eventError := EC_cantconnect;
-    notifyListeners(IE_error);
-    Exit;
-  end;
-}
-    StartPolling;
+end; // Connect
 
-    if LastStatus = Byte(SC_OFFLINE) then
-      SetStatus(Byte(SC_ONLINE))
-    else if not ExitFromAutoaway then
-      SetStatus(Byte(LastStatus));
-  end else
-    GoneOffline;
-end; // connect
+procedure TWIMSession.AfterSessionStarted;
+begin
+  StartPolling;
+  if LastStatus = Byte(SC_OFFLINE) then
+    SetStatusAndVis(Byte(SC_ONLINE), Byte(VI_normal))
+  else if not ExitFromAutoaway then
+    SetStatusAndVis(Byte(LastStatus), Byte(Visibility));
+end;
 
 function TWIMSession.MakeParams(const Method, BaseURL: String; const Params: TDictionary<String, String>; Sign: Boolean = True): String;
 var
@@ -3537,6 +3625,29 @@ begin
   end;
 end;
 
+procedure TWIMSession.OpenICQURL(URL: String);
+var
+  BaseURL: String;
+  Params: TDictionary<String, String>;
+begin
+  if fSession.token = '' then
+  begin
+    OpenURL(URL);
+    Exit;
+  end;
+
+  BaseURL := 'https://www.icq.com/karma_api/karma_client2web_login.php';
+
+  Params := TDictionary<String, String>.Create();
+  Params.Add('ts', IntToStr(DateTimeToUnix(Now, False) - fSession.hostOffset));
+  Params.Add('owner', MyAccNum);
+  Params.Add('a', fSession.token);
+  Params.Add('k', fSession.devid);
+  Params.Add('d', URL);
+  OpenURL(BaseURL + '?' + MakeParams('GET', BaseURL, Params));
+  Params.Free;
+end;
+
 function TWIMSession.ClientLogin: Boolean;
 var
   JSON: TJSONObject;
@@ -3557,7 +3668,7 @@ begin
            '&clientVersion=' + IfThen(ShowClientID, '0.11.9999.' + IntToStr(RnQBuild) , '10.0.12393') +
            '&devId=' + fSession.devid +
            '&tokenType=longterm' +
-           '&s=' + String(MyAccNum) +
+           '&s=' + ParamEncode(String(MyAccNum)) +
            '&pwd=' + ParamEncode(fPwd);
 
   ErrHandler := procedure(Resp: TPair<Integer, String>)
@@ -3565,9 +3676,9 @@ begin
     ResetSession;
     eventInt := Resp.Key;
     eventMsgA := Resp.Value;
-    if Resp.Key = 0 then
+    if Resp.Key = Integer(EAC_Unknown) then
       eventError := EC_Login_Seq_Failed
-    else if Resp.Key = 330 then
+    else if Resp.Key = Integer(EAC_Wrong_Login) then
       eventError := EC_badPwd
     else
       eventError := EC_other;
@@ -3635,11 +3746,11 @@ function TWIMSession.StartSession: Boolean;
 var
   Query, s: RawByteString;
   ts: Integer;
-  Hash, BaseURL, UnixTime, Caps: String;
+  Hash, BaseURL, UnixTime, AutoCaps: String;
   RespStr: RawByteString;
   Params: TDictionary<String, String>;
   JSON: TJSONObject;
-  UsingSaved, SeqFailed, ProcResult: Boolean;
+  UsingSaved, Relogin, SeqFailed, ProcResult: Boolean;
   UID: TGUID;
   ErrHandler: TErrorProc;
 begin
@@ -3647,6 +3758,7 @@ begin
   ProcResult := False;
   UsingSaved := True;
   SeqFailed := False;
+  Relogin := False;
 
   if RequiresLogin then
   begin
@@ -3669,36 +3781,11 @@ begin
   BaseURL := WIM_HOST + 'aim/startSession';
   UnixTime := IntToStr(DateTimeToUnix(Now, False) - fSession.hostOffset);
 
-  Caps := '094613534c7f11d18222444553540000,094613544c7f11d18222444553540000,094613594c7f11d18222444553540000,0946135b4c7f11d18222444553540000';
-  Caps := Caps + ',' + String2Hex(BigCapability[CAPS_big_Buzz].v);
+  AutoCaps := '';
 
-  if TWIMSession(Account.AccProto.ProtoElem).ShowClientID then
-    Caps := Caps + ',' + String2Hex(BigCapability[CAPS_big_Build].v);
 
-(* TODO: Encryptions support
-  if fECCKeys.generated then
-  begin
-    SetLength(s, 11);
-    CopyMemory(@s[1], @fECCKeys.pubEccKey[0], Length(s));
-    Caps := Caps + ',' + String2Hex('RDEC0' + s);
-    CopyMemory(@s[1], @fECCKeys.pubEccKey[11], Length(s));
-    Caps := Caps + ',' + String2Hex('RDEC1' + s);
-//    SetLength(s, 11);
-    CopyMemory(@s[1], @fECCKeys.pubEccKey[22], Length(s));
-    Caps := Caps + ',' + String2Hex('RDEC2' + s);
-  end;
-
-  if UseCryptMsg then
-  begin
-    Caps := Caps + ',' + String2Hex(BigCapability[CAPS_big_CryptMsg].v);
-    Caps := Caps + ',' + String2Hex(BigCapability[CAPS_big_QIP_Secure].v); // QIP protect message
-  end;
-*)
-  if (curXStatus > 0) and not (XStatusArray[curXStatus].pidOld = '') then
-    Caps := Caps + ',' + String2Hex(XStatusArray[curXStatus].pidOld);
-
-  if AddExtCliCaps and (Length(ExtClientCaps) = 16) then
-    Caps := Caps + ',' + String2Hex(ExtClientCaps);
+//  if AddExtCliCaps and (Length(ExtClientCaps) = 16) then
+//    Caps := Caps + ',' + String2Hex(ExtClientCaps);
 
   Params := TDictionary<String, String>.Create();
   Params.Add('f', 'json');
@@ -3711,29 +3798,31 @@ begin
   Params.Add('buildNumber', IfThen(ShowClientID, '9999', '12393'));
   Params.Add('pointVersion', IfThen(ShowClientID, IntToStr(RnQBuild), '0'));
 //  Params.Add('c', 'WebIM.jscb_tmp_c38690'); // callback
-  Params.Add('assertCaps', Caps);
-  Params.Add('interestCaps', '8eec67ce70d041009409a7c1602a5c84');
+  Params.Add('assertCaps', GetMyCaps);
+  Params.Add('interestCaps', AutoCaps);
   Params.Add('ts', UnixTime);
   Params.Add('imf', 'plain');
-  Params.Add('invisible', 'false');
+  Params.Add('invisible', IfThen(Visibility = VI_invisible, 'true', 'false'));
   Params.Add('inactiveView', 'offline');
-  Params.Add('view', 'online');
+  // Full invisibility is not working, "offline" presence event is still being sent to others when starting/ending session
+  Params.Add('view', IfThen(Visibility = VI_invisible, 'invisible', 'online'));
   Params.Add('activeTimeout', '180');
   Params.Add('mobile', '0');
   Params.Add('rawMsg', '0');
   Params.Add('language', 'en-us');
   Params.Add('deviceId', 'dev1');
   Params.Add('sessionTimeout', '7776000'); // 90 days
-//  Params.Add('nonce', UnixTime + '-' + nonce);
   Params.Add('events', 'myInfo,presence,buddylist,typing,dataIM,userAddedToBuddyList,service,webrtcMsg,mchat,hist,hiddenChat,diff,permitDeny,imState,notification,apps' + ',offlineIM,sentIM,alert');
-  Params.Add('includePresenceFields', String.Join(',', SupportedPresenceFields));
-//  Params.Add('excludePresenceFields', 'buddyIcon,bigBuddyIcon,bigIconId,largeIconId');
+  Params.Add('includePresenceFields', AllFieldsAsParam);
+//  Params.Add('nonce', UnixTime + '-' + nonce);
 
   ErrHandler := procedure(Resp: TPair<Integer, String>)
   begin
-    if (Resp.Key = 401) and UsingSaved then
+    if ((Resp.Key = Integer(EAC_Auth_Required)) or (Resp.Key = Integer(EAC_Wrong_DevKey))) and UsingSaved then
     begin
+      Relogin := True;
       ResetSession;
+      RequestPasswordIfNeeded(False);
       ProcResult := StartSession;
     end else
     begin
@@ -3762,6 +3851,9 @@ begin
 
   Result := ProcResult;
   Params.Free;
+
+  if Relogin then
+    Exit;
 
   if SeqFailed then
   begin
@@ -3857,6 +3949,30 @@ Exit;
   Result := True;
 end;
 
+function TWIMSession.PingSession: Boolean;
+var
+  JSON: TJSONObject;
+  Query: UTF8String;
+  BaseURL: String;
+  ts: Integer;
+begin
+  Result := False;
+  BaseURL := WIM_HOST + 'aim/pingSession';
+  Query := '&k=' + fSession.DevId;
+  Result := SendSessionRequest(False, BaseURL, Query, RT_JSON, JSON, 'Restore session');
+  if Result then
+  try
+    GetSafeJSONValue(JSON, 'aimsid', fSession.AimSid);
+    GetSafeJSONValue(JSON, 'fetchBaseURL', fSession.fetchURL);
+    GetSafeJSONValue(JSON, 'ts', ts);
+    LastFetchBaseURL := fSession.fetchURL;
+    fSession.hostOffset := DateTimeToUnix(Now, False) - ts;
+    AfterSessionStarted;
+  finally
+    JSON.Free;
+  end;
+end;
+
 procedure TWIMSession.ResetSession;
 begin
   fSession.secret := '';
@@ -3874,14 +3990,31 @@ var
 begin
   BaseURL := WIM_HOST + 'aim/endSession';
   Query := IfThen(EndToken, '&invalidateToken=1');
-  if not SendSessionRequest(False, BaseURL, Query, 'End current session') then
-  begin
-//    q.reset;
-    GoneOffline;
-  end;
+  SendSessionRequest(False, BaseURL, Query, 'End current session');
+  GoneOffline;
 
   if EndToken then
     ResetSession;
+end;
+
+procedure TWIMSession.PollError(const ExtraError: String = '');
+begin
+  if CleanDisconnect then
+    Exit;
+
+  MsgDlg(GetTranslation('Failed to start listening for events, waiting %d sec before retry...', [Round(ICQErrorReconnectDelay / 1000)]) +
+         IfThen(ExtraError = '', '', #13#10 + '[' + ExtraError + ']'), False, mtError);
+
+  TTask.Create(procedure
+  begin
+    Sleep(ICQErrorReconnectDelay);
+    TThread.Synchronize(nil, procedure
+    begin
+      // Try to use existing session, get new initial fetch url and start polling again. Go offline if all fails.
+      if not PingSession then
+        EndSession;
+    end);
+  end).Start;
 end;
 
 procedure TWIMSession.StartPolling;
@@ -3892,7 +4025,7 @@ begin
   if (pos('?', BaseURL) = 0) then
     BaseURL := BaseURL + '?'
   else
-    BaseURL := BaseURL + '$';
+    BaseURL := BaseURL + '&';
   BaseURL := BaseURL + 'f=json&r=' + IntToStr(reqId) + '&timeout=60000&peek=0';
   Inc(reqId);
 
@@ -3909,9 +4042,12 @@ end;
 
 procedure TWIMSession.PollURL(const URL: String);
 begin
-  if not running or not Assigned(httpPoll) or (URL = '') then
+  if not Running then
+    Exit;
+
+  if not Assigned(HttpPoll) or (URL = '') then
   begin
-OutputDebugString(PChar('Emergency! Poll failed.'));
+    PollError('ERR_UNASSIGNED');
     Exit;
   end;
 
@@ -3925,14 +4061,17 @@ OutputDebugString(PChar('Emergency! Poll failed.'));
     timeout.Enabled := True;
   except
     on E: OverbyteIcsHttpProt.EHttpException do
-      HandleError(E, URL);
+    begin
+      HandleError(E, URL, '', False);
+      PollError('ERR_GETFAIL');
+    end;
   end;
 end;
 
 procedure TWIMSession.PollRequestDone(Sender: TObject; RqType: THttpRequest; ErrCode: Word);
 var
-  t, ts: Integer;
-  RespStr: String;
+  t, ts, code: Integer;
+  RespStrR: RawByteString;
   Resp: TPair<Integer, String>;
   json: TJSONObject;
   event, etype, edata: TJSONValue;
@@ -3956,35 +4095,55 @@ begin
   timeout.Enabled := False;
 
   if not Assigned(Sender) then
+  begin
+    PollError('ERR_NOSENDER');
     Exit;
+  end;
 
   with Sender as TSslHttpCli do
   begin
     if Assigned(SendStream) then
       SendStream.Free;
 
-    RespStr := pollStream.DataString;
+//    RespStr := pollStream.DataString;
+    RespStrR := StrToUTF8(pollStream.DataString);
     pollStream.Clear;
   end;
 
-  if (ErrCode = httperrAborted) then
+  // Abort and request fetch URL again every <60 sec to stay online
+  if ErrCode = httperrAborted then
   begin
     RestartPolling(1000);
     Exit;
   end;
 
-  eventNameA := '[POST] Fetched new events';
-  eventData := RespStr;
-  notifyListeners(IE_serverGot);
+  // 5 sec delay after HTTP error
+  if not (HttpPoll.StatusCode = 200) then
+  begin
+    MsgDlg('Fetch event bad code: ' + IntToStr(HttpPoll.StatusCode) + #13#10#13#10 + HttpPoll.RcvdHeader.Text + #13#10#13#10 + UnUTF(RespStrR), False, mtInformation);
+    if (HttpPoll.StatusCode >= 500) and (HttpPoll.StatusCode < 600) then
+      RestartPolling(ICQErrorReconnectDelay)
+    else
+      PollError('ERR_HTTPCODE');
+    Exit;
+  end;
 
   ts := 0;
   json := nil;
-  if not (Trim(RespStr) = '') then
+  if not (Trim(RespStrR) = '') then
   try
+    eventNameA := '[POST] Fetched new events';
+    eventMsgA := RespStrR;
+    NotifyListeners(IE_serverSent);
+
     LastFetchBaseURL := '';
-    json := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RespStr), 0) as TJSONObject;
+//    json := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RespStr), 0) as TJSONObject;
+    json := TJSONObject.ParseJSONValue(RespStrR) as TJSONObject;
     if not Assigned(json) then
-      OutputDebugString(PChar('FUCK! Not a JSON response.'));
+    begin
+      PollError('ERR_NOTAJSON');
+      Exit;
+    end;
     Resp := CheckResponseData(json);
     if Resp.Key = 200 then
     if not (json.GetValue('fetchBaseURL') = nil) then
@@ -4014,24 +4173,29 @@ QueryPerformanceCounter(StartCount);
           ProcessContactList(TJSONObject(edata).GetValue('groups') as TJSONArray);
 QueryPerformanceCounter(StopCount);
 TimingSeconds := (StopCount - StartCount) / Freq;
-OutputDebugString(PChar('Populating CL: ' + floattostr(TimingSeconds)));
+ODS('Populating CL: ' + floattostr(TimingSeconds));
+          // Get caps of users currently online
+          GetAllCaps;
+          NotifyListeners(IE_online);
           // Get own profile's settings
           GetProfile(MyAccNum);
-          notifyListeners(IE_online);
         end else if (etype.Value = 'presence') or (etype.Value = 'myInfo') then
           ProcessContact(TJSONObject(edata))
         else if (etype.Value = 'histDlgState') or (etype.Value = 'offlineIM') then
           ProcessDialogState(TJSONObject(edata), etype.Value = 'offlineIM')
-        else if etype.Value = 'dataIM' then
-          ProcessIMData(TJSONObject(edata))
         else if etype.Value = 'imState' then
           ProcessIMState(TJSONObject(edata))
         else if etype.Value = 'typing' then
           ProcessTyping(TJSONObject(edata))
+        else if etype.Value = 'userAddedToBuddyList' then
+          ProcessAddedYou(TJSONObject(edata))
+        else if etype.Value = 'permitDeny' then
+          ProcessPermitDeny(TJSONObject(edata))
         else if etype.Value = 'diff' then
         begin
 //          TJSONArray(edata)
-        end;
+        end else
+          ODS('Unhandled event type: ' + etype.Value);
       end;
     end
       else // Events that do not continue events fetching
@@ -4047,53 +4211,35 @@ OutputDebugString(PChar('Populating CL: ' + floattostr(TimingSeconds)));
         if Assigned(etype) then
         if etype.Value = 'sessionEnded' then
         begin
-//          q.reset;
+          if Assigned(edata) and (edata is TJSONObject) then
+            if GetSafeJSONValue(TJSONObject(edata), 'endCode', code) then
+              if (code = 142) or  // "offReason" : "Killed Sessions"
+                 (code = 26) then // "offReason" : "User Initiated Bump"
+                CleanDisconnect := True;
           GoneOffline;
         end;
       end;
     end;
   finally
-    FreeAndNil(json);
-  end else
-    OutputDebugString(PChar('Empty response, WTF?! Restarting with previous fetch url'));
-(*
-{
-  "response" : {
-    "statusCode" : 200,
-    "statusText" : "Ok",
-    "data" : {
-      "events" : [
-        {
-          "type" : "sessionEnded",
-          "eventData" : {
-            "endCode" : 26,
-            "offReason" : "User Initiated Bump"
-          }
-        }
-      ]
-    }
-  }
-}
-*)
+    JSON.Free;
+  end
+    else
+  begin
+    PollError('ERR_EMPTYRESP');
+    Exit;
+  end;
+
   RestartPolling(t);
 end;
 
 procedure TWIMSession.RestartPolling(Delay: Integer = 1);
 begin
   if (LastFetchBaseURL = '') then
-  begin
-    if not CleanDisconnect then
-    begin
-      OutputDebugString(PChar('Unexpected disconnect!'));
-      EndSession;
-    end;
-  end else if Delay <= 1 then
-    PollURL(LastFetchBaseURL)
+    PollError('ERR_UNCLEAN')
   else
   TTask.Create(procedure
   begin
-    OutputDebugString(PChar('Sleeping ' + IntToStr(Delay) + ' ms'));
-    Sleep(Delay);
+    Sleep(Max(100, Delay)); // Min 100ms between fetches, just in case :)
     TThread.Synchronize(nil, procedure
     begin
       PollURL(LastFetchBaseURL);
@@ -4140,8 +4286,10 @@ end;
 function TWIMSession.ProcessContact(const Buddy: TJSONObject; GroupToAddTo: Integer = -1): TWIMContact;
 var
   i: Integer;
+  LoadingCL, FoundCap: Boolean;
   Tmp, Phone1, Phone2, Phone3, PhoneType, OldXStatusStr: String;
-  TheCap: RawByteString;
+  OldPic: TPicName;
+  TheCap, TheCap2: RawByteString;
   UnixTime: Integer;
   NewStatus: TWIMStatus;
   Profile, TmpObj: TJSONObject;
@@ -4153,7 +4301,7 @@ begin
   if not Assigned(Buddy) then
     Exit;
 
-  Result := GeTWIMContact(Buddy.GetValue('aimId').Value);
+  Result := GetWIMContact(Buddy.GetValue('aimId').Value);
   if not Assigned(Result) then
     Exit;
 
@@ -4171,7 +4319,8 @@ begin
   end;
 
   if GetSafeJSONValue(Buddy, 'emailId', Tmp) then
-    Result.Email := Tmp;
+    if not TryStrToInt(Tmp, i) then
+      Result.Email := Tmp;
 
   // "abPhones" array - more phones, especially for CT_SMS contacts
 //  GetSafeJSONValue(Buddy, 'abPhoneNumber', Phone1);
@@ -4185,6 +4334,9 @@ begin
   if GetSafeJSONValue(Buddy, 'workNumber', Tmp) then
     Result.Workphone := Tmp;
   // otherNumber
+
+  if GetSafeJSONValue(Buddy, 'official', i) then
+    Result.Official := i = 1;
 
   GetSafeJSONValue(Buddy, 'userType', Tmp);
   Result.UserType := CT_UNK;
@@ -4201,66 +4353,74 @@ begin
 
   if not (Buddy.GetValue('capabilities') = nil) then
   begin
-    Result.CapabilitiesSm := []; // Reset necessary?
+    Result.LastCapsUpdate := Now;
+    Result.CapabilitiesSm := [];
+    Result.CapabilitiesBig := [];
+    Result.CapabilitiesXTraz := [];
+    Result.ExtraCapabilities := '';
     Caps := Buddy.GetValue('capabilities') as TJSONArray;
     if Assigned(Caps) then
     for Cap in Caps do
     if Assigned(Cap) then
     begin
       TheCap := hex2StrU(Cap.Value);
+      FoundCap := False;
 
       for i := 1 to Length(BigCapability) do
       if TheCap = BigCapability[i].v then
       begin
         Include(Result.CapabilitiesBig, i);
+        FoundCap := True;
         Break;
       end;
 
       if Copy(TheCap, 1, 2) = CapsMakeBig1 then
       if Copy(TheCap, 5, 12) = CapsMakeBig2 then
       begin
-        TheCap := Copy(TheCap, 3, 2);
+        TheCap2 := Copy(TheCap, 3, 2);
         for i := 1 to Length(CapsSmall) do
-        if TheCap = CapsSmall[i].v then
+        if TheCap2 = CapsSmall[i].v then
         begin
           Include(Result.CapabilitiesSm, i);
+          FoundCap := True;
           Break;
         end;
       end;
 
-      Result.Crypt.SupportCryptMsg := CAPS_big_CryptMsg in Result.CapabilitiesBig;
-      Result.Crypt.SupportEcc := False;
-      i := Pos('RDEC0', Result.ExtraCapabilities);
+      if not FoundCap then
+        Result.ExtraCapabilities := Result.ExtraCapabilities + TheCap;
+    end;
+
+    Result.Crypt.SupportCryptMsg := CAPS_big_CryptMsg in Result.CapabilitiesBig;
+    Result.Crypt.SupportEcc := False;
+    i := Pos('RDEC0', Result.ExtraCapabilities);
+    if i > 0 then
+    begin
+      Result.Crypt.EccPubKey := Copy(Result.ExtraCapabilities, i + 5, 11);
+      i := Pos('RDEC1', Result.ExtraCapabilities);
       if i > 0 then
       begin
-        Result.Crypt.EccPubKey := copy(Result.ExtraCapabilities, i + 5, 11);
-        i := Pos('RDEC1', Result.ExtraCapabilities);
+        Result.Crypt.EccPubKey := Result.Crypt.EccPubKey + Copy(Result.ExtraCapabilities, i + 5, 11);
+        i := Pos('RDEC2', Result.ExtraCapabilities);
         if i > 0 then
         begin
           Result.Crypt.EccPubKey := Result.Crypt.EccPubKey + copy(Result.ExtraCapabilities, i + 5, 11);
-          i := Pos('RDEC2', Result.ExtraCapabilities);
-          if i > 0 then
+          Result.Crypt.SupportEcc := Length(Result.Crypt.EccPubKey) = 33;
+          if Result.Crypt.SupportEcc and fECCKeys.generated then
           begin
-            Result.Crypt.EccPubKey := Result.Crypt.EccPubKey + copy(Result.ExtraCapabilities, i + 5, 11);
-            Result.Crypt.SupportEcc := Length(Result.Crypt.EccPubKey)=33;
-            if Result.Crypt.SupportEcc and fECCKeys.generated then
+            SetLength(Result.Crypt.EccMsgKey, SizeOf(TECCSecretKey));
+            if not ecdh_shared_secret(PECCPublicKey(Result.Crypt.EccPubKey)^, fECCKeys.pk, PECCSecretKey(Result.Crypt.EccMsgKey)^) then
             begin
-              SetLength(Result.Crypt.EccMsgKey, sizeof(TECCSecretKey));
-              if not ecdh_shared_secret(PECCPublicKey(Result.Crypt.EccPubKey)^, fECCKeys.pk, PECCSecretKey(Result.Crypt.EccMsgKey)^) then
-              begin
-                Result.Crypt.EccMsgKey := '';
-                Result.Crypt.SupportEcc := False;
-              end;
+              Result.Crypt.EccMsgKey := '';
+              Result.Crypt.SupportEcc := False;
             end;
           end;
         end;
       end;
     end;
-  end;
 
-  Result.CntIsLocal := False;
-  Result.Authorized := True;
-  Result.SSIID := 1; // Force not local
+    Result.Typing.bSupport := CAPS_big_MTN in Result.CapabilitiesBig;
+  end;
 
   GetSafeJSONValue(Buddy, 'state', Tmp);
   if Tmp = 'online' then
@@ -4290,12 +4450,16 @@ begin
     Result.MemberSince := UnixToDateTime(UnixTime);
 
   // awayMsg, profileMsg - ?
-  OldXStatusStr := Result.xStatusStr;
-  if GetSafeJSONValue(Buddy, 'statusMsg', Tmp) then
-    Result.xStatusStr := TNetEncoding.HTML.Decode(Tmp);
-  if (Result.xStatusStr = '') and GetSafeJSONValue(Buddy, 'moodTitle', Tmp) then
-    Result.xStatusStr := TNetEncoding.HTML.Decode(Tmp);
+  try
+    OldXStatusStr := Result.xStatusStr;
+    if GetSafeJSONValue(Buddy, 'statusMsg', Tmp) then
+      Result.xStatusStr := HTMLEntitiesDecode(Tmp);
+    if (Result.xStatusStr = '') and GetSafeJSONValue(Buddy, 'moodTitle', Tmp) then
+      Result.xStatusStr := HTMLEntitiesDecode(Tmp);
   //XStatusArray[curXStatus].pid6
+  except
+    // Cannot decode HTML for some reason
+  end;
 
   Profile := TJSONObject(Buddy.GetValue('profile'));
   if Assigned(Profile) then
@@ -4420,13 +4584,14 @@ begin
     "betaFlag" : 0,
     "autoSms" : "false", // autoforward IM to SMS
 }
+    Result.Authorized := True; // Assume this is the default :)
     if GetSafeJSONValue(Profile, 'authRequired', i) then
-      if i = 0 then
-        Result.Authorized := True;
+      Result.Authorized := i = 0;
 
     // Owner only
     if Result.UID2cmp = MyAccNum then
     begin
+      Result.Authorized := True;
       if GetSafeJSONValue(Profile, 'webAware', i) then
         webAware := i = 1;
       if GetSafeJSONValue(Profile, 'authRequired', i) then
@@ -4454,16 +4619,27 @@ begin
   //bot -	For buddylist events, any buddies that are BOTs will have this set
   //shared - For buddylist events, any buddies in the a shared buddies group will have this set
 
+  LoadingCL := GroupToAddTo >= 0;
+
   // Add to roster if it's CL response and group is defined
-  if (GroupToAddTo >= 0) then
+  if LoadingCL then
   begin
+    Result.CntIsLocal := False;
     Result.group := GroupToAddTo;
     if not Result.IsInRoster then
       fRoster.add(Result);
   end;
 
   // Handle status change
-  ProcessNewStatus(Result, NewStatus, False, not (OldXStatusStr = Result.xStatusStr), GroupToAddTo >= 0);
+  ProcessNewStatus(Result, NewStatus, False, not (OldXStatusStr = Result.xStatusStr), LoadingCL);
+
+  OldPic := Result.ClientPic;
+  GetClientPicAndDesc4(Result, Result.ClientPic, Result.ClientDesc);
+  if not (Result.ClientPic = OldPic) and not LoadingCL then
+  begin
+    eventContact := Result;
+    NotifyListeners(IE_redraw);
+  end;
 
   if GetSafeJSONValue(Buddy, 'iconId', Tmp) then
   if not (Tmp = Result.IconID) then
@@ -4540,7 +4716,27 @@ begin
     notifyListeners(IE_contactupdate);
 end; // ProcessNewStatus
 
+procedure TWIMSession.ProcessUsersAndGroups(const JSON: TJSONObject);
+var
+  user, groups: TJSONValue;
+  users: TJSONArray;
+begin
+  if not IsReady then
+    Exit;
+
+  groups := JSON.GetValue('groups');
+  if Assigned(groups) and (groups is TJSONArray) then
+    ProcessContactList(TJSONArray(groups));
+
+  users := JSON.GetValue('users') as TJSONArray;
+  if Assigned(users) then
+  for user in users do
+    ProcessContact(TJSONObject(user));
+end;
+
 procedure TWIMSession.ProcessDialogState(const Dlg: TJSONObject; IsOfflineMsg: Boolean = False);
+const
+  AESBLKSIZE = SizeOf(TAESBlock);
 var
   c: TWIMContact;
   starting, outgoing: Boolean;
@@ -4548,8 +4744,172 @@ var
   sn, mtype, sTmp, StickerStr: String;
   iTmp: Integer;
   ExtSticker: TStringDynArray;
-  Msg, Sticker: TJSONValue;
+  Msg, MsgPos, Sticker: TJSONValue;
   Msgs: TJSONArray;
+
+  procedure DecryptMessage(Encrypted: Integer; Payload: TJSONObject; var Msg: String);
+  var
+    RQCompressed, RQLen: Integer;
+    RQCRC: Cardinal;
+    Ctx: TAESECB;
+    Key: TSHA256Digest;
+    Msg2, CrptMsg: TBytes;
+    i: Integer;
+  begin
+    GetSafeJSONValue(Payload, 'compressed', RQCompressed);
+    GetSafeJSONValue(Payload, 'crc', RQCRC);
+    GetSafeJSONValue(Payload, 'length', RQLen);
+
+    if RQLen = 0 then
+    begin
+      eventError := EC_FailedDecrypt;
+      eventMsgA := GetTranslation('Zero length message');
+      NotifyListeners(IE_error);
+      Exit;
+    end else if RQCRC = 0 then
+    begin
+      eventError := EC_FailedDecrypt;
+      eventMsgA := GetTranslation('Incorrect CRC');
+      NotifyListeners(IE_error);
+      Exit;
+    end else if not (RQCompressed in [0,1]) then
+    begin
+      eventError := EC_FailedDecrypt;
+      eventMsgA := GetTranslation('Unknown type of compression [%d]', [RQCompressed]);
+      NotifyListeners(IE_error);
+      Exit;
+    end else if c.Crypt.EccMsgKey = '' then
+    begin
+      eventError := EC_FailedDecrypt;
+      eventMsgA := GetTranslation('Unable to create encryption key');
+      NotifyListeners(IE_error);
+      Exit;
+    end;
+
+    eventFlags := eventFlags or IF_Encrypt;
+
+    Msg2 := TEncoding.ANSI.GetBytes(Msg); // Should be Base64
+    Base64DecodeBytes(Msg2, CrptMsg);
+    SetLength(Msg2, 0);
+
+    CalcKey(Encrypted = 2, IfThen(Encrypted = 2, c.Crypt.EccMsgKey, ''), c.UID2cmp, MyAccount, 0, RQLen, Key);
+
+    i := Length(CrptMsg);
+    SetLength(Msg2, i + AESBLKSIZE);
+    ctx := TAESECB.Create(Key[0], 256);
+    ctx.Decrypt(@CrptMsg[0], @Msg2[0], i);
+    ctx.Free;
+
+    if RQCompressed = 1 then
+      Msg2 := ZDecompressBytes(Msg2);
+
+    SetLength(Msg2, RQLen);
+    if Length(Msg2) > 0 then
+    if not ((ZipCrc32($FFFFFFFF, @Msg2[0], RQLen) XOR $FFFFFFFF) = RQCRC) then
+    begin
+      eventError := EC_FailedDecrypt;
+      eventMsgA := GetTranslation('Bad CRC');
+      NotifyListeners(IE_error);
+      //eventFlags := eventFlags and not IF_Bin and not IF_CODEPAGE_MASK;
+    end else
+      Msg := TEncoding.UTF8.GetString(Msg2)
+    else
+    begin
+      eventError := EC_FailedDecrypt;
+      eventMsgA := GetTranslation('Zero length message');
+      NotifyListeners(IE_error);
+    end;
+    {
+    eventContact := c;
+    notificationForMsg(msgtype, msgflags, priority=2, msg);
+    case getStatus of
+      byte(SC_away): sendACK(thisCnt, ACK_AWAY, '');
+      byte(SC_na): sendACK(thisCnt, ACK_NA, '');
+      byte(SC_dnd), byte(SC_occupied):
+        if priority = 2 then
+          sendACK(thisCnt, ACK_OK, '', msgDwnCnt)
+        else
+          sendACK(thisCnt, ACK_NOBLINK,'')
+      else sendACK(thisCnt, ACK_OK, '', msgDwnCnt)
+    end;
+    }
+  end;
+
+  function CheckDataPayload(var Msg: String): Boolean;
+  var
+    Payload, RQCaps, RQCap: TJSONValue;
+    RQType, Cap: String;
+    Caps: TArray<String>;
+    Pub: array [0..2] of Integer;
+    Encryped, ECC, i: Integer;
+    My: TWIMContact;
+  begin
+    Result := False;
+    Encryped := 0;
+    Payload := nil;
+    try
+      Payload := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(Msg), 0);
+      if not Assigned(Payload) or not (Payload is TJSONObject) then
+        Exit;
+      GetSafeJSONValue(TJSONObject(Payload), 'type', RQType);
+      if not (RQType = 'RnQDataIM') then
+        Exit;
+      RQCaps := TJSONObject(Payload).GetValue('caps');
+      if not Assigned(RQCaps) or not (RQCaps is TJSONArray) then
+        Exit;
+
+      GetSafeJSONValue(TJSONObject(Payload), 'data', Msg);
+
+      // No caps? Get data as is
+      if TJSONArray(RQCaps).Count = 0 then
+        Exit;
+
+      for RQCap in TJSONArray(RQCaps) do
+        if Assigned(RQCap) and (RQCap is TJSONString) then
+          Insert(TJSONString(RQCap).Value, Caps, High(Caps));
+
+      // Buzz
+      if MatchText(String2Hex(BigCapability[CAPS_big_Buzz].v), Caps) then
+      begin
+        eventContact := c;
+        NotifyListeners(IE_buzz);
+        Result := True;
+        Exit;
+      end;
+
+      // Regular crypt
+      if MatchText(String2Hex(BigCapability[CAPS_big_CryptMsg].v), Caps) then
+        Encryped := 1;
+
+      // ECC crypt
+      ECC := 0;
+      for i := Low(Caps) to High(Caps) do
+      begin
+        if Caps[i].StartsWith(String2Hex('RDEC0')) then begin Pub[0] := i; Inc(ECC); end
+        else if Caps[i].StartsWith(String2Hex('RDEC1')) then begin Pub[1] := i; Inc(ECC, 2); end
+        else if Caps[i].StartsWith(String2Hex('RDEC2')) then begin Pub[2] := i; Inc(ECC, 4); end;
+      end;
+
+      if ECC = 7 then
+      begin
+        My := TWIMContact(GetMyInfo);
+        if My.Crypt.EccPubKey = Copy(Hex2Str(Caps[Pub[0]]), 6, 11) + Copy(Hex2Str(Caps[Pub[1]]), 6, 11) + Copy(Hex2Str(Caps[Pub[2]]), 6, 11) then
+          Encryped := 2
+        else
+        begin
+          eventError := EC_FailedDecrypt;
+          eventMsgA := GetTranslation('Message was encrypted using another public key');
+          NotifyListeners(IE_error);
+          Exit;
+        end;
+      end;
+
+      if Encryped > 0 then
+        DecryptMessage(Encryped, TJSONObject(Payload), Msg);
+    finally
+      FreeAndNil(Payload);
+    end;
+  end;
 
   procedure ProcessMsg(Msg: TJSONObject);
   begin
@@ -4563,7 +4923,7 @@ var
     SetLength(eventBinData, 0);
     eventFlags := 0;
     eventMsgA := '';
-    eventEncoding := TEncoding.Default;
+//    eventEncoding := TEncoding.Default;
 
     if IsOfflineMsg then
       eventFlags := eventFlags or IF_offline
@@ -4596,9 +4956,9 @@ var
       if (Length(ExtSticker) >= 4) then
         eventBinData := GetSticker(ExtSticker[1], ExtSticker[3]);
 
-      eventData := '';
+      eventString := '';
     end else if GetSafeJSONValue(TJSONObject(Msg), IfThen(IsOfflineMsg, 'message', 'text'), sTmp) then
-      eventData := sTmp;
+      eventString := sTmp;
     if GetSafeJSONValue(TJSONObject(Msg), IfThen(IsOfflineMsg, 'msgId', 'wid'), sTmp) then
       eventWID := sTmp;
     if GetSafeJSONValue(TJSONObject(Msg), IfThen(IsOfflineMsg, 'timestamp', 'time'), iTmp) then
@@ -4617,6 +4977,11 @@ var
 //    "lastDelivered" : "6640435849580249672",
 //    "lastRead" : "6640435849580249672"
 //  },
+
+    // Process special RnQ messages
+    if not (eventString = '') and ContainsStr(eventString, 'RnQDataIM') then
+      if CheckDataPayload(eventString) then
+        Exit;
 
     eventContact := c;
     notifyListeners(IE_msg);
@@ -4637,7 +5002,7 @@ begin
 
   c := nil;
   if not (sn = '') then
-    c := GeTWIMContact(sn);
+    c := GetWIMContact(sn);
 
   if not Assigned(c) then
   begin
@@ -4657,111 +5022,29 @@ begin
     Msgs := Dlg.GetValue('messages') as TJSONArray;
     if Assigned(Msgs) then
       for Msg in Msgs do
-        ProcessMsg(TJSONObject(Msg));
-  end;
-end;
+        if Msg is TJSONObject then
+          ProcessMsg(TJSONObject(Msg));
 
-procedure TWIMSession.ProcessIMData(const Data: TJSONObject);
-var
-  c: TWIMContact;
-  pubKey, msgKey, OrigMsg, CrptMsg: RawByteString;
-  Cap, sTmp: String;
-  IsBase64, iTmp: Integer;
-begin
-  if not Assigned(Data) then
-    Exit;
-
-  c := ProcessContact(TJSONObject(Data.GetValue('source')));
-  if not Assigned(c) then
-  begin
-    eventError := EC_MalformedMsg;
-    eventMsgA := Data.ToString;
-    notifyListeners(IE_error);
-    Exit;
-  end;
-
-  SetLength(eventBinData, 0);
-  eventFlags := 0;
-  eventMsgA := '';
-  eventContact := c;
-  eventEncoding := TEncoding.UTF8;
-
-//  "autoresponse" : 0
-//    if GetSafeJSONValue(TJSONObject(Msg), IfThen(IsOfflineMsg, 'msgId', 'wid'), sTmp) then
-//      eventWID := sTmp;
-  if GetSafeJSONValue(TJSONObject(Data), 'timestamp', iTmp) then
-    eventTime := UnixToDateTime(iTmp, False);
-
-  GetSafeJSONValue(Data, 'base64Encoded', IsBase64);
-  GetSafeJSONValue(Data, 'dataCapability', Cap);
-  GetSafeJSONValue(Data, 'dataType', sTmp); // invite??
-  GetSafeJSONValue(Data, 'dataIM', OrigMsg);
-(* TODO: Encrypted data
-  if Copy(hex2StrU(Cap), 1, 4) = 'RDEC' then
-  begin
-    pubKey := getTLVSafe($EC, snac, ofs);
-    if not (c.Crypt.SupportEcc and (c.Crypt.EccPubKey = pubKey) and (c.Crypt.EccMsgKey > '')) then
+    MsgPos := Dlg.GetValue('intro');
+    if Assigned(MsgPos) and (MsgPos is TJSONObject) then
     begin
-      // Need to calculate key
-      msgKey := '';
-      if pubKey > '' then
-      begin
-        SetLength(msgKey, sizeof(TECCSecretKey));
-        if not ecdh_shared_secret(PECCPublicKey(pubKey)^, fECCKeys.pk, PECCSecretKey(msgKey)^) then
-          msgKey := '';
-      end;
-      c.Crypt.EccPubKey := pubKey;
-      c.Crypt.EccMsgKey := msgKey;
-    end else
-      msgKey := c.Crypt.EccMsgKey;
-
-    if not (msgKey > '') then
-      msg := getTranslation('R&Q error: Unknown key for encription')
-    else
-    begin
-      eventFlags := eventFlags or IF_Encrypt;
-      CrptMsg := Base64DecodeString(OrigMsg);
-      CalcKey(True, msgKey, c.UID2cmp, MyAccount, eventMsgID, origMsgLen, key);
-
-      i := Length(CrptMsg);
-      SetLength(Msg, i+AESBLKSIZE);
-
-      ctx := TAESECB.Create(key[0], 256);
-      ctx.Decrypt(@CrptMsg[1], @msg[1], i);
-      ctx.Free;
-
-      if CompressType = 1 then
-        msg := ZDecompressStr(Copy(msg, 5, Length(msg)));
-
-      setLength(msg, origMsgLen);
-
-      if Length(msg) > 0 then
-      begin
-        msgCRC := (ZipCrc32($FFFFFFFF, @msg[1], origMsgLen) XOR $FFFFFFFF);
-        if msgCRC <> origMsgCRC then
-        begin
-          msg := getTranslation('R&Q error: Could''t decrypt message. Bad CRC. Enhanced encryption.');
-          eventFlags := eventFlags and not IF_Bin and not IF_CODEPAGE_MASK;
-        end;
-      end;
-      eventContact := thisCnt;
-
-      notificationForMsg(msgtype, msgflags, priority=2, msg);
-
-      case getStatus of
-        byte(SC_away): sendACK(thisCnt, ACK_AWAY, '');
-        byte(SC_na): sendACK(thisCnt, ACK_NA, '');
-        byte(SC_dnd), byte(SC_occupied):
-          if priority = 2 then
-            sendACK(thisCnt, ACK_OK, '', msgDwnCnt)
-          else
-            sendACK(thisCnt, ACK_NOBLINK,'')
-        else sendACK(thisCnt, ACK_OK, '', msgDwnCnt)
-      end;
+      Msgs := TJSONObject(MsgPos).GetValue('messages') as TJSONArray;
+      if Assigned(Msgs) then
+        for Msg in Msgs do
+          if Msg is TJSONObject then
+            ProcessMsg(TJSONObject(Msg));
     end;
-  end
-*)
-//  notifyListeners(IE_msg);
+
+    MsgPos := Dlg.GetValue('tail');
+    if Assigned(MsgPos) and (MsgPos is TJSONObject) then
+    begin
+      Msgs := TJSONObject(MsgPos).GetValue('messages') as TJSONArray;
+      if Assigned(Msgs) then
+        for Msg in Msgs do
+          if Msg is TJSONObject then
+            ProcessMsg(TJSONObject(Msg));
+    end;
+  end;
 end;
 
 procedure TWIMSession.ProcessIMState(const Data: TJSONObject);
@@ -4810,7 +5093,7 @@ begin
   if not Assigned(Data) then
     Exit;
 
-  c := GeTWIMContact(Data.GetValue('aimId').Value);
+  c := GetWIMContact(Data.GetValue('aimId').Value);
   if not Assigned(c) then
     Exit;
 
@@ -4832,6 +5115,78 @@ begin
   notifyListeners(IE_typing);
 end;
 
+procedure TWIMSession.ProcessAddedYou(const Data: TJSONObject);
+var
+  c: TWIMContact;
+  NeedAuth: Integer;
+  Name, Msg: String;
+begin
+  if not Assigned(Data) then
+    Exit;
+
+  c := GetWIMContact(Data.GetValue('requester').Value);
+  if not Assigned(c) then
+    Exit;
+
+  //GetSafeJSONValue(Data, 'displayAIMid', Name);
+  GetSafeJSONValue(Data, 'authRequested', NeedAuth);
+  GetSafeJSONValue(Data, 'msg', Msg);
+
+  eventContact := c;
+  eventTime := Now;
+  eventFlags := 0;
+  eventMsgA := Msg;
+  NotifyListeners(IE_addedYou);
+
+  if NeedAuth = 1 then
+  begin
+    eventContact := c;
+    eventTime := Now;
+    eventFlags := 0;
+    eventMsgA := Msg;
+    NotifyListeners(IE_authReq);
+  end;
+end;
+
+procedure TWIMSession.ProcessPermitDeny(const Data: TJSONObject);
+var
+  c: TWIMContact;
+  Mode: String;
+  Item, Items: TJSONValue;
+begin
+  if not Assigned(Data) then
+    Exit;
+
+  SpamList.Clear;
+  Items := Data.GetValue('ignores');
+  if Assigned(Items) and (Items is TJSONArray) then
+  for Item in TJSONArray(Items) do
+  begin
+    c := nil;
+    if not (TJSONString(Item).Value = '') then
+      c := GetWIMContact(TJSONString(Item).Value);
+    if not Assigned(c) then
+      Continue;
+    SpamList.Add(c);
+    AddToIgnoreList(c, True);
+    eventContact := c;
+    NotifyListeners(IE_contactupdate);
+  end;
+
+(* Clear unsupported block list?
+  Items := Data.GetValue('blocks');
+  if Assigned(Items) and (Items is TJSONArray) then
+    for Item in TJSONArray(Items) do
+      RemFromBlock(TJSONString(Item).Value);
+*)
+  if GetSafeJSONValue(Data, 'pdMode', Mode) then
+    if not (Mode = '') then
+      if (SpamList.Count > 0) and not (Mode = 'denySome') then
+        SetPermitDenyMode('denySome');
+
+  NotifyListeners(IE_UpdatePrefsFrm);
+end;
+
 // Not working, for VoIP?
 procedure TWIMSession.InitWebRTC;
 var
@@ -4849,12 +5204,12 @@ begin
   SendRequest(False, BaseURL, MakeParams('GET', BaseURL, Params), 'Init WebRTC');
 end;
 
-procedure TWIMSession.checkServerHistory(uid: TUID);
+procedure TWIMSession.checkServerHistory(const uid: TUID);
 begin
   checkOrGetServerHistory(uid, False);
 end;
 
-procedure TWIMSession.getServerHistory(uid: TUID);
+procedure TWIMSession.getServerHistory(const uid: TUID);
 begin
   checkOrGetServerHistory(uid, True);
 end;
@@ -5147,9 +5502,12 @@ begin
     if GetSafeJSONValue(TJSONObject(Results.Get(0)), 'resultCode', ResCode) then
     if TryStrToInt(ResCode, Code) then
     begin
-      if Code = 0 then // Success! Get profile of a newly added contact
-        GetProfile(c.UID2cmp)
-      else
+      if Code = 0 then // Success! Remove local state and get profile of a newly added contact
+      begin
+        c.CntIsLocal := False;
+        GetProfile(c.UID2cmp);
+      end
+        else
       begin
         eventError := EC_AddContact_Error;
         eventInt := Code;
@@ -5225,21 +5583,17 @@ begin
     Exit;
 end;
 
-procedure TWIMSession.AuthGrant(c: TWIMContact);
+procedure TWIMSession.AuthGrant(c: TWIMContact; Grant: Boolean = True);
 var
   JSON: TJSONObject;
   Query: UTF8String;
   BaseURL, ResCode: String;
   Code: Integer;
 begin
-  if c.CntIsLocal then
-    Exit;
-
   BaseURL := WIM_HOST + 'buddylist/authorizeUser';
   Query := '&t=' + ParamEncode(String(c.UID2cmp)) +
-           '&authorized=1';
-  if SendSessionRequest(False, BaseURL, Query, 'Grant auth', 'Failed to grant authorization') then
-    c.Authorized := True
+           '&authorized=' + IfThen(Grant, '1', '0');
+  SendSessionRequest(False, BaseURL, Query, IfThen(Grant, 'Grant', 'Deny') + ' auth', 'Failed to ' + IfThen(Grant, 'grant', 'deny') + ' authorization');
 end;
 
 procedure TWIMSession.AuthRequest(c: TWIMContact; Reason: String);
@@ -5248,9 +5602,6 @@ var
   BaseURL: String;
   iam: TRnQContact;
 begin
-  if c.CntIsLocal then
-    Exit;
-
   if not ImVisibleTo(c) then
     if AddTempVisMsg then
       AddTemporaryVisible(c);
@@ -5491,11 +5842,11 @@ begin
   TWIMSession( Result ).FRefCount := 1;
 end;
 
-class function TWIMSession._getContactClass : TRnQCntClass;
+class function TWIMSession._getContactClass: TRnQCntClass;
 begin
   Result := TWIMContact;
 end;
-class function TWIMSession._getProtoServers : String;
+class function TWIMSession._getProtoServers: String;
 var
   i : Integer;
 begin
@@ -5503,12 +5854,13 @@ begin
   for I := 0 to Length(ICQServers) - 1 do
     Result := Result + ICQServers[i]+ CRLF;
 end;
+
 class function TWIMSession._getProtoID : Byte;
 begin
   Result := WIMProtoID;
 end;
 
-function TWIMSession.GetContactClass : TRnQCntClass;
+function TWIMSession.GetContactClass: TRnQCntClass;
 begin
   Result := TWIMContact;
 end;
@@ -5520,12 +5872,12 @@ end;
 
 function TWIMSession.GetContact(const UID: TUID): TRnQContact;
 begin
-  result := GeTWIMContact(uid);
+  result := GetWIMContact(uid);
 end;
 
 function TWIMSession.GetContact(const UIN: Integer): TRnQContact;
 begin
-  result := GeTWIMContact(uin);
+  result := GetWIMContact(uin);
 end;
 
 function TWIMSession.GetStatuses: TStatusArray;
@@ -5618,19 +5970,19 @@ begin
     Result := 0;
 end;
 
-procedure TWIMSession.getClientPicAndDesc4(cnt:TRnQContact;
+procedure TWIMSession.getClientPicAndDesc4(cnt: TRnQContact;
               var pPic: TPicName; var CliDesc: String);
 var
   c: TWIMContact;
 begin
-  pPic := '';
-  CliDesc := Str_unk;
   if isOffline or (cnt=NIL) or cnt.isOffline then
     exit;
   if cnt is TWIMContact then
     c := TWIMContact(cnt)
    else
     Exit;
+  pPic := '';
+  CliDesc := Str_unk;
 
 //  getICQClientPicAndDesc(c, pPic, CliDesc);
 end; // getClientPicAndDesc4
@@ -5647,7 +5999,7 @@ procedure TWIMSession.ApplyBalloon;
   end;
 begin
   if GetMyInfo = nil then
-  raise Exception.create('ApplyBalloon: ICQ.MyInfo is nil');
+    raise Exception.create('ApplyBalloon: ICQ.MyInfo is nil');
 
   Self.birthdayFlag := (SendBalloonOn = BALLOON_BDAY) and SameMonthDay(self.getMyInfo.birth, Now)
                        or (SendBalloonOn = BALLOON_DATE) and SameMonthDay(SendBalloonOnDate, Now)
@@ -5656,7 +6008,7 @@ end; // ApplyBalloon
 
 class constructor TWIMSession.InitICQProto;
 var
-  b, b2 : Byte;
+  b, b2: Byte;
 begin
   SetLength(ICQstatuses, Byte(HIGH(TWIMStatus))+1);
   for b := byte(LOW(TWIMStatus)) to byte(HIGH(TWIMStatus)) do

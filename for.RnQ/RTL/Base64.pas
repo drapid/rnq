@@ -18,6 +18,9 @@ uses
 
   function Base64EncodeToString(const InBuffer; InSize: DWord): AnsiString;
 
+  procedure Base64EncodeBytes(const InBytes: TBytes; var OutBytes: TBytes);
+  procedure Base64DecodeBytes(const InBytes: TBytes; var OutBytes: TBytes);
+
 implementation
 
 const
@@ -242,6 +245,46 @@ begin
   SetLength(Result, CalcEncodedSize(InSize));
   POut := @Result[1];
   Base64Encode(InBuffer, InSize, POut^);
+end;
+
+procedure Base64EncodeBytes(const InBytes: TBytes; var OutBytes: TBytes);
+var
+  InSize, OutSize: DWord;
+  PIn, POut: Pointer;
+begin
+  InSize := Length(InBytes);
+  OutSize := CalcEncodedSize(InSize);
+  SetLength(OutBytes, OutSize);
+  if OutSize > 0 then
+  begin
+    PIn := @InBytes[0];
+    POut := @OutBytes[0];
+    Base64Encode(PIn^, InSize, POut^);
+  end;
+end;
+
+procedure Base64DecodeBytes(const InBytes: TBytes; var OutBytes: TBytes);
+var
+  InSize, OutSize: DWord;
+  PIn, POut: Pointer;
+begin
+  InSize := Length(InBytes);
+  if InSize = 0 then
+  begin
+    SetLength(OutBytes, 0);
+    Exit;
+  end;
+
+  PIn := @InBytes[0];
+  OutSize := CalcDecodedSize(PIn, InSize);
+
+  SetLength(OutBytes, OutSize);
+  if OutSize > 0 then
+  begin
+    FillChar(OutBytes[0], OutSize, '.');
+    POut := @OutBytes[0];
+    Base64Decode(PIn^, InSize, POut^);
+  end;
 end;
 
 end.

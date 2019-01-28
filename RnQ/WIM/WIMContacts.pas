@@ -36,6 +36,7 @@ type
     UININT: Integer;
     //Invisible: Boolean;
     NoClient: Boolean;
+    Official: Boolean;
     ClientClosed: TDateTime;
     Status: TWIMStatus;
     PrevStatus: TWIMStatus;
@@ -119,6 +120,7 @@ type
     CapabilitiesSm: set of 1..36;
     CapabilitiesXTraz: set of 1..50;
     ExtraCapabilities: RawByteString;
+    LastCapsUpdate: TTime;
     InfoToken: RawByteString;
 //    Interests: Array of record code: Integer; Str: String; end;
     Cookie: RawByteString;

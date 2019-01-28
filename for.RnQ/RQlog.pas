@@ -211,13 +211,19 @@ procedure TlogFrm.LogListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
 begin
   if Node = NIL then
     Exit;
+  dumpBox.WordWrap := True;
+  dumpBox.ScrollBars := ssVertical;
   with TLogItem(PLogItem(LogList.GetNodeData(Node))^) do
    begin
      if (Cpt = Text) then
       dumpBox.Text := Cpt
      else
       if pkt then
-        dumpBox.Text := Cpt + CrLfS + hexDumpS(PktData)
+        begin
+          dumpBox.WordWrap := false;
+          dumpBox.ScrollBars := ssBoth;
+          dumpBox.Text := Cpt + CrLfS + hexDumpS(PktData);
+        end
        else
         dumpBox.Text := Cpt + CrLfS + Text;
    end;

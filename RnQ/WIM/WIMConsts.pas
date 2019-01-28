@@ -28,10 +28,6 @@ type
   TVisibility = (VI_normal, VI_invisible, VI_privacy, VI_all, VI_CL);
 
 const
-  LOGIN_CHANNEL = 1;
-  SNAC_CHANNEL = 2;
-  LOGOUT_CHANNEL = 4;
-
   SupportedPresenceFields: array [1 .. 34] of String = ('aimId', 'displayId', 'friendly', 'moodIcon', 'moodTitle',
     'offlineMsg', 'state', 'statusMsg', 'userType', 'phoneNumber', 'cellNumber', 'smsNumber', 'workNumber', 'otherNumber',
     'capabilities', 'ssl', 'abPhoneNumber', 'lastName', 'abPhones', 'abContactName', 'lastseen', 'mute', 'livechat', 'official',
@@ -44,21 +40,16 @@ const
   visibility2imgName: array [Tvisibility] of TPicName = (PIC_VISIBILITY_NORMAL, PIC_VISIBILITY_NONE,
     PIC_VISIBILITY_PRIVACY, PIC_VISIBILITY_ALL, PIC_VISIBILITY_CL);
   visib2str: array [Tvisibility] of TPicName = ('normal', 'invisible', 'privacy', 'all', 'cl');
-  visibility2SSIcode: array [Tvisibility] of byte = (04, 02, 03, 01, 05);
-  visibilitySSI2vis: array [1 .. 5] of Tvisibility = (VI_all, VI_invisible, VI_privacy, VI_normal, VI_CL);
   status2ShowStr: array [TWIMStatus] of string = ('Online', 'Offline', 'Unknown', 'Occupied', 'N/A', 'Away');
   status2Img: array [0 .. Byte(SC_AWAY)] of TPicName = ('online', 'offline', 'unk', 'occupied', 'na', 'away');
-  status2code: array [TWIMStatus] of dword = (0, 0, 0, $11, 5, 1);
   statusWithAutoMsg = [byte(SC_AWAY), byte(SC_NA), byte(SC_OCCUPIED)];
 
 const
   maxRefs = 2000;
   // directProtoVersion=8;
-  My_proto_ver = 11;
-  ICQ_TCP_VERSION = My_proto_ver;
   maxPwdLength = 16;
   AIM_MD5_STRING: AnsiString = 'AOL Instant Messenger (SM)';
-  ICQ_DEV_ID: AnsiString = 'ic1rtwz1s1Hj1O0r';
+  ICQ_DEV_ID: AnsiString = 'ic1nmMjqg7Yu-0hL'; // ic1nmMjqg7Yu-0hL - ICQ Windows, ic1rtwz1s1Hj1O0r - Web
   LOGIN_HOST: AnsiString = 'https://api.login.icq.net/';
   WIM_HOST: AnsiString = 'https://api.icq.net/';
   REST_HOST: AnsiString = 'https://rapi.icq.net/';
@@ -69,6 +60,8 @@ const
   // ICQ_SECURE_LOGIN_SERVER = 'slogin.oscar.aol.com';
   AOL_FILE_TRANSFER_SERVER0 = 'ars.icq.com';
   ICQ_SECURE_LOGIN_SERVER0 = 'slogin.icq.com';
+
+  ICQErrorReconnectDelay = 5000; // Default attempt delay after error
 
   BALLOON_NEVER = 0;
   BALLOON_ALWAYS = 1;
@@ -148,8 +141,8 @@ const
   );
 // capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 // capStr20012  = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xbc, 0xd2, 0x00, 0x04, 0xac, 0x96, 0xdd, 0x96};
-CapsMakeBig1 = AnsiString(#$09#$46);
-CapsMakeBig2 = AnsiString(#$4C#$7F#$11#$D1#$82#$22#$44#$45#$53#$54#$00#$00);
+  CapsMakeBig1 = AnsiString(#$09#$46);
+  CapsMakeBig2 = AnsiString(#$4C#$7F#$11#$D1#$82#$22#$44#$45#$53#$54#$00#$00);
 
 (*
   #define kAccCap_SecureIm   OLESTR( "{09460001-4C7F-11D1-8222-444553540000}")
@@ -171,11 +164,11 @@ CapsMakeBig2 = AnsiString(#$4C#$7F#$11#$D1#$82#$22#$44#$45#$53#$54#$00#$00);
   #define kAccCap_SmartCaps   OLESTR( "{094601FF-4C7F-11D1-8222-444553540000}")
 *)
 
-CapsSmall: array [1 .. 36] of record
-  v: RawByteString;
-  s: AnsiString;
-  Desc: AnsiString;
-end
+  CapsSmall: array [1 .. 36] of record
+    v: RawByteString;
+    s: AnsiString;
+    Desc: AnsiString;
+  end
 = ((v: #$01#$00; s: 'Video'; Desc: ''), // = Video
   (v: #$01#$01; s: 'SIP/RTP video'; Desc: 'Can do live video streaming, using SIP/RTP'),
   // 2 = RtpVideo
@@ -219,479 +212,111 @@ end
   (v: #$13#$53; s: 'Unique request ID'),  // 32
   (v: #$13#$54; s: 'Emoji support'),  // 33
   (v: #$13#$59; s: 'Mail notifications'),  // 34
-  (v: #$13#$5A; s: 'Intro dialog states'; desc: 'Receive dialog states on first connect'),  // 35
+  (v: #$13#$5A; s: 'Dialog messages position support'; desc: 'Receive intro/tail messages'),  // 35
   (v: #$13#$5B; s: 'Mentions support')  // 36
   );
-// #$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00  // Anti-invischeck
-MsgCapabilities:
-array [1 .. 1] of RawByteString = (#$3B#$60#$B3#$EF#$D8#$2A#$6C#$45#$A4#$E0#$9C#$5A#$5E#$67#$E8#$65
+  // #$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00  // Anti-invischeck
+  MsgCapabilities: array [1 .. 1] of RawByteString = (#$3B#$60#$B3#$EF#$D8#$2A#$6C#$45#$A4#$E0#$9C#$5A#$5E#$67#$E8#$65
   // XStatus
   // #$09#$46#$13#$43#$4C#$7F#$11#$D1#$82#$22#$44#$45#$53#$54#$00#$00 // file transfer (Send)
   // D9122DF0-9130-11D3-8DD7-00104B06462E //File transfer plugin.
   // #$09#$46#$13#$48#$4C#$7F#$11#$D1#$82#$22#$44#$45#$53#$54#$00#$00 // file transfer (Recieve)
   // #$09#$46#$13#$49#$4C#$7F#$11#$D1#$82#$22#$44#$45#$53#$54#$00#$00, // Plugin MSG
   // #$f0#$2d#$12#$d9#$30#$91#$d3#$11#$8d#$d7#$00#$10#$4b#$06#$46#$2e,
-
   );
-// msgUTF : TGUID = '{0946134E-4C7F-11D1-8222-444553540000}';
-msgUTFstr = '{0946134E-4C7F-11D1-8222-444553540000}';
-msgRTF:
-TGUID = '{97B12751-243C-4334-AD22-D6ABF73F1492}';
-msgRnQpass:
-TGUID = '{e92a62a2-e32a-49dc-acc6-22066bd4f316}';
-// msgQIPpass : TGUID = '{d3d45319-8b32-403b-acc7-d1a9e2b5813e}';
-msgQIPpassStr = AnsiString('{D3D45319-8B32-403B-ACC7-D1A9E2B5813E}');
+  // msgUTF : TGUID = '{0946134E-4C7F-11D1-8222-444553540000}';
+  msgUTFstr = '{0946134E-4C7F-11D1-8222-444553540000}';
+  msgRTF: TGUID = '{97B12751-243C-4334-AD22-D6ABF73F1492}';
+  msgRnQpass: TGUID = '{e92a62a2-e32a-49dc-acc6-22066bd4f316}';
+  // msgQIPpass : TGUID = '{d3d45319-8b32-403b-acc7-d1a9e2b5813e}';
+  msgQIPpassStr = AnsiString('{D3D45319-8B32-403B-ACC7-D1A9E2B5813E}');
 
-CAPS_sm_SmartCaps = 10;
-CAPS_sm_ICQServerRelay = 12;
-CAPS_sm_ICQ = 13;
-CAPS_sm_UTF8 = 14;
-CAPS_sm_Avatar = 15;
-CAPS_sm_BuddyIcon = 17;
-CAPS_sm_File = 18;
-CAPS_sm_FileTransfer = 20;
-CAPS_sm_ShareBuddies = 23;
-CAPS_sm_AIM = 24;
-CAPS_sm_ShortCaps = 25;
-CAPS_sm_SecIM = 26;
-CAPS_sm_NewStat = 28;
+  CAPS_sm_SmartCaps = 10;
+  CAPS_sm_ICQServerRelay = 12;
+  CAPS_sm_ICQ = 13;
+  CAPS_sm_UTF8 = 14;
+  CAPS_sm_Avatar = 15;
+  CAPS_sm_BuddyIcon = 17;
+  CAPS_sm_File = 18;
+  CAPS_sm_FileTransfer = 20;
+  CAPS_sm_ShareBuddies = 23;
+  CAPS_sm_AIM = 24;
+  CAPS_sm_ShortCaps = 25;
+  CAPS_sm_SecIM = 26;
+  CAPS_sm_NewStat = 28;
+  CAPS_sm_UniqueID = 32;
+  CAPS_sm_Emoji = 33;
+  CAPS_sm_MailNotify = 34;
+  CAPS_sm_IntroDlgStates = 35;
+  CAPS_sm_Mentions = 36;
 
-CAPS_big_RTF = 1;
-CAPS_big_2001 = 2;
-CAPS_big_MTN = 3;
-CAPS_big_SecIM = 4;
-CAPS_big_Chat = 5;
-CAPS_big_Xtraz = 6;
-CAPS_big_QIP_Secure = 7;
-CAPS_big_Lite = 8;
-CAPS_big_Tril = 9;
-CAPS_big_macICQ = 11;
-CAPS_big_LICQ = 12;
-CAPS_big_QIP = 13;
-CAPS_big_MultiUserChat = 17;
-CAPS_big_RMBLR = 18;
-CAPS_BIG_Xtraz5 = 20;
-CAPS_big_tZers = 21;
-CAPS_big_ICQ6 = 22;
-CAPS_big_CryptMsg = 23;
-CAPS_big_qipInf = 24;
-CAPS_big_qipWM = 27;
-CAPS_big_qipSym = 28;
-CAPS_big_qip2010 = 29;
-CAPS_big_tZers_Mults = 30;
-CAPS_big_Build = 31;
-CAPS_big_Buzz = 32;
+  CAPS_big_RTF = 1;
+  CAPS_big_2001 = 2;
+  CAPS_big_MTN = 3;
+  CAPS_big_SecIM = 4;
+  CAPS_big_Chat = 5;
+  CAPS_big_Xtraz = 6;
+  CAPS_big_QIP_Secure = 7;
+  CAPS_big_Lite = 8;
+  CAPS_big_Tril = 9;
+  CAPS_big_macICQ = 11;
+  CAPS_big_LICQ = 12;
+  CAPS_big_QIP = 13;
+  CAPS_big_MultiUserChat = 17;
+  CAPS_big_RMBLR = 18;
+  CAPS_BIG_Xtraz5 = 20;
+  CAPS_big_tZers = 21;
+  CAPS_big_ICQ6 = 22;
+  CAPS_big_CryptMsg = 23;
+  CAPS_big_qipInf = 24;
+  CAPS_big_qipWM = 27;
+  CAPS_big_qipSym = 28;
+  CAPS_big_qip2010 = 29;
+  CAPS_big_tZers_Mults = 30;
+  CAPS_big_Build = 31;
+  CAPS_big_Buzz = 32;
 
-CAPS_Ext_CLI_Last = 14;
-CAPS_Ext_CLI_First = 9;
+  CAPS_Ext_CLI_Last = 14;
+  CAPS_Ext_CLI_First = 9;
 
-header2711_0 = AnsiString(#$1B#0) + AnsiChar(My_proto_ver) + Z + Z + Z + Z + #00#00#00;
-header2711 = header2711_0 + AnsiString(#03#00#00#00) + #04#$FF#$FF#$E#0#$FF#$FF + Z + Z + Z;
-header2711_1 = header2711_0 + #01#00#00#00 + #00#$FF#$FF#$E#0#$FF#$FF + Z + Z + Z;
-header2711_2 = header2711_0 + #03#00#00#00 + #00#00#00#$0E#00#00#00 + Z + Z + Z;
+  // Message types
+  MTYPE_PLAIN = $01; // Plain text (simple) message
+  MTYPE_CHAT = $02; // Chat request message
+  MTYPE_FILEREQ = $03; // File request / file ok message
+  MTYPE_URL = $04; // URL message (0xFE formatted)
+  MTYPE_AUTHREQ = $06; // Authorization request message (0xFE formatted)
+  MTYPE_AUTHDENY = $07; // Authorization denied message (0xFE formatted)
+  MTYPE_AUTHOK = $08; // Authorization given message (empty)
+  MTYPE_SERVER = $09; // Message from OSCAR server (0xFE formatted)
+  MTYPE_ADDED = $0C; // "You-were-added" message (0xFE formatted)
+  MTYPE_WWP = $0D; // Web pager message (0xFE formatted)
+  MTYPE_EEXPRESS = $0E; // Email express message (0xFE formatted)
+  MTYPE_CONTACTS = $13; // Contact list message
+  MTYPE_PLUGIN = $1A; // Plugin message described by text string
+  MTYPE_AUTOAWAY = $E8; // Auto away message
+  MTYPE_AUTOBUSY = $E9; // Auto occupied message
+  MTYPE_AUTONA = $EA; // Auto not available message
+  MTYPE_AUTOFFC = $EC; // Auto free for chat message
 
-publicEmailTab:
-array [boolean] of byte = (0, 1);
+  MTYPE_XSTATUS = $61;
+  MTYPE_GCARD = $62;
 
-// Message types
-MTYPE_PLAIN = $01; // Plain text (simple) message
-MTYPE_CHAT = $02; // Chat request message
-MTYPE_FILEREQ = $03; // File request / file ok message
-MTYPE_URL = $04; // URL message (0xFE formatted)
-MTYPE_AUTHREQ = $06; // Authorization request message (0xFE formatted)
-MTYPE_AUTHDENY = $07; // Authorization denied message (0xFE formatted)
-MTYPE_AUTHOK = $08; // Authorization given message (empty)
-MTYPE_SERVER = $09; // Message from OSCAR server (0xFE formatted)
-MTYPE_ADDED = $0C; // "You-were-added" message (0xFE formatted)
-MTYPE_WWP = $0D; // Web pager message (0xFE formatted)
-MTYPE_EEXPRESS = $0E; // Email express message (0xFE formatted)
-MTYPE_CONTACTS = $13; // Contact list message
-MTYPE_PLUGIN = $1A; // Plugin message described by text string
-MTYPE_AUTOAWAY = $E8; // Auto away message
-MTYPE_AUTOBUSY = $E9; // Auto occupied message
-MTYPE_AUTONA = $EA; // Auto not available message
-MTYPE_AUTOFFC = $EC; // Auto free for chat message
+  MTYPE_UNKNOWN = $00; // Unknown message, only used internally by this plugin
 
-MTYPE_XSTATUS = $61;
-MTYPE_GCARD = $62;
+  MTYPE_AUTOMSGS = [MTYPE_AUTOAWAY, MTYPE_AUTOBUSY, MTYPE_AUTONA, MTYPE_AUTOFFC];
 
-MTYPE_UNKNOWN = $00; // Unknown message, only used internally by this plugin
+  PLUGIN_SCRIPT = AnsiString('Script Plug-in: Remote Notification Arrive');
+  ACK_OK = 0;
+  ACK_FILEDENY = 1;
+  ACK_OCCUPIED = 9;
+  ACK_AWAY = 4;
+  ACK_NA = $E;
+  ACK_NOBLINK = $C;
 
-MTYPE_AUTOMSGS = [MTYPE_AUTOAWAY, MTYPE_AUTOBUSY, MTYPE_AUTONA, MTYPE_AUTOFFC];
-
-PLUGIN_SCRIPT = AnsiString('Script Plug-in: Remote Notification Arrive');
-ACK_OK = 0;
-ACK_FILEDENY = 1;
-ACK_OCCUPIED = 9;
-ACK_AWAY = 4;
-ACK_NA = $E;
-ACK_NOBLINK = $C;
-
-flag_invisible = $00000100;
-flag_webaware = $00010000;
-flag_showip = $00020000;
-flag_birthday = $00080000;
-flag_unknown = $00100000;
-// if none of the following direct connection is for everyone
-
-MTN_FINISHED = $0000; // typing finished sign
-MTN_TYPED = $0001; // text typed sign
-MTN_BEGUN = $0002; // typing begun sign
-MTN_CLOSED = $000F; // Closed chat
-
-// Channels
-ICQ_LOGIN_CHAN = 01;
-ICQ_DATA_CHAN = 02;
-ICQ_ERROR_CHAN = 03;
-ICQ_CLOSE_CHAN = 04;
-ICQ_PING_CHAN = 05;
-
-// Families
-ICQ_SERVICE_FAMILY = $0001;
-ICQ_LOCATION_FAMILY = $0002;
-ICQ_BUDDY_FAMILY = $0003;
-ICQ_MSG_FAMILY = $0004;
-ICQ_BOS_FAMILY = $0009;
-ICQ_STATUS_FAMILY = $000B;
-ICQ_AVATAR_FAMILY = $0010;
-ICQ_LISTS_FAMILY = $0013; // Feedbag (Buddylist)
-ICQ_EXTENSIONS_FAMILY = $0015;
-
-ICQ_BUCP_FAMILY = $0017; // BUCP Service (Login)
-
-// FLAGS BUDDY__RIGHTS_QUERY_FLAGS for Snac 0302
-BART_SUPPORTED = $0001; // Want to receive BART items
-INITIAL_DEPARTS = $0002;
-// Want to receive ARRIVE/DEPART for all users on a Buddy List, even those offline
-OFFLINE_BART_SUPPORTED = $0004;
-// Want to receive BART items for offline buddies, excluding location
-REJECT_PENDING_BUDDIES = $0008;
-// If set and INITIAL_DEPARTS is set, use REJECT on pending buddies instead of DEPART
-
-// SNACS for ICQ Extensions Family 0x0015
-SRV_ICQEXT_ERROR = $0001;
-CLI_META_REQ = $0002;
-SRV_META_REPLY = $0003;
-
-// SNACS for 04/06 (send message)
-CLI_META_MSG = $0006;
-CLI_META_MSG_DATA = $0002;
-CLI_META_MSG_ACK = $0003;
-CLI_META_MSG_OWNER = $001C;
-CLI_META_MSG_UNK = $001F;
-CLI_META_STORE_IF_OFFLINE = $0006;
-CLI_META_STICKER_DATA = $0031;
-CLI_META_REQ_CAPS_BYTE = $05;
-CLI_META_FRAG_VERSION_BYTE = $01;
-CLI_META_FRAG_ID_BYTE = $01; // 1 = text message
-CLI_META_REQ_CAP = $0106; // Unknown cap
-CLI_META_MSG_CHARSET = $0002;
-CLI_META_MSG_LANGUAGE = $0020;
-
-// Reply types for SNAC 15/02 & 15/03
-CLI_OFFLINE_MESSAGE_REQ = $003C;
-CLI_DELETE_OFFLINE_MSGS_REQ = $003E;
-SRV_OFFLINE_MESSAGE = $0041;
-SRV_END_OF_OFFLINE_MSGS = $0042;
-CLI_META_INFO_REQ = $07D0;
-SRV_META_INFO_REPLY = $07DA;
-
-// Reply subtypes for SNAC 15/02 & 15/03
-META_PROCESSING_ERROR = $0001; // Meta processing error server reply;
-META_SET_HOMEINFO_ACK = $0064; // Set user home info server ack;
-META_SET_WORKINFO_ACK = $006E; // Set user work info server ack;
-META_SET_MOREINFO_ACK = $0078; // Set user more info server ack;
-META_SET_NOTES_ACK = $0082; // Set user notes info server ack;
-META_SET_EMAILINFO_ACK = $0087; // Set user email(s) info server ack;
-META_SET_INTINFO_ACK = $008C; // Set user interests info server ack;
-META_SET_AFFINFO_ACK = $0096; // Set user affilations info server ack;
-META_SMS_DELIVERY_RECEIPT = $0096; // Server SMS response (delivery receipt) NOTE: same as ID above;
-META_SET_PERMS_ACK = $00A0; // Set user permissions server ack;
-META_SET_PASSWORD_ACK = $00AA; // Set user password server ack;
-META_UNREGISTER_ACK = $00B4; // Unregister account server ack;
-META_SET_HPAGECAT_ACK = $00BE; // Set user homepage category server ack;
-META_BASIC_USERINFO = $00C8; // User basic info reply;
-META_WORK_USERINFO = $00D2; // User work info reply;
-META_MORE_USERINFO = $00DC; // User more info reply;
-META_NOTES_USERINFO = $00E6; // User notes (about) info reply;
-META_EMAIL_USERINFO = $00EB; // User extended email info reply;
-META_INTERESTS_USERINFO = $00F0; // User interests info reply;
-META_AFFILATIONS_USERINFO = $00FA; // User past/affilations info reply;
-META_SHORT_USERINFO = $0104; // Short user information reply;
-META_HPAGECAT_USERINFO = $010E; // User homepage category information reply;
-META_SIMPLE_QUERY = $019A;
-SRV_USER_FOUND = $01A4; // Search: user found reply;
-SRV_LAST_USER_FOUND = $01AE; // Search: last user found reply;
-META_REGISTRATION_STATS_ACK = $0302; // Registration stats ack;
-SRV_RANDOM_FOUND = $0366; // Random search server reply;
-META_REQUEST_PROFILE_INFO = $051F; // Request user info;
-META_REQUEST_FULL_INFO = $04B2; // Request full user info;
-META_REQUEST_SHORT_INFO = $04BA; // Request short user info;
-META_REQUEST_SELF_INFO = $04D0; // Request full self user info;
-META_REQUEST_DELETE_UIN = $04C4; // Unreg UIN?;
-META_REQUEST_CHANGE_PWD = $042E;
-META_REQUEST_SEND_SMS = $1482;
-META_SEARCH_GENERIC = $055F; // Search user by details (TLV);
-META_SEARCH_UIN = $0569; // Search user by UIN (TLV);
-META_SEARCH_EMAIL = $0573; // Search user by E-mail (TLV);
-META_XML_INFO = $08A2; // Server variable requested via xml;
-META_SET_FULLINFO_ACK = $0C3F; // Server ack for set fullinfo command;
-META_SPAM_REPORT_ACK = $2012; // Server ack for user spam report;
-META_SEND_PERM = $0C3A;
-
-User_email = $015E;
-User_First = $0140;
-User_Last = $014A;
-User_Nick = $0154;
-User_Nick_U = $015F;
-User_City = $0190;
-User_State = $019A;
-User_Cntry = $01A4;
-User_Inter = $01EA;
-User_Gender = $017C;
-User_Lang = $0186;
-User_Age = $0168;
-// User_Age   = $0172;
-User_URL = $0213;
-User_OnOf = $0230;
-User_Birth = $023A;
-User_Notes = $0258;
-User_HmStr = $0262;
-// User_HmZip = $026C;
-User_HmZip2 = $026D;
-User_HmCel = $028A;
-User_Auth = $02F8;
-User_WebSt = $030C;
-User_GMTos = $0316;
-User_MarSts = $033E;
-
-// Work
-User_WkURL = $02DA;
-User_WkPos = $01C2;
-User_WkDept = $01B8;
-User_WkCmpny = $01AE;
-User_WkCity = $029E;
-User_WkState = $02A8;
-User_WkCntry = $02B2;
-User_WkZip = $02BC;
-User_WkCell = $02C6;
-
-// Made in COMPAD!!!!!!!!!!!
-META_SEARCH_COMPAD = $0FA0; // Adv Search in ComPad
-META_SAVE_PROFILE = $0FD2; // Set user profile data
-
-CP_User_Gender = $0082; // 1 байт
-CP_User_City = $00A0; // Chars
-CP_User_Cntry = $00BE; // 4 байта юзать!!!
-CP_User_Lang = $00FA; // 2 байта юзать!!!
-CP_User_Age = $0154; // Сначала большее, потом меньшее 4 байта
-CP_User_NICK = $017C; // Chars        Nick or Name
-CP_User_ONLINE = $0136; // WOrd #0001
-
-META_COMPAD_UID = $0032;
-META_COMPAD_INFO_HASH = $003C;
-META_COMPAD_NICK2 = $0046; // Nick again
-META_COMPAD_EMAIL = $0050; // E-Mail
-META_COMPAD_EMAIL_INACTIVE = $0055; // Неподтверждёное мыло!
-META_COMPAD_FNAME = $0064; // First Name // Имя
-META_COMPAD_LNAME = $006E; // Фамилия
-META_COMPAD_NICK = $0078; // Ник
-META_COMPAD_GENDER = $0082; // Пол
-META_COMPAD_Mails = $008C; // #00#00     // Содержит TLV 1 -> содержит TLV $64=Мыло для подключения
-META_COMPAD_HOMES = $0096; // Содержит внутри себя TLV с городом, областью, страной.
-META_COMPAD_HOMES_ADDRESS = $0064;
-META_COMPAD_HOMES_CITY = $006E;
-META_COMPAD_HOMES_STATE = $0078;
-META_COMPAD_HOMES_ZIP = $0082;
-META_COMPAD_HOMES_COUNTRY = $008C;
-META_COMPAD_FROM = $00A0; // Я из
-META_COMPAD_FROM_ADDRESS = $0064;
-META_COMPAD_FROM_CITY = $006E;
-META_COMPAD_FROM_STATE = $0078;
-META_COMPAD_FROM_COUNTRY = $008C;
-META_COMPAD_FROM_UNK1 = $0082;
-META_COMPAD_FROM_UNK2 = $0084;
-META_COMPAD_LANG1 = $00AA; // $0026
-META_COMPAD_LANG2 = $00B4; // $000C
-META_COMPAD_LANG3 = $00BE; // $0000
-META_COMPAD_PHONES = $00C8; // $0000  Номерa
-META_COMPAD_PHONES_NUM = $0064; // Телефон, но скорее стационарный, а не мобильный. Ещё факс там где-то))
-META_COMPAD_PHONES_CNT = $006E;
-
-META_COMPAD_HP = $00FA; // HomePage
-META_COMPAD_UNK9 = $0104; // $0000
-META_COMPAD_MAIL_UN = $010E; // $0000  - Пропала после запроса подтверждения мыла
-
-META_COMPAD_WORKS = $0118; // Работа
-META_COMPAD_WORKS_POSITION = $0064; // Должность
-META_COMPAD_WORKS_ORG = $006E; // Организация
-META_COMPAD_WORKS_PAGE = $0078; // WorkPage
-META_COMPAD_WORKS_DEPT = $007D; // Department
-META_COMPAD_WORKS_UNK2 = $0082; // ???   $0003
-META_COMPAD_WORKS_UNK3 = $0096; // Похоже на дату устройства. 8 символов
-META_COMPAD_WORKS_UNK4 = $00A0; // Похоже на дату увольнения. 8 символов
-META_COMPAD_WORKS_ADDRESS = $00AA; // Улица
-META_COMPAD_WORKS_CITY = $00B4; // Город
-META_COMPAD_WORKS_STATE = $00BE; // Область
-META_COMPAD_WORKS_COUNTRY = $00D2; // Страна
-META_COMPAD_WORKS_ZIP = $00C8; // Индекс
-
-META_COMPAD_MARITAL_STATUS = $012C; // Семейное положение
-
-META_COMPAD_INTERESTS = $0122;
-META_COMPAD_INTEREST_TEXT = $0064;
-META_COMPAD_INTEREST_ID = $006E;
-META_COMPAD_UNK10 = $0123; // $0000
-META_COMPAD_UNK11 = $0124; // $0000
-META_COMPAD_UNK12 = $012C; // $000C
-META_COMPAD_UNK13 = $0136; // $00 00 00 00 00 00 00 00
-META_COMPAD_UNK14 = $0140; // $0000
-META_COMPAD_UNK15 = $014A; // $0000
-META_COMPAD_UNK16 = $0154; // $0000
-META_COMPAD_UNK17 = $015E; // $0000
-META_COMPAD_UNK18 = $0168; // $0000
-META_COMPAD_UNK19 = $0172; // $0000
-META_COMPAD_GMT = $017C; // $FFFA  GMTs
-META_COMPAD_ABOUT = $0186; // About
-META_COMPAD_STS_MSG = $0226;
-META_COMPAD_MOBILE = $024E;
-
-META_COMPAD_STATUS = $0190;
-META_COMPAD_AUTH = $019A; // Request auth when someone adds you (0 = request; 1 = no request)
-META_COMPAD_BDAY = $01A4; // BirthDay
-
-META_COMPAD_INFO_CHG = $01CC; // Time of info changed (maybe)
-META_COMPAD_INFO_SHOW = $01F9; // Show info (2 = Cont; 1 = All but email; 0 = Show to all)
-META_COMPAD_WEBAWARE = $0212; // WebAware (1= show status)
-
-META_COMPAD_WP = $00; //
-// META_COMPAD_  = $01; //
-// META_COMPAD_  = $00; //
-
-const
-  FEEDBAG_CLASS_ID_BUDDY = $00;
-  FEEDBAG_CLASS_ID_GROUP = $01;
-  FEEDBAG_CLASS_ID_PERMIT = $02;
-  FEEDBAG_CLASS_ID_DENY = $03;
-  FEEDBAG_CLASS_ID_PDINFO = $04; // (R) PDMODE/PDMASK/PDFLAGS
-  FEEDBAG_CLASS_ID_BUDDY_PREFS = $05; // (R) Buddy List preferences
-  FEEDBAG_CLASS_ID_NONBUDDY = $06;
-  // (R) Users not in the Buddy List; use this to store aliases or other information for future use
-  FEEDBAG_CLASS_ID_TPA_PROVIDER = $07;
-  FEEDBAG_CLASS_ID_TPA_SUBSCRIPTION = $08;
-  FEEDBAG_CLASS_ID_CLIENT_PREFS = $09;
-  // (R) Client-specific preferences; name is name of client, e.g., "AIM Express"
-  FEEDBAG_CLASS_ID_STOCK = $0A;
-  FEEDBAG_CLASS_ID_WEATHER = $0B;
-  FEEDBAG_CLASS_ID_WATCH_LIST = $0D;
-  FEEDBAG_CLASS_ID_IGNORE_LIST = $0E;
-  FEEDBAG_CLASS_ID_DATE_TIME = $0F; // (R) Timestamp
-  FEEDBAG_CLASS_ID_EXTERNAL_USER = $10;
-  FEEDBAG_CLASS_ID_ROOT_CREATOR = $11;
-  FEEDBAG_CLASS_ID_FISH = $12;
-  FEEDBAG_CLASS_ID_IMPORT_TIMESTAMP = $13;
-  FEEDBAG_CLASS_ID_BART = $14; // (R) BART IDs; name is the BART Type
-  FEEDBAG_CLASS_ID_RB_ORDER = $15;
-  // (R) Order attribute lists recent buddies in the least to most recently used order
-  FEEDBAG_CLASS_ID_PERSONALITY = $16; // (R) Collection of BART ids
-  FEEDBAG_CLASS_ID_AL_PROF = $17; // (R) Information about Account Linking prefrences
-  FEEDBAG_CLASS_ID_AL_INFO = $18; // (R) Account linking information
-  FEEDBAG_CLASS_ID_DELETED = $19;
-  // FEEDBAG_CLASS_ID_INTERACTION      = $19; // (R) Non-Buddy interaction record
-  FEEDBAG_CLASS_ID_INFO_COLLECTION = $1D; // (R) Vanity information kept at user logoff
-  FEEDBAG_CLASS_ID_FAVORITE_LOCATION = $1E; // (R) User's favorite locations
-  FEEDBAG_CLASS_ID_BART_PDINFO = $1F; // (R) BART PDMODE
-  FEEDBAG_CLASS_ID_UNKNOWN = $20;
-
-  // FEEDBAG_STATUS_CODES (возвращаемые значения сервером после модификации)
-  FEEDBAG_STATUS_CODES_SUCCESS = $00;
-  FEEDBAG_STATUS_CODES_DB_ERROR = $01;
-  FEEDBAG_STATUS_CODES_NOT_FOUND = $02;
-  FEEDBAG_STATUS_CODES_ALREADY_EXISTS = $03;
-  FEEDBAG_STATUS_CODES_BAD_REQUEST = $0A;
-  FEEDBAG_STATUS_CODES_DB_TIME_OUT = $0B;
-  FEEDBAG_STATUS_CODES_OVER_ROW_LIMIT = $0C;
-  FEEDBAG_STATUS_CODES_NOT_EXECUTED = $0D;
-  FEEDBAG_STATUS_CODES_AUTH_REQUIRED = $0E;
-  FEEDBAG_STATUS_CODES_AUTO_AUTH = $0F;
-
-  SSI_OPERATION_CODES_ADD = $08;
-  SSI_OPERATION_CODES_UPDATE = $09;
-  SSI_OPERATION_CODES_REMOVE = $0A;
-
-  FEEDBAG_CLASS_NAMES: array [FEEDBAG_CLASS_ID_BUDDY .. FEEDBAG_CLASS_ID_UNKNOWN]
-    of string = ('Buddy', 'Group', 'Visible', 'Invisible', 'PDINFO', 'BUDDY_PREFS', 'NONBUDDY',
-    'TPA_PROVIDER', 'TPA_SUBSCRIPTION', 'CLIENT_PREFS', 'STOCK', 'Weather', 'Unk 0C', 'WATCH_LIST',
-    'Ignore list', 'Date time', 'EXTERNAL_USER', 'ROOT_CREATOR', 'FISH', 'Import time', 'BART',
-    'RB_ORDER', 'PERSONALITY', 'AL_PROF', 'AL_INFO', 'Deleted', '1A', '1B', '1C', 'INFO_COLLECTION',
-    'FAVORITE_LOCATION', 'Unk', 'Unk');
-
-  BART_ID_EMPTY = #$02#$01#$d2#$04#$72;
-
-  // Class: BART__ID_FLAGS
-  BART_FLAGS_CUSTOM = $01; // This is a custom blob; the opaque data will also be 16 bytes
-  BART_FLAGS_DATA = $04;
-  // The opaque field is really data the client knows how to process; these items do not need to be downloaded from BART
-  BART_FLAGS_UNKNOWN = $40;
-  // Used in OSERVICE__BART_REPLY; BART does not know about this ID, please upload
-  BART_FLAGS_REDIRECT = $80;
-  // Used in OSERVICE__BART_REPLY; BART says use this ID instead for the matching type
-
-  // Class: BART__ID_TYPES
-  BART_TYPE_BUDDY_ICON_SMALL = 0; // GIF/JPG/BMP, <= 32 pixels and 2k
-  BART_TYPE_BUDDY_ICON = 1; // GIF/JPG/BMP, <= 64 pixels and 7k
-  BART_TYPE_STATUS_STR = 2; // StringTLV format; DATA flag is always set
-  BART_TYPE_ARRIVE_SOUND = 3; // WAV/MP3/MID, <= 10K
-  BART_TYPE_RICH_TEXT = 4; // byte array of rich text codes; DATA flag is always set
-  BART_TYPE_SUPERBUDDY_ICON = 5; // XML
-  BART_TYPE_RADIO_STATION = 6; // Opaque struct; DATA flag is always set
-  BART_TYPE_BUDDY_ICON_BIG = 12; // SWF
-  BART_TYPE_STATUS_STR_TOD = 13; // Time when the status string is set
-  BART_TYPE_STATUS_MOOD = 14; // $0E
-  BART_TYPE_CURRENT_AV_TRACK = 15; // XML file; Data flag should not be set
-  BART_TYPE_XSTATUS = 16; // Just a guess :)
-  // BART_TYPE_DEPART_SOUND 96 WAV/MP3/MID, <= 10K
-  // BART_TYPE_IM_CHROME 129 GIF/JPG/BMP wallpaper
-  // BART_TYPE_IM_SOUND 131 WAV/MP3, <= 10K
-  // BART_TYPE_IM_CHROME_XML 136 XML
-  // BART_TYPE_IM_CHROME_IMMERS 137 Immersive Expressions
-  // BART_TYPE_EMOTICON_SET 1024 Set of default Emoticons
-  // BART_TYPE_ENCR_CERT_CHAIN 1026 Cert chain for encryption certs
-  // BART_TYPE_SIGN_CERT_CHAIN 1027 Cert chain for signing certs
-  // BART_TYPE_GATEWAY_CERT 1028 Cert for enterprise gateway
-
-  BART__REPLY_CODES: array [0 .. 7] of string = ('Success', 'ID is malformed',
-    'Custom blobs are not allowed for this type', 'Item uploaded is too small for this type',
-    'Item uploaded is too big for this type', 'Item uploaded is the wrong type',
-    'Item uploaded has been banned', 'Item downloaded was not found');
-  {
-    snac(13.37)!!!
-    FEEDBAG__REPORT_INTERACTION
-
-    It's used for reporting out-of-band interactions with other users to the OSCAR backend.
-
-    Packet dump:
-    > 2a 02 58 12 00 1c 00 13-00 37 00 00 00 00 00 37
-    > 01 01 00 0c 61 6f 6c 73-79 73 74 65 6d 6d 73 67
-    > 00 00
-
-    01 — interaction type
-    01 — number of screennames
-    00 0c — length of screenname
-    61 6f 6c 73-79 73 74 65 6d 6d 73 67 — screenname
-    00 00 — empty tlv block
-  }
-  // const
-  // Buddy types
-  // BUDDY_NORMAL    = $0000;      //A normal contact list entry
-  // BUDDY_GROUP     = $0001;      //A larger group header
-  // BUDDY_VISIBLE   = $0002;      //A contact on the visible list
-  // BUDDY_INVISIBLE = $0003;      //A contact on the invisible list
-  // BUDDY_IGNORE    = $000e;      //A contact on the ignore list
-  // BUDDY_ICON      = $0014;      //My Icon
-
-
-  // CRLF=#13#10;
+  MTN_FINISHED = $0000; // typing finished sign
+  MTN_TYPED = $0001; // text typed sign
+  MTN_BEGUN = $0002; // typing begun sign
+  MTN_CLOSED = $000F; // Closed chat
 
 type
   TICQAccept = (AC_OK, AC_DENIED, AC_AWAY);
@@ -701,7 +326,7 @@ type
     EC_missingLogin, EC_anotherLogin, EC_serverDisconnected, EC_badPwd, EC_cantChangePwd,
     EC_loginDelay, EC_cantCreateUIN, EC_invalidFlap, EC_badContact, EC_cantConnect_dc,
     EC_proxy_error, EC_proxy_badPwd, EC_proxy_unk, // unknown reply
-    EC_MalformedMsg, EC_AddContact_Error, EC_Login_Seq_Failed);
+    EC_MalformedMsg, EC_AddContact_Error, EC_Login_Seq_Failed, EC_FailedDecrypt);
 
   TICQAuthError = (
     EAC_Not_Enough_Data = -1,
@@ -710,8 +335,10 @@ type
     EAC_Invalid_Request = 400,
     EAC_Auth_Required = 401,
     EAC_Req_Timeout = 408,
+    EAC_Wrong_DevKey = 440,
     EAC_Missing_Param = 460,
-    EAC_Param_Error = 462
+    EAC_Param_Error = 462,
+    EAC_Rate_Limit = 607
   );
 
 const
@@ -736,7 +363,8 @@ const
     'PROXY: Unknown reply\n[%d] %s',      // 'proxy: unk'
     'Couldn''t parse incoming event\nRaw input:\n%s',
     'Failed to add contact\n%s',
-    'Login sequence cannot be completed due to error on one of the stages');
+    'Login sequence cannot be completed due to error on one of the stages',
+    'Could''t decrypt message\n%s');
 (*
   ICQAuthErrors: array [330, 408] of String = (
 
@@ -937,9 +565,6 @@ const
   PicName: 'status.evil'; Caption: 'Evil')
 
   );
-// XStatus6Set = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
-// 20,21,22,23,24, 33,34];
-// XStatus6Count = 27;
 
 icq_missed_msgs:
 array [0 .. 4] of string = ('Message was invalid', 'Message was too large', 'Message rate exceeded',
@@ -993,11 +618,30 @@ const
       '205.188.252.19',
       '205.188.252.28' } );
 
+  function AllFieldsAsQuery(Enabled: Boolean = True): String;
+  function AllFieldsAsParam: String;
+
 implementation
+
+uses
+  SysUtils, RDUtils;
 
 function CAPS_sm2big(i: byte): RawByteString; inline;
 begin
   result := CapsMakeBig1 + CapsSmall[i].v + CapsMakeBig2;
+end;
+
+function AllFieldsAsQuery(Enabled: Boolean = True): String;
+var
+  Val: String;
+begin
+  Val := IfThen(Enabled, '1', '0');
+  Result := '&' + String.Join('=' + Val + '&', SupportedPresenceFields) + '=' + Val;
+end;
+
+function AllFieldsAsParam: String;
+begin
+  Result := String.Join(',', SupportedPresenceFields)
 end;
 
 end.

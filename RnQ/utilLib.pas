@@ -188,6 +188,7 @@ procedure incDBTimer;
 function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: String): Boolean; overload;
 function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: RawByteString): Boolean; overload;
 function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Integer): Boolean; overload;
+function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Cardinal): Boolean; overload
 function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Boolean): Boolean; overload;
 
 
@@ -4576,6 +4577,13 @@ begin
     Result := Val.GetValue(Key).TryGetValue(Data);
 end;
 
+function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Cardinal): Boolean;
+begin
+  Data := 0;
+  Result := False;
+  if Assigned(Val) and Assigned(Val.GetValue(Key)) then
+    Result := Val.GetValue(Key).TryGetValue(Data);
+end;
 
 function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Boolean): Boolean;
 begin
