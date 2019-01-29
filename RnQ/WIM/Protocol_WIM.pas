@@ -17,7 +17,6 @@ uses
 
   procedure SendWIMContacts(cnt: TRnQContact; flags:integer; cl:TRnQCList);
 //  procedure SendWIMAddedYou(cnt: TRnQContact);
-  procedure SendWIMAutoMsgReq(cnt: TRnQContact);
   procedure ChangeXStatus(pWIM: TWIMSession; const st: Byte; const StName: String = ''; const StText: String = '');
 
   procedure LoggaWIMPkt(const Prefix: String; What: TWhatLog; Data: RawByteString = '');
@@ -88,19 +87,6 @@ begin
     writeHistorySafely(ev);
   chatFrm.addEvent_openchat(cnt, ev);
 end; // sendWIMcontacts
-
-procedure SendWIMAutoMsgReq(cnt: TRnQContact);
-var
-  oe: Toevent;
-begin
-  oe := Toevent.create(OE_automsgreq);
-  //oe.uid := uin;
-  oe.whom := cnt;
-  oe.timeSent := Now;
-  oe.ID := TWIMSession(cnt.fProto).SendAutoMsgReq(cnt.uid);
-  plugins.castEv(PE_AUTOMSG_REQ_SENT, cnt.uid);
-  Account.acks.add(oe);
-end; // SendWIMAutoMsgReq
 
 procedure ChangeXStatus(pWIM: TWIMSession; const st: Byte; const StName: String = ''; const StText: String = '');
 var
@@ -180,7 +166,7 @@ begin
       result := getTranslation(status2ShowStr[TWIMstatus(s)])
 end;
 
-function status2imgName(s: byte; inv:boolean=FALSE):TPicName;
+function status2imgName(s: byte; inv: boolean=FALSE): TPicName;
 const
   prefix = 'status.';
 begin
@@ -227,8 +213,10 @@ begin
  end;
 end; // status2imgdx
 
-function visibilityName(vi:Tvisibility):string;
-begin result:=getTranslation(visibility2ShowStr[vi]) end;
+function visibilityName(vi: Tvisibility): string;
+begin
+  result := getTranslation(visibility2ShowStr[vi])
+end;
 
 function str2status(const s: AnsiString): byte;
 var
@@ -892,25 +880,11 @@ case ev of
         statusIcon.showballoon(2000, getTranslation('Online'), Application.MainForm.Caption, bitInfo{, 'status.' + status2Img[thisWIM.getStatus]});
         {$ENDIF Use_Baloons}
         checkupdate.checking := False;
-        {$IFDEF UseNotSSI}
-        if not thisWIM.useSSI and (thisWIM.readList(LT_ROSTER).count < 1) then
-//        thisWIM.SSIreqRoster;
-        RQ_WIM.RequestContactList(thisWIM);
-        {$ENDIF UseNotSSI}
         outboxCount := timeBetweenMsgs;
         StayConnected := AutoReconnect;
         thisWIM.CleanDisconnect := False;
         plugins.castEv(PE_CONNECTED);
         toReconnectTime := 50;
-        {$IFDEF UseNotSSI}
-        {$IFDEF RNQ_AVATARS}
-        Check_my_avatar(thisWIM);
-        {$ENDIF RNQ_AVATARS}
-        {$ENDIF UseNotSSI}
-{
-         thisWIM.getSession;
-         chatFrm.CheckChatServerHistory;
-}
       end
         else
       begin
@@ -1110,6 +1084,9 @@ case ev of
        begin
 //         Temp := UnUTF(thisWIM.eventMsgA);
          rS := UTF8Encode(thisWIM.eventString);
+         e.flags := e.flags and not IF_CODEPAGE_MASK; // Clear Encodings flags
+//         e.flags := e.flags and not IF_Bin; // Clear bin flag
+         e.flags := e.flags or IF_UTF8_TEXT;
          vS := plugins.castEv(PE_MSG_GOT, cuid, e.flags, e.when, rS);
 {
        end else
@@ -1132,8 +1109,6 @@ case ev of
          if IsUTF8String(rS) then
           e.flags := e.flags or IF_UTF8_TEXT;
         e.ParseMsgStr(rS);
-        if behave(e, EK_msg) then
-          NILifNIL(c);
 
 //         if Length(thisWIM.eventBinData) > 0 then
 //           e.setImgBin(thisWIM.eventBinData);

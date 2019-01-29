@@ -29,14 +29,14 @@ const
  {$ELSE}
    LiteVersion = True;
  {$ENDIF}
-//  ANDRQversion:Longword=$00090412;  // remember: it's hex
-//  RnQversion:Longword = $000A00DB;  // remember: it's hex
+//  ANDRQversion: Longword = $00090412;  // remember: it's hex
+//  RnQversion: Longword = $000A00DB;  // remember: it's hex
   RQversion: Longword = $000A01FF;  // remember: it's hex
  {$IFDEF DB_ENABLED}
   RnQBuild = 1300;
   PIC_CLIENT_LOGO                 = TPicName('rnq');
  {$ELSE ~DB_ENABLED}
-  RnQBuild = 1128;
+  RnQBuild = 1129;
   PIC_CLIENT_LOGO                 = TPicName('rnq');
  {$ENDIF ~DB_ENABLED}
 {$I RnQBuiltTime.inc}

@@ -928,7 +928,7 @@ else
 //    c.birthCountry := CB2ID(birthCountryBox);
 
 //    ICQ.sendSaveMyInfoAs(c);
-    TWIMSession(c.fProto).sendsaveMyInfoNew(c);
+//    TWIMSession(c.fProto).sendsaveMyInfoNew(c);
 {   // retrieves new datas from the server
     ICQ.sendStatusCode;
     ICQ.sendSimpleQueryInfo(c.uin);}
