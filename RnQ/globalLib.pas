@@ -104,6 +104,7 @@ var
 //  userPath: String;
   AccPath: String;
   FileSavePath: String;
+  StickerPath      : String;
   MakeBackups: Boolean;
 
 //  gmtCodes,languageCodes,countryCodes,pastCodes,ageCodes,interestCodes,genderCodes :Tcodes;

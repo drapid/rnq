@@ -15,7 +15,7 @@ uses
   ExtCtrls, StrUtils, Math, OverbyteIcsHttpProt,
   RnQGlobal, RnQNet, RQThemes, RDGlobal, RQUtil,
   RnQPrefsLib, RnQPrefsTypes, RnQBinUtils, groupsLib,
-  RnQProtocol, WIMContacts, WIMConsts,
+  RnQProtocol, WIMContacts, WIMConsts, ICQ.Stickers,
   RnQPrefsInt,
   SynEcc;
 
@@ -201,8 +201,11 @@ type
     IE_srvSomeInfo,
     IE_MultiChat,
 
+    IE_UpdatePrefsFrm,
+
     IE_serverHistoryReady,
-    IE_UpdatePrefsFrm
+    IE_stickersupdate,
+    IE_stickersearchupdate
   );
 
   TwimPhase = (
@@ -234,6 +237,7 @@ type
 
   TWIMNotify = procedure(Sender: TWIMSession; event: TwimEvent) of object;
   TErrorProc = reference to procedure(Resp: TPair<Integer, String>);
+  THandlerProc = reference to procedure(RespStrR: RawByteString);
   TReturnData = (RT_None, RT_JSON);
 
   TrefKind = (
@@ -279,6 +283,8 @@ type
     reqId: TmsgID;
 //    cookie: RawByteString;
     waitingNewPwd: RawByteString;
+    AttachedLoginPhone: String;
+
 {
     refs: array [1..maxRefs] of record
       kind: TrefKind;
@@ -303,10 +309,12 @@ type
     fPwd: String;
     fSession: TSessionParams;
     LastFetchBaseURL: String;
+    PatchVersion: String;
+
     BuzzedLastTime: TDateTime;
     procedure SetWebAware(value: Boolean);
     procedure SetAuthNeeded(value: Boolean);
-    procedure checkOrGetServerHistory(uid: TUID; retrieve: Boolean = False);
+    procedure checkOrGetServerHistory(const uid: TUID; retrieve: Boolean = False);
 
   public
     fECCKeys: record
@@ -366,6 +374,7 @@ type
     pollStream: TStringStream;
     exectime: Int64;
     CleanDisconnect: Boolean;
+    LastSearchPacks: TStickerPacks;
 
     class function NewInstance: TObject; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 //    class function GetId: Word; override;
@@ -387,9 +396,6 @@ type
 //    class function GeTWIMContact(uin: Integer): TWIMContact; overload;
     function GetWIMContact(const uid: TUID): TWIMContact; overload;
     function GetWIMContact(const uin: Integer): TWIMContact; overload;
-//{$IFNDEF UID_IS_UNICODE}
-//    function GeTWIMContact(const uid: String): TWIMContact; overload;
-//{$ENDIF ~UID_IS_UNICODE}
 
     function GetContact(const UID: TUID): TRnQContact; overload; override; final;
     function GetContact(const UIN: Integer): TRnQContact; overload;
@@ -402,8 +408,8 @@ type
 
 //    constructor Create; override;
 //    destructor Destroy; override;
-    class constructor InitICQProto;
-    class destructor UnInitICQProto;
+    class constructor InitWIMProto;
+    class destructor UnInitWIMProto;
     constructor Create(const id: TUID; subType: TWIMSessionSubType);
     destructor Destroy; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure ResetPrefs; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
@@ -417,7 +423,7 @@ type
     procedure SetStatus(st: Byte; vi: Byte); overload;
     function getPwd: String; override; final;
     procedure setPwd(const value: String); override; final;
-    function MakeParams(const Method, BaseURL: String; const Params: TDictionary<String, String>; Sign: Boolean = True): String;
+    function MakeParams(const Method, BaseURL: String; const Params: TDictionary<String, String>; Sign: Boolean = True; DoublePercent: Boolean = False): String;
     procedure OpenICQURL(URL: String);
     function ClientLogin: Boolean;
     function StartSession: Boolean;
@@ -432,7 +438,7 @@ type
     procedure PollURL(const URL: String);
     procedure PollRequestDone(Sender: TObject; RqType: THttpRequest; ErrCode: Word);
     procedure ProcessContactList(const CL: TJSONArray);
-    function ProcessContact(const Buddy: TJSONObject; GroupToAddTo: Integer = -1): TWIMContact;
+    function ProcessContact(const Buddy: TJSONObject; GroupToAddTo: Integer = -1; Batch: Boolean = False): TWIMContact;
     procedure ProcessNewStatus(var Cnt: TWIMContact; NewStatus: TWIMStatus; CheckInvis: Boolean = False; XStatusStrChanged: Boolean = False; NoNotify: Boolean = False);
     procedure ProcessUsersAndGroups(const JSON: TJSONObject);
     procedure ProcessDialogState(const Dlg: TJSONObject; IsOfflineMsg: Boolean = False);
@@ -521,6 +527,8 @@ type
 
     procedure SendCreateUIN(const AcceptKey: RawByteString); deprecated;
 //    procedure sendPermsNew;//(c: Tcontact);
+
+    procedure SendSaveMyInfo(c: TWIMContact);
     function SendSticker(const Cnt: TWIMContact; const sticker: String): Integer;
     procedure SendPrivacy(Details: Word; ShareWeb: Boolean; AuthReq: Boolean); deprecated;
     procedure SendContacts(Cnt: TRnQContact; flags: DWord; cl: TRnQCList); deprecated;
@@ -535,6 +543,7 @@ type
     procedure GetProfile(const UID: TUID);
     procedure GetContactInfo(const UID: TUID; const IncludeField: String);
     procedure GetContactAttrs(const UID: TUID);
+    procedure SendContactAttrs(c: TWIMContact);
     procedure GetCL;
     procedure FindContact;
     procedure ValidateSid;
@@ -549,7 +558,7 @@ type
                          const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean; overload;
     function SendRequest(IsPOST: Boolean; const BaseURL, Query: String; Ret: TReturnData;
                          var JSON: TJSONObject; const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean; overload;
-    procedure SendRequestAsync(const BaseURL, Query: String; const Header: AnsiString = '');
+    procedure SendRequestAsync(IsPOST: Boolean; const BaseURL, Query: String; const Header: AnsiString = ''; HandlerProc: THandlerProc = nil);
     function SendPresenceState: Boolean;
     procedure SendStatusStr(const st: Byte; const StText: String = '');
 
@@ -623,6 +632,11 @@ type
     property Statuses: TStatusArray read GetStatuses;
     property MyInfo: TRnQContact read getMyInfo;
     procedure SendSMS(const Dest, Msg: String; Ack: Boolean);
+    procedure GetStoreStickerPacks;
+    procedure SearchStoreStickerPacks(const Query: String);
+    function GetStoreStickerPack(const PackId: String): TStickerPack;
+    procedure BuyStickerPack(const PackId: String);
+    procedure RemoveStickerPack(const PackId: String);
   end; // TWIMSession
 
   TWIMProtoClass = class of TWIMSession;
@@ -670,8 +684,7 @@ uses
   themesLib, mainDlg, //chatDlg,
   RnQStrings, //outboxLib,
   Protocol_WIM, NetEncoding,
-  viewWIMinfodlg,
-  ICQ.Stickers;
+  viewWIMinfodlg;
 
 var
   lastSendedFlap: TDateTime;
@@ -791,21 +804,6 @@ end;
 function sameMethods(a, b: TWIMNotify): boolean;
 begin result := double((@a)^) = double((@b)^) end;
 
-function encrypted(const s: RawByteString): RawByteString;
-const
-  cryptData:array [1..16] of byte=($F3,$26,$81,$C4,$39,$86,$DB,$92,$71,$A3,$B9,$E6,$53,$7A,$95,$7C);
-var
-  i: integer;
-begin
-  i := length(s);
-  setLength(result, i);
-while i > 0 do
-  begin
-  byte(result[i]) := byte(s[i]) xor cryptData[i];
-  dec(i);
-  end;
-end; // encrypted
-
 function str2url(const s: AnsiString): AnsiString;
 var
   i: integer;
@@ -883,7 +881,7 @@ begin
   MsgDlg('This feature isn''t available yet.\nCome back tomorrow...', True, mtInformation)
 end;
 
-function ParamEncode(const Param: String): UTF8String;
+function ParamEncode(const Param: String; DoublePercent: Boolean = False): UTF8String;
 const
   HexMap: UTF8String = '0123456789ABCDEF';
 
@@ -904,7 +902,7 @@ var
   SrcUTF8: UTF8String;
 begin
   Result := '';
-  SrcUTF8 := UTF8Encode(Param);
+  SrcUTF8 := UTF8Encode(IfThen(DoublePercent, Param.Replace('%', '%25'), Param)); // Double encode percent
 
   I := 1; J := 1;
   SetLength(Result, Length(SrcUTF8) * 3);
@@ -1108,7 +1106,7 @@ begin
    pp.addPrefStr('oscar-uid', MyAccount);
   pp.addPrefBool('add-to-vislist-before-msg', addTempVisMsg);
   pp.addPrefBool('add-client-caps', AddExtCliCaps);
-  pp.addPrefStr('add-client-caps-str', str2hexU(ExtClientCaps));
+  pp.addPrefBlob64('add-client-caps-str', ExtClientCaps);
   pp.addPrefInt('send-balloon-on', SendBalloonOn);
   pp.addPrefDate('send-balloon-on-date', SendBalloonOnDate);
   try
@@ -1542,6 +1540,8 @@ var
   Resp: TPair<Integer, String>;
   TmpJSON: TJSONValue;
 begin
+  if not Running then
+    Exit;
   Result := False;
 
   Prefix := IfThen(IsPOST, '[POST] ', '[GET] ');
@@ -1579,11 +1579,11 @@ begin
   end;
 end;
 
-procedure TWIMSession.SendRequestAsync(const BaseURL, Query: String; const Header: AnsiString = '');
+procedure TWIMSession.SendRequestAsync(IsPOST: Boolean; const BaseURL, Query: String; const Header: AnsiString = ''; HandlerProc: THandlerProc = nil);
 var
   Prefix: String;
 begin
-  Prefix := '[POST] ';
+  Prefix := IfThen(IsPOST, '[POST] ', '[GET] ');
   eventNameA := Prefix + Header;
   eventString := BaseURL + '?' + Query;
   notifyListeners(IE_serverGotU);
@@ -1592,9 +1592,19 @@ begin
   var
     RespStr: RawByteString;
   begin
-    LoadFromURLAsString(BaseURL, RespStr, Query);
+    if IsPOST then
+      LoadFromURLAsString(BaseURL, RespStr, Query)
+    else
+      LoadFromURLAsString(BaseURL + '?' + Query, RespStr);
+
     TThread.Synchronize(nil, procedure
     begin
+      if not Running then
+        Exit;
+
+      if Assigned(HandlerProc) then
+        HandlerProc(RespStr);
+
       eventNameA := Prefix + Header;
       eventMsgA := RespStr;
       notifyListeners(IE_serverSent);
@@ -1918,7 +1928,7 @@ begin
   Params.Add('offlineIM', '1');
   Params.Add('notifyDelivery', 'true');
   BaseURL := WIM_HOST + IfThen(IsSticker, 'im/sendSticker', 'im/sendIM');
-  SendRequestAsync(BaseURL, MakeParams('POST', BaseURL, Params, False), 'Send ' + IfThen(IsSticker, 'sticker', 'message'));
+  SendRequestAsync(True, BaseURL, MakeParams('POST', BaseURL, Params, False), 'Send ' + IfThen(IsSticker, 'sticker', 'message'));
   Params.Free;
 end; // SendMsg
 
@@ -1986,7 +1996,7 @@ begin
     Params.Add('offlineIM', '1');
     Params.Add('notifyDelivery', 'true');
     BaseURL := WIM_HOST + 'im/sendIM';
-    SendRequestAsync(BaseURL, MakeParams('POST', BaseURL, Params, False), 'Send buzz');
+    SendRequestAsync(True, BaseURL, MakeParams('POST', BaseURL, Params, False), 'Send buzz');
     Result := True;
   finally
     Params.Free;
@@ -2081,14 +2091,34 @@ begin
       GetSafeJSONValue(JSON, 'note', c.ssImportant);
       GetSafeJSONValue(JSON, 'smsNumber', c.ssCell);
       GetSafeJSONValue(JSON, 'workNumber', c.ssCell2);
-      GetSafeJSONValue(JSON, 'homeNumber', c.ssCell3);
-//      GetSafeJSONValue(JSON, 'otherNumber', c.ssCell4);
-//      GetSafeJSONValue(JSON, 'friendly', Tmp)
-      c.ssMail := '';
+      GetSafeJSONValue(JSON, 'phoneNumber', c.ssCell3);
+      GetSafeJSONValue(JSON, 'otherNumber', c.ssCell4);
+      GetSafeJSONValue(JSON, 'friendly', c.ssNickname)
     end;
   finally
     JSON.Free;
   end;
+end;
+
+procedure TWIMSession.SendContactAttrs(c: TWIMContact);
+var
+  Query: UTF8String;
+  BaseURL: String;
+  Params: TDictionary<String, String>;
+begin
+  Params := TDictionary<String, String>.Create();
+  BaseURL := WIM_HOST + 'buddylist/setBuddyAttribute';
+  Params.Clear;
+  Params.Add('buddy', String(c.UID2Cmp));
+  if not IsMyAcc(c) then // Returns error for own contact
+    Params.Add('friendly', c.ssNickname);
+  Params.Add('note', c.ssImportant); // Not working, value stays unchanged on server
+  Params.Add('smsNumber', c.ssCell);
+  Params.Add('workNumber', c.ssCell2);
+  Params.Add('phoneNumber', c.ssCell3);
+  Params.Add('otherNumber', c.ssCell4);
+  SendSessionRequest(True, BaseURL, '&' + MakeParams('POST', BaseURL, Params, False), 'Save my contact attributes', 'Failed to save my contact attributes');
+  Params.Free;
 end;
 
 procedure TWIMSession.GetContactInfo(const uid: TUID; const IncludeField: String);
@@ -2226,6 +2256,336 @@ begin
 //  Params.Free;
 end;
 
+function CheckSimpleData(var JSON: TJSONObject; StatusOnly: Boolean = False): Boolean;
+var
+  Tmp: TJSONValue;
+begin
+  Result := True;
+  Tmp := JSON.GetValue('status');
+  if not Assigned(Tmp) or not (Tmp is TJSONNumber) or not (TJSONNumber(Tmp).AsInt = 200) then
+    Exit(False);
+  if not StatusOnly then
+  begin
+    Tmp := JSON.GetValue('data');
+    if not Assigned(Tmp) or not (Tmp is TJSONObject) then
+      Exit(False);
+    JSON := TJSONObject(Tmp);
+  end;
+end;
+
+
+procedure JSONToStickerPack(const JSON: TJSONObject; out SRecord: TStickerPack);
+begin
+  SRecord := Default(TStickerPack);
+  GetSafeJSONValue(JSON, 'id', SRecord.Id);
+  GetSafeJSONValue(JSON, 'name', SRecord.Name);
+  GetSafeJSONValue(JSON, 'description', SRecord.Desc);
+  GetSafeJSONValue(JSON, 'count', SRecord.Count);
+  GetSafeJSONValue(JSON, 'purchased', SRecord.Purchased);
+  GetSafeJSONValue(JSON, 'usersticker', SRecord.UserSticker);
+  GetSafeJSONValue(JSON, 'priority', SRecord.Priority);
+  GetSafeJSONValue(JSON, 'is_enabled', SRecord.IsEnabled);
+  GetSafeJSONValue(JSON, 'store_id', SRecord.StoreId);
+end;
+
+procedure TWIMSession.GetStoreStickerPacks;
+var
+  BaseURL: String;
+  Params: TDictionary<String, String>;
+  Handler: THandlerProc;
+begin
+  if RequiresLogin then
+    Exit;
+
+  BaseURL := STORE_HOST + 'openstore/contentlist';
+  Params := TDictionary<String, String>.Create();
+  Params.Add('a', fSession.token);
+  Params.Add('f', 'json');
+  Params.Add('k', fSession.DevId);
+  Params.Add('ts', IntToStr(DateTimeToUnix(Now, False) - fSession.hostOffset));
+  Params.Add('r', CreateNewGUID);
+//  Params.Add('platform', 'windows');
+  Params.Add('client', 'WIM');
+//  Params.Add('lang', IfThen(IsRuLang, 'ru-ru', 'en-us'));
+  Params.Add('lang', 'en-us');
+
+  Handler := procedure(RespStrR: RawByteString)
+  var
+    Tmp: TJSONValue;
+    JSON: TJSONObject;
+    Sticker: TJSONValue;
+    Stickers: TJSONArray;
+    SRecord: TStickerPack;
+  begin
+    if ParseJSON(UTF8String(RespStrR), JSON) then
+    try
+      if not CheckSimpleData(JSON, True) then
+        Exit;
+      Tmp := JSON.GetValue('stickers');
+      if not Assigned(Tmp) or not (Tmp is TJSONObject) then
+        Exit;
+      Tmp := TJSONObject(Tmp).GetValue('sets');
+      if not Assigned(Tmp) or not (Tmp is TJSONArray) then
+        Exit;
+
+      ClearStickerPacks;
+      Stickers := TJSONArray(Tmp);
+      for Sticker in Stickers do
+      if Assigned(Sticker) then
+      begin
+        JSONToStickerPack(TJSONObject(Sticker), SRecord);
+
+        // Skip duplicates
+        if DupStickerPacks.Contains(SRecord.Id) then
+          Continue;
+
+        // Skip disabled, but not the hidden ones
+        if not SRecord.IsEnabled and not HiddenStickerPacks.Contains(SRecord.Id) then
+          Continue;
+
+        AddStickerPack(SRecord);
+      end;
+    finally
+      FreeAndNil(JSON);
+    end;
+    NotifyListeners(IE_stickersupdate);
+  end;
+
+  SendRequestAsync(False, BaseURL, MakeParams('GET', BaseURL, Params), 'Get store sticker packs', Handler);
+  Params.Free;
+end;
+
+procedure TWIMSession.SearchStoreStickerPacks(const Query: String);
+var
+  BaseURL: String;
+  Params: TDictionary<String, String>;
+  Handler: THandlerProc;
+begin
+  if RequiresLogin then
+    Exit;
+
+  BaseURL := STORE_HOST + 'store/showcase';
+  Params := TDictionary<String, String>.Create();
+  Params.Add('a', fSession.Token);
+  Params.Add('f', 'json');
+  Params.Add('k', fSession.DevId);
+  Params.Add('ts', IntToStr(DateTimeToUnix(Now, False) - fSession.HostOffset));
+  Params.Add('r', CreateNewGUID);
+  Params.Add('platform', 'windows');
+  Params.Add('client', 'WIM');
+//  Params.Add('lang', IfThen(IsRuLang, 'ru-ru', 'en-us'));
+  Params.Add('lang', IfThen(false, 'ru-ru', 'en-us'));
+  Params.Add('search', Trim(Query));
+
+  Handler := procedure(RespStrR: RawByteString)
+  var
+    Tmp: TJSONValue;
+    JSON: TJSONObject;
+    Res: TJSONValue;
+    Ress: TJSONArray;
+    SRecord: TStickerPack;
+  begin
+    SetLength(LastSearchPacks, 0);
+    if ParseJSON(UTF8String(RespStrR), JSON) then
+    try
+      if not CheckSimpleData(JSON) then
+        Exit;
+      Tmp := JSON.GetValue('top');
+      if not Assigned(Tmp) or not (Tmp is TJSONArray) then
+        Exit;
+
+      Ress := TJSONArray(Tmp);
+      for Res in Ress do
+      if Assigned(Res) then
+      begin
+        JSONToStickerPack(TJSONObject(Res), SRecord);
+        SetLength(LastSearchPacks, Length(LastSearchPacks) + 1);
+        LastSearchPacks[Length(LastSearchPacks) - 1] := SRecord;
+      end;
+    finally
+      FreeAndNil(JSON);
+    end;
+    NotifyListeners(IE_stickersearchupdate);
+  end;
+
+  SendRequestAsync(False, BaseURL, MakeParams('GET', BaseURL, Params), 'Search store sticker packs', Handler);
+  Params.Free;
+end;
+
+function TWIMSession.GetStoreStickerPack(const PackId: String): TStickerPack;
+var
+  Tmp: TJSONValue;
+  JSON: TJSONObject;
+  BaseURL: String;
+  Params: TDictionary<String, String>;
+  Handler: THandlerProc;
+begin
+  Result := Default(TStickerPack);
+  if RequiresLogin or (PackId = '') then
+    Exit;
+
+  BaseURL := STORE_HOST + 'openstore/packinfo';
+  Params := TDictionary<String, String>.Create();
+  Params.Add('a', fSession.Token);
+  Params.Add('f', 'json');
+  Params.Add('k', fSession.DevId);
+  Params.Add('ts', IntToStr(DateTimeToUnix(Now, False) - fSession.HostOffset));
+  Params.Add('r', CreateNewGUID);
+  Params.Add('platform', 'windows');
+  Params.Add('client', 'WIM');
+//  Params.Add('lang', IfThen(IsRuLang, 'ru-ru', 'en-us'));
+  Params.Add('lang', IfThen(False, 'ru-ru', 'en-us'));
+  Params.Add('id', PackId);
+
+  SendRequest(False, BaseURL, MakeParams('GET', BaseURL, Params), RT_JSON, JSON, 'Get sticker pack store id');
+  if Assigned(JSON) then
+  try
+    if CheckSimpleData(JSON) then
+      JSONToStickerPack(JSON, Result);
+  finally
+    FreeAndNil(JSON);
+  end;
+  Params.Free;
+end;
+
+procedure TWIMSession.BuyStickerPack(const PackId: String);
+var
+  SRecord: TStickerPack;
+  BaseURL: String;
+  Params: TDictionary<String, String>;
+  Handler: THandlerProc;
+  PID: Integer;
+begin
+  // Packs that cannot be purchased
+  if TryStrToInt(PackId, PID) then
+  if HiddenStickerPacks.Contains(PID) then
+  begin
+    ChangeStickerPackStatus(PackId, True);
+    NotifyListeners(IE_stickersupdate);
+    Exit;
+  end;
+
+  SRecord := GetStoreStickerPack(PackId);
+  if SRecord.StoreId = '' then
+    MsgDlg(GetTranslation(ICQError2Str[EC_StoreProblem], [GetTranslation('Unable to get sticker pack store id')]), False, mtError);
+
+  if RequiresLogin or (PackId = '') or (SRecord.StoreId = '') then
+    Exit;
+
+  BaseURL := STORE_HOST + 'store/buy/free';
+  Params := TDictionary<String, String>.Create();
+  Params.Add('a', fSession.Token);
+  Params.Add('f', 'json');
+  Params.Add('k', fSession.DevId);
+  Params.Add('ts', IntToStr(DateTimeToUnix(Now, False) - fSession.HostOffset));
+  Params.Add('r', CreateNewGUID);
+  Params.Add('platform', 'windows');
+  Params.Add('client', 'WIM');
+//  Params.Add('lang', IfThen(IsRuLang, 'ru-ru', 'en-us'));
+  Params.Add('lang', IfThen(False, 'ru-ru', 'en-us'));
+  Params.Add('product', SRecord.StoreId);
+
+  Handler := procedure(RespStrR: RawByteString)
+  var
+    Tmp: TJSONValue;
+    JSON: TJSONObject;
+    Verified: Boolean;
+  begin
+    if ParseJSON(UTF8String(RespStrR), JSON) then
+    try
+      if not CheckSimpleData(JSON) then
+        Exit;
+
+      GetSafeJSONValue(JSON, 'is_verified', Verified);
+
+      if Verified then
+      begin
+        AddStickerPack(SRecord);
+        ChangeStickerPackStatus(PackId, True);
+        NotifyListeners(IE_stickersupdate);
+      end
+        else
+      begin
+        eventError := EC_StoreProblem;
+        eventMsgA := GetTranslation('Purchase data failed the verification');
+        NotifyListeners(IE_error);
+      end;
+    finally
+      FreeAndNil(JSON);
+    end;
+  end;
+
+  SendRequestAsync(True, BaseURL + '?' + MakeParams('GET', BaseURL, Params), 'product=' + SRecord.StoreId, 'Buy free sticker pack', Handler);
+  Params.Free;
+end;
+
+procedure TWIMSession.RemoveStickerPack(const PackId: String);
+var
+  BaseURL: String;
+  Params: TDictionary<String, String>;
+  Handler: THandlerProc;
+  PID: Integer;
+begin
+  // Packs that cannot be purchased
+  if TryStrToInt(PackId, PID) then
+  if HiddenStickerPacks.Contains(PID) then
+  begin
+    ChangeStickerPackStatus(PackId, False);
+    RemoveStickerPackCache(PackId);
+    NotifyListeners(IE_stickersupdate);
+    Exit;
+  end;
+
+  if RequiresLogin or (PackId = '') then
+    Exit;
+
+  BaseURL := STORE_HOST + 'store/deletepurchase';
+  Params := TDictionary<String, String>.Create();
+  Params.Add('a', fSession.Token);
+  Params.Add('f', 'json');
+  Params.Add('k', fSession.DevId);
+  Params.Add('ts', IntToStr(DateTimeToUnix(Now, False) - fSession.HostOffset));
+  Params.Add('r', CreateNewGUID);
+  Params.Add('platform', 'windows');
+  Params.Add('client', 'WIM');
+//  Params.Add('lang', IfThen(IsRuLang, 'ru-ru', 'en-us'));
+  Params.Add('lang', IfThen(False, 'ru-ru', 'en-us'));
+//  Params.Add('product_id', 'ai_s1');
+
+  Handler := procedure(RespStrR: RawByteString)
+  var
+    Tmp: TJSONValue;
+    JSON: TJSONObject;
+    Status: String;
+  begin
+    if ParseJSON(UTF8String(RespStrR), JSON) then
+    try
+      if not CheckSimpleData(JSON, True) then
+        Exit;
+
+      GetSafeJSONValue(JSON, 'description', Status);
+
+      if Status = 'OK' then
+      begin
+        ChangeStickerPackStatus(PackId, False);
+        RemoveStickerPackCache(PackId);
+        NotifyListeners(IE_stickersupdate);
+      end
+        else
+      begin
+        eventError := EC_StoreProblem;
+        eventMsgA := GetTranslation('Cannot remove sticker pack: %s', [Status]);
+        NotifyListeners(IE_error);
+      end;
+    finally
+      FreeAndNil(JSON);
+    end;
+  end;
+
+  SendRequestAsync(True, BaseURL + '?' + MakeParams('GET', BaseURL, Params), 'product_id=' + PackId, 'Remove sticker pack', Handler);
+  Params.Free;
+end;
+
 procedure TWIMSession.SendSMS(const Dest, Msg: String; Ack: Boolean);
 begin
   if not IsReady then
@@ -2233,6 +2593,46 @@ begin
 
   // TODO?
 end; // sendSMS
+
+procedure TWIMSession.SendSaveMyInfo(c: TWIMContact);
+var
+  BaseURL: String;
+  Params: TDictionary<String, String>;
+begin
+  if c.birth > 0 then
+    c.age := YearsBetween(Now, c.birth);
+  SavingMyInfo.ACKcount := 3;
+
+  BaseURL := WIM_HOST + 'memberDir/update';
+
+  Params := TDictionary<String, String>.Create();
+  Params.Add('set=firstName', c.First);
+  Params.Add('set=lastName', c.Last);
+//  Params.Add('set=nick', c.Nick);
+  Params.Add('set=friendlyName', c.Nick);
+//  Params.Add('set=relationshipStatus', SrvMarStsByID(c.MarStatus));
+  Params.Add('set=birthDate', IntToStr(DateTimeToUnix(c.Birth)));
+  Params.Add('set=gender', IfThen(c.Gender = 2, 'male', IfThen(c.Gender = 1, 'female', 'unknown')));
+  Params.Add('set=lang1', c.Lang[1]);
+  Params.Add('set=lang2', c.Lang[2]);
+  Params.Add('set=lang3', c.Lang[3]);
+  Params.Add('set=tz', '99'{Result.GMThalfs});
+  Params.Add('set=aboutMe', c.About);
+//  Params.Add('set=originAddress', '{city=' + ParamEncode(c.BirthCity) + ',state=' + ParamEncode(c.BirthState) + ',' +
+//                                   'country=' + ParamEncode(c.BirthCountry) + '}');
+//  Params.Add('set=homeAddress', '{street=' + ParamEncode(c.Address) + ',city=' + ParamEncode(c.City) + ',' +
+//                                 'state=' + ParamEncode(c.State) + ',zip=' + ParamEncode(c.ZIP) + ',' +
+//                                 'country=' + ParamEncode(c.Country) + '}');
+  Params.Add('set=homeAddress', '{city=' + ParamEncode(c.City) + ',state=' + ParamEncode(c.State) + ',' +
+                                 'country=' + ParamEncode(c.Country) + '}');
+//  Params.Add('set=phones', '[{type=home,phone=666h} {type=work,phone=666w} {type=mobile,phone=666m} {type=homeFax,phone=666hf} {type=workFax,phone=666wf} {type=other,phone=666o}]');
+//  Params.Add('set=jobs', '[{title=1,company=2,website=3,department=4,industry=arts,subIndustry=music,startDate=444,endDate=666,street=5,city=6,state=7,zip=8,country=' + ParamEncode(c.Country) + '}]');
+//  Params.Add('set=interests', '[{code=art,text=test}]');
+
+  SendSessionRequest(True, BaseURL, '&' + MakeParams('POST', BaseURL, Params, False, True), 'Save my info', 'Failed to save my info');
+
+  Params.Free;
+end;
 
 procedure TWIMSession.SendPrivacy(Details: Word; ShareWeb: Boolean; AuthReq: Boolean);
 var
@@ -2469,19 +2869,19 @@ begin
   //Result := Result + ',' + '0946135C4C7F11D18222444553540000';
   //Result := Result + ',' + '0946135E4C7F11D18222444553540000';
 
-  if fECCKeys.Generated then
-  begin
-    SetLength(s, 11);
-    CopyMemory(@s[1], @fECCKeys.pubEccKey[0], Length(s));
-    Result := Result + ',' + Str2Hex('RDEC0' + s);
-    CopyMemory(@s[1], @fECCKeys.pubEccKey[11], Length(s));
-    Result := Result + ',' + Str2Hex('RDEC1' + s);
-    CopyMemory(@s[1], @fECCKeys.pubEccKey[22], Length(s));
-    Result := Result + ',' + Str2Hex('RDEC2' + s);
-  end;
-
   if UseCryptMsg then
   begin
+    if fECCKeys.Generated then
+    begin
+      SetLength(s, 11);
+      CopyMemory(@s[1], @fECCKeys.pubEccKey[0], Length(s));
+      Result := Result + ',' + Str2Hex('RDEC0' + s);
+      CopyMemory(@s[1], @fECCKeys.pubEccKey[11], Length(s));
+      Result := Result + ',' + Str2Hex('RDEC1' + s);
+      CopyMemory(@s[1], @fECCKeys.pubEccKey[22], Length(s));
+      Result := Result + ',' + Str2Hex('RDEC2' + s);
+    end;
+
     Result := Result + ',' + Str2Hex(BigCapability[CAPS_big_CryptMsg].v);
 //    Result := Result + ',' + Str2Hex(BigCapability[CAPS_big_QIP_Secure].v); // QIP protect message
   end;
@@ -2919,11 +3319,10 @@ begin
     exit;
   tempVisibleList.remove(c);
   result := not fVisibleList.exists(c);
-if result then
+  if result then
   begin
-  removeFromInvisible(c);
-  if IsReady
-  then
+    removeFromInvisible(c);
+    if IsReady then
     begin
        //SSI_AddVisItem(c.UID, FEEDBAG_CLASS_ID_PERMIT);
       eventContact := c;
@@ -2940,15 +3339,14 @@ begin
     exit;
   tempVisibleList.remove(cl);
   cl := cl.clone.remove(fVisibleList);
-if IsReady
-then
+  if IsReady then
   begin
     fVisibleList.add(cl);
-  //sendAddVisible(cl);
-  eventContact := NIL;
-  notifyListeners(IE_visibilityChanged);
+    //sendAddVisible(cl);
+    eventContact := NIL;
+    notifyListeners(IE_visibilityChanged);
   end;
-cl.free;
+  cl.free;
 end; // add2visible
 
 function TWIMSession.add2ignore(c: TWIMContact): boolean;
@@ -2961,7 +3359,7 @@ begin
   begin
     BaseURL := WIM_HOST + 'preference/setPermitDeny';
     Query := '&pdIgnore=' + ParamEncode(String(c.UID2Cmp));
-    Result := SendSessionRequest(False, BaseURL, Query, 'setPermitDeny');
+    Result := SendSessionRequest(False, BaseURL, Query, 'Add to ignore list');
   end;
 end;
 
@@ -2975,7 +3373,7 @@ begin
   begin
     BaseURL := WIM_HOST + 'preference/setPermitDeny';
     Query := '&pdIgnoreRemove=' + ParamEncode(String(c.UID2Cmp));
-    Result := SendSessionRequest(False, BaseURL, Query, 'setPermitDeny');
+    Result := SendSessionRequest(False, BaseURL, Query, 'Remove from ignore list');
   end;
 end;
 
@@ -3068,13 +3466,12 @@ begin
       cl1 := cl.clone.intersect(fVisibleList);
       fVisibleList.remove(cl1);
     end;
-  if IsReady and
-   not cl1.empty then
-    begin
+  if IsReady and not cl1.empty then
+   begin
     //sendRemoveVisible(cl1);
     eventContact := NIL;
     notifyListeners(IE_visibilityChanged);
-    end;
+   end;
   cl1.free;
 end; // removeFromVisible
 
@@ -3102,10 +3499,9 @@ begin
   removeTemporaryVisible(cl);
   cl:= cl.clone.remove(fInvisibleList);
   removeFromVisible(cl);
-  if IsReady
-  then
+  if IsReady then
   begin
-      fInVisibleList.add(cl);
+    fInVisibleList.add(cl);
     //sendAddInvisible(cl);
     eventContact := NIL;
     notifyListeners(IE_visibilityChanged);
@@ -3135,14 +3531,13 @@ begin
       cl1 := cl.clone.intersect(fInvisibleList);
       fInvisibleList.remove(cl1);
     end;
-if IsReady and
- not cl1.empty then
+  if IsReady and not cl1.empty then
   begin
-  //sendRemoveInvisible(cl1);
-  eventContact := NIL;
-  notifyListeners(IE_visibilityChanged);
+    //sendRemoveInvisible(cl1);
+    eventContact := NIL;
+    notifyListeners(IE_visibilityChanged);
   end;
- cl1.free;
+  cl1.free;
 end; // removeFromInvisible
 
 function TWIMSession.AddTemporaryVisible(c: TWIMContact): Boolean;
@@ -3152,7 +3547,7 @@ begin
     exit;
   result := TRUE;
   tempvisibleList.add(c);
-// TODO: Server side
+  // TODO: Server side
   eventContact := c;
   notifyListeners(IE_visibilityChanged);
 end; // AddTemporaryVisible
@@ -3348,12 +3743,12 @@ sendSNAC(ICQ_MSG_FAMILY, $B, copy(snac, 1, 11+ord(snac[11]))+#0#3 +s);
 
 end; // sendACK
 
-procedure TWIMSession.SetWebAware(value:boolean);
+procedure TWIMSession.SetWebAware(value: boolean);
 begin
   P_webaware := value;
 end; // setWebaware
 
-procedure TWIMSession.SetAuthNeeded(value:boolean);
+procedure TWIMSession.SetAuthNeeded(value: boolean);
 begin
   P_authNeeded := value;
 end; // setAuthNeeded
@@ -3426,7 +3821,7 @@ begin
     SetStatus(Byte(LastStatus), Byte(Visibility));
 end;
 
-function TWIMSession.MakeParams(const Method, BaseURL: String; const Params: TDictionary<String, String>; Sign: Boolean = True): String;
+function TWIMSession.MakeParams(const Method, BaseURL: String; const Params: TDictionary<String, String>; Sign: Boolean = True; DoublePercent: Boolean = False): String;
 var
   hash: String;
   encparams: TStringList;
@@ -3439,7 +3834,7 @@ begin
 
   with Params.GetEnumerator do
   while MoveNext do
-  encparams.Add(Current.Key + '=' + IfThen(Current.Key = 'stickerId', Current.Value, ParamEncode(Current.Value)));
+  encparams.Add(Current.Key + '=' + IfThen(Current.Key = 'stickerId', Current.Value, ParamEncode(Current.Value, DoublePercent)));
   Result := encparams.DelimitedText;
   encparams.Free;
 
@@ -3702,70 +4097,53 @@ Exit;
   BaseURL := REST_HOST + 'genToken';
   UnixTime := IntToStr(DateTimeToUnix(Now, False) - fSession.hostOffset);
 
-  params.Clear;
+//  params.Clear;
+  Params := TDictionary<String, String>.Create();
   params.Add('a', fSession.token);
   params.Add('k', fSession.devid);
   params.Add('ts', UnixTime);
 
-  Query := MakeParams('POST', BaseURL, params);
-  LoggaWIMPkt('[POST] REST auth token', WL_sent_text, BaseURL + '?' + Query);
+  SendRequest(True, BaseURL, MakeParams('POST', BaseURL, Params), RT_JSON, JSON, 'Generate REST auth token', '');
   params.Free;
 
-  LoadFromURLAsString(BaseURL, RespStr, Query);
-
-  json := nil;
+  if Assigned(JSON) then
   try
-    json := TJSONObject.ParseJSONValue(UTF8String(RespStr)) as TJSONObject;
-    if Assigned(json) then
-    begin
-      if (json.GetValue('results') = nil) and not (json.GetValue('status') = nil) then
-      begin
-        fSession.restToken := '';
-        LoggaWIMPkt('[POST] REST auth token', WL_rcvd_text, 'Failed to get auth token: ' + (json.GetValue('status') as TJSONObject).GetValue('reason').Value);
-      end
-        else
-      begin
-        fSession.restToken := (json.GetValue('results') as TJSONObject).GetValue('authToken').Value;
-        LoggaWIMPkt('[POST] REST auth token', WL_rcvd_text, RespStr);
-      end;
-    end else
+    if JSON.GetValue('results') = nil then
     begin
       fSession.restToken := '';
-      LoggaWIMPkt('[POST] REST auth token', WL_rcvd_text, 'Failed to get auth token');
-    end;
+      LoggaWIMPkt('[POST] REST auth token', WL_rcvd_text, 'Failed to get auth token: ' + (json.GetValue('status') as TJSONObject).GetValue('reason').Value);
+      MsgDlg('Failed to get REST auth token', True, mtError);
+    end
+   else
+      begin
+        fSession.restToken := TJSONObject(JSON.GetValue('results')).GetValue('authToken').Value;
+        LoggaWIMPkt('[POST] REST auth token', WL_rcvd_text, RespStr);
+      end;
   finally
     FreeAndNil(json);
   end;
 
+  // REST client id
   if not (fSession.restToken = '') then
   begin
-    // REST client id
     UnixTime := IntToStr(DateTimeToUnix(Now, False) - fSession.hostOffset);
+    BaseURL := REST_HOST;
     Query := '{"method": "addClient", "reqId": "' + IntToStr(reqId) + '-' + UnixTime + '", "authToken": "' + fSession.restToken + '", "params": ""}';
-    LoggaWIMPkt('[POST] REST client id', WL_sent_text, Query);
-    LoadFromURLAsString(REST_HOST, RespStr, Query);
+    SendRequest(True, BaseURL, Query, RT_JSON, JSON, 'Get REST client id', '');
     Inc(reqId);
-
-    json := nil;
+    if Assigned(json) then
     try
-      json := TJSONObject.ParseJSONValue(UTF8String(RespStr)) as TJSONObject;
-      if Assigned(json) then
-      begin
-        if (json.GetValue('results') = nil) and not (json.GetValue('status') = nil) then
+      if (json.GetValue('results') = nil) then
         begin
           fSession.restClientId := '';
-          LoggaWIMPkt('[POST] REST client id', WL_rcvd_text, 'Failed to get client id: ' + (json.GetValue('status') as TJSONObject).GetValue('reason').Value)
+          LoggaWIMPkt('[POST] REST client id', WL_rcvd_text, 'Failed to get client id: ' + (json.GetValue('status') as TJSONObject).GetValue('reason').Value);
+          MsgDlg('Failed to get REST client id', True, mtError);
         end
           else
         begin
           fSession.restClientId := (json.GetValue('results') as TJSONObject).GetValue('clientId').Value;
           LoggaWIMPkt('[POST] REST client id', WL_rcvd_text, RespStr);
         end;
-      end else
-      begin
-        fSession.restClientId := '';
-        LoggaWIMPkt('[POST] REST client id', WL_rcvd_text, 'Failed to get client id');
-      end;
     finally
       FreeAndNil(json);
     end;
@@ -3835,6 +4213,8 @@ begin
     Sleep(ICQErrorReconnectDelay);
     TThread.Synchronize(nil, procedure
     begin
+      if not Running then
+        Exit;
       // Try to use existing session, get new initial fetch url and start polling again. Go offline if all fails.
       if not PingSession then
         EndSession;
@@ -3953,6 +4333,12 @@ begin
     Exit;
   end;
 
+  if Trim(RespStrR) = '' then
+  begin
+    PollError('ERR_EMPTYRESP');
+    Exit;
+  end;
+
   ts := 0;
   json := nil;
   if not (Trim(RespStrR) = '') then
@@ -3962,9 +4348,7 @@ begin
     NotifyListeners(IE_serverSent);
 
     LastFetchBaseURL := '';
-//    json := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RespStr), 0) as TJSONObject;
-    json := TJSONObject.ParseJSONValue(UTF8String(RespStrR)) as TJSONObject;
-    if not Assigned(json) then
+    if not ParseJSON(UTF8String(RespStrR), JSON) then
     begin
       PollError('ERR_NOTAJSON');
       Exit;
@@ -4047,11 +4431,6 @@ ODS('Populating CL: ' + floattostr(TimingSeconds));
     end;
   finally
     JSON.Free;
-  end
-    else
-  begin
-    PollError('ERR_EMPTYRESP');
-    Exit;
   end;
 
   RestartPolling(t);
@@ -4067,6 +4446,8 @@ begin
     Sleep(Max(100, Delay)); // Min 100ms between fetches, just in case :)
     TThread.Synchronize(nil, procedure
     begin
+      if not Running then
+        Exit;
       PollURL(LastFetchBaseURL);
     end);
   end).Start;
@@ -4100,7 +4481,7 @@ begin
       buddies := TJSONObject(group).GetValue('buddies') as TJSONArray;
       for buddy in buddies do
       if Assigned(buddy) then
-        ProcessContact(TJSONObject(buddy), id);
+        ProcessContact(TJSONObject(buddy), id, True);
     end;
   finally
     RnQmain.roster.EndUpdate;
@@ -4108,7 +4489,7 @@ begin
 
 end;
 
-function TWIMSession.ProcessContact(const Buddy: TJSONObject; GroupToAddTo: Integer = -1): TWIMContact;
+function TWIMSession.ProcessContact(const Buddy: TJSONObject; GroupToAddTo: Integer = -1; Batch: Boolean = False): TWIMContact;
 var
   i: Integer;
   LoadingCL, FoundCap: Boolean;
@@ -4169,8 +4550,12 @@ begin
   begin
     Result.UserType := CT_SMS;
     Result.SMSable := True;
-  end else if Tmp = 'icq' then
-    Result.UserType := CT_ICQ;
+  end else if Tmp = 'phone' then
+    Result.UserType := CT_PHONE
+  else if Tmp = 'icq' then
+    Result.UserType := CT_ICQ
+  else if Tmp = 'oldicq' then
+    Result.UserType := CT_OLDICQ;
   //Other possible types:
   //aim	- AIM or AOL
   //interop	- Gatewayed from another network
@@ -4286,13 +4671,20 @@ begin
     // Cannot decode HTML for some reason
   end;
 
+  // Owner only
+  if GetSafeJSONValue(Buddy, 'attachedPhoneNumber', Tmp) then
+    if not (Tmp = '') then
+      AttachedLoginPhone := Tmp;
+
   Profile := TJSONObject(Buddy.GetValue('profile'));
   if Assigned(Profile) then
   begin
     GetSafeJSONValue(Profile, 'firstName', Result.first);
     GetSafeJSONValue(Profile, 'lastName', Result.last);
 
-    if GetSafeJSONValue(Profile, 'friendlyName', Tmp) then
+    if GetSafeJSONValue(Profile, 'nick', Tmp) and (Tmp<>'') then
+      Result.Nick := Tmp
+     else if GetSafeJSONValue(Profile, 'friendlyName', Tmp) then
       if not (Tmp = '') then
         Result.nick := Tmp;
 
@@ -4363,6 +4755,7 @@ begin
       GetSafeJSONValue(TmpObj, 'zip', Result.BirthZIP);
     end;
 
+    // Not there in new proto
     GetSafeJSONValue(Profile, 'lang1', Result.Lang[1]);
     GetSafeJSONValue(Profile, 'lang2', Result.Lang[2]);
     GetSafeJSONValue(Profile, 'lang3', Result.Lang[3]);
@@ -4382,7 +4775,8 @@ begin
           Result.Cellular := Tmp
         else if PhoneType = 'work' then
           Result.Workphone := Tmp
-        // other?
+        else if PhoneType = 'other' then
+          Result.OtherPhone := Tmp
       end;
     end;
 
@@ -4456,11 +4850,11 @@ begin
   end;
 
   // Handle status change
-  ProcessNewStatus(Result, NewStatus, False, not (OldXStatusStr = Result.xStatusStr), LoadingCL);
+  ProcessNewStatus(Result, NewStatus, False, not (OldXStatusStr = Result.xStatusStr), Batch);
 
   OldPic := Result.ClientPic;
   GetClientPicAndDesc4(Result, Result.ClientPic, Result.ClientDesc);
-  if not (Result.ClientPic = OldPic) and not LoadingCL then
+  if not (Result.ClientPic = OldPic) and not Batch then
   begin
     eventContact := Result;
     NotifyListeners(IE_redraw);
@@ -4556,7 +4950,7 @@ begin
   users := JSON.GetValue('users') as TJSONArray;
   if Assigned(users) then
   for user in users do
-    ProcessContact(TJSONObject(user));
+    ProcessContact(TJSONObject(user), -1, True);
 end;
 
 procedure TWIMSession.ProcessDialogState(const Dlg: TJSONObject; IsOfflineMsg: Boolean = False);
@@ -4662,7 +5056,8 @@ var
 
   function CheckDataPayload(var Msg: String): Boolean;
   var
-    Payload, RQCaps, RQCap: TJSONValue;
+    Payload: TJSONObject;
+    RQCaps, RQCap: TJSONValue;
     RQType, Cap: String;
     Caps: TArray<AnsiString>;
     Pub: array [0..2] of Integer;
@@ -4671,19 +5066,16 @@ var
   begin
     Result := False;
     Encryped := 0;
-    Payload := nil;
+    if ParseJSON(Msg, Payload) then
     try
-      Payload := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(Msg), 0);
-      if not Assigned(Payload) or not (Payload is TJSONObject) then
-        Exit;
-      GetSafeJSONValue(TJSONObject(Payload), 'type', RQType);
+      GetSafeJSONValue(Payload, 'type', RQType);
       if not (RQType = 'RnQDataIM') then
         Exit;
-      RQCaps := TJSONObject(Payload).GetValue('caps');
+      RQCaps := Payload.GetValue('caps');
       if not Assigned(RQCaps) or not (RQCaps is TJSONArray) then
         Exit;
 
-      GetSafeJSONValue(TJSONObject(Payload), 'data', Msg);
+      GetSafeJSONValue(Payload, 'data', Msg);
 
       // No caps? Get data as is
       if TJSONArray(RQCaps).Count = 0 then
@@ -4733,7 +5125,7 @@ var
       end;
 
       if Encryped > 0 then
-        DecryptMessage(Encryped, TJSONObject(Payload), Msg);
+        DecryptMessage(Encryped, Payload, Msg);
     finally
       FreeAndNil(Payload);
     end;
@@ -4846,6 +5238,8 @@ begin
   begin
     GetSafeJSONValue(Dlg, 'unreadCnt', iTmp);
     GetSafeJSONValue(Dlg, 'unreadMentionMeCount', iTmp);
+    if GetSafeJSONValue(Dlg, 'patchVersion', sTmp) then
+      PatchVersion := sTmp;
 
     Msgs := Dlg.GetValue('messages') as TJSONArray;
     if Assigned(Msgs) then
@@ -5029,7 +5423,7 @@ begin
   Params.Add('r', IntToStr(DateTimeToUnix(Now, False) * 1000) + '_' + IntToStr(Random(32767)));
   Params.Add('ts', UnixTime);
   BaseURL := WIM_HOST + 'webrtc/alloc';
-  SendRequest(False, BaseURL, MakeParams('GET', BaseURL, Params), 'Init WebRTC');
+  SendRequest(True, BaseURL, MakeParams('POST', BaseURL, Params), 'Init WebRTC');
 end;
 
 procedure TWIMSession.checkServerHistory(const uid: TUID);
@@ -5042,7 +5436,7 @@ begin
   checkOrGetServerHistory(uid, True);
 end;
 
-procedure TWIMSession.checkOrGetServerHistory(uid: TUID; retrieve: Boolean = False);
+procedure TWIMSession.checkOrGetServerHistory(const uid: TUID; retrieve: Boolean = False);
 
   function sameTextMsgExists(ev: Thevent; const text: String; kind: Integer): Boolean;
   begin
@@ -5057,8 +5451,8 @@ procedure TWIMSession.checkOrGetServerHistory(uid: TUID; retrieve: Boolean = Fal
 var
   query, params, wid, lastMsgId, fromMsgId: String;
   respStr: RawByteString;
-  json, msg, text, tmp: TJSONValue;
-  results, stickerObj: TJSONObject;
+  msg, text, tmp: TJSONValue;
+  json, results, stickerObj: TJSONObject;
   messages: TJSONArray;
   msgCount, unixTime, code, ind, kind: Integer;
   extsticker: TStringDynArray;
@@ -5097,8 +5491,8 @@ begin
   LoggaWIMPkt('[POST] REST contact history', WL_rcvd_text, respStr);
   Inc(reqId);
 
-  json := TJSONObject.ParseJSONValue(UTF8String(respStr), 0);
-  if ((json as TJSONObject).GetValue('status') as TJSONObject).GetValue('code').TryGetValue(code) then
+  if ParseJSON(UTF8String(respStr), json) then
+  if (json.GetValue('status') as TJSONObject).GetValue('code').TryGetValue(code) then
   begin
     if not (code = 20000) then
     begin
@@ -5106,7 +5500,7 @@ begin
       Exit;
     end;
 
-    results := (json as TJSONObject).GetValue('results') as TJSONObject;
+    results := json.GetValue('results') as TJSONObject;
     if results = nil then
     begin
       OutputDebugString(PChar('No results'));
@@ -5675,16 +6069,17 @@ end; // findID
 class function TWIMSession.NewInstance: TObject;
 begin
   Result := inherited NewInstance;
-  TWIMSession( Result ).FRefCount := 1;
+  TWIMSession(Result).FRefCount := 1;
 end;
 
 class function TWIMSession._getContactClass: TRnQCntClass;
 begin
   Result := TWIMContact;
 end;
+
 class function TWIMSession._getProtoServers: String;
 var
-  i : Integer;
+  i: Integer;
 begin
   Result := '';
   for I := 0 to Length(ICQServers) - 1 do
@@ -5796,7 +6191,7 @@ begin
 end; // sendFileOK
 }
 
-function TWIMSession.compareStatusFor(cnt1, Cnt2 : TRnqContact) : Smallint;
+function TWIMSession.compareStatusFor(cnt1, Cnt2: TRnqContact): Smallint;
 begin
   if StatusPriority[TWIMContact(cnt1).status] < StatusPriority[TWIMContact(Cnt2).status] then
     result := -1
@@ -5842,7 +6237,7 @@ begin
                        or (SendBalloonOn = BALLOON_ALWAYS);
 end; // ApplyBalloon
 
-class constructor TWIMSession.InitICQProto;
+class constructor TWIMSession.InitWIMProto;
 var
   b, b2: Byte;
 begin
@@ -5889,7 +6284,7 @@ begin
   RegisterProto(TWIMSession);
 end;
 
-class destructor TWIMSession.UnInitICQProto;
+class destructor TWIMSession.UnInitWIMProto;
 var
   b: Byte;
 begin

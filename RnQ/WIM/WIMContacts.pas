@@ -80,11 +80,14 @@ type
     Regular,
     Cellular,
     SMSMobile,
+    OtherPhone,
 //    lclImportant,
     ssImportant,
     ssCell,
     ssCell2,
     ssCell3,
+    ssCell4,
+    ssNickname,
     ssMail: String;
     OnlineTime: DWord;       // В секундах!
     LastUpdate_dw: DWord;

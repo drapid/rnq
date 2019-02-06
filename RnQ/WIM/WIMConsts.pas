@@ -14,7 +14,7 @@ uses
 
 type
   TWIMStatus = (SC_ONLINE = 0, SC_OFFLINE, SC_UNK, SC_OCCUPIED, SC_NA, SC_AWAY);
-  TWIMContactType = (CT_UNK = 0, CT_ICQ, CT_SMS);
+  TWIMContactType = (CT_UNK = 0, CT_ICQ, CT_OLDICQ, CT_SMS, CT_PHONE);
 
   TGroupAction = (GA_None = 0, GA_Add, GA_Rename, GA_Remove);
 
@@ -53,6 +53,7 @@ const
   LOGIN_HOST: AnsiString = 'https://api.login.icq.net/';
   WIM_HOST: AnsiString = 'https://api.icq.net/';
   REST_HOST: AnsiString = 'https://rapi.icq.net/';
+  STORE_HOST: AnsiString = 'https://store.icq.com/';
   UINToUpdate = '662846976'; //223223181
   AIMprefix = 'AIM_';
   ICQMaxAvatarSize = 7800;
@@ -326,7 +327,8 @@ type
     EC_missingLogin, EC_anotherLogin, EC_serverDisconnected, EC_badPwd, EC_cantChangePwd,
     EC_loginDelay, EC_cantCreateUIN, EC_invalidFlap, EC_badContact, EC_cantConnect_dc,
     EC_proxy_error, EC_proxy_badPwd, EC_proxy_unk, // unknown reply
-    EC_MalformedMsg, EC_AddContact_Error, EC_Login_Seq_Failed, EC_FailedDecrypt);
+    EC_MalformedMsg, EC_AddContact_Error, EC_Login_Seq_Failed, EC_FailedDecrypt,
+    EC_StoreProblem);
 
   TICQAuthError = (
     EAC_Not_Enough_Data = -1,
@@ -364,7 +366,8 @@ const
     'Couldn''t parse incoming event\nRaw input:\n%s',
     'Failed to add contact\n%s',
     'Login sequence cannot be completed due to error on one of the stages',
-    'Could''t decrypt message\n%s');
+    'Could''t decrypt message\n%s',
+    'Failed to process store purchase\n%s');
 (*
   ICQAuthErrors: array [330, 408] of String = (
 

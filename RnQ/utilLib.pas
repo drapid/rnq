@@ -185,11 +185,15 @@ function  CheckType(const lnk: String; var sA: RawByteString; var ext: String): 
 function  CheckType(const lnk: String): Boolean; overload;
 procedure incDBTimer;
 
-function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: String): Boolean; overload;
-function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: RawByteString): Boolean; overload;
-function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Integer): Boolean; overload;
-function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Cardinal): Boolean; overload
-function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Boolean): Boolean; overload;
+  function ParseJSON(const RespStr: String; out JSON: TJSONObject): Boolean; overload;
+  function ParseJSON(const RespStr: String; out JSON: TJSONArray): Boolean; overload;
+  function ParseJSON(const RespStrR: UTF8String; out JSON: TJSONObject): Boolean; overload;
+  function ParseJSON(const RespStrR: UTF8String; out JSON: TJSONArray): Boolean; overload;
+  function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: String): Boolean; overload;
+  function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: RawByteString): Boolean; overload;
+  function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Integer): Boolean; overload;
+  function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Cardinal): Boolean; overload
+  function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Boolean): Boolean; overload;
 
 
 implementation
@@ -4540,6 +4544,75 @@ begin
     inc(saveDBtimer2, saveDBdelay);
 
 end;
+
+function ParseJSON(const RespStr: String; out JSON: TJSONObject): Boolean;
+var
+  TmpJSON: TJSONValue;
+begin
+  Result := False;
+  JSON := nil;
+  TmpJSON := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RespStr), 0);
+  if not Assigned(TmpJSON) then
+    Exit;
+  if TmpJSON is TJSONObject then
+  begin
+    JSON := TmpJSON as TJSONObject;
+    Result := True;
+  end else
+    FreeAndNil(TmpJSON);
+end;
+
+function ParseJSON(const RespStr: String; out JSON: TJSONArray): Boolean;
+var
+  TmpJSON: TJSONValue;
+begin
+  Result := False;
+  JSON := nil;
+  TmpJSON := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RespStr), 0);
+  if not Assigned(TmpJSON) then
+    Exit;
+  if TmpJSON is TJSONArray then
+  begin
+    JSON := TmpJSON as TJSONArray;
+    Result := True;
+  end else
+    FreeAndNil(TmpJSON);
+end;
+
+function ParseJSON(const RespStrR: UTF8String; out JSON: TJSONObject): Boolean;
+var
+  TmpJSON: TJSONValue;
+begin
+  Result := False;
+  JSON := nil;
+  TmpJSON := TJSONObject.ParseJSONValue(RespStrR);
+  if not Assigned(TmpJSON) then
+    Exit;
+  if TmpJSON is TJSONObject then
+  begin
+    JSON := TmpJSON as TJSONObject;
+    Result := True;
+  end else
+    FreeAndNil(TmpJSON);
+end;
+
+function ParseJSON(const RespStrR: UTF8String; out JSON: TJSONArray): Boolean;
+var
+  TmpJSON: TJSONValue;
+begin
+  Result := False;
+  JSON := nil;
+  TmpJSON := TJSONObject.ParseJSONValue(RespStrR);
+  if not Assigned(TmpJSON) then
+    Exit;
+  if TmpJSON is TJSONArray then
+  begin
+    JSON := TmpJSON as TJSONArray;
+    Result := True;
+  end else
+    FreeAndNil(TmpJSON);
+end;
+
 
 function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: String): Boolean;
 begin

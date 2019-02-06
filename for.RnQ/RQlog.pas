@@ -16,10 +16,13 @@ uses
   VirtualTrees;
 
 type
+  TPktType = (ptBin, ptJSON, ptXML, ptString, ptUTF8);
+
   PLogItem = ^TLogItem;
   TLogItem = record
    pkt: Boolean;
    Cpt, Text: String;
+   pktType: TPktType;
    PktData: RawByteString;
    Img: TPicName;
   end;
