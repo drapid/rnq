@@ -261,6 +261,7 @@ begin
   cellular := '';
   SMSMobile := '';
   SMSable := False;
+  Official := False;
   proto := 0;
   MarStatus := 0;
   crypt.qippwd := 0;
@@ -279,6 +280,8 @@ begin
   SetLength(ssCell, 0);
   SetLength(ssCell2, 0);
   SetLength(ssCell3, 0);
+  SetLength(ssCell4, 0);
+  SetLength(ssNickname, 0);
   SetLength(ssMail, 0);
 
   fDisplay := '';
@@ -538,7 +541,7 @@ begin
     else
      Interests.InterestBlock[idx].Names:=TStringList.Create;
    while str<>'' do
-     Interests.InterestBlock[idx].Names.Add(chop(',',str));
+     Interests.InterestBlock[idx].Names.Add(chop(',', str));
 //                 Interests.InterestBlock[i].Count:=int.Count+1;
 end;
 
@@ -635,10 +638,12 @@ begin
       +TLV2_IFNN(DBFK_INTERESTS, interests2str(interests))
       +TLV2U_IFNN(DBFK_lclNoteStr, lclImportant)
       +TLV2U_IFNN(DBFK_ssNoteStr, ssImportant)
-      +TLV2U_IFNN(DBFK_ssMail, ssMail)
+//      +TLV2U_IFNN(DBFK_ssMail, ssMail)
+//      +TLV2U_IFNN(DBFK_ssNickname, ssNickname)
       +TLV2U_IFNN(DBFK_ssCell, ssCell)
       +TLV2U_IFNN(DBFK_ssCell2, ssCell2)
       +TLV2U_IFNN(DBFK_ssCell3, ssCell3)
+      +TLV2U_IFNN(DBFK_ssCell4, ssCell4)
 //      +TLV2(DBFK_ICONSHOW, int2str(icon.ToShow))
       +TLV2(DBFK_ICONSHOW, integer(icon.ToShow))
       +TLV2U_IFNN(DBFK_ICONMD5, IconID)
@@ -736,9 +741,11 @@ begin
 
     DBFK_ssNoteStr: self.ssImportant := UnUTF(item);
     DBFK_ssMail: self.ssMail := UnUTF(item);
+//    DBFK_ssNickname: self.ssNickname := UnUTF(item);
     DBFK_ssCell: self.ssCell := UnUTF(item);
     DBFK_ssCell2: self.ssCell2 := UnUTF(item);
     DBFK_ssCell3: self.ssCell3 := UnUTF(item);
+    DBFK_ssCell4: self.ssCell4 := UnUTF(item);
     DBFK_ICONMD5: self.IconID := UnUTF(item);
     DBFK_MARSTATUS: self.MarStatus := str2int(item);
     DBFK_qippwd: self.crypt.qippwd := str2int(item);

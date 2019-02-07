@@ -966,16 +966,16 @@ begin
     //      icq.sock.ThreadAttach
 //          try
             resolving := TRUE;
-          logEvPkt('Resolve IP Host='+ pr.loginServerAddr, '', '', '', false);
+          logEvPkt('Resolve IP Host='+ pr.loginServerAddr, '', '', '', ptNone);
           PostMessage(RnQmain.Handle, WM_RESOLVE_DNS, 0, 0);
   {          pr.sock.DnsLookup(pr.aProxy.serv.host);
           except
            on E:Exception do
             begin
-              evInt:=WSocket_WSAGetLastError;
+              evInt := WSocket_WSAGetLastError;
               msg := E.Message;
               Account.AccProto.disconnect;
-              resolving:= False;
+              resolving := False;
               setProgBar(Account.AccProto, 0);
               msgDlg(getTranslation('DNS error: [%d]\n%s' , [evInt, Msg]), False, mtError);
             end

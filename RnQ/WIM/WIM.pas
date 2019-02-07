@@ -163,6 +163,8 @@ type
     IE_serverGot,
     IE_serverSentU,
     IE_serverGotU,
+    IE_serverSentJ,
+    IE_serverGotJ,
 
     IE_creatingUIN,
     IE_newUin,
@@ -1555,7 +1557,7 @@ begin
 
   eventNameA := Prefix + Header;
   eventMsgA := RespStrR;
-  notifyListeners(IE_serverSent);
+  notifyListeners(IE_serverSentJ);
 
   TmpJSON := TJSONObject.ParseJSONValue(UTF8String(RespStrR));
   if not Assigned(TmpJSON) then
@@ -4345,7 +4347,7 @@ begin
   try
     eventNameA := '[POST] Fetched new events';
     eventMsgA := RespStrR;
-    NotifyListeners(IE_serverSent);
+    NotifyListeners(IE_serverSentJ);
 
     LastFetchBaseURL := '';
     if not ParseJSON(UTF8String(RespStrR), JSON) then

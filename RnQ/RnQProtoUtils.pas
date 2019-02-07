@@ -15,17 +15,24 @@ type
               WL_serverGot, WL_serverSent,
               WL_heSent, WL_meSent, WL_connecting,
               WL_sent_text, WL_rcvd_text,
-              WL_sent_text8, WL_rcvd_text8 // Data in UTF8
+              WL_sent_text8, WL_rcvd_text8, // Data in UTF8
+              WL_sent_json8, WL_rcvd_json8, // JSON in UTF8
+              WL_sent_xml8, WL_rcvd_xml8 // XML in UTF8
             );
 
 const
   LogWhatNames: array [TwhatLog] of string=('CONNECTED', 'DISCONNECTED',
                                             'CLIENT', 'SERVER', 'DC RCVD', 'DC SENT',
                                             'CONNECTING', 'CLIENT', 'SERVER',
-                                            'CLIENT', 'SERVER');
+                                            'CLIENT', 'SERVER',
+                                            'CLIENT', 'SERVER',
+                                            'CLIENT', 'SERVER'
+                                            );
   LogPics: array[TwhatLog] of TPicName = (PIC_CONNECTING, PIC_OFFGOING,
             PIC_LEFT, PIC_RIGHT,
             PIC_RIGHT, PIC_LEFT, PIC_CONNECTING,
+            PIC_LEFT, PIC_RIGHT,
+            PIC_LEFT, PIC_RIGHT,
             PIC_LEFT, PIC_RIGHT,
             PIC_LEFT, PIC_RIGHT
              );
@@ -49,24 +56,50 @@ var
   sA: RawByteString;
   sU: String;
   needHash: Boolean;
+  pt: TPktType;
 begin
-  needHash := not (what in [WL_sent_text, WL_rcvd_text, WL_sent_text8, WL_rcvd_text8]);
+  needHash := not (what in [WL_sent_text, WL_rcvd_text,
+                            WL_sent_text8, WL_rcvd_text8,
+                            WL_sent_json8, WL_rcvd_json8,
+                            WL_sent_xml8, WL_rcvd_xml8
+                            ]);
   if needHash then
     begin
       sA := data;
       sU := '';
+      pt := ptBin;
     end
    else
     begin
-      sA := '';
+//      sA := '';
       if what in [WL_sent_text8, WL_rcvd_text8] then
-        sU := UTF8Decode(data)
+        begin
+//          sU := UTF8Decode(data);
+          sA := data;
+          pt := ptUTF8;
+        end
        else
-        sU := String(data);
+      if what in [WL_sent_json8, WL_rcvd_json8] then
+        begin
+          sA := data;
+          pt := ptJSON;
+        end
+       else
+      if what in [WL_sent_xml8, WL_rcvd_xml8] then
+        begin
+          sA := data;
+          pt := ptXML;
+        end
+       else
+        begin
+//          sU := String(data);
+          sA := data;
+          pt := ptString;
+        end;
     end;
 
   if (logpref.pkts.onwindow) then
-    logEvPkt(head, sU, sA, LogPics[what], needHash);
+    logEvPkt(head, sU, sA, LogPics[what], pt);
 
   if logpref.pkts.onfile then
    begin

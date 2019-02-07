@@ -1917,7 +1917,7 @@ begin
   loggaEvtS('R&Q: '+intToStrA(RnQBuild) +' starting');
 
   loggaEvtS('theme: loading');
-  logEvPkt(logtimestamp + 'theme: reload', reloadCurrentTheme, '', '', false);
+  logEvPkt(logtimestamp + 'theme: reload', reloadCurrentTheme, '', '', ptNone);
   picDrawFirstLtr := theme.ThemePath.fn = '';
   loggaEvtS('theme: loaded');
 
@@ -2422,6 +2422,7 @@ begin
  RnQmain.hide;
  chatFrm.updateChatfrmXY;
  chatFrm.Hide;
+ logfrm.Hide;
  quitUser;
  quitconfirmation := false;
  FreeAndNil(logfrm);

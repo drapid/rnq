@@ -650,7 +650,9 @@ case ev of
   IE_serverSentU:  LoggaWIMPkt(thisWIM.eventNameA, WL_rcvd_text8, UTF8Encode(thisWIM.eventString));
   IE_serverGot: LoggaWIMPkt(thisWIM.eventNameA, WL_sent_text, thisWIM.eventMsgA);
   IE_serverGotU: LoggaWIMPkt(thisWIM.eventNameA, WL_sent_text8, UTF8Encode(thisWIM.eventString));
-    IE_connecting:
+  IE_serverSentJ:  LoggaWIMPkt(thisWIM.eventNameA, WL_rcvd_json8, thisWIM.eventMsgA);
+  IE_serverGotJ: LoggaWIMPkt(thisWIM.eventNameA, WL_sent_json8, thisWIM.eventMsgA);
+  IE_connecting:
     begin
      LoggaWIMPkt('', WL_connecting, thisWIM.eventAddress);
      DisableSounds := False;

@@ -196,6 +196,7 @@ const
 
   DBFK_ssCell2 = 131;
   DBFK_ssCell3 = 132;
+  DBFK_ssCell4 = 142;
 
   // New types
   DBFK_SMSMOBILE = 44;

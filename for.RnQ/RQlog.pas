@@ -16,11 +16,11 @@ uses
   VirtualTrees;
 
 type
-  TPktType = (ptBin, ptJSON, ptXML, ptString, ptUTF8);
+  TPktType = (ptNone, ptBin, ptJSON, ptXML, ptString, ptUTF8);
 
   PLogItem = ^TLogItem;
   TLogItem = record
-   pkt: Boolean;
+//   pkt: Boolean;
    Cpt, Text: String;
    pktType: TPktType;
    PktData: RawByteString;
@@ -51,10 +51,11 @@ type
   private
     fShowEvents: Boolean;
     fShowPackets: Boolean;
+    SetLast: Boolean;
   public
     LogList: TVirtualDrawTree;
 //    procedure DestroyHandle; Override;
-    procedure addToLog(pkt: Boolean; const s, Text: String;
+    procedure addToLog(pt: TPktType; const s, Text: String;
                        const data: rawByteString; const Img: TPicName);
     procedure HideAllEvents(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
     procedure updateVisibility;
@@ -68,7 +69,7 @@ procedure loggaEvtA(s: AnsiString; const img: TPicName = '';
 }
 procedure logEvPkt(const Head: String; const TextData: String;
                    const data: RawByteString; const img: TPicName;
-                   needHex: Boolean = True);
+                   pktType: TPktType = ptBin);
 procedure FlushLogEvFile;
 
 var
@@ -80,35 +81,38 @@ implementation
 
 uses
 //  incapsulate,
+  Clipbrd, JSON,
   RDUtils, RnQSysUtils,
   RQThemes, RnQGlobal,
-  RQutil, RnQFileUtil, Clipbrd,
+  RQutil, RnQFileUtil,
   RnQGraphics32;
 
 var
   logEvFileData: String;
 
-procedure TlogFrm.addToLog(pkt: Boolean; const s, Text: String;
+procedure TlogFrm.addToLog(pt: TPktType; const s, Text: String;
                      const data: rawByteString; const Img: TPicName);
 var
   it: PLogItem;
 //  i: integer;
-  SetLast: Boolean;
+//  SetLast: Boolean;
   n: PVirtualNode;
 begin
- if LogList.FocusedNode = LogList.GetLast then
-   SetLast := True
-  else
-   SetLast := False;
+  if self.visible then
+   if LogList.FocusedNode = LogList.GetLast then
+     SetLast := True
+    else
+     SetLast := False;
+
  n := LogList.AddChild(nil);
  it := LogList.GetNodeData(n);
- it.pkt := pkt;
+ it.pktType := pt;
  it.Cpt := s;
  it.Text := Text;
  it.Img := Img;
  it.PktData := data;
 
-  if (fShowPackets and pkt)or(fShowEvents and not pkt) then
+  if (fShowPackets and (pt <> ptNone))or(fShowEvents and (pt = ptNone)) then
     begin
       Include(N.States, vsVisible);
       Exclude(N.States, vsFiltered);
@@ -118,15 +122,17 @@ begin
       Exclude(N.States, vsVisible);
       Include(N.States, vsFiltered);
     end;
-
-  if vsVisible in n.States then
-  if SetLast then
-   with LogList do
+  if self.visible then
    begin
-     FocusedNode := n;
-     ClearSelection;
-     if n <> NIL then
-       Selected[n] := True;
+    if vsVisible in n.States then
+    if SetLast then
+     with LogList do
+     begin
+       FocusedNode := n;
+       ClearSelection;
+       if n <> NIL then
+         Selected[n] := True;
+     end;
    end;
 end; // addToLog
 
@@ -134,7 +140,7 @@ procedure TlogFrm.HideAllEvents(Sender: TBaseVirtualTree; Node: PVirtualNode; Da
 begin
   with TlogItem(PLogItem(Sender.getnodedata(Node))^) do
    begin
-     if (fShowPackets and pkt)or(fShowEvents and not pkt) then
+     if (fShowPackets and (pktType <> ptNone))or(fShowEvents and (pktType <> ptNone)) then
        begin
          if not(vsVisible in Node.States) then
           begin
@@ -196,6 +202,7 @@ begin
   end;
   fShowEvents := Showevents1.Checked;
   fShowPackets := Showpackets1.Checked;
+  SetLast := True;
 end;
 
 procedure TlogFrm.FormDestroy(Sender: TObject);
@@ -205,9 +212,22 @@ begin
 end;
 
 procedure TlogFrm.FormShow(Sender: TObject);
+var
+  n: PVirtualNode;
 begin
   theme.pic2ico(RQteFormIcon, PIC_HISTORY, icon);
-  applyTaskButton(self)
+  applyTaskButton(self);
+  if SetLast then
+    begin
+     with LogList do
+     begin
+       n := GetLast;
+       FocusedNode := n;
+       ClearSelection;
+       if n <> NIL then
+         Selected[n] := True;
+     end;
+    end;
 end;
 
 procedure TlogFrm.LogListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
@@ -221,11 +241,30 @@ begin
      if (Cpt = Text) then
       dumpBox.Text := Cpt
      else
-      if pkt then
+      if pktType = ptBin then
         begin
           dumpBox.WordWrap := false;
           dumpBox.ScrollBars := ssBoth;
           dumpBox.Text := Cpt + CrLfS + hexDumpS(PktData);
+        end
+      else if pktType = ptJSON then
+        begin
+          var json: TJSONValue;
+          json := TJSONObject.ParseJSONValue(UTF8String(PktData));
+          if Assigned(json) then
+            begin
+//              dumpBox.Text := Cpt + CRLF + Trim(PrettyPrintJSON(json))
+              dumpBox.Text := Cpt + CRLF + Trim(json.Format);
+              json.Free;
+            end
+          else
+            dumpBox.Text := Cpt + CRLF + UnUTF(PktData);
+        end
+      else if pktType <> ptNone then
+        begin
+          dumpBox.WordWrap := false;
+          dumpBox.ScrollBars := ssBoth;
+          dumpBox.Text := Cpt + CrLfS + UnUTF(PktData);
         end
        else
         dumpBox.Text := Cpt + CrLfS + Text;
@@ -361,13 +400,13 @@ begin
   if logpref.evts.onwindow and assigned(logFrm) then
     begin
     h := s;
-    logFrm.addToLog(False, chopline(h), s, '', img);
+    logFrm.addToLog(ptNone, chopline(h), s, '', img);
     end;
 
 end; // loggaEvt
 
 procedure logEvPkt(const Head: String; const TextData: String;
-      const data: RawByteString; const img: TPicName; needHex: Boolean = True);
+      const data: RawByteString; const img: TPicName; pktType: TPktType = ptBin);
 //var
 //  h: string;
 begin
@@ -377,7 +416,7 @@ begin
   if logpref.pkts.onwindow and assigned(logFrm) then
     begin
 //    h := s;
-    logFrm.addToLog(needHex, Head, TextData, Data, img);
+    logFrm.addToLog(pktType, Head, TextData, Data, img);
     end;
 
 //  if logpref.evts.onfile then
