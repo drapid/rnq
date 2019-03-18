@@ -11,11 +11,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.StdCtrls, vcl.ComCtrls, Winapi.CommCtrl,
- {$IFDEF PREF_IN_DB}
-  DBPrefsLib,
- {$ELSE ~PREF_IN_DB}
-  RnQPrefsLib,
- {$ENDIF PREF_IN_DB}
+  RnQPrefsInt,
   RnQGraphics32, Vcl.ExtCtrls, Vcl.Menus;
 
 type
@@ -46,7 +42,7 @@ type
 
 //var
 //  Form1: TForm1;
-  function  viewTextWindow(prefs: TRnQPref; const title, body: string; const bin: RawByteString = ''): Tform;
+  function  viewTextWindow(prefs: IRnQPref; const title, body: string; const bin: RawByteString = ''): Tform;
 
 implementation
 
@@ -59,7 +55,7 @@ uses
    System.UITypes, StrUtils, RnQLangs, RnQSysUtils, RDFileUtil,
    RnQGlobal, utilLib, langLib;
 
-function viewTextWindow(prefs: TRnQPref; const title, body: string; const bin: RawByteString = ''): Tform;
+function viewTextWindow(prefs: IRnQPref; const title, body: string; const bin: RawByteString = ''): Tform;
 var
   form: THEventFrm;
   memo: Tmemo;

@@ -305,7 +305,7 @@ begin
           if PicFmt = PA_FORMAT_XML then
            begin
  {$IFDEF PROTOCOL_ICQ}
-            if (cnt is TICQcontact) and TicqSession(cnt.fProto).AvatarsAutoGetSWF then
+            if (cnt is TICQcontact) and TicqSession(cnt.Proto).AvatarsAutoGetSWF then
              begin
 //               s := get_flashFile_from_xml(s, cnt.UID);
                str.Position := 0;
@@ -496,7 +496,7 @@ var
 begin
  {$IFDEF PROTOCOL_ICQ}
   result := false;
-  if not TicqSession(cnt.fProto).AvatarsSupport then
+  if not TicqSession(cnt.Proto).AvatarsSupport then
     Exit;
  {$ENDIF PROTOCOL_ICQ}
   hasAvatar := cnt.icon.ToShow <> IS_AVATAR;
@@ -722,9 +722,9 @@ procedure updateAvatar(c: TRnQcontact; var hash_safe: RawByteString);
 var
   sr: TsearchRec;
 //  path,
-//  uinStr : String;
-//  uin, code : Integer;
-//  c : Tcontact;
+//  uinStr: String;
+//  uin, code: Integer;
+//  c: Tcontact;
   PicFile: String;
 //  b,
   hasAvatar, loaded: Boolean;

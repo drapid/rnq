@@ -25,7 +25,8 @@ const
   StatusPriority: array [TWIMStatus] of byte = (0, 4, 5, 1, 2, 3);
 
 type
-  TVisibility = (VI_normal, VI_invisible, VI_privacy, VI_all, VI_CL);
+//  TVisibility = (VI_normal, VI_invisible, VI_privacy, VI_all, VI_CL);
+  TVisibility = (VI_normal, VI_invisible);
 
 const
   SupportedPresenceFields: array [1 .. 34] of String = ('aimId', 'displayId', 'friendly', 'moodIcon', 'moodTitle',
@@ -36,12 +37,15 @@ const
 //    buddyIcon,bigBuddyIcon,bigIconId,largeIconId
 
   visibility2ShowStr: array [Tvisibility] of String = ('Normal (all but invisible-list)',
-    'Invisible', 'Privacy (only visible-list)', 'Visible to all', 'Visible to contact-list');
-  visibility2imgName: array [Tvisibility] of TPicName = (PIC_VISIBILITY_NORMAL, PIC_VISIBILITY_NONE,
-    PIC_VISIBILITY_PRIVACY, PIC_VISIBILITY_ALL, PIC_VISIBILITY_CL);
-  visib2str: array [Tvisibility] of TPicName = ('normal', 'invisible', 'privacy', 'all', 'cl');
+    'Invisible'); //, 'Privacy (only visible-list)' , 'Visible to all', 'Visible to contact-list');
+  visibility2imgName: array [Tvisibility] of TPicName = (PIC_VISIBILITY_NORMAL, PIC_VISIBILITY_NONE);
+//    PIC_VISIBILITY_PRIVACY, PIC_VISIBILITY_ALL, PIC_VISIBILITY_CL);
+//  visib2str: array [Tvisibility] of TPicName = ('normal', 'invisible', 'privacy', 'all', 'cl');
+  visib2str: array [Tvisibility] of TPicName = ('normal', 'invisible');
   status2ShowStr: array [TWIMStatus] of string = ('Online', 'Offline', 'Unknown', 'Occupied', 'N/A', 'Away');
   status2Img: array [0 .. Byte(SC_AWAY)] of TPicName = ('online', 'offline', 'unk', 'occupied', 'na', 'away');
+  Status2Srv: array [0 .. Byte(SC_AWAY)] of TPicName =
+              ('online', 'offline', 'offline', 'online', 'online', 'online');
   statusWithAutoMsg = [byte(SC_AWAY), byte(SC_NA), byte(SC_OCCUPIED)];
 
 const
@@ -51,6 +55,7 @@ const
   AIM_MD5_STRING: AnsiString = 'AOL Instant Messenger (SM)';
   ICQ_DEV_ID: AnsiString = 'ic1nmMjqg7Yu-0hL'; // ic1nmMjqg7Yu-0hL - ICQ Windows, ic1rtwz1s1Hj1O0r - Web
   LOGIN_HOST: AnsiString = 'https://api.login.icq.net/';
+  SMS_REG: AnsiString = 'https://www.icq.com/smsreg/';
   WIM_HOST: AnsiString = 'https://api.icq.net/';
   REST_HOST: AnsiString = 'https://rapi.icq.net/';
   STORE_HOST: AnsiString = 'https://store.icq.com/';
@@ -165,7 +170,7 @@ const
   #define kAccCap_SmartCaps   OLESTR( "{094601FF-4C7F-11D1-8222-444553540000}")
 *)
 
-  CapsSmall: array [1 .. 36] of record
+  CapsSmall: array [1 .. 39] of record
     v: RawByteString;
     s: AnsiString;
     Desc: AnsiString;
@@ -214,7 +219,11 @@ const
   (v: #$13#$54; s: 'Emoji support'),  // 33
   (v: #$13#$59; s: 'Mail notifications'),  // 34
   (v: #$13#$5A; s: 'Dialog messages position support'; desc: 'Receive intro/tail messages'),  // 35
-  (v: #$13#$5B; s: 'Mentions support')  // 36
+  (v: #$13#$5B; s: 'Mentions support'),  // 36
+
+  (v: #$13#$58; s: '1358'),  // 37
+  (v: #$13#$5C; s: '135c'),  // 38
+  (v: #$13#$5E; s: '135e')  // 39
   );
   // #$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00#$00  // Anti-invischeck
   MsgCapabilities: array [1 .. 1] of RawByteString = (#$3B#$60#$B3#$EF#$D8#$2A#$6C#$45#$A4#$E0#$9C#$5A#$5E#$67#$E8#$65
@@ -333,6 +342,7 @@ type
   TICQAuthError = (
     EAC_Not_Enough_Data = -1,
     EAC_Unknown = 0,
+    EAC_OK = 200, // no error
     EAC_Wrong_Login = 330,
     EAC_Invalid_Request = 400,
     EAC_Auth_Required = 401,

@@ -437,7 +437,6 @@ var
   Mutex: Cardinal;
   portsListen: TPortList;
   cache: String;
-  imgCacheInfo: TMemIniFile;
 
 //const
 //  supportInvisCheck = false;

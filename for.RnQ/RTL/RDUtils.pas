@@ -2073,7 +2073,7 @@ begin
   //c := 0;
   //i := length(s);
   i := 1;
-  while i < (length(s)-1) do
+  while i <= (length(s)-1) do
     begin
 //      if (s[i] in hexChars)and
 //         (s[i+1] in hexChars) then

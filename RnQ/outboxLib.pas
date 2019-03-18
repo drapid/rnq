@@ -20,10 +20,12 @@ const
   OE_file       = 6;
   OE_email      = 7;
   OE_automsgreq = 8;
+  OE_sticker    = 9;
 
-  OEvent2ShowStr: array [OE_msg..OE_automsgreq] of string=(
+  OEvent2ShowStr: array [OE_msg.. OE_sticker] of string=(
     Str_message, 'Contacts', 'Added you', 'Authorization given',
-    'Authorization denied', 'File', 'E-Mail', 'Auto-message'
+    'Authorization denied', 'File', 'E-Mail', 'Auto-message',
+    'Sticker'
   );
 type
   POEvent = ^TOEvent;
@@ -48,7 +50,7 @@ type
     function   toString: RawByteString; reIntroduce;
     function   fromString(const s: RawByteString): Boolean;
     function   Clone: TOEvent;
-    end; // TOEvent
+   end; // TOEvent
 
   Toutbox = class(Tlist)
    public
@@ -221,7 +223,7 @@ begin
   result.lastmodify := now;
   result.cl := NIL;
   updateScreenFor(result.whom);
-  saveOutboxDelayed:=TRUE;
+  saveOutboxDelayed := TRUE;
 end; // add
 
 function Toutbox.getAt(idx: integer): TOevent;
@@ -253,7 +255,7 @@ begin
       list[i] := NIL;
       Delete(i);
       updateScreenFor(ev.whom);
-      saveOutboxDelayed:=TRUE;
+      saveOutboxDelayed := TRUE;
     end
    else
     Result := False;
@@ -265,19 +267,19 @@ var
 begin
   i := 0;
   while i < count do
-    begin
+   begin
     result := getAt(i);
     if (result.flags and IF_sendWhenImVisible=0)
     or result.whom.imVisibleTo then
       begin
-       list[i] := NIL;
-       delete(i);
-       saveOutboxDelayed := TRUE;
-       updateScreenFor(result.whom);
-      exit;
+        list[i] := NIL;
+        delete(i);
+        saveOutboxDelayed := TRUE;
+        updateScreenFor(result.whom);
+        exit;
       end;
     inc(i);
-    end;
+   end;
   result := NIL;
 end; // popVisible
 
@@ -402,20 +404,12 @@ begin
       OEK_email: email := UnUTF(copy(s,i,L));
       OEK_uin:
          begin
-      {$IFDEF UID_IS_UNICODE}
-           uid  := IntToStr(integer((@s[i])^));
-      {$ELSE ansi}
-           uid  := IntToStrA(integer((@s[i])^));
-      {$ENDIF UID_IS_UNICODE}
+           uid  := Int2UID(integer((@s[i])^));
            whom := Account.AccProto.getContact(uid);
          end;
       OEK_uid:
          begin
-      {$IFDEF UID_IS_UNICODE}
-           uid  := unUTF(copy(s,i,L));
-      {$ELSE ansi}
-           uid  := copy(s,i,L);
-      {$ENDIF UID_IS_UNICODE}
+           uid := Raw2UID(copy(s,i,L));
            whom := Account.AccProto.getContact(uid);
          end;
       OEK_cl:

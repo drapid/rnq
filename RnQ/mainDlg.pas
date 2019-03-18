@@ -568,9 +568,6 @@ uses
   {$ELSE}
     RnQGraphics32,
   {$ENDIF USE_GDIPLUS}
- {$IFDEF RNQ_AVATARS}
-  RnQ_Avatars,
- {$ENDIF}
  {$IFDEF RNQ_PLAYER}
   uSimplePlayer,
  {$ENDIF RNQ_PLAYER}
@@ -995,11 +992,12 @@ begin
   openSendContacts(clickedContact)
 end;
 
-procedure TRnQmain.sendContactsAction(sender:Tobject);
+procedure TRnQmain.sendContactsAction(sender: Tobject);
 var
 //  i: integer;
 //  s: String;
   s: RawByteString;
+  UID: TUID;
   cnt: TRnQContact;
   wnd: TselectCntsFrm;
   cl: TRnQCList;
@@ -1009,10 +1007,10 @@ begin
  if not cl.empty then
   begin
     s := (wnd.extra as Tincapsulate).str;
-    if s > '' then
+    UID := Raw2UID(s);
+    if UID > '' then
     begin
-//      cnt := contactsDB.get(TICQContact, s);
-      cnt := wnd.proto.getContact(s);
+      cnt := wnd.proto.getContact(UID);
       begin
         Account.outbox.add(OE_CONTACTS, cnt, 0, cl);
         if Assigned(outboxFrm) then
@@ -1262,7 +1260,7 @@ procedure TRnQmain.Visiblelist1Click(Sender: TObject);
 begin
   if not Assigned(clickedContact) then
     Exit;
-  with clickedContact.fProto do
+  with clickedContact.Proto do
    if isInList(LT_VISIBLE, clickedContact) then
     begin
  {$IFDEF UseNotSSI}
@@ -1310,8 +1308,8 @@ procedure TRnQmain.invisiblelist1Click(Sender: TObject);
 begin
   if not Assigned(clickedContact) then
     Exit;
- with clickedContact.fProto do
-  if isInList(LT_INVISIBLE, clickedContact) then
+ with clickedContact.Proto do
+  if clickedContact.isInList(LT_INVISIBLE) then
   begin
  {$IFDEF UseNotSSI}
 //   if not icq.useSSI then
@@ -1319,7 +1317,7 @@ begin
      readList(LT_INVISIBLE).remove(clickedContact)
     else
  {$ENDIF UseNotSSI}
-     RemFromList(LT_INVISIBLE, clickedContact);
+     clickedContact.RemFromList(LT_INVISIBLE);
   end
 else
   begin
@@ -1335,8 +1333,8 @@ else
     else
  {$ENDIF UseNotSSI}
      begin
-       RemFromList(LT_VISIBLE, clickedContact);
-       AddToList(LT_INVISIBLE, clickedContact);
+       clickedContact.RemFromList(LT_VISIBLE);
+       clickedContact.AddToList(LT_INVISIBLE);
      end;
   end;
  {$IFDEF UseNotSSI}
@@ -1344,7 +1342,7 @@ else
   if (clickedContact.iProto.ProtoElem is TicqSession) then
     TicqSession(clickedContact.iProto.ProtoElem).updateVisibility;
  {$ENDIF UseNotSSI}
-  saveListsDelayed:=TRUE;
+  saveListsDelayed := TRUE;
   roasterLib.redraw(clickedContact);
 end;
 
@@ -1353,9 +1351,9 @@ begin
   if not Assigned(clickedContact) then
     Exit;
   if clickedContact.isInList(LT_TEMPVIS) then
-    clickedContact.fProto.RemFromList(LT_TEMPVIS, clickedContact)
+    clickedContact.RemFromList(LT_TEMPVIS)
    else
-    clickedContact.fProto.AddToList(LT_TEMPVIS, clickedContact);
+    clickedContact.AddToList(LT_TEMPVIS);
   roasterLib.redraw(clickedContact);
 end;
 
@@ -1420,9 +1418,9 @@ end;
 
 procedure TRnQmain.AppActivate(Sender: TObject);
 begin
- inactiveTime := 0;
- TipsShowTop;
- applyTransparency;
+  inactiveTime := 0;
+  TipsShowTop;
+  applyTransparency;
 end;
 
 procedure TRnQmain.Newgroup1Click(Sender: TObject);
@@ -1445,7 +1443,10 @@ end;
 
 procedure TRnQmain.Requestavatar1Click(Sender: TObject);
 begin
-  reqAvatarsQ.add(clickedContact);
+  if Assigned(clickedContact) then
+    begin
+      reqAvatarsQ.add(clickedContact);
+    end;
 end;
 
 procedure TRnQmain.authReqClick(Sender: TObject);
@@ -1453,7 +1454,7 @@ var
   rsn, s1, s2: String;
   uid: TUID;
 begin
-  if not Assigned(clickedContact) or (clickedContact.fProto = NIL) then
+  if not Assigned(clickedContact) or (clickedContact.Proto = NIL) then
     Exit;
   try
     uid := clickedContact.uid;
@@ -1462,13 +1463,13 @@ begin
   end;
   if uid = '' then
    Exit;
-  with clickedContact.fProto.getMyInfo do
-   rsn := getTranslation(Str_authRequest) + ' ' + displayed4All+ ' UID#:' + uin2Show;
+  with clickedContact.Proto.getMyInfo do
+    rsn := getTranslation(Str_authRequest) + ' ' + displayed4All+ ' UID#:' + uin2Show;
   s1 := getTranslation('Enter reason to authorize');
   s2 := getTranslation('Reason');
   if InputQueryBig(s1, s2, rsn) then
    begin
-    clickedContact.fProto.AuthRequest(clickedContact, rsn);
+    clickedContact.AuthRequest(rsn);
     plugins.castEv( PE_AUTHREQ_SENT, UID, rsn);
    end;
 end;
@@ -1498,11 +1499,14 @@ end;
 procedure TRnQmain.Deletegroup1Click(Sender: TObject);
 var
   id: integer;
+  i: Integer;
 begin
   if roasterlib.focused=NIL then
     exit;
   id := roasterlib.focused.groupId;
- with groups.a[groups.idxOf(id)] do
+  i := groups.idxOf(id);
+  if i >=0 then
+  with groups.a[i] do
   if messageDlg(getTranslation('Are you sure you want to delete the group "%s" ?',[name]), mtConfirmation, [mbYes,mbNo], 0) = mrYes then
     begin
     if Account.AccProto.readList(LT_ROSTER).getCount(id) > 0 then
@@ -2114,7 +2118,7 @@ end;
 
 procedure TRnQmain.divisorMenuPopup(Sender: TObject);
 begin
-  newgroup1.visible:=showGroups;
+  newgroup1.visible := showGroups;
 end;
 
 procedure TRnQmain.gmAAdd2ServerExecute(Sender: TObject);
@@ -2342,9 +2346,9 @@ case msg.msg of
    if msg.WParam = IPC_STARTPLAY then
      mARnQPlayerExecute(self)// Запускаем проигрыватель
 {    case msg.lParam of // что делаем
-      IPC_STARTPLAY : mARnQPlayerExecute(self);// Запускаем проигрыватель
-//      IPC_ISPLAYING : executeMacro( := 'is plaing!';
-      IPC_SETVOLUME : begin
+      IPC_STARTPLAY: mARnQPlayerExecute(self);// Запускаем проигрыватель
+//      IPC_ISPLAYING: executeMacro( := 'is plaing!';
+      IPC_SETVOLUME: begin
           if Assigned(frmPlayer) then
             begin
               frmPlayer.volumeslider.Position := msg.wParam; // := 'Set volume';
@@ -2533,10 +2537,10 @@ var
   i: integer;
   vi1: TRnQViewInfoForm;
   Fcs: THandle;
-//  cnt : Tcontact;
+//  cnt: Tcontact;
   cnt1: TRnQContact;
   aNewDawn: boolean;   // TRUE once after each midnight
-//  vLastInput : DWord;
+//  vLastInput: DWord;
   isSSRuning: BOOL;
   b: boolean;
   AwayXsts: TXStatStr;
@@ -2676,46 +2680,18 @@ processOutbox;
 // query contacts infos
 if usertime mod 20=0 then
  begin
-  if (Account.AccProto.ProtoElem.ProtoID = ICQProtoID) then
-   begin
-    if assigned(retrieveQ) and (Account.AccProto.isOnline) and not retrieveQ.empty then
-    begin
- {$IFDEF PROTOCOL_ICQ}
-     TicqSession(Account.AccProto.ProtoElem).sendSimpleQueryInfo(retrieveQ.getAt(0).uid);
- {$ENDIF PROTOCOL_ICQ}
-     retrieveQ.delete(0);
-     saveListsDelayed := True;
-//     saveRetrieveQ;
-    end;
- {$IFDEF PROTOCOL_ICQ}
-    {$IFDEF RNQ_AVATARS}
-    if assigned(reqAvatarsQ) and TicqSession(Account.AccProto).AvatarsSupport and Account.AccProto.isOnline and not reqAvatarsQ.empty then
-     begin
-       cnt1 := reqAvatarsQ.getAt(0);
-       if try_load_avatar(cnt1, TICQContact(cnt1).ICQIcon.hash,
-                          cnt1.Icon.hash_safe) then
-         reqAvatarsQ.delete(0)
-        else
-         begin
-          if TicqSession(Account.AccProto.ProtoElem).RequestIcon(TICQContact(cnt1)) then
-            reqAvatarsQ.delete(0);
-         end;
-     end;
-    {$ENDIF RNQ_AVATARS}
-    if assigned(reqXStatusQ) and not reqXStatusQ.empty and Assigned(Account.AccProto)
-       and Account.AccProto.isOnline then
-     begin
-       TicqSession(Account.AccProto.ProtoElem).RequestXStatus(reqXStatusQ.getAt(0).UID);
-       reqXStatusQ.delete(0);
-     end;
+   Process_InfoRetrives;
+   Process_xStatusRetrives;
 
-    {$IFDEF RNQ_AVATARS}
-    if (ToUploadAvatarFN > '') and Account.AccProto.isOnline then
-     if TicqSession(Account.AccProto.ProtoElem).uploadAvatar(ToUploadAvatarFN) then
+  {$IFDEF RNQ_AVATARS}
+   if assigned(reqAvatarsQ) and Account.AccProto.isOnline and not reqAvatarsQ.empty then
+    if Protocols_all.try_load_or_req_avatar(reqAvatarsQ.getAt(0)) then
+     reqAvatarsQ.delete(0);
+
+   if (ToUploadAvatarFN > '') and Account.AccProto.isOnline then
+     if Account.AccProto.uploadAvatar(ToUploadAvatarFN) then
        ToUploadAvatarFN := '';
-    {$ENDIF RNQ_AVATARS}
- {$ENDIF PROTOCOL_ICQ}
-   end;
+  {$ENDIF RNQ_AVATARS}
  end;
 
  if self.Floating then
@@ -3322,11 +3298,7 @@ begin
           if (groups.name2id(edit.text) < 0)
           or (messageDlg(getTranslation('The name %s already exists. Do you want to keep it?',[edit.text]), mtConfirmation, [mbYes,mbNo], 0) = mrYes) then
             begin
-             with groups.a[groups.idxOf(groupId)] do
-              begin
-               name := edit.text;
-               ServerUpdate;
-              end;
+             groups.rename(groupId, edit.text);
              saveGroupsDelayed := TRUE;
             end;
         NODE_CONTACT:
@@ -3475,7 +3447,7 @@ begin
      (not (clickedContact.fProto is TicqSession) or (TicqSession(clickedContact.fProto).UseSSI)) and
  {$ENDIF UseNotSSI}
       not clickedContact.CntIsLocal and
-       (clickedContact.fProto.isOffline or not Assigned(destGrp) or (groups.idxOf(destGrp.groupID) < 0) or (groups.get(destGrp.groupID).ssiID = 0)) then
+       (clickedContact.Proto.isOffline or not Assigned(destGrp) or (groups.idxOf(destGrp.groupID) < 0) or (groups.get(destGrp.groupID).ssiID = 0)) then
       Accept := False;
 end
 else
@@ -3685,7 +3657,7 @@ begin
  {$IFDEF PROTOCOL_ICQ}
   if not Assigned(clickedContact) then
     Exit;
-  if not clickedContact.fProto.isOnline then
+  if not clickedContact.Proto.isOnline then
     exit;
   if warnVisibilityAutoMsgReq and not clickedContact.imVisibleTo then
     case messageDlg(getTranslation('This action might make you visible to the contact.\nDo you want to continue?'), mtConfirmation, [mbYes,mbYesToAll,mbNo], 0) of
@@ -3893,14 +3865,14 @@ procedure TRnQmain.cmAmovetogroupUpdate(Sender: TObject);
 begin
 {if Contact <> nil then
 begin
-  TAction(Sender).visible:=ICQ.readroaster.exists(Contact);
+  TAction(Sender).visible := ICQ.readroaster.exists(Contact);
   if Contact.group = 0 then
-    TAction(Sender).caption:=getTranslation('Move to group')
+    TAction(Sender).caption := getTranslation('Move to group')
   else
-    TAction(Sender).caption:=getTranslation('Move from %s to group', [groups.id2name(Contact.group)] );
+    TAction(Sender).caption := getTranslation('Move from %s to group', [groups.id2name(Contact.group)] );
 end}
   TAction(Sender).Enabled :=
-    ( Assigned(clickedContact) and (clickedContact.CntIsLocal or clickedContact.fProto.isOnline
+    ( Assigned(clickedContact) and (clickedContact.CntIsLocal or clickedContact.Proto.isOnline
      {$IFDEF UseNotSSI}
 //      or not icq.useSSI
       or ((clickedContact.fProto is TicqSession) and not TicqSession(clickedContact.fProto).useSSI)
@@ -3944,27 +3916,22 @@ end;
 procedure TRnQmain.ARename1Update(Sender: TObject);
 begin
   TAction(Sender).Enabled :=
-    ( Assigned(clickedContact) and (clickedContact.CntIsLocal or clickedContact.fProto.isOnline
+    ( Assigned(clickedContact) and (clickedContact.CntIsLocal or clickedContact.Proto.isOnline
      {$IFDEF UseNotSSI}
 //      or not icq.useSSI
-      or ((clickedContact.fProto is TicqSession) and not TicqSession(clickedContact.fProto).useSSI)
+      or ((clickedContact.Proto is TicqSession) and not TicqSession(clickedContact.Proto).useSSI)
      {$ENDIF UseNotSSI}
 ))
 end;
 
 procedure TRnQmain.ARequestAvtUpdate(Sender: TObject);
 begin
- {$IFDEF PROTOCOL_ICQ}
   {$IFDEF RNQ_AVATARS}
   if clickedContact <> nil then
-    TAction(Sender).visible := TicqSession(Account.AccProto).AvatarsSupport and //avt_icq.isOnline and
-         (clickedContact is TICQContact) and
-         (length(TICQContact(clickedContact).ICQIcon.hash) = 16)
-         and (TICQContact(clickedContact).ICQIcon.hash <> clickedContact.Icon.hash_safe);
+    TAction(Sender).visible := clickedContact.AvatarNeedToRefresh;
   {$ELSE RNQ_AVATARS}
   TAction(Sender).visible := false;
   {$ENDIF RNQ_AVATARS}
- {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQmain.contactMenuNEWPopup(Sender: TObject);
@@ -4396,7 +4363,7 @@ begin
 //   if clickedContact.iProto.ProtoElem is TICQSession then
 //     TICQSession(clickedContact.iProto.ProtoElem).SSIAddContact(TICQContact(clickedContact))
 //    else
-     clickedContact.fProto.addContact(clickedContact);
+     clickedContact.Proto.addContact(clickedContact);
 //  ICQ.addContact(clickedContact);
 end;
 
@@ -4409,16 +4376,16 @@ begin
     begin
      Visible :=
         Assigned(clickedContact) and clickedContact.CntIsLocal and
-        clickedContact.fProto.IsOnline
+        clickedContact.Proto.IsOnline
  {$IFDEF UseNotSSI}
 //        icq.useSSI and
-        and (not(clickedContact.iProto.ProtoElem is TicqSession) or
-             TicqSession(clickedContact.iProto.ProtoElem).UseSSI)
+        and (not(clickedContact.Proto.ProtoElem is TicqSession) or
+             TicqSession(clickedContact.Proto.ProtoElem).UseSSI)
  {$ENDIF UseNotSSI}
          ;
       if Visible then
        begin
-        prt := clickedContact.fProto._getProtoID;
+        prt := clickedContact.Proto._getProtoID;
         Enabled :=
   {$IFDEF PROTOCOL_XMP}
             (prt=XMPProtoID)or
@@ -4516,18 +4483,18 @@ begin
  TAction(Sender).Visible := boolean(getShiftState() and (1+2)); // shift OR control
  TAction(Sender).Enabled :=
      ( Assigned(clickedContact) and
-       (clickedContact.CntIsLocal or clickedContact.fProto.isOnline
+       (clickedContact.CntIsLocal or clickedContact.Proto.isOnline
  {$IFDEF UseNotSSI}
 //        or not icq.useSSI
-       or ((clickedContact.fProto is TicqSession) and
-               not TicqSession(clickedContact.fProto).UseSSI)
+       or ((clickedContact.Proto is TicqSession) and
+               not TicqSession(clickedContact.Proto).UseSSI)
  {$ENDIF UseNotSSI}
        ))
 end;
 
 procedure TRnQmain.cAMakeLocalExecute(Sender: TObject);
 begin
- if assigned(clickedContact) and clickedContact.fProto.isOnline then
+ if assigned(clickedContact) and clickedContact.Proto.isOnline then
    clickedContact.DelCntFromSrv;
 end;
 
@@ -4536,7 +4503,7 @@ begin
   if Sender is TAction then
    with Sender as TAction do
      Visible :=
-        Assigned(clickedContact) and clickedContact.fProto.IsOnline and
+        Assigned(clickedContact) and clickedContact.Proto.IsOnline and
         not clickedContact.CntIsLocal and
         (clickedContact.SSIID <> 0) and
 //        (TICQContact(clickedContact).SSIID <> 0) and

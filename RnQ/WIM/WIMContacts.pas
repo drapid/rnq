@@ -93,7 +93,7 @@ type
     LastUpdate_dw: DWord;
     Lastinfoupdate_dw: DWord;
     LastStatusUpdate_dw: DWord;
-    WorkCountry: Word;
+//    WorkCountry: Word;
     IdleTime: Word;          // В секундах!
     GMThalfs: ShortInt;
     Lang: TLanguages;
@@ -104,7 +104,7 @@ type
     LastInfoUpdate,       // local time
     LastStatusUpdate,     // local time
     InfoUpdatedTo: TDateTime;        // local time
-    Proto: integer;
+    ProtoV: integer;
     fServerProto: String;
     Connection: record
       port, ft_port: Integer;
@@ -114,6 +114,7 @@ type
      end;
     SMSable,
     NoDB,
+    Muted,
 //    Authorized,
     BirthFlag,
     ICQ2Go,
@@ -134,7 +135,7 @@ type
     xStatusDesc: String;
     xStatus: Byte;
 //    xStatusOld: Byte;
-    IconID: String;
+    IconID: RawByteString;
     Interests: TInterests; // By Shyr
 //    data: tce;
    public
@@ -168,8 +169,8 @@ type
 //  function  ICQCL_buinlist(cl: TRnQCList; Proto: IRnQProtocol): string;
   procedure ICQCL_setStatus(cl: TRnQCList; st: TWIMStatus);
   function  ICQCL_idxBySSID(cl: TRnQCList; ssid: Word): integer;
-  function  ICQCL_C8SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
-  function  ICQCL_SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
+//  function  ICQCL_C8SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
+//  function  ICQCL_SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
 
   function unFakeUIN(uin: int64): TUID;
 
@@ -262,7 +263,7 @@ begin
   SMSMobile := '';
   SMSable := False;
   Official := False;
-  proto := 0;
+  protoV := 0;
   MarStatus := 0;
   crypt.qippwd := 0;
   crypt.supportCryptMsg := False;
@@ -646,12 +647,12 @@ begin
       +TLV2U_IFNN(DBFK_ssCell4, ssCell4)
 //      +TLV2(DBFK_ICONSHOW, int2str(icon.ToShow))
       +TLV2(DBFK_ICONSHOW, integer(icon.ToShow))
-      +TLV2U_IFNN(DBFK_ICONMD5, IconID)
+      +TLV2_IFNN(DBFK_ICONMD5, Icon.hash_safe)
       +TLV2U_IFNN(DBFK_WORKPAGE, workpage)
       +TLV2U_IFNN(DBFK_WORKSTNT, workPos) // Должность
       +TLV2U_IFNN(DBFK_WORKDEPT, workDep) // Департамент
       +TLV2U_IFNN(DBFK_WORKCOMPANY, workCompany) // Компания
-      +TLV2_IFNN(DBFK_WORKCOUNTRY, integer(workCountry))
+//      +TLV2_IFNN(DBFK_WORKCOUNTRY, integer(workCountry))
       +TLV2U_IFNN(DBFK_WORKZIP, workzip)
       +TLV2U_IFNN(DBFK_WORKADDRESS, workaddress)
       +TLV2U_IFNN(DBFK_WORKPHONE, workphone)
@@ -667,7 +668,7 @@ begin
       +TLV2U_IFNN(DBFK_BIRTHZIP, BirthZIP)
 end;
 
-function TWIMContact.ParseDBrow(ItemType: Integer; const item : RawByteString): Boolean;
+function TWIMContact.ParseDBrow(ItemType: Integer; const item: RawByteString): Boolean;
   procedure str2interests(str: RawByteString; var int: Tinterests);  // By Shyr
   var
    s1: RawByteString;
@@ -726,7 +727,7 @@ begin
     DBFK_WORKSTNT: self.workPos  := UnUTF(item); // Должность
     DBFK_WORKDEPT: self.workDep  := UnUTF(item); // Департамент
     DBFK_WORKCOMPANY: self.workCompany := UnUTF(item); // Компания
-    DBFK_WORKCOUNTRY: system.move(item[1], self.workCountry, 4);
+//    DBFK_WORKCOUNTRY: system.move(item[1], self.workCountry, 4);
     DBFK_WORKZIP: self.workzip := UnUTF(item);
     DBFK_WORKADDRESS: self.workaddress := UnUTF(item);
     DBFK_WORKPHONE: self.workphone := UnUTF(item);
@@ -746,7 +747,6 @@ begin
     DBFK_ssCell2: self.ssCell2 := UnUTF(item);
     DBFK_ssCell3: self.ssCell3 := UnUTF(item);
     DBFK_ssCell4: self.ssCell4 := UnUTF(item);
-    DBFK_ICONMD5: self.IconID := UnUTF(item);
     DBFK_MARSTATUS: self.MarStatus := str2int(item);
     DBFK_qippwd: self.crypt.qippwd := str2int(item);
 
@@ -802,7 +802,7 @@ begin
       TWIMContact(cnt).status := st;
    end;
 end; // setStatus
-
+{
 function ICQCL_SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
 var
   i: integer;
@@ -819,7 +819,7 @@ function ICQCL_C8SSIByGrp(cl: TRnQCList; grID: Integer): AnsiString;
 begin
   result := TLV($C8, ICQCL_SSIByGrp(cl, grID));
 end;
-
+}
 function unFakeUIN(uin: int64): TUID;
 var
   x: int64;

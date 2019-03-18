@@ -86,6 +86,7 @@ uses
  {$ELSE ~DB_ENABLED}
   histUtilsDlg,
  {$ENDIF ~DB_ENABLED}
+   RnQNet.Cache,
    Protocols_all;
 
 var
@@ -384,6 +385,7 @@ autocopyhist := TRUE;
   behaviour[EK_XstatusMsg].trig := [BE_history];
   behaviour[EK_Xstatusreq].trig := [BE_history];
   behaviour[EK_buzz].trig := [BE_OPENCHAT, BE_HISTORY, BE_TIP, BE_SOUND];
+  behaviour[EK_Sticker].trig := [BE_tray, BE_openchat, BE_save, BE_sound, BE_history, BE_tip, BE_FLASHCHAT];
 
   for i:=1 to EK_last do
   begin
@@ -963,7 +965,7 @@ begin
     l := beh2str(i);
     pp.getPrefBlob(sU, RawByteString(l));
 //    if l <> '' then
-    behaviour[i]:=str2beh(l)
+    behaviour[i] := str2beh(l)
    end;
 
   pp.getPrefInt('inactive-hide-time', inactivehideTime);
@@ -1627,6 +1629,7 @@ begin
   supportedBehactions[EK_XstatusMsg]:= allBehactions;
   supportedBehactions[EK_Xstatusreq]:= allBehactions;
   supportedBehactions[EK_buzz] := [BE_OPENCHAT, BE_HISTORY, BE_TIP, BE_SOUND];
+  supportedBehactions[EK_Sticker] := allBehactions;
 
   resetCommonCFG;
   loadCommonCFG;
@@ -2010,18 +2013,7 @@ if PREVIEWversion and (Account.AccProto.ProtoElem is TicqSession) then
     end;
  end;
  {$ENDIF PROTOCOL_ICQ}
-//  MainProto.MyInfo := MainProto.getContact(lastUser);
-//ICQ.myinfo := TicqSession.getICQContact(lastUser);
-{
-  if MainProto.ProtoName = 'ICQ' then
-   begin
-    with TICQcontact(MainProto.getMyInfo) do
-      begin
-//        status := ticqStatus(SC_OFFLINE);
-        ICQIcon.hash_safe := myAvatarHash;
-      end;
-   end;
-}
+
 //setVisibility(MainProto, byte(VI_normal));
 setVisibility(Account.AccProto, byte(RnQstartingVisibility));
 //myStatus:= byte(SC_OFFLINE);

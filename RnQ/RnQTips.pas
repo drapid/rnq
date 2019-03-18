@@ -848,7 +848,7 @@ begin
            if length(sa) >= 4 then
             begin
               if Assigned(thisCnt) then
-                thisCnt.fProto.EventExtraPics(ev.kind, sa, p1, p2);
+                thisCnt.Proto.EventExtraPics(ev.kind, sa, p1, p2);
 
               if Assigned(thisCnt) then
               begin
@@ -1147,4 +1147,3 @@ end; // tipDrawEvent
 
 
 end.
-

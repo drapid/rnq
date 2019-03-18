@@ -179,8 +179,6 @@ end;
 procedure createMenuAs(ami: aTaMenuItem; var ppm: TPopupMenu; Own: TComponent);
 var
   i: Integer;
-//  , k
-//  mi : TRQMenuItem;
   updArr: aTaMenuItemUpd;
 begin
   ppm := TPopupMenu.Create(Own);
@@ -194,8 +192,6 @@ end;
 procedure createMenuAs(ami: array of TaMenuItem; var ppm: TPopupMenu; Own: TComponent);
 var
   i: Integer;
-//  , k
-//  mi : TRQMenuItem;
   updArr: aTaMenuItemUpd;
 begin
   ppm := TPopupMenu.Create(Own);

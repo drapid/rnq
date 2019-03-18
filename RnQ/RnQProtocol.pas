@@ -123,6 +123,7 @@ type
  {$IFDEF UID_IS_UNICODE}
   TUID = String;
   TUID_Char = Char;
+  PUID_Char = PChar;
  {$ELSE ansi}
   TUID = AnsiString;
   TUID_Char = AnsiChar;
@@ -251,11 +252,11 @@ type
 //    procedure connect; overload;
 //    procedure connect(createUIN:boolean); overload;
 //   public
-    function  getStatuses    : TStatusArray;
-    function  GetVisibilities : TStatusArray;
-    function  getStatusMenu : TStatusMenu;
-    function  getVisMenu    : TStatusMenu;
-    function  getContactClass : TRnQCntClass;
+    function  getStatuses: TStatusArray;
+    function  getVisibilitis: TStatusArray;
+    function  getStatusMenu: TStatusMenu;
+    function  getVisMenu: TStatusMenu;
+    function  getContactClass: TRnQCntClass;
     function  getContact(const UID: TUID): TRnQContact;
       { Get the algorithm name }
     function  ProtoName: String;
@@ -266,32 +267,32 @@ type
     procedure Clear;
 
     procedure disconnect;
-//    procedure setStatus(s:Tstatus; inv:boolean);
-//    function  getStatus:Tstatus;
+//    procedure setStatus(s: Tstatus; inv: boolean);
+//    function  getStatus: Tstatus;
     function  isOnline: boolean;
     function  isOffline: boolean;
     function  isReady: boolean;     // we can send commands
     function  isConnecting: boolean;
     function  getStatus: byte;
-    procedure setStatus(st : Byte);
-    function  getVisibility : byte;
-    function  IsInvisible  : Boolean;
+    procedure setStatus(st: Byte);
+    function  getVisibility: byte;
+    function  IsInvisible: Boolean;
     function  getStatusName: String;
-    function  getStatusImg : TPicName;
-    function  getXStatus:byte;
+    function  getStatusImg: TPicName;
+    function  getXStatus: byte;
 
     function  imVisibleTo(c: TRnQContact): boolean;
     procedure getClientPicAndDesc4(c: TRnQContact; var pPic : TPicName; var CliDesc : String);
-    function  isMyAcc(c : TRnQContact) : Boolean;
-    function  getMyInfo : TRnQContact;
+    function  isMyAcc(c: TRnQContact): Boolean;
+    function  getMyInfo: TRnQContact;
     function  maxCharsFor(const c: TRnQContact): integer;
 //    function  canSendMsgFor(c: TRnQContact; msg: String):integer;
 
 
     // manage contact lists
-    function  readList(l: TLIST_TYPES):TRnQCList;
-    procedure AddToList(l: TLIST_TYPES; cl:TRnQCList); overLoad;
-    procedure RemFromList(l: TLIST_TYPES; cl:TRnQCList); OverLoad;
+    function  readList(l: TLIST_TYPES): TRnQCList;
+    procedure AddToList(l: TLIST_TYPES; cl: TRnQCList); overLoad;
+    procedure RemFromList(l: TLIST_TYPES; cl: TRnQCList); OverLoad;
     // manage contacts
     procedure AddToList(l: TLIST_TYPES; cnt: TRnQContact); OverLoad;
     procedure RemFromList(l: TLIST_TYPES; cnt: TRnQContact); OverLoad;
@@ -398,7 +399,7 @@ type
 
 
     function  getStatuses: TStatusArray; Virtual; Abstract;
-    function  GetVisibilities: TStatusArray; Virtual; Abstract;
+    function  getVisibilities: TStatusArray; Virtual; Abstract;
     function  getStatusMenu: TStatusMenu; Virtual; Abstract;
     function  getVisMenu: TStatusMenu; Virtual; Abstract;
     function  getContactClass: TRnQCntClass; Virtual; Abstract;
@@ -448,12 +449,16 @@ type
     function  addContact(c: TRnQContact; isLocal: Boolean = false): boolean; Virtual; Abstract;
     function  removeContact(c: TRnQContact): boolean; Virtual; Abstract;
 
+    function  deleteGroup(grSSID: Integer): Boolean; Virtual; Abstract;
+
     function  validUid1(const uin: TUID): boolean; inline;
 //    function  getContact(uid: TUID): TRnQContact;
     function  ContactExists(const UID: TUID): Boolean;
 
     function  sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK: boolean): integer; Virtual; Abstract; // returns handle
     procedure UpdateGroupOf(cnt: TRnQContact); Virtual; Abstract;
+    procedure UpdateGroupID(grID: Integer); Virtual; Abstract;
+
 {$IFDEF usesDC}
     function getNewDirect: TProtoDirect; Virtual; Abstract;
 {$ENDIF usesDC}
@@ -524,8 +529,6 @@ type
     first,
     last,
     lclImportant: String;
-//    iProto: IRnQProtocol;
-    fProto: TRnQProtocol;
     antispam: record
        Tryes: Byte;
        lastQuests: array of String;
@@ -561,6 +564,10 @@ type
       end;
       {$ENDIF RNQ_AVATARS}
     data: pointer;
+   protected
+//    iProto: IRnQProtocol;
+    fProto: TRnQProtocol;
+   public
     class function trimUID(const uid: TUID): TUID; virtual; abstract;
     constructor Create(pProto: TRnQProtocol; const uin_: TUID); Virtual;
     destructor Destroy; override;
@@ -591,14 +598,18 @@ type
     function  imVisibleTo: Boolean;
     function  isInRoster: Boolean;
     function  isInList(l: TLIST_TYPES): Boolean;
+    procedure AddToList(l: TLIST_TYPES); inline;
+    procedure RemFromList(l: TLIST_TYPES); inline;
     function  isMyAcc: Boolean;
 //   public
 //    function  GetProto: IRnQProtocol;
     procedure SetGroupName(const pName: String);
     function  buin: RawByteString;
     function  UIDasInt: Integer;
+    function  getGroupName: String;
     property  Display: string read fDisplay write SetDisplay;
     property  ProtoID: byte read _getProtoID;
+    property  Proto: TRnQProtocol read fProto;
     property  Status: byte read getStatus;
   end;
 
@@ -687,6 +698,8 @@ var
 
   function  Int2UID(const i: Integer): TUID; Inline;
   function  Raw2UID(const s: RawByteString): TUID;
+  function  UID2RAW(const u: TUID): RawByteString;
+
 const
  // Flags for messages
   IF_multiple = 1 shl 0;      // multiple recipients
@@ -979,9 +992,9 @@ begin
   CntIsLocal := True;
   antispam.Tryes := 0;
   icon.Bmp := NIL;
-  icon.cache :=NIL;
+  icon.cache := NIL;
 //  antispam.lastQuests
-//nodb:=FALSE;
+//nodb := FALSE;
 end; // clear
 
 function TRnQcontact.equals(c: TRnQcontact): boolean;
@@ -1126,6 +1139,7 @@ begin
       DBFK_LASTBDINFORM: system.move(item[1], LastBDInform, 8);
       DBFK_lclNoteStr: lclImportant := UnUTF(item);
       DBFK_ICONSHOW:   system.move(item[1], icon.ToShow, 1);
+      DBFK_ICONMD5:    self.Icon.hash_safe := item;
       DBFK_SSIID: begin
                        SSIID := str2int(item);
                        CntIsLocal := SSIID = 0;
@@ -1161,6 +1175,16 @@ end;
 function TRnQcontact.isMyAcc: Boolean;
 begin
   Result := fProto.isMyAcc(Self);
+end;
+
+procedure TRnQcontact.AddToList(l: TLIST_TYPES);
+begin
+  fProto.AddToList(l, self);
+end;
+
+procedure TRnQcontact.RemFromList(l: TLIST_TYPES);
+begin
+  fProto.RemFromList(l, self);
 end;
 
 function TRnQcontact.GetBDay: TDateTime;
@@ -1203,6 +1227,11 @@ begin
         end;
     Result := Trunc(bd - Date);
    end;
+end;
+
+function TRnQcontact.getGroupName: String;
+begin
+  result := groups.id2name(group)
 end;
 
 procedure TRnQcontact.SetGroupName(const pName: String);
@@ -1410,8 +1439,10 @@ begin
     insert(idx, c);
 end; // putAt
 
-function TRnQCList.empty:boolean;
-begin result:= count=0 end;
+function TRnQCList.empty: boolean;
+begin
+  result := count=0
+end;
 
 function TRnQCList.remove(const c: TRnQContact): boolean;
 begin result := inherited remove(c) >= 0 end;
@@ -1661,10 +1692,10 @@ var
 begin
   if group=-1 then
    begin
-    result:=inherited count;
+    result := inherited count;
     exit;
    end;
-  result:=0;
+  result := 0;
  for i:=0 to count-1 do
 //  if (TRnQContact(items[i]).group = group)
 //     and ((not OnlyOnline) or TRnQContact(items[i]).isOnline) then
@@ -1676,12 +1707,12 @@ begin
     inc(result);
 end; // count
 
-procedure TRnQCList.getOnlOfflCount(var pOnlCount, pOfflCount : Integer);
+procedure TRnQCList.getOnlOfflCount(var pOnlCount, pOfflCount: Integer);
 var
 //  a, b,
   i: Integer;
 begin
-  pOnlCount:=0;
+  pOnlCount := 0;
   pOfflCount:=0;
   for i:=0 to TList(self).count-1 do
     with TRnQcontact(getAt(i)) do
@@ -1703,7 +1734,7 @@ begin
    begin
     cnt := getAt(i);
 //    if cnt is TICQContact then
-//      TICQContact(cnt).status:=st;
+//      TICQContact(cnt).status := st;
     cnt.status := st;
    end;
 end;}
@@ -1881,6 +1912,15 @@ begin
    Result := unUTF(s)
  {$ELSE ansi}
    Result := s
+ {$ENDIF UID_IS_UNICODE}
+end;
+
+function  UID2RAW(const u: TUID): RawByteString;
+begin
+ {$IFDEF UID_IS_UNICODE}
+   Result := StrToUTF8(u)
+ {$ELSE ansi}
+   Result := u
  {$ENDIF UID_IS_UNICODE}
 end;
 

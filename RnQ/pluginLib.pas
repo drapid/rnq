@@ -41,7 +41,7 @@ type
     procedure disactivate;
     function cast(data: RawByteString): RawByteString;
     procedure cast_preferences;
-    end;
+   end;
 
   Tplugins = class
    private
@@ -88,7 +88,7 @@ type
 //    ButtonCount: Integer;
 //    maxID: Integer;
     PluginsTB: TToolBar;
-    function Add(proc: Pointer; iIcon: HIcon; const bHint: String; const sPic: AnsiString = ''): integer;
+    function  Add(proc: Pointer; iIcon: HIcon; const bHint: String; const sPic: AnsiString = ''): integer;
     procedure Del(bAddr: integer);
     procedure Modify(bAddr: Integer; iIcon: HICON; const bHint: String; const sPic: AnsiString = '');
     procedure onToolMouseDown(Sender: TObject; Button: TMouseButton;
@@ -161,8 +161,8 @@ case id of
   PL_INVISIBLELIST:  Account.AccProto.AddToList(LT_INVISIBLE, cl);
 //  PL_IGNORELIST:   ICQ.ignoreList;
   PL_TEMPVISIBLELIST: Account.AccProto.AddToList(LT_TEMPVIS, cl);
-  PL_DB : Account.AccProto.contactsDB.add(cl);
-  PL_NIL : notInList.add(cl); // not in list
+  PL_DB: Account.AccProto.contactsDB.add(cl);
+  PL_NIL: notInList.add(cl); // not in list
 //  else result := NIL;
   end;
 end; // whatlist
@@ -499,16 +499,12 @@ case _byte_at(data,1) of
       PG_ANDRQ_VER_STR: resStr := AnsiChar(PM_DATA)+_istring( ip2str(RQversion) );
       PG_RNQ_BUILD: resStr := AnsiChar(PM_DATA)+_int( RnQBuild ) + _dt(BuiltTime);
       PG_TIME: resStr := AnsiChar(PM_DATA)+_dt( now );
- {$IFDEF PROTOCOL_ICQ}
       PG_CONTACTINFO:
                if minimum(6) then
                  begin
-                    i := _int_at(data,3);
-//                   tS := IntToStrA(_int_at(data,3));
-//                   outBuffer := AnsiChar(PM_DATA)+_icontactinfo( Account.AccProto.getContact(tS) );
-                   resStr := AnsiChar(PM_DATA)+_icontactinfo(TicqSession(Account.AccProto).getICQContact(i) );
+                   tS := Int2UID(_int_at(data,3));
+                   resStr := AnsiChar(PM_DATA)+_icontactinfo( Account.AccProto.getContact(tS) );
                  end;
- {$ENDIF PROTOCOL_ICQ}
       PG_LIST: if minimum(3) then
         begin
         cl := whatlist(_byte_at(data,3));

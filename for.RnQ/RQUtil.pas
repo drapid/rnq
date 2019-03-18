@@ -29,7 +29,8 @@ interface
 
 
   function  str2html(const s: String): String;
-  function  strFromHTML(const s: String): String;
+  function  strFromHTML(const s: String): String; OverLoad;
+  function  strFromHTML(const s: RawByteString): RawByteString; OverLoad;
 
   function  str2fontstyle(const s: AnsiString): Tfontstyles;
   function  fontstyle2str(fs: Tfontstyles): AnsiString;
@@ -185,6 +186,19 @@ begin
 //  '<br>', #10,
 ]);
 end; // str2html
+
+function strFromHTML(const s: RawByteString): RawByteString; OverLoad;
+begin
+  result := template(s, [
+  RawByteString('&amp;'), RawByteString('&'),
+  RawByteString('&quot;'), RawByteString('"'),
+  RawByteString('&lt;'), RawByteString('<'),
+  RawByteString('&gt;'), RawByteString('>'),
+  RawByteString('<br>'), CRLF
+//  '<br>', #13,
+//  '<br>', #10,
+   ]);
+end; // strFromhtml
 
 
 procedure msgDlg(msg: String; NeedTransl: Boolean; kind: TMsgDlgType; const uid: String = '');

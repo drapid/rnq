@@ -12,7 +12,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ExtCtrls, RnQButtons, RnQDialogs, VirtualTrees, StdCtrls,
-  RnQProtocol, RnQConst, globallib;
+  RnQProtocol, RnQConst, globalLib;
 
 type
   TusersFrm = class(TForm)
@@ -875,7 +875,9 @@ procedure refreshAvailableUsers;
     db: TRnQCList;
     ini: TStrings;
     zf: TZipFile;
-    s: AnsiString;
+//    s: AnsiString;
+    sU: String;
+    sA: RawByteString;
     cf: string;
     i: Integer;
 //    cnt: TRnQcontact;
@@ -903,9 +905,10 @@ procedure refreshAvailableUsers;
              Result := True;
              if not isEncripted then
               begin
-               ini.Text := zf.data[i];
-               s := ini.values['account-name'];
-               nick := unUTF( s );
+               ini.Text := unUTF( zf.data[i] );
+               sU := ini.values['account-name'];
+//               nick := unUTF( s );
+               nick := sU;
                pSSI := yesno(ini.Values['use-ssi']);
               end;
             end;
@@ -918,9 +921,10 @@ procedure refreshAvailableUsers;
                Result := True;
                if not isEncripted then
                 begin
-                 ini.Text := zf.data[i];
-                 s := ini.values['account-name'];
-                 nick := unUTF(s);
+                 ini.Text := unUTF( zf.data[i] );
+                 sU := ini.values['account-name'];
+//                 nick := unUTF(s);
+                 nick := sU;
                  pSSI := yesno(ini.Values['use-ssi']);
                 end;
               end;
@@ -946,7 +950,7 @@ procedure refreshAvailableUsers;
             end;
 }
           except
-           s := '';
+           sU := '';
          end;
          zf.Free;
       end;
@@ -958,11 +962,11 @@ procedure refreshAvailableUsers;
           save := True;
           result := True;
           try
-            ini.LoadFromFile(cf);
+            ini.LoadFromFile(cf, TEncoding.UTF8);
            except
             ini.Clear;
           end;
-          nick := UnUTF(ini.values['account-name']);
+          nick := ini.values['account-name'];
           pSSI := yesno(ini.Values['use-ssi']);
         end
        else
@@ -988,19 +992,19 @@ procedure refreshAvailableUsers;
              zf.LoadFromFile(path+ PathDelim +dbFileName + '3');
            i := zf.IndexOf(dbFileName);
            if i >=0 then
-             s := zf.data[i];
+             sA := zf.data[i];
           except
-           s := '';
+           sA := '';
          end;
          zf.Free;
         end;
-       if s = '' then
-         s := loadFileA(path+ PathDelim +dbFileName);
+       if sA = '' then
+         sA := loadFileA(path+ PathDelim +dbFileName);
 {
-      if s > '' then
+      if sA > '' then
        begin
         Result := True;
-        db := str2db(protoClass._getContactClass, s);
+        db := str2db(protoClass._getContactClass, sA);
         cnt := db.get(protoClass._getContactClass, uid);
         if Assigned(cnt) then
           nick := cnt.nick;
@@ -1010,9 +1014,9 @@ procedure refreshAvailableUsers;
 //        nick := ' ';
       if save then
        begin
-        ini.values['account-name']:= StrToUTF8(nick);
+        ini.values['account-name'] := nick;
   //      ini.Values['use-ssi'] := yesno();
-        ini.saveToFile(cf);
+        ini.saveToFile(cf, TEncoding.UTF8);
        end;
       freeDB(db);
      end;
@@ -1053,13 +1057,12 @@ procedure refreshAvailableUsers;
     end;
   end; // addAvailableUser
 
-  procedure searchIn(path: string; Prefix : String = '');
-
+  procedure searchIn(path: string; Prefix: String = '');
   var
     sr: TsearchRec;
     s: String;
     u2: TUID;
-//   prCl : TRnQProtoHelper;
+//   prCl: TRnQProtoHelper;
     prCl: TRnQProtoClass;
   begin
     path := includeTrailingPathDelimiter(path);
@@ -1073,10 +1076,20 @@ procedure refreshAvailableUsers;
           begin
             u2 := TUID(s);
             if prCl._isProtoUid(u2) then
-             begin
-              addAvailableUser(prCl, u2, path+sr.name, Prefix);
-              break;
-             end;
+              begin
+               addAvailableUser(prCl, u2, path+sr.name, Prefix);
+               break;
+              end
+             else
+              if s.StartsWith(prCl._GetProtoName + '_') then
+                begin
+                  u2 := TUID(copy(s, length(prCl._GetProtoName)+2, 250));
+                  if prCl._isProtoUid(u2) then
+                    begin
+                     addAvailableUser(prCl, u2, path+sr.name, Prefix);
+                     break;
+                    end
+                end;
           end;
        end;
      until FindNext(sr) > 0;
@@ -1091,7 +1104,7 @@ var
 //  uid: AnsiString;
 begin
   clearAvailableUsers;
-  searchIn(myPath);
+  searchIn(myPath); // Too long!!!!
   if RnQMainPath > '' then
     searchIn(myPath+RnQMainPath, 'Old\');
 

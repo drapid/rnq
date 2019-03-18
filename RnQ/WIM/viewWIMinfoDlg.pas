@@ -232,7 +232,7 @@ implementation
 
 uses
   clipbrd, Types,
-  RQCodes, RDGlobal, RDUtils, RnQLangs, RnQStrings,
+  RDGlobal, RDUtils, RnQLangs, RnQStrings,
   RQUtil, RQThemes, RnQBinUtils,
   RnQSysUtils, RnQGlobal, RnQPics,
   mainDlg, langLib, roasterLib, chatDlg, utilLib,
@@ -242,7 +242,7 @@ uses
 //  AsyncCalls,
  {$ENDIF}
   Protocols_all,
-  WIMConsts, Protocol_WIM, WIM,
+  WIMConsts, Protocol_WIM, WIM, WIMCodes,
   menusUnit;
 
 {$R *.DFM}
@@ -380,8 +380,8 @@ with TWIMContact(contact) do
   aboutBox.text := about;
   nickBox.text := nick;
   uinBox.text := uid;
-  if contact.fProto.isMyAcc(contact) then
-    ipBox.text := TWIMSession(contact.fProto).getLocalIPstr
+  if contact.isMyAcc then
+    ipBox.text := TWIMSession(contact.Proto).getLocalIPstr
   else
     if connection.ip = 0 then
       ipBox.text := ''
@@ -507,8 +507,8 @@ with TWIMContact(contact) do
  {$IFDEF UseNotSSI}
             TWIMSession(contact.fProto).useSSI and
  {$ENDIF UseNotSSI}
-            contact.fProto.isOnline;
-  publicChk.checked := TWIMSession(contact.fProto).pPublicEmail;
+            contact.Proto.isOnline;
+  publicChk.checked := TWIMSession(contact.Proto).pPublicEmail;
   dontdeleteChk.checked:=TCE(data^).dontdelete;
   ChkSendTransl.Checked := SendTransl;
 
@@ -524,10 +524,11 @@ with TWIMContact(contact) do
   onlinesinceBox.ReadOnly := True;
   membersinceBox.ReadOnly := True;
   LastChgInfoBox.ReadOnly := True;
-  if contact.group=0 then
+
+  if contact.getGroupName='' then
     groupBox.text := '('+getTranslation('Noone')+')'
   else
-    groupBox.text := groups.id2name(contact.group);
+    groupBox.text := contact.getGroupName;
 // end; // end with
   groupBox.ReadOnly := True;
   uinlistsBox.text:='';
@@ -548,14 +549,14 @@ with TWIMContact(contact) do
   clientBox.text := contact.ClientDesc;
   if clientBox.text ='' then
     clientBox.text:=getTranslation(Str_unk);
-  if contact.fProto.isMyAcc(contact) then
+  if contact.isMyAcc then
    begin
 //    protoBox.text:='ver.'+intToStr(My_proto_ver);
 //    loginMailEdt.Text := Attached_login_email;
    end
   else
    begin
-    protoBox.text := ifThen(TWIMContact(contact).proto=0, getTranslation(Str_unk),  'ver.'+intToStr(TWIMContact(contact).proto));
+    protoBox.text := ifThen(TWIMContact(contact).protoV=0, getTranslation(Str_unk),  'ver.'+intToStr(TWIMContact(contact).protoV));
     loginMailEdt.Text := '';
     loginMailEdt.Visible := False;
    end;
@@ -572,8 +573,8 @@ with TWIMContact(contact) do
   workAddressEdt.text := workaddress;
   workCityEdt.Text  := workcity;
   workStateEdt.Text := workstate;
-  with WorkCntryBox do
-    itemIndex := findInStrings(CountriesByID(workCountry), Items);
+//  with WorkCntryBox do
+//    itemIndex := findInStrings(CountriesByID( workCountry), Items);
   workZipEdt.Text   := workzip;
   WorkCellEdit.Text := workphone;
   WorkCompanyEdit.Text := workCompany;
@@ -673,7 +674,7 @@ procedure TviewinfoFrm.updateBtnClick(Sender: TObject);
 var
   wpS : TwpSearch;
 begin
-  if OnlFeature(contact.fProto) then
+  if OnlFeature(contact.Proto) then
     begin
      wpS.uin := contact.UID2cmp;
 //     TWIMSession(contact.iProto.ProtoElem).sendQueryInfo(StrToIntDef(wpS.uin, 0));
@@ -693,7 +694,7 @@ begin
   inherited create(owner_);
   position := poDefaultPosOnly;
   contact := c;
-  itsme := c.fProto.isMyAcc(c);
+  itsme := c.isMyAcc;
   readOnlyContact := not itsme;
   applyCommonSettings(self);
 
@@ -713,7 +714,7 @@ begin
   gmtBox.Items.text:=gmtsToStr;
   MarStsBox.Items.Text := MarStsToStr;
   if TWIMContact(contact).infoUpdatedTo = 0 then
-    TWIMSession(contact.fProto).sendQueryInfo(contact.UID2cmp);
+    TWIMSession(contact.Proto).sendQueryInfo(contact.UID2cmp);
   theme.pic2ico(RQteFormIcon, PIC_INFO, icon);
   updateBtn.ImageName := PIC_LOAD_NET;
   deleteBtn.ImageName := PIC_DELETE;
@@ -790,8 +791,8 @@ else
    {$IFDEF RNQ_AVATARS}
 //  avtSaveBtn.Enabled := itsme;
   avtSaveBtn.Visible := itsme;
-  avtTS.TabVisible := TWIMSession(contact.fProto).AvatarsSupport;
-  ClrAvtBtn.Enabled := (itsme and (TWIMSession(contact.fProto).myAvatarHash > '')) or
+  avtTS.TabVisible := TWIMSession(contact.Proto).AvatarsSupport;
+  ClrAvtBtn.Enabled := (itsme and (TWIMSession(contact.Proto).myAvatarHash > '')) or
      (not itsme and (contact.Icon.Hash_safe > '')and(TWIMContact(contact).IconID = ''));
   ClrAvtLbl.Visible := itsme and ClrAvtBtn.Enabled;
    {$ENDIF RNQ_AVATARS}
@@ -830,17 +831,17 @@ var
   c: TWIMContact;
   i, j: Integer;
 begin
-if not contact.fProto.isMyAcc(contact) then
+if not contact.isMyAcc then
   begin
   addGroupsToMenu(self, addmenu.items, addcontactAction, True);
   with topPnl.clientToScreen(saveBtn.BoundsRect.bottomRight) do
     addmenu.popup(x,y);
   end
 else
-  if OnlFeature(contact.fProto) then
+  if OnlFeature(contact.Proto) then
     begin
 //    c := Tcontact.create(0);
-    c := TWIMContact(contact.fProto.getMyInfo);
+    c := TWIMContact(contact.Proto.getMyInfo);
     c.uid := contact.uid;
     c.nick := nickBox.text;
     c.first := firstbox.Text;
@@ -907,7 +908,7 @@ else
         c.interests.InterestBlock[i].Names[j] := Trim(c.interests.InterestBlock[i].Names[j]);
     c.GMThalfs := StrToGMTI(gmtBox.text);
 //    c.xStatusStr := xstatusBox.Text;
-    TWIMSession(c.fProto).pPublicEmail := publicChk.checked;
+    TWIMSession(c.Proto).pPublicEmail := publicChk.checked;
 
     c.workpage := WkpgEdt.Text;
     c.workPos := workPosEdit.Text;
@@ -916,7 +917,7 @@ else
     c.workcity := workCityEdt.Text;
     c.workstate := workStateEdt.Text;
 //    c.workCountry := StrToCountryI(WorkCntryBox.text);
-     c.workCountry := CB2ID(WorkCntryBox);
+//     c.workCountry := CB2ID(WorkCntryBox);
     c.workzip := workZipEdt.Text;
     c.workphone := WorkCellEdit.Text;
     c.LifeStatus :=  StsMsgEdit.Text;
@@ -1372,7 +1373,7 @@ begin
   if not Assigned(contact) then
     Exit;
    {$IFDEF RNQ_AVATARS}
-  itsme := contact.fProto.ismyAcc(contact);
+  itsme := contact.ismyAcc;
   if itsme then
    begin
 {
@@ -1401,7 +1402,7 @@ begin
        updateAvatarFor(contact);
      end;
   AvtPBox.Repaint;
-  ClrAvtBtn.Enabled := (itsme and (TWIMSession(contact.fProto).myAvatarHash > '')) or
+  ClrAvtBtn.Enabled := (itsme and (TWIMSession(contact.Proto).myAvatarHash > '')) or
      (not itsme and (contact.Icon.Hash_safe > '')and(TWIMContact(contact).IconID = ''));
   ClrAvtLbl.Visible := itsme and ClrAvtBtn.Enabled;
    {$ENDIF RNQ_AVATARS}

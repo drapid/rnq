@@ -1475,7 +1475,7 @@ begin
       end; }
 end;
  {$ELSE NOT USE_GDIPLUS}
-function TRQtheme.GetPicOld(const PicName: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
+function TRQtheme.GetPicOld(const picName: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
 var
   i: Integer;
 //  bmp: TRnQBitmap;
@@ -2722,7 +2722,7 @@ begin
       end
 end; // addthemeprop
 
-function TRQtheme.AddPicResource(const name: TPicName; ResourceName: String; Internal: Boolean = false) : Boolean;
+function TRQtheme.AddPicResource(const name: TPicName; ResourceName: String; Internal: Boolean = false): Boolean;
 var
   bmp: TRnQBitmap;
   str: TResourceStream;

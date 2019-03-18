@@ -243,7 +243,6 @@ end;
 
 procedure repaintAllWindows;
 
-//  procedure repaintRecur(c: Tcontrol);
   procedure repaintRecur(c: TComponent);
   var
     i: integer;

@@ -39,38 +39,38 @@ type
     );
 
   TThemePath = record
-    pathType : TPathType;
+    pathType: TPathType;
     fn, subfn: string;
   end;
 
   TThemeSourcePath = record
-    pathType : TPathType;
+    pathType: TPathType;
 {    case TPathType of
       pt_path: (path: string[255]);
-      pt_zip : (zp: TZipFile);
+      pt_zip: (zp: TZipFile);
 //    end;}
     path: string;
-    ArcFile : String;
+    ArcFile: String;
     {$IFDEF USE_ZIP}
-//      zp : TKAZip;
+//      zp: TKAZip;
       zp: TZipFile;
-//      zp : TVCLUnZip;
+//      zp: TVCLUnZip;
     {$ENDIF USE_ZIP}
     {$IFDEF USE_RAR}
-//      rarFile : String;
-       RarHnd : THandle;
-//      rr : TUnRar;
+//      rarFile: String;
+       RarHnd: THandle;
+//      rr: TUnRar;
     {$ENDIF USE_RAR}
       {$IFDEF USE_7Z}
-//       z7 : TSevenZip;
-//       z7 : T7zInArchive;
-       z7 : I7zInArchive;
+//       z7: TSevenZip;
+//       z7: T7zInArchive;
+       z7: I7zInArchive;
       {$ENDIF USE_7Z}
  end;
 
 // file management
  {$IFDEF USE_RAR}
-  function RARCallbackProc(msg: UINT; UserData, P1, P2: integer) :integer; stdcall;
+  function RARCallbackProc(msg: UINT; UserData, P1, P2: integer): integer; stdcall;
  {$ENDIF USE_RAR}
 
   function loadFile(pt: TThemeSourcePath; fn: String): RawByteString; overload;
@@ -979,29 +979,29 @@ closeFile(f);
 result:=IOresult=0;
 end; // partDeleteFile
 
-function sizeOfFile(const fn:string):int64;
+function sizeOfFile(const fn: string): int64;
 var
-  f:file;
-  bak:integer;
-//  ff : Cardinal;
+  f: file;
+  bak: integer;
+//  ff: Cardinal;
 begin
 //  ff := OpenFile(fn, )
 //  size := GetFileSize(ff, 0);
 //  CloseHandle(ff);
   IOresult;
   assignFile(f,fn);
-  bak:=fileMode;
+  bak := fileMode;
   filemode := 0;
   {$I-}
-  reset(f,1);
+  reset(f, 1);
   filemode := bak;
   result := FileSize(f);
   closeFile(f);
   if IOresult<>0 then
-    result:=-1;
+    result := -1;
 end; // sizeOfFile
 
-function  CreateDirRecursive(const fpath: String): Boolean;
+function CreateDirRecursive(const fpath: String): Boolean;
 var
   s: String;
 begin

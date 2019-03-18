@@ -3,7 +3,7 @@
 Author:       François PIETTE
 Description:  Version defines for ICS (Internet Component Suite)
 Creation:     2003
-Version:      8.58
+Version:      8.59
 EMail:        francois.piette@overbyte.be  http://www.overbyte.be
 Support:      Use the mailing list twsocket@elists.org
               Follow "support" link at http://www.overbyte.be for subscription.
@@ -66,7 +66,11 @@ Aug 2015 - V8.08 - Angus XE9 is now Delphi 10 Seattle
 Apr 2016 - V8.09 - Angus Delphi 10.1 and 10.2, USE_SSL now enabled
 Mar 2017 - V8.42 - Angus couple more BCBs, added BDS numbers
 Jul 2018 - V8.55 - Angus added NO_DEBUG_LOG as disabled but used for testing
-Oct 2018 - V8.58 - Angus Delphi 10.3 Rio, updated BDB for 10.1 and later
+Oct 2018 - V8.58 - Angus Delphi 10.3 Rio, updated BCB for 10.1 and later
+Dec 2019 - V8.59 - Angus added AUTO_X509_CERTS to enable automatic SSL/TLS ordering
+                      in SocketServer and other servers.
+
+
 
   SYMBOL           Compiler version
   ===============  ======================================
@@ -109,7 +113,7 @@ Oct 2018 - V8.58 - Angus Delphi 10.3 Rio, updated BDB for 10.1 and later
   DELPHI23_UP      Delphi 23 or higher  (Delphi 10 Seattle - Aitana - BDS17)
   DELPHI24_UP      Delphi 24 or higher  (Delphi 10.1 Berlin - BigBen - BDS18)
   DELPHI25_UP      Delphi 25 or higher  (Delphi 10.2 Tokyo - Godzilla - BDS19)
-  DELPHI26_UP      Delphi 26 or higher  (Delphi 10.3 ? - Carnival - BDS20)
+  DELPHI26_UP      Delphi 26 or higher  (Delphi 10.3 Rio - Carnival - BDS20)
 
   BCB1             C++ Builder 1
   BCB3             C++ Builder 3
@@ -221,6 +225,10 @@ Oct 2018 - V8.58 - Angus Delphi 10.3 Rio, updated BDB for 10.1 and later
 
 { Next symbol removes a lot of debug logging code, to save space }
 {$DEFINE NO_DEBUG_LOG}  // remove dot By Rapid D
+
+{ Next symbol enables automatic SSL/TLS ordering in SocketServer and other servers }
+{ Unfortunately this adds a lot of other units, HTTPS REST, Json, OAuth2, etc }
+{$DEFINE AUTO_X509_CERTS}
 
 
 { Do not change anything below this line !                                   }

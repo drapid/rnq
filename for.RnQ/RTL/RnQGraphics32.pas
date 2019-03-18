@@ -150,6 +150,13 @@ type
     procedure GetHICON(var hi: HICON);
     function  GetWidth: Integer;  OverRide; //{$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
     function  GetHeight: Integer; OverRide; //{$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+    procedure SetWidth(W: Integer);  OverRide;
+    procedure SetHeight(H: Integer); OverRide;
+    procedure SaveToStream(Stream: TStream); OverRide; deprecated 'Don''t coded yet';
+    procedure LoadFromClipboardFormat(AFormat: Word; AData: THandle;
+      APalette: HPALETTE); OverRide; deprecated 'Don''t coded yet';
+    procedure SaveToClipboardFormat(var AFormat: Word; var AData: THandle;
+      var APalette: HPALETTE); OverRide; deprecated 'Don''t coded yet';
     function  GetSize(PPI: Integer): TSize;
     function  RnQCheckTime: Boolean;
     property  Animated: Boolean read fAnimated;
@@ -534,6 +541,33 @@ begin
         Result.cx := fWidth;
         Result.cy := fHeight;
       end
+end;
+
+procedure TRnQBitmap.SetWidth(W: Integer);
+begin
+  RaiseExceptions;
+end;
+
+procedure TRnQBitmap.SetHeight(H: Integer);
+begin
+  RaiseExceptions;
+end;
+
+procedure TRnQBitmap.SaveToStream(Stream: TStream);
+begin
+  RaiseExceptions;
+end;
+
+procedure TRnQBitmap.LoadFromClipboardFormat(AFormat: Word; AData: THandle;
+      APalette: HPALETTE);
+begin
+  RaiseExceptions;
+end;
+
+procedure TRnQBitmap.SaveToClipboardFormat(var AFormat: Word; var AData: THandle;
+      var APalette: HPALETTE);
+begin
+  RaiseExceptions;
 end;
 
 procedure InitTransAlpha(bmp: TBitmap);

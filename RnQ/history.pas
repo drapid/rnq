@@ -45,7 +45,7 @@ type
 //    function Clear;
     procedure deleteFromTo(const uid: TUID; st, en: integer);
     procedure deleteFromToTime(const uid: TUID; const st, en: TDateTime);
-//    function  load(uid: AnsiString; quite: Boolean = false): boolean;
+//    function  load(uid: AnsiString; quiet: Boolean = false): boolean;
     function  load(cnt: TRnQContact; const quiet: Boolean = false): boolean;
 //    function  RepaireHistoryFile(fn: String; var rslt: String): Boolean;
      property Token: Cardinal read fToken;
@@ -91,7 +91,7 @@ begin
 end;
  {$ENDIF ~DB_ENABLED}
 
-//function Thistory.load(uid:AnsiString; quite : Boolean = false):boolean;
+//function Thistory.load(uid: AnsiString; quiet: Boolean = false): boolean;
 function Thistory.load(cnt: TRnQContact; const quiet: Boolean = false): boolean;
  {$IFNDEF DB_ENABLED}
 var
@@ -103,12 +103,12 @@ begin
     FromDB(cnt);
     Result := True;
  {$ELSE ~DB_ENABLED}
-//  Result :=  fromString(loadFile(userPath+historyPath + uid), quite);
+//  Result :=  fromString(loadFile(userPath+historyPath + uid), quiet);
   str := GetStream(UIDHistoryFN(cnt.UID2cmp));
   if Assigned(str)  then
    begin
     str.Position := 0;
-//    Result :=  fromSteam(str, quite);
+//    Result :=  fromSteam(str, quiet);
     memstream := TMemoryStream.Create;
     memstream.CopyFrom(str, str.Size);
     memstream.Position := 0;
@@ -507,8 +507,7 @@ begin
       end;
       ev.when      := getDatetime;
       parseExtrainfo;
-      ev.f_info      := getString;
-//      ev.parseInfo(getString);
+      ev.parseInfo(getString);
       add(ev);
       end;
     HI_hashed: hashed := getString;
@@ -903,7 +902,7 @@ while str.Position < len do
       end;
     else
       begin
-//       if not quite then
+//       if not quiet then
 //         msgDlg(getTranslation('The history is corrupted, some data is lost'),mtError);
        result:=FALSE;
 //       exit;
@@ -925,14 +924,14 @@ begin
   if Assigned(str)  then
    begin
     str.Position := 0;
-  //  Result :=  fromSteam(str, quite);
+  //  Result :=  fromSteam(str, quiet);
     memstream := TMemoryStream.Create;
     memstream.CopyFrom(str, str.Size);
     memstream.Position := 0;
     FreeAndNil(str);
 
     result := RepaireHistoryStream(memstream, rslt);
-//    Result :=  fromSteam(memstream, quite);
+//    Result :=  fromSteam(memstream, quiet);
     FreeAndNil(memstream);
    end;
   rslt := rslt+crlf+ logtimestamp + getTranslation('End of repaire file "%s"', [fn]);

@@ -346,6 +346,7 @@ object viewinfoFrm: TviewinfoFrm
         Height = 21
         Date = 38421.000000000000000000
         Format = 'dd.MM.yyyy'
+        Time = 0.660487349538016100
         TabOrder = 15
         OnChange = birthBoxChange
       end
@@ -398,6 +399,10 @@ object viewinfoFrm: TviewinfoFrm
     object HomeTS: TTabSheet
       Caption = 'Home'
       ImageIndex = 7
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label14: TLabel
         Left = 34
         Top = 153
@@ -564,6 +569,10 @@ object viewinfoFrm: TviewinfoFrm
     object WorkTS: TTabSheet
       Caption = '&Work'
       ImageIndex = 6
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label1: TLabel
         Left = 32
         Top = 237
@@ -713,6 +722,10 @@ object viewinfoFrm: TviewinfoFrm
     end
     object TabSheet2: TTabSheet
       Caption = '&Extra'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Bevel2: TBevel
         Left = 245
         Top = 201
@@ -1197,6 +1210,10 @@ object viewinfoFrm: TviewinfoFrm
       Caption = '&Avatar'
       ImageIndex = 4
       OnShow = avtTSShow
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         424
         395)

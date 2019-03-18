@@ -100,8 +100,7 @@ begin
 //  c:=Tcontact(contactsDB.get(TICQContact, uin));
   plugins.castEv( PE_ADDEDYOU_SENT, cnt.uid);
   TicqSession(cnt.fProto).sendAddedYou(cnt.uid);
-  ev := Thevent.new(EK_ADDEDYOU, cnt.fProto.getMyInfo, now,
-                  ''{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, 0);
+  ev := Thevent.new(EK_ADDEDYOU, cnt.fProto.getMyInfo, now, 0);
   ev.fIsMyEvent := True;
   if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
     writeHistorySafely(ev, cnt);
@@ -117,7 +116,7 @@ begin
   plugins.castEv( PE_CONTACTS_SENT, cnt.uid, flags, cl);
   TicqSession(cnt.fProto).sendContacts(cnt, flags, cl);
   ev := Thevent.new(EK_CONTACTS, cnt.fProto.getMyInfo, now,
-                  cl.tostring{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, flags);
+                  cl.tostring, '', flags);
   ev.fIsMyEvent := True;
   if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
     writeHistorySafely(ev, cnt);
@@ -712,8 +711,7 @@ if ev in [TicqEvent(IE_msg), IE_url, IE_contacts, IE_authReq, IE_addedyou,
       IE_email, IE_webpager, IE_fromMirabilis, IE_TYPING, IE_ackXStatus, IE_XStatusReq,
       IE_StickerMsg, IE_MultiChat] then
   begin
-  e := Thevent.new(EK_null, c, thisICQ.eventTime,
-                 ''{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, thisICQ.eventFlags,
+  e := Thevent.new(EK_null, c, thisICQ.eventTime, thisICQ.eventFlags,
                  thisICQ.eventMsgID, thisICQ.eventWID);
   e.otherpeer := c;
   if ev in [IE_contacts] then
@@ -723,23 +721,15 @@ if ev in [TicqEvent(IE_msg), IE_url, IE_contacts, IE_authReq, IE_addedyou,
      e.cl.remove(c);
     end
    else if ev in [IE_url, IE_authreq] then
- {$IFDEF DB_ENABLED}
     begin
       e.fBin := '';
       e.txt := UnUTF(thisICQ.eventMsgA);
     end
- {$ELSE ~DB_ENABLED}
-    e.setInfo(thisICQ.eventMsgA)
- {$ENDIF ~DB_ENABLED}
    else if ev in [IE_ack, IE_authDenied] then
- {$IFDEF DB_ENABLED}
     begin
       e.fBin := AnsiChar(thisICQ.eventAccept);
       e.txt := UnUTF(thisICQ.eventMsgA);
     end;
- {$ELSE ~DB_ENABLED}
-    e.setInfo(AnsiChar(thisICQ.eventAccept)+thisICQ.eventMsgA);
- {$ENDIF ~DB_ENABLED}
   end
 else
   e:=NIL;
@@ -1034,7 +1024,6 @@ case ev of
                    sA := TLV(6, c.connection.internal_ip)
                   else
                    sA := '';
- {$IFDEF DB_ENABLED}
                  e.fBin := TLV(1, StrToUTF8(thisICQ.eventDirect.fileName))+
                             TLV(2, thisICQ.eventDirect.fileCntTotal)+
                             TLV(3, thisICQ.eventDirect.fileSizeTotal)+
@@ -1042,14 +1031,6 @@ case ev of
                             TLV(5, c.connection.ip)+
                             sA;
                  e.txt := '';
- {$ELSE ~DB_ENABLED}
-     e.SetInfo(TLV(1, StrToUTF8(thisICQ.eventDirect.fileName))+
-                            TLV(2, thisICQ.eventDirect.fileCntTotal)+
-                            TLV(3, thisICQ.eventDirect.fileSizeTotal)+
-                            TLV(4, thisICQ.eventMsgA)+
-                            TLV(5, c.connection.ip)+
-                            sA);
- {$ENDIF ~DB_ENABLED}
                  if behave(e, EK_file) then
                     NILifNIL(c);
 //                 receiveFile(thisICQ.eventDirect);
@@ -1365,19 +1346,11 @@ case ev of
           roasterLib.updateHiddenNodes;
   //        chatFrm.userChanged(c);
            redraw(c);
- {$IFDEF DB_ENABLED}
           e.fBin := int2str(integer(c.status))+ AnsiChar(c.invisible) + AnsiChar(c.xStatus);
- {$ELSE ~DB_ENABLED}
-          e.f_info:= int2str(integer(c.status))+ AnsiChar(c.invisible) + AnsiChar(c.xStatus);
- {$ENDIF ~DB_ENABLED}
           if //(c.xStatus > 0) or
            (c.xStatusDesc > '') then
             begin
- {$IFDEF DB_ENABLED}
               e.txt   := c.xStatusDesc;
- {$ELSE ~DB_ENABLED}
-              e.f_info := e.f_info + _istring(StrToUtf8(c.xStatusDesc));
- {$ENDIF ~DB_ENABLED}
               e.flags := e.flags or IF_XTended_EVENT;
             end;
           if oncomingOnAway
@@ -1428,7 +1401,6 @@ case ev of
     begin
       c.xStatusStr := excludeTrailingCRLF(UnUTF(thisICQ.eventMsgA));
       c.xStatusDesc := excludeTrailingCRLF(unUTF(thisICQ.eventData));
- {$IFDEF DB_ENABLED}
       if c.xStatus > 0 then
         begin
           e.fBin := AnsiChar(c.xStatus) + _istring(StrToUTF8(c.xStatusStr));
@@ -1436,12 +1408,6 @@ case ev of
        else
         e.fBin := AnsiChar(#00) + _istring(StrToUTF8(c.xStatusStr));
       e.txt   := c.xStatusDesc;
- {$ELSE ~DB_ENABLED}
-      if c.xStatus > 0 then
-        e.f_info := AnsiChar(c.xStatus) + _istring(StrToUTF8(c.xStatusStr)) + _istring(StrToUTF8(c.xStatusDesc))
-       else
-        e.f_info := #00 + _istring(StrToUTF8(c.xStatusStr));
- {$ENDIF ~DB_ENABLED}
       behave(e, EK_XstatusMsg);
       updateViewInfo(c);
     end;
@@ -1607,11 +1573,7 @@ case ev of
       roasterLib.updateHiddenNodes;
       TCE(c.data^).lastOncoming := thisICQ.eventTime;
       updateViewInfo(c);
- {$IFDEF DB_ENABLED}
-      e.fBin :=int2str(integer(c.status))+AnsiChar(c.invisible)+AnsiChar(c.xStatus);
- {$ELSE ~DB_ENABLED}
-      e.f_info:=int2str(integer(c.status))+AnsiChar(c.invisible)+AnsiChar(c.xStatus);
- {$ENDIF DB_ENABLED}
+      e.fBin := int2str(integer(c.status))+AnsiChar(c.invisible)+AnsiChar(c.xStatus);
       if noOncomingCounter = 0 then
         behave(e, EK_oncoming)
        else
@@ -1689,12 +1651,8 @@ case ev of
     if not e.cl.empty
     and not isAbort(plugins.castEv( PE_CONTACTS_GOT,cuid,e.flags,e.when,e.cl )) then
      begin
- {$IFDEF DB_ENABLED}
        e.fBin := e.cl.tostring;
        e.txt := '';
- {$ELSE ~DB_ENABLED}
-       e.SetInfo(e.cl.tostring);
- {$ENDIF ~DB_ENABLED}
        if behave(e, EK_contacts) then
          NILifNIL(c);
      end;
@@ -1727,12 +1685,8 @@ case ev of
       sU := UnUTF(thisICQ.eventMsgA);
       if not isAbort(plugins.castEv( PE_URL_GOT, cuid, e.flags, e.when, thisICQ.eventAddress, sU )) then
         begin
- {$IFDEF DB_ENABLED}
          e.fBin := '';
          e.txt := thisICQ.eventAddress+#10+sU;
- {$ELSE ~DB_ENABLED}
-         e.SetInfo(thisICQ.eventAddress+#10+sU);
- {$ENDIF ~DB_ENABLED}
          if behave(e, EK_url) then
            NILifNIL(c);
         end;
@@ -1793,12 +1747,8 @@ case ev of
   IE_gcard:
     if not isAbort(plugins.castEv( PE_GCARD_GOT, cuid, e.flags, e.when, thisICQ.eventAddress )) then
       begin
- {$IFDEF DB_ENABLED}
          e.fBin := '';
          e.txt := thisICQ.eventAddress;
- {$ELSE ~DB_ENABLED}
-         e.SetInfo(thisICQ.eventAddress);
- {$ENDIF ~DB_ENABLED}
        if behave(e, EK_gcard) then
          NILifNIL(c);
       end;
@@ -1830,12 +1780,8 @@ case ev of
     begin
       if thisICQ.eventAddress > '' then
         begin
- {$IFDEF DB_ENABLED}
          e.fBin := '';
          e.txt := thisICQ.eventMsgA + CRLF + thisICQ.eventAddress;
- {$ELSE ~DB_ENABLED}
-         e.SetInfo(thisICQ.eventMsgA + CRLF + thisICQ.eventAddress);
- {$ENDIF ~DB_ENABLED}
         end
        else
         begin
@@ -1848,7 +1794,7 @@ case ev of
  if thisICQ.eventFlags and IF_offline > 0 then
   if ev in [IE_msg,IE_url,IE_addedYou,IE_authReq,IE_contacts] then
   // we already played a sound for the first offline message, let's make no other sound
-    disableSounds :=TRUE;
+    disableSounds := TRUE;
  if Assigned(e) then
   e.free;
  if Assigned(statusIcon) then
@@ -1871,7 +1817,7 @@ begin
   if result > 0 then
     exit;
 
-  s:= TICQcontact(c).extracapabilities;
+  s := TICQcontact(c).extracapabilities;
  while s > '' do
   begin
    capa:=chop(17,0,s);

@@ -23,7 +23,7 @@ type
     procedure FormPaint(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure addBtnClick(Sender: TObject);
-    procedure addcontactAction(sender:Tobject);
+    procedure addcontactAction(sender: Tobject);
     procedure FormShow(Sender: TObject);
     procedure uinBoxChange(Sender: TObject);
     procedure uinBoxKeyPress(Sender: TObject; var Key: Char);
@@ -124,7 +124,7 @@ begin
   inherited create(AOwner);
   thisProto := proto;
   LocalChk.Enabled := thisProto.isSSCL and thisProto.isOnline;
-  LocalChk.Checked := not LocalChk.Enabled; //not (LocalChk.Checked);
+  LocalChk.Checked := not LocalChk.Enabled; // not (LocalChk.Checked);
 end;
 
 procedure TaddContactFrm.destroyHandle;

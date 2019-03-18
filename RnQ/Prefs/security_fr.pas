@@ -130,7 +130,7 @@ begin
  {$ENDIF PROTOCOL_ICQ}
   histcryptEnableChk.checked  := histcrypt.enabled;
   histcryptSavePwdChk.checked := histcrypt.savePwd;
-  newHistPwd:=histcrypt.pwd;
+  newHistPwd := histcrypt.pwd;
 //  newAccPass := '';
 end;
 
