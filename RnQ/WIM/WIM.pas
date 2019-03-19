@@ -4729,7 +4729,7 @@ begin
   end;
 
   if Buddy.GetValueSafe('iconId', Tmp) then
-  begin
+    begin
       try
         tmpId := hex2strU(tmp);
        except
@@ -5112,9 +5112,8 @@ begin
   if not Assigned(Dlg) then
     Exit;
 
-  if Dlg.GetValueSafe('starting', starting) then
-    if starting then
-      Exit; // Skip last messages for sidebar
+  if not Dlg.GetValueSafe('starting', starting) then
+   starting := false;
 
   if IsOfflineMsg then
     Dlg.GetValueSafe('aimId', sn)
@@ -5138,7 +5137,12 @@ begin
   else
   with Dlg do
   begin
-    GetValueSafe('unreadCnt', iTmp);
+    if not GetValueSafe('unreadCnt', iTmp) then
+      iTmp := 0;
+
+    if starting and (iTmp=0) then
+      Exit; // Skip last messages for sidebar
+
     GetValueSafe('unreadMentionMeCount', iTmp);
     if GetValueSafe('patchVersion', sTmp) then
       PatchVersion := sTmp;
@@ -5295,6 +5299,7 @@ var
   c: TWIMContact;
   Mode: String;
   Item, Items: TJSONValue;
+  cl: TRnQCList;
 begin
   if not Assigned(Data) then
     Exit;
@@ -5314,6 +5319,20 @@ begin
     eventContact := c;
     NotifyListeners(IE_contactupdate);
   end;
+
+  fVisibleList.Clear;
+  Items := Data.GetValue('allows');
+  if Assigned(Items) and (Items is TJSONArray) then
+   begin
+    cl := TRnQCList.Create;
+    for Item in TJSONArray(Items) do
+      begin
+        if not (TJSONString(Item).Value = '') then
+          cl.add(Self, TJSONString(Item).Value)
+      end;
+     add2visible(cl, True);
+     cl.Free;
+   end;
 
 (* Clear unsupported block list?
   Items := Data.GetValue('blocks');
