@@ -589,7 +589,8 @@ var
 //    while (j <= length(s)) and (s[j] in EMAILCHARS) and (j - start < 30) do
     while (j <= length(s)) and CharInSet(s[j], EMAILCHARS) and (j - start < 30) do
       inc(j);
-    if s[j] <> '@' then
+
+    if (j > length(s)) or (s[j] <> '@') then
       exit;
   // @ found, now skip the @ and search for .
     inc(j);

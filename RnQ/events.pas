@@ -142,12 +142,12 @@ Type
     otherpeer: TRnQcontact; // used to keep track of other peer when "who" is us
 
     class function new(kind_: integer; who_: TRnQContact; when_: TdateTime;
-             flags_: integer; pID: integer = 0; GUID: RawByteString = ''): Thevent; OverLoad;
+             flags_: integer; pID: Int64 = 0; GUID: RawByteString = ''): Thevent; OverLoad;
 
     class function new(kind_: integer; who_: TRnQContact; when_: TdateTime;
              const bin_: RawByteString;
              const txt_: String;
-             flags_: integer; pID: integer = 0; GUID: RawByteString = ''): Thevent; OverLoad;
+             flags_: integer; pID: Int64 = 0; GUID: RawByteString = ''): Thevent; OverLoad;
     destructor Destroy; override;
     function  pic: TPicName;
     function  PicSize(const PPI: Integer): TSize;
@@ -402,7 +402,7 @@ begin
 end;
 
 class function Thevent.new(kind_: integer; who_: TRnQContact; when_: TdateTime;
-             flags_: integer; pID: integer = 0; GUID: RawByteString = ''): Thevent;
+             flags_: integer; pID: Int64 = 0; GUID: RawByteString = ''): Thevent;
 begin
   Result := Thevent.new(kind_, who_, when_, '', '', flags_, pID, GUID);
 end;
@@ -411,7 +411,7 @@ class function Thevent.new(kind_: integer;
             who_: TRnQContact; when_: TdateTime;
             const bin_: RawByteString;
             const txt_: String;
-            flags_: integer; pID: Integer = 0; GUID: RawByteString = ''): Thevent;
+            flags_: integer; pID: Int64 = 0; GUID: RawByteString = ''): Thevent;
 begin
   Result := Thevent.create;
   Result.kind := kind_;

@@ -549,7 +549,6 @@ type
     lastTimeSeenOnline: TdateTime;   // local time
      {$IFDEF RNQ_AVATARS}
      Icon_Path: String;
-//     icon : packed record
      icon: packed record
        Bmp: TRnQBitmap;
        cache: TRnQBitmap;
@@ -560,7 +559,6 @@ type
        IsBmp: Boolean;
        ID: Word;
        Hash_safe: RawByteString;
-//    icon : Tbitmap;
       end;
       {$ENDIF RNQ_AVATARS}
     data: pointer;
@@ -699,6 +697,7 @@ var
   function  Int2UID(const i: Integer): TUID; Inline;
   function  Raw2UID(const s: RawByteString): TUID;
   function  UID2RAW(const u: TUID): RawByteString;
+  function  UID2FN(const u: TUID): TFileName;
 
 const
  // Flags for messages
@@ -721,7 +720,7 @@ var
 implementation
 
 uses
-   StrUtils, OverbyteIcsWSocket, System.Threading,
+   StrUtils, OverbyteIcsWSocket, System.Threading, System.IOUtils,
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
@@ -965,10 +964,10 @@ begin
   s := Self.fProto.ProtoName;
   if s='ICQ' then
  {$ENDIF ~ICQ_ONLY}
-    Result := String(UID2cmp)
+    Result := UID2FN(UID2cmp)
  {$IFNDEF ICQ_ONLY}
    else
-    Result := s + '_' + UID2cmp;
+    Result := s + '_' + UID2FN(UID2cmp);
  {$ENDIF ~ICQ_ONLY}
 end;
 
@@ -1922,6 +1921,35 @@ begin
  {$ELSE ansi}
    Result := u
  {$ENDIF UID_IS_UNICODE}
+end;
+
+function  UID2FN(const u: TUID): TFileName;
+// Replace all invalid characters with its code and '#' as prefix.
+var
+  s, s1: TFileName;
+  ch: Char;
+  I: Integer;
+begin
+  if u = '' then
+    s := '#0000'
+   else
+    begin
+      s := String(u);
+      if not TPath.HasValidFileNameChars(s, false) then
+        begin
+          s1 := s;
+          s := '';
+          for I := 1 to Length(s1) do
+            begin
+              ch := s1[i];
+              if TPath.IsValidFileNameChar(Ch) and (Ch <> '#') then
+                s := s + ch
+               else
+                s := s + '#' +IntToHex( Word(ch));
+            end;
+        end;
+    end;
+  Result := s;
 end;
 
 var

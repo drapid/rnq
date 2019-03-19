@@ -235,7 +235,7 @@ end; // str2divisor
 procedure updateHiddenNode(n: TNode);
 begin
   if (n=NIL) or (n.treenode=NIL) then
-   exit;
+    exit;
   RnQmain.roster.isVisible[n.treenode] := not showOnlyImVisibleTo or n.contact.imVisibleTo;
 end; // updateHiddenNode
 
@@ -283,7 +283,7 @@ case sortBy of
     begin
       tmpT1 := TCE(c1.data^).lastMsgTime;
       tmpT2 := TCE(c2.data^).lastMsgTime;
-    tmpB1 := TRUE;
+      tmpB1 := TRUE;
     if (tmpT1 < startTime) and (tmpT2 < startTime) then
       if not(c1.isOnline or c2.isOnline) then
         begin
@@ -622,7 +622,7 @@ begin
   result.treenode := RnQmain.roster.addChild(divs[d].treenode, result);
   groups.a[idx].node[d] := result;
   if not building then
-   sort(result);
+    sort(result);
 end; // insertNode
 
 function shouldBeUnder(c: TRnQContact; d: TDivisor): TNode;
@@ -1713,7 +1713,7 @@ case n.kind of
 
 //     DrawText32(cnv.Handle, cntTxt, s, cnv.Font, DT_CENTER or DT_VCENTER);
 
-     DrawText(cnv.Handle, PChar(s),  Length(s), cntTxt,
+     DrawText(cnv.Handle, PChar(s), Length(s), cntTxt,
               DT_LEFT or DT_SINGLELINE or DT_VCENTER or DT_END_ELLIPSIS);
 
 //     DrawText32(cnv.Handle, cntTxt, s, cnv.Font, DT_LEFT or DT_SINGLELINE or DT_VCENTER or DT_END_ELLIPSIS);

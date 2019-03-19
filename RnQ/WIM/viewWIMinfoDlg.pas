@@ -509,7 +509,7 @@ with TWIMContact(contact) do
  {$ENDIF UseNotSSI}
             contact.Proto.isOnline;
   publicChk.checked := TWIMSession(contact.Proto).pPublicEmail;
-  dontdeleteChk.checked:=TCE(data^).dontdelete;
+  dontdeleteChk.checked := TCE(data^).dontdelete;
   ChkSendTransl.Checked := SendTransl;
 
   lastmsgBox.text := datetime2str( TCE(data^).lastMsgTime );
@@ -531,7 +531,7 @@ with TWIMContact(contact) do
     groupBox.text := contact.getGroupName;
 // end; // end with
   groupBox.ReadOnly := True;
-  uinlistsBox.text:='';
+  uinlistsBox.text := '';
   uinlists.resetEnumeration;
   while uinlists.hasMore do
    with uinlists.getNext^ do
@@ -548,10 +548,10 @@ with TWIMContact(contact) do
 //  clientBox.text := getClientFor(contact, True);
   clientBox.text := contact.ClientDesc;
   if clientBox.text ='' then
-    clientBox.text:=getTranslation(Str_unk);
+    clientBox.text := getTranslation(Str_unk);
   if contact.isMyAcc then
    begin
-//    protoBox.text:='ver.'+intToStr(My_proto_ver);
+//    protoBox.text := 'ver.'+intToStr(My_proto_ver);
 //    loginMailEdt.Text := Attached_login_email;
    end
   else
@@ -582,7 +582,7 @@ with TWIMContact(contact) do
   birthCityBox.text := birthcity;
   birthStateBox.text := birthstate;
 
-  StsMsgEdit.Text   := LifeStatus;
+  StsMsgEdit.Text := LifeStatus;
 {
   with birthCountryBox do
     ItemIndex := findInStrings(CountriesByID(birthCountry), Items);
@@ -590,9 +590,9 @@ with TWIMContact(contact) do
 
    {$IFDEF RNQ_AVATARS}
 
- b := False;
- if FindFirst(AccPath + avtPath + contact.getFN + '.photo.*', faAnyFile, sr) = 0 then
- repeat
+  b := False;
+  if FindFirst(AccPath + avtPath + contact.getFN + '.photo.*', faAnyFile, sr) = 0 then
+  repeat
      b := False;
      if (sr.name<>'.') and (sr.name<>'..') then
  //      if sr.Attr and faDirectory > 0 then
@@ -606,8 +606,8 @@ with TWIMContact(contact) do
          b := True;
          Break;
         end;
- until findNext(sr) <> 0;
- findClose(sr);
+  until findNext(sr) <> 0;
+  findClose(sr);
 
 // if FileExists(userPath + avtPath+contact.uinAsStr + '.photo.jpeg') then
 //  loadPic(userPath + avtPath+contact.uinAsStr + '.photo.jpeg', contactPhoto)

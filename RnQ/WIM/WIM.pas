@@ -13,7 +13,6 @@ interface
 uses
   Windows, SysUtils, Classes, Character, Types, JSON, Generics.Collections, Threading,
   ExtCtrls, StrUtils, Math, OverbyteIcsHttpProt,
-//  OverbyteIcsSSLHttpRest,
   RnQGlobal, RnQNet, RQThemes, RDGlobal, RQUtil, RnQJSON,
   RnQPrefsLib, RnQPrefsTypes, RnQBinUtils, groupsLib,
   RnQProtocol, WIMContacts, WIMConsts, WIM.Stickers,
@@ -747,7 +746,7 @@ begin
 //  Result := TNetEncoding.URL.Encode(text); // Shit at emoji/unicode
 end;
 
-function CheckResponseData(var JSON: TJSONObject): TPair<Integer, String>;
+function CheckResponseData(var JSON: TJSONObject; var pReqID: String): TPair<Integer, String>;
 var
   Tmp: TJSONValue;
 begin
@@ -763,6 +762,7 @@ begin
       JSON.GetValueSafe('statusText', Result.Value);
       if Result.Key = 200 then
       begin
+        JSON.GetValueSafe('requestId', pReqID);
         Tmp := JSON.GetValue('data');
         if Assigned(Tmp) and (Tmp is TJSONObject) then
           JSON := Tmp as TJSONObject;
@@ -852,7 +852,6 @@ begin
 //    pollStream := TStringStream.Create('', TEncoding.UTF8);
     pollStream := TMemoryStream.Create();
     httpPoll := TSslHttpCli.Create(nil);
-//    httpPoll := TSslHttpRest.Create(nil);
     httpPoll.FollowRelocation := True;
     httpPoll.OnRequestDone := PollRequestDone;
     httpPoll.RcvdStream := pollStream;
@@ -1332,6 +1331,7 @@ var
   Prefix: String;
   RespStrR: RawByteString;
   Resp: TPair<Integer, String>;
+  lReqId: String;
 begin
   if not Running then
     Exit;
@@ -1354,7 +1354,7 @@ begin
     Exit;
 
   try
-    Resp := CheckResponseData(JSON);
+    Resp := CheckResponseData(JSON, lReqId);
     if Resp.Key = Integer(EAC_OK) then
       Result := True
     else if Assigned(ErrProc) then
@@ -1730,19 +1730,20 @@ begin
     Tmp, tmp2: TJSONValue;
     JSON, data: TJSONObject;
     sID: String;
+    lReqId: String;
+    resp: TPair<Integer, String>;
   begin
     if ParseJSON(UTF8String(RespStrR), JSON) then
     try
-      tmp := json.Values['response'];
-      if (tmp <> NIL) and (tmp is TJSONObject) then
-        begin
-          tmp2 := TJSONObject(tmp).GetValue('statusCode');
-          if not Assigned(tmp2) or (tmp2.Value <> '200') then
-            Exit;
-          TJSONObject(tmp).GetValueSafe('requestId', sID);
-          if TryStrToInt(sID, eventInt) then
+      Resp := CheckResponseData(JSON, lReqId);
+
+      if not Assigned(JSON) or (resp.key <> 200) then
+        Exit;
+      eventWID := lReqId;
+//      TJSONObject(tmp).GetValueSafe('requestId', sID);
+//          if TryStrToInt(sID, eventInt) then
             begin
-              data := TJSONObject(tmp).GetValue('data') AS TJSONObject;
+              data := TJSONObject(JSON).GetValue('data') AS TJSONObject;
               if not Assigned(data) then
                 Exit;
               Tmp := data.GetValue('histMsgId');
@@ -1759,7 +1760,6 @@ begin
                 eventWID := '';
               notifyListeners(IE_serverAck);
             end;
-        end;
     finally
       FreeAndNil(JSON);
     end;
@@ -2530,7 +2530,7 @@ end; // notificationForMsg
 
 function parseTzerTag(sA: RawByteString): RawByteString;
 var
-  p : Integer;
+  p: Integer;
   imgStr: RawByteString;
   ext: RawByteString;
 begin
@@ -2568,7 +2568,7 @@ end; // parsePagerString
 
 
 
-procedure TWIMSession.OnProxyError(Sender : TObject; Error : Integer; const Msg : String);
+procedure TWIMSession.OnProxyError(Sender: TObject; Error: Integer; const Msg: String);
 begin
 // if not isAva then
 
@@ -2577,9 +2577,9 @@ begin
     GoneOffline;
 //    eventInt := WSocket_WSAGetLastError;
 //    if eventInt=0 then
-     eventInt:=error;
+     eventInt := error;
     eventMsgA := msg;
-    eventError:=EC_cantconnect;
+    eventError := EC_cantconnect;
     notifyListeners(IE_error);
 //  exit;
   end;
@@ -2590,8 +2590,8 @@ function TWIMSession.GetMyCaps: RawByteString;
 var
   s: RawByteString;
 begin
-  Result := Str2Hex(CAPS_sm2big(CAPS_sm_UniqueID));
-  Result := Result + ',' + Str2Hex(CAPS_sm2big(CAPS_sm_Emoji));
+  Result := Str2Hex(CAPS_sm2big(CAPS_sm_Emoji));
+//  Result := Result + ',' + Str2Hex(CAPS_sm2big(CAPS_sm_UniqueID));  Not use unique ID yet
   Result := Result + ',' + Str2Hex(CAPS_sm2big(CAPS_sm_MailNotify));
 //  Result := Result + ',' + Str2Hex(CAPS_sm2big(CAPS_sm_IntroDlgStates)); // intro/tail messages
   Result := Result + ',' + Str2Hex(CAPS_sm2big(CAPS_sm_UTF8));
@@ -4052,13 +4052,13 @@ begin
     BaseURL := BaseURL + '?'
   else
     BaseURL := BaseURL + '&';
-  BaseURL := BaseURL + 'f=json&r=' + IntToStr(reqId) + '&timeout=60000&peek=0';
-  Inc(reqId);
+  BaseURL := BaseURL + 'f=json&r=' + IntToStr(IncReqId) + '&timeout=60000&peek=0';
 
   LoggaWIMPkt('[GET] Event fetch loop started', WL_sent_text, BaseURL);
   PollURL(BaseURL);
 
   phase := online_;
+  NotifyListeners(IE_online);
 end;
 
 procedure TWIMSession.AbortPolling(Sender: TObject);
@@ -4117,6 +4117,9 @@ var
 var
   Freq, StartCount, StopCount: Int64;
   TimingSeconds: real;
+  cli: TSslHttpCli;
+  lReqId: String;
+  eTypeV: String;
 begin
   timeout.Enabled := False;
 
@@ -4126,8 +4129,8 @@ begin
     Exit;
   end;
 
-  with Sender as TSslHttpCli do
-//  with Sender as TSslHttpRest do
+  cli := Sender as TSslHttpCli;
+  with cli do
   begin
     if Assigned(SendStream) then
       SendStream.Free;
@@ -4153,15 +4156,21 @@ begin
   end;
 
   // 5 sec delay after HTTP error
-  if not (HttpPoll.StatusCode = 200) then
+  if not (cli.StatusCode = 200) then
   begin
-    MsgDlg('Fetch event bad code: ' + IntToStr(HttpPoll.StatusCode) + #13#10#13#10 + HttpPoll.RcvdHeader.Text + #13#10#13#10 + UnUTF(RespStrR), False, mtInformation);
-    if (HttpPoll.StatusCode >= 500) and (HttpPoll.StatusCode < 600) then
+    MsgDlg('Fetch event bad code: ' + IntToStr(cli.StatusCode) + #13#10#13#10 + cli.RcvdHeader.Text + #13#10#13#10 + UnUTF(RespStrR), False, mtInformation);
+    if (cli.StatusCode >= 500) and (cli.StatusCode < 600) then
       RestartPolling(ICQErrorReconnectDelay)
     else
       PollError('ERR_HTTPCODE');
     Exit;
   end;
+
+  if (RespStrR='') and (cli.ContentLength >0) then
+    begin
+      if cli.State =  httpWaitingBody then
+        exit;
+    end;
 
   if Trim(RespStrR) = '' then
   begin
@@ -4183,7 +4192,7 @@ begin
       PollError('ERR_NOTAJSON');
       Exit;
     end;
-    Resp := CheckResponseData(JSON);
+    Resp := CheckResponseData(JSON, lReqId);
     if Resp.Key = Integer(EAC_OK) then
     if not (JSON.GetValue('fetchBaseURL') = nil) then
     begin
@@ -4205,36 +4214,44 @@ begin
         etype := TJSONObject(event).GetValue('type');
         edata := TJSONObject(event).GetValue('eventData');
         if Assigned(etype) and Assigned(edata) then
-        if etype.Value = 'buddylist' then
-        begin
-QueryPerformanceFrequency(Freq);
-QueryPerformanceCounter(StartCount);
-          ProcessContactList(TJSONObject(edata).GetValue('groups') as TJSONArray);
-QueryPerformanceCounter(StopCount);
-TimingSeconds := (StopCount - StartCount) / Freq;
-ODS('Populating CL: ' + floattostr(TimingSeconds));
-          // Get caps of users currently online
-          GetAllCaps;
-          NotifyListeners(IE_online);
-          // Get own profile's settings
-          GetProfile(MyAccNum);
-        end else if (etype.Value = 'presence') or (etype.Value = 'myInfo') then
-          ProcessContact(TJSONObject(edata))
-        else if (etype.Value = 'histDlgState') or (etype.Value = 'offlineIM') then
-          ProcessDialogState(TJSONObject(edata), etype.Value = 'offlineIM')
-        else if etype.Value = 'imState' then
-          ProcessIMState(TJSONObject(edata))
-        else if etype.Value = 'typing' then
-          ProcessTyping(TJSONObject(edata))
-        else if etype.Value = 'userAddedToBuddyList' then
-          ProcessAddedYou(TJSONObject(edata))
-        else if etype.Value = 'permitDeny' then
-          ProcessPermitDeny(TJSONObject(edata))
-        else if etype.Value = 'diff' then
-        begin
-//          TJSONArray(edata)
-        end else
-          ODS('Unhandled event type: ' + etype.Value);
+         begin
+          etypev := etype.Value;
+          if etypev = 'buddylist' then
+          begin
+  QueryPerformanceFrequency(Freq);
+  QueryPerformanceCounter(StartCount);
+            try
+              if edata is TJSONObject then
+                ProcessContactList(TJSONObject(edata).GetValue('groups') as TJSONArray);
+             except
+                on E: Exception do
+                   msgDlg('Error in event buddylist: '+ e.Message, false, mtError);
+            end;
+  QueryPerformanceCounter(StopCount);
+  TimingSeconds := (StopCount - StartCount) / Freq;
+  ODS('Populating CL: ' + floattostr(TimingSeconds));
+            // Get caps of users currently online
+            GetAllCaps;
+            // Get own profile's settings
+            GetProfile(MyAccNum);
+          end else if (etypev = 'presence') or (etypev = 'myInfo') then
+            ProcessContact(TJSONObject(edata))
+          else if (etypev = 'histDlgState') or (etypev = 'offlineIM') then
+            ProcessDialogState(TJSONObject(edata), etypev = 'offlineIM')
+          else if etypev = 'imState' then
+            ProcessIMState(TJSONObject(edata))
+          else if etypev = 'typing' then
+            ProcessTyping(TJSONObject(edata))
+          else if etypev = 'userAddedToBuddyList' then
+            ProcessAddedYou(TJSONObject(edata))
+          else if etypev = 'permitDeny' then
+            ProcessPermitDeny(TJSONObject(edata))
+          else if etypev = 'diff' then
+          begin
+  //          TJSONArray(edata)
+          end else
+            ODS('Unhandled event type: ' + etype.Value);
+         end;
       end;
     end
       else // Events that do not continue events fetching
@@ -4325,8 +4342,8 @@ begin
 
       buddies := TJSONObject(group).GetValue('buddies') as TJSONArray;
       for buddy in buddies do
-      if Assigned(buddy) then
-        ProcessContact(TJSONObject(buddy), id, True);
+      if Assigned(buddy) and (buddy is TJSONObject) then
+        ProcessContact(buddy as TJSONObject, id, True);
     end;
   finally
 //    RnQmain.roster.EndUpdate;
@@ -4722,11 +4739,11 @@ begin
       begin
     OutputDebugString(PChar('New avatar for ' + String(Result.UID2cmp) + ': ' + Tmp));
         Result.IconID := tmpId;
-    eventContact := Result;
-    notifyListeners(IE_avatar_changed);
-    if IsMyAcc(Result) then
-      MyAvatarHash := Result.IconID;
-  end;
+        eventContact := Result;
+        notifyListeners(IE_avatar_changed);
+        if IsMyAcc(Result) then
+          MyAvatarHash := Result.IconID;
+      end;
     end;
 
   Result.InfoUpdatedTo := now;

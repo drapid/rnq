@@ -1301,13 +1301,13 @@ begin
   savefile2(myPath+commonFileName, getCommonCFG, True, MakeBackups)
 end;
 
-function readOnlyFiles:boolean;
+function readOnlyFiles: boolean;
 
-{  function recur(const path:string):boolean;
+{  function recur(const path: string): boolean;
   var
-    sr:TsearchRec;
+    sr: TsearchRec;
   begin
-  result:=TRUE;
+  result := TRUE;
   if FindFirst(path+'*.*', faAnyFile, sr)=0 then
     repeat
     if (sr.Attr and faReadOnly > 0) or (sr.name[1]<>'.') and (sr.Attr and faDirectory >0) and recur(path+sr.name+PathDelim) then
@@ -1320,21 +1320,21 @@ function readOnlyFiles:boolean;
   result:=FALSE;
   end;
 }
-  function fileIsReadOnly(f : string) : Boolean;
+  function fileIsReadOnly(f: string): Boolean;
   var
-    i:integer;
+    i: integer;
   begin
-    i:=FileGetAttr(f);
+    i := FileGetAttr(f);
     if (i >= 0) and (i and faReadOnly >0) then
       result := TRUE
      else
       Result := False;
   end;
 //var
-//  i:integer;
-//  sr:TsearchRec;
+//  i: integer;
+//  sr: TsearchRec;
 begin
-  result:= fileIsReadOnly(myPath+commonFileName);
+  result := fileIsReadOnly(myPath+commonFileName);
   if Result then
     Exit;
   if fileIsReadOnly(Account.ProtoPath + dbFilename+'5') {or
@@ -1626,8 +1626,8 @@ begin
   supportedBehactions[EK_automsg] := allBehactions;
   supportedBehactions[EK_typingBeg] := mtnBehactions;
   supportedBehactions[EK_typingFin] := mtnBehactions;
-  supportedBehactions[EK_XstatusMsg]:= allBehactions;
-  supportedBehactions[EK_Xstatusreq]:= allBehactions;
+  supportedBehactions[EK_XstatusMsg] := allBehactions;
+  supportedBehactions[EK_Xstatusreq] := allBehactions;
   supportedBehactions[EK_buzz] := [BE_OPENCHAT, BE_HISTORY, BE_TIP, BE_SOUND];
   supportedBehactions[EK_Sticker] := allBehactions;
 
@@ -2391,18 +2391,18 @@ end;
 
 procedure quit;
 begin
- if not initOnce then
-   exit;
+  if not initOnce then
+    exit;
   initOnce := FALSE;
-   plugins.castEv( PE_QUIT); // Added For Test Purpose
+  plugins.castEv( PE_QUIT); // Added For Test Purpose
 
- SoundUnInit;
- disablesounds := True;
+  SoundUnInit;
+  disablesounds := True;
 
- running := false;
- stayconnected := FALSE;
+  running := false;
+  stayconnected := FALSE;
 
- stopMainTimer;
+  stopMainTimer;
 
  try
    Account.AccProto.disconnect;
@@ -2492,6 +2492,8 @@ begin
   applyTransparency;
   for i:=0 to Screen.FormCount-1 do
     applyCommonSettings(screen.forms[i]);
+  for i:=0 to Screen.DataModuleCount-1 do
+    applyCommonSettings(screen.DataModules[i]);
   SoundInit;
 //ShowHintsInChat2 := True;
 end; // afterWindowsCreation

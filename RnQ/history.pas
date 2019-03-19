@@ -87,7 +87,7 @@ const
  {$IFNDEF DB_ENABLED}
 class function Thistory.UIDHistoryFN(const UID: TUID): String;
 begin
-  Result := Account.ProtoPath + historyPath + String(UID);
+  Result := Account.ProtoPath + historyPath + UID2FN(UID);
 end;
  {$ENDIF ~DB_ENABLED}
 

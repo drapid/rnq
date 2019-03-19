@@ -736,7 +736,7 @@ begin
    begin
     hasAvatar := False;
     loaded    := False;
-//    hsh := TICQcontact(c).ICQIcon.hash_safe;
+
 //    if hash_safe <> z+z+z+z then
     if hash_safe <> #0#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0 then
     begin

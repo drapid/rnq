@@ -73,14 +73,14 @@ begin
  {$ENDIF PROTOCOL_ICQ}
   theme.initEmojiPics;
 
-if (chatFrm<>NIL) then
-  begin
-  setupChatButtons;
-  chatFrm.updateGraphics;
-  end;
- TextBGColor := theme.GetColor(ClrHistBG, clWindow);
- hisBGColor  := theme.GetColor(ClrHistBG+'.his', TextBGColor);
- myBGColor   := theme.GetColor(ClrHistBG+'.my', TextBGColor);
+  if (chatFrm<>NIL) then
+   begin
+    setupChatButtons;
+    chatFrm.updateGraphics;
+   end;
+  TextBGColor := theme.GetColor(ClrHistBG, clWindow);
+  hisBGColor  := theme.GetColor(ClrHistBG+'.his', TextBGColor);
+  myBGColor   := theme.GetColor(ClrHistBG+'.my', TextBGColor);
   with theme.GetPicSize(RQteDefault, PIC_MSG_OK) do
    hasMsgOK := (cx > 0) and (cy > 0);
   with theme.GetPicSize(RQteDefault, PIC_MSG_SERVER) do

@@ -410,7 +410,7 @@ case _byte_at(data,1) of
              tS := '';
             resStr := //#00#00#00 + //outBuffer+char(PM_DATA) +
                         _int(chatFrm.plugBtns.Add(Pointer(_int_at(data, 3)),
-                              _int_at(data, 7), _istring_at(data, 11), tS)+1);
+                              HIcon(_int_at(data, 7)), _istring_at(data, 11), tS)+1);
           end;
       PC_DELBUTTON: if minimum(4) then chatFrm.plugBtns.Del(_int_at(data, 3)-1);
       PC_MODIFY_BUTTON : if minimum(2+4+4+4) then
@@ -421,7 +421,7 @@ case _byte_at(data,1) of
             else
              tS := '';
             chatFrm.plugBtns.Modify(_int_at(data, 3)-1,
-                _int_at(data, 7), _istring_at(data, 11), tS);
+                HIcon(_int_at(data, 7)), _istring_at(data, 11), tS);
           end;
       PC_ADDCONTACTMENU : if minimum(2+4) then
           begin
