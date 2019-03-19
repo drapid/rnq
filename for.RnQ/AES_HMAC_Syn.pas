@@ -383,6 +383,7 @@ begin
 end;
 
 
+{$OVERFLOWCHECKS OFF}
 procedure encr_data(var data: Pointer; d_len: Integer; var cx: fcrypt_ctx);
 var
   i, j: Integer;
@@ -416,14 +417,16 @@ begin
    end;
   cx.encr_pos := pos;
 end;
+ {$OVERFLOWCHECKS ON}
 
 //* perform 'in place' encryption or decryption and authentication               */
-procedure fcrypt_encrypt(data : Pointer; data_len : Integer; var cx : fcrypt_ctx);
+procedure fcrypt_encrypt(data: Pointer; data_len: Integer; var cx: fcrypt_ctx);
 begin
   encr_data(data, data_len, cx);
   hmac_sha1_data(data, data_len, cx.auth_ctx);
 end;
-procedure fcrypt_decrypt(data : Pointer; data_len : Integer; var cx : fcrypt_ctx);
+
+procedure fcrypt_decrypt(data: Pointer; data_len: Integer; var cx: fcrypt_ctx);
 begin
   hmac_sha1_data(data, data_len, cx.auth_ctx);
   encr_data(data, data_len, cx);
@@ -431,7 +434,7 @@ end;
 
 //* close encryption/decryption and return the MAC value */
 //* the return value is the length of the MAC            */
-function fcrypt_end(var cx : fcrypt_ctx)  //* the context (input)      */
+function fcrypt_end(var cx: fcrypt_ctx)  //* the context (input)      */
                 : RawByteString;          //* the MAC value (output)   */
 begin
   SetLength(Result, MAC_LENGTH);

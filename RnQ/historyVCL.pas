@@ -630,12 +630,18 @@ var
       Result := ch in ['0'..'9'];
      {$ENDIF UNICODE}
     end;
+  const
+    UIN_MIN_LEN = 5;
   var
     i: integer;
+    ls: Integer;
   begin
     result := False;
     i := start;
-    if (i > 0)and isdig(s[i-1]) then
+    ls := Length(s);
+    if (ls < UIN_MIN_LEN) or (ls-i < UIN_MIN_LEN) then
+      Exit;
+    if (i > 1)and isdig(s[i-1]) then
       Exit;
     while (i <= length(s)) and isdig(s[i]) and (i - start < 10) do
       inc(i);
@@ -644,7 +650,7 @@ var
       or ((i < length(s)) and CharInSet(s[i], [',','.']) and isdig(s[i+1])) then
 //      Result := False
      else 
-    if i - start > 5 then
+    if i - start > UIN_MIN_LEN then
     begin
       end_ := i - 1;
       result := True;

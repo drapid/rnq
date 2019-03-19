@@ -39,7 +39,9 @@ type
     function  getByWID(pWID: RawByteString): Thevent;
     function  getByTime(time: TDateTime): Thevent;
     function  getIdxBeforeTime(time: TDateTime; inclusive: Boolean = True): Integer;
-    class function UIDHistoryFN(const UID: TUID): String;
+ {$IFNDEF DB_ENABLED}
+    class function UIDHistoryFN(const UID: TUID): TFileName;
+ {$ENDIF ~DB_ENABLED}
     procedure reset;
     procedure WriteToHistory(ev: Thevent);
 //    function Clear;
@@ -85,7 +87,7 @@ const
   Max_Event_ID = 1000000;
 
  {$IFNDEF DB_ENABLED}
-class function Thistory.UIDHistoryFN(const UID: TUID): String;
+class function Thistory.UIDHistoryFN(const UID: TUID): TFileName;
 begin
   Result := Account.ProtoPath + historyPath + UID2FN(UID);
 end;
@@ -331,49 +333,11 @@ var
   begin
     i := getInt;
     SetLength(Result, i);
-    str.Read(result[1], i);
+    if i > 0 then
+      str.Read(result[1], i);
 //    inc(cur,length(result))
   end;
 
-{  function getInt1(str1: Tstream): integer; Inline;
-  begin
-    str1.Read(result, 4);
-  end;
-  function getByte1(str1: Tstream): byte; Inline;
-  begin
-    str1.Read(result, 1);
-  end;
-  function getDatetime1(str1: Tstream): Tdatetime; Inline;
-  begin
-    str1.Read(result, 8);
-  end;
-  function getString1(str1: Tstream): string; Inline;
-  var
-    i: Integer;
-  begin
-    i := getInt1(str1);
-    SetLength(Result, i);
-    str1.Read(result[1], i);
-  end;
-}
-
-
-{  procedure parseExtrainfo;
-  var
-    code, next, extraEnd: integer;
-  begin
-  extraEnd := cur+getInt;
-  while cur < extraEnd do
-    begin
-    code := getInt;
-    next := cur+getInt;
-    case code of
-      EI_flags: ev.flags := getInt;
-      end;
-    cur := next;
-    end;
-  end; // parseExtraInfo
-}
   procedure parseExtrainfo;
   var
     code, next, extraEnd: integer;
@@ -417,7 +381,8 @@ var
         EI_WID:
           begin
             SetLength(s, len);
-            str.Read(s[1], len);
+            if len > 0 then
+              str.Read(s[1], len);
           end;
        end;
       cur := next;
