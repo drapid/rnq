@@ -601,7 +601,8 @@ type
     function  isMyAcc: Boolean;
 //   public
 //    function  GetProto: IRnQProtocol;
-    procedure SetGroupName(const pName: String);
+    function  SetGroupName(const pName: String): Boolean;
+    function  SetGroupSSID(ssiID: Integer): Boolean;
     function  buin: RawByteString;
     function  UIDasInt: Integer;
     function  getGroupName: String;
@@ -961,7 +962,7 @@ var
  {$ENDIF ~ICQ_ONLY}
 begin
  {$IFNDEF ICQ_ONLY}
-  s := Self.fProto.ProtoName;
+  s := Self.Proto.ProtoName;
   if s='ICQ' then
  {$ENDIF ~ICQ_ONLY}
     Result := UID2FN(UID2cmp)
@@ -993,7 +994,6 @@ begin
   icon.Bmp := NIL;
   icon.cache := NIL;
 //  antispam.lastQuests
-//nodb := FALSE;
 end; // clear
 
 function TRnQcontact.equals(c: TRnQcontact): boolean;
@@ -1233,27 +1233,40 @@ begin
   result := groups.id2name(group)
 end;
 
-procedure TRnQcontact.SetGroupName(const pName: String);
+function TRnQcontact.SetGroupName(const pName: String): Boolean;
 var
   gId: Integer;
 begin
+  Result := True;
   gID := groups.name2id(pName);
-  if gID >= 0 then
-    begin
-      self.group := gID
-    end
-   else
+  if gID < 0 then
     begin
        if pName > '' then
          begin
-           gID := groups.add();
-           groups.rename(gID, pName);
+           gID := groups.add(pName);
          end
         else
+         begin
           gId := 2000;
+          Result := False;
+         end;
     end;
   self.group := gID;
 end;
+
+function TRnQContact.SetGroupSSID(ssiID: Integer): Boolean;
+var
+  gId: Integer;
+begin
+  Result := False;
+  gID := groups.ssi2id(ssiID);
+  if gID >= 0 then
+    begin
+      self.group := gID;
+      Result := True;
+    end;
+end;
+
 
 { TCListEnumerator }
 
@@ -1493,7 +1506,7 @@ begin
     Exit;
   i := _idxOf(u);
   if i >= 0 then
-    result:= getAt(i)
+    result := getAt(i)
    else
     begin
 //     result:= iProto.getContact(uid);
@@ -1557,7 +1570,6 @@ begin
     result:=result + StrToUTF8(TRnQContact(List[I]).UID) + CRLF;
 end;
 
-//function TRnQCList.fromString(cls: TRnQContactType; const s: RawByteString; db: TRnQCList): boolean;
 function TRnQCList.fromString(pr: TRnQProtocol; const s: RawByteString; db: TRnQCList): boolean;
 var
   i: integer;

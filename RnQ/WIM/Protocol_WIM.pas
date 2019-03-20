@@ -842,7 +842,7 @@ case ev of
       end; };
   IE_userSimpleInfo:
      begin
-      if (thisWIM.eventWP.uin = UINToUpdate) and checkupdate.enabled then
+      if (thisWIM.eventWP.uin = IntToStr(UINToUpdate)) and checkupdate.enabled then
        begin
         checkupdate.autochecking := True;
         c.nick  := thisWIM.eventwp.nick;

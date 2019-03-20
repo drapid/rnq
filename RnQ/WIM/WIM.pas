@@ -4353,12 +4353,13 @@ end;
 function TWIMSession.ProcessContact(const Buddy: TJSONObject; GroupToAddTo: Integer = -1; Batch: Boolean = False): TWIMContact;
 var
   i, Mute: Integer;
-  LoadingCL, FoundCap: Boolean;
+  b, LoadingCL, FoundCap: Boolean;
   Tmp, Phone1, Phone2, Phone3, PhoneType, OldXStatusStr: String;
   OldPic: TPicName;
   TheCap, TheCap2: RawByteString;
   UnixTime: Integer;
   NewStatus: TWIMStatus;
+  NewInvis: Boolean;
   Profile, TmpObj: TJSONObject;
   Cap, Ph, TmpArr: TJSONValue;
   Caps: TJSONArray;
@@ -4376,10 +4377,10 @@ begin
 //  if Buddy.GetValueSafe('abContactName', Name) then
 //    if not (Name = '') then
 //      Result.nick := Name
-  if (Result.nick = '') then
+//  if (Result.nick = '') then
   begin
     if Buddy.GetValueSafe('displayId', Tmp) then
-      if not (Tmp = '') then
+      if (Tmp <> '')and (tmp <> Result.UID2cmp) then
         Result.nick := Tmp;
     if Buddy.GetValueSafe('friendly', Tmp) then
 //      if not (Tmp = '') then
@@ -4423,6 +4424,9 @@ begin
   //aim	- AIM or AOL
   //interop	- Gatewayed from another network
   //imserv - IMServ group target
+
+  if Buddy.GetValueSafe('deleted', b) then
+    Result.NoDB := true;
 
   if not (Buddy.GetValue('capabilities') = nil) then
   begin
@@ -4495,17 +4499,43 @@ begin
     Result.Typing.bSupport := CAPS_big_MTN in Result.CapabilitiesBig;
   end;
 
-  Buddy.GetValueSafe('state', Tmp);
-  if Tmp = 'online' then
-    NewStatus := SC_ONLINE
-  else
-    NewStatus := SC_OFFLINE;
-
+  UnixTime := -1;
   if Buddy.GetValueSafe('lastseen', UnixTime) then
-  if UnixTime = 0 then
-    Result.LastTimeSeenOnline := Now
-  else
-    Result.LastTimeSeenOnline := UnixToDateTime(UnixTime, False);
+    if UnixTime = 0 then
+      Result.LastTimeSeenOnline := Now
+     else
+      Result.LastTimeSeenOnline := UnixToDateTime(UnixTime, False);
+
+  NewInvis := False;
+  Result.isMobile := False;
+  if Buddy.GetValueSafe('state', Tmp) then
+    begin
+      if Tmp = 'online' then
+        NewStatus := SC_ONLINE
+      else if tmp = 'offline' then
+        NewStatus := SC_OFFLINE
+      else if tmp = 'occupied' then
+        NewStatus := SC_OCCUPIED
+      else if tmp = 'na' then
+        NewStatus := SC_NA
+      else if tmp = 'busy' then
+        NewStatus := SC_DND
+      else if tmp = 'away' then
+        NewStatus := SC_AWAY
+      else if (tmp = 'mobile') and (UnixTime=0) then
+        begin
+          NewStatus := SC_ONLINE;
+          Result.isMobile := True;
+        end
+      else if tmp = 'invisible' then
+        begin
+          NewStatus := SC_ONLINE;
+          NewInvis := True;
+        end;
+    end
+   else if (UnixTime <> 0) then
+      NewStatus := SC_OFFLINE
+   ;
 
   if Buddy.GetValueSafe('onlineTime', UnixTime) then
     Result.OnlineTime := UnixTime;
@@ -4538,6 +4568,8 @@ begin
     // Cannot decode HTML for some reason
   end;
 
+  Result.Authorized := True; // Assume this is the default :)
+
   // Owner only
   if Buddy.GetValueSafe('attachedPhoneNumber', Tmp) then
     if not (Tmp = '') then
@@ -4554,7 +4586,10 @@ begin
     if Profile.GetValueSafe('nick', Tmp) then
       Result.Nick := Tmp;
     if Profile.GetValueSafe('friendlyName', Tmp) then
-      Result.Display := Tmp;
+      Result.Nick := Tmp;
+
+    if Profile.GetValueSafe('authRequired', i) then
+      Result.Authorized := i = 0;
 
     if Profile.GetValueSafe('gender', Tmp) then
     begin
@@ -4671,9 +4706,6 @@ begin
     "betaFlag" : 0,
     "autoSms" : "false", // autoforward IM to SMS
 }
-    Result.Authorized := True; // Assume this is the default :)
-    if Profile.GetValueSafe('authRequired', i) then
-      Result.Authorized := i = 0;
 
     // Owner only
     if Result.UID2cmp = MyAccNum then
@@ -4712,13 +4744,13 @@ begin
   if LoadingCL then
   begin
     Result.CntIsLocal := False;
-    Result.group := GroupToAddTo;
+    Result.SetGroupSSID(GroupToAddTo);
     if not Result.IsInRoster then
       fRoster.add(Result);
   end;
 
   // Handle status change
-  ProcessNewStatus(Result, NewStatus, False, not (OldXStatusStr = Result.xStatusStr), Batch);
+  ProcessNewStatus(Result, NewStatus, NewInvis, not (OldXStatusStr = Result.xStatusStr), Batch);
 
   OldPic := Result.ClientPic;
   GetClientPicAndDesc4(Result, Result.ClientPic, Result.ClientDesc);
@@ -4752,7 +4784,8 @@ begin
   notifyListeners(IE_userinfo);
 end;
 
-procedure TWIMSession.ProcessNewStatus(var Cnt: TWIMContact; NewStatus: TWIMStatus; CheckInvis: Boolean = False; XStatusStrChanged: Boolean = False; NoNotify: Boolean = False);
+procedure TWIMSession.ProcessNewStatus(var Cnt: TWIMContact; NewStatus: TWIMStatus;
+                           CheckInvis: Boolean = False; XStatusStrChanged: Boolean = False; NoNotify: Boolean = False);
 var
   OldInvis, NewInvis: Integer;
   StatusChanged: Boolean;
@@ -4764,7 +4797,9 @@ begin
   if NewStatus = SC_ONLINE then
     NewInvis := 0
   else if (Cnt.Status = SC_OFFLINE) and CheckInvis then
-    NewInvis := 2;
+    NewInvis := 2
+  else if (Cnt.Status = SC_ONLINE) and CheckInvis then
+    NewInvis := 1;
 
   Cnt.PrevStatus := Cnt.Status;
   eventOldStatus := Cnt.Status;

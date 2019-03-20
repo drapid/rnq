@@ -13,7 +13,7 @@ uses
 {$I NoRTTI.inc}
 
 type
-  TWIMStatus = (SC_ONLINE = 0, SC_OFFLINE, SC_UNK, SC_OCCUPIED, SC_NA, SC_AWAY);
+  TWIMStatus = (SC_ONLINE = 0, SC_OFFLINE, SC_UNK, SC_OCCUPIED, SC_DND, SC_NA, SC_AWAY);
   TWIMContactType = (CT_UNK = 0, CT_ICQ, CT_OLDICQ, CT_SMS, CT_PHONE);
 
   TGroupAction = (GA_None = 0, GA_Add, GA_Rename, GA_Remove);
@@ -22,7 +22,7 @@ type
 
 const
   SC_Last = SC_AWAY;
-  StatusPriority: array [TWIMStatus] of byte = (0, 4, 5, 1, 2, 3);
+  StatusPriority: array [TWIMStatus] of byte = (0, 8, 9, 1, 2, 3, 4);
 
 type
 //  TVisibility = (VI_normal, VI_invisible, VI_privacy, VI_all, VI_CL);
@@ -42,11 +42,11 @@ const
 //    PIC_VISIBILITY_PRIVACY, PIC_VISIBILITY_ALL, PIC_VISIBILITY_CL);
 //  visib2str: array [Tvisibility] of TPicName = ('normal', 'invisible', 'privacy', 'all', 'cl');
   visib2str: array [Tvisibility] of TPicName = ('normal', 'invisible');
-  status2ShowStr: array [TWIMStatus] of string = ('Online', 'Offline', 'Unknown', 'Occupied', 'N/A', 'Away');
-  status2Img: array [0 .. Byte(SC_AWAY)] of TPicName = ('online', 'offline', 'unk', 'occupied', 'na', 'away');
+  status2ShowStr: array [TWIMStatus] of string = ('Online', 'Offline', 'Unknown', 'Occupied', 'Don''t disturb', 'N/A', 'Away');
+  status2Img: array [0 .. Byte(SC_AWAY)] of TPicName = ('online', 'offline', 'unk', 'occupied', 'dnd', 'na', 'away');
   Status2Srv: array [0 .. Byte(SC_AWAY)] of TPicName =
-              ('online', 'offline', 'offline', 'online', 'online', 'online');
-  statusWithAutoMsg = [byte(SC_AWAY), byte(SC_NA), byte(SC_OCCUPIED)];
+              ('online', 'offline', 'offline', 'occupied', 'dnd', 'na', 'away');
+  statusWithAutoMsg = [byte(SC_AWAY), byte(SC_NA), byte(SC_dnd), byte(SC_OCCUPIED)];
 
 const
   maxRefs = 2000;
@@ -59,7 +59,7 @@ const
   WIM_HOST: AnsiString = 'https://api.icq.net/';
   REST_HOST: AnsiString = 'https://rapi.icq.net/';
   STORE_HOST: AnsiString = 'https://store.icq.com/';
-  UINToUpdate = '662846976'; //223223181
+  UINToUpdate = 223223181;
   AIMprefix = 'AIM_';
   ICQMaxAvatarSize = 7800;
   // AOL_FILE_TRANSFER_SERVER = 'ars.oscar.aol.com';

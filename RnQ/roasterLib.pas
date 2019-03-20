@@ -562,9 +562,9 @@ begin
 
   result := vsVisible in n.states;
   repeat
-  n := n.parent;
-  if n<>root then
-    result := (vsVisible in n.states) and (vsExpanded in n.states);
+    n := n.parent;
+    if n<>root then
+      result := (vsVisible in n.states) and (vsExpanded in n.states);
   until not result or (n=root);
 end; // isVisible
 

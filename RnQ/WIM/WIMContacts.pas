@@ -34,7 +34,6 @@ type
   TWIMContact = class(TRnQContact)
   public
     UININT: Integer;
-    //Invisible: Boolean;
     NoClient: Boolean;
     Official: Boolean;
     ClientClosed: TDateTime;
@@ -546,7 +545,7 @@ begin
 //                 Interests.InterestBlock[i].Count:=int.Count+1;
 end;
 
-function  TWIMContact.GetDBrow: RawByteString;
+function TWIMContact.GetDBrow: RawByteString;
   function interests2str(int: Tinterests): RawByteString;  // By Shyr
   var
    i, j: integer;

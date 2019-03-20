@@ -672,12 +672,12 @@ end;
 
 procedure TviewinfoFrm.updateBtnClick(Sender: TObject);
 var
-  wpS : TwpSearch;
+  wpS: TwpSearch;
 begin
   if OnlFeature(contact.Proto) then
     begin
      wpS.uin := contact.UID2cmp;
-//     TWIMSession(contact.iProto.ProtoElem).sendQueryInfo(StrToIntDef(wpS.uin, 0));
+     TWIMSession(contact.Proto).sendQueryInfo(contact.UID2cmp);
      wpS.token := TWIMContact(contact).InfoToken;
 //     TWIMSession(contact.fProto).sendWPsearch2(wpS, 0, False);
     end
