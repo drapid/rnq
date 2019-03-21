@@ -1304,7 +1304,7 @@ function TWIMSession.SendSessionRequest(IsPOST: Boolean; const BaseURL: String; 
 begin
   if fSession.aimsid = '' then
     Exit(False);
-  Query := 'f=json&aimsid=' + fSession.aimsid + '&r=' + CreateNewGUID + Query;
+  Query := 'f=json&aimsid=' + ParamEncode(fSession.aimsid) + '&r=' + CreateNewGUID + Query;
   Result := SendRequest(IsPOST, BaseURL, Query, Header, ErrMsg, ErrProc);
 end;
 
@@ -1313,7 +1313,7 @@ function TWIMSession.SendSessionRequest(IsPOST: Boolean; const BaseURL: String; 
 begin
   if fSession.aimsid = '' then
     Exit(False);
-  Query := 'f=json&aimsid=' + fSession.aimsid + '&r=' + CreateNewGUID + Query;
+  Query := 'f=json&aimsid=' + ParamEncode(fSession.aimsid) + '&r=' + CreateNewGUID + Query;
   Result := SendRequest(IsPOST, BaseURL, Query, Ret, JSON, Header, ErrMsg, ErrProc);
 end;
 
@@ -1416,12 +1416,9 @@ begin
   Result := False;
   BaseURL := WIM_HOST + 'presence/setState';
   Query :=
-           '&f=json' +
-           '&aimsid=' + ParamEncode(fSession.aimsid) +
 //           '&view=' + IfThen(Visibility = VI_invisible, 'invisible', Status2Srv[Byte(curStatus)]) +
            '&view=' + Status2Srv[Byte(curStatus)] +
            '&invisible=' + IfThen(Visibility = VI_invisible, '1', '0') +
-           '&r=' + CreateNewGUID +
            '&assertCaps=' + GetMyCaps;
            //IfThen(curStatus = SC_AWAY, '&away=Seeya', ''); // Not really useful, only you receive your awayMsg :)
   if SendSessionRequest(False, BaseURL, Query, 'Set status and visibility', 'Failed to set status') then
@@ -5605,11 +5602,8 @@ var
   Code: Integer;
 begin
   BaseURL := WIM_HOST + 'buddylist/setBuddyAttribute';
-  Query := '?f=json' +
-           '&aimsid=' + ParamEncode(fSession.aimsid) +
-           '&buddy=' + ParamEncode(String(c.UID2cmp)) +
-           '&friendly=' + ParamEncode(c.Display) +
-           '&r=' + CreateNewGUID;
+  Query := '&buddy=' + ParamEncode(String(c.UID2cmp)) +
+           '&friendly=' + ParamEncode(c.Display);
   SendSessionRequest(False, BaseURL, Query, 'Rename contact', 'Failed to rename contact');
 end;
 
@@ -5620,10 +5614,7 @@ var
   Code: Integer;
 begin
   BaseURL := WIM_HOST + 'buddylist/removeBuddy';
-  Query := '?f=json' +
-           '&aimsid=' + ParamEncode(fSession.aimsid) +
-           '&buddy=' + ParamEncode(String(c.UID2cmp)) +
-           '&r=' + CreateNewGUID +
+  Query := '&buddy=' + ParamEncode(String(c.UID2cmp)) +
            '&allGroups=1';
   if SendSessionRequest(False, BaseURL, Query, 'Remove contact', 'Failed to remove contact') then
     c.CntIsLocal := c.IsInRoster
