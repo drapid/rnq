@@ -449,6 +449,7 @@ type
     function serverStart: Word;
     //procedure sendAddTempContact(const buinlist: RawByteString); overload; // 030F
   public // ICQ Only
+    procedure SSI_UpdateContact(c: TWIMContact);
     procedure SendAddContact(c: TWIMContact);
     procedure SendRemoveContact(c: TWIMContact);
 
@@ -689,7 +690,7 @@ result :=
   '<codepage>1251</codepage>' +
   //'<encoding>utf8</encoding>' +
   '<senders_UIN>' + me.uid + '</senders_UIN>' +
-  '<senders_name>' + AnsiString(me.displayed) + '</senders_name>' +
+  '<senders_name>' + AnsiString(me.displayed4All) + '</senders_name>' +
   '<delivery_receipt>' + yesno[ack] + '</delivery_receipt>' +
   '<time>' + AnsiString(FormatDatetime('ddd, dd mmm yyyy hh:nn:ss', now - gmtoffset)) + ' GMT</time>' +
   '</icq_sms_message>';
@@ -1414,8 +1415,13 @@ var
 begin
   Result := False;
   BaseURL := WIM_HOST + 'presence/setState';
-  Query := '&view=' + IfThen(Visibility = VI_invisible, 'invisible', Status2Srv[Byte(curStatus)]) +
+  Query :=
+           '&f=json' +
+           '&aimsid=' + ParamEncode(fSession.aimsid) +
+//           '&view=' + IfThen(Visibility = VI_invisible, 'invisible', Status2Srv[Byte(curStatus)]) +
+           '&view=' + Status2Srv[Byte(curStatus)] +
            '&invisible=' + IfThen(Visibility = VI_invisible, '1', '0') +
+           '&r=' + CreateNewGUID +
            '&assertCaps=' + GetMyCaps;
            //IfThen(curStatus = SC_AWAY, '&away=Seeya', ''); // Not really useful, only you receive your awayMsg :)
   if SendSessionRequest(False, BaseURL, Query, 'Set status and visibility', 'Failed to set status') then
@@ -2688,6 +2694,8 @@ begin
 end; // setStatus
 }
 procedure TWIMSession.SetStatus(st: Byte);
+var
+  savedSt: TWIMStatus;
 begin
   if st = Byte(SC_OFFLINE) then
   begin
@@ -2701,7 +2709,7 @@ begin
 
   if not (st = Byte(CurStatus)) then
   begin
-    eventOldStatus := CurStatus;
+    savedSt := CurStatus;
     StartingStatus := TWIMStatus(st);
   end;
 {
@@ -2718,12 +2726,13 @@ begin
     if SendPresenceState then
     begin
       eventContact := nil;
+      eventOldStatus := savedSt;
       if not (eventOldStatus = CurStatus) then
         notifyListeners(IE_statuschanged);
       if not (eventOldInvisible = IsInvisible) then
         notifyListeners(IE_visibilityChanged);
     end; // else restore status and vis?
-    SendStatusStr(CurXStatus, ExtStsStrings[CurXStatus].Desc);
+//    SendStatusStr(CurXStatus, ExtStsStrings[CurXStatus].Desc);
   end else
     Connect;
 end; // SetStatus
@@ -2766,7 +2775,7 @@ begin
       if not (eventOldInvisible = IsInvisible) then
         notifyListeners(IE_visibilityChanged);
     end; // else restore status and vis?
-    SendStatusStr(CurXStatus, ExtStsStrings[CurXStatus].Desc);
+//    SendStatusStr(CurXStatus, ExtStsStrings[CurXStatus].Desc);
   end else
     Connect;
 end;
@@ -3416,7 +3425,8 @@ end; // maxCharsFor
 
 function TWIMSession.imVisibleTo(c: TRnQcontact): boolean;
 begin
-  Result := Visibility = VI_normal;
+  Result := (Visibility = VI_normal) or
+            ((Visibility = VI_invisible) and fVisibleList.exists(c));
 {
   Result := ((Visibility = VI_all) or TempVisibleList.exists(c) or
             ((Visibility = VI_privacy) and (fVisibleList.exists(c))) or
@@ -3525,6 +3535,7 @@ end; // Connect
 
 procedure TWIMSession.AfterSessionStarted;
 begin
+  curStatus := StartingStatus;
   StartPolling;
   if LastStatus = Byte(SC_OFFLINE) then
     SetStatus(Byte(SC_ONLINE), Byte(VI_normal))
@@ -4384,7 +4395,7 @@ begin
         Result.nick := Tmp;
     if Buddy.GetValueSafe('friendly', Tmp) then
 //      if not (Tmp = '') then
-      Result.Display := Tmp;
+      Result.fDisplay := Tmp;
 //        Result.nick := Tmp;
   end;
 
@@ -4519,7 +4530,7 @@ begin
       else if tmp = 'na' then
         NewStatus := SC_NA
       else if tmp = 'busy' then
-        NewStatus := SC_DND
+        NewStatus := SC_OCCUPIED
       else if tmp = 'away' then
         NewStatus := SC_AWAY
       else if (tmp = 'mobile') and (UnixTime=0) then
@@ -5585,6 +5596,21 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TWIMSession.SSI_UpdateContact(c: TWIMContact);
+var
+  Query: String;
+  BaseURL, ResCode: String;
+  Code: Integer;
+begin
+  BaseURL := WIM_HOST + 'buddylist/setBuddyAttribute';
+  Query := '?f=json' +
+           '&aimsid=' + ParamEncode(fSession.aimsid) +
+           '&buddy=' + ParamEncode(String(c.UID2cmp)) +
+           '&friendly=' + ParamEncode(c.Display) +
+           '&r=' + CreateNewGUID;
+  SendSessionRequest(False, BaseURL, Query, 'Rename contact', 'Failed to rename contact');
 end;
 
 procedure TWIMSession.SendRemoveContact(c: TWIMContact);

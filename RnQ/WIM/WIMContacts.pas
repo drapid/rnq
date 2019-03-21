@@ -381,9 +381,14 @@ begin
 end;
 
 procedure TWIMContact.SetDisplay(const s: String);
+var
+  s0: String;
 begin
+  s0 := Display;
   inherited;
   // TODO: Update displayed name on server
+  if s0 <> Display then
+    TWIMSession(fProto).SSI_UpdateContact(self);
 end;
 
 procedure TWIMContact.ViewInfo;

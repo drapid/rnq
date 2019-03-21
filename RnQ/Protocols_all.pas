@@ -974,6 +974,16 @@ begin
  {$ENDIF UseNotSSI}
  end
  {$ENDIF PROTOCOL_ICQ}
+ {$IFDEF PROTOCOL_WIM}
+ if proto is TWIMSession then
+   begin
+    with proto AS TWIMSession do
+     begin
+      setStatus(getStatus, vi);
+     end;
+   end
+  else
+ {$ENDIF PROTOCOL_WIM}
  {$IFDEF PROTOCOL_MRA}
  else
    if proto.ProtoElem is TMRASession then
