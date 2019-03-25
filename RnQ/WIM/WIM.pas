@@ -278,6 +278,7 @@ type
     eventMsgID: TmsgID;
     eventStream: TMemoryStream;
     eventJSON: TJSONValue;
+    eventReqID: RawByteString;
     eventWID: RawByteString;
 //    eventEncoding: TEncoding;
 
@@ -306,19 +307,19 @@ type
       WIMstatuses, icqVis: TStatusArray;
 
 
-    class function NewInstance: TObject; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function NewInstance: TObject; override; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
 //    class function GetId: Word; override;
-    class function _GetProtoName: String; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _GetProtoName: String; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
 //    class function _isValidUid(var uin: TUID): Boolean; override; final;
-    class function _isProtoUid(var uin: TUID): Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    class function _isValidUid1(const uin: TUID): Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _isProtoUid(var uin: TUID): Boolean; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
+    class function _isValidUid1(const uin: TUID): Boolean; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
     class function _IsValidPhone(const Phone: TUID): Boolean;
-    class function _getDefHost: Thostport; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    class function _getContactClass: TRnQCntClass; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    class function _getProtoServers: String; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    class function _getProtoID: Byte; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function _getDefHost: Thostport; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
+    class function _getContactClass: TRnQCntClass; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
+    class function _getProtoServers: String; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
+    class function _getProtoID: Byte; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
     class function _CreateProto(const uid: TUID): TRnQProtocol; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    class function  _RegisterUser(var pUID: TUID; var pPWD: String): Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    class function  _RegisterUser(var pUID: TUID; var pPWD: String): Boolean; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
     class function _MaxPWDLen: Integer; override; final;
 //    class function isValidUid(var uin: TUID): Boolean;
 //    function isValidUid(var uin: TUID): Boolean;
@@ -342,14 +343,14 @@ type
     class constructor InitWIMProto;
     class destructor UnInitWIMProto;
     constructor Create(const id: TUID; subType: TWIMSessionSubType);
-    destructor Destroy; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure ResetPrefs; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure GetPrefs(pp: IRnQPref); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure SetPrefs(pp: IRnQPref); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure Clear; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    destructor Destroy; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
+    procedure ResetPrefs; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
+    procedure GetPrefs(pp: IRnQPref); OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
+    procedure SetPrefs(pp: IRnQPref); OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
+    procedure Clear; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
     function RequestPasswordIfNeeded(DoConnect: Boolean = True): Boolean;
     procedure Connect;
-    procedure disconnect; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure disconnect; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
     procedure setStatus(st: Byte); overload; override; final;
     procedure SetStatus(st: Byte; vi: Byte); overload;
     function getPwd: String; override; final;
@@ -416,10 +417,10 @@ type
     function AddContact(c: TRnQContact; IsLocal: Boolean = false): Boolean; OverRide;
     function  removeContact(c: TRnQContact): boolean; OverRide;
     function  deleteGroup(grSSID: Integer): Boolean; OverRide;
-    procedure UpdateGroupOf(cnt: TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure UpdateGroupID(grID: Integer); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure UpdateGroupOf(cnt: TRnQContact); OverLoad; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
+    procedure UpdateGroupID(grID: Integer); OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
 
-    procedure InputChangedFor(cnt: TRnQContact; InpIsEmpty: Boolean; timeOut: boolean = false); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure InputChangedFor(cnt: TRnQContact; InpIsEmpty: Boolean; timeOut: boolean = false); OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
     function UpdateGroupOf(c: TWIMContact; grp: Integer): Boolean; OverLoad;
     procedure getClientPicAndDesc4(cnt: TRnQContact; var pPic: TPicName; var CliDesc: String); override; final;
     function maxCharsFor(const c: TRnQContact; isBin: Boolean = false):integer; override; final;
@@ -467,7 +468,7 @@ type
 //    procedure sendPermsNew;//(c: Tcontact);
 
     procedure SendSaveMyInfo(c: TWIMContact);
-    function SendSticker(const Cnt: TRnQContact; const sticker: String): Integer;
+    function SendSticker(const Cnt: TRnQContact; const sticker: String): RawByteString;
     procedure SendContacts(Cnt: TRnQContact; flags: DWord; cl: TRnQCList); deprecated;
     procedure SendQueryInfo(const uid: TUID); deprecated;
 //    procedure SendAddedYou(const uin: TUID);
@@ -539,14 +540,15 @@ type
 
   public // All
     function CreateDataPayload(Caps: TArray<RawByteString>; const Data: TBytes = nil; Compressed: Integer = -1; CRC: Cardinal = 0; Len: Integer = 0): String;
-    function SendMsgOrSticker(Cnt: TRnQContact; var Flags: dword; const Msg: String; MsgType: TMsgType; var RequiredACK: Boolean): Integer; // returns handle
+    function SendMsgOrSticker(Cnt: TRnQContact; var Flags: dword; const Msg: String; MsgType: TMsgType; var RequiredACK: Boolean): RawByteString; // returns handle
     function sendMsg(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): Integer; override; final; // returns handle
-    function SendSticker2(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): Integer;
+    function sendMsg2(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): RawByteString; override; final; // returns handle
+    function SendSticker2(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): RawByteString;
     function SendBuzz(Cnt: TRnQContact): Boolean;
     procedure SetListener(l: TProtoNotify); override; final;
     procedure SetMuted(c: TWIMcontact; Mute: Boolean);
-    procedure AuthRequest(cnt: TRnQContact; const reason: String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    procedure AuthGrant(Cnt: TRnQContact); OverLoad; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure AuthRequest(cnt: TRnQContact; const reason: String); OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
+    procedure AuthGrant(Cnt: TRnQContact); OverLoad; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
     procedure AuthGrant(c: TWIMContact; Grant: Boolean = True); OverLoad; deprecated;
 
 //    function AddRef(k: TRefKind; const uin: TUID): Integer;
@@ -556,10 +558,10 @@ type
 //    procedure setMyInfo(cnt: TRnQContact);
     function getStatuses: TStatusArray; override; final;
     function getVisibilities: TStatusArray; override; final;
-    function  getStatusMenu: TStatusMenu; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  getVisMenu: TStatusMenu; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  getStatusDisable: TOnStatusDisable; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function  getPrefPage: TPrefFrameClass; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getStatusMenu: TStatusMenu; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
+    function  getVisMenu: TStatusMenu; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
+    function  getStatusDisable: TOnStatusDisable; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
+    function  getPrefPage: TPrefFrameClass; OverRide; {$IFDEF HAS_FINAL} final; {$ENDIF HAS_FINAL}
 
     function GenSSID: Integer;
     procedure ApplyBalloon;
@@ -1602,15 +1604,23 @@ end;
 
 function TWIMSession.SendMsg(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): Integer;
 begin
+  Result := -1;
+  SendMsgOrSticker(Cnt, flags, Msg, MSG_TEXT, RequiredACK);
+end;
+
+function TWIMSession.SendMsg2(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): RawByteString;
+begin
   Result := SendMsgOrSticker(Cnt, flags, Msg, MSG_TEXT, RequiredACK);
 end;
 
-function TWIMSession.SendSticker2(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): Integer;
+function TWIMSession.SendSticker2(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): RawByteString;
 begin
   Result := SendMsgOrSticker(Cnt, flags, Msg, MSG_STICKER, RequiredACK);
 end;
 
-function TWIMSession.SendMsgOrSticker(Cnt: TRnQContact; var Flags: dword; const Msg: String; MsgType: TMsgType; var RequiredACK: Boolean): Integer;
+function TWIMSession.SendMsgOrSticker(Cnt: TRnQContact; var Flags: dword;
+                                      const Msg: String; MsgType: TMsgType;
+                                      var RequiredACK: Boolean): RawByteString;
 const
   AESBLKSIZE = SizeOf(TAESBlock);
 var
@@ -1626,7 +1636,7 @@ var
   BaseURL: String;
   Handler: THandlerProc;
 begin
-  Result := -1;
+  Result := '';
   RequiredACK := false;
   if not IsReady then
     Exit;
@@ -1710,14 +1720,16 @@ begin
   end;
 
 //  Result := addRef(REF_msg, c.UID2Cmp);
-  Result := IncReqId;
+  Result := CreateNewGUID;
   RequiredACK := True;
 
   Params := TDictionary<String, String>.Create;
   Params.Add('f', 'json');
   Params.Add('aimsid', fSession.aimsid);
   Params.Add('t', c.UID2cmp);
-  Params.Add('r', IntToStr(Result));
+//  Params.Add('r', IntToStr(Result));
+
+  Params.Add('r', Result);
   // parts[quotes], mentions
   Params.Add(IfThen(IsSticker, 'stickerId', 'message'), ReadyMsg);
   // (is_sms)
@@ -1742,7 +1754,7 @@ begin
 
       if not Assigned(JSON) or (resp.key <> 200) then
         Exit;
-      eventWID := lReqId;
+      eventReqID := lReqId;
 //      TJSONObject(tmp).GetValueSafe('requestId', sID);
 //          if TryStrToInt(sID, eventInt) then
             begin
@@ -1773,12 +1785,12 @@ begin
   Params.Free;
 end; // SendMsg
 
-function TWIMSession.SendSticker(const Cnt: TRnQContact; const sticker: String): Integer;
+function TWIMSession.SendSticker(const Cnt: TRnQContact; const sticker: String): RawByteString;
 var
   f: DWord;
   ack: Boolean;
 begin
-  Result := -1;
+  Result := '';
   if Assigned(Cnt) then
     Result := SendMsgOrSticker(Cnt, f, sticker, MSG_STICKER, ack);
 end;
@@ -1832,7 +1844,7 @@ begin
     Params.Add('aimsid', fSession.aimsid);
     Params.Add('t', c.UID2Cmp);
 //    Params.Add('r', IntToStr(AddRef(REF_msg, c.UID2Cmp)));
-    Params.Add('r', IntToStr(reqId));
+    Params.Add('r', CreateNewGUID);
     Params.Add('message', CreateDataPayload([Str2Hex(BigCapability[CAPS_big_Buzz].v)]));
     Params.Add('offlineIM', '1');
     Params.Add('notifyDelivery', 'true');
@@ -1926,7 +1938,7 @@ begin
   Query := '&buddy=' + ParamEncode(String(UID));
   if SendSessionRequest(False, BaseURL, Query, RT_JSON, JSON, 'Get contact [' + String(UID) + '] attributes') then
   try
-    c := GetWIMContact(UID);
+    c := getWIMContact(UID);
     if Assigned(c) then
     with JSON do
     begin
@@ -2594,7 +2606,7 @@ var
   s: RawByteString;
 begin
   Result := Str2Hex(CAPS_sm2big(CAPS_sm_Emoji));
-//  Result := Result + ',' + Str2Hex(CAPS_sm2big(CAPS_sm_UniqueID));  Not use unique ID yet
+  Result := Result + ',' + Str2Hex(CAPS_sm2big(CAPS_sm_UniqueID));
   Result := Result + ',' + Str2Hex(CAPS_sm2big(CAPS_sm_MailNotify));
 //  Result := Result + ',' + Str2Hex(CAPS_sm2big(CAPS_sm_IntroDlgStates)); // intro/tail messages
   Result := Result + ',' + Str2Hex(CAPS_sm2big(CAPS_sm_UTF8));
@@ -5075,11 +5087,12 @@ var
         eventMsgID := MsgID;
 
       GetValueSafe('reqId', sID);
+      eventReqID := sID;
       if TryStrToInt(sID, ID) then
       begin
         eventInt := ID;
-        NotifyListeners(IE_serverAck);
       end;
+      NotifyListeners(IE_serverAck);
 
       Exit;
     end;
@@ -5165,7 +5178,7 @@ begin
 
   c := nil;
   if not (sn = '') then
-    c := GetWIMContact(sn);
+    c := getWIMContact(sn);
 
   if not Assigned(c) then
   begin
@@ -5266,11 +5279,13 @@ begin
       eventMsgID := MsgID;
 
     GetValueSafe('sendReqId', sID);
+    eventReqID := sID;
     if TryStrToInt(sID, ID) then
     begin
       eventInt := ID;
-      notifyListeners(IE_serverAck);
     end;
+    if sID > '' then
+      notifyListeners(IE_serverAck);
   end;
 end;
 

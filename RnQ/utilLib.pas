@@ -1832,10 +1832,10 @@ begin
   if Length(send_msg) = 0 then
     exit;
   result := True;
-  oe.id := oe.whom.Proto.sendMsg(oe.whom, oe.flags, send_msg, result);
+  oe.sID := oe.whom.Proto.sendMsg2(oe.whom, oe.flags, send_msg, result);
   oe.timeSent := now;
   if result then
-    Account.acks.add(oe.kind, oe.whom, oe.flags, 'MSG').ID := oe.ID;
+    Account.acks.add(oe.kind, oe.whom, oe.flags, 'MSG').sID := oe.sID;
 
   if Length(oe.info) = 0 then
     exit;
@@ -1851,7 +1851,7 @@ begin
       vStr := oe.info;
       fl := oe.flags or IF_UTF8_TEXT;
     end;
-  ev := Thevent.new(EK_MSG, oe.whom.Proto.getMyInfo, oe.timeSent, vBin, vStr, fl, oe.id);
+  ev := Thevent.new(EK_MSG, oe.whom.Proto.getMyInfo, oe.timeSent, vBin, vStr, fl, 0, oe.sid);
   ev.fIsMyEvent := True;
   if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) and ( oe.flags and IF_not_save_hist = 0) then
     writeHistorySafely(ev, oe.whom);

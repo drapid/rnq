@@ -167,7 +167,7 @@ Type
     procedure appendToHistoryFile(par: TUID='');
  {$ENDIF ~DB_ENABLED}
 
-    procedure writeWID(pID: integer; GUID: RawByteString);
+    procedure writeWID(pID: Int64; GUID: RawByteString);
 
     function  getBodyBin: RawByteString;
     function  getBodyText: string;
@@ -292,7 +292,7 @@ begin
 end; // appendToHistoryFile
  {$ENDIF ~DB_ENABLED}
 
-procedure Thevent.writeWID(pID: integer; GUID: RawByteString);
+procedure Thevent.writeWID(pID: Int64; GUID: RawByteString);
 begin
  {$IFDEF DB_ENABLED}
  // make update

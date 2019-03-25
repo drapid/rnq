@@ -456,6 +456,7 @@ type
     function  ContactExists(const UID: TUID): Boolean;
 
     function  sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK: boolean): integer; Virtual; Abstract; // returns handle
+    function  sendMsg2(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK: boolean): RawByteString; OverLoad; Virtual; // returns MsgId
     procedure UpdateGroupOf(cnt: TRnQContact); Virtual; Abstract;
     procedure UpdateGroupID(grID: Integer); Virtual; Abstract;
 
@@ -847,6 +848,16 @@ begin
    else
     Result := String(MyAccNum);
   Result := '(' + _GetProtoName + ') ' + Result;
+end;
+
+function TRnQProtocol.sendMsg2(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK: boolean): RawByteString;
+var
+  i: Integer;
+begin
+  Result := '';
+  i := sendMsg(cnt, flags, msg, requiredACK);
+  if i >= 0 then
+    Result := IntToStr(i);
 end;
 
 procedure TRnQProtocol.GetPrefs(pp: IRnQPref);

@@ -42,7 +42,8 @@ type
     wrote, lastmodify: Tdatetime;
     // ack fields
     timeSent: TdateTime;
-    ID: integer;
+//    ID: integer;
+    sID: RawByteString;
     filepos: integer;
 //    constructor Create;// override;
     constructor Create(pKind: Integer); // override;
@@ -73,7 +74,7 @@ type
     function getAt(idx: integer): TOevent;
     function remove(ev: TOevent): boolean; overload;
     function stFor(who: TRnQContact): boolean;
-    function findID(id: Integer): integer;
+    function findID(id: RawByteString): integer;
 
     procedure updateScreenFor(cnt: TRnQContact);
     end; // Toutbox
@@ -81,9 +82,9 @@ type
 implementation
 
 uses
+  RQUtil, RnQDialogs, RDUtils, RnQBinUtils, RnQCrypt,
   RnQConst, globalLib, mainDlg, utilLib, chatDlg,
-  roasterLib, RnQCrypt,
-  RQUtil, RnQDialogs, RDUtils, RnQBinUtils;
+  roasterLib;
 
 {destructor Toutbox.Destroy;
 begin
@@ -335,17 +336,17 @@ begin
  RnQmain.PntBar.Repaint;
 end; // updateScreenFor
 
-function Toutbox.findID(id: Integer): integer;
+function Toutbox.findID(id: RawByteString): integer;
 var
   e: TOEvent;
 begin
   for result:=count-1 downto 0 do
    begin
     e := getAt(result);
-    if ( e<> NIL) AND (e.id = id) then
+    if ( e<> NIL) AND (e.sID = id) then
      exit;
    end;
-  result:=-1;
+  result := -1;
 end; // findID
 
 ////////////////////////////////////////////////////////////////////////
@@ -441,7 +442,7 @@ begin
   Result.wrote := Self.wrote;
   Result.lastmodify := lastmodify;
   Result.timeSent   := timeSent;
-  Result.ID    := ID;
+  Result.sID    := sID;
   Result.filepos    := filepos;  
 end;
 

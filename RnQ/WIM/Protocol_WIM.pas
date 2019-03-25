@@ -516,7 +516,7 @@ begin
 case ev of
 	IE_serverAck:
   	begin
-      i := Account.acks.findID(thisWIM.eventInt);
+      i := Account.acks.findID(thisWIM.eventReqID);
       if i >= 0 then  // exploit only for automsgreq
        if Account.acks.getAt(i).kind = OE_msg then
         begin
@@ -546,7 +546,7 @@ case ev of
     end;
   IE_srvSomeInfo:
     begin
-      i:= Account.acks.findID(thisWIM.eventMsgID);
+      i:= Account.acks.findID(thisWIM.eventReqId);
       if i>=0 then
       	with Account.acks.getAt(i) do
         begin
@@ -574,7 +574,7 @@ case ev of
     end;
   IE_msgError:
   	begin
-    i := Account.acks.findID(thisWIM.eventMsgID);
+    i := Account.acks.findID(thisWIM.eventReqId);
     if i>=0 then
     	with Account.acks.getAt(i) do
        begin
@@ -749,7 +749,7 @@ case ev of
     end;
   IE_ack:
     begin
-      i:= Account.acks.findID(thisWIM.eventInt);
+      i:= Account.acks.findID(thisWIM.eventReqId);
       if i >= 0 then
       begin
         sU := UnUTF(thisWIM.eventMsgA);
