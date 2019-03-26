@@ -524,7 +524,7 @@ case ev of
           TempCh := chatFrm.chats.byContact(c);
           if TempCh <> NIL then
               begin
-                 TempEv := TempCh.historyBox.history.getByID(thisWIM.eventInt);
+                 TempEv := TempCh.historyBox.history.getByID(thisWIM.eventReqID);
                  if TempEv <> NIL then
                   begin
 //                    TempEv.flags := TempEv.flags OR IF_SERVER_ACCEPT;// IF_MSG_SERVER;
@@ -671,7 +671,7 @@ case ev of
                  if TempCh <> NIL then
                   begin
         //            TempCh.historyBox.history.
-                     TempEv := TempCh.historyBox.history.getByID(thisWIM.eventMsgID);
+                     TempEv := TempCh.historyBox.history.getByID(thisWIM.eventReqID);
                      if TempEv <> NIL then
                       begin
                        TempEv.flags := TempEv.flags OR IF_not_delivered;// IF_MSG_OK;
@@ -769,7 +769,7 @@ case ev of
          if TempCh <> NIL then
           begin
 //            TempCh.historyBox.history.
-             TempEv := TempCh.historyBox.history.getByID(thisWIM.eventMsgID);
+             TempEv := TempCh.historyBox.history.getByID(thisWIM.eventReqID);
              if TempEv <> NIL then
               TempEv.flags := TempEv.flags OR IF_delivered;// IF_MSG_OK;
 //             TempEv := NIL;

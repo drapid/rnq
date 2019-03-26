@@ -1851,7 +1851,7 @@ begin
       vStr := oe.info;
       fl := oe.flags or IF_UTF8_TEXT;
     end;
-  ev := Thevent.new(EK_MSG, oe.whom.Proto.getMyInfo, oe.timeSent, vBin, vStr, fl, 0, oe.sid);
+  ev := Thevent.new(EK_MSG, oe.whom.Proto.getMyInfo, oe.timeSent, vBin, vStr, fl, oe.sID);
   ev.fIsMyEvent := True;
   if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) and ( oe.flags and IF_not_save_hist = 0) then
     writeHistorySafely(ev, oe.whom);

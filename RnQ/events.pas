@@ -119,7 +119,8 @@ Type
  {$ENDIF ~DB_ENABLED}
 
     WID: RawByteString;
-    ID: int64;
+//    ID: int64;
+    reqId: RawByteString;
     kind,
     expires    : integer;  // tenths of second, negative if permanent
     when       : TdateTime;
@@ -134,9 +135,9 @@ Type
     class constructor Create;
     class destructor Destroy;
    public
-//    themeTkn : Integer;
-//    picIdx   : Integer;
-//    picLoc   : TPicLocation;
+//    themeTkn: Integer;
+//    picIdx: Integer;
+//    picLoc: TPicLocation;
     HistoryToken: Cardinal;
     PaintHeight: Integer;
     otherpeer: TRnQcontact; // used to keep track of other peer when "who" is us
@@ -147,7 +148,12 @@ Type
     class function new(kind_: integer; who_: TRnQContact; when_: TdateTime;
              const bin_: RawByteString;
              const txt_: String;
-             flags_: integer; pID: Int64 = 0; GUID: RawByteString = ''): Thevent; OverLoad;
+             flags_: integer; pReqID: RawByteString = ''; GUID: RawByteString = ''): Thevent; OverLoad;
+
+    class function new(kind_: integer; who_: TRnQContact; when_: TdateTime;
+             const bin_: RawByteString;
+             const txt_: String;
+             flags_: integer; pID: Int64; GUID: RawByteString = ''): Thevent; OverLoad;
     destructor Destroy; override;
     function  pic: TPicName;
     function  PicSize(const PPI: Integer): TSize;
@@ -240,7 +246,7 @@ uses
 function Thevent.clone: Thevent;
 begin
   Result := Thevent.create;
-  Result.ID := ID;
+  Result.reqID := reqID;
   Result.WID := WID;
   Result.kind := kind;
   Result.who := who;
@@ -411,7 +417,22 @@ class function Thevent.new(kind_: integer;
             who_: TRnQContact; when_: TdateTime;
             const bin_: RawByteString;
             const txt_: String;
-            flags_: integer; pID: Int64 = 0; GUID: RawByteString = ''): Thevent;
+            flags_: integer; pID: Int64; GUID: RawByteString = ''): Thevent;
+var
+  reqID: RawByteString;
+begin
+  if pID > 0 then
+    reqID := IntToStr(pID)
+   else
+    reqID := '';
+  Result := Thevent.new(kind_, who_, when_, bin_, txt_, flags_, reqId, GUID);
+end;
+
+class function Thevent.new(kind_: integer;
+            who_: TRnQContact; when_: TdateTime;
+            const bin_: RawByteString;
+            const txt_: String;
+            flags_: integer; pReqID: RawByteString = ''; GUID: RawByteString = ''): Thevent;
 begin
   Result := Thevent.create;
   Result.kind := kind_;
@@ -420,7 +441,7 @@ begin
   Result.flags := flags_;
   Result.expires := -1;
   Result.cl := NIL;
-  Result.ID := pID;
+  Result.reqID := pReqID;
   Result.fBin := bin_;
   Result.txt := txt_;
  {$IFNDEF DB_ENABLED}

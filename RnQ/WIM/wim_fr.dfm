@@ -31,10 +31,6 @@ object WIMFr: TWIMFr
       TabOrder = 0
       object TS1: TTabSheet
         Caption = 'WIM'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         DesignSize = (
           405
           361)
@@ -179,10 +175,6 @@ object WIMFr: TWIMFr
       object SecTS: TTabSheet
         Caption = 'Security'
         ImageIndex = 4
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         DesignSize = (
           405
           361)
@@ -225,10 +217,6 @@ object WIMFr: TWIMFr
       object AddTrafTB: TTabSheet
         Caption = 'Add traffic'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         DesignSize = (
           405
           361)
@@ -482,10 +470,6 @@ object WIMFr: TWIMFr
       object AvatarsTS: TTabSheet
         Caption = 'Avatars'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object AvatarGrp: TGroupBox
           Left = 6
           Top = 17
@@ -552,10 +536,6 @@ object WIMFr: TWIMFr
         Caption = 'File transfer'
         ImageIndex = 3
         TabVisible = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object FTPortsEdit: TLabeledEdit
           Left = 64
           Top = 16

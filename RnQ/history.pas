@@ -35,7 +35,8 @@ type
 //    destructor Destroy; override;
     function  toString: RawByteString; reIntroduce;
     function  getAt(idx: integer): Thevent;
-    function  getByID(pID: int64): Thevent;
+    function  getByID(pID: int64): Thevent; OverLoad;
+    function  getByID(pReqID: RawByteString): Thevent; OverLoad;
     function  getByWID(pWID: RawByteString): Thevent;
     function  getByTime(time: TDateTime): Thevent;
     function  getIdxBeforeTime(time: TDateTime; inclusive: Boolean = True): Integer;
@@ -85,6 +86,7 @@ uses
 
 const
   Max_Event_ID = 1000000;
+  Max_Event_IDs = RawByteString('1000000');
 
  {$IFNDEF DB_ENABLED}
 class function Thistory.UIDHistoryFN(const UID: TUID): TFileName;
@@ -418,7 +420,8 @@ begin
   repeat
   begin
   ev := Thevent.create;
-  ev.ID := Max_Event_ID;
+//  ev.ID := Max_Event_ID;
+  ev.reqID := IntToStrA(Max_Event_ID);
 //  ev.fpos:=cur-1;
 //  ev.fpos:= str.Position;
   ev.fpos := curPos;
@@ -556,21 +559,30 @@ begin
 end; // reset
 
 function  Thistory.getByID(pID: Int64): Thevent;
+begin
+  Result := NIL;
+  if pID > 0 then
+    Result := getByID(IntToStr(pID));
+end;
+
+function  Thistory.getByID(pReqID: RawByteString): Thevent;
 var
   i: integer;
 begin
-  i := Count-1;
   Result := NIL;
+  if pReqID = '' then
+   Exit;
+  i := Count-1;
   while i >= 0 do
    with Thevent(items[i]) do
    begin
-    if ID = pID then
+    if reqID = pReqID then
       begin
        Result := Thevent(items[i]);
        break;
       end
      else
-      if ID = Max_Event_ID then
+      if reqID = Max_Event_IDs then
         Exit;
     dec(i);
    end;
@@ -594,7 +606,7 @@ begin
        break;
       end
      else
-      if ID = Max_Event_ID then
+      if reqID = Max_Event_IDs then
         Exit;
     dec(i);
    end;
