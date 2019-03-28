@@ -14,7 +14,7 @@ uses
   Windows, SysUtils, Classes, Character, Types, JSON, Generics.Collections, Threading,
   ExtCtrls, StrUtils, Math, OverbyteIcsHttpProt,
   RnQGlobal, RnQNet, RQThemes, RDGlobal, RQUtil, RnQJSON,
-  RnQPrefsLib, RnQPrefsTypes, RnQBinUtils, groupsLib,
+  RnQPrefsTypes, groupsLib,
   RnQProtocol, WIMContacts, WIMConsts, WIM.Stickers,
   RnQPrefsInt,
   SynEcc;
@@ -190,7 +190,7 @@ type
     const ContactType: TClass =  TWIMContact;
   private
     phase: TwimPhase;
-    wasUINwp: Boolean;  // trigger a last result at first result
+//    wasUINwp: Boolean;  // trigger a last result at first result
 //    creatingUIN: Boolean;  // this is a special session, to create uin
 //    isAvatarSession: Boolean;  // this is a special session, to get avatars
     protoType: TWIMSessionSubType; // main session; to create uin; to get avatars
@@ -218,7 +218,7 @@ type
 }
     lastMsgIds: TStringList;
 //    SSI_InServerTransaction: Boolean;
-    SSI_InServerTransaction: Integer;
+//    SSI_InServerTransaction: Integer;
     savingMyInfo: record
       running: Boolean;
       ACKcount: Integer;
@@ -465,6 +465,7 @@ type
     procedure SendTyping(c: TWIMContact; NotifType: Word);
 
     procedure SendCreateUIN(const AcceptKey: RawByteString); deprecated;
+    function  UploadAvatar(const fn: TFileName; cnt: TRnQContact = NIL; chat: Boolean = false): Boolean;
 //    procedure sendPermsNew;//(c: Tcontact);
 
     procedure SendSaveMyInfo(c: TWIMContact);
@@ -487,15 +488,15 @@ type
     procedure GetExpressions(const uid: TUID);
     procedure GetAllCaps;
     procedure Test;
-    function SendSessionRequest(IsPOST: Boolean; const BaseURL: String; Query: String;
+    function SendSessionRequest(IsPOST: Boolean; const BaseURL: String; const Query: RawByteString;
                                 const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean; overload;
-    function SendSessionRequest(IsPOST: Boolean; const BaseURL: String; Query: String; Ret: TReturnData;
+    function SendSessionRequest(IsPOST: Boolean; const BaseURL: String; const Query: RawByteString; Ret: TReturnData;
                                 var JSON: TJSONObject; const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean; overload;
-    function SendRequest(IsPOST: Boolean; const BaseURL, Query: String;
+    function SendRequest(IsPOST: Boolean; const BaseURL: String; const Query: RawByteString;
                          const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean; overload;
-    function SendRequest(IsPOST: Boolean; const BaseURL, Query: String; Ret: TReturnData;
+    function SendRequest(IsPOST: Boolean; const BaseURL: String; const Query: RawByteString; Ret: TReturnData;
                          var JSON: TJSONObject; const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean; overload;
-    procedure SendRequestAsync(IsPOST: Boolean; const BaseURL, Query: String; const Header: AnsiString = ''; HandlerProc: THandlerProc = nil);
+    procedure SendRequestAsync(IsPOST: Boolean; const BaseURL: String; const Query: RawByteString; const Header: AnsiString = ''; HandlerProc: THandlerProc = nil);
     function SendPresenceState: Boolean;
     procedure SendStatusStr(const st: Byte; const StText: String = '');
 
@@ -703,11 +704,11 @@ begin
   MsgDlg('This feature isn''t available yet.\nCome back tomorrow...', True, mtInformation)
 end;
 
-function ParamEncode(const Param: String; DoublePercent: Boolean = False): UTF8String;
+function ParamEncode(const Param: String; DoublePercent: Boolean = False): RawByteString;
 const
-  HexMap: UTF8String = '0123456789ABCDEF';
+  HexMap: RawByteString = '0123456789ABCDEF';
 
-  function IsSafeChar(ch: Integer): Boolean;
+  function IsSafeChar(ch: Byte): Boolean;
   begin
     if (ch >= 48) and (ch <= 57) then Result := True // 0-9
     else if (ch >= 65) and (ch <= 90) then Result := True // A-Z
@@ -721,25 +722,32 @@ const
   end;
 var
   I, J: Integer;
-  SrcUTF8: UTF8String;
+  SrcUTF8: RawByteString;
+  ch: AnsiChar;
+  bb: Byte;
 begin
   Result := '';
-  SrcUTF8 := UTF8Encode(IfThen(DoublePercent, Param.Replace('%', '%25'), Param)); // Double encode percent
+  if DoublePercent then
+    SrcUTF8 := UTF8Encode(Param.Replace('%', '%25')) // Double encode percent
+   else
+    SrcUTF8 := UTF8Encode(Param);
 
   I := 1; J := 1;
   SetLength(Result, Length(SrcUTF8) * 3);
   while I <= Length(SrcUTF8) do
   begin
-    if IsSafeChar(Ord(SrcUTF8[I])) then
+    ch := SrcUTF8[I];
+    bb := Ord(ch);
+    if IsSafeChar(bb) then
     begin
-      Result[J] := SrcUTF8[I];
+      Result[J] := ch;
       Inc(J);
     end
       else
     begin
       Result[J] := '%';
-      Result[J+1] := HexMap[(Ord(SrcUTF8[I]) shr 4) + 1];
-      Result[J+2] := HexMap[(Ord(SrcUTF8[I]) and 15) + 1];
+      Result[J+1] := HexMap[(bb shr 4) + 1];
+      Result[J+2] := HexMap[(bb and $F) + 1];
       Inc(J,3);
     end;
     Inc(I);
@@ -1301,25 +1309,29 @@ begin
   Result := String(MyAccount).StartsWith('+');;
 end;
 
-function TWIMSession.SendSessionRequest(IsPOST: Boolean; const BaseURL: String; Query: String; const Header: AnsiString = '';
+function TWIMSession.SendSessionRequest(IsPOST: Boolean; const BaseURL: String; const Query: RawByteString; const Header: AnsiString = '';
                                         const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean;
+var
+  q: RawByteString;
 begin
   if fSession.aimsid = '' then
     Exit(False);
-  Query := 'f=json&aimsid=' + ParamEncode(fSession.aimsid) + '&r=' + CreateNewGUID + Query;
-  Result := SendRequest(IsPOST, BaseURL, Query, Header, ErrMsg, ErrProc);
+  q := 'f=json&aimsid=' + ParamEncode(fSession.aimsid) + '&r=' + CreateNewGUID + Query;
+  Result := SendRequest(IsPOST, BaseURL, q, Header, ErrMsg, ErrProc);
 end;
 
-function TWIMSession.SendSessionRequest(IsPOST: Boolean; const BaseURL: String; Query: String; Ret: TReturnData;
+function TWIMSession.SendSessionRequest(IsPOST: Boolean; const BaseURL: String; const Query: RawByteString; Ret: TReturnData;
                                         var JSON: TJSONObject; const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean;
+var
+  q: RawByteString;
 begin
   if fSession.aimsid = '' then
     Exit(False);
-  Query := 'f=json&aimsid=' + ParamEncode(fSession.aimsid) + '&r=' + CreateNewGUID + Query;
-  Result := SendRequest(IsPOST, BaseURL, Query, Ret, JSON, Header, ErrMsg, ErrProc);
+  q := 'f=json&aimsid=' + ParamEncode(fSession.aimsid) + '&r=' + CreateNewGUID + Query;
+  Result := SendRequest(IsPOST, BaseURL, q, Ret, JSON, Header, ErrMsg, ErrProc);
 end;
 
-function TWIMSession.SendRequest(IsPOST: Boolean; const BaseURL, Query: String; const Header: AnsiString = '';
+function TWIMSession.SendRequest(IsPOST: Boolean; const BaseURL: String; const Query: RawByteString; const Header: AnsiString = '';
                                  const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean;
 var
   JSON: TJSONObject;
@@ -1328,7 +1340,7 @@ begin
   Result := SendRequest(IsPOST, BaseURL, Query, RT_None, JSON, Header, ErrMsg, ErrProc);
 end;
 
-function TWIMSession.SendRequest(IsPOST: Boolean; const BaseURL, Query: String; Ret: TReturnData; var JSON: TJSONObject;
+function TWIMSession.SendRequest(IsPOST: Boolean; const BaseURL: String; const Query: RawByteString; Ret: TReturnData; var JSON: TJSONObject;
                                  const Header: AnsiString = ''; const ErrMsg: String = ''; const ErrProc: TErrorProc = nil): Boolean;
 var
   Prefix: String;
@@ -1342,7 +1354,10 @@ begin
 
   Prefix := IfThen(IsPOST, '[POST] ', '[GET] ');
   eventNameA := Prefix + Header;
-  eventString := BaseURL + '?' + Query;
+  if IsPOST then
+    eventString := BaseURL + CRLF + Query
+   else
+    eventString := BaseURL + '?' + Query;
   notifyListeners(IE_serverGotU);
   if IsPOST then
     LoadFromURLAsString(BaseURL, RespStrR, Query)
@@ -1377,7 +1392,7 @@ begin
   end;
 end;
 
-procedure TWIMSession.SendRequestAsync(IsPOST: Boolean; const BaseURL, Query: String; const Header: AnsiString = ''; HandlerProc: THandlerProc = nil);
+procedure TWIMSession.SendRequestAsync(IsPOST: Boolean; const BaseURL: String; const Query: RawByteString; const Header: AnsiString = ''; HandlerProc: THandlerProc = nil);
 var
   Prefix: String;
 begin
@@ -1412,7 +1427,7 @@ end;
 
 function TWIMSession.SendPresenceState: Boolean;
 var
-  Query: UTF8String;
+  Query: RawByteString;
   BaseURL: String;
 begin
   Result := False;
@@ -3411,6 +3426,36 @@ begin
   // TODO? New proto can do this?
 end; // sendCreateUIN
 
+function TWIMSession.UploadAvatar(const fn: TFileName; cnt: TRnQContact = NIL; chat: Boolean = false): Boolean;
+var
+  Query: RawByteString;
+  BaseURL: String;
+  buf: RawByteString;
+  json: TJSONObject;
+  lReqId, iconId: String;
+begin
+  Result := False;
+  BaseURL := WIM_HOST + 'expressions/upload';
+  Query := 'f=json&aimsid=' + ParamEncode(fSession.aimsid) + '&r=' + CreateNewGUID;
+  Query := Query + '&type=largeBuddyIcon';
+           //IfThen(curStatus = SC_AWAY, '&away=Seeya', ''); // Not really useful, only you receive your awayMsg :)
+  if cnt <> NIL then
+    Query := Query + '&t=' + ParamEncode(cnt.UID2cmp)
+   else if (chat) then
+    Query := Query + '&livechat=1';
+
+  buf := loadFileA(fn);
+  if SendRequest(True, BaseURL + '?' + Query, buf, RT_JSON, json, 'Upload avatar', 'Failed to upload avatar') then
+  begin
+    CheckResponseData(json, lReqId);
+    json.GetValueSafe('id', iconId);
+    if iconId <> '' then
+      begin
+      end;
+    Result := True;
+  end;
+end;
+
 function TWIMSession.maxCharsFor(const c: TRnQcontact; isBin: Boolean = false): integer;
 begin
 {  if not c.isOnline then
@@ -3606,7 +3651,7 @@ end;
 function TWIMSession.ClientLogin: Boolean;
 var
   JSON: TJSONObject;
-  Query: UTF8String;
+  Query: RawByteString;
   BaseURL, TransId, SMSCode: String;
   ErrHandler: TErrorProc;
   lPhone_verified: Boolean;
@@ -4027,7 +4072,7 @@ end;
 
 procedure TWIMSession.EndSession(EndToken: Boolean = False);
 var
-  Query: UTF8String;
+  Query: RawByteString;
   BaseURL: String;
 begin
   BaseURL := WIM_HOST + 'aim/endSession';
@@ -4327,7 +4372,7 @@ var
   id, gID: Integer;
   pG: PGroup;
   name: String;
-  c: TWIMContact;
+//  c: TWIMContact;
 begin
   if not Assigned(CL) then
     Exit;
@@ -5061,11 +5106,12 @@ var
     end;
   end;
 
-  procedure ProcessMsg(Msg: TJSONObject);
+  procedure ProcessMsg(Msg: TJSONObject; chat: TWIMContact = NIL);
   var
     UnixTime, ID: Integer;
     MsgID: TMsgID;
-    WID, sID: String;
+    WID, sID, lSender: String;
+    chatObj: TJSONValue;
   begin
     if not Assigned(Msg) then
       Exit;
@@ -5101,6 +5147,14 @@ var
     eventFlags := 0;
     eventMsgA := '';
 //    eventEncoding := TEncoding.Default;
+
+    lSender := '';
+    chatObj := TJSONObject(Msg).GetValue('chat');
+    if Assigned(chatObj) and (chatObj is TJSONObject) then
+      begin
+        chatObj.GetValueSafe('sender', lSender);
+      end;
+
 
     if IsOfflineMsg then
       eventFlags := eventFlags or IF_offline
@@ -5161,6 +5215,12 @@ var
         Exit;
 
     eventContact := c;
+    if lSender <> '' then
+      begin
+        eventAddress := lSender;
+        notifyListeners(IE_MultiChat);
+      end
+     else
     notifyListeners(IE_msg);
   end;
 
@@ -5221,7 +5281,7 @@ begin
     if Assigned(Msgs) then
       for Msg in Msgs do
         if Msg is TJSONObject then
-          ProcessMsg(TJSONObject(Msg));
+          ProcessMsg(TJSONObject(Msg), c);
 
     MsgPos := GetValue('intro');
     if Assigned(MsgPos) and (MsgPos is TJSONObject) then
@@ -5536,8 +5596,8 @@ end;
 
 procedure TWIMSession.SendTyping(c: TWIMContact; NotifType: Word);
 var
-  TypingStatus: String;
-  Query: UTF8String;
+  TypingStatus: RawByteString;
+  Query: RawByteString;
   BaseURL: String;
 begin
   if not Assigned(c) or (not IsOnline) or (not ImVisibleTo(c)) then
@@ -5570,7 +5630,7 @@ end;
 procedure TWIMSession.SendAddContact(c: TWIMContact);
 var
   JSON: TJSONObject;
-  Query: UTF8String;
+  Query: RawByteString;
   BaseURL, ResCode: String;
   Results: TJSONArray;
   Code: Integer;
@@ -5612,9 +5672,8 @@ end;
 
 procedure TWIMSession.SSI_UpdateContact(c: TWIMContact);
 var
-  Query: String;
-  BaseURL, ResCode: String;
-  Code: Integer;
+  Query: RawByteString;
+  BaseURL: String;
 begin
   BaseURL := WIM_HOST + 'buddylist/setBuddyAttribute';
   Query := '&buddy=' + ParamEncode(String(c.UID2cmp)) +
@@ -5624,9 +5683,8 @@ end;
 
 procedure TWIMSession.SendRemoveContact(c: TWIMContact);
 var
-  Query: UTF8String;
-  BaseURL, ResCode: String;
-  Code: Integer;
+  Query: RawByteString;
+  BaseURL: String;
 begin
   BaseURL := WIM_HOST + 'buddylist/removeBuddy';
   Query := '&buddy=' + ParamEncode(String(c.UID2cmp)) +
@@ -5642,9 +5700,9 @@ end;
 
 function TWIMSession.UpdateGroupOf(c: TWIMContact; grp: Integer): Boolean;
 var
-  Query: UTF8String;
-  BaseURL,  ResCode: String;
-  Code: Integer;
+  Query: RawByteString;
+  BaseURL: String;
+//  Code: Integer;
 begin
   Result := False;
   if c.CntIsLocal then
@@ -5664,9 +5722,9 @@ end;
 
 function TWIMSession.SendUpdateGroup(const Name: String; ga: TGroupAction; const Old: String = ''): Boolean;
 var
-  Query: UTF8String;
+  Query: RawByteString;
   BaseURL: String;
-  Code: Integer;
+//  Code: Integer;
 begin
   Result := False;
   if ga = GA_Add then
@@ -5707,20 +5765,18 @@ end;
 
 procedure TWIMSession.AuthGrant(c: TWIMContact; Grant: Boolean = True);
 var
-  JSON: TJSONObject;
-  Query: UTF8String;
+  Query: RawByteString;
   BaseURL, ResCode: String;
-  Code: Integer;
 begin
   BaseURL := WIM_HOST + 'buddylist/authorizeUser';
-  Query := '&t=' + ParamEncode(String(c.UID2cmp)) +
-           '&authorized=' + IfThen(Grant, '1', '0');
+  Query := RawByteString('&t=') + ParamEncode(String(c.UID2cmp)) +
+           '&authorized=' + IfThen(Grant, RawByteString('1'), RawByteString('0'));
   SendSessionRequest(False, BaseURL, Query, IfThen(Grant, 'Grant', 'Deny') + ' auth', 'Failed to ' + IfThen(Grant, 'grant', 'deny') + ' authorization');
 end;
 
 procedure TWIMSession.AuthRequest(cnt: TRnQContact; const Reason: String);
 var
-  Query: UTF8String;
+  Query: RawByteString;
   BaseURL: String;
   iam: TRnQContact;
   rsn: String;

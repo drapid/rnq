@@ -148,7 +148,7 @@ uses
  {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_WIM}
   Protocol_WIM, WIMcontacts,
-  WIM,
+  WIM, WIMConsts,
  {$ENDIF PROTOCOL_WIM}
 
   outboxDlg,
@@ -506,6 +506,13 @@ begin
     end
    else
   {$ENDIF PROTOCOL_ICQ}
+  {$IFDEF PROTOCOL_WIM}
+   if self is TWIMSession then
+    begin
+     Result := TWIMSession(self).uploadAvatar(fn);
+    end
+   else
+  {$ENDIF PROTOCOL_WIM}
   {$IFDEF PROTOCOL_BIM}
    if proto is TBIMSession then
     begin
@@ -566,6 +573,11 @@ begin
     Result := CAPS_big_Buzz in TICQContact(Self).capabilitiesBig
    else
  {$ENDIF PROTOCOL_ICQ}
+ {$IFDEF PROTOCOL_WIM}
+  if Assigned(Self) and (Self is TWIMContact) then
+    Result := CAPS_big_Buzz in TWIMContact(Self).capabilitiesBig
+   else
+ {$ENDIF PROTOCOL_WIM}
    Result := false;
 end;
 
@@ -1077,7 +1089,7 @@ begin
 end;
 
 (*
-function getClientFor(c: TRnQcontact; pInInfo: Boolean = False):string;
+function getClientFor(c: TRnQcontact; pInInfo: Boolean = False): string;
 begin
   result:='';
   if c=NIL then exit;

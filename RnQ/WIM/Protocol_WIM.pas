@@ -1349,7 +1349,7 @@ case ev of
     end;
   end;
  if thisWIM.eventFlags and IF_offline > 0 then
-  if ev in [IE_msg,IE_url,IE_addedYou,IE_authReq,IE_contacts] then
+  if ev in [IE_msg, IE_MultiChat, IE_url,IE_addedYou,IE_authReq,IE_contacts] then
   // we already played a sound for the first offline message, let's make no other sound
     disableSounds := TRUE;
  if Assigned(e) then
