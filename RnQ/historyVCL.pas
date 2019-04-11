@@ -1941,6 +1941,8 @@ var
 //  sA: AnsiString;
  {$ENDIF UNICODE}
 begin
+  if not Assigned(history) then
+    Exit;
   if ((Self.Width <> lastWidth)//or(Self.Height <> lastHeight)
      )
      or (history.themeToken <> theme.token)or(history.SmilesToken <> theme.token) then
@@ -2332,6 +2334,8 @@ var
 
   procedure addStr(s: String);
   begin
+    if s = '' then
+      Exit;
     while dim+length(s) > length(result) do
       setLength(result, length(result)+10000);
   {$IFDEF UNICODE}
@@ -4477,6 +4481,18 @@ begin
     cnt := cnt.Proto.getContact(selectedUIN);
   if Assigned(cnt) then
     addToRoster(cnt, (sender as Tmenuitem).tag, cnt.CntIsLocal)
+end;
+
+function stripProtocol(const stringData: String): String;
+begin
+  if StartsText('uin:', stringData) then
+    Result := copy(stringData, 5, length(stringData))
+  else if StartsText('link:', stringData) then
+    Result := copy(stringData, 6, length(stringData))
+  else if StartsText('mailto:', stringData) then
+    Result := copy(stringData, 8, length(stringData))
+  else
+    Result := stringData;
 end;
 
 procedure THistoryData.addlink2favClick(Sender: TObject);

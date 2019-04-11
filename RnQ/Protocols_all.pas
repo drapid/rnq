@@ -1015,9 +1015,8 @@ function str2db(pProto: TRnQProtocol; const s: RawByteString;
 const
   ErrCorupted = 'The contacts database is corrupted, some data is lost';
 var
-  t, l, i: integer;
+  t, l, i, tInt: integer;
   d: RawByteString;
-//  c:TICQcontact;
   c: TRnQContact;
   vUID: TUID;
 begin
@@ -1061,10 +1060,11 @@ while i < length(s) do
                  end;
       DBFK_GROUP:
                   begin
-                    system.move(d[1], c.group, 4);
+                    system.move(d[1], tInt, 4);
+                    c.groupId := tInt;
                     if pCheckGroups then
-                     if not groups.exists(c.group) then
-                       c.group := 0;
+                     if not groups.exists(tInt) then
+                       c.groupId := 0;
                   end;
       else
        begin

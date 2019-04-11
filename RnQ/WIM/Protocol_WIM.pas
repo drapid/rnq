@@ -1198,6 +1198,8 @@ case ev of
       begin
         // Закрыли чат
       end;
+      if thisWIM.eventAddress <> '' then
+        e.otherpeer := thisWIM.getWIMContact(thisWIM.eventAddress);
 
       if c.typing.bIsTyping then
         behave(e, EK_typingBeg)
@@ -1256,12 +1258,6 @@ case ev of
        if (ev = IE_MultiChat) and (thisWIM.eventAddress > '') then
          e.who := thisWIM.getWIMContact(thisWIM.eventAddress);
 
-{       if thisWIM.eventEncoding = TEncoding.BigEndianUnicode then
-       begin
-         Temp := WideBEToStr(thisWIM.eventMsgA);
-         vS := plugins.castEv(PE_MSG_GOT, cuid, e.flags, e.when, Temp);
-       end else if thisWIM.eventEncoding = TEncoding.UTF8 then
-}
        begin
 //         Temp := UnUTF(thisWIM.eventMsgA);
          rS := UTF8Encode(thisWIM.eventString);

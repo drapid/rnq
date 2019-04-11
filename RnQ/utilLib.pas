@@ -157,7 +157,7 @@ function  saveAllLists(const uPath: String; const pr: TRnQProtocol; pProxys: Tar
 function  loadDB(zp: TZipFile; pCheckGroups: Boolean): boolean;
 //procedure saveDB;
 //procedure saveLists(pr: TRnQProtocol);
-procedure loadLists(const pr: TRnQProtocol; zp: TZipFile; const uPath : String);
+procedure loadLists(const pr: TRnQProtocol; zp: TZipFile; const uPath: String);
 procedure LoadExtSts(zp: TZipFile);
 //procedure SaveExtSts;
 procedure loadSpamQuests(zp: TZipFile);
@@ -1448,10 +1448,10 @@ var
 begin
   c1 := TRnQcontact(item1);
   c2 := TRnQcontact(item2);
-  if c1.group < c2.group then
+  if c1.groupId < c2.groupId then
     result := -1
    else
-    if c1.group > c2.group then
+    if c1.groupId > c2.groupId then
       result := +1
      else
       result := compareText(c1.displayed, c2.displayed);
@@ -1977,7 +1977,7 @@ begin
     exit;
   if group=2000 then
     group := 0;
-  c.group := group;
+  c.groupId := group;
   saveGroupsDelayed := TRUE;
   result := addToRoster(c, isLocal) or roasterLib.update(c);
 end; // addToRoster
@@ -2856,7 +2856,7 @@ if minOnOff then
                 EK_XstatusMsg, EK_Xstatusreq]) then
    begin
 //     gr := vCnt.group;
-     gr := groups.get(vCnt.group);
+     gr := groups.get(vCnt.groupId);
      if OnlOfflInOne then
        dd := d_contacts
       else
@@ -3156,16 +3156,19 @@ begin
     exit;
   if c.isInRoster then
     plugins.castEvList(PE_LIST_REMOVE, PL_ROSTER, c);
-  grp := c.group;
+  autosizeDelayed := TRUE;
+  grp := c.groupId;
   roasterLib.remove(c);
-//  c.iProto.removeContact(c);
+//  c.Proto.removeContact(c);
   if WithHistory then
     DelHistWith(c.UID2cmp);
+
+  c.groupId := 0;
 
   if (grp>0) and (TRnQCList(c.Proto.readList(LT_ROSTER)).getCount(grp) = 0) then
     if messageDlg(getTranslation('This group (%s) is empty! Do you want to delete it?',[groups.id2name(grp)]),mtConfirmation, [mbYes,mbNo], 0) = mrYes then
       roasterLib.removeGroup(grp);
-  c.group := 0;
+
 end; // removeFromRoster
 
 procedure realizeEvents(const kind_: integer; c: TRnQcontact);
@@ -3208,7 +3211,7 @@ var
  {$IFDEF PROTOCOL_ICQ}
   dd: TProtoDirect;
  {$ENDIF PROTOCOL_ICQ}
-//  ev0:Thevent;
+//  ev0: Thevent;
   vCnt: TRnQContact;
 begin
   if not Assigned(ev) then
@@ -3941,7 +3944,7 @@ case kind of
     else
      if c.birth <> 0 then
       fieldOutDP('Birthday', DateToStr(c.birth));
-    fieldOutDP('Group', groups.id2name(c.group));
+    fieldOutDP('Group', c.GetGroupName);
 
     tS := '';
     if c.GetContactIP <> 0 then
@@ -3991,7 +3994,7 @@ case kind of
      {$IFDEF UseNotSSI}
        Assigned(c) and
 //       icq.useSSI and
-       (not (c.iProto.ProtoElem is TicqSession) or TicqSession(c.iProto.ProtoElem).useSSI) and
+       (not (c.Proto.ProtoElem is TicqSession) or TicqSession(c.Proto.ProtoElem).useSSI) and
      {$ENDIF UseNotSSI}
        not c.CntIsLocal and not c.Authorized then
       fieldOut('', 'Need authorization', True);
@@ -4067,7 +4070,7 @@ case kind of
       a2 := 0;
       a3 := 0;
       for cnt1 in cl do
-        if cnt1.group = groupid then
+        if cnt1.groupId = groupid then
           if cnt1.isOffline then
             inc(a)
            else

@@ -163,7 +163,7 @@ type
   TDirectNotification      = procedure (Sender: TObject; ErrCode: Word;
                                         msg: String) of object;
 
-  TProtoDirect=class
+  TProtoDirect = class
   protected
     P_host, P_port: AnsiString;
   public
@@ -253,7 +253,7 @@ type
 //    procedure connect(createUIN:boolean); overload;
 //   public
     function  getStatuses: TStatusArray;
-    function  getVisibilitis: TStatusArray;
+    function  getVisibilities: TStatusArray;
     function  getStatusMenu: TStatusMenu;
     function  getVisMenu: TStatusMenu;
     function  getContactClass: TRnQCntClass;
@@ -341,7 +341,7 @@ type
 }
     procedure SetListener(l: TProtoNotify);
     procedure AuthGrant(Cnt: TRnQContact);
-    procedure AuthRequest(cnt: TRnQContact; const reason : String);
+    procedure AuthRequest(cnt: TRnQContact; const reason: String);
     function  getPwd: String;
     procedure setPwd(const pPWD: String);
     function  pwdEqual(const pass: String): Boolean;
@@ -518,6 +518,8 @@ type
 //  PRnQContact = ^TRnQContact;
 
   TRnQContact = class //(TObject)
+   protected
+    group: Integer;
    public
     UID: TUID;
     UID2cmp: TUID; // LowerCase and without delimiters
@@ -543,7 +545,6 @@ type
       bIsTyping,
       bIAmTyping: Boolean;
      end;
-    group: Integer;
     birth,
     birthL,       // Local Birthdate
     LastBDInform,
@@ -602,6 +603,7 @@ type
     function  isMyAcc: Boolean;
 //   public
 //    function  GetProto: IRnQProtocol;
+    procedure SetGroupID(pID: Integer);
     function  SetGroupName(const pName: String): Boolean;
     function  SetGroupSSID(ssiID: Integer): Boolean;
     function  buin: RawByteString;
@@ -611,6 +613,7 @@ type
     property  ProtoID: byte read _getProtoID;
     property  Proto: TRnQProtocol read fProto;
     property  Status: byte read getStatus;
+    property  groupId: Integer read group write setGroupId;
   end;
 
   TCListEnumerator = class
@@ -654,7 +657,6 @@ type
     function  remove(cl: TRnQCList): TRnQCList; overload;
     function  intersect(cl: TRnQCList): TRnQCList;
     function  toString: RawByteString; reintroduce;
-//    function  fromString(cls: TRnQContactType; const s: RawByteString; db:TRnQCList):boolean;
     function  fromString(pr: TRnQProtocol; const s: RawByteString; db: TRnQCList): boolean;
     function  clone: TRnQCList;
     procedure assign(cl: TRnQCList);
@@ -1242,6 +1244,14 @@ end;
 function TRnQcontact.getGroupName: String;
 begin
   result := groups.id2name(group)
+end;
+
+procedure TRnQcontact.SetGroupID(pID: Integer);
+begin
+  if pID >=0 then
+    group := pID
+   else
+    group := 2000;
 end;
 
 function TRnQcontact.SetGroupName(const pName: String): Boolean;

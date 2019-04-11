@@ -2667,7 +2667,7 @@ function TWIMSession.RemoveContact(c: TRnQContact): Boolean;
 var
   IsLocal: Boolean;
 begin
-  IsLocal := c.CntIsLocal or (c.group = 0);
+  IsLocal := c.CntIsLocal or (c.groupId = 0);
   Result := NotInList.remove(c);
   Result := fRoster.remove(c) or Result;
   if Result then
@@ -5353,6 +5353,7 @@ procedure TWIMSession.ProcessTyping(const Data: TJSONObject);
 var
   c: TWIMContact;
   TypingStatus: String;
+  attr: TJSONValue;
 begin
   if not Assigned(Data) then
     Exit;
@@ -5360,6 +5361,13 @@ begin
   c := GetWIMContact(Data.GetValue('aimId').Value);
   if not Assigned(c) then
     Exit;
+
+  attr := Data.GetValue('MChat_Attrs');
+  eventAddress := '';
+  if Assigned(attr) and (attr is TJSONObject) then
+    begin
+      attr.GetValueSafe('sender', eventAddress);
+    end;
 
   Data.GetValueSafe('typingStatus', TypingStatus);
   if TypingStatus = 'typing' then

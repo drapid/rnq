@@ -946,7 +946,6 @@ begin
  {$IFDEF PROTOCOL_ICQ}
         +AnsiChar(Status2OldStatus[TICQStatus(status)])+AnsiChar(Status2OldStatus[TICQStatus(oldstatus)])
  {$ELSE ~PROTOCOL_ICQ}
-//        +AnsiChar(0)+AnsiChar(0)
         +AnsiChar(status)+AnsiChar(oldstatus)
  {$ENDIF PROTOCOL_ICQ}
         +AnsiChar(inv)+AnsiChar(oldInv) )
@@ -1018,7 +1017,7 @@ end;
 
 procedure TPlugButtons.Del(bAddr: integer);
 var
-  i : Integer;
+  i: Integer;
 begin
 // deBUG!!!!!!!
   i := bAddr;// - 1;

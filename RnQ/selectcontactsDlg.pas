@@ -233,7 +233,7 @@ begin
       chk := CK_off;}
     if (SCO_groups in options) then // and (grp<> cl.get(li.UID).group) then
       begin
-       g := findGroupNode(c.group);
+       g := findGroupNode(c.groupID);
        if g <> NIL then
        begin
   //       TlistItem(PListItem(List.getnodedata(g)^)^).grpId:= grp;

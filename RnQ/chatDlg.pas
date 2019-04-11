@@ -2390,16 +2390,14 @@ begin
     else
     if oldCh.chatType = CT_IM then
     begin
-     { $IFDEF RNQ_FULL}
      // end typing
       oldCh.who.Proto.InputChangedFor(oldCh.who, True);
-     { $ENDIF}
+       historyData.currentHB := NIl;
+      oldCh.historyBox.Visible := false;
 //      oldCh.historyBox.newSession:=0;
       if oldCh.historyBox.history<>NIL then
        begin
-  //      historyBox.history.reset;
-        oldCh.historyBox.history.Free;
-        oldCh.historyBox.history := NIL;
+        FreeAndNil(oldCh.historyBox.history);
        end;
 
     end;
@@ -2448,7 +2446,7 @@ end;
 
 procedure TchatFrm.FormShow(Sender: TObject);
 var
-//  i:integer;
+//  i: integer;
   ch: TChatInfo;
 begin
 //  theme.getIco2(PIC_MSG, icon);

@@ -405,19 +405,19 @@ if buildingOnline then
 if result<>0 then
   exit;
 // different groups?
-if showGroups and (tmpC1.group <> tmpC2.group) then
+if showGroups and (tmpC1.groupId <> tmpC2.groupId) then
   begin
-  if tmpC1.group = 0 then
+  if tmpC1.groupId = 0 then
     result := -1
   else
-    if tmpC2.group = 0 then
+    if tmpC2.groupId = 0 then
       result := +1
     else
       begin
-      tmpI1 := groups.get(tmpC1.group).order;
-      tmpI2 := groups.get(tmpC2.group).order;
+      tmpI1 := groups.get(tmpC1.groupId).order;
+      tmpI2 := groups.get(tmpC2.groupId).order;
       if tmpI1=tmpI2 then
-        result := compareText(groups.id2name(tmpC1.group), groups.id2name(tmpC2.group))
+        result := compareText(tmpC1.getGroupName, tmpC2.getGroupName)
       else
         if tmpI1<tmpI2 then
           result := -1
@@ -496,7 +496,7 @@ begin
   inherited create;
   kind    := NODE_CONTACT;
   contact := contact_;
-  groupId := contact_.group;
+  groupId := contact_.groupId;
   TCE(contact_.data^).node := self;
   contactsPool.add(self);
 end; // create
@@ -628,12 +628,12 @@ end; // insertNode
 function shouldBeUnder(c: TRnQContact; d: TDivisor): TNode;
 begin
   result := insertNode(d);
-  if (c.group = 0) or not showGroups or not (d in divsWithGroups) then
+  if (c.groupId = 0) or not showGroups or not (d in divsWithGroups) then
     exit;
-  if not groups.exists(c.group) then
-    c.group := 0
+  if not groups.exists(c.groupId) then
+    c.groupId := 0
    else
-    result := insertNode(c.group, d);
+    result := insertNode(c.groupId, d);
 end; // shouldBeUnder
 
 function insertNode(c: TRnQContact; under: TNode): TNode; overload;
@@ -926,7 +926,7 @@ begin
   if Assigned(n) and
      (isUnderDiv(n) = GetContactDiv(c)) then
     begin
-      if n.groupId <> c.group then
+      if n.groupId <> c.groupId then
        begin
         removeNode(c);
         n := insertNode(c);
@@ -1094,7 +1094,7 @@ begin
     exit;
   cl := Account.AccProto.readList(LT_ROSTER).clone;
   for c in cl do
-    if c.group = id then
+    if c.groupId = id then
       remove(c);
   cl.free;
   with groups.a[groups.idxOf(id)] do
@@ -1233,7 +1233,7 @@ end;
 
 procedure setNewGroupFor(c: TRnQContact; grp: integer);
 begin
-  c.group := grp;
+  c.groupId := grp;
   c.Proto.updateGroupOf(c);
   update(c);
   dbUpdateDelayed := TRUE;
@@ -1602,7 +1602,7 @@ case n.kind of
     if n.contact.UID = '' then
       Exit;
     isNIL := notinlist.exists(n.contact);
-    if indentRoster and showgroups and (n.contact.group>0) and not isNIL then
+    if indentRoster and showgroups and (n.contact.groupId>0) and not isNIL then
       inc(x, theme.getPicSize(RQteDefault, PIC_CLOSE_GROUP, 0, PPI).cx);
 
 {

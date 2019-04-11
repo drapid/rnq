@@ -1594,7 +1594,7 @@ begin
   roster.BeginUpdate;
   try
     for c in Account.AccProto.readList(LT_ROSTER) do
-      if c.group=oldID then
+      if c.groupId = oldID then
         setNewGroupFor(c, newID);
    finally
 //    roster.show;
@@ -1693,7 +1693,7 @@ var
 begin
   result := TRnQCList.create;
   for c in Account.AccProto.readList(LT_ROSTER) do
-      if c.group = clickedGroup then
+      if c.groupId = clickedGroup then
         result.add(c);
 end; // clickedGroupList
 
@@ -2207,17 +2207,17 @@ begin
   Sendemail1.visible := clickedContact.CanMail;
 
   movetogroup1.visible := clickedContact.isInRoster;
-  if clickedContact.group = 0 then
+  if clickedContact.groupId = 0 then
     movetogroup1.caption := getTranslation('Move to group')
    else
-    movetogroup1.caption := getTranslation('Move from %s to group', [dupAmperstand(groups.id2name(clickedContact.group))] );
+    movetogroup1.caption := getTranslation('Move from %s to group', [dupAmperstand(clickedContact.getGroupName)] );
   addtocontactlist1.visible := not movetogroup1.visible;
 
   if movetogroup1.visible then
     addGroupsToMenu(self, movetogroup1, addcontactAction,
  {$IFDEF UseNotSSI}
 //     not icq.useSSI or
-     ((clickedContact.iProto.ProtoElem is TicqSession) and not (TicqSession(clickedContact.iProto.ProtoElem).UseSSI)) or
+     ((clickedContact.Proto.ProtoElem is TicqSession) and not (TicqSession(clickedContact.Proto.ProtoElem).UseSSI)) or
  {$ENDIF UseNotSSI}
      clickedContact.CntIsLocal)
    else
@@ -4390,9 +4390,9 @@ begin
   {$IFDEF PROTOCOL_XMP}
             (prt=XMPProtoID)or
   {$ENDIF PROTOCOL_XMP}
-            ((clickedContact.group <> 0)
+            ((clickedContact.groupId <> 0)
 //        and (clickedContact.group <> 0)
-             and (groups.id2ssi(clickedContact.group) > 0));
+             and (groups.id2ssi(clickedContact.groupId) > 0));
        end;
     end;
 end;
