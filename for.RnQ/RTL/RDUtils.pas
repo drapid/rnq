@@ -53,8 +53,8 @@ procedure swap4(var a, b: Integer); overload;
 procedure swap4(var src, dest; count: dword; cond: Boolean); overload;
 procedure swap8(var a, b: TDateTime);
 // Convert
-function  ip2str(ip: Integer): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-function  str2ip(const s: RawByteString): Integer;
+function  ip2str(ip: UInt32): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+function  str2ip(const s: RawByteString): UInt32;
 function  qword_BE2verU(d: UInt64): String;
 function  qword_LE2verU(d: UInt64): String;
 function  bool2str(const b: Boolean): RawByteString;
@@ -1078,18 +1078,18 @@ begin
 end;
 
  {$IFDEF UNICODE}
-function ip2str(ip: Integer): String; inline;
+function ip2str(ip: UInt32): String; inline;
 begin
   result := dword_LE2ipU(ip)
 end;
  {$ELSE nonUNICODE}
-function ip2str(ip: Integer): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+function ip2str(ip: UInt32): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
   result := dword_LE2ip(ip)
 end;
  {$ENDIF UNICODE}
 
-function str2ip(const s: RawByteString): Integer;
+function str2ip(const s: RawByteString): UInt32;
 var
   i, v: Integer;
 //  cd: Integer;

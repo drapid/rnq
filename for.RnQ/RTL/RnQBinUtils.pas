@@ -61,9 +61,9 @@ function WNTS(const s: RawByteString): RawByteString;
 function WNTSU(const s: String): RawByteString;
 
 // read data
-function Qword_LEat(p: Pointer): Int64; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
-function Qword_BEat(p: Pointer): Int64; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
-function dword_BEat(const s: RawByteString; ofs: Integer): Integer; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function Qword_LEat(p: Pointer): UInt64; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function Qword_BEat(p: Pointer): UInt64; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function dword_BEat(const s: RawByteString; ofs: Integer): Cardinal; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 function dword_BEat(p: Pointer): LongWord; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 function dword_LEat(p: Pointer): LongWord; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 function dword_LEat(const s: RawByteString; ofs: integer): integer; overload; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
@@ -410,10 +410,10 @@ begin
   result := swap(pw^);
 end; // getTLVwordBE
 
-function getTLVdwordBE(p: pointer): dword;
+function getTLVdwordBE(p: pointer): cardinal;
 var
   pw: pword absolute p;
-  pd: pinteger absolute p;
+  pd: pcardinal absolute p;
 begin
   inc(pw, 2);
   //result := BSwapInt(pd^);
@@ -900,24 +900,24 @@ begin
    Result := '';
 end;
 
-function qword_LEat(p: pointer): int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function qword_LEat(p: pointer): UInt64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 begin
-  result := int64(p^)
+  result := UInt64(p^)
 end;
 
-function Qword_BEat(p: pointer): int64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+function Qword_BEat(p: pointer): UInt64; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 begin
 //  result := IcsSwap64(int64(p^))
-  result := BSwap64(int64(p^))
+  result := BSwap64(UInt64(p^))
 end;
 
 function dword_BEat(p: pointer): LongWord; OverLoad; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
 begin
 //  result := IcsSwap32(LongWord(p^))
-  result := BSwap32(integer(p^))
+  result := BSwap32(Cardinal(p^))
 end;
 
-function dword_BEat(const s: RawByteString; ofs: integer): integer; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
+function dword_BEat(const s: RawByteString; ofs: integer): Cardinal; {$IFDEF HAS_INLINE}inline; {$ENDIF HAS_INLINE}
 begin
   result := dword_BEat(@s[ofs])
 end;
