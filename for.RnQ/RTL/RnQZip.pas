@@ -205,7 +205,7 @@ const
    dwEndOfCentralDirSignature = $06054b50;
    wAESEncrSignature = $9901;
 
-function ZipCrc32(crc: Cardinal; const buffer: PByteArray; size: Integer): Cardinal; OverLoad;
+function ZipCrc32(crc: Cardinal; const buffer: PByteArray; size: Int64): Cardinal; OverLoad;
 function ZipCrc32(crc: Cardinal; const stream: TStream): Cardinal; OverLoad;
 
 //function ZipCRC32(const Data: string): longword;
@@ -276,41 +276,31 @@ var
 begin
  for n:=0 to 255 do
   begin
-   c:=Cardinal(n);
+   c := Cardinal(n);
    for k:=0 to 7 do
     begin
      if Boolean(c and 1) then
-      c:=$edb88320 xor (c shr 1) else c:=c shr 1;
+       c := $edb88320 xor (c shr 1)
+      else
+       c := c shr 1;
     end;
-   crc_table[n]:=c;
+   crc_table[n] := c;
   end;
  crc_table_computed := True;
 end;
 
-function update_crc(crc: Cardinal; buf: PByteArray; len: Integer): Cardinal;
+function ZipCrc32(crc: Cardinal; const buffer: PByteArray; size: Int64): Cardinal;
 var
   c: Cardinal;
-  n: Integer;
+  n: Int64;
 begin
- c:=crc;
+ c := crc;
  if not crc_table_computed then
   make_crc_table;
- for n:=0 to len-1 do
-  c:=crc_table[(c xor buf^[n]) and $FF] xor (c shr 8);
- Result:=c;
-end;
-
-function ZipCrc32(crc: Cardinal; const buffer: PByteArray; size: Integer): Cardinal;
-var
-  c: Cardinal;
-  n: Integer;
-begin
- c:=crc;
- if not crc_table_computed then
-  make_crc_table;
- for n:=0 to size-1 do
-  c:=crc_table[(c xor buffer^[n]) and $FF] xor (c shr 8);
- Result:=c;
+ if size > 0 then
+   for n:=0 to size-1 do
+     c := Cardinal(crc_table[Byte(c xor buffer^[n])] xor Cardinal(c shr 8));
+ Result := c;
 end;
 
 function ZipCrc32(crc: Cardinal; const stream: TStream): Cardinal;
@@ -319,16 +309,17 @@ var
   n: Integer;
   buf: Byte;
 begin
- c:=crc;
+ c := crc;
  if not crc_table_computed then
   make_crc_table;
  stream.Position := 0;
- for n:=0 to stream.size-1 do
+ n := stream.Read(buf, 1);
+ while n > 0 do
   begin
-    stream.Read(buf, 1);
-    c:=crc_table[(c xor buf) and $FF] xor (c shr 8);
+    c := crc_table[Byte(c xor buf) and $FF] xor (c shr 8);
+    n := stream.Read(buf, 1);
   end;
- Result:=c;
+ Result := c;
 end;
 
 {function ZCrc32(crc: Cardinal; const stream: TStream): Cardinal;
@@ -950,28 +941,13 @@ begin
        salt2 := TestRPNG;
        aesMode := 3;
        l := SALT_LENGTH[aesMode];
-//       l := SALT_LENGTH(aesMode);
        SetLength(salt2, l);
        fcrypt_init(aesMode, Files[i].pass, salt2, pwd_ver, cx);
-//        fcrypt_init(aesMode, @Files[i].pass[1], Length(Files[i].pass), @salt2[1], pwd_verW, cx);
-//        SetLength(pwd_ver, 2);
-//        CopyMemory(@pwd_ver[1], @pwd_verW, 2);
        if ComprSize > 0 then
         begin
-//         ofs := ComprSize mod 16;
-//         EncrSize := ComprSize - ofs;
-//         fcrypt_encrypt(data, EncrSize, cx);
          fcrypt_encrypt(data, ComprSize, cx);
-{         if ofs > 0 then
-          begin
-           data1 := data;
-           inc(Cardinal(Data1), EncrSize);
-           fcrypt_encrypt(data1, ofs, cx);
-          end;}
         end;
        s1 := fcrypt_end(cx);
-//        SetLength(s1, 10);
-//        fcrypt_end(@s1[1], cx);
        ofs := l + 2 + ComprSize + 10;
        SetLength(Files[i].CompressedData, ofs);
        ofs := 1;

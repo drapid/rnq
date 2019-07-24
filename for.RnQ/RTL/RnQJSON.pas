@@ -95,8 +95,9 @@ begin
     FreeAndNil(TmpJSON);
 end;
 
-function ParseJSON(const RespStr: String; out JSON: TJSONArray): Boolean;
-var
+
+function ParseJSON(const RespStr: String; out JSON: TJSONArray): Boolean;
+var
   TmpJSON: TJSONValue;
 begin
   Result := False;
@@ -133,8 +134,9 @@ begin
     FreeAndNil(TmpJSON);
 end;
 
-function ParseJSON(const RespStrR: UTF8String; out JSON: TJSONArray): Boolean;
-var
+
+function ParseJSON(const RespStrR: UTF8String; out JSON: TJSONArray): Boolean;
+var
   TmpJSON: TJSONValue;
 begin
   Result := False;
@@ -154,7 +156,8 @@ begin
     FreeAndNil(TmpJSON);
 end;
 
-const INDENT_SIZE = 2;
+
+const INDENT_SIZE = 2;
 
 function PrettyPrintJSON(Value: TJSONValue; Indent: Integer = 0): String; forward;
 

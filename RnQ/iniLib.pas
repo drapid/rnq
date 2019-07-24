@@ -2391,18 +2391,18 @@ end;
 
 procedure quit;
 begin
- if not initOnce then
-   exit;
+  if not initOnce then
+    exit;
   initOnce := FALSE;
-   plugins.castEv( PE_QUIT); // Added For Test Purpose
+  plugins.castEv( PE_QUIT); // Added For Test Purpose
 
- SoundUnInit;
- disablesounds := True;
+  SoundUnInit;
+  disablesounds := True;
 
- running := false;
- stayconnected := FALSE;
+  running := false;
+  stayconnected := FALSE;
 
- stopMainTimer;
+  stopMainTimer;
 
  try
    Account.AccProto.disconnect;

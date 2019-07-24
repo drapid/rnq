@@ -29,10 +29,6 @@ object viewinfoFrm: TviewinfoFrm
     OnChange = pagectrlChange
     object mainSheet: TTabSheet
       Caption = '&Main'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label7: TLabel
         Left = 3
         Top = 264
@@ -346,6 +342,7 @@ object viewinfoFrm: TviewinfoFrm
         Height = 21
         Date = 38421.000000000000000000
         Format = 'dd.MM.yyyy'
+        Time = 0.660487349538016100
         TabOrder = 15
         OnChange = birthBoxChange
       end
@@ -927,10 +924,6 @@ object viewinfoFrm: TviewinfoFrm
     object InterSheet: TTabSheet
       Caption = '&Client'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Bevel1: TBevel
         Left = 16
         Top = 293
@@ -1081,10 +1074,6 @@ object viewinfoFrm: TviewinfoFrm
     object TabSheet1: TTabSheet
       Caption = '&Notes'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object notesBox: TMemo
         AlignWithMargins = True
         Left = 3
@@ -1339,10 +1328,6 @@ object viewinfoFrm: TviewinfoFrm
     object PrivacyTab: TTabSheet
       Caption = 'Privacy'
       ImageIndex = 6
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label4: TLabel
         Left = 35
         Top = 32
