@@ -86,6 +86,7 @@ uses
  {$ELSE ~DB_ENABLED}
   histUtilsDlg,
  {$ENDIF ~DB_ENABLED}
+   RnQNet.Cache,
    Protocols_all;
 
 var
@@ -384,6 +385,7 @@ autocopyhist := TRUE;
   behaviour[EK_XstatusMsg].trig := [BE_history];
   behaviour[EK_Xstatusreq].trig := [BE_history];
   behaviour[EK_buzz].trig := [BE_OPENCHAT, BE_HISTORY, BE_TIP, BE_SOUND];
+  behaviour[EK_Sticker].trig := [BE_tray, BE_openchat, BE_save, BE_sound, BE_history, BE_tip, BE_FLASHCHAT];
 
   for i:=1 to EK_last do
   begin
@@ -963,7 +965,7 @@ begin
     l := beh2str(i);
     pp.getPrefBlob(sU, RawByteString(l));
 //    if l <> '' then
-    behaviour[i]:=str2beh(l)
+    behaviour[i] := str2beh(l)
    end;
 
   pp.getPrefInt('inactive-hide-time', inactivehideTime);
@@ -1299,13 +1301,13 @@ begin
   savefile2(myPath+commonFileName, getCommonCFG, True, MakeBackups)
 end;
 
-function readOnlyFiles:boolean;
+function readOnlyFiles: boolean;
 
-{  function recur(const path:string):boolean;
+{  function recur(const path: string): boolean;
   var
-    sr:TsearchRec;
+    sr: TsearchRec;
   begin
-  result:=TRUE;
+  result := TRUE;
   if FindFirst(path+'*.*', faAnyFile, sr)=0 then
     repeat
     if (sr.Attr and faReadOnly > 0) or (sr.name[1]<>'.') and (sr.Attr and faDirectory >0) and recur(path+sr.name+PathDelim) then
@@ -1318,21 +1320,21 @@ function readOnlyFiles:boolean;
   result:=FALSE;
   end;
 }
-  function fileIsReadOnly(f : string) : Boolean;
+  function fileIsReadOnly(f: string): Boolean;
   var
-    i:integer;
+    i: integer;
   begin
-    i:=FileGetAttr(f);
+    i := FileGetAttr(f);
     if (i >= 0) and (i and faReadOnly >0) then
       result := TRUE
      else
       Result := False;
   end;
 //var
-//  i:integer;
-//  sr:TsearchRec;
+//  i: integer;
+//  sr: TsearchRec;
 begin
-  result:= fileIsReadOnly(myPath+commonFileName);
+  result := fileIsReadOnly(myPath+commonFileName);
   if Result then
     Exit;
   if fileIsReadOnly(Account.ProtoPath + dbFilename+'5') {or
@@ -1624,9 +1626,10 @@ begin
   supportedBehactions[EK_automsg] := allBehactions;
   supportedBehactions[EK_typingBeg] := mtnBehactions;
   supportedBehactions[EK_typingFin] := mtnBehactions;
-  supportedBehactions[EK_XstatusMsg]:= allBehactions;
-  supportedBehactions[EK_Xstatusreq]:= allBehactions;
+  supportedBehactions[EK_XstatusMsg] := allBehactions;
+  supportedBehactions[EK_Xstatusreq] := allBehactions;
   supportedBehactions[EK_buzz] := [BE_OPENCHAT, BE_HISTORY, BE_TIP, BE_SOUND];
+  supportedBehactions[EK_Sticker] := allBehactions;
 
   resetCommonCFG;
   loadCommonCFG;
@@ -2010,18 +2013,7 @@ if PREVIEWversion and (Account.AccProto.ProtoElem is TicqSession) then
     end;
  end;
  {$ENDIF PROTOCOL_ICQ}
-//  MainProto.MyInfo := MainProto.getContact(lastUser);
-//ICQ.myinfo := TicqSession.getICQContact(lastUser);
-{
-  if MainProto.ProtoName = 'ICQ' then
-   begin
-    with TICQcontact(MainProto.getMyInfo) do
-      begin
-//        status := ticqStatus(SC_OFFLINE);
-        ICQIcon.hash_safe := myAvatarHash;
-      end;
-   end;
-}
+
 //setVisibility(MainProto, byte(VI_normal));
 setVisibility(Account.AccProto, byte(RnQstartingVisibility));
 //myStatus:= byte(SC_OFFLINE);
@@ -2500,6 +2492,8 @@ begin
   applyTransparency;
   for i:=0 to Screen.FormCount-1 do
     applyCommonSettings(screen.forms[i]);
+  for i:=0 to Screen.DataModuleCount-1 do
+    applyCommonSettings(screen.DataModules[i]);
   SoundInit;
 //ShowHintsInChat2 := True;
 end; // afterWindowsCreation

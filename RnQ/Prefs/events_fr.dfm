@@ -35,6 +35,10 @@ object eventsFr: TeventsFr
     TabOrder = 0
     object MainTS: TTabSheet
       Caption = 'Common'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         450
         407)
@@ -280,11 +284,6 @@ object eventsFr: TeventsFr
           DefaultNodeHeight = 16
           Header.AutoSizeIndex = 0
           Header.DefaultHeight = 17
-          Header.Font.Charset = DEFAULT_CHARSET
-          Header.Font.Color = clWindowText
-          Header.Font.Height = -11
-          Header.Font.Name = 'Tahoma'
-          Header.Font.Style = []
           Header.Height = 17
           Header.MainColumn = -1
           Header.Options = [hoColumnResize, hoDrag]
@@ -315,6 +314,10 @@ object eventsFr: TeventsFr
     object DisEvTS: TTabSheet
       Caption = 'Extra disabling'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         450
         407)
@@ -408,6 +411,10 @@ object eventsFr: TeventsFr
     object LogTS: TTabSheet
       Caption = 'Log'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         450
         407)

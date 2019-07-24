@@ -28,6 +28,7 @@ type
     procedure OpenMailBox;
     procedure userSetStatus(st: byte; isShowAMWin: Boolean = True);
     procedure usersetVisibility(vi: byte);
+    function  UploadAvatar(const fn: String): Boolean;
     procedure ViewSSI;
     procedure EventExtraPics(evKind: Integer;
                              const evBody: RawByteString;
@@ -43,10 +44,17 @@ type
     function  CanSMS: Boolean;
     function  CanMail: Boolean;
     function  CanBuzz: Boolean;
+    function  sendBuzz: Boolean;
+    function  CanSendFile: Boolean;
     procedure auth;
     procedure AuthDenied(const msg: string='');
+    procedure AuthRequest(const msg: String);
     procedure DelCntFromSrv;
+  {$IFDEF RNQ_AVATARS}
+    function  AvatarNeedToRefresh: Boolean;
+  {$ENDIF RNQ_AVATARS}
     procedure SendFilesTo(const pFiles: String);
+    procedure sendSticker(stkr: String);
 
     function  sendEmailTo: boolean;
     function  GetContactIP: Integer;
@@ -56,6 +64,7 @@ type
 
 function  Protos_getXstsPic(cnt: TRnQContact; isSelf: Boolean = false): TPicName;
 procedure ProtoEvent(Sender: TRnQProtocol; event: Integer);
+function  try_load_or_req_avatar(cnt: TRnQContact): Boolean;
 
 
 function  Proto_StsID2Name(Proto: TRnQProtocol; s: Byte; xs: byte): String;
@@ -80,6 +89,8 @@ function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer; cl:
 
 procedure getTrayIconTip(var vPic: TPicName; var vTip: String);
 
+procedure Process_InfoRetrives;
+procedure Process_xStatusRetrives;
 
 var
   ToUploadAvatarFN: String;
@@ -137,14 +148,17 @@ uses
  {$ENDIF PROTOCOL_ICQ}
  {$IFDEF PROTOCOL_WIM}
   Protocol_WIM, WIMcontacts,
-  WIM,
+  WIM, WIMConsts,
  {$ENDIF PROTOCOL_WIM}
 
   outboxDlg,
   events, pluginutil, pluginLib, history,
 
+  {$IFDEF RNQ_AVATARS}
+  RnQ_Avatars,
+  {$ENDIF RNQ_AVATARS}
   RnQConst, globalLib,
-  utilLib, themesLib, RQThemes, roasterlib,
+  utilLib, themesLib, RQThemes, roasterLib,
   MainDlg, chatDlg;
 
 procedure TRnQProtoHelper.Event(event: Integer);
@@ -481,6 +495,33 @@ begin
   result := TRUE;
 end; // enterICQpwd
 
+function TRnQProtoHelper.UploadAvatar(const fn: String): Boolean;
+begin
+  Result := false;
+  if (fn > '') and self.isOnline then
+  {$IFDEF PROTOCOL_ICQ}
+   if self is TicqSession then
+    begin
+     Result := TicqSession(self).uploadAvatar(fn)
+    end
+   else
+  {$ENDIF PROTOCOL_ICQ}
+  {$IFDEF PROTOCOL_WIM}
+   if self is TWIMSession then
+    begin
+     Result := TWIMSession(self).uploadAvatar(fn);
+    end
+   else
+  {$ENDIF PROTOCOL_WIM}
+  {$IFDEF PROTOCOL_BIM}
+   if proto is TBIMSession then
+    begin
+     TBIMSession(proto).uploadAvatar(fn);
+     Result := True;
+    end;
+  {$ENDIF PROTOCOL_BIM}
+end;
+
 /////////////////////////////////////////////
 //  TRnQContactHelper
 /////////////////////////////////////////////
@@ -532,7 +573,57 @@ begin
     Result := CAPS_big_Buzz in TICQContact(Self).capabilitiesBig
    else
  {$ENDIF PROTOCOL_ICQ}
+ {$IFDEF PROTOCOL_WIM}
+  if Assigned(Self) and (Self is TWIMContact) then
+    Result := CAPS_big_Buzz in TWIMContact(Self).capabilitiesBig
+   else
+ {$ENDIF PROTOCOL_WIM}
    Result := false;
+end;
+
+function TRnQContactHelper.sendBuzz: Boolean;
+begin
+  if 1=2 then
+   else
+ {$IFDEF PROTOCOL_ICQ}
+  if Assigned(Self) and (Self is TICQContact) then
+    Result := TICQSession(Self.Proto).SendBuzz(Self)
+   else
+ {$ENDIF PROTOCOL_ICQ}
+ {$IFDEF PROTOCOL_WIM}
+  if Assigned(Self) and (Self is TWIMContact) then
+    Result := TWIMSession(Self.Proto).SendBuzz(Self)
+   else
+ {$ENDIF PROTOCOL_WIM}
+   Result := false;
+end;
+
+procedure TRnQContactHelper.sendSticker(stkr: String);
+begin
+ {$IFDEF PROTOCOL_ICQ}
+  if Assigned(Self) and (Self is TICQContact) then
+    TICQSession(Self.Proto).sendSticker(self.UID2cmp, stkr);
+ {$ENDIF PROTOCOL_ICQ}
+ {$IFDEF PROTOCOL_WIM}
+  if Assigned(Self) and (Self is TWIMContact) then
+    TWIMSession(Self.Proto).sendSticker(TWIMContact(self), stkr);
+ {$ENDIF PROTOCOL_WIM}
+end;
+
+function TRnQContactHelper.CanSendFile: Boolean;
+begin
+  Result :=
+{$IFDEF PROTOCOL_ICQ}
+        (Self is TICQcontact) and
+ {$IFDEF usesDC}
+        Assigned(Self) and Self.fProto.IsOnline and
+            TICQContact(Self).isAcceptFile;
+ {$else not usesDC}
+        false;
+ {$ENDIF  usesDC}
+{$ELSE ~PROTOCOL_ICQ}
+        false;
+{$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TRnQContactHelper.auth;
@@ -559,7 +650,7 @@ begin
      end;
  {$ENDIF ICQ_ONLY}
    end;
-  ev := Thevent.new(EK_auth, Self.fProto.getMyInfo, now, ''{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, 0);
+  ev := Thevent.new(EK_auth, Self.Proto.getMyInfo, now, 0);
   ev.fIsMyEvent := True;
   if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
     writeHistorySafely(ev, Self);
@@ -590,11 +681,34 @@ begin
    {$ENDIF PROTOCOL_XMP}
    end;
  {$ENDIF ICQ_ONLY}
-  ev := Thevent.new(EK_authDenied, Self.fProto.getMyInfo, now{$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, msg, 0);
+  ev := Thevent.new(EK_authDenied, Self.Proto.getMyInfo, now, '', msg, 0);
   ev.fIsMyEvent := True;
   if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
     writeHistorySafely(ev, Self);
   chatFrm.addEvent_openchat(Self, ev);
+end;
+
+procedure TRnQContactHelper.AuthRequest(const msg: String);
+begin
+ {$IFDEF PROTOCOL_ICQ}
+  if Self is TICQContact then
+    TicqSession(Self.Proto).AuthRequest(Self, msg)
+   else
+ {$ENDIF PROTOCOL_ICQ}
+ {$IFDEF PROTOCOL_BIM}
+  if Self is TBIMContact then
+    TBIMContact(Self).AuthRequest(Self, msg)
+   else
+ {$ENDIF PROTOCOL_BIM}
+ {$IFDEF PROTOCOL_XMP}
+  if Self is TxmppContact then
+   else
+ {$ENDIF PROTOCOL_XMP}
+ {$IFDEF PROTOCOL_WIM}
+  if Self is TWIMContact then
+    TWIMSession(Self.fProto).AuthRequest(Self, msg)
+   else
+ {$ENDIF PROTOCOL_WIM}
 end;
 
 procedure TRnQContactHelper.DelCntFromSrv;
@@ -610,10 +724,48 @@ begin
     {$ENDIF PROTOCOL_ICQ}
            end;
  {$IFNDEF ICQ_ONLY}
-//     XMPProtoID : TxmppSession(ProtoElem).AuthCancel(cnt);
+//     XMPProtoID: TxmppSession(ProtoElem).AuthCancel(cnt);
    end;
  {$ENDIF ICQ_ONLY}
 end;
+
+  {$IFDEF RNQ_AVATARS}
+function TRnQContactHelper.AvatarNeedToRefresh: Boolean;
+begin
+ {$IFDEF PROTOCOL_ICQ}
+  if Self is TICQContact then
+    Result := TicqSession(Self.fProto).AvatarsSupport and
+      (length(TICQContact(Self).ICQIcon.hash) = 16) and
+      (TICQContact(Self).ICQIcon.hash <>
+       Self.Icon.hash_safe)
+   else
+ {$ENDIF PROTOCOL_ICQ}
+ {$IFDEF PROTOCOL_BIM}
+  if Self is TBIMContact then
+    Result := (length(TBIMContact(Self).BIMIcon.hash) = 16) and
+      (TBIMContact(Self).BIMIcon.hash <>
+       Self.Icon.hash_safe)
+   else
+ {$ENDIF PROTOCOL_BIM}
+ {$IFDEF PROTOCOL_XMP}
+  if Self is TxmppContact then
+    Result := ((length(TxmppContact(Self).XIcon.hash) = 20) or
+               (length(TxmppContact(Self).XIcon.hash) = 40)) and
+      (TxmppContact(Self).XIcon.hash <>
+       Self.Icon.hash_safe)
+   else
+ {$ENDIF PROTOCOL_XMP}
+ {$IFDEF PROTOCOL_WIM}
+  if Self is TWIMContact then
+    Result := TWIMSession(Self.fProto).AvatarsSupport and
+      (length(TWIMContact(Self).IconID) = 16) and
+      (TWIMContact(Self).IconID <>
+       Self.Icon.hash_safe)
+   else
+ {$ENDIF PROTOCOL_WIM}
+    Result := false;
+end;
+  {$ENDIF RNQ_AVATARS}
 
 procedure TRnQContactHelper.SendFilesTo(const pFiles: String);
 begin
@@ -834,6 +986,16 @@ begin
  {$ENDIF UseNotSSI}
  end
  {$ENDIF PROTOCOL_ICQ}
+ {$IFDEF PROTOCOL_WIM}
+ if proto is TWIMSession then
+   begin
+    with proto AS TWIMSession do
+     begin
+      setStatus(getStatus, vi);
+     end;
+   end
+  else
+ {$ENDIF PROTOCOL_WIM}
  {$IFDEF PROTOCOL_MRA}
  else
    if proto.ProtoElem is TMRASession then
@@ -853,9 +1015,8 @@ function str2db(pProto: TRnQProtocol; const s: RawByteString;
 const
   ErrCorupted = 'The contacts database is corrupted, some data is lost';
 var
-  t, l, i: integer;
+  t, l, i, tInt: integer;
   d: RawByteString;
-//  c:TICQcontact;
   c: TRnQContact;
   vUID: TUID;
 begin
@@ -899,10 +1060,11 @@ while i < length(s) do
                  end;
       DBFK_GROUP:
                   begin
-                    system.move(d[1], c.group, 4);
+                    system.move(d[1], tInt, 4);
+                    c.groupId := tInt;
                     if pCheckGroups then
-                     if not groups.exists(c.group) then
-                       c.group := 0;
+                     if not groups.exists(tInt) then
+                       c.groupId := 0;
                   end;
       else
        begin
@@ -927,7 +1089,7 @@ begin
 end;
 
 (*
-function getClientFor(c: TRnQcontact; pInInfo: Boolean = False):string;
+function getClientFor(c: TRnQcontact; pInInfo: Boolean = False): string;
 begin
   result:='';
   if c=NIL then exit;
@@ -992,6 +1154,93 @@ begin
  {$ENDIF ICQ_ONLY}
 end;
 
+//function try_load_avatar(cnt: TRnQContact): Boolean;
+function try_load_or_req_avatar(cnt: TRnQContact): Boolean;
+begin
+  Result := false;
+  if not Assigned(cnt) then
+    Exit;
+  {$IFDEF PROTOCOL_ICQ}
+  if cnt.Proto is TicqSession then
+    begin
+     if not TicqSession(cnt.Proto).AvatarsSupport then
+       exit;
+     Result := RnQ_Avatars.try_load_avatar(cnt, TICQContact(cnt).ICQIcon.Hash,
+                     cnt.Icon.hash_safe);
+     if not Result then
+       Result := TicqSession(cnt.Proto).RequestIcon(TICQContact(cnt));
+    end
+   else
+  {$ENDIF PROTOCOL_ICQ}
+  {$IFDEF PROTOCOL_BIM}
+  if cnt.Proto is TBIMSession then
+    begin
+     Result := RnQ_Avatars.try_load_avatar(cnt, TBIMContact(cnt).BIMIcon.Hash,
+                     TBIMContact(cnt).BIMIcon.hash_safe);
+     if not Result then
+       Result := TBIMSession(cnt.Proto).RequestIcon(TBIMContact(cnt));
+    end;
+  {$ENDIF PROTOCOL_BIM}
+  {$IFDEF PROTOCOL_XMP}
+  if cnt.Proto is TxmppSession then
+    begin
+//     if not TxmppSession(cnt.fProto).AvatarsSupport then
+//       exit;
+     Result := RnQ_Avatars.try_load_avatar(cnt, TxmppContact(cnt).XIcon.Hash,
+                     cnt.Icon.hash_safe);
+     if not Result then
+       Result := TxmppSession(cnt.Proto).RequestIcon(TxmppContact(cnt));
+    end
+   else
+  {$ENDIF PROTOCOL_XMP}
+  {$IFDEF PROTOCOL_WIM}
+  if cnt.Proto is TWIMSession then
+    begin
+     if not TWIMSession(cnt.Proto).AvatarsSupport then
+       exit;
+     Result := RnQ_Avatars.try_load_avatar(cnt, TWIMContact(cnt).IconID,
+                     cnt.Icon.hash_safe);
+     if not Result then
+       begin
+         DownloadAvtByHash(TWIMContact(cnt));
+         Result := True;
+       end;
+    end
+   else
+  {$ENDIF PROTOCOL_WIM}
+end;
+
+procedure Process_InfoRetrives;
+begin
+ {$IFDEF PROTOCOL_ICQ}
+//  if (Account.AccProto.ProtoElem.ProtoID = ICQProtoID) then
+  if (Account.AccProto is TicqSession) then
+   begin
+    if assigned(retrieveQ) and (Account.AccProto.isOnline) and not retrieveQ.empty then
+    begin
+     TicqSession(Account.AccProto).sendSimpleQueryInfo(retrieveQ.getAt(0).uid);
+     retrieveQ.delete(0);
+     saveListsDelayed := True;
+//     saveRetrieveQ;
+    end;
+   end;
+ {$ENDIF PROTOCOL_ICQ}
+end;
+
+procedure Process_xStatusRetrives;
+begin
+ {$IFDEF PROTOCOL_ICQ}
+  if (Account.AccProto is TicqSession) then
+   begin
+    if assigned(reqXStatusQ) and not reqXStatusQ.empty and Assigned(Account.AccProto)
+       and Account.AccProto.isOnline then
+     begin
+       TicqSession(Account.AccProto).RequestXStatus(reqXStatusQ.getAt(0).UID);
+       reqXStatusQ.delete(0);
+     end;
+   end;
+ {$ENDIF PROTOCOL_ICQ}
+end;
 
 function  Proto_Outbox_add(kind: Integer; dest: TRnQContact; flags: integer=0; const info: string=''): Toevent;
 //var
@@ -1127,7 +1376,7 @@ begin
 //      c.CntIsLocal := isLocal;
   if isLocal then
     c.SSIID := 0;
-  result:= c.fProto.addContact(c, isLocal);
+  result:= c.Proto.addContact(c, isLocal);
   if not result then
     exit;
   roasterlib.update(c);

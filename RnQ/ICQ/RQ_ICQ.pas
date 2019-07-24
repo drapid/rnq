@@ -77,13 +77,13 @@ var
 implementation
 uses
   DateUtils, ansistrings, AnsiClasses,
-  math, Types, StrUtils, System.Threading, NetEncoding,
+  math, Types, StrUtils, System.Threading, NetEncoding, JSON,
   RDGlobal, RnQBinUtils, RDFileUtil, RDUtils, Base64,
-  RnQGlobal, JSON,
+  RnQGlobal,
  {$IFDEF RNQ_AVATARS}
   RnQ_Avatars,
  {$ENDIF}
-  RnQNet, RQUtil, RnQLangs,
+  RnQNet, RQUtil, RnQLangs, RnQNet.Cache,
   Protocol_ICQ,
   menusUnit,
   UtilLib, roasterlib, mainDlg, RnQConst, GlobalLib, events,

@@ -15,7 +15,7 @@ uses
 
 
 //  procedure TipAdd2(ev: Thevent; bmp2: tbitmap; seconds: Integer = -1);
-  procedure TipAdd3(ev: Thevent; bmp2: tbitmap = NIL; pCnt: TRnQContact = NIL; seconds: Integer = -1);
+  procedure TipAdd3(ev: Thevent; bmp2: TBitmap = NIL; pCnt: TRnQContact = NIL; seconds: Integer = MAXWORD);
 //  procedure TipAdd(bmp: Tbitmap; seconds: Integer = -1); overload;
 //  procedure TipAdd(ev: Thevent; seconds: Integer = -1); overload;
 //  procedure TipAdd(gpBmp: tGPbitmap; seconds: Integer = -1); overload;
@@ -142,7 +142,7 @@ begin
 //  ev := NIL;
 end;
 
-procedure TipAdd3(ev: Thevent; bmp2: tbitmap = NIL; pCnt: TRnQContact = NIL; seconds: Integer = -1);
+procedure TipAdd3(ev: Thevent; bmp2: TBitmap = NIL; pCnt: TRnQContact = NIL; seconds: Integer = MAXWORD);
 var
 //  isEv: Boolean;
 //  isPic: Boolean;
@@ -848,7 +848,7 @@ begin
            if length(sa) >= 4 then
             begin
               if Assigned(thisCnt) then
-                thisCnt.fProto.EventExtraPics(ev.kind, sa, p1, p2);
+                thisCnt.Proto.EventExtraPics(ev.kind, sa, p1, p2);
 
               if Assigned(thisCnt) then
               begin

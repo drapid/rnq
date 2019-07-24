@@ -199,6 +199,7 @@ const
 
   procedure HandleError(E: EHttpException; URL: String; ErrText: String = ''; Quiet: Boolean = True);
 
+
 var
   MainProxy: Tproxy;
   AllProxies: TarrProxy;
@@ -214,9 +215,9 @@ uses
  {$ENDIF UNICODE}
 //    OverbyteIcsLogger,
   RnQDialogs,
- {$IFDEF RNQ}
-    RnQLangs,
     RQUtil,
+    RnQLangs,
+ {$IFDEF RNQ}
  {$ENDIF RNQ}
  {$IFDEF RNQ_PLUGIN}
    RDPlugins,
@@ -1225,7 +1226,7 @@ function LoadFromURL0(const URL: String; var fn: String; Threshold: LongInt = 0;
 var
   AvStream: TMemoryStream;
   httpCli: THttpCli;
-  ft : TPAFormat;
+  ft: TPAFormat;
 begin
   Result := False;
 
@@ -1289,7 +1290,7 @@ begin
   AvStream:= TMemoryStream.Create;
 
   httpCli.RcvdStream:= AvStream;
-  httpCli.URL:= URL;
+  httpCli.URL := URL;
   result := False;
   try
     if Threshold > 0 then
@@ -1387,7 +1388,6 @@ begin
     FreeAndNil(AvStream);
   end;
 end;
-
 
 
 //FINALIZATION

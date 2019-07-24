@@ -9,9 +9,10 @@ unit MenuStickers;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Types, StdCtrls, RnQNet, RnQProtocol, utilLib,
-  ExtCtrls, RDGlobal, RnQGraphics32, RnQButtons, RnQImageGrid,
-  System.Threading, System.SyncObjs, System.Actions, Vcl.ActnList, Generics.Collections;
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Types,
+  StdCtrls, ExtCtrls, System.Threading, System.SyncObjs, System.Actions, Vcl.ActnList, Generics.Collections,
+  RnQNet, RnQProtocol, utilLib,
+  RDGlobal, RnQGraphics32, RnQButtons, RnQImageGrid;
 
 type
   TFStickers = class(TForm)
@@ -65,7 +66,9 @@ implementation
 { $R 'stickers.res' 'stickers.rc'} // Added to Project Source
 
 uses
-  ICQv9, ICQ.Stickers,
+//  ICQv9,
+  Protocols_all,
+  ICQ.Stickers,
   RnQLangs, RnQGlobal, RQUtil, RQThemes, RDUtils,
   events, history,
   globalLib, chatDlg;
@@ -268,15 +271,15 @@ begin
       Self.Hide;
       GoToChat;
 
-      TICQSession(rnqContact.fProto).sendSticker(rnqContact.UID, StickerMsg);
+      rnqContact.sendSticker(StickerMsg);
 
       // Add sticker to chat
       extStiker := TStringList.Create;
       extStiker.Delimiter := ':';
       extStiker.StrictDelimiter := true;
       extStiker.DelimitedText := StickerMsg;
-      ev := Thevent.new(EK_MSG, rnqContact.fProto.getMyInfo, Now, getSticker(extStiker.Strings[1], extStiker.Strings[3])
-                        {$IFDEF DB_ENABLED}, ''{$ENDIF DB_ENABLED}, 0);
+      ev := Thevent.new(EK_MSG, rnqContact.Proto.getMyInfo, Now, getSticker(extStiker.Strings[1], extStiker.Strings[3])
+                        , '', 0);
       ev.fIsMyEvent := True;
       writeHistorySafely(ev, rnqContact);
       chatFrm.addEvent(rnqContact, ev.clone);

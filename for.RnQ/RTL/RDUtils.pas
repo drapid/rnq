@@ -53,8 +53,8 @@ procedure swap4(var a, b: Integer); overload;
 procedure swap4(var src, dest; count: dword; cond: Boolean); overload;
 procedure swap8(var a, b: TDateTime);
 // Convert
-function  ip2str(ip: Integer): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-function  str2ip(const s: RawByteString): Integer;
+function  ip2str(ip: UInt32): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+function  str2ip(const s: RawByteString): UInt32;
 function  qword_BE2verU(d: UInt64): String;
 function  qword_LE2verU(d: UInt64): String;
 function  bool2str(const b: Boolean): RawByteString;
@@ -154,11 +154,11 @@ function  bool2str(const b: Boolean): RawByteString;
 
   function str2hex(const s: RawByteString): AnsiString; overload;
   function str2hexU(const s: RawByteString): String; overload;
-  function str2hex(const s: RawByteString; const Delim : AnsiChar) : AnsiString; overload;
+  function str2hex(const s: RawByteString; const Delim: AnsiChar): AnsiString; overload;
   function  hexToInt(const s: RawByteString): Cardinal; overload;
   function  hexToInt(const s: String): Cardinal; overload;
   function  strings2str(const split: string; ss: Tstrings): string; overload;
-  function  strings2str(const split: string; const ss: array of string):string; overload;
+  function  strings2str(const split: string; const ss: array of string): string; overload;
   procedure str2strings(const split: String; src: string; var ss: Tstrings); deprecated;
   function  size2str(sz: Int64): String;
 
@@ -571,10 +571,19 @@ end; // ipos
 // case insensitive version
 function ipos(const ss, s: string; ofs: integer=1): integer;
 var
-  s0: PWideChar;
+  p, s0: PWideChar;
 begin
-  s0 := PWideChar(s);
-  Result := TextPos(s0, PWideChar(@ss[ofs])) - s0;
+  Result := 0;
+  if (s > '') and (ofs <= Length(ss)) then
+    begin
+      s0 := PWideChar(s);
+      if s0 <> NIL then
+        begin
+          p := TextPos(s0, PWideChar(@ss[ofs]));
+          if p <> NIL then
+            Result := p - s0 + 1;
+        end;
+    end;
 end;
 
 function capitalize(const s: string): string;
@@ -1078,18 +1087,18 @@ begin
 end;
 
  {$IFDEF UNICODE}
-function ip2str(ip: Integer): String; inline;
+function ip2str(ip: UInt32): String; inline;
 begin
   result := dword_LE2ipU(ip)
 end;
  {$ELSE nonUNICODE}
-function ip2str(ip: Integer): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+function ip2str(ip: UInt32): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
   result := dword_LE2ip(ip)
 end;
  {$ENDIF UNICODE}
 
-function str2ip(const s: RawByteString): Integer;
+function str2ip(const s: RawByteString): UInt32;
 var
   i, v: Integer;
 //  cd: Integer;
@@ -1504,7 +1513,7 @@ begin
     end;
 //>>> Added 2016 for Emoji
     if (c shr 3)=$1E {11110xxx} then begin    //Символ занимает 4 байта
-      if Integer(Len-i)<1 then               //Строка кончилась?
+      if Len<(1+i) then               //Строка кончилась?
         if i=2 then begin
           error;
           exit;
@@ -1539,7 +1548,7 @@ begin
     end;
 //<<< Added 2016 for Emoji
     if (c shr 4)=$E {1110xxxx} then begin    //Символ занимает 3 байта
-      if Integer(Len-i)<1 then               //Строка кончилась?
+      if Len<(1+i) then               //Строка кончилась?
         if i=2 then begin
           error;
           exit;
@@ -2073,7 +2082,7 @@ begin
   //c := 0;
   //i := length(s);
   i := 1;
-  while i < (length(s)-1) do
+  while i <= (length(s)-1) do
     begin
 //      if (s[i] in hexChars)and
 //         (s[i+1] in hexChars) then

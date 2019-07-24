@@ -85,7 +85,8 @@ begin
   {$IFDEF PROTOCOL_ICQ}
     Result := getProtoClass(ICQProtoID)
   {$ELSE ~PROTOCOL_ICQ}
-    Result := NIL;
+//    Result := NIL;
+  Result := getProtoClass(Byte(cUsedProtos[Low(cUsedProtos)]))
   {$ENDIF PROTOCOL_ICQ}
 end;
 

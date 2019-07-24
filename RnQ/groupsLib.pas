@@ -37,8 +37,8 @@ type
     ssiID: Integer;
     name: string;
     order: integer;
-    node: array [Tdivisor] of Tnode;
-    expanded: array [Tdivisor] of boolean;
+    node: array [TDivisor] of Tnode;
+    expanded: array [TDivisor] of boolean;
     procedure ServerUpdate;
    end;
 
@@ -140,7 +140,7 @@ end; // fromString
 function Tgroups.toString: RawByteString;
 var
   i: integer;
-  d: Tdivisor;
+  d: TDivisor;
 begin
   result := '';
   for i:=0 to count-1 do
@@ -159,12 +159,12 @@ end; // toString
 procedure Tgroups.clear;
 var
   I: Integer;
-  d: Tdivisor;
+  d: TDivisor;
 begin
  for I := 0 to Length(a) - 1 do
   begin
     a[i].name := '';
-    for d:=low(Tdivisor) to high(Tdivisor) do
+    for d:=low(TDivisor) to high(TDivisor) do
      begin
 //     divs[d].Free;
        a[i].node[d].Free;
@@ -194,7 +194,7 @@ end; // freeID
 
 function Tgroups.add(id_: integer=0): integer;
 var
-  d: Tdivisor;
+  d: TDivisor;
   p: Pgroup;
 begin
   setlength(a, length(a)+1);
@@ -232,12 +232,17 @@ function Tgroups.exists(id: integer): boolean;
 begin result:=idxOf(id) >= 0 end;
 
 procedure Tgroups.rename(id: integer; const newname: string; onlyLocal: Boolean = false);
+var
+  i: Integer;
 begin
-  with a[idxOf(id)] do
-   begin
-     name := newname;
-     ServerUpdate;
-   end;
+  i := idxOf(id);
+  if i >=0  then
+    with a[i] do
+      begin
+        name := newname;
+        if not onlyLocal then
+          ServerUpdate;
+      end;
 end;
 
 procedure TGroups.setNode(id: integer; divisor: TDivisor; node: TNode);
@@ -251,14 +256,11 @@ end;
 
 procedure Tgroups.MakeAllLocal;
 var
-  p: TGroup;
+  i: Integer;
 begin
-  for p in a do
-  begin
-//    p := g.Value;
-//    p.IsLocal := True;
-//    SaveGroup(p);
-  end;
+  if length(a)>0 then
+    for i := Low(a) to High(a) do
+      a[i].ssiID := -1;
 end;
 
 function Tgroups.delete(id: integer): boolean;
@@ -313,22 +315,22 @@ function Tgroups.ssi2id(ssiN: Integer): integer;
 var
   i: integer;
 begin
-for i:=0 to count-1 do
-  if a[i].ssiID = ssiN then
+  for i:=0 to count-1 do
+   if a[i].ssiID = ssiN then
     begin
-    result:=a[i].id;
-    exit;
+      result := a[i].id;
+      exit;
     end;
-result:=-1;
+  result := -1;
 end; // name2id
 
 function Tgroups.id2ssi(id: integer): Integer;
 begin
-  id:=idxOf(id);
+  id := idxOf(id);
   if id<0 then
-    result:= 0
+    result := 0
    else
-    result:=a[id].ssiID;
+    result := a[id].ssiID;
 end;
 
 function Tgroups.getAllSSI: RawByteString;

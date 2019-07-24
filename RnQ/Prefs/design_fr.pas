@@ -470,14 +470,14 @@ begin
   roundwindowsChk.Checked := roundedWindows;}
   roasterTitleBox.Text := rosterTitle;
   if not RnQmain.bar.visible then
-    roasterbarGrp.ItemIndex:=2
+    roasterbarGrp.ItemIndex := 2
    else
     if rosterbarOnTop then
-      roasterbarGrp.ItemIndex:=0
+      roasterbarGrp.ItemIndex := 0
      else
-      roasterbarGrp.ItemIndex:=1;
+      roasterbarGrp.ItemIndex := 1;
   if not RnQmain.FilterBar.visible then
-    FilterBarGrp.ItemIndex:=2
+    FilterBarGrp.ItemIndex := 2
    else
     if FilterBarOnTop then
       FilterBarGrp.ItemIndex := 0

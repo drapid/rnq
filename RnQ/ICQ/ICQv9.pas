@@ -7384,8 +7384,8 @@ case ReplyType of
       $0FAA: // wp result (ComPad)
         begin // simple query and wp result
         y := word_BEat(snac, ofs);
-//        cont.nodb:=FALSE;
-//        cont.infoUpdatedTo:=now;
+//        cont.nodb := FALSE;
+//        cont.infoUpdatedTo := now;
 //        if ord(snac[ofs+2])=$A then
         if readBYTE(snac, ofs)=$A then
           begin
@@ -7503,7 +7503,7 @@ case ReplyType of
         cont.infoUpdatedTo := now;
 //        if snac[ofs+2]=#$14 then
         if readBYTE(snac, ofs)=$14 then
-          cont.nodb:=TRUE;
+          cont.nodb := TRUE;
         if (flags and 1) = 0 then
           notifyListeners(IE_userinfo);
         end;

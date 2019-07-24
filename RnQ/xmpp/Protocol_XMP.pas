@@ -148,8 +148,7 @@ begin
       XMPPv1.IE_TYPING//, XMPPv1.IE_ackXStatus, XMPPv1.IE_XStatusReq
       ] then
   begin
-  e := Thevent.new(EK_null, c, thisXMP.eventTime,
-                    '', thisXMP.eventFlags);
+  e := Thevent.new(EK_null, c, thisXMP.eventTime, thisXMP.eventFlags);
   e.otherpeer := c;
 {  if ev in [XMPPv1.IE_contacts] then
     begin
@@ -159,12 +158,8 @@ begin
     end;}
   if ev in [XMPPv1.IE_msg, XMPPv1.IE_url, XMPPv1.IE_authreq] then
    begin
- { $IFDEF DB_ENABLED}
-//    e.fBin := '';
-//    e.txt := thisXMP.eventMsg;
- { $ELSE ~DB_ENABLED}
-    e.setInfo(thisXMP.eventMsg);
- { $ENDIF ~DB_ENABLED}
+    e.fBin := '';
+    e.txt := thisXMP.eventMsg;
    end;
 //  if ev in [XMPPv1.IE_ack, XMPPv1.IE_authDenied] then
 //    e.setInfo(char(thisXMP.eventAccept)+thisXMP.eventMsg);
@@ -366,12 +361,7 @@ begin
   //        chatFrm.userChanged(c);
            redraw(c);
   //        e.info:=int2str(integer(c.status))+char(c.invisible) +char(c.xStatus);
- {$IFDEF DB_ENABLED}
-          e.fBin :=int2str(integer(c.status))+AnsiChar(c.invisible) + AnsiChar(#0);//AnsiChar(c.xStatus.id);
- {$ELSE ~DB_ENABLED}
-          e.f_info := int2str(integer(c.status))+ AnsiChar(c.invisible) + AnsiChar(0);
-
- {$ENDIF ~DB_ENABLED}
+          e.fBin := int2str(integer(c.status))+AnsiChar(c.invisible) + AnsiChar(#0);//AnsiChar(c.xStatus.id);
           if oncomingOnAway
           and (thisXMP.eventOldStatus in [byte(mSC_AWAY)])
           and not (c.status in [mSC_AWAY])
@@ -482,13 +472,8 @@ begin
        begin
         if (vSA>'') and (ord(vSA[1])=PM_DATA) then
          thisXMP.eventMsg := UnUTF(_istring_at(vSA, 2));
- { $IFDEF DB_ENABLED}
-//         e.fBin := '';
-//         e.txt := thisXMP.eventMsg;
- { $ELSE ~DB_ENABLED}
-         e.flags := (e.flags and not IF_CODEPAGE_MASK) or IF_UTF8_TEXT;
-         e.SetInfo(StrToUTF8(thisXMP.eventMsg));
- { $ENDIF ~DB_ENABLED}
+         e.fBin := '';
+         e.txt := thisXMP.eventMsg;
         if behave(e, EK_msg) then
           NILifNIL(c);
        end;
@@ -540,12 +525,8 @@ begin
 //        msgDlg('___EMAIL EXPRESS___'+
 //         #13+ thisXMP.eventName+' (From: '+thisXMP.eventAddress+')'+
 //         #13+ thisXMP.eventMsg,mtInformation);
- { $IFDEF DB_ENABLED}
-//          e.fBin := '';
-//          e.txt := 'Mail from: '+thisXMP.eventAddress + #13 + thisXMP.eventName;
- { $ELSE ~DB_ENABLED}
-          e.setInfo('Mail from: '+thisXMP.eventAddress + #13 + thisXMP.eventName);
- { $ENDIF ~DB_ENABLED}
+          e.fBin := '';
+          e.txt := 'Mail from: '+thisXMP.eventAddress + #13 + thisXMP.eventName;
           e.kind := EK_MSG;
 //          TipAdd(e);
           TipAdd3(e);

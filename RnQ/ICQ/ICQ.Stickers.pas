@@ -6,7 +6,7 @@ unit ICQ.Stickers;
 interface
 
 uses
-  Windows, Classes, SysUtils, Generics.Collections;
+  Windows, Classes, SysUtils, Generics.Collections, JSON, RnQJSON;
 
 
 const
@@ -35,6 +35,7 @@ type
     IsEnabled: Boolean;
     Priority: Integer;
     Count: Integer;
+    class function fromJSON(const JSON: TJSONObject): TStickerPack; static;
   end;
 
   TStickerPacks = array of TStickerPack;
@@ -162,6 +163,24 @@ begin
 
   Result := 'http://www.icq.com/store/stickers/' + ext + '/' + sticker + '/' + size;
 end;
+
+class function TStickerPack.fromJSON(const JSON: TJSONObject): TStickerPack;
+begin
+  Result := Default(TStickerPack);
+  with JSON do
+  begin
+    GetValueSafe('id', Result.Id);
+    GetValueSafe('name', Result.Name);
+    GetValueSafe('description', Result.Desc);
+    GetValueSafe('count', Result.Count);
+    GetValueSafe('purchased', Result.Purchased);
+    GetValueSafe('usersticker', Result.UserSticker);
+    GetValueSafe('priority', Result.Priority);
+    GetValueSafe('is_enabled', Result.IsEnabled);
+    GetValueSafe('store_id', Result.StoreId);
+  end;
+end;
+
 
 procedure ClearStickerPacks;
 begin

@@ -420,9 +420,12 @@ uses
  {$ENDIF}
   Protocols_all,
   RnQCrypt,
+ {$IFDEF PROTOCOL_WIM}
+  WIM.MenuStickers, WIM, WIMContacts, WIMConsts,
+ {$ENDIF PROTOCOL_WIM}
  {$IFDEF PROTOCOL_ICQ}
+  MenuStickers,
   ICQConsts, ICQContacts, ICQv9,
-  ICQ.Stickers, MenuStickers,
  {$ENDIF PROTOCOL_ICQ}
   RQThemes, themesLib,
  {$IFDEF USE_SECUREIM}
@@ -564,7 +567,7 @@ begin
 
     if UseContactThemes and Assigned(ContactsTheme) then
      begin
-      ContactsTheme.ApplyFont(TPicName('group.') + TPicName(AnsiLowerCase(groups.id2name(c.group))) + '.'+p, Self.Canvas.Font);
+      ContactsTheme.ApplyFont(TPicName('group.') + TPicName(AnsiLowerCase(c.getGroupName)) + '.'+p, Self.Canvas.Font);
       ContactsTheme.ApplyFont(TPicName(c.UID2cmp) + '.'+p, Self.Canvas.Font);
      end;
 
@@ -1287,7 +1290,7 @@ begin
  try
   if (chatType = CT_IM) and Assigned(who) then
    if (who.typing.bIamTyping) and ((now - who.typing.typingTime)*SecsPerDay > typingInterval) then
-    who.fProto.InputChangedFor(who, false, True);
+    who.Proto.InputChangedFor(who, false, True);
  except
  end;
 end;
@@ -1578,15 +1581,15 @@ begin
       FAniTimer.Enabled := false;
     if isVisible and enabled and pagectrl.visible and pagectrl.enabled then
      ch.input.setFocus;
-   
-   {$IFDEF PROTOCOL_ICQ}
-      BuzzBtn.Visible := ch.who.CanBuzz;
-      BuzzBtn.Left := RnQFileBtn.Left + RnQFileBtn.Width;
+
+    BuzzBtn.Visible := ch.who.CanBuzz;
+    BuzzBtn.Left := RnQFileBtn.Left + RnQFileBtn.Width;
+
+   {$IF Defined(PROTOCOL_ICQ)or Defined(PROTOCOL_WIM)}
       stickersBtn.Visible := True;
    {$ELSE ~PROTOCOL_ICQ}
-      BuzzBtn.Visible := false;
       stickersBtn.Visible := false;
-   {$ENDIF PROTOCOL_ICQ}
+   {$IFend PROTOCOL_ICQ}
 
   //    stickersBtn.Enabled := EnableStickers;
       stickersBtn.Enabled := MainPrefs.getPrefBoolDef('chat-images-enable-stickers', True);
@@ -1722,7 +1725,7 @@ begin
     sbar.panels[0].text := getTranslation('Chars:') + ' ' + intToStr(length(input.Text));
     quoteIdx := -1;
    { $IFDEF RNQ_FULL}
-    who.fProto.InputChangedFor(who, length(input.Text) = 0);
+    who.Proto.InputChangedFor(who, length(input.Text) = 0);
    { $ENDIF}
   end;
 end;
@@ -2330,7 +2333,7 @@ begin
   sendBtn.Invalidate;
   sbar.Invalidate;
 
- {$IFDEF PROTOCOL_ICQ}
+ {$IF Defined(PROTOCOL_ICQ)or Defined(PROTOCOL_WIM)}
   if (ch.chatType = CT_IM) and not (cnt = nil) then
   begin
     BuzzBtn.Visible := cnt.CanBuzz;
@@ -2356,7 +2359,7 @@ begin
          end;
   {$ENDIF FLASH_AVATARS}
   {$ENDIF RNQ_AVATARS}
- {$ENDIF PROTOCOL_ICQ}
+ {$IFend PROTOCOL_ICQ}
 end; // updateSendBtn
 
 procedure TchatFrm.closePageAt(idx: Integer);
@@ -2387,16 +2390,14 @@ begin
     else
     if oldCh.chatType = CT_IM then
     begin
-     { $IFDEF RNQ_FULL}
      // end typing
-      oldCh.who.fProto.InputChangedFor(oldCh.who, True);
-     { $ENDIF}
+      oldCh.who.Proto.InputChangedFor(oldCh.who, True);
+       historyData.currentHB := NIl;
+      oldCh.historyBox.Visible := false;
 //      oldCh.historyBox.newSession:=0;
       if oldCh.historyBox.history<>NIL then
        begin
-  //      historyBox.history.reset;
-        oldCh.historyBox.history.Free;
-        oldCh.historyBox.history := NIL;
+        FreeAndNil(oldCh.historyBox.history);
        end;
 
     end;
@@ -2445,7 +2446,7 @@ end;
 
 procedure TchatFrm.FormShow(Sender: TObject);
 var
-//  i:integer;
+//  i: integer;
   ch: TChatInfo;
 begin
 //  theme.getIco2(PIC_MSG, icon);
@@ -2878,17 +2879,17 @@ begin
 end;
 
 procedure TchatFrm.ShowStickersExecute(Sender: TObject);
- {$IFDEF PROTOCOL_ICQ}
+ {$IF Defined(PROTOCOL_ICQ)or Defined(PROTOCOL_WIM)}
 var
   ch: TchatInfo;
- {$ENDIF PROTOCOL_ICQ}
+ {$IFend PROTOCOL_ICQ}
 begin
- {$IFDEF PROTOCOL_ICQ}
+ {$IF Defined(PROTOCOL_ICQ)or Defined(PROTOCOL_WIM)}
   ch := thisChat;
   if ch = nil then
     exit;
   ShowStickersMenu(ch.who, Self, stickersBtn.ClientOrigin);
- {$ENDIF PROTOCOL_ICQ}
+ {$IFend PROTOCOL_ICQ}
 end;
 
 procedure TchatFrm.sbarDblClick(Sender: TObject);
@@ -2988,16 +2989,16 @@ begin
  {$IFDEF PROTOCOL_ICQ}
   3: if Assigned(ch) then
       if ch.chatType = CT_IM then
-      if ch.who.fProto.ProtoID = ICQProtoID then
-       if TICQSession(ch.who.fProto).UseCryptMsg and
+      if ch.who.ProtoID = ICQProtoID then
+       if TICQSession(ch.who.Proto).UseCryptMsg and
           (( TICQContact(ch.who).crypt.supportCryptMsg
            or
-            TICQSession(ch.who.fProto).useMsgType2for(TICQContact(ch.who))
+            TICQSession(ch.who.Proto).useMsgType2for(TICQContact(ch.who))
            )
           or
           ( TICQContact(ch.who).crypt.SupportEcc
            and
-            TICQSession(ch.who.fProto).UseEccCryptMsg)
+            TICQSession(ch.who.Proto).UseEccCryptMsg)
           )
        then
          begin
@@ -3036,6 +3037,57 @@ begin
 
          end;
  {$ENDIF PROTOCOL_ICQ}
+ {$IFDEF PROTOCOL_WIM}
+  3: if Assigned(ch) then
+      if ch.chatType = CT_IM then
+      if ch.who.ProtoID = WIMProtoID then
+       if TWIMSession(ch.who.Proto).UseCryptMsg and
+          (( TWIMContact(ch.who).crypt.supportCryptMsg
+           or
+            TWIMSession(ch.who.Proto).useMsgType2for(TWIMContact(ch.who))
+           )
+          or
+          ( TWIMContact(ch.who).crypt.SupportEcc
+           and
+            TWIMSession(ch.who.Proto).UseEccCryptMsg)
+          )
+       then
+         begin
+          if TWIMContact(ch.who).crypt.supportEcc then
+            begin
+               with theme.GetPicSize(RQteDefault, PIC_CLIENT_LOGO, 16, PPI) do
+                begin
+                  r2 := agR;
+                  inc(R2.X, cx+2);
+                  dec(R2.Width, cx+3);
+                  agR.Width := cx+3;
+                  theme.drawPic(statusbar.canvas.Handle, R2, PIC_KEY, True, PPI);
+//                    dec(agR.Width, cx+2);
+                end;
+              theme.drawPic(statusbar.canvas.Handle, agR, PIC_CLIENT_LOGO, True, PPI)
+            end
+          else
+          if TWIMContact(ch.who).crypt.supportCryptMsg then
+//           theme.drawPic(statusbar.canvas.Handle, rect.left,rect.top+1, PIC_KEY);
+            theme.drawPic(statusbar.canvas.Handle, agR, PIC_KEY, True, PPI)
+           else
+            if CAPS_big_QIP_Secure in TWIMContact(ch.who).capabilitiesBig then
+             begin
+              if TWIMContact(ch.who).crypt.qippwd > 0 then
+               with theme.GetPicSize(RQteDefault, PIC_CLI_QIP, 16, PPI) do
+                begin
+                  r2 := agR;
+                  inc(R2.X, cx+2);
+                  dec(R2.Width, cx+3);
+                  agR.Width := cx+3;
+                  theme.drawPic(statusbar.canvas.Handle, R2, PIC_KEY, True, PPI);
+//                    dec(agR.Width, cx+2);
+                end;
+              theme.drawPic(statusbar.canvas.Handle, agR, PIC_CLI_QIP, True, PPI)
+             end;
+
+         end;
+ {$ENDIF PROTOCOL_WIM}
   4:
        DrawText(StatusBar.Canvas.Handle, StatusBar.SimpleText, 4, ARect, DT_CENTER or DT_SINGLELINE or DT_VCENTER);
 
@@ -3060,7 +3112,7 @@ end;
 
 procedure TchatFrm.FormMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 //var
-//  tabindex : Integer;
+//  tabindex: Integer;
 begin
   hintMode := HM_comm;
 {  tabindex := pagectrl.IndexOfTabAt(X, Y);
@@ -3194,8 +3246,8 @@ begin
  {$WARN UNSAFE_CODE OFF}
   wnd := TselectCntsFrm.doAll(MainDlg.RnQmain,
                               'Send multiple', 'Send message',
-                              cnt.fProto,
-                              cnt.fProto.readList(LT_ROSTER).clone.add(notinlist),
+                              cnt.Proto,
+                              cnt.Proto.readList(LT_ROSTER).clone.add(notinlist),
                               sendMessageAction,
                               [sco_multi, sco_groups, sco_predefined],
                               @wnd
@@ -3297,7 +3349,7 @@ begin
   if (ch = nil)or(ch.who = nil) then
     Exit;
 
-  max := ch.who.fProto.maxCharsFor(ch.who);
+  max := ch.who.Proto.maxCharsFor(ch.who);
   if length(ch.input.text) > max then
    if MessageDlg(getTranslation('Your message is too long. Max %d characters.\n\n                       Split the message?',[max]),
                 mtInformation, [mbYes, mbNo], 0)=mrYes then
@@ -3700,8 +3752,8 @@ begin
   if add2rstr.visible then
   try
     selectedUIN := copy(params.LinkUrl, 5, length(params.LinkUrl));
-    addGroupsToMenu(Self, add2rstr, addcontactAction, not ch.who.fProto.isOnline or
-      ch.who.fProto.canAddCntOutOfGroup);
+    addGroupsToMenu(Self, add2rstr, addcontactAction, not ch.who.Proto.isOnline or
+      ch.who.Proto.canAddCntOutOfGroup);
   except
     add2rstr.visible := false;
   end;
@@ -3732,8 +3784,8 @@ begin
     add2rstr.visible := True;
     try
       selectedUIN := copy(request.Url, 5, length(request.Url));
-      addGroupsToMenu(Self, add2rstr, addcontactAction, not thisChat.who.fProto.isOnline or
-         thisChat.who.fProto.canAddCntOutOfGroup);
+      addGroupsToMenu(Self, add2rstr, addcontactAction, not thisChat.who.Proto.isOnline or
+         thisChat.who.Proto.canAddCntOutOfGroup);
     except
       add2rstr.visible := false;
     end;
@@ -3826,13 +3878,13 @@ procedure TchatFrm.stickersBtnClick(Sender: TObject);
 var
   ch: TchatInfo;
 begin
- {$IFDEF PROTOCOL_ICQ}
+  {$IF Defined(PROTOCOL_ICQ)or Defined(PROTOCOL_WIM)}
   ch := thisChat;
   if ch = nil then
     exit;
   ShowStickersMenu(ch.who, Self, toolbar.ClientToScreen(Types.point(TRnQSpeedButton(Sender).Left, TRnQSpeedButton(Sender).Top)));
   enterCount := 0;
- {$ENDIF PROTOCOL_ICQ}
+ {$IFend PROTOCOL_ICQ}
 end;
 
 procedure TchatFrm.SplitterMoved(Sender: TObject);
@@ -4043,9 +4095,9 @@ begin
     if (ev<>NIL) //then
 //      begin
 //      if
-      and ((blinking or c.fProto.getStatusDisable.blinking) or not blinkWithStatus) then
+      and ((blinking or c.Proto.getStatusDisable.blinking) or not blinkWithStatus) then
        begin
-        if (blinking or c.fProto.getStatusDisable.blinking) then
+        if (blinking or c.Proto.getStatusDisable.blinking) then
           inc(R.left, 1 + ev.Draw(hnd, R.left,R.top, PPI).cx)
         else
           inc(R.left, 1 + ev.PicSize(PPI).cx);
@@ -4082,7 +4134,7 @@ begin
 
     if UseContactThemes and Assigned(ContactsTheme) then
      begin
-      ContactsTheme.ApplyFont(TPicName('group.') + TPicName(AnsiLowerCase(groups.id2name(c.group))) + '.'+p, control.Canvas.Font);
+      ContactsTheme.ApplyFont(TPicName('group.') + TPicName(AnsiLowerCase(c.getGroupName)) + '.'+p, control.Canvas.Font);
       ContactsTheme.ApplyFont(TPicName(c.UID2cmp) + '.'+p, control.Canvas.Font);
      end;
  hnd := control.Canvas.Handle;
@@ -4569,7 +4621,7 @@ begin
        exit;
      end;
 
-    PicMaxSize := round(thisChat.who.fProto.maxCharsFor(thisChat.who, True) * 3 / 4 )- 100;
+    PicMaxSize := round(thisChat.who.Proto.maxCharsFor(thisChat.who, True) * 3 / 4 )- 100;
 
     fs := TFileStream.Create(fn, fmOpenRead or fmShareDenyNone);
     sU := SysUtils.ExtractFileExt(fn);
@@ -4648,22 +4700,19 @@ end;}
 procedure TchatFrm.BuzzBtnClick(Sender: TObject);
 var
   ch: TchatInfo;
- {$IFDEF PROTOCOL_ICQ}
   ev: THevent;
- {$ENDIF PROTOCOL_ICQ}
 begin
   ch := thisChat;
 
-  if not OnlFeature(ch.who.fProto) then
+  if not OnlFeature(ch.who.Proto) then
     Exit;
 
   if (ch = nil) or (ch.who = nil) then
     exit;
 
- {$IFDEF PROTOCOL_ICQ}
-  if TICQSession(ch.who.fProto).sendBuzz(ch.who) then
+  if ch.who.sendBuzz then
     begin
-      ev := THevent.new(EK_buzz, Account.AccProto.getMyInfo, Now, ''{$IFDEF DB_ENABLED}, ''{$ENDIF DB_ENABLED}, 0);
+      ev := THevent.new(EK_buzz, ch.who.Proto.getMyInfo, Now, '', '', 0);
       ev.fIsMyEvent := True;
       if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
         writeHistorySafely(ev);
@@ -4671,7 +4720,6 @@ begin
     end
    else
     msgDlg('Wait at least 15 seconds before buzzing again', True, mtInformation)
- {$ENDIF PROTOCOL_ICQ}
 end;
 
 procedure TchatFrm.SBSearchClick(Sender: TObject);
@@ -4888,10 +4936,10 @@ begin
  {$IFDEF RNQ_FULL}
 //  if Assigned(FSmiles) then
 //    FSmiles.Hide;
- {$IFDEF PROTOCOL_ICQ}
+ {$IF Defined(PROTOCOL_ICQ)or Defined(PROTOCOL_WIM)}
   if Assigned(FStickers) then
     FStickers.Hide;
- {$ENDIF PROTOCOL_ICQ}
+ {$IFend PROTOCOL_ICQ}
  {$ENDIF RNQ_FULL}
 end;
 

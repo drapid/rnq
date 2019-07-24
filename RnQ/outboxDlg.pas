@@ -123,7 +123,7 @@ procedure ToutboxFrm.updatememo;
 var
   s, s1: string;
 begin
-memo.readonly:=TRUE;
+  memo.readonly := TRUE;
 if list.FocusedNode = NIL then
 //not validIdx(list.itemIndex) then
   begin
@@ -134,17 +134,17 @@ if list.FocusedNode = NIL then
   exit;
   end;
 
-lastSelected:= TOevent(POevent(list.getnodedata(list.FocusedNode))^);
+lastSelected := TOevent(POevent(list.getnodedata(list.FocusedNode))^);
 //list.Items.Objects[list.itemIndex] as TOevent;
 with lastSelected do
   begin
-  memo.text:=info;
+  memo.text := info;
    if kind= OE_msg then
-     memo.readonly:=FALSE;
-  saveBtn.enabled:=FALSE;
+     memo.readonly := FALSE;
+  saveBtn.enabled := FALSE;
   case kind of
     OE_msg, OE_contacts, OE_addedYou, OE_auth, OE_authDenied:
-      s:=getTranslation(OEvent2ShowStr[kind]);
+      s := getTranslation(OEvent2ShowStr[kind]);
     else s:='';
     end;
   if Assigned(whom) then
@@ -164,7 +164,7 @@ end;
 
 procedure ToutboxFrm.updateChars;
 begin
-  charsLbl.caption:=getTranslation('Chars:')+' '+intToStr(length(memo.text))
+  charsLbl.caption := getTranslation('Chars:')+' '+intToStr(length(memo.text))
 end;
 
 procedure ToutboxFrm.FormShow(Sender: TObject);
@@ -222,18 +222,18 @@ cnv.font.size:=-10;
       s1 := Str_unk; 
 
 case oe.kind of
-  OE_msg: bmp:=PIC_MSG;
-  OE_contacts: bmp:=PIC_CONTACTS;
-  OE_addedYou: bmp:=PIC_ADD_CONTACT;
+  OE_msg: bmp := PIC_MSG;
+  OE_contacts: bmp := PIC_CONTACTS;
+  OE_addedYou: bmp := PIC_ADD_CONTACT;
   OE_auth:
     begin
-    bmp:='';
-    msg:=getTranslation('Yes');
+    bmp := '';
+    msg := getTranslation('Yes');
     end;
   OE_authDenied:
     begin
-    bmp:='';
-    msg:=getTranslation('No');
+    bmp := '';
+    msg := getTranslation('No');
     end;
   else exit;
   end;
@@ -256,7 +256,7 @@ else
     SetBkMode(cnv.handle, OPAQUE);
     end;}
     outText(msg);
-  cnv.Font.style:=[];
+  cnv.Font.style := [];
   inc(x,4);
   end;
   outText(s1);
@@ -267,22 +267,22 @@ end;
 procedure ToutboxFrm.listChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
 begin
  updatememo;
- deleteBtn.enabled:= list.FocusedNode<>NIL;
- saveBtn.enabled:=FALSE;
+ deleteBtn.enabled := list.FocusedNode<>NIL;
+ saveBtn.enabled := FALSE;
 end;
 
 procedure ToutboxFrm.listClick(Sender: TObject);
 begin
-updatememo;
-deleteBtn.enabled:= list.FocusedNode<>NIL;
-saveBtn.enabled:=FALSE;
+  updatememo;
+  deleteBtn.enabled := list.FocusedNode<>NIL;
+  saveBtn.enabled := FALSE;
 end;
 
 procedure ToutboxFrm.deleteBtnClick(Sender: TObject);
 var
-  ev:TOevent;
-//  i:integer;
-  n : PVirtualNode;
+  ev: TOevent;
+//  i: integer;
+  n: PVirtualNode;
 begin
   if list.SelectedCount <= 0 then
     Exit;
@@ -313,14 +313,14 @@ end;
 
 procedure ToutboxFrm.SplitterMoved(Sender: TObject);
 begin
-//list.height:=splitter.top;
-//memo.height:=clientHeight-splitter.height-list.height
+//list.height := splitter.top;
+//memo.height := clientHeight-splitter.height-list.height
 end;
 
 procedure ToutboxFrm.memoChange(Sender: TObject);
 begin
-saveBtn.enabled:=TRUE;
-updateChars;
+  saveBtn.enabled := TRUE;
+  updateChars;
 end;
 
 procedure ToutboxFrm.saveBtnClick(Sender: TObject);
@@ -330,35 +330,35 @@ begin
 //with list.Items.Objects[list.itemIndex] as TOevent do
  with TOevent(POevent(list.getnodedata(list.FocusedNode))^) do
   begin
-  info:=memo.text;
-  lastmodify:=now;
+    info := memo.text;
+    lastmodify := now;
   end;
-saveBtn.enabled:=FALSE;
+  saveBtn.enabled := FALSE;
 end;
 
 procedure ToutboxFrm.FormResize(Sender: TObject);
 //var
-//  i:integer;
+//  i: integer;
 begin
 {if memo.boundsrect.Bottom > clientHeight then
   begin
-  i:=clientHeight-splitter.boundsrect.bottom;
+  i := clientHeight-splitter.boundsrect.bottom;
   if i > 10 then
     memo.height:=i;
   end;  }
 end;
 
-procedure ToutboxFrm.open(c:TRnQcontact=NIL);
+procedure ToutboxFrm.open(c: TRnQcontact=NIL);
 var
-//  i:integer;
-  n : PVirtualNode;
+//  i: integer;
+  n: PVirtualNode;
 begin
- lastSelected:=NIL;
+ lastSelected := NIL;
  n := NIL;
  updateList;
 if c=NIL then
 //  list.get
-//  i:=list.items.indexOfObject(lastSelected)
+//  i := list.items.indexOfObject(lastSelected)
 else
   begin
     n := list.GetLast();
@@ -446,7 +446,7 @@ begin
   if (lastSelected = NIL)or (lastSelected.whom = NIL) then
     exit;
 
-  Sendmsg1.Enabled:= lastSelected.whom.fProto.isOnline;
+  Sendmsg1.Enabled := lastSelected.whom.Proto.isOnline;
 end;
 
 procedure ToutboxFrm.processChk00Click(Sender: TObject);

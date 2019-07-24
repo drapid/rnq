@@ -260,7 +260,7 @@ const
 //  cachedThemeFilename = 'cache.theme';
   spamsFilename = '0spamers';
   helpFilename = 'miniguide.html';
-  rnqSite = 'http://RnQ.ru';
+  rnqSite = 'https://RnQ.ru';
 
   // paths
  {$IFDEF DB_ENABLED}

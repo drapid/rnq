@@ -39,9 +39,11 @@ const
     'webp'
   );
 
+  procedure CacheType(const url, mime, ctype: RawByteString);
   function CheckType(lnk: String): Boolean; overload;
   function CheckType(lnk: String; var sA: RawByteString; var ext: String): Boolean; overload;
   function DownloadAndCache(lnk: String): Boolean;
+  function CacheImage(var mem: TMemoryStream; const url, ext: RawByteString): Boolean;
 
 var
   EnableVideoLinks: Boolean;

@@ -82,7 +82,8 @@ implementation
 uses
 //  incapsulate,
   Clipbrd, JSON,
-  RDUtils, RnQSysUtils,
+  RDUtils, RnQSysUtils, RnQJSON,
+  RnQxml, NativeXML,
   RQThemes, RnQGlobal,
   RQutil, RnQFileUtil,
   RnQGraphics32;
@@ -231,6 +232,9 @@ begin
 end;
 
 procedure TlogFrm.LogListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+var
+  json: TJSONValue;
+  xml: TRnQXml;
 begin
   if Node = NIL then
     Exit;
@@ -249,13 +253,24 @@ begin
         end
       else if pktType = ptJSON then
         begin
-          var json: TJSONValue;
-          json := TJSONObject.ParseJSONValue(UTF8String(PktData));
+          json := TJSONObject.ParseJSONValue(UTF8String(PktData), true);
           if Assigned(json) then
             begin
-//              dumpBox.Text := Cpt + CRLF + Trim(PrettyPrintJSON(json))
-              dumpBox.Text := Cpt + CRLF + Trim(json.Format);
+              dumpBox.Text := Cpt + CRLF + Trim(formatJSON(json));
               json.Free;
+            end
+          else
+            dumpBox.Text := Cpt + CRLF + UnUTF(PktData);
+        end
+      else if pktType = ptXML then
+        begin
+          xml := TRnQXml.Create(nil);
+          xml.ReadFromString(UTF8String(PktData));
+          if Assigned(xml) then
+            begin
+              xml.xmlFormat := xfReadable;
+              dumpBox.Text := Cpt + CRLF + Trim(xml.WriteToString);
+              xml.Free;
             end
           else
             dumpBox.Text := Cpt + CRLF + UnUTF(PktData);

@@ -45,7 +45,6 @@ type
     Name,
     Caption: string;
     fProtoIDX: Integer;
-//    proto: IRnQProtocol;
    public
      destructor Destroy; override;
      function Clone: TPrefPage;

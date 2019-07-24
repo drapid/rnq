@@ -58,18 +58,18 @@ type
      procedure getPrefDate(const key: String; var Val: TDateTime);
      procedure getPrefDateTime(const key: String; var Val: TDateTime);
      procedure getPrefValue(const key: String; et: TElemType; var Val: TPrefElem);
-     function getPrefGuid(const key: String; var Val: TGUID): Boolean;
-     function getPrefBoolDef(const key: String; const DefVal: Boolean): Boolean;
-     function getPrefBlobDef(const key: String; const DefVal: RawByteString = ''): RawByteString;
-     function getPrefBlob64Def(const key: String; const DefVal: RawByteString = ''): RawByteString;
-     function getPrefStrDef(const key: String; const DefVal: String = ''): String;
-     function getPrefIntDef(const key: String; const DefVal: Integer = -1): Integer;
-     function getPrefVal(const key: String): TPrefElement;
+     function  getPrefGuid(const key: String; var Val: TGUID): Boolean;
+     function  getPrefBoolDef(const key: String; const DefVal: Boolean): Boolean;
+     function  getPrefBlobDef(const key: String; const DefVal: RawByteString = ''): RawByteString;
+     function  getPrefBlob64Def(const key: String; const DefVal: RawByteString = ''): RawByteString;
+     function  getPrefStrDef(const key: String; const DefVal: String = ''): String;
+     function  getPrefIntDef(const key: String; const DefVal: Integer = -1): Integer;
+     function  getPrefVal(const key: String): TPrefElement;
 
-     function getAllPrefs: RawByteString;
+     function  getAllPrefs: RawByteString;
 
      procedure DeletePref(const key: String);
-     function prefExists(const key: String): Boolean;
+     function  prefExists(const key: String): Boolean;
 
      procedure addPrefBlobOld(const key: String; const Val: RawByteString);
      procedure addPrefBlob64(const key: String; const Val: RawByteString);
@@ -131,11 +131,11 @@ uses
 
 
 (*
-Procedure PrefAddVal(const k : String; const v : AnsiString; Mas : THashedStringList);
+Procedure PrefAddVal(const k: String; const v: AnsiString; Mas: THashedStringList);
 var
-//  so : TPUStrObj;
-  El : TPrefElement;
-  i : Integer;
+//  so: TPUStrObj;
+  El: TPrefElement;
+  i: Integer;
 begin
   i := Mas.IndexOf(k);
   if i>=0 then
@@ -170,13 +170,13 @@ end;
 
 (*
 
-{Procedure loadPrefFile(zp : TZipFile);
-  function fullpath(fn:string):string;
-  begin if ansipos(':',fn)=0 then result:=myPath+fn else result:=fn end;
+{Procedure loadPrefFile(zp: TZipFile);
+  function fullpath(fn: string): string;
+  begin if ansipos(':',fn)=0 then result := myPath+fn else result := fn end;
 var
-  s : AnsiString;
-  k,v:string;
-  i, j : Integer;
+  s: AnsiString;
+  k, v: string;
+  i, j: Integer;
 begin
   i := -1;
   if Assigned(zp) then
@@ -221,7 +221,7 @@ end;
 procedure TRnQPref.addPrefBlobOld(const key: String;
   const Val: RawByteString);
 var
-//  so : TPUStrObj;
+//  so: TPUStrObj;
   El: TPrefElement;
   i: Integer;
 begin

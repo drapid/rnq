@@ -82,7 +82,7 @@ type
       PluginProc: Pointer;
 //      ProtoLink: Pointer;
       ProtoLink: TObject;
-      ProtoLinkI: IInterface;
+//      ProtoLinkI: IInterface;
 //      ProcIdx: Integer;
 //      procedure OnPluginMenuClick(Sender: TObject);
     {$ifdef RNQ_SERVICES}

@@ -378,6 +378,7 @@ uses
   {$ELSE}
     RnQGraphics32,
   {$ENDIF USE_GDIPLUS}
+  WIM.Stickers,
   themesLib, menusUnit;
 
 function minor(const a, b: ThistoryPos): boolean; overload;
@@ -588,7 +589,8 @@ var
 //    while (j <= length(s)) and (s[j] in EMAILCHARS) and (j - start < 30) do
     while (j <= length(s)) and CharInSet(s[j], EMAILCHARS) and (j - start < 30) do
       inc(j);
-    if s[j] <> '@' then
+
+    if (j > length(s)) or (s[j] <> '@') then
       exit;
   // @ found, now skip the @ and search for .
     inc(j);
@@ -628,12 +630,18 @@ var
       Result := ch in ['0'..'9'];
      {$ENDIF UNICODE}
     end;
+  const
+    UIN_MIN_LEN = 5;
   var
     i: integer;
+    ls: Integer;
   begin
     result := False;
     i := start;
-    if (i > 0)and isdig(s[i-1]) then
+    ls := Length(s);
+    if (ls < UIN_MIN_LEN) or (ls-i < UIN_MIN_LEN) then
+      Exit;
+    if (i > 1)and isdig(s[i-1]) then
       Exit;
     while (i <= length(s)) and isdig(s[i]) and (i - start < 10) do
       inc(i);
@@ -642,7 +650,7 @@ var
       or ((i < length(s)) and CharInSet(s[i], [',','.']) and isdig(s[i+1])) then
 //      Result := False
      else 
-    if i - start > 5 then
+    if i - start > UIN_MIN_LEN then
     begin
       end_ := i - 1;
       result := True;
@@ -1083,6 +1091,9 @@ var
     vRnQpicEx: TRnQBitmap;
     hnd: HDC;
     pt: TPoint;
+    extStiker: TStringList;
+    png: TRnQBitmap;
+    fs: TMemoryStream;
 
   begin
     x := margin.left;
@@ -1101,7 +1112,8 @@ var
     BodyText := ev.getBodyText;
 //    BodyBin  := ev.bInfo;
     BodyBin  := ev.getBodyBin;
-    if ((Length(BodyText) = 0) and (Length(BodyBin) <= 10)) or (y >= bottomLimit) then
+    if (((Length(BodyText) = 0) and (Length(BodyBin) <= 10)) or (y >= bottomLimit))
+       and (ev.kind <> ek_sticker) then
      begin
       ev.HistoryToken := history.Token;
       ev.PaintHeight := 0;
@@ -1736,6 +1748,54 @@ var
     if Assigned(RnQPicStream) then
       FreeAndNil(RnQPicStream);
 
+    if ev.kind = EK_Sticker then
+      begin
+        extStiker := TStringList.Create;
+        extStiker.Delimiter := ':';
+        extStiker.StrictDelimiter := true;
+        extStiker.DelimitedText := BodyBin;
+        if extStiker.count >= 3 then
+        begin
+          png := TRnQBitmap.Create;
+          fs := TMemoryStream.Create;
+
+          getSticker(extStiker.Strings[1], extStiker.Strings[3], fs, 'small');
+          if not loadPic(TStream(fs), png) then
+            begin
+              fs.Free;
+              png.Free;
+              png := NIL;
+            end;
+          if Assigned(png) then
+            begin
+                 size := BoundsSize(png.getWidth + 1, png.getHeight, MaxChatImgWidthVal, MaxChatImgHeightVal);
+                 newLineHeight(size.cy+1);
+                 // paint
+                 if not JustCalc then
+                  begin
+                   // only the first one has full length
+                   r := rect(x, y, x+size.cx, y+size.cy);
+                   if bodySkipCounter<=0 then
+                    begin
+                      k := 0;
+//                      addItem( PK_RQPICEX, chunkStart, k, r);
+                       begin
+                         cnv.Lock;
+                         DrawRbmp(Cnv.Handle, png,
+                                  MakeRect(x, y+(lineHeight-size.cy) div 2, size.cx, size.cy));
+                         cnv.Unlock;
+                       end;
+                    end;
+                 end;
+               png.Free;
+               png := NIL;
+               inc(x, size.cx);
+            end;
+
+        end;
+        extStiker.Free;
+      end;
+
     newLineB(x, y);
     Result := y - pTop;
     ev.HistoryToken := history.Token;
@@ -1833,7 +1893,7 @@ var
        EK_XstatusMsg,
        EK_OFFGOING:
          begin
-           who.fProto.EventExtraPics(ev.kind, ev.getBodyBin,
+           who.Proto.EventExtraPics(ev.kind, ev.getBodyBin,
             pic1, pic2);
            if pic1 > '' then
              with theme.drawPic(Cnv.Handle, curX+2, curY, pic1, True, PPI) do
@@ -1881,6 +1941,8 @@ var
 //  sA: AnsiString;
  {$ENDIF UNICODE}
 begin
+  if not Assigned(history) then
+    Exit;
   if ((Self.Width <> lastWidth)//or(Self.Height <> lastHeight)
      )
      or (history.themeToken <> theme.token)or(history.SmilesToken <> theme.token) then
@@ -2054,11 +2116,7 @@ begin
      bodySkipCounter := 0;
   //  s := ev.getHeaderText;
      if ev.kind = EK_GCARD then
-      {$IFDEF DB_ENABLED}
        linkTheWholeBody := ev.txt
-      {$ELSE ~DB_ENABLED}
-       linkTheWholeBody := ev.decrittedInfo
-      {$ENDIF ~DB_ENABLED}
       else
        linkTheWholeBody := '';
   //  inc(y, drawHeader(cnv1, y));
@@ -2276,6 +2334,8 @@ var
 
   procedure addStr(s: String);
   begin
+    if s = '' then
+      Exit;
     while dim+length(s) > length(result) do
       setLength(result, length(result)+10000);
   {$IFDEF UNICODE}
@@ -2659,7 +2719,7 @@ begin
       try
         HistoryData.selectedUIN := pointedItem.link.str;
         addGroupsToMenu(self, HistoryData.add2rstr, HistoryData.addcontactAction,
-          who.fProto.canAddCntOutOfGroup or not who.fProto.isOnline);
+          who.Proto.canAddCntOutOfGroup or not who.Proto.isOnline);
       except
         HistoryData.add2rstr.visible := FALSE;
       end;
@@ -3309,7 +3369,7 @@ begin
   if isUseCntThemes then
     begin
       uidBG := TPicName(LowerCase(who.uid2cmp)) + '.'+PIC_CHAT_BG;
-      grpBG := TPicName('group.') + TPicName(AnsiLowerCase(groups.id2name(who.group))) + '.'+PIC_CHAT_BG
+      grpBG := TPicName('group.') + TPicName(AnsiLowerCase(who.getGroupName)) + '.'+PIC_CHAT_BG
     end
    else
     begin
@@ -4418,9 +4478,21 @@ begin
     exit;
   cnt := hb.who;
   if Assigned(cnt) then
-    cnt := cnt.fProto.getContact(selectedUIN);
+    cnt := cnt.Proto.getContact(selectedUIN);
   if Assigned(cnt) then
     addToRoster(cnt, (sender as Tmenuitem).tag, cnt.CntIsLocal)
+end;
+
+function stripProtocol(const stringData: String): String;
+begin
+  if StartsText('uin:', stringData) then
+    Result := copy(stringData, 5, length(stringData))
+  else if StartsText('link:', stringData) then
+    Result := copy(stringData, 6, length(stringData))
+  else if StartsText('mailto:', stringData) then
+    Result := copy(stringData, 8, length(stringData))
+  else
+    Result := stringData;
 end;
 
 procedure THistoryData.addlink2favClick(Sender: TObject);

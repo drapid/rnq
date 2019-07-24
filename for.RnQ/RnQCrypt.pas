@@ -4,10 +4,12 @@ unit RnQCrypt;
 
 interface
 
-   {$IFDEF USE_SYMCRYPTO}
 uses
-  SynCommons;
+  SysUtils,
+   {$IFDEF USE_SYMCRYPTO}
+  SynCommons,
    {$ENDIF USE_SYMCRYPTO}
+  Types;
 
 // crypting
 function  passCrypt(const s: RawByteString): RawByteString;
@@ -37,8 +39,16 @@ function  MD5Pass2(const s: RawByteString): RawByteString;
 
   function Hash256String(key, str: RawByteString): RawByteString;
 
+type
+  TProgressFunc = function(p: real): Boolean;
+
+  function MD5PassH(const s: RawBytestring): RawByteString; //return HEX(MD5)
+  function MD5PassHS(const s: RawBytestring): String; //return HEX(MD5)
+  function getFileMD5(fn: String; progFunc: TProgressFunc): TBytes;
+
 implementation
 uses
+  Windows,
    {$IFDEF USE_SYMCRYPTO}
      SynCrypto,
     {$ELSE not SynCrypto}
@@ -494,6 +504,90 @@ var
 begin
   HMAC_SHA256(key, str, digest);
   Result := Base64EncodeString(DigestToString(digest));
+end;
+
+   {$IFDEF USE_SYMCRYPTO}
+function getFileMD5(fn: String; progFunc: TProgressFunc): TBytes;
+var
+  F: THandle;
+  digest: TMD5Digest;
+  MD5: TMD5;
+  fSize: TQWordRec;
+  fPos: UInt64;
+  buf: array [1..1024*1024] of byte;
+  i: integer;
+begin
+  for i:=0 to 15 do
+    byte(digest[i]):=succ(i);
+  F := FileOpenSequentialRead(fn);
+  if PtrInt(F)>=0 then
+    try
+      md5.Init;
+      fSize.L := GetFileSize(F, @fSize.H);
+      fPos := 0;
+      if fSize.V > 0 then
+        repeat
+          i := FileRead(F, pointer(buf[1])^, sizeof(buf));
+          Inc(fPos, i);
+          md5.Update(buf[1], i);
+          if not( Assigned(progFunc) and progFunc((fPos / fSize.V))) then
+            exit;
+        until i < sizeof(buf);
+   finally
+    FileClose(F);
+    md5.Final(digest);
+  end;
+  SetLength(Result, length(digest));
+  ansiStrings.StrPLCopy(PAnsiChar(Result), PAnsiChar(@digest), length(digest));
+end;
+
+   {$ELSE NOT USE_SYMCRYPTO}
+function getFileMD5(fn: String; progFunc: TProgressFunc): TBytes;
+var
+  digest: TMD5Digest;
+  context: TMD5Context;
+  fs: Tfilestream;
+  buf: array [1..32*1024] of byte;
+  i: integer;
+begin
+  fs := TfileStream.create(fn, fmOpenRead+fmShareDenyWrite);
+for i:=0 to 15 do byte(digest[i]):=succ(i);
+MD5init(context);
+try
+  repeat
+  i:=fs.Read(buf, sizeof(buf));
+  MD5updateBuffer(context, @buf, i);
+  if not progFunc(safeDiv(0.0+fs.position, fs.size)) then exit;
+  until i < sizeof(buf);
+finally
+  fs.free;
+  MD5final(digest, context);
+  for i:=0 to 15 do
+    result:=result+intToHex(byte(digest[i]), 2);
+  end;
+end;
+   {$ENDIF USE_SYMCRYPTO}
+
+function MD5PassH(const s: RawBytestring): RawByteString;
+var
+  digest: RawBytestring;
+  i: Integer;
+begin
+  digest := MD5Pass2(s);
+  if length(digest) > 0 then
+    for i:=0 to length(digest)-1 do
+      result := result + IntToHexA(byte(digest[i]), 2);
+end;
+
+function MD5PassHS(const s: RawBytestring): String; //return HEX(MD5)
+var
+  digest: RawBytestring;
+  i: Integer;
+begin
+  digest := MD5Pass2(s);
+  if length(digest) > 0 then
+    for i:=0 to length(digest)-1 do
+      result := result + intToHex(byte(digest[i]), 2);
 end;
 
 end.

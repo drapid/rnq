@@ -29,7 +29,8 @@ interface
 
 
   function  str2html(const s: String): String;
-  function  strFromHTML(const s: String): String;
+  function  strFromHTML(const s: String): String; OverLoad;
+  function  strFromHTML(const s: RawByteString): RawByteString; OverLoad;
 
   function  str2fontstyle(const s: AnsiString): Tfontstyles;
   function  fontstyle2str(fs: Tfontstyles): AnsiString;
@@ -88,13 +89,15 @@ interface
   function ParamEncode(const Param: String): UTF8String;
   procedure ODS(const Msg: String);
 
+  procedure notAvailable;
+  function  isEmailAddress(const s: string; start: integer): integer;
+
 var
   masterMute: Boolean = false;
 
 implementation
 uses
   sysutils, StrUtils, math, DateUtils,
-
 //  MSACMX,
 //  ComObj,
   Themes,
@@ -185,6 +188,19 @@ begin
 //  '<br>', #10,
 ]);
 end; // str2html
+
+function strFromHTML(const s: RawByteString): RawByteString; OverLoad;
+begin
+  result := template(s, [
+  RawByteString('&amp;'), RawByteString('&'),
+  RawByteString('&quot;'), RawByteString('"'),
+  RawByteString('&lt;'), RawByteString('<'),
+  RawByteString('&gt;'), RawByteString('>'),
+  RawByteString('<br>'), CRLF
+//  '<br>', #13,
+//  '<br>', #10,
+   ]);
+end; // strFromhtml
 
 
 procedure msgDlg(msg: String; NeedTransl: Boolean; kind: TMsgDlgType; const uid: String = '');
@@ -1337,6 +1353,54 @@ begin
   if IsDebuggerPresent then
     OutputDebugString(PChar(Msg));
 end;
+
+procedure notAvailable;
+begin
+  msgDlg('This feature isn''t available yet.\nCome back tomorrow...', True, mtInformation)
+end;
+
+function isEmailAddress(const s: string; start: integer): integer;
+//const
+//  emailChar=['a'..'z','A'..'Z','0'..'9','-','_','.'];
+var
+  j: integer;
+  existsDot: boolean;
+begin
+  result := -1;
+//  if s[start] in EMAILCHARS then   // chi comincia bene...
+  if CharInSet(s[start], EMAILCHARS) then   // chi comincia bene...
+  begin
+  // try to find the @
+    j := start+1;
+//  while (j < length(s)) and (s[j] in EMAILCHARS) do
+  while (j < length(s)) and CharInSet(s[j], EMAILCHARS) do
+    inc(j);
+  if s[j]='@' then
+    begin
+    // @ found, now skip the @ and search for .
+      inc(j);
+      existsDot := FALSE;
+//    while (j < length(s)) and (s[j+1] in EMAILCHARS) do
+    while (j < length(s)) and CharInSet(s[j+1], EMAILCHARS) do
+      begin
+        if s[j]='.' then
+          begin
+            existsDot := TRUE;
+            break;
+          end;
+        inc(j);
+      end;
+//    if existsDot and (s[j] in EMAILCHARS) then // at least a valid char after the . must exists
+    if existsDot and CharInSet(s[j], EMAILCHARS) then // at least a valid char after the . must exists
+      begin
+        repeat
+          inc(j);
+        until (j > length(s)) or not  CharInSet(s[j], EMAILCHARS); // go forth till we're out or we meet an invalid char
+        result := j-1;
+      end;
+    end;
+  end;
+end; // isEmailAddress
 
 
 end.

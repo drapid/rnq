@@ -15,7 +15,7 @@ uses
 
 {$I NoRTTI.inc}
 
-  procedure SendWIMContacts(cnt: TRnQContact; flags:integer; cl:TRnQCList);
+  procedure SendWIMContacts(cnt: TRnQContact; flags: integer; cl: TRnQCList);
 //  procedure SendWIMAddedYou(cnt: TRnQContact);
   procedure ChangeXStatus(pWIM: TWIMSession; const st: Byte; const StName: String = ''; const StText: String = '');
 
@@ -39,26 +39,37 @@ uses
 
   function LoadFromURLAsync(const URL: String; Callback: THttpRequestDone = nil; Data: Pointer = nil; POSTData: RawByteString = ''; ShowErrors: Boolean = True): Boolean;
 
+  procedure DownloadAvtFromURL(c: TWIMContact);
+  procedure DownloadAvtByHash(c: TWIMContact);
+
 implementation
 
 uses
-  Forms, SysUtils,
-  Types,
+  Forms, SysUtils, Types, JSON, StrUtils, DateUtils,
  {$IFDEF UNICODE}
-   AnsiStrings, AnsiClasses, WideStrUtils,
+   AnsiStrings, AnsiClasses, WideStrUtils, Character,
  {$ENDIF}
   RnQBinUtils, RnQNet, RQUtil, RnQDialogs, RQlog,
   rnqLangs, RnQStrings, RQThemes, RDFileUtil, RDUtils,
-  RnQTips, RnQTrayLib, RnQGlobal, RnQPics, RnQConst,
+  RnQTips, RnQTrayLib, RnQGlobal, RnQPics, RnQConst, RnQJSON, RnQNet.Cache,
 {$IFDEF RNQ_AVATARS}
   RnQ_Avatars,
 {$ENDIF}
   globalLib, utilLib, iniLib,
   Protocols_all,
 //  ICQClients,
+  WIM.Stickers,
   pluginutil, pluginLib,
   roasterLib, themesLib, history,
   mainDlg, chatDlg;
+
+type
+  TDownloadObj = class
+  public
+    procedure OnAvatarDownloaded(Sender: TObject; RqType: THttpRequest; ErrCode: Word);
+  end;
+
+
 {
 procedure SendWIMAddedYou(cnt: TRnQContact);
 var
@@ -80,8 +91,8 @@ var
 begin
 //  c := Tcontact(contactsDB.get(TWIMContact, uin));
   plugins.castEv( PE_CONTACTS_SENT, cnt.uid, flags, cl);
-  TWIMSession(cnt.fProto).sendContacts(cnt, flags, cl);
-  ev := Thevent.new(EK_CONTACTS, cnt, now, cl.tostring, 0, flags);
+  TWIMSession(cnt.Proto).sendContacts(cnt, flags, cl);
+  ev := Thevent.new(EK_CONTACTS, cnt, now, cl.tostring, '', 0, flags);
   ev.fIsMyEvent := True;
   if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
     writeHistorySafely(ev);
@@ -262,6 +273,197 @@ begin
   result := nil;
 end; // findViewInfo
 
+
+procedure onGetServerHistory(chat: TWIMContact; hist: TJSONValue);
+
+  function sameTextMsgExists(ev: Thevent; const text: String; kind: Integer): Boolean;
+  begin
+    Result := not (ev = nil) and (ev.getBodyText = text) and (ev.kind = kind);
+  end;
+
+  function sameBinMsgExists(ev: Thevent; bin: RawByteString; kind: Integer): Boolean;
+  begin
+    Result := not (ev = nil) and (ev.getBodyBin = bin) and (ev.kind = kind);
+  end;
+
+var
+//  query, params, lastMsgId, fromMsgId, PatchVer: String;
+//  respStr: RawByteString;
+//  msg, Patch: TJSONValue;
+//  json, results
+//  messages, Patches: TJSONArray;
+  wid: String;
+  msg, text, tmp: TJSONValue;
+  stickerObj: TJSONObject;
+  msgCount, unixTime, code, ind, kind: Integer;
+  PatchMsgId: Int64;
+  extsticker: TStringDynArray;
+  stickerBin: RawByteString;
+  time: TDateTime;
+  outgoing: Boolean;
+  ev, evtmp, evtmp2: Thevent;
+//  cht, cnt: TRnQContact;
+  cnt: TRnQContact;
+  histF: Thistory;
+  histArr: TJSONArray;
+
+
+  procedure FreeBeforeContinue;
+  begin
+    if Assigned(evtmp) then
+      FreeAndNil(evtmp);
+    if Assigned(evtmp2) then
+      FreeAndNil(evtmp2);
+  end;
+
+begin
+  evtmp := nil;
+  evtmp2 := nil;
+  histArr := TJSONArray(hist);
+
+//    histF := Thistory.Create(LowerCase(uid));
+    histF := Thistory.Create;
+    histF.load(chat, true);
+
+    for msg in histArr do
+    if not (msg = nil) and (msg is TJSONObject) then
+    begin
+      msg.GetValueSafe('time', unixTime);
+      time := UnixToDateTime(unixTime, False);
+{
+      if not LoadEntireHistory and (CompareDateTime(time, NewHistFirstStart) < 0) then
+      begin
+        OutputDebugString(PChar('Msg was created before the new history'));
+        Continue;
+      end;
+ }
+      evtmp := histF.getByTime(time);
+
+      tmp := (msg as TJSONObject).GetValue('outgoing');
+      outgoing := not (tmp = nil) and (tmp.Value = 'true');
+
+      if outgoing then
+        cnt := Account.AccProto.getMyInfo
+      else
+        cnt := chat;
+
+      wid := '';
+      tmp := (msg as TJSONObject).GetValue('wid');
+      if Assigned(tmp) then
+      begin
+        tmp.TryGetValue(wid);
+        evtmp2 := histF.getByWID(wid);
+        if not (wid = '') and not (evtmp2 = nil) then
+        begin
+          OutputDebugString(PChar('Msg is already in history (WID ' + wid + ')'));
+          FreeBeforeContinue;
+          Continue;
+        end;
+        if Assigned(evtmp2) then
+          FreeAndNil(evtmp2);
+      end;
+
+      text := (msg as TJSONObject).GetValue('text');
+      stickerObj := (msg as TJSONObject).GetValue('sticker') as TJSONObject;
+      if not (stickerObj = nil) then
+      begin
+        text := stickerObj.GetValue('id');
+        extsticker := SplitString(text.Value, ':');
+//        if EnableStickers and (length(extsticker) >= 4) then
+        if (length(extsticker) >= 4) then
+        begin
+          kind := EK_msg;
+          stickerBin := GetSticker(extsticker[1], extsticker[3]);
+          evtmp2 := histF.getByTime(time);
+          if sameBinMsgExists(evtmp2, stickerBin, kind) then
+          begin
+            OutputDebugString(PChar('EK_msg with the same sticker is already in history (WID ' + wid + ')'));
+            FreeBeforeContinue;
+            Continue;
+          end;
+          if Assigned(evtmp2) then
+            FreeAndNil(evtmp2);
+          ev := Thevent.new(kind, chat, time, 0, 0, wid);
+          ev.fIsMyEvent := outgoing;
+//          ev.setImgBin(stickerBin);
+//          histF.WriteToHistory(ev.clone);
+          ev.Free;
+          FreeBeforeContinue;
+          Continue;
+        end;
+      end;
+
+      { TODO: Add bday, buddy_added and other events }
+      tmp := (msg as TJSONObject).GetValue('eventTypeId');
+      if not (tmp = nil) then
+      begin
+        if tmp.Value = '27:51000' then
+        begin
+          kind := EK_msg;
+          if sameTextMsgExists(evtmp, text.Value, kind) then
+          begin
+            OutputDebugString(PChar('EK_msg with the same time is already in history'));
+            FreeBeforeContinue;
+            Continue;
+          end;
+          ev := Thevent.new(kind, chat, time, '', '[' + GetTranslation('Message deleted') + ']', IF_not_delivered, 0, wid);
+          ev.fIsMyEvent := outgoing;
+//          histF.WriteToHistory(ev.clone);
+          ev.Free;
+          FreeBeforeContinue;
+          Continue;
+        end else if tmp.Value = '27:33000' then
+        begin
+          kind := EK_AddedYou;
+          if sameTextMsgExists(evtmp, text.Value, kind) then
+          begin
+            OutputDebugString(PChar('EK_AddedYou with the same time is already in history'));
+            FreeBeforeContinue;
+            Continue;
+          end;
+          ev := Thevent.new(kind, chat, time, 0);
+          ev.fIsMyEvent := False;
+//          histF.WriteToHistory(ev.clone);
+          ev.Free;
+          FreeBeforeContinue;
+          Continue;
+        end else if tmp.Value = '27:33000' then
+        begin
+          // Bday event is never saved on disk, ignore
+          kind := EK_BirthDay;
+          FreeBeforeContinue;
+          Continue;
+        end;
+      end;
+
+      if not (text = nil) then
+      try
+        kind := EK_msg;
+        evtmp2 := histF.getByTime(time);
+        if sameTextMsgExists(evtmp2, text.Value, kind) then
+        begin
+          OutputDebugString(PChar('EK_msg with the same time/text is already in history (WID ' + wid + ')'));
+          FreeBeforeContinue;
+          Continue;
+        end;
+        if Assigned(evtmp2) then
+          FreeAndNil(evtmp2);
+        ev := Thevent.new(kind, chat, time, '', text.Value, 0, 0, wid);
+        ev.fIsMyEvent := outgoing;
+//        histF.WriteToHistory(ev.clone);
+        ev.Free;
+      except
+        OutputDebugString(PChar('Not a json'));
+      end else
+        OutputDebugString(PChar('Empty msg'));
+      if Assigned(evtmp) then
+        FreeAndNil(evtmp);
+    end;
+    hist.Free;
+  //end else OutputDebugString(PChar('Cannot parse code!'));
+end;
+
+
 procedure ProcessWIMEvents(var thisWIM: TWIMSession; ev: TWIMEvent);
 var
   c: TWIMcontact;
@@ -275,6 +477,7 @@ var
   vS: AnsiString;
   cuid: TUID;
   DlgType: TMsgDlgType;
+  Temp: String;
 begin
   c := thisWIM.eventContact;
   thisWIM.eventContact := nil;
@@ -290,7 +493,7 @@ begin
       IE_email, IE_webpager, IE_fromMirabilis, IE_TYPING, //IE_ackXStatus,
       IE_XStatusReq, IE_MultiChat] then
   begin
-    e := Thevent.new(EK_null, c, thisWIM.eventTime, '', thisWIM.eventFlags, thisWIM.eventMsgID, thisWIM.eventWID);
+    e := Thevent.new(EK_null, c, thisWIM.eventTime, thisWIM.eventFlags, thisWIM.eventMsgID, thisWIM.eventWID);
     e.otherpeer := c;
     if ev in [IE_contacts] then
     begin
@@ -298,18 +501,22 @@ begin
       e.cl.remove(thisWIM.getMyInfo);
       e.cl.remove(c);
     end else if ev in [IE_url, IE_authreq] then
-//      e.setText(UnUTF(thisWIM.eventMsgA))
-      e.setInfo(thisWIM.eventMsgA)
+      begin
+        e.fBin := '';
+        e.txt := UnUTF(thisWIM.eventMsgA);
+      end
     else if ev in [IE_ack, IE_authDenied] then
-//      e.setData(UnUTF(thisWIM.eventMsgA), [Byte(thisWIM.eventAccept)]);
-      e.setInfo(thisWIM.eventMsgA)
+      begin
+        e.fBin := AnsiChar(thisWIM.eventAccept);
+        e.txt := UnUTF(thisWIM.eventMsgA);
+      end;
   end else
     e := nil;
 
 case ev of
 	IE_serverAck:
   	begin
-      i := Account.acks.findID(thisWIM.eventMsgID);
+      i := Account.acks.findID(thisWIM.eventReqID);
       if i >= 0 then  // exploit only for automsgreq
        if Account.acks.getAt(i).kind = OE_msg then
         begin
@@ -317,7 +524,7 @@ case ev of
           TempCh := chatFrm.chats.byContact(c);
           if TempCh <> NIL then
               begin
-                 TempEv := TempCh.historyBox.history.getByID(thisWIM.eventMsgID);
+                 TempEv := TempCh.historyBox.history.getByID(thisWIM.eventReqID);
                  if TempEv <> NIL then
                   begin
 //                    TempEv.flags := TempEv.flags OR IF_SERVER_ACCEPT;// IF_MSG_SERVER;
@@ -329,8 +536,8 @@ case ev of
                       TempEv.flags := TempEv.flags or IF_Delivered;
                     TempEv.writeWID(thisWIM.eventMsgID, thisWIM.eventWID);
   //                 TempEv := NIL;
+                    TempCh.repaint();
                   end;
-                 TempCh.repaint();
               end;
 
         if (Account.acks.getAt(i).flags and IF_Simple > 0) then
@@ -339,7 +546,7 @@ case ev of
     end;
   IE_srvSomeInfo:
     begin
-      i:= Account.acks.findID(thisWIM.eventMsgID);
+      i:= Account.acks.findID(thisWIM.eventReqId);
       if i>=0 then
       	with Account.acks.getAt(i) do
         begin
@@ -367,7 +574,7 @@ case ev of
     end;
   IE_msgError:
   	begin
-    i := Account.acks.findID(thisWIM.eventMsgID);
+    i := Account.acks.findID(thisWIM.eventReqId);
     if i>=0 then
     	with Account.acks.getAt(i) do
        begin
@@ -464,7 +671,7 @@ case ev of
                  if TempCh <> NIL then
                   begin
         //            TempCh.historyBox.history.
-                     TempEv := TempCh.historyBox.history.getByID(thisWIM.eventMsgID);
+                     TempEv := TempCh.historyBox.history.getByID(thisWIM.eventReqID);
                      if TempEv <> NIL then
                       begin
                        TempEv.flags := TempEv.flags OR IF_not_delivered;// IF_MSG_OK;
@@ -542,7 +749,7 @@ case ev of
     end;
   IE_ack:
     begin
-      i:= Account.acks.findID(thisWIM.eventInt);
+      i:= Account.acks.findID(thisWIM.eventReqId);
       if i >= 0 then
       begin
         sU := UnUTF(thisWIM.eventMsgA);
@@ -562,7 +769,7 @@ case ev of
          if TempCh <> NIL then
           begin
 //            TempCh.historyBox.history.
-             TempEv := TempCh.historyBox.history.getByID(thisWIM.eventMsgID);
+             TempEv := TempCh.historyBox.history.getByID(thisWIM.eventReqID);
              if TempEv <> NIL then
               TempEv.flags := TempEv.flags OR IF_delivered;// IF_MSG_OK;
 //             TempEv := NIL;
@@ -614,13 +821,13 @@ case ev of
   IE_toofast: msgDlg('You''re sending too fast!', True, mtWarning);
   IE_pause: msgDlg('You''ll be disconnected soon because server was paused.', True, mtWarning);
   IE_resume: msgDlg('Server was resumed, you may not be disconnected after all.', True, mtWarning);
-  IE_pwdChanged:
+{  IE_pwdChanged:
     begin
 //    saveCFG;
     if not dontSavePwd then
       saveCfgDelayed := True;
     msgDlg('Your password has been changed.', True, mtInformation);
-    end;
+    end;}
   IE_myinfoACK: msgDlg('Your information has been saved.', True, mtInformation);
   IE_wpEnd:
 {    if (wpFrm<>NIL) then
@@ -635,7 +842,7 @@ case ev of
       end; };
   IE_userSimpleInfo:
      begin
-      if (thisWIM.eventWP.uin = UINToUpdate) and checkupdate.enabled then
+      if (thisWIM.eventWP.uin = IntToStr(UINToUpdate)) and checkupdate.enabled then
        begin
         checkupdate.autochecking := True;
         c.nick  := thisWIM.eventwp.nick;
@@ -745,7 +952,6 @@ case ev of
          end
         else if thisWIM.eventError = EC_other then
         begin
-          var Temp: String;
           case TICQAuthError(thisWIM.eventInt) of
             EAC_Not_Enough_Data: Temp := 'Failed to get all the data required for starting a new session';
             EAC_Unknown: Temp := 'Unknown error';
@@ -787,19 +993,11 @@ case ev of
           roasterLib.update(c);//  Что-то нада убрать тут!!!!
           roasterLib.updateHiddenNodes;
           redraw(c);
- {$IFDEF DB_ENABLED}
-          e.fBin := int2str(integer(c.status))+ AnsiChar(c.invisible) + AnsiChar(c.xStatus);
- {$ELSE ~DB_ENABLED}
-          e.f_info:= int2str(integer(c.status))+ AnsiChar(c.isInvisible) + AnsiChar(c.xStatus);
- {$ENDIF ~DB_ENABLED}
+          e.fBin := int2str(integer(c.status))+ AnsiChar(c.isInvisible) + AnsiChar(c.xStatus);
           if //(c.xStatus > 0) or
            (c.xStatusDesc > '') then
             begin
- {$IFDEF DB_ENABLED}
               e.txt   := c.xStatusDesc;
- {$ELSE ~DB_ENABLED}
-              e.f_info := e.f_info + _istring(StrToUtf8(c.xStatusDesc));
- {$ENDIF ~DB_ENABLED}
               e.flags := e.flags or IF_XTended_EVENT;
             end;
 
@@ -839,7 +1037,6 @@ case ev of
     begin
       c.xStatusStr := excludeTrailingCRLF(UnUTF(thisWIM.eventMsgA));
       c.xStatusDesc := excludeTrailingCRLF(unUTF(thisWIM.eventData));
- {$IFDEF DB_ENABLED}
       if c.xStatus > 0 then
         begin
           e.fBin := AnsiChar(c.xStatus) + _istring(StrToUTF8(c.xStatusStr));
@@ -847,12 +1044,6 @@ case ev of
        else
         e.fBin := AnsiChar(#00) + _istring(StrToUTF8(c.xStatusStr));
       e.txt   := c.xStatusDesc;
- {$ELSE ~DB_ENABLED}
-      if c.xStatus > 0 then
-        e.f_info := AnsiChar(c.xStatus) + _istring(StrToUTF8(c.xStatusStr)) + _istring(StrToUTF8(c.xStatusDesc))
-       else
-        e.f_info := #00 + _istring(StrToUTF8(c.xStatusStr));
- {$ENDIF ~DB_ENABLED}
       behave(e, EK_XstatusMsg);
       updateViewInfo(c);
 
@@ -948,11 +1139,7 @@ case ev of
       roasterLib.updateHiddenNodes;
       TCE(c.data^).lastOncoming := thisWIM.eventTime;
       updateViewInfo(c);
- {$IFDEF DB_ENABLED}
-      e.fBin :=int2str(integer(c.status))+AnsiChar(c.invisible)+AnsiChar(c.xStatus);
- {$ELSE ~DB_ENABLED}
-      e.f_info := int2str(integer(c.status))+AnsiChar(c.isInvisible)+AnsiChar(c.xStatus);
- {$ENDIF DB_ENABLED}
+      e.fBin :=int2str(integer(c.status))+AnsiChar(c.isInvisible)+AnsiChar(c.xStatus);
       if noOncomingCounter = 0 then
         behave(e, EK_ONCOMING)
       else if noOncomingCounter < 50 then
@@ -1011,6 +1198,8 @@ case ev of
       begin
         // Закрыли чат
       end;
+      if thisWIM.eventAddress <> '' then
+        e.otherpeer := thisWIM.getWIMContact(thisWIM.eventAddress);
 
       if c.typing.bIsTyping then
         behave(e, EK_typingBeg)
@@ -1021,12 +1210,8 @@ case ev of
     if not e.cl.empty
     and not isAbort(plugins.castEv( PE_CONTACTS_GOT,cuid,e.flags,e.when,e.cl )) then
      begin
- {$IFDEF DB_ENABLED}
        e.fBin := e.cl.tostring;
        e.txt := '';
- {$ELSE ~DB_ENABLED}
-       e.SetInfo(e.cl.tostring);
- {$ENDIF ~DB_ENABLED}
        if behave(e, EK_contacts) then
          NILifNIL(c);
      end;
@@ -1057,12 +1242,8 @@ case ev of
       sU := UnUTF(thisWIM.eventMsgA);
       if not isAbort(plugins.castEv( PE_URL_GOT, cuid, e.flags, e.when, thisWIM.eventAddress, sU )) then
         begin
- {$IFDEF DB_ENABLED}
          e.fBin := '';
          e.txt := thisWIM.eventAddress+#10+sU;
- {$ELSE ~DB_ENABLED}
-         e.SetInfo(thisWIM.eventAddress+#10+sU);
- {$ENDIF ~DB_ENABLED}
          if behave(e, EK_url) then
            NILifNIL(c);
         end;
@@ -1077,12 +1258,6 @@ case ev of
        if (ev = IE_MultiChat) and (thisWIM.eventAddress > '') then
          e.who := thisWIM.getWIMContact(thisWIM.eventAddress);
 
-{       if thisWIM.eventEncoding = TEncoding.BigEndianUnicode then
-       begin
-         Temp := WideBEToStr(thisWIM.eventMsgA);
-         vS := plugins.castEv(PE_MSG_GOT, cuid, e.flags, e.when, Temp);
-       end else if thisWIM.eventEncoding = TEncoding.UTF8 then
-}
        begin
 //         Temp := UnUTF(thisWIM.eventMsgA);
          rS := UTF8Encode(thisWIM.eventString);
@@ -1121,12 +1296,8 @@ case ev of
   IE_gcard:
     if not isAbort(plugins.castEv(PE_GCARD_GOT, cuid, e.flags, e.when, thisWIM.eventAddress)) then
     begin
- {$IFDEF DB_ENABLED}
          e.fBin := '';
          e.txt := thisWIM.eventAddress;
- {$ELSE ~DB_ENABLED}
-         e.SetInfo(thisWIM.eventAddress);
- {$ENDIF ~DB_ENABLED}
        if behave(e, EK_gcard) then
          NILifNIL(c);
     end;
@@ -1160,6 +1331,13 @@ case ev of
 //      if TempCh <> nil then
 //        TempCh.historyBox.ShowServerHistoryNotif;
     end;
+  IE_serverHistory:
+    begin
+      onGetServerHistory(thisWIM.eventContact, thisWIM.eventJSON);
+//      TempCh := chatFrm.chats.byContact(c);
+//      if TempCh <> nil then
+//        TempCh.historyBox.ShowServerHistoryNotif;
+    end;
   IE_UpdatePrefsFrm:
     begin
 //      if Assigned(PrefSheetFrm) then
@@ -1167,9 +1345,9 @@ case ev of
     end;
   end;
  if thisWIM.eventFlags and IF_offline > 0 then
-  if ev in [IE_msg,IE_url,IE_addedYou,IE_authReq,IE_contacts] then
+  if ev in [IE_msg, IE_MultiChat, IE_url,IE_addedYou,IE_authReq,IE_contacts] then
   // we already played a sound for the first offline message, let's make no other sound
-    disableSounds :=TRUE;
+    disableSounds := TRUE;
  if Assigned(e) then
   e.free;
  if Assigned(statusIcon) then
@@ -1278,5 +1456,61 @@ begin
   except end;
 end;
 
+procedure ShowAvatarError(var Cnt: TWIMContact);
+begin
+  if AvatarsNotDnlddInform then
+    MsgDlg(GetTranslation('Contact [%s] doesn''t have an avatar or its download failed',
+    [IfThen(Cnt.displayed = '', Cnt.UID2cmp, Cnt.displayed)]), False, mtInformation);
+end;
+
+procedure TDownloadObj.OnAvatarDownloaded(Sender: TObject; RqType: THttpRequest; ErrCode: Word);
+var
+  Async: TWIMAsync;
+  mem: TMemoryStream;
+begin
+  Async := (Sender as TWIMAsync);
+  if not Assigned(Async) then
+    Exit;
+
+  mem := nil;
+  try
+    if (ErrCode = httperrNoError) and Assigned(Async.RcvdStream) and (Async.RcvdCount > 0) then
+    begin
+      Async.RcvdStream.Seek(0, soFromBeginning);
+      mem := TMemoryStream(Async.RcvdStream);
+      avatars_save_and_load(Async.Contact, Async.Contact.IconID, Async.Contact.icon.Hash_safe, mem);
+    end else
+      ShowAvatarError(Async.Contact);
+
+  updateAvatarFor(Async.Contact);
+//    TryLoadAvatar(Async.Contact);
+//    RnQ_Avatars.try_load_avatar(Async.Contact, Async.Contact.IconID,
+//                     Async.Contact.Icon.hash_safe);
+  finally
+    FreeAndNil(mem);
+    if Assigned(Async.SendStream) then
+      Async.SendStream.Free;
+    //Async.RcvdStream.Free;
+    FreeAndNil(Async);
+    FreeAndNil(Self);
+  end;
+end;
+
+procedure DownloadAvtFromURL(c: TWIMContact);
+var
+  DObj: TDownloadObj;
+begin
+  DObj := TDownloadObj.Create;
+  LoadFromURLAsync(ICQ_AVATAR_URL + c.uid2Cmp, DObj.OnAvatarDownloaded, c);
+end;
+
+procedure DownloadAvtByHash(c: TWIMContact);
+var
+  DObj: TDownloadObj;
+begin
+  DownloadAvtFromURL(c);
+//  DObj := TDownloadObj.Create;
+//  LoadFromURLAsync(ICQ_AVATAR_URL + c.IconID, DObj.OnAvatarDownloaded, c);
+end;
 
 end.

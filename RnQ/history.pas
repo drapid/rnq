@@ -35,17 +35,20 @@ type
 //    destructor Destroy; override;
     function  toString: RawByteString; reIntroduce;
     function  getAt(idx: integer): Thevent;
-    function  getByID(pID: int64): Thevent;
+    function  getByID(pID: int64): Thevent; OverLoad;
+    function  getByID(pReqID: RawByteString): Thevent; OverLoad;
     function  getByWID(pWID: RawByteString): Thevent;
     function  getByTime(time: TDateTime): Thevent;
     function  getIdxBeforeTime(time: TDateTime; inclusive: Boolean = True): Integer;
-    class function UIDHistoryFN(const UID: TUID): String;
+ {$IFNDEF DB_ENABLED}
+    class function UIDHistoryFN(const UID: TUID): TFileName;
+ {$ENDIF ~DB_ENABLED}
     procedure reset;
     procedure WriteToHistory(ev: Thevent);
 //    function Clear;
     procedure deleteFromTo(const uid: TUID; st, en: integer);
     procedure deleteFromToTime(const uid: TUID; const st, en: TDateTime);
-//    function  load(uid: AnsiString; quite: Boolean = false): boolean;
+//    function  load(uid: AnsiString; quiet: Boolean = false): boolean;
     function  load(cnt: TRnQContact; const quiet: Boolean = false): boolean;
 //    function  RepaireHistoryFile(fn: String; var rslt: String): Boolean;
      property Token: Cardinal read fToken;
@@ -83,15 +86,16 @@ uses
 
 const
   Max_Event_ID = 1000000;
+  Max_Event_IDs = RawByteString('1000000');
 
  {$IFNDEF DB_ENABLED}
-class function Thistory.UIDHistoryFN(const UID: TUID): String;
+class function Thistory.UIDHistoryFN(const UID: TUID): TFileName;
 begin
-  Result := Account.ProtoPath + historyPath + String(UID);
+  Result := Account.ProtoPath + historyPath + UID2FN(UID);
 end;
  {$ENDIF ~DB_ENABLED}
 
-//function Thistory.load(uid:AnsiString; quite : Boolean = false):boolean;
+//function Thistory.load(uid: AnsiString; quiet: Boolean = false): boolean;
 function Thistory.load(cnt: TRnQContact; const quiet: Boolean = false): boolean;
  {$IFNDEF DB_ENABLED}
 var
@@ -103,12 +107,12 @@ begin
     FromDB(cnt);
     Result := True;
  {$ELSE ~DB_ENABLED}
-//  Result :=  fromString(loadFile(userPath+historyPath + uid), quite);
+//  Result :=  fromString(loadFile(userPath+historyPath + uid), quiet);
   str := GetStream(UIDHistoryFN(cnt.UID2cmp));
   if Assigned(str)  then
    begin
     str.Position := 0;
-//    Result :=  fromSteam(str, quite);
+//    Result :=  fromSteam(str, quiet);
     memstream := TMemoryStream.Create;
     memstream.CopyFrom(str, str.Size);
     memstream.Position := 0;
@@ -331,49 +335,11 @@ var
   begin
     i := getInt;
     SetLength(Result, i);
-    str.Read(result[1], i);
+    if i > 0 then
+      str.Read(result[1], i);
 //    inc(cur,length(result))
   end;
 
-{  function getInt1(str1: Tstream): integer; Inline;
-  begin
-    str1.Read(result, 4);
-  end;
-  function getByte1(str1: Tstream): byte; Inline;
-  begin
-    str1.Read(result, 1);
-  end;
-  function getDatetime1(str1: Tstream): Tdatetime; Inline;
-  begin
-    str1.Read(result, 8);
-  end;
-  function getString1(str1: Tstream): string; Inline;
-  var
-    i: Integer;
-  begin
-    i := getInt1(str1);
-    SetLength(Result, i);
-    str1.Read(result[1], i);
-  end;
-}
-
-
-{  procedure parseExtrainfo;
-  var
-    code, next, extraEnd: integer;
-  begin
-  extraEnd := cur+getInt;
-  while cur < extraEnd do
-    begin
-    code := getInt;
-    next := cur+getInt;
-    case code of
-      EI_flags: ev.flags := getInt;
-      end;
-    cur := next;
-    end;
-  end; // parseExtraInfo
-}
   procedure parseExtrainfo;
   var
     code, next, extraEnd: integer;
@@ -417,7 +383,8 @@ var
         EI_WID:
           begin
             SetLength(s, len);
-            str.Read(s[1], len);
+            if len > 0 then
+              str.Read(s[1], len);
           end;
        end;
       cur := next;
@@ -453,7 +420,8 @@ begin
   repeat
   begin
   ev := Thevent.create;
-  ev.ID := Max_Event_ID;
+//  ev.ID := Max_Event_ID;
+  ev.reqID := IntToStrA(Max_Event_ID);
 //  ev.fpos:=cur-1;
 //  ev.fpos:= str.Position;
   ev.fpos := curPos;
@@ -507,8 +475,7 @@ begin
       end;
       ev.when      := getDatetime;
       parseExtrainfo;
-      ev.f_info      := getString;
-//      ev.parseInfo(getString);
+      ev.parseInfo(getString);
       add(ev);
       end;
     HI_hashed: hashed := getString;
@@ -592,21 +559,30 @@ begin
 end; // reset
 
 function  Thistory.getByID(pID: Int64): Thevent;
+begin
+  Result := NIL;
+  if pID > 0 then
+    Result := getByID(IntToStr(pID));
+end;
+
+function  Thistory.getByID(pReqID: RawByteString): Thevent;
 var
   i: integer;
 begin
-  i := Count-1;
   Result := NIL;
+  if pReqID = '' then
+   Exit;
+  i := Count-1;
   while i >= 0 do
    with Thevent(items[i]) do
    begin
-    if ID = pID then
+    if reqID = pReqID then
       begin
        Result := Thevent(items[i]);
        break;
       end
      else
-      if ID = Max_Event_ID then
+      if reqID = Max_Event_IDs then
         Exit;
     dec(i);
    end;
@@ -630,7 +606,7 @@ begin
        break;
       end
      else
-      if ID = Max_Event_ID then
+      if reqID = Max_Event_IDs then
         Exit;
     dec(i);
    end;
@@ -903,7 +879,7 @@ while str.Position < len do
       end;
     else
       begin
-//       if not quite then
+//       if not quiet then
 //         msgDlg(getTranslation('The history is corrupted, some data is lost'),mtError);
        result:=FALSE;
 //       exit;
@@ -925,14 +901,14 @@ begin
   if Assigned(str)  then
    begin
     str.Position := 0;
-  //  Result :=  fromSteam(str, quite);
+  //  Result :=  fromSteam(str, quiet);
     memstream := TMemoryStream.Create;
     memstream.CopyFrom(str, str.Size);
     memstream.Position := 0;
     FreeAndNil(str);
 
     result := RepaireHistoryStream(memstream, rslt);
-//    Result :=  fromSteam(memstream, quite);
+//    Result :=  fromSteam(memstream, quiet);
     FreeAndNil(memstream);
    end;
   rslt := rslt+crlf+ logtimestamp + getTranslation('End of repaire file "%s"', [fn]);

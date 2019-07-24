@@ -1,4 +1,4 @@
-unit ICQ.Stickers;
+unit WIM.Stickers;
 {$I forRnQConfig.inc}
 {$I RnQConfig.inc }
 {$I NoRTTI.inc}
@@ -6,7 +6,7 @@ unit ICQ.Stickers;
 interface
 
 uses
-  Windows, Classes;
+  Windows, Classes, SysUtils, Generics.Collections, JSON, RnQJSON;
 
 
 const
@@ -25,18 +25,45 @@ const
 type
   PMemoryStream = ^TMemoryStream;
 
-  function getSticker(const ext, sticker: String;
-                      pifs: TMemoryStream = NIL; const forceSize: String = ''): RawByteString;
+  TStickerPack = record
+    Id: Integer;
+    StoreId: String;
+    Name: String;
+    Desc: String;
+    Purchased: Boolean;
+    UserSticker: Boolean;
+    IsEnabled: Boolean;
+    Priority: Integer;
+    Count: Integer;
+    class function fromJSON(const JSON: TJSONObject): TStickerPack; static;
+  end;
 
-  function getStickerURL(const ext, sticker: RawByteString; const forceSize: String = ''): RawByteString;
+  TStickerPacks = array of TStickerPack;
 
-  function make_sticker_url(set_id: Integer; sticker_id: Integer; const size: String): String;
-  function make_big_icon_url(set_id: Integer): String;
+  function  getSticker(const ext, sticker: String;
+                       pifs: TMemoryStream = NIL; const forceSize: String = ''): RawByteString;
+
+  function  getStickerURL(const ext, sticker: RawByteString; const forceSize: String = ''): RawByteString;
+
+  function  make_sticker_url(set_id: Integer; sticker_id: Integer; const size: String): String;
+  function  make_big_icon_url(set_id: Integer): String;
+  procedure ClearStickerPacks;
+  procedure AddStickerPack(pak: TStickerPack);
+
+  procedure ChangeStickerPackStatus(const PackId: String; Status: Boolean);
+  function  GetStickerPacksCount: Integer;
+  function  GetStickerPacks(ActiveOnly: Boolean = False): TStickerPacks;
+
+  function  GetCachedPickers: String;
+  procedure RemoveStickerPackCache(const PackId: String);
+
+var
+  HiddenStickerPacks, DupStickerPacks: TList<Integer>;
 
 implementation
 
 uses
-  Base64, SysUtils, StrUtils,
+  Base64, StrUtils,
   RDGlobal, RnQGlobal,
   RDUtils, globalLib,
   RnQPrefsLib,
@@ -139,20 +166,39 @@ begin
   Result := 'http://www.icq.com/store/stickers/' + ext + '/' + sticker + '/' + size;
 end;
 
-function make_sticker_url(set_id: Integer; sticker_id: Integer; size: String): String;
+function make_sticker_url(set_id: Integer; sticker_id: Integer; const size: String): String;
 begin
-  Result := 'https://c.icq.com/store/stickers/' + set_id + '/' + sticker_id + '/' + size + '.png';
+  Result := 'https://c.icq.com/store/stickers/' + inttoStr(set_id) + '/' + IntToStr(sticker_id) + '/' + size + '.png';
 end;
 
 function make_big_icon_url(set_id: Integer): String;
 begin
-  Result := 'https://c.icq.com/store/stickers/'+ set_id + '/icon/large.png';
+  Result := 'https://c.icq.com/store/stickers/'+ IntToStr(set_id) + '/icon/large.png';
 end;
 
-(*
 procedure parse_StickerFile(node: TJSONObject);
+var
+//  js: TJSONObject;
+  jv: TJSONValue;
+  st: TStickerPack;
 begin
-  node.
+  st := Default(TStickerPack);
+  with node do
+  begin
+    GetValueSafe('id', st.Id);
+    GetValueSafe('name', st.Name);
+    GetValueSafe('description', st.Desc);
+    GetValueSafe('count', st.Count);
+    GetValueSafe('purchased', st.Purchased);
+    GetValueSafe('usersticker', st.UserSticker);
+    GetValueSafe('priority', st.Priority);
+    GetValueSafe('is_enabled', st.IsEnabled);
+    GetValueSafe('store_id', st.StoreId);
+  end;
+  jv := node.GetValue ('contentlist_sticker_picker_icon');
+
+
+(*
             auto iter_id = _node.FindMember("id");
             if (iter_id == _node.MemberEnd() || !iter_id->value.IsInt())
                 return false;
@@ -204,7 +250,123 @@ begin
             }
 
             auto iter_content = _node.FindMember("content");
-end;
 *)
+end;
+
+class function TStickerPack.fromJSON(const JSON: TJSONObject): TStickerPack;
+begin
+  Result := Default(TStickerPack);
+  with JSON do
+  begin
+    GetValueSafe('id', Result.Id);
+    GetValueSafe('name', Result.Name);
+    GetValueSafe('description', Result.Desc);
+    GetValueSafe('count', Result.Count);
+    GetValueSafe('purchased', Result.Purchased);
+    GetValueSafe('usersticker', Result.UserSticker);
+    GetValueSafe('priority', Result.Priority);
+    GetValueSafe('is_enabled', Result.IsEnabled);
+    GetValueSafe('store_id', Result.StoreId);
+  end;
+end;
+
+
+procedure ClearStickerPacks;
+begin
+
+end;
+
+procedure AddStickerPack(pak: TStickerPack);
+begin
+
+end;
+
+procedure ChangeStickerPackStatus(const PackId: String; Status: Boolean);
+begin
+
+end;
+
+function GetStickerPacksCount: Integer;
+//var
+//  qry: TFDQuery;
+begin
+  Result := 0;
+{
+  qry := TFDQuery.Create(sql);
+  try
+    qry.Connection := sql;
+    qry.SQL.Text := 'SELECT COUNT(*) FROM "' + dbStickers + '"';
+    if qry.OpenOrExecute and (qry.RecordCount > 0) then
+    begin
+      qry.First;
+      Result := qry.Fields[0].AsInteger;
+    end;
+  finally
+    if Assigned(qry) then
+      FreeAndNil(qry);
+  end;
+}
+end;
+
+function GetStickerPacks(ActiveOnly: Boolean = False): TStickerPacks;
+//var
+//  qry: TFDQuery;
+begin
+{
+  qry := TFDQuery.Create(sql);
+  try
+    qry.Connection := sql;
+    qry.SQL.Text := 'SELECT * FROM "' + dbStickers + '"' + IfThen(ActiveOnly, ' WHERE "purchased" = 1', '') + ' ORDER BY "Id"';
+    if not QueryToStickersArray(qry, Result) then
+      SetLength(Result, 0);
+  finally
+    if Assigned(qry) then
+      FreeAndNil(qry);
+  end;
+}
+end;
+
+procedure RemoveStickerPackCache(const PackId: String);
+var
+  sr: TSearchRec;
+begin
+  if FindFirst(StickerPath + PackId + '_*_*.png', faAnyFile, sr) = 0 then
+  repeat
+    if not (sr.name = '.') and not (sr.name = '..') then
+      DeleteFile(StickerPath + sr.name);
+  until FindNext(sr) <> 0;
+  FindClose(sr);
+end;
+
+function CheckPickerCache(Ext: Integer): Boolean;
+begin
+  Result := FileExists(StickerPath + IntToStr(Ext) + '_picker_small.png');
+end;
+
+function GetCachedPickers: String;
+var
+  i: Integer;
+  s: TStickerPacks;
+begin
+  Result := '';
+  s := GetStickerPacks(True);
+  for i := 0 to Length(s) - 1 do
+    if CheckPickerCache(s[i].Id) then
+      Result := Result + 'picker:n' + IntToStr(s[i].Id) + #10;
+  Result := Trim(Result);
+end;
+
+
+initialization
+
+  HiddenStickerPacks := TList<Integer>.Create;
+  HiddenStickerPacks.AddRange([87, 108, 205, 209]);
+  DupStickerPacks := TList<Integer>.Create;
+  DupStickerPacks.AddRange([116288, 194855, 234247 {Cute Pigs - Incomplete set}]);
+
+finalization
+
+  HiddenStickerPacks.Free;
+  DupStickerPacks.Free;
 
 end.

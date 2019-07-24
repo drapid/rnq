@@ -99,8 +99,9 @@ implementation
  uses
    SysUtils, StrUtils, Masks,
    RDGlobal, RnQStrings, RDUtils,
-   RnQLangFrm, RnQGlobal,
+   RnQGlobal,
  {$IFDEF RNQ}
+   RnQLangFrm,
    RQlog,
    RQUtil,
  {$ENDIF RNQ}
@@ -875,8 +876,8 @@ var
   sA: RawByteString;
   w: String;
 //  lang_paths : array[0..1] of string;
-  lang_paths : array of string;
-  lang_subpaths : array of string;
+  lang_paths: array of string;
+  lang_subpaths: array of string;
   ti: Integer;
 begin
   setLength(lang_paths, 2);
@@ -1014,6 +1015,7 @@ begin
 //     langList[0]
     end
   else
+ {$IFDEF RNQ}
    begin
     refreshLangList(False);
     i := showLangsFrm(langList);
@@ -1033,6 +1035,16 @@ begin
        LangVar.loadLanguage2(langList[i]);
       end;
    end;
+{$ELSE RNQ}
+      begin
+       i := 0;
+       gLangFile := langList[i].fn;
+       gLangSubFile := langList[i].subFile;
+       LangVar := TRnQLang.Create;
+//       LangVar.loadLanguage;
+       LangVar.loadLanguage2(langList[i]);
+      end;
+{$ENDIF RNQ}
   ClearLanglist;
 end;
 

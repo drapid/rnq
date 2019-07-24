@@ -131,7 +131,7 @@ procedure TauthreqFrm.addBtnClick(Sender: TObject);
 begin
   addGroupsToMenu(self, addmenu.items, addcontactAction, True);
   with clientToScreen(addBtn.BoundsRect.bottomRight) do
-    addmenu.popup(x,y);
+    addmenu.popup(x, y);
 end;
 
 procedure TauthreqFrm.FormClose(Sender: TObject; var Action: TCloseAction);

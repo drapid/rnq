@@ -2,7 +2,7 @@
   This file is part of R&Q.
   Under same license
 }
-unit MenuStickers;
+unit WIM.MenuStickers;
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 
@@ -65,9 +65,11 @@ implementation
 { $R 'stickers.res' 'stickers.rc'} // Added to Project Source
 
 uses
-  ICQv9, ICQ.Stickers,
-  RnQLangs, RnQGlobal, RQUtil, RQThemes, RDUtils,
-  events, history,
+  WIM, WIM.Stickers,
+  RnQLangs, RnQGlobal, RQUtil, RQThemes, RDUtils, RnQConst,
+//  protocols_all, outboxLib,
+  events,
+  history,
   globalLib, chatDlg;
 
 var
@@ -261,27 +263,37 @@ end;
 procedure TFStickers.SendSticker(StickerMsg: String; Index: Integer);
 var
   ev: Thevent;
-  extStiker: TStringList;
+//  extStiker: TStringList;
+//  st: RawByteString;
 begin
-  if OnlFeature(rnqContact.fProto) then
+  if OnlFeature(rnqContact.Proto) then
     begin
       Self.Hide;
       GoToChat;
 
-      TICQSession(rnqContact.fProto).sendSticker(rnqContact.UID, StickerMsg);
+      TWIMSession(rnqContact.Proto).sendSticker(rnqContact, StickerMsg);
 
+{
       // Add sticker to chat
       extStiker := TStringList.Create;
       extStiker.Delimiter := ':';
       extStiker.StrictDelimiter := true;
       extStiker.DelimitedText := StickerMsg;
-      ev := Thevent.new(EK_MSG, rnqContact.fProto.getMyInfo, Now, getSticker(extStiker.Strings[1], extStiker.Strings[3])
-                        {$IFDEF DB_ENABLED}, ''{$ENDIF DB_ENABLED}, 0);
-      ev.fIsMyEvent := True;
-      writeHistorySafely(ev, rnqContact);
-      chatFrm.addEvent(rnqContact, ev.clone);
-      ev.Free;
+//      Proto_Outbox_add(OE_sticker, rnqContact, 0, st);
+
+//      st := getSticker(extStiker.Strings[1], extStiker.Strings[3]);
       extStiker.Free;
+}
+      ev := Thevent.new(EK_Sticker, rnqContact.Proto.getMyInfo, Now
+                        , '',
+                        StickerMsg, 0);
+      ev.fIsMyEvent := True;
+      if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) then
+        writeHistorySafely(ev, rnqContact);
+      // HISTORY
+      if BE_history in behaviour[ev.kind].trig then
+        chatFrm.addEvent(rnqContact, ev.clone);
+      ev.Free;
     end
    else
     Self.Hide

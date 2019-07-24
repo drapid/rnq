@@ -117,9 +117,9 @@ begin
   NILdoWith := 2 - NILdoGrp.ItemIndex;
   doFixWindows := fixwindowsChk.checked;
   wheelVelocity := round(wheel.value);
-  wheelVelocity:=round(wheel.value);
-  inactivehideTime:=round(inactivehideSpin.value*10);
-  inactiveHide:=inactivehideChk.checked;
+  wheelVelocity := round(wheel.value);
+  inactivehideTime := round(inactivehideSpin.value*10);
+  inactiveHide := inactivehideChk.checked;
   FileSavePath := RcvPathEdit.Text;
 end;
 
@@ -130,17 +130,17 @@ begin
   fnBoxButton.left:=  fnBox.left + fnBox.width + GAP_SIZE;
 
 
-  minimizeroasterChk.checked:=minimizeroster;
-  switchklChk.checked:=autoswitchKL;
+  minimizeroasterChk.checked := minimizeroster;
+  switchklChk.checked := autoswitchKL;
   NILdoGrp.ItemIndex := 2 - NILdoWith;
-  fixwindowsChk.checked:=doFixWindows;
-  wheel.value:=wheelVelocity;
-  inactivehideChk.checked:=inactivehide;
-  quitChk.checked:=quitconfirmation;
+  fixwindowsChk.checked := doFixWindows;
+  wheel.value := wheelVelocity;
+  inactivehideChk.checked := inactivehide;
+  quitChk.checked := quitconfirmation;
   inactivehideSpin.value := inactivehideTime div 10;
-  fnBox.text:=browserCmdLine;
-  defaultbrowserChk.checked:=useDefaultBrowser;
-  custombrowserChk.checked:=not useDefaultBrowser;
+  fnBox.text := browserCmdLine;
+  defaultbrowserChk.checked := useDefaultBrowser;
+  custombrowserChk.checked := not useDefaultBrowser;
   RcvPathEdit.Text := FileSavePath;
 end;
 

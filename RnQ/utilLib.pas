@@ -16,7 +16,7 @@ interface
 uses
   windows, sysutils, graphics, classes, extctrls,
   forms, stdctrls, controls, menus,
-  comctrls, messages, types, JSON,
+  comctrls, messages, types,
   VirtualTrees,
   strutils,
 //    GDIPAPI, GDIPOBJ,
@@ -113,7 +113,6 @@ procedure openSendContacts(dest: TRnQContact);
 function  isEmailAddress(const s: string; start: integer): integer;
 procedure notAvailable;
 // strings
-//function  TLV(code: integer; data: string): string;
 function  mb(q: extended): string;
 
 procedure onlyDigits(obj: Tobject); overload;
@@ -129,8 +128,6 @@ function  ints2cl(proto: TRnQProtocol; a: TintegerDynArray): TRnQCList;
 function  beh2str(kind: integer): RawByteString;
 procedure str2beh(const b, s: RawByteString); overload;
 function  str2beh(s: AnsiString): Tbehaviour; overload;
-function  str2html(const s: string): string;
-function  strFromHTML(const s: string): string;
 function  db2strU(db: TRnQCList): RawByteString;
 // window management
 procedure toggleMainfrmBorder(setBrdr: Boolean = false; IsBrdr: Boolean = True);
@@ -160,7 +157,7 @@ function  saveAllLists(const uPath: String; const pr: TRnQProtocol; pProxys: Tar
 function  loadDB(zp: TZipFile; pCheckGroups: Boolean): boolean;
 //procedure saveDB;
 //procedure saveLists(pr: TRnQProtocol);
-procedure loadLists(const pr: TRnQProtocol; zp: TZipFile; const uPath : String);
+procedure loadLists(const pr: TRnQProtocol; zp: TZipFile; const uPath: String);
 procedure LoadExtSts(zp: TZipFile);
 //procedure SaveExtSts;
 procedure loadSpamQuests(zp: TZipFile);
@@ -174,26 +171,12 @@ procedure loadOutInBox(zp: TZipFile);
 //procedure saveRetrieveQ;
 function  openSaveDlg(parent: Tform; const Cptn: String; IsOpen: Boolean;
                       const ext: String = ''; const extCptn: String = '';
-                      const defFile: String = ''; MultiSelect: boolean = false): string;
+                      const defFile: String = ''; MultiSelect: boolean = false): String;
 
 function  str2sortby(const s: AnsiString): TsortBy;
 procedure CheckBDays;
 function  GetWidth(chk: TCheckBox): integer;
-function  CacheImage(var mem: TMemoryStream; const url, ext: RawByteString): Boolean;
-procedure CacheType(const url, mime, ctype: RawByteString);
-function  CheckType(const lnk: String; var sA: RawByteString; var ext: String): Boolean; overload;
-function  CheckType(const lnk: String): Boolean; overload;
 procedure incDBTimer;
-
-  function ParseJSON(const RespStr: String; out JSON: TJSONObject): Boolean; overload;
-  function ParseJSON(const RespStr: String; out JSON: TJSONArray): Boolean; overload;
-  function ParseJSON(const RespStrR: UTF8String; out JSON: TJSONObject): Boolean; overload;
-  function ParseJSON(const RespStrR: UTF8String; out JSON: TJSONArray): Boolean; overload;
-  function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: String): Boolean; overload;
-  function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: RawByteString): Boolean; overload;
-  function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Integer): Boolean; overload;
-  function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Cardinal): Boolean; overload
-  function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Boolean): Boolean; overload;
 
 
 implementation
@@ -225,7 +208,6 @@ uses
   // лайт версия будет без окна настроек!!!
 // {$IFNDEF RNQ_LITE}
   prefDlg, RnQPrefsInt, RnQPrefsTypes,
-//   ignore_fr,
   design_fr,
 // {$ENDIF RNQ_LITE}
  {$IFDEF RNQ_PLAYER}
@@ -250,6 +232,9 @@ uses
   Protocol_ICQ,// ICQClients,
   wpDlg,
  {$ENDIF PROTOCOL_ICQ}
+ {$IFDEF PROTOCOL_WIM}
+  WIM, WIMContacts, WIMConsts,
+ {$ENDIF PROTOCOL_WIM}
   {$IFDEF USE_GDIPLUS}
     RnQGraphics,
   {$ELSE}
@@ -956,7 +941,7 @@ begin
          begin
            lastserverAddr := pr.loginServerAddr;
            lastServerIP := pr.loginServerAddr;
-           connect_after_dns(Account.AccProto)
+           connect_after_dns(pr)
          end
        else
         begin
@@ -1221,7 +1206,7 @@ begin
   result := NIL;
   if ev=NIL then
     exit;
-  result := viewTextWindow(MainPrefs, ev.getHeaderText, ev.getBodyText, ev.getBodyBin);
+  result := viewTextWindow(mainPrefs, ev.getHeaderText, ev.getBodyText, ev.getBodyBin);
 //theme.GetIco2(ev.pic, result.icon);
   theme.pic2ico(RQteFormIcon, ev.pic, result.icon);
 end; // viewHeventWindow
@@ -1244,7 +1229,7 @@ begin
     Filtr := getTranslation('All files') + '|*.*';
 //  if defFile = '' then
 //    defFile := myPath;
-//dlg.options:=[ofFileMustExist,ofEnableSizing];
+//dlg.options := [ofFileMustExist,ofEnableSizing];
   if parent <> NIL then
     hndl := parent.Handle
    else
@@ -1256,32 +1241,6 @@ begin
   else
     result := '';
 end; // opendlg
-
-function str2html(const s: string): string;
-begin
-  result := template(s, [
-    '&', '&amp;',
-    '"', '&quot;',
-    '<', '&lt;',
-    '>', '&gt;',
-    CRLF, '<br>',
-    #13, '<br>',
-    #10, '<br>'
-   ]);
-end; // str2html
-
-function strFromHTML(const s: string): string;
-begin
-  result := template(s, [
-    '&amp;', '&',
-    '&quot;', '"',
-    '&lt;', '<',
-    '&gt;', '>',
-    '<br>', CRLF
-//  '<br>', #13,
-//  '<br>', #10,
-   ]);
-end; // str2html
 
 
 procedure restoreForeWindow;
@@ -1489,10 +1448,10 @@ var
 begin
   c1 := TRnQcontact(item1);
   c2 := TRnQcontact(item2);
-  if c1.group < c2.group then
+  if c1.groupId < c2.groupId then
     result := -1
    else
-    if c1.group > c2.group then
+    if c1.groupId > c2.groupId then
       result := +1
      else
       result := compareText(c1.displayed, c2.displayed);
@@ -1670,8 +1629,8 @@ end;
 
 procedure loadInbox(zp : TZipFile);
 var
- s : AnsiString;
- i : Integer;
+ s: AnsiString;
+ i: Integer;
 begin
   i := -1;
   if Assigned(zp) then
@@ -1741,8 +1700,8 @@ begin
   wnd := TselectCntsFrm.doAll( RnQmain,
                               getTranslation('To %s',[dest.displayed]),
                               getTranslation('Send selected contacts'),
-                              dest.fProto,
-                              notInList.clone.add(dest.fProto.readList(LT_ROSTER)),
+                              dest.Proto,
+                              notInList.clone.add(dest.Proto.readList(LT_ROSTER)),
                               RnQmain.sendContactsAction,
                               [sco_multi, sco_groups, sco_predefined],
                               @wnd,
@@ -1750,7 +1709,7 @@ begin
                               );
 //  Theme.getIco2(PIC_CONTACTS, wnd.icon);
   Theme.pic2ico(RQteFormIcon, PIC_CONTACTS, wnd.icon);
-  wnd.extra := Tincapsulate.aString(dest.uid);
+  wnd.extra := Tincapsulate.aString(UID2RAW(dest.uid));
  {$ENDIF PROTOCOL_ICQ}
 end; // openSendContacts
 
@@ -1852,7 +1811,7 @@ begin
   if oe.flags and IF_multiple <> 0 then
    oe.flags := oe.flags or IF_noblink and not IF_urgent;
 
-  vBin := plugins.castEv( PE_MSG_SENT, oe.whom.uid, oe.flags, oe.info);
+  vBin := plugins.castEv( PE_MSG_SENT, oe.whom.uid, oe.flags, StrToUTF8(oe.info));
   if (vBin>'') then
     if(byte(vBin[1])=PM_DATA) then
      begin
@@ -1873,14 +1832,13 @@ begin
   if Length(send_msg) = 0 then
     exit;
   result := True;
-  oe.id := oe.whom.fProto.sendMsg(oe.whom, oe.flags, send_msg, result);
+  oe.sID := oe.whom.Proto.sendMsg2(oe.whom, oe.flags, send_msg, result);
   oe.timeSent := now;
   if result then
-    Account.acks.add(oe.kind, oe.whom, oe.flags, 'MSG').ID := oe.ID;
+    Account.acks.add(oe.kind, oe.whom, oe.flags, 'MSG').sID := oe.sID;
 
   if Length(oe.info) = 0 then
     exit;
- {$IFDEF DB_ENABLED}
   if (oe.flags and IF_Bin) <> 0 then
     begin
       vBin := oe.info;
@@ -1893,21 +1851,7 @@ begin
       vStr := oe.info;
       fl := oe.flags or IF_UTF8_TEXT;
     end;
- {$ELSE ~DB_ENABLED}
-  if (oe.flags and IF_Bin) <> 0 then
-    begin
-      vBin := oe.info;
-      vStr := '';
-      fl := oe.flags;
-    end
-   else
-    begin
-      vBin := StrToUTF8(oe.info);
-      vStr := '';
-      fl := oe.flags or IF_UTF8_TEXT;
-    end;
- {$ENDIF ~DB_ENABLED}
-  ev := Thevent.new(EK_MSG, oe.whom.fProto.getMyInfo, oe.timeSent, vBin{$IFDEF DB_ENABLED}, vStr{$ENDIF DB_ENABLED}, fl, oe.id);
+  ev := Thevent.new(EK_MSG, oe.whom.Proto.getMyInfo, oe.timeSent, vBin, vStr, fl, oe.sID);
   ev.fIsMyEvent := True;
   if logpref.writehistory and (BE_save in behaviour[ev.kind].trig) and ( oe.flags and IF_not_save_hist = 0) then
     writeHistorySafely(ev, oe.whom);
@@ -2033,7 +1977,7 @@ begin
     exit;
   if group=2000 then
     group := 0;
-  c.group := group;
+  c.groupId := group;
   saveGroupsDelayed := TRUE;
   result := addToRoster(c, isLocal) or roasterLib.update(c);
 end; // addToRoster
@@ -2041,7 +1985,7 @@ end; // addToRoster
 function addToNIL(c: TRnQContact; isBulk: Boolean = false): boolean;
 begin
   result := FALSE;
-  c.fProto.removeContact(c);
+  c.Proto.removeContact(c);
   if not notInList.add(c) then
     exit;
   if not isBulk then
@@ -2062,7 +2006,7 @@ begin
  {$IFDEF PROTOCOL_ICQ}
     if not isBulk and (c is TICQContact) then
      if TICQContact(c).infoUpdatedTo=0 then
-      TicqSession(c.fProto).sendQueryInfo(TICQcontact(c).uinINT);
+      TicqSession(c.Proto).sendQueryInfo(TICQcontact(c).uinINT);
  {$ENDIF PROTOCOL_ICQ}
    end;
 end; // eventFrom
@@ -2118,7 +2062,7 @@ begin
     result := status2imgName(byte(SC_UNK), FALSE)
    else
 //  result:=status2imgName(tstatus(c.status), c.invisible)
-    result:= c.fProto.Statuses[c.getStatus].ImageName;
+    result:= c.Proto.Statuses[c.getStatus].ImageName;
 //  Result := c.statusImg;
 end; // rosterImgIdxFor
 
@@ -2210,10 +2154,10 @@ begin
            s1 := getTranslation(Str_unk)
           else
            s1 := ip2str(TICQContact(c).connection.ip);
-         if TICQContact(c).proto=0 then
+         if TICQContact(c).protoV=0 then
            s2 := getTranslation(Str_unk)
           else
-           s2 := intToStr(TICQContact(c).proto);
+           s2 := intToStr(TICQContact(c).protoV);
        end
       else
  {$ENDIF PROTOCOL_ICQ}
@@ -2226,7 +2170,7 @@ begin
       '%nick%',  c.nick,
       '%first%', c.first,
       '%last%',  c.last,
-      '%status%',getTranslation(c.fProto.statuses[c.getStatus].Cptn),
+      '%status%',getTranslation(c.Proto.statuses[c.getStatus].Cptn),
       '%ip%',    s1,
       '%proto%', s2
      ]);
@@ -2255,7 +2199,7 @@ begin
 //  result := applyVars(c, ExtStsStrings[TicqSession(c.fProto).curXStatus], True);
  {$IFDEF PROTOCOL_ICQ}
   if Assigned(c) then
-    result := applyVars(c, ExtStsStrings[TicqSession(c.fProto).curXStatus].Desc, True)
+    result := applyVars(c, ExtStsStrings[TicqSession(c.Proto).curXStatus].Desc, True)
    else
     result := applyVars(NIL, ExtStsStrings[TicqSession(Account.AccProto.ProtoElem).curXStatus].Desc, True)
  {$ENDIF PROTOCOL_ICQ}
@@ -2552,7 +2496,7 @@ begin
     if (msg > '')and(Assigned(ev)) then
       begin
 //        spamCnt := contactsDB.get(TICQContact, spamsFilename);
-        spamCnt := c.fProto.getContact(spamsFilename);
+        spamCnt := c.Proto.getContact(spamsFilename);
         writeHistorySafely(ev, spamCnt);
 //        if chatFrm.chats.idxOfUIN(spamsFilename) >= 0 then
           chatFrm.addEvent(spamCnt, ev.clone);
@@ -2707,10 +2651,6 @@ var
   dd: TDivisor;
 begin
   result := FALSE;
- {$IFNDEF DB_ENABLED}
-//  if info > '' then
-//    ev.setInfo(info);
- {$ENDIF ~DB_ENABLED}
   if kind >= 0 then
     ev.kind := kind;
 
@@ -2733,10 +2673,10 @@ begin
    else
     vCnt := ev.who;
 
-  vProto := vCnt.fProto;
+  vProto := vCnt.Proto;
 
  if (spamfilter.useBotInInvis or (vCnt.imVisibleTo)) and spamfilter.useBot then
-  if not (vProto.isInList(LT_ROSTER, vCnt) or
+  if not (vCnt.isInRoster or
           notInList.exists(vCnt) or
           chatFrm.isChatOpen(vCnt)
           ) then
@@ -2916,7 +2856,7 @@ if minOnOff then
                 EK_XstatusMsg, EK_Xstatusreq]) then
    begin
 //     gr := vCnt.group;
-     gr := groups.get(vCnt.group);
+     gr := groups.get(vCnt.groupId);
      if OnlOfflInOne then
        dd := d_contacts
       else
@@ -2940,7 +2880,7 @@ if minOnOff then
           else
            begin
               begin
-               picsName := TPicName('group.') + TPicName(AnsiLowerCase(groups.id2name(vCnt.group))) + '.' + TPicName(event2str[ev.kind]);
+               picsName := TPicName('group.') + TPicName(AnsiLowerCase(vCnt.getGroupName)) + '.' + TPicName(event2str[ev.kind]);
                picsFound := (ContactsTheme.GetSound(picsName) > '');
               end;
              if picsFound then
@@ -3167,12 +3107,12 @@ begin
   if
   {$IFDEF UseNotSSI}
 //    icq.useSSI and
-  (not (c.iProto.ProtoElem is TicqSession) or TicqSession(c.iProto.ProtoElem).useSSI) and
+  (not (c.Proto.ProtoElem is TicqSession) or TicqSession(c.Proto.ProtoElem).useSSI) and
  {$ENDIF UseNotSSI}
     not Local_only
   then
 //    activeICQ.add2ignore(c);
-    c.fProto.AddToList(LT_SPAM, c);
+    c.AddToList(LT_SPAM);
 //    activeICQ.SSI_AddVisItem(c.UID, FEEDBAG_CLASS_ID_IGNORE_LIST);
 {    for i := Low(prefPages) to High(prefPages) do
      if prefPages[i].Name = 'Ignore list' then
@@ -3191,11 +3131,11 @@ begin
   ignoreList.remove(c);
  {$IFDEF UseNotSSI}
 //  if icq.useSSI then
-  if (not (c.iProto.ProtoElem is TicqSession) or TicqSession(c.iProto.ProtoElem).useSSI) then
+  if (not (c.Proto.ProtoElem is TicqSession) or TicqSession(c.iProto.ProtoElem).useSSI) then
  {$ENDIF UseNotSSI}
    begin
 //    if ICQ.readList(LT_SPAM).exists(c) then
-      c.fProto.RemFromList(LT_SPAM, c);
+      c.RemFromList(LT_SPAM);
 //      ICQ.SSI_DelVisItem(c.UID, FEEDBAG_CLASS_ID_IGNORE_LIST);
    end;
 
@@ -3216,16 +3156,19 @@ begin
     exit;
   if c.isInRoster then
     plugins.castEvList(PE_LIST_REMOVE, PL_ROSTER, c);
-  grp := c.group;
+  autosizeDelayed := TRUE;
+  grp := c.groupId;
   roasterLib.remove(c);
-//  c.iProto.removeContact(c);
+//  c.Proto.removeContact(c);
   if WithHistory then
     DelHistWith(c.UID2cmp);
 
-  if (grp>0) and (TRnQCList(c.fProto.readList(LT_ROSTER)).getCount(grp) = 0) then
+  c.groupId := 0;
+
+  if (grp>0) and (TRnQCList(c.Proto.readList(LT_ROSTER)).getCount(grp) = 0) then
     if messageDlg(getTranslation('This group (%s) is empty! Do you want to delete it?',[groups.id2name(grp)]),mtConfirmation, [mbYes,mbNo], 0) = mrYes then
       roasterLib.removeGroup(grp);
-  c.group := 0;
+
 end; // removeFromRoster
 
 procedure realizeEvents(const kind_: integer; c: TRnQcontact);
@@ -3268,7 +3211,7 @@ var
  {$IFDEF PROTOCOL_ICQ}
   dd: TProtoDirect;
  {$ENDIF PROTOCOL_ICQ}
-//  ev0:Thevent;
+//  ev0: Thevent;
   vCnt: TRnQContact;
 begin
   if not Assigned(ev) then
@@ -3297,7 +3240,7 @@ begin
     EK_file:
       begin
  {$IFDEF PROTOCOL_ICQ}
-        dd := vCnt.fProto.directs.findID(ev.ID);
+        dd := vCnt.Proto.directs.findID(ev.ID);
         if Assigned(dd) then
           receiveFile(dd);
  {$ENDIF PROTOCOL_ICQ}
@@ -3324,7 +3267,7 @@ begin
         end;
     EK_CONTACTS:
       TselectCntsFrm.doAll(RnQmain, getTranslation('from %s', [vCnt.displayed]),
-            getTranslation('Add selected contacts'), vCnt.fProto,
+            getTranslation('Add selected contacts'), vCnt.Proto,
             ev.cl.clone, RnQmain.addContactsAction, [sco_multi, sco_selected], @wnd, false, false)
   end;
   try
@@ -3928,7 +3871,7 @@ case kind of
      fieldOut(getTranslation('UIN')+'# ', c.uin2Show);
 //     if y < i+ty then y := i+ty;
 //     if n.contact.xStatusStr > '' then
-    if Assigned(c.fProto) and c.fProto.isOnline then
+    if Assigned(c.Proto) and c.Proto.isOnline then
       fieldOutDP('Status', c.getStatusName);
 
 //     if (not XStatusAsMain) and (cnt.xStatus > 0) then
@@ -4001,12 +3944,12 @@ case kind of
     else
      if c.birth <> 0 then
       fieldOutDP('Birthday', DateToStr(c.birth));
-    fieldOutDP('Group', groups.id2name(c.group));
+    fieldOutDP('Group', c.GetGroupName);
 
     tS := '';
     if c.GetContactIP <> 0 then
-     if c.fProto.getMyInfo <> NIL then
-      if c.GetContactIP = c.fProto.getMyInfo.GetContactIP then
+     if c.Proto.getMyInfo <> NIL then
+      if c.GetContactIP = c.Proto.getMyInfo.GetContactIP then
         tS := ip2str(c.GetContactIntIP)
        else
         tS := ip2str(c.GetContactIP);
@@ -4051,13 +3994,15 @@ case kind of
      {$IFDEF UseNotSSI}
        Assigned(c) and
 //       icq.useSSI and
-       (not (c.iProto.ProtoElem is TicqSession) or TicqSession(c.iProto.ProtoElem).useSSI) and
+       (not (c.Proto.ProtoElem is TicqSession) or TicqSession(c.Proto.ProtoElem).useSSI) and
      {$ENDIF UseNotSSI}
        not c.CntIsLocal and not c.Authorized then
       fieldOut('', 'Need authorization', True);
    {$IFDEF RNQ_AVATARS}
+    if
  {$IFDEF PROTOCOL_ICQ}
-    if TicqSession(Account.AccProto).AvatarsSupport and
+       TicqSession(Account.AccProto).AvatarsSupport and
+ {$ENDIF PROTOCOL_ICQ}
        avatarShowInHint then
      if Assigned(c.icon.Bmp) then
        if calcOnly then
@@ -4089,10 +4034,18 @@ case kind of
           DrawRbmp(cnv.Handle, c.icon.Bmp, tR, false);
          end
       else
-       if Assigned(cnt) then
-        if cnt.ICQIcon.hash > '' then
-         fieldOut('', 'Has avatar', True);
+       begin
+ {$IFDEF PROTOCOL_ICQ}
+         if Assigned(cnt) then
+          if cnt.ICQIcon.hash > '' then
+           fieldOut('', 'Has avatar', True);
  {$ENDIF PROTOCOL_ICQ}
+ {$IFDEF PROTOCOL_WIM}
+       if Assigned(c) and (c is TWIMContact) then
+        if TWIMContact(c).IconID > '' then
+         fieldOut('', 'Has avatar', True);
+ {$ENDIF PROTOCOL_WIM}
+       end;
    {$ENDIF RNQ_AVATARS}
     end;
   NODE_GROUP:
@@ -4117,7 +4070,7 @@ case kind of
       a2 := 0;
       a3 := 0;
       for cnt1 in cl do
-        if cnt1.group = groupid then
+        if cnt1.groupId = groupid then
           if cnt1.isOffline then
             inc(a)
            else
@@ -4146,11 +4099,11 @@ end; // drawHint
 
 function infoToStatus(const info: RawByteString): byte;
 begin
- {$IFDEF PROTOCOL_ICQ}
   if length(info) < 4 then
     result := byte(SC_UNK)
    else
     result := str2int(info);
+ {$IFDEF PROTOCOL_ICQ}
 if not (result in [byte(SC_ONLINE)..byte(SC_Last)]) then
  {$ENDIF PROTOCOL_ICQ}
   result := byte(SC_UNK);
@@ -4211,7 +4164,7 @@ procedure addTempVisibleFor(time: integer; c: TRnQContact);
 begin
 // {$IFDEF UseNotSSI}
 //  ICQ.addTemporaryVisible(c);
-  c.fProto.AddToList(LT_TEMPVIS, c);
+  c.AddToList(LT_TEMPVIS);
   removeTempVisibleTimer := time;
   removeTempVisibleContact := c;
 //{$ELSE UseSSI}
@@ -4367,7 +4320,7 @@ begin
               end
              else
               begin
-                ss := TPicName('group.') + TPicName(AnsiLowerCase(groups.id2name(c.group))) + '.' + bds;
+                ss := TPicName('group.') + TPicName(AnsiLowerCase(c.getGroupName)) + '.' + bds;
                 if (ContactsTheme.GetSound(ss) > '') then
                  begin
                   played := True;
@@ -4416,117 +4369,6 @@ begin
   end;
 end;
 
-procedure CacheType(const url, mime, ctype: RawByteString);
-begin
-  try
-    if not (mime = '') then
-      imgCacheInfo.WriteString(url, 'mime', mime)
-    else
-      imgCacheInfo.WriteString(url, 'mime', ctype);
-    imgCacheInfo.UpdateFile;
-  except end;
-end;
-
-function CheckType(const lnk: String; var sA: RawByteString; var ext: String): Boolean;
-var
-  idx: Integer;
-  ctype: String;
-  imgStr, mime, fileIdStr: RawByteString;
-  buf: TMemoryStream;
-  JSONObject: TJSONObject;
-begin
-  Result := False;
-  if ContainsText(lnk, 'files.icq.net/') then
-  begin
-    buf := TMemoryStream.Create;
-    fileIdStr := ReplaceText(Trim(lnk), 'files.icq.net/get/', 'files.icq.com/getinfo?file_id=');
-    fileIdStr := ReplaceText(fileIdStr, 'files.icq.net/files/get?fileId=', 'files.icq.com/getinfo?file_id=');
-    LoadFromURL(fileIdStr, buf);
-    SetLength(imgStr, buf.Size);
-    buf.ReadBuffer(imgStr[1], buf.Size);
-    buf.Free;
-
-    JSONObject := TJSONObject.ParseJSONValue(imgStr) as TJSONObject;
-    if Assigned(JSONObject) then
-    try
-      JSONObject := TJSONObject.ParseJSONValue(TJSONArray(JSONObject.GetValue('file_list')).Items[0].ToJSON) as TJSONObject;
-      sA := JSONObject.GetValue('dlink').Value + '?no-download=1';
-      mime := JSONObject.GetValue('mime').Value;
-      JSONObject.Free;
-    except end;
-  end else
-    sA := Trim(lnk);
-
-  ctype := HeaderFromURL(sA);
-  CacheType(lnk, mime, ctype);
-  if MatchText(mime, ImageContentTypes) or MatchText(ctype, ImageContentTypes) then
-  begin
-    Result := True;
-
-    idx := IndexText(mime, ImageContentTypes);
-    if idx < 0 then
-      idx := IndexText(ctype, ImageContentTypes);
-
-    if idx >= 0 then
-      ext := ImageExtensions[idx]
-    else
-      ext := 'jpg';
-  end;
-end;
-
-function CheckType(const lnk: String): Boolean;
-var
-  ext: String;
-  sA: RawByteString;
-begin
-  Result := CheckType(lnk, sA, ext);
-end;
-
-function CacheImage(var mem: TMemoryStream; const url, ext: RawByteString): Boolean;
-var
-  imgcache, fn: String;
-  hash: LongWord;
-  winimg: TWICImage;
-begin
-  Result := False;
-  winimg := TWICImage.Create;
-  mem.Seek(0, 0);
-
-  try
-    winimg.LoadFromStream(mem);
-  except
-    if Assigned(winimg) then
-      winimg.Free;
-    Exit;
-  end;
-
-  if winimg.Empty then
-  begin
-    winimg.Free;
-    Exit;
-  end;
-
-  imgcache := myPath + 'Cache\Images\';
-  if not DirectoryExists(imgcache) then
-    ForceDirectories(imgcache);
-
-  hash := CalcMurmur2(BytesOf(url));
-  fn := imgcache + IntToStr(hash) + '.' + ext;
-  winimg.SaveToFile(fn);
-
-  try
-    imgCacheInfo.WriteString(url, 'ext', ext);
-    imgCacheInfo.WriteString(url, 'hash', IntToStr(hash));
-    imgCacheInfo.WriteInteger(url, 'width', winimg.Width);
-    imgCacheInfo.WriteInteger(url, 'height', winimg.Height);
-    imgCacheInfo.UpdateFile;
-  finally
-    winimg.Free;
-  end;
-
-  Result := True;
-end;
-
 procedure incDBTimer;
 var
   isSSRuning: BOOL;
@@ -4545,126 +4387,7 @@ begin
 
 end;
 
-function ParseJSON(const RespStr: String; out JSON: TJSONObject): Boolean;
-var
-  TmpJSON: TJSONValue;
-begin
-  Result := False;
-  JSON := nil;
-  TmpJSON := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RespStr), 0);
-  if not Assigned(TmpJSON) then
-    Exit;
-  if TmpJSON is TJSONObject then
-  begin
-    JSON := TmpJSON as TJSONObject;
-    Result := True;
-  end else
-    FreeAndNil(TmpJSON);
-end;
 
-function ParseJSON(const RespStr: String; out JSON: TJSONArray): Boolean;
-var
-  TmpJSON: TJSONValue;
-begin
-  Result := False;
-  JSON := nil;
-  TmpJSON := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RespStr), 0);
-  if not Assigned(TmpJSON) then
-    Exit;
-  if TmpJSON is TJSONArray then
-  begin
-    JSON := TmpJSON as TJSONArray;
-    Result := True;
-  end else
-    FreeAndNil(TmpJSON);
-end;
-
-function ParseJSON(const RespStrR: UTF8String; out JSON: TJSONObject): Boolean;
-var
-  TmpJSON: TJSONValue;
-begin
-  Result := False;
-  JSON := nil;
-  TmpJSON := TJSONObject.ParseJSONValue(RespStrR);
-  if not Assigned(TmpJSON) then
-    Exit;
-  if TmpJSON is TJSONObject then
-  begin
-    JSON := TmpJSON as TJSONObject;
-    Result := True;
-  end else
-    FreeAndNil(TmpJSON);
-end;
-
-function ParseJSON(const RespStrR: UTF8String; out JSON: TJSONArray): Boolean;
-var
-  TmpJSON: TJSONValue;
-begin
-  Result := False;
-  JSON := nil;
-  TmpJSON := TJSONObject.ParseJSONValue(RespStrR);
-  if not Assigned(TmpJSON) then
-    Exit;
-  if TmpJSON is TJSONArray then
-  begin
-    JSON := TmpJSON as TJSONArray;
-    Result := True;
-  end else
-    FreeAndNil(TmpJSON);
-end;
-
-
-function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: String): Boolean;
-begin
-  Data := '';
-  Result := False;
-  if Assigned(Val) and Assigned(Val.GetValue(Key)) then
-  begin
-    Result := Val.GetValue(Key).TryGetValue(Data);
-    Data := UnUTF(Data);
-  end;
-end;
-
-
-// Keep UTF8
-
-function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: RawByteString): Boolean;
-var
-  s: String;
-begin
-  Data := '';
-  Result := False;
-  if Assigned(Val) and Assigned(Val.GetValue(Key)) then
-  begin
-    Result := Val.GetValue(Key).TryGetValue(s);
-    Data := s;
-  end;
-end;
-
-
-function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Integer): Boolean;
-begin
-  Data := 0;
-  Result := False;
-  if Assigned(Val) and Assigned(Val.GetValue(Key)) then
-    Result := Val.GetValue(Key).TryGetValue(Data);
-end;
-
-function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Cardinal): Boolean;
-begin
-  Data := 0;
-  Result := False;
-  if Assigned(Val) and Assigned(Val.GetValue(Key)) then
-    Result := Val.GetValue(Key).TryGetValue(Data);
-end;
-
-function GetSafeJSONValue(const Val: TJSONObject; const Key: String; out Data: Boolean): Boolean;
-begin
-  Data := False;
-  Result := False;
-  if Assigned(Val) and Assigned(Val.GetValue(Key)) then
-    Result := Val.GetValue(Key).TryGetValue(Data);
-end;
 
 
 

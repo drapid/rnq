@@ -106,12 +106,7 @@ begin
    s := AnsiChar(#00);
 //  e := Thevent.new(i, icq.myInfo, now, s+'Testing', 0);
   e := Thevent.new(i, Account.AccProto.getMyInfo, now, s
-            {$IFDEF DB_ENABLED}
               , getTranslation('Testing')
-            {$ELSE ~DB_ENABLED}
-              +AnsiString(getTranslation('Testing'))
-//              + str
-            {$ENDIF DB_ENABLED}
               +CRLF  + 'Second row ------- :)', 0);
 //  TipAdd(e);
   TipAdd3(e);

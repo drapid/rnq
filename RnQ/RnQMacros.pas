@@ -202,7 +202,7 @@ case m of
       c := focusedContact;
       if (c=NIL) or c.imVisibleTo then
         exit;
-      c.fProto.AddToList(LT_TEMPVIS, c);
+      c.AddToList(LT_TEMPVIS);
       roasterLib.redraw(c);
     end;
   OP_TOGGLE_SOUND:
@@ -416,8 +416,7 @@ begin
 //    drawNodeHint(bmp.canvas, node.treenode, r);
     drawHint(bmp.canvas, node.kind,
              node.groupId, node.contact, r, True, RnQmain.currentPPI);
-    bmp.Width := r.Right+1;
-    bmp.Height := r.bottom+1;
+    bmp.SetSize(r.Right+1, r.bottom+1);
 //    drawNodeHint(bmp.canvas, node.treenode, r);
     drawHint(bmp.canvas, node.kind,
              node.groupId, node.contact, r, False, RnQmain.currentPPI);

@@ -38,9 +38,6 @@ uses
    Generics.Collections,
 
  {$IFDEF USE_ZIP}
-//   kazip,
-//   VCLUnZip,
-//  SXZipUtils,
   RnQZip,
  {$ENDIF USE_ZIP}
  {$IFDEF USE_RAR}
@@ -106,7 +103,7 @@ type
 //    bmp: TGPImage;
     ref: integer;
     PPI: WORD;
-//    AniIdx : Integer;
+//    AniIdx: Integer;
   end;
  const
   FPT_CHARSET = 1 shl 0;
@@ -456,11 +453,8 @@ implementation
   RnQDialogs,
   CommCtrl, mmSystem, Types;
 type
-//  Tsection=(_null,_roaster,_tip,_pics,_icons,_history,_smiles,_sounds,_menu);
   TRQsection=(_null, _pics, _icons, _smiles, _sounds, _ico, _smile, _str, _desc, _fontfile);
 const
-//  sectionLabels:array [Tsection] of string=('','roaster','tip','pics','icons',
-//    'history','smiles','sounds','menu');
   RQsectionLabels: array [TRQsection] of AnsiString=('', 'pics', 'icons', 'smiles',
     'sounds', 'rnqpics', 'rnqsmiles', 'strings', 'desc', 'font');
 
@@ -1475,7 +1469,7 @@ begin
       end; }
 end;
  {$ELSE NOT USE_GDIPLUS}
-function TRQtheme.GetPicOld(const PicName: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
+function TRQtheme.GetPicOld(const picName: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
 var
   i: Integer;
 //  bmp: TRnQBitmap;
@@ -2722,7 +2716,7 @@ begin
       end
 end; // addthemeprop
 
-function TRQtheme.AddPicResource(const name: TPicName; ResourceName: String; Internal: Boolean = false) : Boolean;
+function TRQtheme.AddPicResource(const name: TPicName; ResourceName: String; Internal: Boolean = false): Boolean;
 var
   bmp: TRnQBitmap;
   str: TResourceStream;
@@ -3304,66 +3298,74 @@ var
   var
     i: integer;
     s: AnsiString;
+    kp: AnsiString;
     fontProp: TFontObj;
   begin
-    result := true;
+    Result := true;
     fontProp := TFontObj.Create;
-    if k=prefix+'.name' then
+    if StartsStr(prefix, k) then
       begin
-       fontProp.flags := fontProp.flags or FPT_NAME;
-       s := fontAvailable(v);
- {$IFDEF UNICODE}
-//       fontProp.name := AnsiStrAlloc(Length(s)+1);
-       fontProp.name := WideStrAlloc(Length(s)+1);
- {$ELSE nonUNICODE}
-       fontProp.name := StrAlloc(Length(s)+1);
- {$ENDIF UNICODE}
-       StrPCopy(fontProp.name, String(s));
-  //     font.name := fontAvailable(v);
-      end
-    else
-    if k=prefix+'.size' then
-      begin
-       fontProp.flags := fontProp.flags or FPT_SIZE;
-       fontProp.size := strToIntA(v)
-  //     font.size := strToInt(v)
-      end
-    else
-    if k=prefix+'.color' then
-      begin
-       fontProp.flags := fontProp.flags or FPT_COLOR;
-       fontProp.color := str2color(v)
-  //     font.color := str2color(v)
-      end
-    else
-    if k=prefix+'.charset' then
-     begin
-       fontProp.flags := fontProp.flags or FPT_CHARSET;
-      if isOnlyDigits(v) then
-        fontProp.charset := strToIntA(v)
-  //      font.charset := strToInt(v)
-      else
-        if IdentToCharset(String(v), i) then
-          fontProp.charset := i
-  //        font.charset:=i
+        kp := copy(k, Length(prefix)+1, 2000);
+
+        if kp='.name' then
+          begin
+           fontProp.flags := fontProp.flags or FPT_NAME;
+           s := fontAvailable(v);
+     {$IFDEF UNICODE}
+    //       fontProp.name := AnsiStrAlloc(Length(s)+1);
+           fontProp.name := WideStrAlloc(Length(s)+1);
+     {$ELSE nonUNICODE}
+           fontProp.name := StrAlloc(Length(s)+1);
+     {$ENDIF UNICODE}
+           StrPCopy(fontProp.name, String(s));
+      //     font.name := fontAvailable(v);
+          end
         else
-          if IdentToCharset(String(v+'_CHARSET'), i) then
-            fontProp.charset := i
-  //          font.charset:=i
-           else
-            begin
-              Result := False;
-  //            Exit;
-            end;
-     end
-    else
-    if k=prefix+'.style' then
-      begin
-       fontProp.flags := fontProp.flags or FPT_STYLE;
-       fontProp.style := str2fontstyle(v)
-  //     font.style:=str2fontstyle(v)
+        if kp='.size' then
+          begin
+           fontProp.flags := fontProp.flags or FPT_SIZE;
+           fontProp.size := strToIntA(v)
+      //     font.size := strToInt(v)
+          end
+        else
+        if kp='.color' then
+          begin
+           fontProp.flags := fontProp.flags or FPT_COLOR;
+           fontProp.color := str2color(v)
+      //     font.color := str2color(v)
+          end
+        else
+        if kp='.charset' then
+         begin
+           fontProp.flags := fontProp.flags or FPT_CHARSET;
+          if isOnlyDigits(v) then
+            fontProp.charset := strToIntA(v)
+      //      font.charset := strToInt(v)
+          else
+            if IdentToCharset(String(v), i) then
+              fontProp.charset := i
+      //        font.charset:=i
+            else
+              if IdentToCharset(String(v+'_CHARSET'), i) then
+                fontProp.charset := i
+      //          font.charset:=i
+               else
+                begin
+                  Result := False;
+      //            Exit;
+                end;
+         end
+        else
+        if kp='.style' then
+          begin
+           fontProp.flags := fontProp.flags or FPT_STYLE;
+           fontProp.style := str2fontstyle(v)
+      //     font.style:=str2fontstyle(v)
+          end
+         else
+          result := false;
       end
-    else
+     else
       result := false;
     if Result then
       addprop(ppar, fontProp);
@@ -4581,7 +4583,7 @@ begin
   //      zp.Open(myPath+themesPath+fn);
   //      if zp.IsZipFile > 0 then
         ts.zp := TZipFile.Create;
-        ts.zp.LoadFromFile(theme_paths[ti] + fn);
+        ts.zp.LoadFromFile(theme_paths[ti] + fn, True);
         if ts.zp.Count > 0 then
          begin
   {        for I := 0 to zp.Entries.Count - 1 do

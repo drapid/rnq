@@ -522,14 +522,14 @@ begin
 
   behaviour := tempBeh;
 
-  focusOnChatPopup:=focuschatpopupChk.checked;
-  minOnOff:=minOnOffChk.checked;
-  minOnOffTime:=round(minOnOffSpin.value);
-  oncomingOnAway:=oncomingOnAwayChk.checked;
+  focusOnChatPopup := focuschatpopupChk.checked;
+  minOnOff := minOnOffChk.checked;
+  minOnOffTime := round(minOnOffSpin.value);
+  oncomingOnAway := oncomingOnAwayChk.checked;
   BringInfoFrgd := BringInfoChk.Checked;
   Soundvolume := SndVolSlider.Position;
-  autoconsumeevents:=autoconsumeChk.checked;
-  playSounds:=playSnds.checked;
+  autoconsumeevents := autoconsumeChk.checked;
+  playSounds := playSnds.checked;
   for st := Low(Account.AccProto.statuses) to High(Account.AccProto.statuses) do
    begin
     OnStatusDisable[st].tips     := vOnStatusDisable[st].tips;
@@ -555,7 +555,7 @@ var
   st: byte;
 begin
 
-  focuschatpopupChk.checked:=focusOnChatPopup;
+  focuschatpopupChk.checked := focusOnChatPopup;
   minOnOffSpin.value := minOnOffTime;
   minOnOffChk.checked := minOnOff;
   oncomingOnAwayChk.checked := oncomingOnAway;
@@ -627,22 +627,17 @@ begin
   if (i = EK_statuschange)or(i = EK_oncoming) then
     e := Thevent.new(i, Account.AccProto.getMyInfo,
             now, int2str(integer(SC_ONLINE))+AnsiChar(True) +AnsiChar(20)
-            {$IFDEF DB_ENABLED},''{$ENDIF DB_ENABLED}, 0)
+            , '', 0)
    else
   if i = EK_XstatusMsg then
     begin
-     e := Thevent.new(i, Account.AccProto.getMyInfo, now, ''
-             {$IFDEF DB_ENABLED},''{$ELSE ~DB_ENABLED}{$ENDIF DB_ENABLED}, 0);
- {$IFDEF DB_ENABLED}
+     e := Thevent.new(i, Account.AccProto.getMyInfo, now, 0);
         e.fBin := AnsiChar(integer(SC_ONLINE)) + _istring('Status');
         e.txt  := 'Status description';
- {$ELSE ~DB_ENABLED}
-        e.f_info := AnsiChar(integer(SC_ONLINE)) + _istring('Status') + _istring('Status description')
- {$ENDIF ~DB_ENABLED}
     end
    else
     e := Thevent.new(i, Account.AccProto.getMyInfo, now, s
-             {$IFDEF DB_ENABLED},{$ELSE ~DB_ENABLED}+{$ENDIF DB_ENABLED} 'Testing'+CRLF  + 'Second row ------- :)', 0);
+             , 'Testing'+CRLF  + 'Second row ------- :)', 0);
 
 
 //  TipAdd(e);

@@ -90,6 +90,10 @@ var
   Soundhndl: THandle;
  {$ENDIF RNQ_PLAYER}
 
+const
+  EMAILCHARS      = ['a'..'z','A'..'Z','0'..'9','-','_','.'];
+
+
 implementation
    uses
      Windows, Controls;
