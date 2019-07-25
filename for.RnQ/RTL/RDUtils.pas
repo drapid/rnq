@@ -571,17 +571,18 @@ end; // ipos
 // case insensitive version
 function ipos(const ss, s: string; ofs: integer=1): integer;
 var
-  p, s0: PWideChar;
+  p, s0, ss0: PWideChar;
 begin
   Result := 0;
-  if (s > '') and (ofs <= Length(ss)) then
+  if (s > '') and (ofs <= Length(s)) then
     begin
-      s0 := PWideChar(s);
+      s0 := PWideChar(@s[ofs]);
+      ss0 := PWideChar(ss);
       if s0 <> NIL then
         begin
-          p := TextPos(s0, PWideChar(@ss[ofs]));
+          p := TextPos(s0, ss0);
           if p <> NIL then
-            Result := p - s0 + 1;
+            Result := p - s0 + ofs;
         end;
     end;
 end;
