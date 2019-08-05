@@ -2062,7 +2062,7 @@ begin
     result := status2imgName(byte(SC_UNK), FALSE)
    else
 //  result:=status2imgName(tstatus(c.status), c.invisible)
-    result:= c.Proto.Statuses[c.getStatus].ImageName;
+    result:= c.Proto.getStatusImg(c.getStatus);
 //  Result := c.statusImg;
 end; // rosterImgIdxFor
 

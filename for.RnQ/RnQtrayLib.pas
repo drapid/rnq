@@ -213,8 +213,8 @@ begin
 //        false, tnWinMsg, WM_TIMERNOTIFY, 2);
       end
      else
-       EnabledBaloons := false;
    {$ENDIF Use_Baloons}
+       EnabledBaloons := false;
 end; // create
 
 destructor TstatusIcon.Destroy;

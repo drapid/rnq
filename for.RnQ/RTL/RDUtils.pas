@@ -29,6 +29,7 @@ function  BoundsSize(srcCX, srcCY, maxCX, maxCY: Longint): TSize; overload;
 function  isURL(const s: string; ofs: Integer=1): boolean;
 //function  ipos(const ss: string; const s: string): Integer; OverLoad;
 function  ipos(const ss, s: string; ofs: integer=1): integer; OverLoad;
+function  ipos(const ss, s: RawByteString; ofs: integer=1): integer; OverLoad;
 function  capitalize(const s: string): string;
 procedure convertAllNewlinesToCRLF(var s: string);
 function  separated(const sep: string; ss: array of string): string;
@@ -587,6 +588,24 @@ begin
     end;
 end;
 
+// case insensitive version
+function ipos(const ss, s: RawByteString; ofs: integer=1): integer;
+var
+  p, s0, ss0: PAnsiChar;
+begin
+  Result := 0;
+  if (s > '') and (ofs <= Length(s)) then
+    begin
+      s0 := PAnsiChar(@s[ofs]);
+      ss0 := PAnsiChar(ss);
+      if s0 <> NIL then
+        begin
+          p := AnsiStrings.TextPos(s0, ss0);
+          if p <> NIL then
+            Result := p - s0 + ofs;
+        end;
+    end;
+end;
 function capitalize(const s: string): string;
 begin
  result := s;
