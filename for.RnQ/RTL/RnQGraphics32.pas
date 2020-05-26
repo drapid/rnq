@@ -2,8 +2,8 @@ unit RnQGraphics32;
 {$I ForRnQConfig.inc}
 {$I NoRTTI.inc}
 
-{ $DEFINE DELPHI9_UP}
 {$IFDEF FPC}
+ { $DEFINE DELPHI9_UP}
   {$DEFINE TransparentStretchBltMissing}
   {$DEFINE CopyPaletteMissing}
 {$ENDIF}
@@ -12,6 +12,9 @@ interface
 
 uses
   Messages, Windows, SysUtils, Types, Classes,
+  {$IFDEF FPC}
+  LCLType,
+  {$ENDIF FPC}
   Graphics,
   Forms,
   Controls,
@@ -30,19 +33,6 @@ const
 
 type
   TGradientDirection = (gdVertical, gdHorizontal);
-type
-  TPAFormat = (PA_FORMAT_UNK, PA_FORMAT_BMP, PA_FORMAT_JPEG,
-               PA_FORMAT_GIF, PA_FORMAT_PNG, PA_FORMAT_XML,
-               PA_FORMAT_SWF, PA_FORMAT_ICO,
-               PA_FORMAT_TIF, PA_FORMAT_WEBP, PA_FORMAT_HEIF, PA_FORMAT_HEIC // From WIC
-               );
-
-const
-  PAFormat: array [TPAFormat] of string = ('.dat','.bmp','.jpeg','.gif','.png', '.xml', '.swf', '.ico', '.tif', '.webp', '.heif', '.heic');
-  PAFormatString: array [TPAFormat] of string = ('Unknown', 'Bitmap', 'JPEG', 'GIF', 'PNG', 'XML', 'SWF', 'ICON', 'TIF', 'WEBP', 'HEIF', 'HEIC');
-  PAFormatMime: array [TPAFormat] of string = ('image/x-icon', 'image/bmp', 'image/jpeg',
-          'image/gif','image/png', 'text/xml', 'application/x-shockwave-flash', 'image/x-icon', 'image/tiff', 'image/webp', 'image/heif', 'image/heic');
-
 type
   TAniDisposalType = (dtUndefined,   {Take no action}
                    dtDoNothing,   {Leave graphic, next frame goes on top of it}
@@ -145,6 +135,7 @@ type
     function  Clone(bnd: TGPRect): TRnQBitmap;
     function  CloneFrame(frame: Integer): TRnQBitmap;
     function  CloneAll: TRnQBitmap;
+    procedure SetTransparent(t: Boolean);
     procedure SetTransparentColor(clr: cardinal);
     function  bmp2ico32: HIcon;
     procedure GetHICON(var hi: HICON);
@@ -153,10 +144,14 @@ type
     procedure SetWidth(W: Integer);  OverRide;
     procedure SetHeight(H: Integer); OverRide;
     procedure SaveToStream(Stream: TStream); OverRide; deprecated 'Don''t coded yet';
+ {$IFNDEF FPC}
     procedure LoadFromClipboardFormat(AFormat: Word; AData: THandle;
       APalette: HPALETTE); OverRide; deprecated 'Don''t coded yet';
     procedure SaveToClipboardFormat(var AFormat: Word; var AData: THandle;
       var APalette: HPALETTE); OverRide; deprecated 'Don''t coded yet';
+  {$ELSE LAZARUS}
+    procedure LoadFromClipboardFormat(FormatID: TClipboardFormat); OverRide; deprecated 'Don''t coded yet';
+ {$ENDIF LAZARUS}
     function  GetSize(PPI: Integer): TSize;
     function  RnQCheckTime: Boolean;
     property  Animated: Boolean read fAnimated;
@@ -213,7 +208,8 @@ type
   procedure FillRoundRectangle(DC: HDC; ARect: TRect; Clr: Cardinal; rnd: Word);
 //  Procedure FillRectangle(DC: HDC; ARect: TRect; Clr : Cardinal);
   procedure DrawTextTransparent(DC: HDC; x, y: Integer; Text: String; Font: TFont; Alpha: Byte; fmt: Integer);
- {$IFDEF DELPHI9_UP}
+// {$IFDEF DELPHI9_UP}
+ {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
   procedure DrawText32(DC: HDC; TextRect: TRect; Text: String; Font: TFont; TextFlags: Cardinal);
  {$ENDIF DELPHI9_UP}
  {$IFNDEF NO_WIN98}
@@ -269,13 +265,15 @@ implementation
  uses
    StrUtils,
    math, mmSystem, Themes, UxTheme,
- {$IFDEF DELPHI9_UP}
+ {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
    UITypes,
    DwmApi,
+   {$IFNDEF FPC}
    wincodec,
    {$IFDEF UNICODE}
      AnsiStrings,
    {$ENDIF UNICODE}
+   {$ENDIF FPC}
  {$ENDIF DELPHI9_UP}
 //  {$IFNDEF RNQ_LITE}
    {$IFDEF USE_FLASH}
@@ -478,9 +476,9 @@ begin
 //  fBmp := createBitmap(Width, Heigth);
    fBmp := Tbitmap.create;
    fBmp.PixelFormat := pf32bit;
-   {$IFDEF DELPHI9_UP}
+   {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
     fBmp.SetSize(Width, Heigth);
-   {$ELSE DELPHI9_UP}
+   {$ELSE DELPHI9_dn}
     fBmp.width  := Width;
     fBmp.height := Heigth;
    {$ENDIF DELPHI9_UP}
@@ -543,9 +541,20 @@ begin
       end
 end;
 
+{$IFDEF FPC}
+procedure RaiseExceptions;
+begin
+  RaiseException(0, 0, 0, 0);
+end;
+{$ENDIF FPC}
+
 procedure TRnQBitmap.SetWidth(W: Integer);
 begin
+  {$IFDEF FPC}
+  RaiseException(0, 0, 0, 0);
+  {$ELSE ~FPC}
   RaiseExceptions;
+  {$ENDIF FPC}
 end;
 
 procedure TRnQBitmap.SetHeight(H: Integer);
@@ -558,6 +567,14 @@ begin
   RaiseExceptions;
 end;
 
+{$IFDEF FPC}
+procedure TRnQBitmap.LoadFromClipboardFormat(FormatID: TClipboardFormat);
+begin
+  RaiseExceptions;
+end;
+
+{$ELSE ~FPC}
+
 procedure TRnQBitmap.LoadFromClipboardFormat(AFormat: Word; AData: THandle;
       APalette: HPALETTE);
 begin
@@ -569,6 +586,7 @@ procedure TRnQBitmap.SaveToClipboardFormat(var AFormat: Word; var AData: THandle
 begin
   RaiseExceptions;
 end;
+{$ENDIF FPC}
 
 procedure InitTransAlpha(bmp: TBitmap);
 var
@@ -586,6 +604,9 @@ begin
   w := bmp.Width-1;  // Сразу вычетаем 1 !!!
 
   Trans.Color := ColorToRGB(bmp.TransparentColor) and not AlphaMask;
+{$IFDEF FPC}
+  bmp.BeginUpdate;
+{$ENDIF FPC}
   for I := 0 to h do
    begin
     Scan32 := Bmp.ScanLine[i];
@@ -600,6 +621,9 @@ begin
        end;
      end;
    end;
+{$IFDEF FPC}
+  bmp.EndUpdate;
+{$ENDIF FPC}
 end;
 
 procedure Premultiply(var bmp: TBitmap);
@@ -627,6 +651,9 @@ var
 begin
   h := bmp.Height-1; // Сразу вычетаем 1 !!!
   w := bmp.Width-1;  // Сразу вычетаем 1 !!!
+{$IFDEF FPC}
+  bmp.BeginUpdate;
+{$ENDIF FPC}
   for I := 0 to h do
    begin
     Scan32 := Bmp.ScanLine[i];
@@ -643,6 +670,9 @@ begin
        end;
      end;
    end;
+{$IFDEF FPC}
+  bmp.EndUpdate;
+{$ENDIF FPC}
 end;
 
 procedure Demultiply(bmp: TBitmap);
@@ -654,6 +684,9 @@ var
 begin
   h := bmp.Height-1;
   w := bmp.Width-1;
+{$IFDEF FPC}
+  bmp.BeginUpdate;
+{$ENDIF FPC}
   for I := 0 to H do
    begin
     Scan32 := Bmp.ScanLine[i];
@@ -669,6 +702,9 @@ begin
        end;
      end;
    end;
+{$IFDEF FPC}
+  bmp.EndUpdate;
+{$ENDIF FPC}
 end;
 
 {procedure LoadPictureFile(Name: String; var gpPicture: IPicture);
@@ -732,7 +768,7 @@ end;}
 
 {$IFDEF FPC}
 function OleLoadPicture(stream: IStream; lSize: Longint; fRunmode: BOOL;
-    const iid: TGUID; var vObject): HResult; stdcall external 'olepro32.dll' name 'OleLoadPicture';
+    const iid: TGUID; var vObject): HResult; stdcall external 'OleAut32.dll' name 'OleLoadPicture';
 {$ENDIF}
 
 procedure LoadPictureStream(str: TStream; var gpPicture: IPicture);
@@ -895,7 +931,7 @@ begin
           else
            begin
              bmp.fBmp.Handle := 0;
-            {$IFDEF DELPHI9_UP}
+            {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
              bmp.fBmp.SetSize(swf.Width, swf.Height);
             {$else DELPHI_9_dn}
              bmp.fBmp.Height := 0;
@@ -987,7 +1023,7 @@ begin
     nil,
     GetLastError,
     LOCALE_USER_DEFAULT,
-    C,
+    @C[0],
     SizeOf(C),
     nil);
   Result:=StrPas( C );
@@ -1039,10 +1075,10 @@ function  loadPic(var str0: TStream; var bmp: TRnQBitmap; idx: Integer = 0;
                   ff: TPAFormat = PA_FORMAT_UNK; name: string = '';
                   PreserveStream: Boolean = false): boolean;
 var
-//  png: TPNGGraphic;
   png: TPNGObject;
+ {$IFNDEF FPC}
   WICpic: TWICImage;
-//  aniImg : TRnQAni;
+ {$ENDIF FPC}
   NonAnimated: Boolean;
   vJpg: TJPEGImage;
 
@@ -1171,7 +1207,7 @@ begin
               h := MulDiv(b, GetDeviceCaps(vBmp.Canvas.Handle, LOGPIXELSY), 2540);
             //  a := 50; b := 120;
               r.Left := 0; r.Top := 0; r.Right := w; r.Bottom := h;
- {$IFDEF DELPHI9_UP}
+ {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
               vBmp.SetSize(w, h);
  {$ELSE DELPHI9_UP}
               vBmp.Height := 0;
@@ -1348,7 +1384,7 @@ begin
            else
              begin
               if not Assigned(bmp.fBmp) then
-               bmp.fBmp :=TBitmap.Create;
+               bmp.fBmp := TBitmap.Create;
               bmp.fBmp.PixelFormat := pf32bit;
               bmp.f32Alpha := False;
               bmp.fBmp.Assign(png);
@@ -1456,6 +1492,7 @@ begin
           Result := True;
        exit;
      end;
+   {$IFNDEF FPC}
     PA_FORMAT_TIF, PA_FORMAT_WEBP, PA_FORMAT_HEIF,  PA_FORMAT_HEIC:
       begin
         WICpic := TWICImage.Create;
@@ -1491,6 +1528,7 @@ begin
             end;
         end;
       end;
+   {$ENDIF FPC}
 //   PA_FORMAT_XML: ;
 //   PA_FORMAT_SWF: ;
 //   PA_FORMAT_UNK: ;
@@ -1539,6 +1577,11 @@ procedure TRnQBitmap.SetTransparentColor(clr: cardinal);
 begin
   fBMP.TransparentColor := clr;
   fTransparentColor := clr;
+end;
+
+procedure TRnQBitmap.SetTransparent(t: Boolean);
+begin
+  fBMP.Transparent := t;
 end;
 
 {
@@ -1608,7 +1651,8 @@ end;
 function CopyPalette(Palette: HPALETTE): HPALETTE;
 var
   PaletteSize: Integer;
-  LogPal: TMaxLogPalette;
+  LogPal: LOGPALETTE;
+  //LogPal: TMaxLogPalette;
 begin
   Result := 0;
   if Palette = 0 then Exit;
@@ -1621,7 +1665,12 @@ begin
     palNumEntries := PaletteSize;
     GetPaletteEntries(Palette, 0, PaletteSize, palPalEntry);
   end;
+ {$IFDEF FPC}
+  Result := CreatePalette((Windows.PLogPalette(@LogPal))^);
+ {$ELSE ~FPC}
   Result := CreatePalette(PLogPalette(@LogPal)^);
+ {$ENDIF FPC}
+
 end;
 {$endif}
 {$ifdef TransparentStretchBltMissing}
@@ -1636,7 +1685,7 @@ end;
 {$ifdef D3_BCB3}
 function GDICheck(Value: Integer): Integer;
 {$else}
-function GDICheck(Value: Cardinal): Cardinal;
+function GDICheck(Value: HANDLE): HANDLE;
 {$endif}
 var
   ErrorCode		: integer;
@@ -1649,6 +1698,7 @@ var
 // 2008.10.19 <-
 
   function ReturnAddr: Pointer;
+  {$asmMode intel}
   // From classes.pas
   asm
     MOV		EAX,[EBP+4] // sysutils.pas says [EBP-4], but this works !
@@ -2512,7 +2562,7 @@ begin
            if fBmp.Height > fHeight then
              begin
                Result.fBmp.Height := 0;
-               {$IFDEF DELPHI9_UP}
+               {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
                 Result.fBmp.SetSize(fBmp.Width, fBmp.Height);
                {$ELSE DELPHI9_UP}
                 Result.fBmp.width  := fBmp.Width;
@@ -2752,7 +2802,7 @@ begin
      Result.fBmp.Canvas.CopyRect(Rect(0, 0, Width, Height), Result.fBmp.Canvas, SRect);
      Result.fBmp.Width := FWidth;
 }
- {$IFDEF DELPHI9_UP}
+ {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
      Result.fBmp.SetSize(Width, Height);
  {$ELSE DELPHI_9_dn}
      Result.fBmp.Height := 0;
@@ -2773,7 +2823,7 @@ begin
         Result.htMask.Width := FWidth;
 }
         Result.htMask.Monochrome := True;
- {$IFDEF DELPHI9_UP}
+ {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
         Result.htMask.SetSize(Width, Height);
  {$ELSE DELPHI_9_dn}
         Result.htMask.Height := 0;
@@ -2859,7 +2909,11 @@ begin
      bV4BlueMask := $000000FF;
      bV4AlphaMask := $FF000000;
      end;
+ {$IFDEF FPC}
+  AlphaBitmap := CreateDIBSection(0, Windows.PBITMAPINFO(@BitmapInfo)^, DIB_RGB_COLORS, Pointer(ImageBits), 0, 0);
+ {$ELSE ~FPC}
   AlphaBitmap := CreateDIBSection(0, PBitmapInfo(@BitmapInfo)^, DIB_RGB_COLORS, Pointer(ImageBits), 0, 0);
+ {$ENDIF FPC}
   try
     //Spin through and fill it with a wash of color and alpha.
 //    AlphaLine := nil;
@@ -3174,7 +3228,7 @@ begin
                pic.Height := 0;
               end;
             pic.PixelFormat := pf1bit;
-           {$IFDEF DELPHI9_UP}
+           {$IF DEFINED(DELPHI9_UP) or DEFINED(FPC)}
             pic.SetSize(Result.cx, Result.cy);
            {$ELSE DELPHI_9_dn}
             pic.Width := Result.cx;
@@ -3186,7 +3240,7 @@ begin
             Pal.palPalEntry[1].peRed := $FF;
             Pal.palPalEntry[1].peGreen := $FF;
             Pal.palPalEntry[1].peBlue := $FF;
-            pic.Palette := CreatePalette(PLogPalette(@Pal)^);
+            pic.Palette := CreatePalette(Windows.PLogPalette(@Pal)^);
             BytesPerRow := Result.cx div 8;
             if Result.cx mod 8 > 0 then
               inc(BytesPerRow);
@@ -3246,7 +3300,7 @@ begin
   result := Tbitmap.create;
   Result.PixelFormat := pf24bit;
   Result.Canvas.Font.PixelsPerInch := PPI;
- {$IFDEF DELPHI9_UP}
+ {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
   Result.SetSize(dx, dy);
  {$ELSE DELPHI9_UP}
   result.width := dx;
@@ -3261,6 +3315,7 @@ begin
   Result.Canvas.Font.PixelsPerInch := cnv.Font.PixelsPerInch;
 end;
 
+{$IFNDEF FPC}
 procedure checkWICCodecs;
 var
   FImagingFactory: IWICImagingFactory;
@@ -3286,9 +3341,8 @@ begin
        isHEIFSupport := true;
       end;
   end;
-
-
 end;
+{$ENDIF FPC}
 
 function  getSupPicExts: String;
 var
@@ -3406,7 +3460,7 @@ begin
    bmp1 := TBitmap.Create;
    if bmp.Width * maxH < bmp.Height * maxW then
      begin
-      {$IFDEF DELPHI9_UP}
+      {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
        bmp1.SetSize(maxH*bmp.Width div bmp.Height, maxH);
       {$ELSE DELPHI_9_down}
        bmp1.Width := maxH*bmp.Width div bmp.Height;
@@ -3415,7 +3469,7 @@ begin
      end
     else
      begin
-      {$IFDEF DELPHI9_UP}
+      {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
      bmp1.SetSize(maxW, maxW*bmp.Height div bmp.Width);
       {$ELSE DELPHI_9_down}
        bmp1.Width := maxW;
@@ -3456,6 +3510,7 @@ begin
      newBmp := TRnQBitmap.Create(maxH*w div h, maxH)
     else
      newBmp := TRnQBitmap.Create(maxW, maxW*h div w);
+}
 {   gr := TGPGraphics.Create(newBmp);
    gr.SetInterpolationMode(InterpolationModeHighQualityBicubic);
    gr.SetSmoothingMode(SmoothingModeHighQuality);
@@ -3590,10 +3645,13 @@ begin
   Result := True;
 end;
 
-  {$IFNDEF DELPHI9_UP}
+  {$IFDEF DELPHI9_UP}
+type
+  COLOR16_RD = COLOR16;
+  {$ELSE !DELPHI9_UP}
 function WinGradientFill; external msimg32 name 'GradientFill';
 type
-  COLOR16_RD = Smallint;
+  COLOR16_RD = UInt16;
 
   PTriVertex_RD = ^TTriVertex;
   { $EXTERNALSYM _TRIVERTEX_RD}
@@ -3624,7 +3682,7 @@ var
   tempDC  : HDC;
   ABitmap, HOldBmp : HBITMAP;
 //  BIH: TBitmapInfoHeader;
-  BI : TBitmapInfo;
+  BI : Windows.TBitmapInfo;
   blend: BLENDFUNCTION;
 //  oldBr, brF : HBRUSH;
 begin
@@ -3647,10 +3705,10 @@ begin
           Green := GetGValue(StartColor) shl 8;
           Alpha := Byte(StartColor shr 24) shl 8;
 }
-          Red := Byte(StartColor) shl 8;
-          Blue := Byte(StartColor shr 16) shl 8;
-          Green := Byte(StartColor shr 8) shl 8;
-          Alpha := Byte(StartColor shr 24) shl 8;
+          Red := COLOR16_RD(Byte(StartColor)) shl 8;
+          Blue := COLOR16_RD(Byte(StartColor shr 16)) shl 8;
+          Green := COLOR16_RD(Byte(StartColor shr 8)) shl 8;
+          Alpha := COLOR16_RD(Byte(StartColor shr 24)) shl 8;
      end;
 
      with udtVertex[1] do
@@ -3661,10 +3719,10 @@ begin
 //          Blue := GetBValue(EndColor) shl 8;
 //          Green := GetGValue(EndColor) shl 8;
 //          Alpha := Byte(EndColor shr 24) shl 8;
-          Red := Byte(EndColor) shl 8;
-          Blue := Byte(EndColor shr 16) shl 8;
-          Green := Byte(EndColor shr 8) shl 8;
-          Alpha := Byte(EndColor shr 24) shl 8;
+          Red := COLOR16_RD(Byte(EndColor)) shl 8;
+          Blue := COLOR16_RD(Byte(EndColor shr 16)) shl 8;
+          Green := COLOR16_RD(Byte(EndColor shr 8)) shl 8;
+          Alpha := COLOR16_RD(Byte(EndColor shr 24)) shl 8;
      end;
 
      rectGradient.UpperLeft := 0;
@@ -3830,15 +3888,15 @@ begin
   R.Right  := MAXWORD;
   R.Bottom := MAXWORD;
    oldFont := SelectObject(DC, Font.Handle);
-   DrawText(DC, PChar(Text), -1, R, DT_CALCRECT or fmt);
-   GetTextExtentPoint32(DC,pchar(Text),length(Text), res);
+   DrawTextW(DC, PChar(Text), -1, R, DT_CALCRECT or fmt);
+   GetTextExtentPoint32W(DC,pchar(Text),length(Text), res);
    SelectObject(DC, oldFont);
   R.Right := res.cx;
   R.Bottom := res.cy;
 //     tempBitmap := createBitmap(res.cx, res.cy);
      tempBitmap := Tbitmap.create;
      tempBitmap.PixelFormat := pf32bit;
- {$IFDEF DELPHI9_UP}
+ {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
      tempBitmap.SetSize(res.cx, res.cy);
  {$ELSE DELPHI_9_dn}
      tempBitmap.Width := res.cx;
@@ -3882,7 +3940,7 @@ begin
 //         FillRect(tempDC, R, GetStockObject(BLACK_BRUSH));
          FillRect(tempDC, R, GetStockObject(WHITE_BRUSH));
 //         FillRect(tempDC, R, GetStockObject(LTGRAY_BRUSH));
-         DrawText(tempDC, PChar(Text), Length(Text), R, fmt);
+         DrawTextW(tempDC, PChar(Text), Length(Text), R, fmt);
          SelectObject(tempDC, oldFont);
           h := res.cY-1;  // Сразу вычетаем 1 !!!
           w := res.cx-1;  // Сразу вычетаем 1 !!!
@@ -3947,7 +4005,7 @@ begin
        end
 end;
 
- {$IFDEF DELPHI9_UP}
+{$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
 //procedure DrawTextTransparent2(DC: HDC; x, y: Integer; Text: String; Font: TFont; Alpha: Byte; fmt: Integer);
 procedure DrawText32(DC: HDC; TextRect: TRect; Text: String; Font: TFont; TextFlags: Cardinal);
 var
@@ -3970,7 +4028,7 @@ begin
 //      TextRect.Left := r.Right - x - 4;
 //      TextRect.Top := y-1;
 //      inc(TextRect.Bottom, 1);
-      FillChar(Options, SizeOf(Options), 0);
+      ZeroMemory(@Options, SizeOf(Options));
       Options.dwSize := SizeOf(Options);
       Options.dwFlags := DTT_COMPOSITED or DTT_GLOWSIZE or DTT_TEXTCOLOR;
 //      Options.dwFlags := DTT_GLOWSIZE or DTT_TEXTCOLOR;
@@ -3996,19 +4054,27 @@ begin
       pmtParams.pBlendFunction := nil;
 //      PaintBuffer := BeginBufferedPaint(DC, TextRect, BPBF_TOPDOWNDIB, @pmtParams, MemDC);
 }
-      PaintBuffer := BeginBufferedPaint(DC, TextRect, BPBF_TOPDOWNDIB, nil, MemDC);
+  {$IFDEF FPC}
+   PaintBuffer := BeginBufferedPaint(DC, @TextRect, BPBF_TOPDOWNDIB, nil, MemDC);
+  {$ELSE ~FPC}
+   PaintBuffer := BeginBufferedPaint(DC, TextRect, BPBF_TOPDOWNDIB, nil, MemDC);
+  {$ENDIF FPC}
       try
          BufferedPaintClear(PaintBuffer, @TextRect);
 //          SetBKMode(MemDC, TRANSPARENT);
           oldF := SelectObject(MemDC, Font.Handle);
+        {$IFDEF FPC}
+         ThemeServices.DrawText(MemDC, ThemeServices.GetElementDetails(TThemedWindow.twCaptionActive), Text, TextRect, TextFlags, 0);
+        {$ELSE ~FPC}
 //         FillRect(MemDC, R, GetStockObject(BLACK_BRUSH));
 //         FillRect(MemDC, R, GetStockObject(LTGRAY_BRUSH));
 //         DrawText(MemDC, PChar(Text), Length(Text), R, fmt);
 //          with ThemeServices.GetElementDetails(twCaptionActive) do
 //            DrawThemeTextEx(ThemeServices.Theme[element], MemDC, Part, State,
-//            DrawThemeTextEx(ThemeServices.Theme[teWindow], MemDC, 0, 0,
+            //DrawThemeTextEx(ThemeServices.Theme[teWindow], MemDC, 0, 0,
             DrawThemeTextEx(StyleServices.Theme[teWindow], MemDC, 0, 0,
                 PWideChar(WideString(Text)), TextLen, TextFlags, @TextRect, Options);
+        {$ENDIF FPC}
           SelectObject(MemDC, oldF);
 //          DeleteObject(oldF);
 //        BufferedPaintMakeOpaque(PaintBuffer, @R);
@@ -4052,6 +4118,10 @@ try
     with Result do
      begin
 //      Strip := ThtBitmap.Create;
+       //fBmp := AGif.GetStripBitmap(htMask);
+       //htMask := AMask;
+       //htTransparent := Assigned(htMask);
+
        fBmp := TBitmap.Create;
       ABitmap := AGif.GetStripBitmap(AMask);
       try
@@ -4063,8 +4133,9 @@ try
        finally
         ABitmap.Free;
       end;
+
       if fBmp.Palette <> 0 then
-      DeleteObject(fBmp.ReleasePalette);
+        DeleteObject(fBmp.ReleasePalette);
       fBmp.Palette := CopyPalette(ThePalette);
      end;
     if Result.FAnimated then
@@ -4635,7 +4706,7 @@ begin
   iconX := GetSystemMetrics(SM_CXICON);
   iconY := GetSystemMetrics(SM_CYICON);
 
- {$IFDEF DELPHI9_UP}// By Rapid D
+ {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
   bmp.SetSize(iconX, iconY);
  {$ELSE DELPHI_9_dn}
   bmp.Height := 0;
@@ -4831,7 +4902,7 @@ procedure CalcPalette(DC: HDC);
 const
   Values: array[0..5] of integer = (55, 115, 165, 205, 235, 255);
 var
-  LP: ^TLogPalette;
+  LP: ^Windows.TLogPalette;
   I, J, K, Sub: integer;
 begin
   GetMem(LP, Sizeof(TLogPalette) + 256*Sizeof(TPaletteEntry));
@@ -4945,7 +5016,9 @@ initialization
    finally
     ReleaseDC(0, DC);
   end;
+ {$IFNDEF FPC}
   checkWICCodecs;
+ {$ENDIF FPC}
 
 {$ifdef TransparentStretchBltMissing}
   // Note: This doesn't return the same palette as the Delphi 3 system palette
@@ -4960,7 +5033,7 @@ initialization
   modulesPath := '';
  {$ENDIF RNQ}
 
-  h := LoadLibrary(PWideChar( modulesPath + 'jpegturbo.dll'));
+  h := LoadLibraryW(PWideChar( modulesPath + 'jpegturbo.dll'));
   if h <> 0 then
   begin
     fJPEGTurbo := True;

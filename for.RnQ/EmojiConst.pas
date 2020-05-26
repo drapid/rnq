@@ -79,9 +79,11 @@ const
   function GetEmojiStr(num: Integer): String;
   function GetEmojiPicName(num: Integer): TPicName;
 
+
 implementation
 uses
-  System.Character, RDUtils;
+  System.Character, SysUtils, Math,
+  RDUtils;
 
 function GetEmojiStr(num: Integer): String;
 begin
@@ -102,6 +104,7 @@ begin
 }
   Result := IntToStrA(num);
 end;
+
 
 var
   i: Integer;

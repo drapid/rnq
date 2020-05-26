@@ -496,7 +496,8 @@ end; // setIconFile}
 procedure TtrayIcon.setTip(const s: String);
 begin
 //  strPCopy(data.szTip, s);
-  strLCopy(data.szTip, PChar(s), 127);
+  ZeroMemory(@data.szTip[0], 128);
+  strLCopy(data.szTip, PChar(s), Length(s));
   update;
 end; // setTip
 

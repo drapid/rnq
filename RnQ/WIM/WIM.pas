@@ -606,7 +606,9 @@ uses
 {$IFDEF UNICODE}
    AnsiStrings, AnsiClasses,
 {$ENDIF UNICODE}
-  RnQZip, SynCrypto,
+  RnQZip,
+  //SynCrypto,
+  mormot.core.crypto,
   RnQDialogs, RnQLangs, RDUtils, RDFileUtil, RnQCrypt, Base64,
 {$IFDEF RNQ_AVATARS}
   RnQ_Avatars,

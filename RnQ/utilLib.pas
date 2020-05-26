@@ -2062,7 +2062,8 @@ begin
     result := status2imgName(byte(SC_UNK), FALSE)
    else
 //  result:=status2imgName(tstatus(c.status), c.invisible)
-    result:= c.Proto.getStatusImg(c.getStatus);
+//    result:= c.Proto.getStatusImg(c.getStatus);
+    result:= c.Proto.getStatusImg;
 //  Result := c.statusImg;
 end; // rosterImgIdxFor
 
@@ -3502,7 +3503,7 @@ end; // mainfrmhandleupdate
 procedure reloadCurrentLang();
 begin
   ClearLanguage;
-  LoadSomeLanguage;
+  LoadSomeLanguage('RnQ', mypath, RnQmainPath);
   translateWindows();
 end; // reloadCurrentLang
 

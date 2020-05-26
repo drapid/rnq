@@ -364,22 +364,22 @@ type
     function  getStatusDisable: TOnStatusDisable; Virtual; Abstract;
     function  getPrefPage: TPrefFrameClass; Virtual; Abstract;
 
-    function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
-    function _AddRef: Integer; stdcall;
-    function _Release: Integer; stdcall;
+    function  QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
+    function  _AddRef: Integer; stdcall;
+    function  _Release: Integer; stdcall;
         procedure AfterConstruction; override; final;
         procedure BeforeDestruction; override; final;
-    function getShowStr: String;
+    function  getShowStr: String;
 
-    property ProtoID: byte read _getProtoID;
+    property  ProtoID: byte read _getProtoID;
 //    class function getProtoByUID(uid : TUID) : TRnQProtoClass;
-    property MyAccNum: TUID read MyAccount;
-    property RefCount: Integer read FRefCount;
+    property  MyAccNum: TUID read MyAccount;
+    property  RefCount: Integer read FRefCount;
 
     property  pwd: String read getPwd write setPwd;
 //    property  MyInfo :TRnQContact read getMyInfo write setMyInfo;
     property  statuses: TStatusArray read getStatuses;
-    property curXStatus: Byte read getXStatus;
+    property  curXStatus: Byte read getXStatus;
   end;
 //type
 
@@ -1597,11 +1597,11 @@ begin
   result := '';
   i := 0;
   while i < count do
-  begin
+    begin
   //    result := result+ PRnQContact(items[i]).buin;
       result := result+ TRnQContact(items[i]).buin;
-    inc(i);
-  end;
+      inc(i);
+    end;
 end; // buinList
 
 function TRnQCList.toIntArray: TIntegerDynArray;

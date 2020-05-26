@@ -218,7 +218,7 @@ type
     procedure RememberScrollPos;
     procedure RestoreScrollPos;
     procedure AddChatItem(var params: TParams; hev: Thevent; animate: Boolean);
-    procedure sendChatItems(params: TParams; prepend: Boolean = False);
+    procedure SendChatItems(params: TParams; prepend: Boolean = False);
     procedure RememberTopEvent;
     procedure RestoreTopEvent;
     procedure HideLoadingScreen;

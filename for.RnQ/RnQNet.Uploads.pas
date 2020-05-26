@@ -110,8 +110,7 @@ uses
 {$ENDIF RNQ}
   RQUtil,
   RnQDialogs,
-  RnQNet,
-  RnQGraphics32;
+  RnQNet;
 
 class procedure TCallbacks.OnBeforeHeaderSend(Sender: TObject; const Method : String; Headers: TStrings);
 begin

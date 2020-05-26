@@ -18,6 +18,7 @@ type
     procedure updateVisPage; virtual;
     procedure initPage(prefs: IRnQPref); virtual;
     procedure unInitPage; virtual;
+    function  getPrefForm: TForm;
    published
     property ParentFont default True;
     property TabOrder;
@@ -76,6 +77,20 @@ uses
  {$ENDIF UNICODE}
    RDUtils;
 
+function TPrefFrame.getPrefForm: TForm;
+var
+  p: TWinControl;
+begin
+  if Self = NIL then
+   Exit(NIL);
+  p := Self.Parent;
+  while p <> NIL do
+   begin
+    if p is TForm then
+      Exit(p as TForm);
+    p := p.Parent;
+   end;
+end;
 
 procedure TPrefFrame.updateVisPage;
 begin

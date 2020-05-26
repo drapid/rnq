@@ -23,6 +23,8 @@ function dword_LE2ipU(d: dword): UnicodeString;
 //procedure SwapShort(const P: PWord; const Count: Cardinal);
 //procedure SwapLong(P: PInteger; Count: Cardinal);
 //function  SwapLong(Value: Cardinal): Cardinal; overload;
+function bSwap32(Value: LongWord): LongWord;
+function bSwap64(Value: Int64): Int64;
 
 function incPtr(p: pointer; d: Integer): Pointer; inline;
 function findTLV(idx: Integer; const s: RawByteString; ofs: Integer=1): Integer;
@@ -127,7 +129,7 @@ function getwTLD_DWORD(const s: RawByteString; var ofs: integer): LongWord;
 
 implementation
   uses
-   SynCommons,
+   //SynCommons,
  {$IFNDEF FPC}
    {$IFDEF UNICODE}
      AnsiStrings,
@@ -149,48 +151,85 @@ Begin
   swap := (X and $ff) shl 8 + ((X shr 8) and $ff)
 End;
 {$ENDIF Linux}
-{$IFDEF FPC}
-// From ICS!
-  {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
-  function IcsSwap32(Value: LongWord): LongWord;
-  {$IFDEF PUREPASCAL}
-  begin
-      Result := Word(((Value shr 16) shr 8) or ((Value shr 16) shl 8)) or
-                Word((Word(Value) shr 8) or (Word(Value) shl 8)) shl 16;
-  {$ELSE}
-  asm
-  {$IFDEF CPUX64}
-      MOV    EAX, ECX
-  {$ENDIF}
-      BSWAP  EAX
-  {$ENDIF}
-  end;
-  {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
-  function IcsSwap64(Value: Int64): Int64;
-  {$IFDEF PUREPASCAL}
-  var
-      H, L: LongWord;
-  begin
-      H := LongWord(Value shr 32);
-      L := LongWord(Value);
-      H := Word(((H shr 16) shr 8) or ((H shr 16) shl 8)) or
-           Word((Word(H) shr 8) or (Word(H) shl 8)) shl 16;
-      L := Word(((L shr 16) shr 8) or ((L shr 16) shl 8)) or
-           Word((Word(L) shr 8) or (Word(L) shl 8)) shl 16;
-      Result := Int64(H) or Int64(L) shl 32;
-  {$ELSE}
-  asm
-  {$IFDEF CPUX64}
-      MOV    RAX, RCX
-      BSWAP  RAX
-  {$ELSE}
-      MOV   EDX,  [EBP + $08]
-      MOV   EAX,  [EBP + $0C]
-      BSWAP EAX
-      BSWAP EDX
-  {$ENDIF}
-  {$ENDIF}
-  end;
+
+{$ifdef FPC}
+function IcsSwap32(a: cardinal): cardinal;
+begin
+  result := SwapEndian(a); // use fast platform-specific function
+end;
+
+function IcsSwap64(const a: QWord): QWord;
+begin
+  result := SwapEndian(a); // use fast platform-specific function
+end;
+
+function bSwap32(Value: LongWord): LongWord;
+begin
+  result := SwapEndian(Value); // use fast platform-specific function
+end;
+
+//function bSwap64(Value: QWord): QWord;
+function bSwap64(Value: Int64): Int64;
+begin
+  result := SwapEndian(Value); // use fast platform-specific function
+end;
+
+{$else}
+{* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
+function bSwap32(Value: LongWord): LongWord;
+{$IFDEF PUREPASCAL}
+begin
+    Result := Word(((Value shr 16) shr 8) or ((Value shr 16) shl 8)) or
+              Word((Word(Value) shr 8) or (Word(Value) shl 8)) shl 16;
+{$ELSE}
+asm
+{$IFDEF CPUX64}
+    MOV    EAX, ECX
+{$ENDIF}
+    BSWAP  EAX
+{$ENDIF}
+end;
+{* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
+function IcsSwap32(Value: LongWord): LongWord;
+{$IFDEF PUREPASCAL}
+begin
+    Result := Word(((Value shr 16) shr 8) or ((Value shr 16) shl 8)) or
+              Word((Word(Value) shr 8) or (Word(Value) shl 8)) shl 16;
+{$ELSE}
+asm
+{$IFDEF CPUX64}
+    MOV    EAX, ECX
+{$ENDIF}
+    BSWAP  EAX
+{$ENDIF}
+end;
+
+{* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
+function bSwap64(Value: Int64): Int64;
+{$IFDEF PUREPASCAL}
+var
+    H, L: LongWord;
+begin
+    H := LongWord(Value shr 32);
+    L := LongWord(Value);
+    H := Word(((H shr 16) shr 8) or ((H shr 16) shl 8)) or
+         Word((Word(H) shr 8) or (Word(H) shl 8)) shl 16;
+    L := Word(((L shr 16) shr 8) or ((L shr 16) shl 8)) or
+         Word((Word(L) shr 8) or (Word(L) shl 8)) shl 16;
+    Result := Int64(H) or Int64(L) shl 32;
+{$ELSE}
+asm
+{$IFDEF CPUX64}
+    MOV    RAX, RCX
+    BSWAP  RAX
+{$ELSE}
+    MOV   EDX,  [EBP + $08]
+    MOV   EAX,  [EBP + $0C]
+    BSWAP EAX
+    BSWAP EDX
+{$ENDIF}
+{$ENDIF}
+end;
 {$ENDIF FPC}
     {$WARN UNSAFE_CAST OFF}
     {$WARN UNSAFE_CODE OFF}

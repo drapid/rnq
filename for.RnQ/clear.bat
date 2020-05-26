@@ -2,6 +2,8 @@
 @FOR /r %%R IN (*.identcache) DO @IF EXIST %%R (del /s /q "%%R")
 @FOR /r %%R IN (*.bak) DO @IF EXIST %%R (del /s /q "%%R")
 @FOR /r %%R IN (*.stat) DO @IF EXIST %%R (del /s /q "%%R")
+@FOR /r %%R IN (*.dcu) DO @IF EXIST %%R (del /s /q "%%R")
+@REM FOR /r %%R IN (*.o) DO IF EXIST %%R (del /s /q "%%R")
 @IF EXIST "*.dcu" del *.dcu
 @IF EXIST "*.ppu" del *.ppu
 @IF EXIST "AES\*.dcu" del AES\*.dcu

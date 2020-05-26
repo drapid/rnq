@@ -7,7 +7,8 @@ interface
 
 uses
   Windows,
-  SynCrypto,
+//  SynCrypto,
+  mormot.core.crypto,
   RDGlobal
   ;
 
@@ -444,6 +445,5 @@ begin
   FillMemory(@cx, sizeof(fcrypt_ctx), 0);
 //	Result  MAC_LENGTH(res);				//* return MAC length in bytes   */
 end;
-
 
 end.

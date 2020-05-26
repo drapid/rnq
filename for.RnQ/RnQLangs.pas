@@ -9,6 +9,7 @@ unit RnQLangs;
 
 interface
 uses
+  Windows, Classes, SysUtils,
   {$IFDEF LANGDEBUG}
   iniFiles,
   {$ENDIF}
@@ -27,9 +28,30 @@ type
 
 //  TLangList = THashedStringList;
   TLangList = TDictionary<String, String>;
+  TResLangList = TDictionary<Integer, String>;
+
+type
+  TMethodHook = class
+  private
+    aOriginal: packed array[ 0..4 ] of byte;
+    pOldProc, pNewProc: pointer;
+    pPosition: PByteArray;
+  public
+    constructor Create( pOldProc, pNewProc: pointer );
+    destructor Destroy; override;
+  end;
+
 
 type
   TRnQLang = class
+   private
+    class var RecStrNameIdMap: TResLangList;
+    class var aMethodHook: TMethodHook;
+   public
+    class constructor  CreateLangs;
+    class destructor DestroyLangs;
+    class procedure RegisterProcedures(aOriginalProcedure, aNewProcedure: pointer);
+    class function LoadResString(ResStringRec: PResStringRec): String;
    private
 //    LangPath: TThemePath;
     LangsStr: TLangList;
@@ -82,10 +104,10 @@ type
   function getTranslation(const key: UnicodeString): string; overload;
  {$ENDIF UNICODE}
 
-  procedure refreshLangList(pOnlyFileNames: Boolean);
+  procedure refreshLangList(pLangFileMask: String; pOnlyFileNames: Boolean; appPath: String; mainPath: String = '');
   procedure ClearLanglist;
 
-  procedure LoadSomeLanguage;
+  procedure LoadSomeLanguage(pLangFileMask: String; appPath: String; mainPath: String = '');
   procedure ClearLanguage;
 var
   useLang: Boolean = false;
@@ -97,9 +119,8 @@ const
 
 implementation
  uses
-   SysUtils, StrUtils, Masks,
-   RDGlobal, RnQStrings, RDUtils,
-   RnQGlobal,
+   StrUtils, Masks,
+   RDGlobal, RDUtils,
  {$IFDEF RNQ}
    RnQLangFrm,
    RQlog,
@@ -111,7 +132,7 @@ implementation
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
-   Classes;
+  RnQStrings;
 
 var
   langList: aLangInfo;
@@ -121,6 +142,24 @@ var
     end;
   alreadyLoaded: array of string;  // keep track of loaded modules
 }
+
+{Replacement for System.LoadResString}
+function NewLoadResString(ResStringRec: PResStringRec): String;
+var
+  Buffer: array [0..4095] of char;
+begin
+  if ResStringRec = nil then Exit;
+  if ResStringRec.Identifier >= 64 * 1024 then
+  begin
+    Result := PChar(ResStringRec.Identifier);
+  end
+  else
+  begin
+    Result := TRnQLang.LoadResString(ResStringRec);
+  end;
+end;
+
+
 
 //  PrefStr: THashedStringList;
 {
@@ -151,11 +190,33 @@ begin
   loadLanguageFile(p_fn, p_isUTFLang);
 end;
 }
+  {Hookup aNewProcedure on aOriginalProcedure}
+class procedure TRnQLang.RegisterProcedures(aOriginalProcedure, aNewProcedure: pointer);
+begin
+    if Assigned(aOriginalProcedure) and Assigned(aNewProcedure) then
+      aMethodHook := TMethodHook.Create( aOriginalProcedure, aNewProcedure);
+end;
+
+class constructor TRnQLang.CreateLangs;
+begin
+  aMethodHook := nil;
+  RecStrNameIdMap := TResLangList.Create;
+  RegisterProcedures(@System.LoadResString, @NewLoadResString);
+end;
+
+class destructor TRnQLang.DestroyLangs;
+begin
+  aMethodHook.Free;
+  aMethodHook := NIL;
+  RecStrNameIdMap.Free;
+  RecStrNameIdMap := NIL;
+end;
 
 constructor TRnQLang.Create;
 begin
 //  LangsStr := THashedStringList.Create;
   LangsStr := TLangList.Create;
+  resetLanguage;
 end;
 
 destructor TRnQLang.Destroy;
@@ -167,6 +228,7 @@ procedure TRnQLang.resetLanguage;
 begin
  if Assigned(LangsStr) then
    LangsStr.Clear;
+ RecStrNameIdMap.Clear;
 end; // resetLanguage
 
 procedure TRnQLang.ClearLanguage;
@@ -212,19 +274,21 @@ begin
 end;
 
 function TRnQLang.loadLanguageFile2(fn: string; ts: TThemeSourcePath; isUTFLang: Boolean): Boolean;
+{
   function fullpath(const fn: string): string;
    var
     s1: String;
   begin
-    if RnQMainPath > '' then
-      s1 := RnQMainPath + fn
+    if mainPath > '' then
+      s1 := mainPath + fn
      else
       s1 := fn;
     if ansipos(':', fn)=0 then
-      result := myPath + s1
+      result := appPath + s1
      else
       result := s1
   end;
+}
 var
   k, v: RawByteString;
   kU, vU: String;
@@ -748,6 +812,37 @@ begin
     end;
 end;
 
+class function TRnQLang.LoadResString(ResStringRec: PResStringRec): String;
+var
+  Buffer: array [0..4095] of char;
+  s: String;
+begin
+  if ResStringRec = nil then Exit;
+  if ResStringRec.Identifier >= 64 * 1024 then
+  begin
+    Result := PChar(ResStringRec.Identifier);
+  end
+  else
+  begin
+    if RecStrNameIdMap.TryGetValue(ResStringRec^.Identifier, Result) then
+    begin
+      Exit;
+    end
+    else
+    begin
+      SetString(s, Buffer,
+        LoadString(FindResourceHInstance(ResStringRec.Module^),
+          ResStringRec.Identifier, Buffer, SizeOf(Buffer)));
+      if Assigned(LangVar) then
+        Result := LangVar.TranslateString(s)
+       else
+        Result := s;
+      RecStrNameIdMap.Add(ResStringRec^.Identifier, Result);
+    end;
+  end;
+end;
+
+
 //////////////////////////////////////////////////////////////////////////
 function getTranslation(const key: AnsiString): string;
 begin
@@ -809,7 +904,7 @@ end; // getTranslation
  {$ENDIF UNICODE}
 
 
-procedure refreshLangList(pOnlyFileNames: Boolean);
+procedure refreshLangList(pLangFileMask: String; pOnlyFileNames: Boolean; appPath: String; mainPath: String = '');
  procedure ProcessFile(Const fn, subfile: String; s: RawByteString; isUTF: Boolean);
  var
   line, k, v, section: RawByteString;
@@ -863,8 +958,9 @@ procedure refreshLangList(pOnlyFileNames: Boolean);
      end
   end;
 const
-   langsFiles : array[0..1] of string = ('RnQ*.utflng', 'RnQ*.lng');
-   ZipLangs : array[0..0] of string = ('.zlng');
+//   langsFiles : array[0..1] of string = ('RnQ*.utflng', 'RnQ*.lng');
+   langsFiles2: array[0..1] of string = ('*.utflng', '*.lng');
+   ZipLangs: array[0..0] of string = ('.zlng');
 var
   sr: TSearchRec;
   I, e: Integer;
@@ -882,24 +978,24 @@ var
 begin
   setLength(lang_paths, 2);
   setLength(lang_subpaths, 2);
-  lang_paths[0] := myPath;
-  lang_paths[1] := myPath + 'Langs' + PathDelim;
+  lang_paths[0] := appPath;
+  lang_paths[1] := appPath + 'Langs' + PathDelim;
   lang_subpaths[0] := '';
   lang_subpaths[1] := 'Langs' + PathDelim;
-  if rnqmainPath > '' then
+  if mainPath > '' then
     begin
       setLength(lang_paths, 3);
-      lang_paths[2] := rnqmainPath;
+      lang_paths[2] := mainPath;
       setLength(lang_subpaths, 3);
-      lang_subpaths[2] := ExtractRelativePath(myPath, rnqmainPath);
+      lang_subpaths[2] := ExtractRelativePath(appPath, mainPath);
     end;
 //  theme_paths[1] := myPath; // For *.rtz
 //  n:=0;
   ClearLangList;
  for ti := Low(lang_paths) to High(lang_paths) do
-  for e := 0 to Length(langsFiles) - 1 do
+  for e := 0 to Length(langsFiles2) - 1 do
   begin
-    if findFirst(lang_paths[ti]+langsFiles[e], faAnyFile, sr) = 0 then
+    if findFirst(lang_paths[ti] + pLangFileMask + langsFiles2[e], faAnyFile, sr) = 0 then
       repeat
       if sr.name[1]<>'.' then
         begin
@@ -931,15 +1027,15 @@ begin
           begin
            w := ts.zp.Name[i];
            if (  LastDelimiter('\/:', w) <= 0)and
-              (MatchesMask(w, langsFiles[0])
-               or MatchesMask(w, langsFiles[1])
+              (MatchesMask(w, pLangFileMask + langsFiles2[0])
+               or MatchesMask(w, pLangFileMask + langsFiles2[1])
                )  then
              begin
               if pOnlyFileNames then
                 sA := ''
                else
                 sA := ts.zp.Data[i];
-              processFile(fn, w, sA, MatchesMask(w, langsFiles[0]));
+              processFile(fn, w, sA, MatchesMask(w, pLangFileMask + langsFiles2[0]));
               sA := '';
              end;
           end;
@@ -978,7 +1074,7 @@ begin
 end;
 
 
-procedure LoadSomeLanguage;
+procedure LoadSomeLanguage(pLangFileMask: String; appPath: String; mainPath: String = '');
 var
   i: Integer;
   lv: ToLangInfo;
@@ -1001,7 +1097,7 @@ begin
        FreeAndNil(LangVar);
    end;
 
-  refreshLangList(True);
+  refreshLangList(pLangFileMask, True, appPath, mainPath);
   if Length(langList) = 0 then
     begin
      useLang := false;
@@ -1017,7 +1113,7 @@ begin
   else
  {$IFDEF RNQ}
    begin
-    refreshLangList(False);
+    refreshLangList(pLangFileMask, False, appPath, mainPath);
     i := showLangsFrm(langList);
     if i < 0 then
       begin
@@ -1056,6 +1152,41 @@ begin
      LangVar.ClearLanguage;
      FreeAndNil(LangVar);
    end;
+end;
+
+
+{ TMethodHook }
+
+constructor TMethodHook.Create(pOldProc, pNewProc: pointer);
+var
+  iOffset : integer;
+  iMemProtect : cardinal;
+  i : integer;
+begin
+  Self.pOldProc := pOldProc;
+  Self.pNewProc := pNewProc;
+
+  pPosition := pOldProc;
+  iOffset := integer( pNewProc ) - integer( pointer( pPosition ) ) - 5;
+
+  for i := 0 to 4 do aOriginal[ i ] := pPosition^[ i ];
+
+  VirtualProtect( pointer( pPosition ), 5, PAGE_EXECUTE_READWRITE,
+    @iMemProtect );
+
+  pPosition^[ 0 ] := $E9;
+  pPosition^[ 1 ] := byte( iOffset );
+  pPosition^[ 2 ] := byte( iOffset shr 8 );
+  pPosition^[ 3 ] := byte( iOffset shr 16 );
+  pPosition^[ 4 ] := byte( iOffset shr 24 );
+end;
+
+destructor TMethodHook.Destroy;
+var
+  i : integer;
+begin
+  for i := 0 to 4 do pPosition^[ i ] := aOriginal[ i ];
+  inherited;
 end;
 
 end.

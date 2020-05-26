@@ -10,9 +10,6 @@ interface
 uses
    Windows, RDGlobal,
  {$IFDEF USE_ZIP}
-//   kazip,
-//   VCLUnZip,
-//  SXZipUtils,
   RnQZip,
  {$ENDIF USE_ZIP}
  {$IFDEF USE_RAR}

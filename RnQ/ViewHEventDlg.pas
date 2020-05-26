@@ -10,9 +10,9 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.StdCtrls, vcl.ComCtrls, Winapi.CommCtrl,
-  RnQPrefsInt,
-  RnQGraphics32, Vcl.ExtCtrls, Vcl.Menus;
+  Vcl.Controls, Vcl.Forms, Vcl.StdCtrls, vcl.ComCtrls, Vcl.ExtCtrls, Vcl.Menus,
+  Winapi.CommCtrl,
+  RnQPrefsInt, RnQGraphics32, RDGlobal;
 
 type
    TImgRec = record

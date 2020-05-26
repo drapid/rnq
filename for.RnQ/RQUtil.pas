@@ -17,7 +17,7 @@ interface
   {$IFNDEF NOT_USE_GDIPLUS}
     RnQGraphics,
   {$ELSE}
-    RnQGraphics32,
+//    RnQGraphics32,
   {$ENDIF NOT_USE_GDIPLUS}
    RDGlobal,
    RnQDialogs,

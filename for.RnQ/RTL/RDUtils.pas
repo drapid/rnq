@@ -65,6 +65,7 @@ function  bool2str(const b: Boolean): RawByteString;
   function color2strU(color: Tcolor): String;
   function Color2HTML(Color: TColor): String;
   function IntToHexA(Value: Integer; Digits: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}
+  function IntToHexAL(Value: Integer; Digits: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}
   function IntToStrA(Value: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}  overload;
   function intToStrA(i, d: Integer): AnsiString; overload;
   function intToStr(i, d: Integer): string; overload;
@@ -150,12 +151,14 @@ function  bool2str(const b: Boolean): RawByteString;
   function hex2StrU(const s: String): RawByteString;
 
   function PacketToHex(Buffer: Pointer; BufLen: Word): AnsiString;
+  function PacketToHexL(Buffer: Pointer; BufLen: Word): AnsiString;
   function  hexDump(const data: RawByteString): AnsiString;
   function  hexDumpS(const data: RawByteString): String;
 
   function str2hex(const s: RawByteString): AnsiString; overload;
   function str2hexU(const s: RawByteString): String; overload;
   function str2hex(const s: RawByteString; const Delim: AnsiChar): AnsiString; overload;
+  function str2hexL(const s: RawByteString): RawByteString;
   function  hexToInt(const s: RawByteString): Cardinal; overload;
   function  hexToInt(const s: String): Cardinal; overload;
   function  strings2str(const split: string; ss: Tstrings): string; overload;
@@ -552,7 +555,8 @@ function isURL(const s: String; ofs: Integer=1): Boolean;
 begin
  {$IFDEF UNICODE}
  while (Integer(s[ofs]) <= $7F) and
-        (((s[ofs] >= '0') and (s[ofs] <= '9')) or s[ofs].IsLetter()) do
+        //(((s[ofs] >= '0') and (s[ofs] <= '9')) or s[ofs].IsLetter()) do
+    (((s[ofs] >= '0') and (s[ofs] <= '9')) or TCharacter.IsLetter(s[ofs])) do
  {$ELSE nonUNICODE}
  while s[ofs] in ['0'..'9','a'..'z','A'..'Z'] do
  {$ENDIF UNICODE}
@@ -570,6 +574,18 @@ begin
 end; // ipos
 }
 // case insensitive version
+{$IFDEF FPC}
+function ipos(const ss, s: string; ofs: integer=1): integer;
+begin
+  Result := Pos(LowerCase(ss), LowerCase(s));
+end;
+
+function ipos(const ss, s: RawByteString; ofs: integer=1): integer;
+begin
+  Result := Pos(LowerCase(ss), LowerCase(s));
+end;
+
+{$ELSE}
 function ipos(const ss, s: string; ofs: integer=1): integer;
 var
   p, s0, ss0: PWideChar;
@@ -606,6 +622,7 @@ begin
         end;
     end;
 end;
+{$ENDIF}
 function capitalize(const s: string): string;
 begin
  result := s;
@@ -697,7 +714,7 @@ begin
   Result := Copy(s, 1, length(s));
   while i <= length(Result) do
 //  if s[i] in ['0'..'9'] then
-  if s[i].IsDigit then
+  if TCharacter.IsDigit(s[i]) then
 //   if Result[i].IsDigit then
      inc(i)
     else
@@ -725,7 +742,7 @@ begin
     Result := False
   else
 {$IFDEF MSWINDOWS}
-    Result := CompareString(LOCALE_USER_DEFAULT, 0, //NORM_IGNORECASE,
+    Result := CompareStringW(LOCALE_USER_DEFAULT, 0, //NORM_IGNORECASE,
       P, L, PChar(sub), L) = 2;
 {$ENDIF}
 {$IFDEF LINUX}
@@ -779,7 +796,7 @@ begin
     Result := False
   else
 {$IFDEF MSWINDOWS}
-    Result := CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE,
+    Result := CompareStringW(LOCALE_USER_DEFAULT, NORM_IGNORECASE,
       P, L, PChar(sub), L) = 2;
 {$ENDIF}
 {$IFDEF LINUX}
@@ -810,6 +827,22 @@ begin
   result := AnsiChar(b)
 end;
 
+{$IFDEF FPC}
+function ABCD_ADCB(d: dword): dword;
+assembler; nostackframe;
+{$asmMode intel}
+asm
+// EAX = WinColor
+// this function swaps R and B bytes in ABGR
+// and writes $FF into A component
+{$IFDEF TARGET_x64}
+        MOV       EAX,ECX
+{$ENDIF}
+        BSWAP     EAX
+        //MOV       AL, $FF
+        ROR       EAX,8
+end;
+{$ELSE}
 function ABCD_ADCB(d: dword): dword; assembler;
  asm
   mov EAX, d
@@ -819,11 +852,23 @@ function ABCD_ADCB(d: dword): dword; assembler;
   ror AX, 8
   rol EAX, 8
 end; // ABCD_ADCB
+{$ENDIF}
 
  {$IFDEF UNICODE}
 function color2strU(color: Tcolor): UnicodeString;
+ {$IFDEF FPC}
+var
+  s: AnsiString;
+begin
+  if ColorToIdent(Color, s) then
+    begin
+      Result := s;
+    end
+   else
+{$ELSE}
 begin
   if not ColorToIdent(Color, Result) then
+{$ENDIF}
     begin
       color := ABCD_ADCB(ColorToRGB(color));
       result := intToHex(color, 6);
@@ -833,6 +878,16 @@ end;
 
 function color2str(color: Tcolor): AnsiString;
  {$IFDEF UNICODE}
+ {$IFDEF FPC}
+var
+  s: AnsiString;
+begin
+  if ColorToIdent(Color, s) then
+    begin
+      Result := s;
+    end
+   else
+{$ELSE}
 var
   res: String;
 begin
@@ -840,6 +895,7 @@ begin
   if ColorToIdent(Color, Res) then
     Result := AnsiString(res)
    else
+{$ENDIF}
     begin
       color := ABCD_ADCB(ColorToRGB(color));
       result := IntToHexA(color,6);
@@ -884,6 +940,10 @@ end;
   function IntToStrA(Value : Integer) : AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   begin
     Result := intToStr(Value);
+  end;
+  function IntToHexAL(Value: Integer; Digits: Integer): AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+  begin
+    Result := LowerCase(IntToHex(Value, Digits));
   end;
 
  {$ELSE win32}
@@ -954,6 +1014,83 @@ asm
         PUSH    ECX            // result ptr
         MOV     ECX, 16        // base 16     EDX = Digits = field width
         CALL    CvtInt
+        MOV     EDX, ESI
+        POP     EAX            // result ptr
+(*{$IF DEFINED(Unicode)}
+        CALL    System.@UStrFromPCharLen
+{$ELSE}*)
+        PUSH    RnQDefaultSystemCodePage
+        CALL    System.@LStrFromPCharLen
+//{$IFEND}
+        ADD     ESP, 32
+        POP     ESI
+end;
+
+procedure CvtIntL;
+{ IN:
+    EAX:  The integer value to be converted to text
+    ESI:  Ptr to the right-hand side of the output buffer:  LEA ESI, StrBuf[16]
+    ECX:  Base for conversion: 0 for signed decimal, 10 or 16 for unsigned
+    EDX:  Precision: zero padded minimum field width
+  OUT:
+    ESI:  Ptr to start of converted text (not start of buffer)
+    ECX:  Length of converted text
+}
+asm // StackAlignSafe
+        OR      CL,CL
+        JNZ     @CvtLoop
+@C1:    OR      EAX,EAX
+        JNS     @C2
+        NEG     EAX
+        CALL    @C2
+        MOV     AL,'-'
+        INC     ECX
+        DEC     ESI
+        MOV     [ESI],AL
+        RET
+@C2:    MOV     ECX,10
+
+@CvtLoop:
+        PUSH    EDX
+        PUSH    ESI
+@D1:    XOR     EDX,EDX
+        DIV     ECX
+        DEC     ESI
+        ADD     DL,'0'
+        CMP     DL,'0'+10
+        JB      @D2
+        ADD     DL,('a'-'0')-10
+@D2:    MOV     [ESI],DL
+        OR      EAX,EAX
+        JNE     @D1
+        POP     ECX
+        POP     EDX
+        SUB     ECX,ESI
+        SUB     EDX,ECX
+        JBE     @D5
+        ADD     ECX,EDX
+        MOV     AL,'0'
+        SUB     ESI,EDX
+        JMP     @z
+@zloop: MOV     [ESI+EDX],AL
+@z:     DEC     EDX
+        JNZ     @zloop
+        MOV     [ESI],AL
+@D5:
+end;
+
+function IntToHexAL(Value: Integer; Digits: Integer): AnsiString;
+//  FmtStr(Result, '%.*x', [Digits, Value]);
+asm
+        CMP     EDX, 32        // Digits < buffer length?
+        JBE     @A1
+        XOR     EDX, EDX
+@A1:    PUSH    ESI
+        MOV     ESI, ESP
+        SUB     ESP, 32
+        PUSH    ECX            // result ptr
+        MOV     ECX, 16        // base 16     EDX = Digits = field width
+        CALL    CvtIntL
         MOV     EDX, ESI
         POP     EAX            // result ptr
 (*{$IF DEFINED(Unicode)}
@@ -1130,7 +1267,8 @@ begin
   try
     repeat
       result := result shl 8;
-      i := pos(AnsiString('.'), s, p);
+      //i := pos(AnsiString('.'), s, p);
+      i := posEx(AnsiString('.'), s, p);
       if i > 0 then
        begin
         s1 := String(copy(s, p, i-p));
@@ -1500,6 +1638,7 @@ var
   tmp: word;
 //  tmp4: DWORD;
   tmp4: ShortString;
+  tmpU: UnicodeString;
 begin
   if Value='' then
   begin
@@ -1552,7 +1691,15 @@ begin
 //        tmp4 := (tmp4 shl 6) or (c and $3F);     //Добавляем 6 бит в конец
         tmp4[k+1] := Value[i-1];
       end;
+      {$ifdef FPC}
+      widestringmanager.Ansi2UnicodeMoveProc(@tmp4[1],
+        CP_UTF8, tmpU, len - j);
+      Move(Pointer(tmpU)^,pc^,length(tmpU)*2);
+      k := length(tmpU);
+      {$else}
       k := Cardinal(UnicodeFromLocaleChars(CP_UTF8, 0, @tmp4[1], 4, pc, len - j));
+      {$ENDIF}
+
       if k > 0 then
          begin
           inc(j, k);
@@ -1853,7 +2000,9 @@ end;
 
 //{$IF CompilerVersion >= 24}
 //{$IFEND}
- {$IFDEF UNICODE} {$IF CompilerVersion >= 24}
+ {$IFDEF UNICODE}
+ {$IFNDEF FPC}
+ {$IF CompilerVersion >= 24}
 function RnQEndsText(const ASubText, AText: UnicodeString): Boolean;
 var
   SubTextLocation: Integer;
@@ -1870,7 +2019,14 @@ function RnQEndsText(const ASubText, AText: UnicodeString): Boolean;
 begin
   Result := AnsiEndsText(ASubText, AText);
 end;
- {$IFEND ver} {$ENDIF UNICODE}
+ {$IFEND ver}
+ {$ELSE FPC}
+ function RnQEndsText(const ASubText, AText: UnicodeString): Boolean;
+ begin
+   Result := AnsiEndsText(ASubText, AText);
+ end;
+ {$ENDIF FPC}
+ {$ENDIF UNICODE}
 
  function IsEqualGUID;                   external ole32 name 'IsEqualGUID';
 {$EXTERNALSYM IsEqualGUID}
@@ -1919,7 +2075,13 @@ end;
 function GUID2rGUID(const guid: TGUID): RawByteString;
 begin
   Result := '';
+{$IFDEF FPC}
+  if (guid.D1=0)and (guid.D2 = 0)and(guid.D3 = 0) then
+    if (guid.D4[0] = 0)and(guid.D4[1] = 0)and(guid.D4[2] = 0)and(guid.D4[3] = 0)
+     and(guid.D4[4] = 0)and(guid.D4[5] = 0)and(guid.D4[6] = 0)and(guid.D4[7] = 0) then
+{$ELSE ~FPC}
   if guid <> GUID_NULL then
+{$ENDIF FPC}
     begin
        SetLength(Result, 16);
        CopyMemory(@Result[1], @guid, 16);
@@ -2136,6 +2298,17 @@ begin
    end;
 end;
 
+function PacketToHexL(Buffer: Pointer; BufLen: Word): AnsiString;
+var
+//  S: AnsiString;
+  i: Cardinal;
+begin
+  Result := '';
+  for i := 1 to BufLen do
+   begin
+      Result := Result + IntToHexAL(PByte(LongWord(Buffer) + i - 1)^, 2);
+   end;
+end;
 
 function str2hex(const s: RawByteString): AnsiString;
 var
@@ -2152,6 +2325,25 @@ begin
 //      result := result+' ';
     end;
 end; // Str2hex
+
+function str2hexL(const s: RawByteString): RawByteString;
+var
+  i: Integer;
+begin
+  Result := '';
+  if Length(s) > 0 then
+   for i:=1 to Length(s) do
+    begin
+ {$IF DEFINED(WIN64) OR DEFINED(FPC)}
+      Result := Result + intToHexA(byte(s[i]), 2);
+ {$ELSE}
+      Result := Result + intToHexAL(byte(s[i]), 2);
+ {$ENDIF}
+    end;
+ {$IF DEFINED(WIN64) OR DEFINED(FPC)}
+  Result := LowerCase(Result);
+ {$ENDIF}
+end; // Str2hexL
 
 function str2hexU(const s: RawByteString): String;
 var
@@ -2320,7 +2512,7 @@ begin
   i := 1;
   while i <= length(s) do
 //    if s[i] in ['0'..'9'] then
-    if s[i].IsDigit then
+    if TCharacter.IsDigit(s[i]) then
       inc(i)
     else
       exit;
@@ -2441,8 +2633,17 @@ begin
 end;
 
 function chop(const ss: String; var s: String): String;
+var
+  p: Integer;
 begin
-  result := chop(pos(ss,s), length(ss), s)
+  p := pos(ss,s);
+  if p > 0 then
+    result := chop(p, length(ss), s)
+   else
+    begin
+      Result := s;
+      s := '';
+    end;
 end;
 
 function chopline(var s: String): String;

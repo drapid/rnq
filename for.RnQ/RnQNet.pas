@@ -199,6 +199,7 @@ const
 
   procedure HandleError(E: EHttpException; URL: String; ErrText: String = ''; Quiet: Boolean = True);
 
+  function ImageContentTypes2ext(pType: String): String;
 
 var
   MainProxy: Tproxy;
@@ -208,7 +209,6 @@ implementation
 
 uses
   Windows, Base64, SysUtils, StrUtils,
-  RDUtils,
   RnQPrefsInt,
  {$IFDEF UNICODE}
    AnsiStrings,
@@ -218,11 +218,12 @@ uses
     RQUtil,
     RnQLangs,
  {$IFDEF RNQ}
+    RnQGraphics32,
  {$ENDIF RNQ}
  {$IFDEF RNQ_PLUGIN}
    RDPlugins,
  {$ENDIF RNQ_PLUGIN}
-    RnQGraphics32
+  RDUtils
    ;
 
 (*
@@ -1136,10 +1137,12 @@ var
   // idx: Integer;
   AvStream: TMemoryStream;
   httpCli: TSslHttpCli;
+ {$IFDEF RNQ}
   ft: TPAFormat;
+ {$ENDIF RNQ}
+  t, ext: String;
 begin
   Result := false;
-  // idx:=  HasAvatar(UIN);
   try
     httpCli := TSslHttpCli.Create(nil);
     httpCli.MultiThreaded := True;
@@ -1156,6 +1159,7 @@ begin
       if Threshold > 0 then
       begin
         httpCli.Head;
+        t := httpCli.ContentType;
         if httpCli.ContentLength > Threshold then
           Exit;
       end;
@@ -1166,7 +1170,8 @@ begin
         if DoPOST then
         begin
           httpCli.SendStream := TMemoryStream.Create;
-          httpCli.SendStream.Write(POSTData[1], Length(POSTData));
+          if POSTData > '' then
+            httpCli.SendStream.Write(POSTData[1], Length(POSTData));
           httpCli.SendStream.Seek(0, 0);
           httpCli.Post;
         end
@@ -1203,9 +1208,17 @@ begin
         begin
           if ExtByContent then
           begin
+ {$IFDEF RNQ}
             ft := DetectFileFormatStream(AvStream);
             if ft <> PA_FORMAT_UNK then
-              fn := ChangeFileExt(fn, PAFormat[ft]);
+              fn := ChangeFileExt(fn, PAFormat[ft])
+             else
+ {$ENDIF RNQ}
+              begin
+                ext := ImageContentTypes2ext(t);
+                if ext > '' then
+                 fn := ChangeFileExt(fn, ext);
+              end;
           end;
           AvStream.SaveToFile(fn);
         end;
@@ -1226,7 +1239,10 @@ function LoadFromURL0(const URL: String; var fn: String; Threshold: LongInt = 0;
 var
   AvStream: TMemoryStream;
   httpCli: THttpCli;
+ {$IFDEF RNQ}
   ft: TPAFormat;
+ {$ENDIF RNQ}
+  t, ext: String;
 begin
   Result := False;
 
@@ -1236,7 +1252,7 @@ begin
       begin
        httpCli.socksServer:='';
        httpCli.socksPort:='';
-       httpCli.SocksAuthentication:=socksNoAuthentication;
+       httpCli.SocksAuthentication := socksNoAuthentication;
        httpCli.Proxy := '';
        httpCli.ProxyPort := '';
       end;
@@ -1287,7 +1303,7 @@ begin
       end
   end;
 
-  AvStream:= TMemoryStream.Create;
+  AvStream := TMemoryStream.Create;
 
   httpCli.RcvdStream:= AvStream;
   httpCli.URL := URL;
@@ -1296,6 +1312,7 @@ begin
     if Threshold > 0 then
      begin
       httpCli.Head;
+      t := httpCli.ContentType;
       if httpCli.ContentLength > Threshold then
         Exit;
      end;
@@ -1322,9 +1339,17 @@ begin
        AvStream.Seek(0,0);
        if ExtByContent then
         begin
+ {$IFDEF RNQ}
          ft := DetectFileFormatStream(AvStream);
          if ft <> PA_FORMAT_UNK then
-          fn := ChangeFileExt(fn, PAFormat[ft]);
+           fn := ChangeFileExt(fn, PAFormat[ft])
+          else
+ {$ENDIF RNQ}
+              begin
+                ext := ImageContentTypes2ext(t);
+                if ext > '' then
+                 fn := ChangeFileExt(fn, ext);
+              end;
         end;
        AvStream.SaveToFile(fn);
      end;
@@ -1387,6 +1412,18 @@ begin
     httpCli.Free;
     FreeAndNil(AvStream);
   end;
+end;
+
+function ImageContentTypes2ext(pType: String): String;
+var
+  I: Integer;
+begin
+  Result := '';
+  if pType = '' then
+    Exit;
+  for I := Low(ImageContentTypes) to High(ImageContentTypes) do
+   if ImageContentTypes[i] = pType then
+     Exit(ImageExtensions[i]);
 end;
 
 
