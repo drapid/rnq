@@ -446,5 +446,4 @@ begin
 //	Result  MAC_LENGTH(res);				//* return MAC length in bytes   */
 end;
 
-
 end.

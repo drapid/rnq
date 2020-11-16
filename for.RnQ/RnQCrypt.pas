@@ -700,7 +700,7 @@ var
   i: integer;
   pos, size: UInt64;
 begin
-  fs := TfileStream.create(fn, fmOpenRead+fmShareDenyWrite);
+  fs := TFileStream.create(fn, fmOpenRead+fmShareDenyWrite);
   for i:=0 to 15 do
     byte(digest[i]) := succ(i);
   MD5init(context);

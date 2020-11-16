@@ -1,4 +1,3 @@
-{$OVERFLOWCHECKS OFF}
 unit Murmur2;
  
 interface
@@ -10,6 +9,8 @@ function CalcMurmur2(const Bytes: TBytes; const Seed: LongWord = $9747B28C): Lon
 function CalcMurmur2(Stream: TStream; const Seed: LongWord = $9747B28C): LongWord; overload;
  
 implementation
+
+{$OVERFLOWCHECKS OFF}
  
 function CalcMurmur2(const Bytes: TBytes; const Seed: LongWord = $9747B28C): LongWord;
 var

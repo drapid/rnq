@@ -7,7 +7,7 @@ unit RnQZip;
 {$I NoRTTI.inc}
 
 { $IFDEF RNQ}
- {$DEFINE ZIP_AES}
+ { $DEFINE ZIP_AES}
 { $ENDIF RNQ}
 
 // ToDo http://www.winzip.com/aes_info.htm
@@ -30,8 +30,16 @@ unit RnQZip;
 interface
 
 uses
-  SysUtils, Classes, Types, Windows, RDGlobal,
-  OverbyteIcsZLibHigh;
+  SysUtils, Classes, Types, Windows,
+ {$IFDEF FPC}
+  ZLib,
+  ZStream,
+  ZlibHigh,
+ {$ELSE ~FPC}
+  System.ZLib,
+  OverbyteIcsZLibHigh,
+ {$ENDIF FPC}
+  RDGlobal;
 
 type
 
@@ -67,6 +75,7 @@ type
     DataOffset: Int64;
     DataLoaded: Boolean;
     function UTFSupport: Boolean;
+    function getFileName: String;
   end;
 
  {$IFDEF ZIP_AES}
@@ -157,6 +166,7 @@ type
     CentralDirectory: array of TFileHeader;
     EndOfCentralDirectory: TEndOfCentralDir;
     aUTF8Support: Boolean;  // By Default its True
+    fFN: String;
    public
     ZipFileComment: AnsiString;
     Password: AnsiString;
@@ -164,7 +174,7 @@ type
   private
     function  GetUncompressed(i: integer): RawByteString;
     procedure SetUncompressed(i: integer; const Value: RawByteString);
-    procedure Uncompress2Stream(I:Integer; Stream : TStream);
+    procedure Uncompress2Stream(I: Integer; Stream: TStream; pAutoLoad: Boolean = True);
     function  GetDateTime(i: integer): TDateTime;
     procedure SetDateTime(i: integer; const Value: TDateTime);
     function  GetCount: integer;
@@ -174,7 +184,7 @@ type
     constructor create;
     function  AddFile(const name: string; FAttribute: DWord = 0; const pPass: AnsiString = '';
                        const pData: RawByteString = ''): Integer;
-    function  AddExtFile(const pFileName : String; const name: string = '';
+    function  AddExtFile(const pFileName: String; const name: string = '';
                          FAttribute: DWord = 0; const pPass: AnsiString = ''): Integer;
     procedure SaveToFile(const filename: string);
     procedure SaveToStream(ZipFileStream: TStream);
@@ -205,7 +215,7 @@ const
    dwEndOfCentralDirSignature = $06054b50;
    wAESEncrSignature = $9901;
 
-function ZipCrc32(crc: Cardinal; const buffer: PByteArray; size: Int64): Cardinal; OverLoad;
+function ZipCrc32(crc: Cardinal; const buffer: PByteArray; size: Cardinal): Cardinal; OverLoad;
 function ZipCrc32(crc: Cardinal; const stream: TStream): Cardinal; OverLoad;
 
 //function ZipCRC32(const Data: string): longword;
@@ -222,21 +232,19 @@ function ZDecompressBytes(const sa: TBytes): TBytes;
 
 implementation
   uses
-//     zlibEx,
-//     OverbyteIcsZLibObj,
-     System.ZLib,
-     System.ZLibConst,
   {$IFDEF ZIP_AES}
    {$IFDEF USE_SYMCRYPTO}
-//     SynCrypto,
      AES_HMAC_Syn,
     {$ELSE not SynCrypto}
      AES_HMAC,
    {$ENDIF ~USE_SYMCRYPTO}
   {$ENDIF ZIP_AES}
- {$IFDEF UNICODE}
+ {$IFNDEF FPC}
+//   System.ZLibConst,
+  {$IFDEF UNICODE}
    AnsiStrings,
- {$ENDIF UNICODE}
+  {$ENDIF UNICODE}
+ {$ENDIF}
    RDFileUtil, RDUtils,
      Math;
 
@@ -266,7 +274,7 @@ const
 
 //procedure make_crc_table;
 var
-  crc_table: array[0..255] of Cardinal;
+  crc_table: array[Byte] of Cardinal;
   crc_table_computed: Boolean;
 
 procedure make_crc_table;
@@ -289,17 +297,22 @@ begin
  crc_table_computed := True;
 end;
 
-function ZipCrc32(crc: Cardinal; const buffer: PByteArray; size: Int64): Cardinal;
+{$R-}
+function ZipCrc32(crc: Cardinal; const buffer: PByteArray; size: Cardinal): Cardinal;
 var
   c: Cardinal;
   n: Int64;
+  a: Byte;
 begin
  c := crc;
  if not crc_table_computed then
   make_crc_table;
  if size > 0 then
    for n:=0 to size-1 do
-     c := Cardinal(crc_table[Byte(c xor buffer^[n])] xor Cardinal(c shr 8));
+     begin
+       a := Byte(c) xor buffer^[n];
+       c := Cardinal(crc_table[a] xor Cardinal(c shr 8));
+     end;
  Result := c;
 end;
 
@@ -313,26 +326,29 @@ begin
  if not crc_table_computed then
   make_crc_table;
  stream.Position := 0;
- n := stream.Read(buf, 1);
- while n > 0 do
-  begin
-    c := crc_table[Byte(c xor buf) and $FF] xor (c shr 8);
-    n := stream.Read(buf, 1);
-  end;
+ if stream.Size > 0 then
+   begin
+     n := stream.Read(buf, 1);
+     while n > 0 do
+      begin
+        c := crc_table[(Byte(c) xor buf) and $FF] xor (c shr 8);
+        n := stream.Read(buf, 1);
+      end;
+   end;
  Result := c;
 end;
+{$R+}
 
-{function ZCrc32(crc: Cardinal; const stream: TStream): Cardinal;
+function ZCrc32(crc: Cardinal; const stream: TStream): Cardinal;
 var
   c: Cardinal;
-//  n: Integer;
-  a: byte;
+  a: Byte;
   Res: Int64;
   buf: array[0..254] of Byte;
 begin
- c:=crc;
+ c := crc;
 // if not crc_table_computed then
-//  make_crc_table;
+//   make_crc_table;
  stream.Position := 0;
  Res := stream.size;
  while Res > 0 do
@@ -341,9 +357,8 @@ begin
     c := crc32(c, @buf[0], a) xor $FFFFFFFF;
     dec(Res, a);
   end;
- Result:=c  xor $FFFFFFFF;
+ Result := c  xor $FFFFFFFF;
 end;
-}
 
 function TFileHeader.UTFSupport: Boolean;
 begin
@@ -353,6 +368,18 @@ end;
 function TLocalFile.UTFSupport: Boolean;
 begin
   result := Self.CommonFileHeader.GeneralPurposeBitFlag and (1 shl 11) > 0
+end;
+
+function TLocalFile.getFileName: String;
+var
+  s: AnsiString;
+begin
+ SetLength(s, CommonFileHeader.FilenameLength);
+ CopyMemory(@s[1], filename, CommonFileHeader.FilenameLength);
+ if UTFSupport then
+   Result := UnUTF(s)
+  else
+   Result := s;
 end;
 
 { TZipFile }
@@ -448,16 +475,18 @@ begin
 end;
 
 
-procedure TZipFile.LoadFromStream(const ZipFileStream: TStream; pPreview : Boolean = false);
+procedure TZipFile.LoadFromStream(const ZipFileStream: TStream; pPreview: Boolean = false);
 var
   n: integer;
   signature: DWORD;
 begin
+  fFN := '';
   n := 0;
   repeat
     signature := 0;
     ZipFileStream.Read(signature, 4);
-    if   (ZipFileStream.Position =  ZipFileStream.Size) then exit;
+    if   (ZipFileStream.Position =  ZipFileStream.Size) then
+      exit;
   until signature = dwLocalFileHeaderSignature;
   repeat
     begin
@@ -465,7 +494,6 @@ begin
       begin
         inc(n);
         SetLength(Files, n);
-        SetLength(CentralDirectory, n);
         with Files[n - 1] do
         begin
           LocalFileHeaderSignature := signature;
@@ -526,40 +554,46 @@ begin
       if (signature = dwCentralFileHeaderSignature) then
       begin
         inc(n);
+        if Length(CentralDirectory) < n then
+          SetLength(CentralDirectory, n);
         with CentralDirectory[n - 1] do
-        begin
-          CentralFileHeaderSignature := signature;
-          ZipFileStream.Read(VersionMadeBy, 2);
-          ZipFileStream.Read(CommonFileHeader, SizeOf(CommonFileHeader));
-          ZipFileStream.Read(FileCommentLength, 2);
-          ZipFileStream.Read(DiskNumberStart, 2);
-          ZipFileStream.Read(InternalFileAttributes, 2);
-          ZipFileStream.Read(ExternalFileAttributes, 4);
-          ZipFileStream.Read(RelativeOffsetOfLocalHeader, 4);
-          SetLength(filename, CommonFileHeader.FilenameLength);
-          ZipFileStream.Read(PAnsiChar(filename)^,
-            CommonFileHeader.FilenameLength);
-          SetLength(extrafield, CommonFileHeader.ExtraFieldLength);
-          ZipFileStream.Read(PAnsiChar(extrafield)^,
-            CommonFileHeader.ExtraFieldLength);
-          SetLength(fileComment, FileCommentLength);
-          ZipFileStream.Read(PAnsiChar(fileComment)^, FileCommentLength);
+          begin
+            CentralFileHeaderSignature := signature;
+            ZipFileStream.Read(VersionMadeBy, 2);
+            ZipFileStream.Read(CommonFileHeader, SizeOf(CommonFileHeader));
+            ZipFileStream.Read(FileCommentLength, 2);
+            ZipFileStream.Read(DiskNumberStart, 2);
+            ZipFileStream.Read(InternalFileAttributes, 2);
+            ZipFileStream.Read(ExternalFileAttributes, 4);
+            ZipFileStream.Read(RelativeOffsetOfLocalHeader, 4);
+            SetLength(filename, CommonFileHeader.FilenameLength);
+            ZipFileStream.Read(PAnsiChar(filename)^,
+              CommonFileHeader.FilenameLength);
+            SetLength(extrafield, CommonFileHeader.ExtraFieldLength);
+            ZipFileStream.Read(PAnsiChar(extrafield)^,
+              CommonFileHeader.ExtraFieldLength);
+            SetLength(fileComment, FileCommentLength);
+            ZipFileStream.Read(PAnsiChar(fileComment)^, FileCommentLength);
 
-          //By Rapid D 20080601 ->
- {$IFDEF ZIP_AES}
-          if (CommonFileHeader.ExtraFieldLength >= SizeOf(TAESExtraData))
-              and (extrafield[1] = #$01)and(extrafield[2] = #$99) then
-            begin
-              CopyMemory(@AESInfo, PAnsiChar(extrafield), SizeOf(TAESExtraData) );
-            end;
- {$ENDIF ZIP_AES}
-          //
-        end;
+            //By Rapid D 20080601 ->
+   {$IFDEF ZIP_AES}
+            if (CommonFileHeader.ExtraFieldLength >= SizeOf(TAESExtraData))
+                and (extrafield[1] = #$01)and(extrafield[2] = #$99) then
+              begin
+                CopyMemory(@AESInfo, PAnsiChar(extrafield), SizeOf(TAESExtraData) );
+              end;
+   {$ENDIF ZIP_AES}
+            //
+          end
       end;
     end;
     signature := 0;
     ZipFileStream.Read(signature, 4);
   until signature <> (dwCentralFileHeaderSignature);
+
+  if Length(CentralDirectory) < length(files) then
+    SetLength(CentralDirectory, length(files));
+
   if signature = dwEndOfCentralDirSignature then
   begin
     EndOfCentralDirectory.EndOfCentralDirSignature := Signature;
@@ -571,26 +605,29 @@ begin
   end;
 end;
 
-procedure TZipFile.LoadFromFile(const filename: string; pPreview : Boolean = false);
+procedure TZipFile.LoadFromFile(const filename: string; pPreview: Boolean = false);
 var
   ZipFileStream: TFileStream;
 begin
+  fFN := filename;
   ZipFileStream := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   try
     LoadFromStream(ZipFileStream, pPreview);
+    fFN := filename;
   finally
     ZipFileStream.Free;
   end;
 end;
 
-function TZipFile.GetUncompressed(I:Integer): RawByteString;
-var   // Decompressor:TDecompressionStream;
-  ResultStream : TMemoryStream;
-  UncSize : Int64;
-{  CompressedStream:TMemoryStream;
-  AHeader:AnsiString;
-  ReadBytes:Integer;
-  LoadedCrc32:DWORD;}
+function TZipFile.GetUncompressed(I: Integer): RawByteString;
+var
+ // Decompressor: TDecompressionStream;
+  ResultStream: TMemoryStream;
+  UncSize: Int64;
+{  CompressedStream: TMemoryStream;
+  AHeader: AnsiString;
+  ReadBytes: Integer;
+  LoadedCrc32: DWORD;}
 begin
  if (I<0) or (I>High(Files)) then
   raise Exception.Create('Index out of range.');
@@ -668,7 +705,7 @@ begin
 end;
 
 
-procedure TZipFile.Uncompress2Stream(I: Integer; Stream: TStream);
+procedure TZipFile.Uncompress2Stream(I: Integer; Stream: TStream; pAutoLoad: Boolean = True);
 var
 //  Decompressor: TDecompressionStream;
 //  CompressedStream: TMemoryStream;
@@ -699,14 +736,32 @@ var
 
   ZLH: Word;
   Compress: Byte;
+  ZipFileStream: TFileStream;
 begin
  if (I<0) or (I>High(Files)) then
   raise Exception.Create('Index out of range.');
- if not Files[i].DataLoaded then
+ if not Files[i].DataLoaded and (not pAutoLoad or (fFN = '')) then
   raise Exception.Create('File was not decompressed.');
 
-// AHeader:=Chr(120)+Chr(156);
- AHeader:=RawByteString(#$78)+#$9C;
+ if pAutoLoad and not Files[i].DataLoaded and (fFN > '') then
+   begin
+     ZipFileStream := TFileStream.Create(fFN, fmOpenRead or fmShareDenyWrite);
+     try
+       with Files[i] do
+        begin
+         DataLoaded := True;
+         SetLength(CompressedData, CommonFileHeader.FileDesc.CompressedSize);
+         ZipFileStream.Position := DataOffset;
+         ZipFileStream.Read(PByte(CompressedData)^,
+                  CommonFileHeader.FileDesc.CompressedSize);
+        end;
+      finally
+       ZipFileStream.Free;
+     end;
+   end;
+
+// AHeader := Chr(120)+Chr(156);
+ AHeader := RawByteString(#$78)+#$9C;
   ZLH := Files[I].CommonFileHeader.CompressionMethod;
   if (ZLH=8)or (ZLH=9)or (ZLH = 99) Then
      Begin
@@ -835,7 +890,7 @@ begin
     LoadedCRC32 := ZipCrc32($FFFFFFFF, Stream) XOR $FFFFFFFF;
 //  LoadedCRC32 := Crc32($FFFFFFFF, TMemoryStream(Stream).Memory, Stream.Size) XOR $FFFFFFFF;
     if LoadedCRC32<>Files[I].CommonFileHeader.FileDesc.Crc32 then
-      raise EZipFileCRCError.CreateFmt('CRC Error in "%s".',[Files[I].FileName]);
+      raise EZipFileCRCError.CreateFmt('CRC Error in "%s".',[Files[I].getFileName]);
    end;
 end;
 
@@ -912,7 +967,7 @@ begin
       begin
         ComprSize := 2;
         resStream := NIL;
-        ComprDataNIL := #03#00;
+        ComprDataNIL := dupString(RawByteString(#03#00));
 //        Files[i].CompressedData := ;
         data := @ComprDataNIL[1];
       end
@@ -923,7 +978,7 @@ begin
         CopyMemory(UnComprStream.Memory, Pointer(Value), Length(Value));
         resStream := TMemoryStream.Create;
     //    ZlibCompressStreamEx(UnComprStream, resStream, clMax, zsZLib, false);
-        ZLibCompressStreamEx(UnComprStream, resStream, OverbyteIcsZLibHigh.clMax, zsZLib, True);
+        ZLibCompressStreamEx(UnComprStream, resStream, clMax, zsZLib, True);
         UnComprStream.Free;
     //    ZCompressStream(UnComprStream, resStream, clMax);
         ComprSize := resStream.Size - 6;
@@ -945,9 +1000,20 @@ begin
        fcrypt_init(aesMode, Files[i].pass, salt2, pwd_ver, cx);
        if ComprSize > 0 then
         begin
+//         ofs := ComprSize mod 16;
+//         EncrSize := ComprSize - ofs;
+//         fcrypt_encrypt(data, EncrSize, cx);
          fcrypt_encrypt(data, ComprSize, cx);
+{         if ofs > 0 then
+          begin
+           data1 := data;
+           inc(Cardinal(Data1), EncrSize);
+           fcrypt_encrypt(data1, ofs, cx);
+          end;}
         end;
        s1 := fcrypt_end(cx);
+//        SetLength(s1, 10);
+//        fcrypt_end(@s1[1], cx);
        ofs := l + 2 + ComprSize + 10;
        SetLength(Files[i].CompressedData, ofs);
        ofs := 1;
@@ -1366,7 +1432,7 @@ begin
     end;
 end;
 
-function zCompressStr(const sa: RawByteString; Level: OverbyteIcsZLibHigh.TCompressionLevel = OverbyteIcsZLibHigh.clMax; StreamType: TZStreamType = zsZLib): RawByteString;
+function zCompressStr(const sa: RawByteString; Level: TCompressionLevel = clMax; StreamType: TZStreamType = zsZLib): RawByteString;
 var
   buf, destBuf: TMemoryStream;
 begin
@@ -1376,7 +1442,7 @@ begin
   destBuf := TMemoryStream.create;
   buf.Write(sa[1], Length(sa));
   buf.Position := 0;
-  ZlibCompressStreamEx(buf, destBuf, OverbyteIcsZLibHigh.clMax, StreamType, false);
+  ZlibCompressStreamEx(buf, destBuf, clMax, StreamType, false);
   buf.free;
   SetLength(Result, destBuf.Size);
   destBuf.Position := 0;
@@ -1420,7 +1486,7 @@ begin
   DestBuf := TMemoryStream.Create;
   Buf.WriteBuffer(sa[0], Length(sa));
   Buf.Position := 0;
-  ZlibCompressStreamEx(Buf, DestBuf, OverbyteIcsZLibHigh.clMax, StreamType, False);
+  ZlibCompressStreamEx(Buf, DestBuf, clMax, StreamType, False);
   Buf.Free;
   SetLength(Result, DestBuf.Size);
   DestBuf.Position := 0;
