@@ -70,7 +70,7 @@ implementation
 {$R *.DFM}
 
 uses
-  RQUtil, RDGlobal, RQThemes, RnQSysUtils, RnQPics, RnQLangs,
+  RQUtil, RDGlobal, RQThemes, RDSysUtils, RnQPics, RnQLangs,
   globalLib, mainDlg, utilLib, themesLib, langLib,
   roasterLib;
 

@@ -1634,7 +1634,7 @@ begin
   resetCommonCFG;
   loadCommonCFG;
 
-  LoadSomeLanguage;
+  LoadSomeLanguage('RnQ', mypath, RnQmainPath);
 
   if check4readonly and readOnlyFiles then
    begin

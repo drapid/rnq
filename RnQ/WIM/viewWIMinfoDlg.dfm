@@ -29,6 +29,10 @@ object viewinfoFrm: TviewinfoFrm
     OnChange = pagectrlChange
     object mainSheet: TTabSheet
       Caption = '&Main'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label7: TLabel
         Left = 3
         Top = 264
@@ -395,6 +399,10 @@ object viewinfoFrm: TviewinfoFrm
     object HomeTS: TTabSheet
       Caption = 'Home'
       ImageIndex = 7
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label14: TLabel
         Left = 34
         Top = 153
@@ -422,6 +430,7 @@ object viewinfoFrm: TviewinfoFrm
         Height = 25
         Hint = 'Open this address'
         Caption = 'GO'
+        ImageName = ''
         TabOrder = 1
         OnClick = goBtnClick
       end
@@ -561,6 +570,10 @@ object viewinfoFrm: TviewinfoFrm
     object WorkTS: TTabSheet
       Caption = '&Work'
       ImageIndex = 6
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label1: TLabel
         Left = 32
         Top = 237
@@ -691,6 +704,7 @@ object viewinfoFrm: TviewinfoFrm
         Height = 25
         Hint = 'Open this address'
         Caption = 'GO'
+        ImageName = ''
         TabOrder = 1
         OnClick = GoWkPgBtnClick
       end
@@ -710,6 +724,10 @@ object viewinfoFrm: TviewinfoFrm
     end
     object TabSheet2: TTabSheet
       Caption = '&Extra'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Bevel2: TBevel
         Left = 245
         Top = 201
@@ -916,14 +934,18 @@ object viewinfoFrm: TviewinfoFrm
         Width = 90
         Height = 25
         Caption = 'Apply'
+        ImageName = 'apply'
         TabOrder = 12
         OnClick = RnQButton2Click
-        ImageName = 'apply'
       end
     end
     object InterSheet: TTabSheet
       Caption = '&Client'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Bevel1: TBevel
         Left = 16
         Top = 293
@@ -1074,6 +1096,10 @@ object viewinfoFrm: TviewinfoFrm
     object TabSheet1: TTabSheet
       Caption = '&Notes'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object notesBox: TMemo
         AlignWithMargins = True
         Left = 3
@@ -1137,9 +1163,9 @@ object viewinfoFrm: TviewinfoFrm
           Top = 44
           Width = 56
           Height = 45
+          ImageName = 'apply'
           TabOrder = 3
           OnClick = ApplyMyTextBtnClick
-          ImageName = 'apply'
         end
         object CellularEdt3: TLabeledEdit
           Left = 66
@@ -1186,6 +1212,10 @@ object viewinfoFrm: TviewinfoFrm
       Caption = '&Avatar'
       ImageIndex = 4
       OnShow = avtTSShow
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         424
         395)
@@ -1219,9 +1249,9 @@ object viewinfoFrm: TviewinfoFrm
           Width = 150
           Height = 22
           Caption = 'Clear avatar'
+          ImageName = 'clear'
           TabOrder = 0
           OnClick = ClrAvtBtnClick
-          ImageName = 'clear'
         end
         object avtSaveBtn: TRnQButton
           Left = 176
@@ -1229,9 +1259,9 @@ object viewinfoFrm: TviewinfoFrm
           Width = 150
           Height = 25
           Caption = 'Change own avatar'
+          ImageName = 'save.net'
           TabOrder = 1
           OnClick = avtSaveBtnClick
-          ImageName = 'save.net'
         end
         object avtLoadBtn: TRnQButton
           Left = 176
@@ -1239,9 +1269,9 @@ object viewinfoFrm: TviewinfoFrm
           Width = 150
           Height = 25
           Caption = 'Load avatar'
+          ImageName = 'load.net'
           TabOrder = 2
           OnClick = avtLoadBtnClick
-          ImageName = 'load.net'
         end
       end
       object IcShRGrp: TRadioGroup
@@ -1289,9 +1319,9 @@ object viewinfoFrm: TviewinfoFrm
           Width = 150
           Height = 25
           Caption = 'Load thumb'
+          ImageName = 'load.net'
           TabOrder = 0
           OnClick = PhtLoadBtnClick
-          ImageName = 'load.net'
         end
         object PhtBigLoadBtn: TRnQButton
           Left = 261
@@ -1299,9 +1329,9 @@ object viewinfoFrm: TviewinfoFrm
           Width = 150
           Height = 25
           Caption = 'Load photo'
+          ImageName = 'load.net'
           TabOrder = 1
           OnClick = PhtBigLoadBtnClick
-          ImageName = 'load.net'
         end
         object PhtLoadBtn2: TRnQButton
           Left = 261
@@ -1309,9 +1339,9 @@ object viewinfoFrm: TviewinfoFrm
           Width = 150
           Height = 25
           Caption = 'Load photo 2'
+          ImageName = 'load.net'
           TabOrder = 2
           OnClick = PhtLoadBtn2Click
-          ImageName = 'load.net'
         end
         object PhtLoadBtn3: TRnQButton
           Left = 261
@@ -1319,15 +1349,19 @@ object viewinfoFrm: TviewinfoFrm
           Width = 150
           Height = 25
           Caption = 'Load photo 3'
+          ImageName = 'load.net'
           TabOrder = 3
           OnClick = PhtLoadBtn3Click
-          ImageName = 'load.net'
         end
       end
     end
     object PrivacyTab: TTabSheet
       Caption = 'Privacy'
       ImageIndex = 6
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label4: TLabel
         Left = 35
         Top = 32

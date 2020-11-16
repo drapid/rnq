@@ -67,7 +67,7 @@ implementation
 uses
   Types,
   RnQLangs, RQUtil, RDGlobal, RQThemes,
-  RnQSysUtils, RnQPics,
+  RDSysUtils, RnQPics,
   globalLib, utilLib, outboxLib, mainDlg, langLib, chatDlg,
   Protocols_all,
   themesLib, menusUnit;

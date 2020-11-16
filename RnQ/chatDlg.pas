@@ -408,7 +408,7 @@ uses
   Clipbrd, ShellAPI, Themes, DateUtils,
   math, Types, System.Threading,
   Base64,
-  RDFileUtil, RQUtil, RDUtils, RnQSysUtils,
+  RDFileUtil, RQUtil, RDUtils, RDSysUtils,
   RnQConst, globalLib, //searchhistDlg,
   outboxlib, utilLib, outboxDlg, RnQTips, RnQPics,
   langLib, roasterLib,

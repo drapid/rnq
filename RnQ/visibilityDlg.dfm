@@ -75,11 +75,6 @@ object visibilityFrm: TvisibilityFrm
     DefaultNodeHeight = 16
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
     Header.Height = 17
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
@@ -101,11 +96,6 @@ object visibilityFrm: TvisibilityFrm
     DefaultNodeHeight = 16
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
     Header.Height = 17
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
@@ -127,11 +117,6 @@ object visibilityFrm: TvisibilityFrm
     DefaultNodeHeight = 16
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
     Header.Height = 17
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
@@ -151,6 +136,7 @@ object visibilityFrm: TvisibilityFrm
     Width = 129
     Height = 25
     Caption = 'visibility to invisible'
+    ImageName = ''
     TabOrder = 1
     OnClick = move2invClick
   end
@@ -160,6 +146,7 @@ object visibilityFrm: TvisibilityFrm
     Width = 121
     Height = 25
     Caption = 'visibility to normal'
+    ImageName = ''
     TabOrder = 3
     OnClick = move2normalClick
   end
@@ -169,6 +156,7 @@ object visibilityFrm: TvisibilityFrm
     Width = 121
     Height = 25
     Caption = 'visibility to visible'
+    ImageName = ''
     TabOrder = 5
     OnClick = move2visClick
   end

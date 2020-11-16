@@ -17,7 +17,7 @@ uses
   RnQPrefsTypes, groupsLib,
   RnQProtocol, WIMContacts, WIMConsts, WIM.Stickers,
   RnQPrefsInt,
-  SynEcc;
+  mormot.core.ecc256r1;
 
 
 type
@@ -606,7 +606,8 @@ uses
 {$IFDEF UNICODE}
    AnsiStrings, AnsiClasses,
 {$ENDIF UNICODE}
-  RnQZip, SynCrypto,
+  RnQZip,
+  mormot.core.crypto,
   RnQDialogs, RnQLangs, RDUtils, RDFileUtil, RnQCrypt, Base64,
 {$IFDEF RNQ_AVATARS}
   RnQ_Avatars,

@@ -360,7 +360,7 @@ uses
 //    RegExpr,
     RegularExpressions,
  {$ENDIF ~DB_ENABLED}
-  RnQSysUtils, RnQLangs, RDFileUtil, RnQFileUtil, RDUtils, RnQBinUtils,
+  RDSysUtils, RnQLangs, RDFileUtil, RnQFileUtil, RDUtils, RnQBinUtils,
   RQUtil, RnQButtons, RnQGlobal, RnQCrypt, RnQPics,
   RnQConst, globalLib, mainDlg, utilLib,
 //  chatDlg,

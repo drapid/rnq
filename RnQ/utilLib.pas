@@ -197,7 +197,7 @@ uses
   {$ENDIF EUREKALOG}
   Base64,
   OverbyteIcsWSocket,
-  RQUtil, RnQFileUtil, RDUtils, RnQSysUtils, RDFileUtil,
+  RQUtil, RnQFileUtil, RDUtils, RDSysUtils, RDFileUtil,
   RQMenuItem, RQThemes, RQLog, RnQDialogs,
   RnQLangs, RnQButtons, RnQBinUtils, RnQGlobal, RnQCrypt, RnQPics,
   RnQtrayLib, RnQTips, Hook,
@@ -261,7 +261,7 @@ end; // str2sortby
 //procedure openURL(url: AnsiString);
 procedure openURL(const pURL: String);
 begin
-  RnQSysUtils.openURL(pURL, useDefaultBrowser, browserCmdLine);
+  RDSysUtils.openURL(pURL, useDefaultBrowser, browserCmdLine);
 end; // openURL
 
 procedure onlyDigits(obj: Tobject);
@@ -2062,8 +2062,8 @@ begin
     result := status2imgName(byte(SC_UNK), FALSE)
    else
 //  result:=status2imgName(tstatus(c.status), c.invisible)
-    result:= c.Proto.getStatusImg(c.getStatus);
-//  Result := c.statusImg;
+//    result := c.Proto.getStatusImg(c.getStatus);
+     Result := c.statusImg;
 end; // rosterImgIdxFor
 
 procedure showAuthreq(c: TRnQcontact; msg: string);
@@ -2354,7 +2354,7 @@ begin
   if vOn <> docking.appBarFlag then
    begin
     docking.appbarFlag := vOn;
-    RnQSysUtils.dockSet(RnQmain.Handle, vOn, WM_DOCK);
+    RDSysUtils.dockSet(RnQmain.Handle, vOn, WM_DOCK);
    end;
   if not docking.active then
     exit;
@@ -2384,7 +2384,7 @@ procedure setAppBarSize;
 begin
 //  r := RnQmain.boundsrect;
 ////  r.Right := r.Right + 10;
-  RnQSysUtils.setAppBarSize(RnQmain.handle, RnQmain.boundsrect, WM_DOCK, docking.pos=DP_left)
+  RDSysUtils.setAppBarSize(RnQmain.handle, RnQmain.boundsrect, WM_DOCK, docking.pos=DP_left)
 end; // setAppBarSize
 
 procedure fixWindowPos(frm: Tform);
@@ -3502,7 +3502,7 @@ end; // mainfrmhandleupdate
 procedure reloadCurrentLang();
 begin
   ClearLanguage;
-  LoadSomeLanguage;
+  LoadSomeLanguage('RnQ', mypath, RnQmainPath);
   translateWindows();
 end; // reloadCurrentLang
 

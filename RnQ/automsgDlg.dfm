@@ -83,11 +83,6 @@ object automsgFrm: TautomsgFrm
     DefaultNodeHeight = 15
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
     Header.Height = 17
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
@@ -115,9 +110,9 @@ object automsgFrm: TautomsgFrm
     Width = 83
     Height = 22
     Caption = 'Ok'
+    ImageName = 'ok'
     TabOrder = 1
     OnClick = okBtnClick
-    ImageName = 'ok'
   end
   object cancelBtn: TRnQButton
     Left = 109
@@ -125,9 +120,9 @@ object automsgFrm: TautomsgFrm
     Width = 81
     Height = 22
     Caption = 'Cancel'
+    ImageName = 'cancel'
     TabOrder = 2
     OnClick = cancelBtnClick
-    ImageName = 'cancel'
   end
   object saveBtn: TRnQButton
     Left = 16
@@ -136,9 +131,9 @@ object automsgFrm: TautomsgFrm
     Height = 20
     Hint = 'add current message to predefined messages'
     Caption = 'Save'
+    ImageName = 'save'
     TabOrder = 6
     OnClick = saveBtnClick
-    ImageName = 'save'
   end
   object deleteBtn: TRnQButton
     Left = 109
@@ -147,8 +142,8 @@ object automsgFrm: TautomsgFrm
     Height = 20
     Hint = 'delete selected predefined message'
     Caption = 'Delete'
+    ImageName = 'delete'
     TabOrder = 7
     OnClick = deleteBtnClick
-    ImageName = 'delete'
   end
 end

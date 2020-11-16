@@ -141,7 +141,7 @@ uses
    AnsiStrings,
  {$ENDIF UNICODE}
   RDGlobal,
-  RQThemes, RnQSysUtils;
+  RQThemes, RDSysUtils;
 //  RnQDialogs, RQUtil, RnQUtils, RnQBinUtils, RnQLangs,
 //  RQlog;
 //var

@@ -59,6 +59,7 @@ contains
   RnQFileUtil in 'RnQFileUtil.pas',
   RnQMenu in 'RnQMenu.pas',
   RQUtil in 'RQUtil.pas',
+  RDSysUtils in 'RDSysUtils.pas',
   RnQSysUtils in 'RnQSysUtils.pas',
   RnQStrings in 'RnQStrings.pas',
   Base64 in 'RTL\Base64.pas',

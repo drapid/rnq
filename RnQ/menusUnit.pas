@@ -39,7 +39,7 @@ var
 implementation
 uses
     mainDlg, RnQConst, globalLib, themesLib, chatDlg,
-    SysUtils, RDGlobal, RDUtils, RnQSysUtils, RnQGlobal,
+    SysUtils, RDGlobal, RDUtils, RDSysUtils, RnQGlobal,
     RnQLangs, utilLib, RnQPics,
     shlObj,
     iniLib;

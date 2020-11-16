@@ -48,7 +48,7 @@ implementation
 
 uses
   utilLib, globalLib,
-  RnQSysUtils, RnQPics,
+  RDSysUtils, RnQPics,
   RnQLangs, mainDlg, RQUtil, RDGlobal, RQThemes, themesLib;
 
 constructor TchangePwdFrm.Create(const proto: TRnQProtocol; isAccPass: Boolean);

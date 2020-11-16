@@ -30,7 +30,7 @@ implementation
 
 uses
   math, StrUtils, Base64,
-  RDUtils, RnQGraphics32, RnQSysUtils, RnQBinUtils,
+  RDUtils, RnQGraphics32, RDSysUtils, RnQBinUtils,
   RQUtil, RDGlobal, RQThemes, RnQLangs, RnQGlobal,
   RnQConst, globalLib,
   RnQtrayLib, RnQPics,

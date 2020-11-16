@@ -77,7 +77,7 @@ implementation
 
 uses
   DwmApi, Math, Types, UITypes,
-  RQUtil, RnQLangs, RnQSysUtils, RnQBinUtils, RnQGraphics32, RnQPics,
+  RQUtil, RnQLangs, RDSysUtils, RnQBinUtils, RnQGraphics32, RnQPics,
   mainDlg, utilLib, RnQConst, globalLib,
 //  aarotate,
 //  , shellapi

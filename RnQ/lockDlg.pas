@@ -59,7 +59,7 @@ uses
    AnsiStrings,
  {$ENDIF UNICODE}
   RDGlobal,
-  globalLib, UtilLib, RnQLangs, RQUtil, RnQSysUtils, RnQCrypt,
+  globalLib, UtilLib, RnQLangs, RQUtil, RDSysUtils, RnQCrypt,
   iniLib,
   mainDlg, chatDlg;
 

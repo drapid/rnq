@@ -72,7 +72,7 @@ implementation
 uses
   Themes, Dwmapi,
   RQUtil, RDGlobal, RQThemes, RnQLangs, LangLib,
-  RnQSysUtils, RnQGlobal, RnQPics,
+  RDSysUtils, RnQGlobal, RnQPics,
   iniLib, RnQConst, globalLib, utilLib, mainDlg,
   connection_fr,
   antispam_fr,

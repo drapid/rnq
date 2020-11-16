@@ -12,7 +12,7 @@ interface
 {$IFDEF usesVCL}
  uses
    Windows, Forms, StdCtrls, Graphics, Classes, Consts, Math, ExtCtrls, CommDlg,
-   UITypes, RDGlobal, RnQStrings;
+   UITypes, RDGlobal;
 {$ELSE}
  uses Windows;
 {$ENDIF}
@@ -37,7 +37,7 @@ const
 {$IFDEF usesVCL}
 resourcestring
   SMsgDlgWarning = 'Warning';
-  SMsgDlgError = Str_Error;
+  SMsgDlgError = 'Error';
   SMsgDlgInformation = 'Information';
   SMsgDlgConfirm = 'Confirm';
   SMsgDlgBuzz = 'Buzz';
@@ -56,6 +56,7 @@ resourcestring
   SMsgDlgYesToAll = 'Yes to &All';
   SMsgDlgClose    = 'Close';
   SCannotOpenClipboard = 'Cannot open clipboard: %s';
+  SMessage = 'Message';
 
  function InputQueryBig(const ACaption, APrompt: string;
    var Value: string): Boolean;
@@ -649,7 +650,7 @@ begin
     TMessageForm(Result).Message := TLabel.Create(Result);
     with TMessageForm(Result).Message do
     begin
-      Name := Str_message;
+      Name := SMessage;
       Parent := Result;
       WordWrap := True;
 //      GlowSize := 5;

@@ -7,7 +7,8 @@ interface
 
 uses
   Windows,
-  SynCrypto,
+//  SynCrypto,
+  mormot.core.crypto,
   RDGlobal
   ;
 

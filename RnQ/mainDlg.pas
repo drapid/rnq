@@ -550,7 +550,7 @@ uses
  {$ENDIF}
   hook,
   OverbyteIcsWSocket,
-  RnQFileUtil, RDFileUtil, RDUtils, RnQSysUtils, tipDlg,
+  RnQFileUtil, RDFileUtil, RDUtils, RDSysUtils, tipDlg,
   RQUtil, RQLog, RQThemes, RnQMenu, RnQPics,
   RnQLangs, RnQStrings, RnQNet, RnQGlobal,
   RnQdbDlg, RnQTips, RnQMacros,
@@ -1418,9 +1418,9 @@ end;
 
 procedure TRnQmain.AppActivate(Sender: TObject);
 begin
- inactiveTime := 0;
- TipsShowTop;
- applyTransparency;
+  inactiveTime := 0;
+  TipsShowTop;
+  applyTransparency;
 end;
 
 procedure TRnQmain.Newgroup1Click(Sender: TObject);
@@ -1464,7 +1464,7 @@ begin
   if uid = '' then
    Exit;
   with clickedContact.Proto.getMyInfo do
-   rsn := getTranslation(Str_authRequest) + ' ' + displayed4All+ ' UID#:' + uin2Show;
+    rsn := getTranslation(Str_authRequest) + ' ' + displayed4All+ ' UID#:' + uin2Show;
   s1 := getTranslation('Enter reason to authorize');
   s2 := getTranslation('Reason');
   if InputQueryBig(s1, s2, rsn) then
@@ -2284,7 +2284,8 @@ begin
         end;
 
       if Account.AccProto.isOnline then
-        statusBtn.ImageName := Account.AccProto.getStatuses[Account.AccProto.getStatus].ImageName
+//        statusBtn.ImageName := Account.AccProto.getStatusImg(Account.AccProto.getStatus)
+        statusBtn.ImageName := Account.AccProto.getStatusImg()
        else
         statusBtn.ImageName := status2imgName(byte(SC_OFFLINE), false);
     end
@@ -2683,15 +2684,15 @@ if usertime mod 20=0 then
    Process_InfoRetrives;
    Process_xStatusRetrives;
 
-    {$IFDEF RNQ_AVATARS}
+  {$IFDEF RNQ_AVATARS}
    if assigned(reqAvatarsQ) and Account.AccProto.isOnline and not reqAvatarsQ.empty then
     if Protocols_all.try_load_or_req_avatar(reqAvatarsQ.getAt(0)) then
-            reqAvatarsQ.delete(0);
+     reqAvatarsQ.delete(0);
 
-    if (ToUploadAvatarFN > '') and Account.AccProto.isOnline then
+   if (ToUploadAvatarFN > '') and Account.AccProto.isOnline then
      if Account.AccProto.uploadAvatar(ToUploadAvatarFN) then
        ToUploadAvatarFN := '';
-    {$ENDIF RNQ_AVATARS}
+  {$ENDIF RNQ_AVATARS}
  end;
 
  if self.Floating then
@@ -4168,11 +4169,19 @@ begin // tag = 3005
 end;
 
 procedure TRnQmain.mAStatusUpdate(Sender: TObject);
+var
+  st: Byte;
 begin // tag = 3004
   if Assigned(Account.AccProto) then
     begin
       if Account.AccProto.isOnline then
-        TAction(Sender).HelpKeyword := Account.AccProto.getStatuses[Account.AccProto.getStatus].ImageName
+        begin
+          if Account.AccProto.isOnline then
+            st := Account.AccProto.getStatus
+           else
+            st := byte(SC_OFFLINE);
+          TAction(Sender).HelpKeyword := String(Account.AccProto.status2imgName(st))
+        end
        else
         TAction(Sender).HelpKeyword := status2imgName(byte(SC_OFFLINE), false);
     end

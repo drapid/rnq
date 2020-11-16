@@ -52,11 +52,11 @@ type
      function  getPrefStr(const key: String; var Val: String): Boolean;
      function  getPrefStrList(const key: String; var Val: TStringList): Boolean;
      function  getPrefBool(const key: String; var Val: Boolean): Boolean;
-     procedure getPrefBlob(const key: String; var Val: RawByteString);
-     procedure getPrefBlob64(const key: String; var Val: RawByteString);
+     function  getPrefBlob(const key: String; var Val: RawByteString): Boolean;
+     function  getPrefBlob64(const key: String; var Val: RawByteString): Boolean;
      function  getPrefInt(const key: String; var Val: Integer): Boolean;
-     procedure getPrefDate(const key: String; var Val: TDateTime);
-     procedure getPrefDateTime(const key: String; var Val: TDateTime);
+     function  getPrefDate(const key: String; var Val: TDateTime): Boolean;
+     function  getPrefDateTime(const key: String; var Val: TDateTime): Boolean;
      procedure getPrefValue(const key: String; et: TElemType; var Val: TPrefElem);
      function  getPrefGuid(const key: String; var Val: TGUID): Boolean;
      function  getPrefBoolDef(const key: String; const DefVal: Boolean): Boolean;
@@ -701,46 +701,50 @@ begin
 
 end;
 
-procedure TRnQPref.getPrefBlob(const key: String; var Val: RawByteString);
+function TRnQPref.getPrefBlob(const key: String; var Val: RawByteString): Boolean;
 var
   i: Integer;
   el: TPrefElement;
 begin
+  Result := False;
    begin
 //    Result := '';
      i := fPrefStr.IndexOf(key);
      if i >= 0 then
       begin
+       Result := True;
        el := TPrefElement(fPrefStr.Objects[i]);
        if el.ElType = ET_Blob then
          Val := ansistrings.StrPas(el.elem.bVal)
         else
        if el.ElType = ET_Blob64 then
          Val := ansistrings.StrPas(el.elem.rVal)
-//        else
-//         Result := DefVal;
+        else
+         Result := False;
       end
    end;
 end;
 
-procedure TRnQPref.getPrefBlob64(const key: String; var Val: RawByteString);
+function TRnQPref.getPrefBlob64(const key: String; var Val: RawByteString): Boolean;
 var
   i: Integer;
   el: TPrefElement;
 begin
+  Result := False;
    begin
 //    Result := '';
      i := fPrefStr.IndexOf(key);
      if i >= 0 then
       begin
+       Result := True;
        el := TPrefElement(fPrefStr.Objects[i]);
        if el.ElType = ET_Blob then
          Val := Base64DecodeString(ansistrings.StrPas(el.elem.bVal))
         else
        if el.ElType = ET_Blob64 then
          Val := ansistrings.StrPas(el.elem.rVal)
-//        else
-//         Result := DefVal;
+        else
+         Result := False;
       end
    end;
 end;
@@ -1027,7 +1031,7 @@ begin
    end;
 end;
 
-procedure TRnQPref.getPrefDate(const key: String; var Val: TDateTime);
+function TRnQPref.getPrefDate(const key: String; var Val: TDateTime): Boolean;
   function dt(l: PAnsiChar): TDateTime; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
   var
     df: TFormatSettings;
@@ -1048,18 +1052,20 @@ var
   i: Integer;
   el: TPrefElement;
 begin
+  Result := False;
    begin
      i := fPrefStr.IndexOf(key);
      if i >= 0 then
       begin
+       Result := True;
        el := TPrefElement(fPrefStr.Objects[i]);
        if el.ElType = ET_Blob then
          Val := dt(el.elem.bVal)
         else
        if el.ElType = ET_Date then
          Val := el.elem.tVal
-//        else
-//         Result := DefVal;
+        else
+         Result := False;
       end
 {     else
       begin
@@ -1069,7 +1075,7 @@ begin
    end;
 end;
 
-procedure TRnQPref.getPrefDateTime(const key: String; var Val: TDateTime);
+function TRnQPref.getPrefDateTime(const key: String; var Val: TDateTime): Boolean;
   function dtt(l: PAnsiChar): TDateTime; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
   var
     df: TFormatSettings;
@@ -1090,20 +1096,23 @@ var
   i: Integer;
   el: TPrefElement;
 begin
+  Result := False;
    begin
      i := fPrefStr.IndexOf(key);
      if i >= 0 then
       try
+       Result := True;
        el := TPrefElement(fPrefStr.Objects[i]);
        if el.ElType = ET_Blob then
          Val := dtt(el.elem.bVal)
         else
        if el.ElType = ET_Time then
          Val := el.elem.tVal
-//        else
-//         Result := DefVal;
+        else
+         Result := False;
       except
         Val := 0;
+        Result := False;
       end
 {     else
       begin

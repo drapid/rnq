@@ -63,6 +63,7 @@ object AllHistSrchForm: TAllHistSrchForm
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Search'
     Default = True
+    ImageName = ''
     TabOrder = 4
     OnClick = SchBtnClick
   end
@@ -74,11 +75,6 @@ object AllHistSrchForm: TAllHistSrchForm
     Anchors = [akLeft, akTop, akRight, akBottom]
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
     Header.Height = 17
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]

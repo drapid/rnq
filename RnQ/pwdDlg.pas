@@ -56,7 +56,7 @@ implementation
 
 uses
   globalLib, utilLib, mainDlg,
-  RnQSysUtils, RnQPics,
+  RDSysUtils, RnQPics,
   RQUtil, RDGlobal, RQThemes, themesLib, RnQLangs;
 
 {$R *.DFM}
@@ -88,7 +88,7 @@ end;
 
 procedure TmsgFrm.FormPaint(Sender: TObject);
 //var
-// r : TRect;
+// r: TRect;
 begin
 // Canvas.
 //  R := Canvas.ClipRect;

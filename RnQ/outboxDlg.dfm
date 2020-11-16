@@ -110,11 +110,6 @@ object outboxFrm: ToutboxFrm
       Align = alLeft
       Header.AutoSizeIndex = 0
       Header.DefaultHeight = 17
-      Header.Font.Charset = DEFAULT_CHARSET
-      Header.Font.Color = clWindowText
-      Header.Font.Height = -11
-      Header.Font.Name = 'Tahoma'
-      Header.Font.Style = []
       Header.Height = 17
       Header.MainColumn = -1
       Header.Options = [hoColumnResize, hoDrag]
@@ -155,9 +150,9 @@ object outboxFrm: ToutboxFrm
       Anchors = [akLeft, akBottom]
       Caption = 'Delete'
       Enabled = False
+      ImageName = 'delete'
       TabOrder = 0
       OnClick = deleteBtnClick
-      ImageName = 'delete'
     end
     object saveBtn: TRnQButton
       Left = 104
@@ -167,9 +162,9 @@ object outboxFrm: ToutboxFrm
       Anchors = [akLeft, akBottom]
       Caption = 'Save'
       Enabled = False
+      ImageName = 'save'
       TabOrder = 1
       OnClick = saveBtnClick
-      ImageName = 'save'
     end
     object closeBtn: TRnQButton
       Left = 456
@@ -179,10 +174,10 @@ object outboxFrm: ToutboxFrm
       Anchors = [akRight, akBottom]
       Cancel = True
       Caption = 'Close'
+      ImageName = 'close'
       ModalResult = 2
       TabOrder = 2
       OnClick = closeBtnClick
-      ImageName = 'close'
     end
   end
   object menu: TPopupMenu

@@ -53,7 +53,7 @@ implementation
 {$R *.dfm}
 
 uses
-  RnQSysUtils,
+  RDSysUtils,
   globalLib, utilLib, RQUtil;
 
 type

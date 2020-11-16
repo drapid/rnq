@@ -94,7 +94,7 @@ implementation
 uses
   strutils, Themes, Dwmapi,
   RnQLangs, RQUtil, RDGlobal, RQThemes, RnQStrings,
-  RnQSysUtils, RnQPics,
+  RDSysUtils, RnQPics,
   chatDlg, events, globalLib, utilLib, themesLib;
 
 //function ToutboxFrm.validIdx(i:integer):boolean;

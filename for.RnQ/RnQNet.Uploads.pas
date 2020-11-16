@@ -9,7 +9,8 @@ uses
 {$IFDEF UseNTLMAuthentication}
   RnQHttpAuth,
 {$ENDIF}
-  RDGlobal, RnQGlobal, RnQZip;
+  RDGlobal
+  ;
 
 type
   TarchiveStream = class(Tstream)
@@ -33,7 +34,7 @@ type
 
     constructor create;
     destructor Destroy; override;
-    function   addFile(src: string; dst: string=''; data: Tobject=NIL): boolean; virtual;
+    function   addFile(const src: string; dst: string=''; data: Tobject=NIL): boolean; virtual;
     function   count(): integer;
     procedure  reset(); virtual;
     property   totalSize: int64 read getTotal;
@@ -51,7 +52,7 @@ type
     function  fsInit(): boolean;
     procedure headerInit(); // fill block with header
     procedure padInit(full: boolean=FALSE); // fill block with pad
-    function  headerLengthForFilename(fn: string):integer;
+    function  headerLengthForFilename(const fn: string):integer;
     procedure calculate(); override;
    public
     fileNamesOEM: boolean;
@@ -64,15 +65,18 @@ type
     procedure reset(); override;
   end; // TtarStream
 
-const
+resourcestring
   FileTooBig = 'File is too big, max size %s MB';
   AuthFailed = 'File hosting authentication failed';
   UploadError = 'Failed to upload file! Server response';
+  FileNotExists = 'File doesn''t exist';
 
+{$IFDEF RNQ}
 //  function UploadFileRGhost(const Filename: String; pOnSendData: TDocDataEvent): String;
   function UploadFileRGhost(FileStream: TStream; FileName: String; pOnSendData: TDocDataEvent): String;
   function UploadFileRnQ(FileStream: TStream; const Filename: String; pOnSendData: TDocDataEvent): String;
   function UploadTarFileRnQ(const Filenames: String; pOnSendData: TDocDataEvent): String;
+{$ENDIF RNQ}
 
   function CreateZip(str: TStringList): TMemoryStream;
 
@@ -99,21 +103,22 @@ implementation
 
 uses
   Windows, SysUtils, StrUtils, DateUtils, math,
-  Base64, RDFileUtil, RDUtils,
-  RnQPrefsInt,
+  Base64, RDFileUtil, RDUtils, RnQBinUtils,
 {$IFDEF UNICODE}
   AnsiStrings,
 {$ENDIF UNICODE}
   // OverbyteIcsLogger,
 {$IFDEF RNQ}
-  RnQLangs,
-{$ENDIF RNQ}
+  RnQPrefsInt,
+  RnQGlobal,
   RQUtil,
-  RnQDialogs,
   RnQNet,
-  RnQGraphics32;
+{$ENDIF RNQ}
+  RnQZip,
+  RnQDialogs
+;
 
-class procedure TCallbacks.OnBeforeHeaderSend(Sender: TObject; const Method : String; Headers: TStrings);
+class procedure TCallbacks.OnBeforeHeaderSend(Sender: TObject; const Method: String; Headers: TStrings);
 begin
   Headers.Add('Pragma: no-cache');
   Headers.Add('Cache-Control: no-cache');
@@ -137,6 +142,7 @@ begin
             [AnsiString('--') + boundry, name, value]);
 end;
 
+{$IFDEF RNQ}
 function UploadFileRGhost(FileStream: TStream; FileName: String; pOnSendData: TDocDataEvent): String;
 var
   AvStream, TokenStream: TMemoryStream;
@@ -188,7 +194,7 @@ begin
       if FileSize(Filename) > ULimit * 1024 * 1024 then
       begin
  {$IFDEF RNQ}
-        msgDlg(getTranslation(FileTooBig, [IntToStr(ULimit)]), true, mtError);
+        msgDlg(Format(FileTooBig, [IntToStr(ULimit)]), False, mtError);
  {$ELSE ~RNQ}
         MessageDlg(Format(FileTooBig, [IntToStr(ULimit)]), mtError, [mbOK], 0);
  {$ENDIF ~RNQ}
@@ -199,7 +205,7 @@ begin
    else
     begin
  {$IFDEF RNQ}
-      msgDlg(getTranslation(AuthFailed), true, mtError);
+      msgDlg(AuthFailed, False, mtError);
  {$ELSE ~RNQ}
         MessageDlg(AuthFailed, mtError, [mbOK], 0);
  {$ENDIF ~RNQ}
@@ -274,7 +280,7 @@ begin
       end;
     except
  {$IFDEF RNQ}
-      msgDlg(getTranslation(UploadError) + ': ' + httpCli.LastResponse, true, mtError);
+      msgDlg(UploadError + ': ' + httpCli.LastResponse, False, mtError);
  {$ELSE ~RNQ}
       MessageDlg(UploadError + ': ' + httpCli.LastResponse, mtError, [mbOK], 0);
  {$ENDIF RNQ}
@@ -309,7 +315,7 @@ begin
   if FileSize(Filename) > 100 * 1024 * 1024 then
   begin
  {$IFDEF RNQ}
-    msgDlg(getTranslation(FileTooBig, [IntToStr(100)]), true, mtError);
+    msgDlg(Format(FileTooBig, [IntToStr(100)]), true, mtError);
  {$ELSE ~RNQ}
     MessageDlg(Format(FileTooBig, [IntToStr(100)]), mtError, [mbOK], 0);
  {$ENDIF RNQ}
@@ -366,7 +372,7 @@ begin
       Result := UnUTF(UploadedName);
     except
  {$IFDEF RNQ}
-      msgDlg(getTranslation(UploadError) + ': ' + #13#10 + httpCli.RcvdHeader.Text, true, mtError);
+      msgDlg(UploadError + ': ' + #13#10 + httpCli.RcvdHeader.Text, False, mtError);
  {$ELSE ~RNQ}
       MessageDlg(UploadError + ': ' + #13#10 + httpCli.RcvdHeader.Text, mtError, [mbOK], 0);
  {$ENDIF RNQ}
@@ -414,9 +420,9 @@ begin
   if fsize = 0 then
   begin
  {$IFDEF RNQ}
-    msgDlg(getTranslation('File doesn''t exist', [Filenames]), true, mtError);
+    msgDlg(Format(FileNotExists, [Filenames]), False, mtError);
  {$ELSE ~RNQ}
-    MessageDlg(Format('File doesn''t exist', [Filenames]), mtError, [mbOK], 0);
+    MessageDlg(Format(FileNotExists, [Filenames]), mtError, [mbOK], 0);
  {$ENDIF RNQ}
     tar.Free;
     Exit;
@@ -426,7 +432,7 @@ begin
   if fsize > 100 * 1024 * 1024 then
   begin
  {$IFDEF RNQ}
-    msgDlg(getTranslation(FileTooBig, [IntToStr(100)]), true, mtError);
+    msgDlg(Format(FileTooBig, [IntToStr(100)]), False, mtError);
  {$ELSE ~RNQ}
     MessageDlg(Format(FileTooBig, [IntToStr(100)]), mtError, [mbOK], 0);
  {$ENDIF RNQ}
@@ -495,7 +501,7 @@ begin
       Result := UnUTF(UploadedName);
     except
  {$IFDEF RNQ}
-      msgDlg(getTranslation(UploadError) + ': ' + #13#10 + httpCli.RcvdHeader.Text, true, mtError);
+      msgDlg(UploadError + ': ' + #13#10 + httpCli.RcvdHeader.Text, False, mtError);
  {$ELSE ~RNQ}
       MessageDlg(UploadError + ': ' + #13#10 + httpCli.RcvdHeader.Text, mtError, [mbOK], 0);
  {$ENDIF RNQ}
@@ -507,6 +513,7 @@ begin
       FreeAndNil(AvStream);
   end;
 end;
+{$ENDIF RNQ}
 
 function CreateZip(str: TStringList): TMemoryStream;
 var
@@ -542,7 +549,7 @@ begin
   result := cachedTotal;
 end; // getTotal
 
-function TarchiveStream.addFile(src: string; dst: string=''; data: Tobject=NIL): boolean;
+function TarchiveStream.addFile(const src: string; dst: string=''; data: Tobject=NIL): boolean;
 
   function getMtime(fh: Thandle): int64;
   var
@@ -647,7 +654,7 @@ end; // fsInit
 
 procedure TtarStream.headerInit();
 
-  function num(i: int64; fieldLength: integer): RawByteString;
+  function num(i: int64; const fieldLength: integer): RawByteString;
   const
     CHARS: array [0..7] of AnsiChar = '01234567';
   var
@@ -671,7 +678,7 @@ procedure TtarStream.headerInit();
     result := s+dupeString(fill, fieldLength-length(s));
   end; // str
 
-  function sum(s: RawBytestring): integer;
+  function sum(const s: RawBytestring): integer;
   var
     i: integer;
   begin
@@ -694,7 +701,7 @@ const
 var
   fn: string;
   fn2: AnsiString;
-  pre, s: RawByteString;
+  pre, s, fnU: RawByteString;
 begin
   fn := replaceStr(flist[cur].dst, '\', '/');
   if fileNamesOEM then
@@ -704,20 +711,33 @@ begin
     end;
 
   pre := '';
-  if length(fn) >= 100 then
+  fnU := StrToUTF8(fn);
+  if length(fnU) >= 100 then
     begin
-      pre := str('././@LongLink', 124)+num(length(fn)+1, 12)+num(0, 12)
+      pre := str('././@LongLink', 124)+num(length(fnU)+1, 12)+num(0, 12)
         +FAKE_CHECKSUM+'L';
       applyChecksum(pre);
-      pre := str(pre, 512)+str(StrToUTF8(fn), 512);
+      pre := str(pre, 512)+str(fnU, 512);
     end;
-  s := str(StrToUTF8(fn), 100)
+{ // old ustar format
+  s := str(fnU, 100)
     +'100666 '#0'     0 '#0'     0 '#0 // file mode, uid, gid
     +num(flist[cur].size, 12) // file size
     +num(flist[cur].mtime, 12)  // mtime
     +FAKE_CHECKSUM
     +'0'+str('', 100)       // link properties
     +'ustar  '#0+str('user',32) + str('group',32);    // not actually used
+}
+ // posix format
+  s := str(fnU, 100)
+    +'100666 '#0'0000000'#0'0000000'#0 // file mode, uid, gid
+    + #$80#0#0#0
+    + qword_BEasStr(flist[cur].size) // file size
+    +num(flist[cur].mtime, 12)  // mtime
+    +FAKE_CHECKSUM
+    +'0'+str('', 100)       // link properties
+    +'ustar'#0'00'+str('',32) + str('',32);    // not actually used
+
   applyChecksum(s);
   s := str(s, 512); // pad
   block.Size := 0;
@@ -753,7 +773,7 @@ begin
   block.Seek(0, soBeginning);
 end; // padInit
 
-function TtarStream.headerLengthForFilename(fn: string): integer;
+function TtarStream.headerLengthForFilename(const fn: string): integer;
 begin
   result := length(fn);
   result := 512 * math.IfThen(result<100, 1, 3+result div 512);

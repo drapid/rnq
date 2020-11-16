@@ -10,9 +10,6 @@ interface
 uses
    Windows, RDGlobal,
  {$IFDEF USE_ZIP}
-//   kazip,
-//   VCLUnZip,
-//  SXZipUtils,
   RnQZip,
  {$ENDIF USE_ZIP}
  {$IFDEF USE_RAR}
@@ -981,14 +978,18 @@ result:=IOresult=0;
 end; // partDeleteFile
 
 function sizeOfFile(const fn: string): int64;
+type
+  PInt64Rec = ^Int64Rec;
 var
-  f: file;
-  bak: integer;
+//  f: file;
+//  bak: integer;
 //  ff: Cardinal;
+  FA: WIN32_FILE_ATTRIBUTE_DATA;
 begin
 //  ff := OpenFile(fn, )
 //  size := GetFileSize(ff, 0);
 //  CloseHandle(ff);
+(*
   IOresult;
   assignFile(f,fn);
   bak := fileMode;
@@ -1000,6 +1001,16 @@ begin
   closeFile(f);
   if IOresult<>0 then
     result := -1;
+*)
+  // Took from mormot2
+  // 5 times faster than CreateFile, GetFileSizeEx, CloseHandle
+  if GetFileAttributesEx(pointer(fn), GetFileExInfoStandard, @FA) then
+  begin
+    PInt64Rec(@result)^.Lo := FA.nFileSizeLow;
+    PInt64Rec(@result)^.Hi := FA.nFileSizeHigh;
+  end
+  else
+    result := 0;
 end; // sizeOfFile
 
 function CreateDirRecursive(const fpath: String): Boolean;

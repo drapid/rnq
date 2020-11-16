@@ -6,6 +6,7 @@ object msgFrm: TmsgFrm
   ClientHeight = 68
   ClientWidth = 179
   Color = clBtnFace
+  CustomTitleBar.Height = 6
   ParentFont = True
   GlassFrame.Enabled = True
   GlassFrame.Left = 6
@@ -68,9 +69,9 @@ object msgFrm: TmsgFrm
     Caption = '&Ok'
     Default = True
     DoubleBuffered = False
+    ImageName = 'ok'
     ParentDoubleBuffered = False
     TabOrder = 1
     OnClick = okBtnClick
-    ImageName = 'ok'
   end
 end

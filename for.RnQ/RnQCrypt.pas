@@ -7,9 +7,27 @@ interface
 uses
   SysUtils,
    {$IFDEF USE_SYMCRYPTO}
-  SynCommons,
+//  SynCommons,
+  mormot.core.base,
+   {$ELSE !USE_SYMCRYPTO}
+     {$IFDEF USE_WE_LIBS}
+       //use Wolfgang Ehrhardt's}
+      WEHash,
+     {$ELSE systems}
+      Hash,
+     {$ENDIF USE_WE_LIBS}
    {$ENDIF USE_SYMCRYPTO}
   Types;
+
+   {$IFDEF USE_SYMCRYPTO}
+type
+  TSHA256Digest = THash256;
+   {$ELSE }
+     {$IFNDEF USE_WE_LIBS}
+type
+      TSHA256Digest = TBytes;
+     {$ENDIF USE_WE_LIBS}
+   {$ENDIF USE_SYMCRYPTO}
 
 // crypting
 function  passCrypt(const s: RawByteString): RawByteString;
@@ -22,6 +40,12 @@ function  calculate_KEY1(const pwd: AnsiString): integer;
 function  calculate_KEY(const pwd: String): integer;
 function  MD5Pass(const s: RawByteString): RawByteString;
 function  MD5Pass2(const s: RawByteString): RawByteString;
+  function MD5PassH(const s: RawBytestring): RawByteString; //return HEX(MD5)
+  function MD5PassHS(const s: RawBytestring): String; //return HEX(MD5)
+  function MD5PassL(const s: RawBytestring): RawByteString; //return hex(MD5)
+
+  function SHA256PassHS(const s: RawBytestring): String; //return HEX(SHA256)
+  function SHA256PassLS(const s: RawBytestring): String; //return hex(SHA256)
 
 //  function qip_msg_decr(s1: RawByteString; s2: AnsiString; n: integer): AnsiString;
 //  function qip_msg_crypt(s1, s2: AnsiString; n: integer): RawByteString;
@@ -33,26 +57,30 @@ function  MD5Pass2(const s: RawByteString): RawByteString;
   function HMAC_MD5(Text, Key: RawByteString): RawByteString;
   function SHA1Pass(const s: RawBytestring): RawByteString;
   function HMAC_SHA1_EX( const Data: RawByteString;
-                       const Key : RawByteString ): RawByteString;
+                       const Key: RawByteString ): RawByteString;
 
-  function DigestToString(digest: THash256): RawByteString;
+  function DigestToString(digest: TSHA256Digest): RawByteString;
 
-  function Hash256String(key, str: RawByteString): RawByteString;
+  function Hash256String(const key, str: RawByteString): RawByteString;
 
 type
   TProgressFunc = function(p: real): Boolean;
 
-  function MD5PassH(const s: RawBytestring): RawByteString; //return HEX(MD5)
-  function MD5PassHS(const s: RawBytestring): String; //return HEX(MD5)
   function getFileMD5(fn: String; progFunc: TProgressFunc): TBytes;
 
 implementation
 uses
   Windows,
    {$IFDEF USE_SYMCRYPTO}
-     SynCrypto,
+//     SynCrypto,
+  mormot.core.crypto,
+  mormot.core.os,
     {$ELSE not SynCrypto}
-     OverbyteIcsMD5,
+     {$IFDEF USE_WE_LIBS}
+       //use Wolfgang Ehrhardt's}
+        MD5, SHA1, HMAC, HMACSHA1, HMACSHA2,
+     {$ENDIF USE_WE_LIBS}
+     classes,
    {$ENDIF ~USE_SYMCRYPTO}
  {$IFDEF UNICODE}
    AnsiStrings,
@@ -270,11 +298,18 @@ end;
 
 function MD5Pass(const s: RawBytestring): RawByteString;
 var
-  MD5Digest: TMD5Digest;
  {$IFDEF USE_SYMCRYPTO}
+  MD5Digest: TMD5Digest;
    MD5: TMD5;
   {$ELSE not SynCrypto}
-   MD5Context: TMD5Context;
+     {$IFDEF USE_WE_LIBS}
+       //use Wolfgang Ehrhardt's}
+       MD5Digest: TMD5Digest;
+       MD5Context: THashContext;
+     {$ELSE USE systems}
+       MD5: THashMD5;
+       MD5Digest: TBytes;
+     {$ENDIF USE_WE_LIBS}
  {$ENDIF ~USE_SYMCRYPTO}
 begin
  {$IFDEF USE_SYMCRYPTO}
@@ -283,27 +318,40 @@ begin
      md5.Update(s[1], length(s));
    md5.Final(MD5Digest);
   {$ELSE not SynCrypto}
-  MD5Init(MD5Context);
-  MD5UpdateBuffer(MD5Context, PAnsiChar(s), length(s));
-  MD5Final(MD5Digest, MD5Context);
+     {$IFDEF USE_WE_LIBS}
+      MD5Init(MD5Context);
+      MD5UpdateXL(MD5Context, PAnsiChar(s), length(s));
+      MD5Final(MD5Context, MD5Digest);
+     {$ELSE USE_WE_LIBS}
+      MD5 := THashMD5.Create;
+      if Length(s)>0 then
+        MD5.Update(s[1], length(s));
+      MD5Digest := MD5.HashAsBytes;
+     {$ENDIF USE_WE_LIBS}
  {$ENDIF ~USE_SYMCRYPTO}
   SetLength(Result, length(MD5Digest));
-//  StrPLCopy(@result[1], PByte(@MD5Digest), length(MD5Digest))
-//  StrPLCopy(@result[1], PAnsiChar(@MD5Digest), length(MD5Digest))
  {$WARN UNSAFE_CODE OFF}
 //  ansiStrings.StrPLCopy(@result[1], PAnsiChar(@MD5Digest), length(MD5Digest))
-  ansiStrings.StrPLCopy(PAnsiChar(result), PAnsiChar(@MD5Digest), length(MD5Digest))
+//  ansiStrings.StrPLCopy(PAnsiChar(result), PAnsiChar(@MD5Digest), length(MD5Digest))
+  CopyMemory(@result[1], @MD5Digest[0], length(MD5Digest))
  {$WARN UNSAFE_CODE ON}
 //  result := copy(PChar(MD5Digest), 0, length(MD5Digest));
 end;
 
 function MD5Pass2(const s: RawBytestring): RawByteString;
 var
-  MD5Digest: TMD5Digest;
  {$IFDEF USE_SYMCRYPTO}
+   MD5Digest: TMD5Digest;
    MD5: TMD5;
   {$ELSE not SynCrypto}
-   MD5Context: TMD5Context;
+     {$IFDEF USE_WE_LIBS}
+       //use Wolfgang Ehrhardt's}
+       MD5Digest: TMD5Digest;
+       MD5Context: THashContext;
+     {$ELSE USE systems}
+       MD5: THashMD5;
+       MD5Digest: TBytes;
+     {$ENDIF USE_WE_LIBS}
  {$ENDIF ~USE_SYMCRYPTO}
 begin
  {$IFDEF USE_SYMCRYPTO}
@@ -317,14 +365,22 @@ begin
        md5.Final(MD5Digest);
      end;
   {$ELSE not SynCrypto}
-  MD5Init(MD5Context);
-  MD5UpdateBuffer(MD5Context, PAnsiChar(s), length(s));
-  MD5Final(MD5Digest, MD5Context);
+     {$IFDEF USE_WE_LIBS}
+      MD5Init(MD5Context);
+      MD5UpdateXL(MD5Context, PAnsiChar(s), length(s));
+      MD5Final(MD5Context, MD5Digest);
+     {$ELSE ~USE_WE_LIBS}
+      MD5 := THashMD5.Create;
+      if Length(s)>0 then
+        MD5.Update(s[1], length(s));
+      MD5Digest := MD5.HashAsBytes;
+     {$ENDIF USE_WE_LIBS}
  {$ENDIF ~USE_SYMCRYPTO}
 
   SetLength(Result, length(MD5Digest));
  {$WARN UNSAFE_CODE OFF}
-  ansiStrings.StrPLCopy(PAnsiChar(result), PAnsiChar(@MD5Digest), length(MD5Digest))
+//  ansiStrings.StrPLCopy(PAnsiChar(result), PAnsiChar(@MD5Digest), length(MD5Digest))
+  CopyMemory(@result[1], @MD5Digest[0], length(MD5Digest))
  {$WARN UNSAFE_CODE ON}
 end;
 
@@ -372,7 +428,6 @@ const
   n0 = $1B5F;
 var
   s4: RawByteString;
-//  a,
   n, l: integer;
   I: Integer;
 begin
@@ -383,8 +438,7 @@ begin
    end;
   Result := '';
   n := n0;
-//  a:=0;
-  s4 := Base64DecodeString(s1); //похоже на декодирование base64
+  s4 := Base64DecodeString(s1); //looks like base64 decoding
   l := Length(s4);
   if l>0 then
    for I := 1 to l do
@@ -399,9 +453,27 @@ var
   ipad, opad, s: RawByteString;
   n: Integer;
 //  MDContext: TMDCtx;
-  MD5: TMD5;
-  MD5Digest: TMD5Digest;
+ {$IFDEF USE_SYMCRYPTO}
+   MD5Digest: TMD5Digest;
+   MD5: TMD5;
+  {$ELSE not SynCrypto}
+   {$IFDEF USE_WE_LIBS}
+   MD5Digest: TMD5Digest;
+   MD5Context: THashContext;
+   {$ELSE !USE_WE_LIBS}
+   MD5Digest: TBytes;
+   {$ENDIF USE_WE_LIBS}
+ {$ENDIF ~USE_SYMCRYPTO}
 begin
+  {$IF NOT DEFINED(USE_SYMCRYPTO) AND NOT DEFINED(USE_WE_LIBS)}
+   if Length(Text) > 0 then
+     MD5Digest := TBytes(@Text[1])
+    else
+     MD5Digest := NIL ;
+  MD5Digest := THashMD5.GetHMACAsBytes(MD5Digest, TBytes(@Key[1]));
+  SetLength(Result, length(MD5Digest));
+  ansiStrings.StrPLCopy(PAnsiChar(Result), PAnsiChar(@MD5Digest), length(MD5Digest));
+  {$ELSE}
  {$WARN UNSAFE_CODE OFF}
   if Length(Key) > 64 then
     Key := MD5Pass(Key);
@@ -413,39 +485,72 @@ begin
     opad[n] := AnsiChar(Byte(opad[n]) xor Byte(Key[n]));
   end;
 
+ {$IFDEF USE_SYMCRYPTO}
   md5.Init;
   md5.Update(ipad[1], length(ipad));
-  md5.Update(Text[1], length(Text));
+  if Length(Text) > 0 then
+    md5.Update(Text[1], length(Text));
   md5.Final(MD5Digest);
   SetLength(s, length(MD5Digest));
   ansiStrings.StrPLCopy(PAnsiChar(s), PAnsiChar(@MD5Digest), length(MD5Digest));
   md5.Init;
   md5.Update(opad[1], length(opad));
-  md5.Update(s[1], length(s));
+  if Length(s) > 0 then
+    md5.Update(s[1], length(s));
   md5.Final(MD5Digest);
   SetLength(Result, length(MD5Digest));
   ansiStrings.StrPLCopy(PAnsiChar(Result), PAnsiChar(@MD5Digest), length(MD5Digest));
+ {$ELSE !USE_SYMCRYPTO}
+  MD5Init(MD5Context);
+  MD5Update(MD5Context, @ipad[1], length(ipad));
+  if Length(Text) > 0 then
+    MD5UpdateXL(MD5Context, @Text[1], length(Text));
+  MD5Final(MD5Context, MD5Digest);
+  SetLength(s, length(MD5Digest));
+  ansiStrings.StrPLCopy(PAnsiChar(s), PAnsiChar(@MD5Digest), length(MD5Digest));
+  MD5Init(MD5Context);
+  MD5Update(MD5Context, @opad[1], length(opad));
+  if Length(s) > 0 then
+    MD5UpdateXL(MD5Context, @s[1], length(s));
+  MD5Final(MD5Context, MD5Digest);
+  SetLength(Result, length(MD5Digest));
+  ansiStrings.StrPLCopy(PAnsiChar(Result), PAnsiChar(@MD5Digest), length(MD5Digest));
+ {$ENDIF USE_SYMCRYPTO}
  {$WARN UNSAFE_CODE ON}
-{
-
-  MDInit(MDContext);
-  MDUpdate(MDContext, ipad, @MD5Transform);
-  MDUpdate(MDContext, Text, @MD5Transform);
-  s := MDFinal(MDContext, @MD5Transform);
-  MDInit(MDContext);
-  MDUpdate(MDContext, opad, @MD5Transform);
-  MDUpdate(MDContext, s, @MD5Transform);
-  Result := MDFinal(MDContext, @MD5Transform);
-}
+  {$IFEND}
 end;
 
 
 function SHA1Pass(const s: RawBytestring): RawByteString;
 var
-  SHA1Digest: TSHA1Digest;
+  p: Pointer;
+ {$IFDEF USE_SYMCRYPTO}
   SHA1: TSHA1;
+  SHA1Digest: TSHA1Digest;
+ {$ELSE !USE_SYMCRYPTO}
+   {$IFDEF USE_WE_LIBS}
+  SHA1Digest: TSHA1Digest;
+   {$ELSE !USE_WE_LIBS}
+  SHA1: THashSHA1;
+  SHA1Digest: TBytes;
+   {$ENDIF USE_WE_LIBS}
+ {$ENDIF ~USE_SYMCRYPTO}
 begin
-  SHA1.full(@s[1], Length(s), SHA1Digest);
+  if Length(s) > 0 then
+    p := @s[1]
+   else
+    p := NIL;
+ {$IFDEF USE_SYMCRYPTO}
+  SHA1.full(p, Length(s), SHA1Digest);
+ {$ELSE !USE_SYMCRYPTO}
+     {$IFDEF USE_WE_LIBS}
+      SHA1FullXL(SHA1Digest, p, Length(s));
+     {$ELSE !USE_WE_LIBS}
+      SHA1 := THashSHA1.Create;
+      SHA1.Update(p, Length(s));
+      SHA1Digest := SHA1.HashAsBytes;
+     {$ENDIF USE_WE_LIBS}
+ {$ENDIF USE_SYMCRYPTO}
   SetLength(Result, length(SHA1Digest));
   ansiStrings.StrPLCopy(PAnsiChar(Result), PAnsiChar(@SHA1Digest), length(SHA1Digest));
 end;
@@ -485,24 +590,66 @@ end;
 function HMAC_SHA1_EX( const Data: RawByteString;
                        const Key : RawByteString ): RawByteString;
 var
+ {$IFDEF USE_SYMCRYPTO}
   Digest: TSHA1Digest;
+ {$ELSE !USE_SYMCRYPTO}
+   {$IFDEF USE_WE_LIBS}
+    Digest: TSHA1Digest;
+    hmac_context: THMAC_Context;
+   {$ELSE !USE_WE_LIBS}
+    d, k, Digest: TBytes;
+   {$ENDIF USE_WE_LIBS}
+ {$ENDIF ~USE_SYMCRYPTO}
 begin
 //   HMAC_SHA1( Data, Key, Digest);
+ {$IFDEF USE_SYMCRYPTO}
    HMAC_SHA1( Key, Data, Digest);
-   SetLength( Result, SizeOf(TSHA1Digest) );
+ {$ELSE !USE_SYMCRYPTO}
+   {$IFDEF USE_WE_LIBS}
+     hmac_sha1_init(hmac_context, PAnsiChar(key), Length(key));
+     hmac_sha1_updateXL(hmac_context, PAnsiChar(Data), Length(Data));
+     hmac_sha1_final(hmac_context, Digest);
+   {$ELSE !USE_WE_LIBS}
+    d := BytesOf(Data);
+    k := BytesOf(Key);
+    Digest := THashSHA1.GetHMACAsBytes(d, k);
+   {$ENDIF USE_WE_LIBS}
+ {$ENDIF USE_SYMCRYPTO}
+   SetLength( Result, SizeOf(Digest) );
    Move( digest[0], Result[1], Length(Result) );
 end;
 
-function DigestToString(digest: THash256): RawByteString;
+function DigestToString(digest: TSHA256Digest): RawByteString;
 begin
   SetString(Result, PAnsiChar(@digest[0]), Length(digest));
 end;
 
-function Hash256String(key, str: RawByteString): RawByteString;
+function Hash256String(const key, str: RawByteString): RawByteString;
 var
+ {$IFDEF USE_SYMCRYPTO}
   digest: TSHA256Digest;
+ {$ELSE !USE_SYMCRYPTO}
+   {$IFDEF USE_WE_LIBS}
+    digest: TSHA256Digest;
+    hmac_context: THMAC_Context;
+   {$ELSE !USE_WE_LIBS}
+    d, k, Digest: TBytes;
+   {$ENDIF USE_WE_LIBS}
+ {$ENDIF ~USE_SYMCRYPTO}
 begin
+ {$IFDEF USE_SYMCRYPTO}
   HMAC_SHA256(key, str, digest);
+ {$ELSE !USE_SYMCRYPTO}
+   {$IFDEF USE_WE_LIBS}
+   hmac_SHA256_init(hmac_context, PAnsiChar(key), Length(key));
+   hmac_SHA256_updateXL(hmac_context, PAnsiChar(str), Length(str));
+   hmac_SHA256_final(hmac_context, Digest);
+   {$ELSE !USE_WE_LIBS}
+    d := BytesOf(str);
+    k := BytesOf(Key);
+    Digest := THashSHA2.GetHMACAsBytes(d, k);
+   {$ENDIF USE_WE_LIBS}
+ {$ENDIF USE_SYMCRYPTO}
   Result := Base64EncodeString(DigestToString(digest));
 end;
 
@@ -518,7 +665,7 @@ var
   i: integer;
 begin
   for i:=0 to 15 do
-    byte(digest[i]):=succ(i);
+    byte(digest[i]) := succ(i);
   F := FileOpenSequentialRead(fn);
   if PtrInt(F)>=0 then
     try
@@ -542,30 +689,79 @@ begin
 end;
 
    {$ELSE NOT USE_SYMCRYPTO}
+   {$IFDEF USE_WE_LIBS}
 function getFileMD5(fn: String; progFunc: TProgressFunc): TBytes;
 var
   digest: TMD5Digest;
-  context: TMD5Context;
+//  context: TMD5Context;
+  context: THashContext;
   fs: Tfilestream;
-  buf: array [1..32*1024] of byte;
+  buf: array [1..16*1024] of byte;
   i: integer;
+  pos, size: UInt64;
 begin
   fs := TfileStream.create(fn, fmOpenRead+fmShareDenyWrite);
-for i:=0 to 15 do byte(digest[i]):=succ(i);
-MD5init(context);
-try
-  repeat
-  i:=fs.Read(buf, sizeof(buf));
-  MD5updateBuffer(context, @buf, i);
-  if not progFunc(safeDiv(0.0+fs.position, fs.size)) then exit;
-  until i < sizeof(buf);
-finally
-  fs.free;
-  MD5final(digest, context);
   for i:=0 to 15 do
-    result:=result+intToHex(byte(digest[i]), 2);
+    byte(digest[i]) := succ(i);
+  MD5init(context);
+  pos := 0;
+  size := fs.size;
+  try
+     if size > 0 then
+      repeat
+        i := fs.Read(buf, sizeof(buf));
+        inc(pos, i);
+    //    MD5updateBuffer(context, @buf, i);
+        if i > 0 then
+          MD5Update(context, @buf, i);
+        if not progFunc(0.0+pos / size) then
+          exit;
+      until i < sizeof(buf);
+   finally
+      fs.free;
+//      MD5final(digest, context);
+      MD5final(context, digest);
+//      for i:=0 to 15 do
+//        result := result + intToHex(byte(digest[i]), 2);
   end;
+  SetLength(Result, length(digest));
+  ansiStrings.StrPLCopy(PAnsiChar(Result), PAnsiChar(@digest), length(digest));
 end;
+   {$ELSE !USE_WE_LIBS}
+function getFileMD5(fn: String; progFunc: TProgressFunc): TBytes;
+var
+  digest: TBytes;
+  md5: THashMD5;
+  fs: Tfilestream;
+  buf: array [1..16*1024] of byte;
+  i: integer;
+  pos, size: UInt64;
+begin
+  fs := TFileStream.create(fn, fmOpenRead+fmShareDenyWrite);
+  for i:=0 to 15 do
+    byte(digest[i]) := succ(i);
+  md5 := THashMD5.Create;
+  pos := 0;
+  size := fs.size;
+  try
+     if size > 0 then
+      repeat
+        i := fs.Read(buf, sizeof(buf));
+        inc(pos, i);
+    //    MD5updateBuffer(context, @buf, i);
+        if i > 0 then
+          md5.Update(buf, i);
+        if not progFunc(0.0+pos / size) then
+          exit;
+      until i < sizeof(buf);
+   finally
+      fs.free;
+      digest := MD5.HashAsBytes;
+  end;
+  SetLength(Result, length(digest));
+  ansiStrings.StrPLCopy(PAnsiChar(Result), PAnsiChar(@digest), length(digest));
+end;
+   {$ENDIF USE_WE_LIBS}
    {$ENDIF USE_SYMCRYPTO}
 
 function MD5PassH(const s: RawBytestring): RawByteString;
@@ -573,10 +769,23 @@ var
   digest: RawBytestring;
   i: Integer;
 begin
+  Result := '';
   digest := MD5Pass2(s);
   if length(digest) > 0 then
-    for i:=0 to length(digest)-1 do
+    for i:=1 to length(digest) do
       result := result + IntToHexA(byte(digest[i]), 2);
+end;
+
+function MD5PassL(const s: RawBytestring): RawByteString;
+var
+  digest: RawBytestring;
+  i: Integer;
+begin
+  Result := '';
+  digest := MD5Pass2(s);
+  if length(digest) > 0 then
+    for i:=1 to length(digest) do
+      result := result + IntToHexAL(byte(digest[i]), 2);
 end;
 
 function MD5PassHS(const s: RawBytestring): String; //return HEX(MD5)
@@ -584,10 +793,43 @@ var
   digest: RawBytestring;
   i: Integer;
 begin
+  Result := '';
   digest := MD5Pass2(s);
   if length(digest) > 0 then
-    for i:=0 to length(digest)-1 do
+    for i:=1 to length(digest) do
       result := result + intToHex(byte(digest[i]), 2);
+end;
+
+function SHA256PassHS(const s: RawBytestring): String; //return HEX(SHA256)
+var SHA: TSHA256;
+    Digest: TSHA256Digest;
+//var
+//  digest: RawBytestring;
+  b: Byte;
+begin
+  Result := '';
+  SHA.Full(pointer(s),length(s),Digest);
+
+//  digest := SHA256(s);
+//  if length(digest) > 0 then
+    for b in digest do
+      result := result + intToHex(Byte(b), 2);
+end;
+
+function SHA256PassLS(const s: RawBytestring): String; //return hex(SHA256)
+var SHA: TSHA256;
+    Digest: TSHA256Digest;
+//var
+//  digest: RawBytestring;
+  b: Byte;
+begin
+  Result := '';
+  SHA.Full(pointer(s),length(s),Digest);
+
+//  digest := SHA256(s);
+//  if length(digest) > 0 then
+    for b in digest do
+      result := result + LowerCase(IntToHex(Byte(b), 2));
 end;
 
 end.

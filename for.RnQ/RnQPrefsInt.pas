@@ -17,11 +17,11 @@ type
      function  getPrefStr(const key: TPrefKey; var Val: String): Boolean;
      function  getPrefStrList(const key: TPrefKey; var Val: TStringList): Boolean;
      function  getPrefBool(const key: TPrefKey; var Val: Boolean): Boolean;
-     procedure getPrefBlob(const key: TPrefKey; var Val: RawByteString);
-     procedure getPrefBlob64(const key: TPrefKey; var Val: RawByteString);
+     function  getPrefBlob(const key: TPrefKey; var Val: RawByteString): Boolean;
+     function  getPrefBlob64(const key: String; var Val: RawByteString): Boolean;
      function  getPrefInt(const key: TPrefKey; var Val: Integer): Boolean;
-     procedure getPrefDate(const key: TPrefKey; var Val: TDateTime);
-     procedure getPrefDateTime(const key: TPrefKey; var Val: TDateTime);
+     function  getPrefDate(const key: String; var Val: TDateTime): Boolean;
+     function  getPrefDateTime(const key: String; var Val: TDateTime): Boolean;
 //     procedure getPrefValue(const key: TPrefKey; et: TElemType; var Val: TPrefElem);
      function  getPrefGuid(const key: TPrefKey; var Val: TGUID): Boolean;
      function  getPrefBoolDef(const key: TPrefKey; const DefVal: Boolean): Boolean;

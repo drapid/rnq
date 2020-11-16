@@ -60,7 +60,7 @@ type
 implementation
 uses
   forms,
-  RQUtil, RDUtils, RnQSysUtils, RnQBinUtils, RnQLangs, RnQGlobal,
+  RQUtil, RDUtils, RDSysUtils, RnQBinUtils, RnQLangs, RnQGlobal,
   RnQGraphics32, tipDlg,
   roasterLib, utilLib, RnQConst, globalLib, iniLib, themesLib,
  {$IFDEF RNQ_PLAYER}

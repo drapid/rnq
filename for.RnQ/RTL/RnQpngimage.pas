@@ -107,10 +107,10 @@
 
 unit RnQpngimage;
 {$I forRnQConfig.inc}
-{$ifdef FPC}
-  {$MODE DELPHI}
-  {$define D7UP}
-{$endif FPC}
+{ $ifdef FPC}
+  { $MODE DELPHI}
+  { $define D7UP}
+{ $endif FPC}
 
 {$I NoRTTI.inc}
 
@@ -405,6 +405,7 @@ type
 {
     procedure AssignImage(Data: Pointer; DataSize: Cardinal);
     procedure AssignAlpha(Data: Pointer; DataSize: Cardinal);
+}
 {
     procedure AssignImageTo(var Dest: Pointer);
     procedure AssignAlphaTo(var Dest: Pointer);
@@ -417,7 +418,7 @@ type
 
     function IsEmpty: Boolean;
     procedure FromHDR;
-    procedure ToBitmap32(var B32:TBitmap);
+    procedure ToBitmap32(var B32: TBitmap);
     procedure PaletteToDIB(Palette: HPalette);
     procedure FreeImageData;
     procedure PrepareImageData();
@@ -459,8 +460,8 @@ type
     constructor Create(AOwner: TPNGObject); OverLoad;
     destructor Destroy; override;
     procedure clear;
-    function getFullBitmap : TBitmap;
-    function AddFrame : TPNGFrame;
+    function getFullBitmap: TBitmap;
+    function AddFrame: TPNGFrame;
     property Owner: TPNGObject read fOwner;
   end;
 
@@ -591,10 +592,7 @@ type
   private
     FAnimated: Boolean;
  {$IFDEF UseAnimation}
-    apng : TAniPNG;
-//    FFramesCount: Integer;
-//    FCurrentFrame: Integer;
-//    FFrameList: TPNGFrameList;
+    apng: TAniPNG;
  {$ENDIF UseAnimation}
 
 //    ImagePalette: HPalette;
@@ -669,10 +667,6 @@ type
     property Animated: Boolean read FAnimated;
  {$IFDEF UseAnimation}
     property AniPNG: TAniPNG read aPNG;
-//    property FramesCount: Integer read FFramesCount;
-//    property CurrentFrame: Integer read FCurrentFrame write SetCurrentFrame;
-
-//    property FrameList: TPngFrameList read FFrameList;
  {$ENDIF UseAnimation}
   {$IFDEF SavePicture}
     {Resizes the PNG image}
@@ -768,7 +762,7 @@ type
      property Palette: HPalette read GetPalette write SetPalette;
     {$ENDIF isTGraphic}
     { $ENDIF}
-    procedure ToBitmap32(var B32:TBitmap);
+    procedure ToBitmap32(var B32: TBitmap);
   end;
 
   {Chunk name object}
@@ -1488,12 +1482,12 @@ end;
 {$ENDIF PUREPASCAL}
 
 {$ENDIF}
-function ByteSwap16(inp:word): word; inline;
+function ByteSwap16(inp: word): word; inline;
 begin
   Result := Swap(inp);
 end;
 (*
-function ByteSwap16(inp:word): word;
+function ByteSwap16(inp: word): word;
 {$IFDEF PUREPASCAL}
 begin
   PByte(@Result)[0] := PByte(@inp)[1];
@@ -1635,7 +1629,7 @@ const
 function ZLIBInitInflate(Stream: TStream): TZStreamRec2;
 begin
   {Fill record}
-  Fillchar(Result, SIZEOF(TZStreamRec2), #0);
+  ZeroMemory(@Result, SIZEOF(TZStreamRec2));
 
   {Set internal record information}
   with Result do
@@ -1658,7 +1652,7 @@ function ZLIBInitDeflate(Stream: TStream;
   Level: TCompressionlevel; Size: Cardinal): TZStreamRec2;
 begin
   {Fill record}
-  Fillchar(Result, SIZEOF(TZStreamRec2), #0);
+  ZeroMemory(@Result, SIZEOF(TZStreamRec2));
 
   {Set internal record information}
   with Result, ZLIB do
@@ -1711,7 +1705,7 @@ begin
     OutputSize := 0;
 
     {Prepares the data to decompress}
-    FillChar(StreamRec, SizeOf(TZStreamRec), #0);
+    ZeroMemory(@StreamRec, SizeOf(TZStreamRec));
   {$IFDEF FPC}
     InflateInit_(StreamRec, @zlib_version[1], SIZEOF(z_stream));
   {$ELSE ~FPC}
@@ -1738,7 +1732,7 @@ begin
         if Output = nil then
           GetMem(Output, OutputSize) else ReallocMem(Output, OutputSize);
         {Copies the new data}
-        CopyMemory(Pointer(Longint(Output) + OutputSize - total_out),
+        CopyMemory(Pointer(Longint(Output) + OutputSize - Integer(total_out)),
           @Buffer, total_out);
       end {if (InflateRet = Z_STREAM_END) or (InflateRet = 0)}
       {Now tests for errors}
@@ -1771,7 +1765,7 @@ begin
     Result := True; {By default returns TRUE as everything might have gone ok}
     OutputSize := 0; {Initialize}
     {Prepares the data to compress}
-    FillChar(StreamRec, SizeOf(TZStreamRec), #0);
+    ZeroMemory(@StreamRec, SizeOf(TZStreamRec));
   {$IFDEF FPC}
     DeflateInit_(StreamRec, CompressionLevel, @zlib_version[1], SIZEOF(z_stream));
   {$ELSE}
@@ -2474,7 +2468,7 @@ begin
     {plus the compression method, plus the length of the text (zlib compressed)}
     ResizeData(Length(fKeyword) + 2 + OutputSize);
 
-    Fillchar(Data^, DataSize, #0);
+    ZeroMemory(Data, DataSize);
     {Copies the keyword data}
     if Keyword <> '' then
       CopyMemory(Data, @fKeyword[1], Length(Keyword));
@@ -2521,7 +2515,7 @@ begin
   {Size is length from keyword, plus a null character to divide}
   {plus the length of the text}
   ResizeData(Length(fKeyword) + 1 + Length(fText));
-  Fillchar(Data^, DataSize, #0);
+  ZeroMemory(Data, DataSize);
   {Copy data}
   if Keyword <> '' then
     CopyMemory(Data, @fKeyword[1], Length(Keyword));
@@ -2701,7 +2695,7 @@ var
 begin
   {Prepares and fills the strucutre}
   if Bitdepth = 16 then Bitdepth := 8;
-  fillchar(palEntries, sizeof(palEntries), 0);
+  ZeroMemory(@palEntries, sizeof(palEntries));
   palEntries.palVersion := $300;
   palEntries.palNumEntries := 1 shl Bitdepth;
   {Fill it with grayscale colors}
@@ -2723,7 +2717,7 @@ var
   palEntries: TMaxLogPalette;
 begin
   {Copy colors}
-  Fillchar(palEntries, sizeof(palEntries), #0);
+  ZeroMemory(@palEntries, sizeof(palEntries));
   BitmapInfo.bmiHeader.biClrUsed := GetPaletteEntries(Palette, 0, 256, palEntries.palPalEntry[0]);
   for j := 0 to BitmapInfo.bmiHeader.biClrUsed - 1 do
   begin
@@ -2744,7 +2738,7 @@ procedure TChunkIHDR.PrepareImageData();
 //    HasPalette := Palette;
     Owner.HasPalette := Palette;
     {Initialize the structure with zeros}
-    fillchar(BitmapInfo, sizeof(BitmapInfo), #0);
+    ZeroMemory(@BitmapInfo, sizeof(BitmapInfo));
     {Fill the strucutre}
     with BitmapInfo.bmiHeader do
     begin
@@ -2761,7 +2755,7 @@ var
   sz : Integer;
 begin
   {Prepare bitmap info header}
-  Fillchar(BitmapInfo, sizeof(TMaxBitmapInfo), #0);
+  ZeroMemory(@BitmapInfo, sizeof(TMaxBitmapInfo));
   {Release old image data}
   FreeImageData();
   bd := 24;
@@ -2790,7 +2784,7 @@ begin
   begin
     sz := Integer(Width) * Integer(Height);
     GetMem(fImageAlpha, sz);
-    FillChar(fImageAlpha^, sz, #0);
+    ZeroMemory(fImageAlpha, sz);
   end;
 
   {Build array for extra byte information}
@@ -2798,7 +2792,7 @@ begin
   if (BitDepth = 16) then
   begin
     GetMem(ExtraImageData, BytesPerRow * Integer(Height));
-    FillChar(ExtraImageData^, BytesPerRow * Integer(Height), #0);
+    ZeroMemory(ExtraImageData, BytesPerRow * Integer(Height));
   end;
   {$ENDIF}
 
@@ -2836,8 +2830,7 @@ begin
     end {with Owner, if TempPalette <> 0};
 
   {Build array and allocate bytes for each row}
-//  zeromemory(ImageData, BytesPerRow * Integer(Height));
-  fillchar(fImageData^, BytesPerRow * Integer(Height), 0);
+  ZeroMemory(fImageData, BytesPerRow * Integer(Height));
 end;
 
 {TChunktRNS implementation}
@@ -2862,7 +2855,7 @@ var
   LookColor: TRGBQuad;
 begin
   {Clears the palette values}
-  Fillchar(PaletteValues, SizeOf(PaletteValues), #0);
+  ZeroMemory(@PaletteValues, SizeOf(PaletteValues));
   {Sets that it uses bit transparency}
   fBitTransparency := True;
 
@@ -3012,7 +3005,7 @@ begin
     begin
       {Calculate total number of palette entries}
       Entries := (1 shl Byte(BitmapInfo.bmiHeader.biBitCount));
-      Fillchar(palEntries, sizeof(palEntries), #0);
+      ZeroMemory(@palEntries, sizeof(palEntries));
       palEntries.palVersion := $300;
       palEntries.palNumEntries := Entries;
 
@@ -3470,7 +3463,7 @@ begin
     {Get current row index}
     CurrentRow := RowStart[CurrentPass];
     {Get a pointer to the current row image data}
-    Data := PByte(frmImageData) + frmBytesPerRow *
+    Data := PByte(frmImageData) + Integer(frmBytesPerRow) *
       (frmHeight - 1 - CurrentRow);
     Trans := PByte(frmImageAlpha) + frmWidth * CurrentRow;
     {$IFDEF Store16bits}
@@ -3497,7 +3490,7 @@ begin
         {Move to the next row}
         inc(CurrentRow, RowIncrement[CurrentPass]);
         {Move pointer to the next line}
-        dec(Data, RowIncrement[CurrentPass] * frmBytesPerRow);
+        dec(Data, RowIncrement[CurrentPass] * Integer(frmBytesPerRow));
         if Trans <> NIL then
           inc(Trans, RowIncrement[CurrentPass] * frmWidth);
         {$IFDEF Store16bits}
@@ -3733,10 +3726,10 @@ begin
   end;
 
   {Get the image data pointer}
-  Data := PByte(frmImageData) + frmBytesPerRow * (frmHeight - 1);
+  Data := PByte(frmImageData) + Integer(frmBytesPerRow) * (frmHeight - 1);
   Trans := frmImageAlpha;
   {$IFDEF Store16bits}
-  Extra := PByte(frmExtraImageData) + frmBytesPerRow * (frmHeight - 1);
+  Extra := PByte(frmExtraImageData) + Integer(frmBytesPerRow) * (frmHeight - 1);
   {$ENDIF}
   {Reads each line}
   FOR j := 0 to frmHeight - 1 do
@@ -3922,12 +3915,12 @@ begin
 
 end;
 
+{$IFDEF SavePicture}
 const
   IDATHeader: Array[0..3] of AnsiChar = ('I', 'D', 'A', 'T');
   fdATHeader: Array[0..3] of AnsiChar = ('f', 'd', 'A', 'T');
   BUFFER = 5;
 
-  {$IFDEF SavePicture}
 {Saves the IDAT chunk to a stream}
 function TChunkIDAT.SaveToStream(Stream: TStream): Boolean;
 var
@@ -4302,7 +4295,7 @@ var
   Src2: pByte;
 begin
   {Clean the line}
-  fillchar(Dest^, Row_Bytes, #0);
+  ZeroMemory(Dest, Row_Bytes);
   {Get first column and enter in loop}
   Col := ColumnStart[Pass];
   with Header.BitmapInfo.bmiHeader do
@@ -4686,7 +4679,7 @@ begin
 
   {Fill array with the palette entries}
   fCount := Size div 3;
-  Fillchar(palEntries, sizeof(palEntries), #0);
+  ZeroMemory(@palEntries, sizeof(palEntries));
   palEntries.palVersion := $300;
   palEntries.palNumEntries := fCount;
   PalColor := Data;
@@ -4716,7 +4709,7 @@ begin
   if fCount = 0 then fCount := Header.BitmapInfo.bmiHeader.biClrUsed;
   ResizeData(fCount * 3);
   {Get all the palette entries}
-  fillchar(palEntries, sizeof(palEntries), #0);
+  ZeroMemory(palEntries, sizeof(palEntries));
   GetPaletteEntries(Header.ImagePalette, 0, 256, palEntries.palPalEntry[0]);
   {Copy pointer to data}
   DataPtr := fData;
@@ -5212,7 +5205,7 @@ begin
   if Stretch then FactorY := H / Header.Height else FactorY := 1;
 
   {Prepare to create the bitmap}
-  Fillchar(BitmapInfo, sizeof(BitmapInfo), #0);
+  ZeroMemory(@BitmapInfo, sizeof(BitmapInfo));
   BitmapInfoHeader.biWidth := W;
   BitmapInfoHeader.biHeight := -Integer(H);
   BitmapInfo.bmiHeader := BitmapInfoHeader;
@@ -5767,8 +5760,8 @@ begin
       8: TBitmap(Dest).PixelFormat := pf8Bit;
      24: TBitmap(Dest).PixelFormat := pf24Bit;
      32: TBitmap(Dest).PixelFormat := pf32Bit;
-    end {case Header.BitmapInfo.bmiHeader.biBitCount};
-
+    end; //case Header.BitmapInfo.bmiHeader.biBitCount
+}
     {Copy transparency mode}
     if (TransparencyMode = ptmBit) then
     begin
@@ -5833,7 +5826,7 @@ begin
     PLTE.fCount := 1 shl BitmapInfo.bmBitsPixel;
 
     {Create and set palette}
-    fillchar(palEntries, sizeof(palEntries), 0);
+    ZeroMemory(@palEntries, sizeof(palEntries));
     palEntries.palVersion := $300;
     palEntries.palNumEntries := 1 shl BitmapInfo.bmBitsPixel;
     for i := 0 to palEntries.palNumEntries - 1 do
@@ -6243,7 +6236,7 @@ begin
     if (Header.BitDepth = 16) then
     begin
       GetMem(NewImageExtra, CX * CY);
-      Fillchar(NewImageExtra^, CX * CY, 0);
+      ZeroMemory(NewImageExtra, CX * CY);
       for Line := 0 to Min(CY - 1, Height - 1) do
         CopyMemory(PByte(NewImageExtra) + (Line * CX),
           ExtraScanline[Line], Min(CX, Width));
@@ -6462,7 +6455,7 @@ begin
         {In case there is no more compressed data to read from}
         if avail_in = 0 then
         begin
-          Result := Count - avail_out;
+          Result := Count - Integer(avail_out);
           Exit;
         end;
 
@@ -6793,7 +6786,7 @@ var
   palEntries: TMaxLogPalette;
 begin
   {Copy colors}
-  Fillchar(palEntries, sizeof(palEntries), #0);
+  ZeroMemory(@palEntries, sizeof(palEntries));
   FBitmapInfo.bmiHeader.biClrUsed := GetPaletteEntries(Palette, 0, 256, palEntries.palPalEntry[0]);
   for j := 0 to FBitmapInfo.bmiHeader.biClrUsed - 1 do
   begin
@@ -6812,7 +6805,7 @@ procedure TPNGFrame.PrepareImageData();
     {Copy if the bitmap contain palette entries}
 //    HasPalette := Palette;
     {Initialize the structure with zeros}
-    fillchar(FBitmapInfo, sizeof(FBitmapInfo), #0);
+    ZeroMemory(@FBitmapInfo, sizeof(FBitmapInfo));
     {Fill the strucutre}
     with FBitmapInfo.bmiHeader do
     begin
@@ -6827,11 +6820,11 @@ procedure TPNGFrame.PrepareImageData();
 var
   bd: byte;
   h: TChunkIHDR;
-  vBytesPerRow : Integer;
-//  plt : HPALETTE;
+  vBytesPerRow: Integer;
+//  plt: HPALETTE;
 begin
   {Prepare bitmap info header}
-  Fillchar(FBitmapInfo, sizeof(TMaxBitmapInfo), #0);
+  ZeroMemory(@FBitmapInfo, sizeof(TMaxBitmapInfo));
   {Release old image data}
   FreeImageData();
 
@@ -6866,7 +6859,7 @@ begin
   if (h.ColorType = COLOR_RGBALPHA) or (h.ColorType = COLOR_GRAYSCALEALPHA) then
   begin
     GetMem(FAlphaData, FAlphaSize);
-    FillChar(FAlphaData^, FAlphaSize, #0);
+    ZeroMemory(FAlphaData, FAlphaSize);
   end;
 
   {Build array for extra byte information}
@@ -6874,7 +6867,7 @@ begin
   if (BitDepth = 16) then
   begin
     GetMem(ExtraImageData, FImageSize);
-    FillChar(ExtraImageData^, FImageSize, #0);
+    ZeroMemory(ExtraImageData, FImageSize);
   end;
   {$ENDIF}
 
@@ -6914,12 +6907,12 @@ begin
 
   {Build array and allocate bytes for each row}
 //  zeromemory(ImageData, BytesPerRow * Integer(Height));
-  fillchar(ImageData^, FImageSize, 0);
+  ZeroMemory(ImageData, FImageSize);
 end;
 
 procedure TPNGFrame.FromHDR;
 var
-  vHDR : TChunkIHDR;
+  vHDR: TChunkIHDR;
 begin
   vHDR := Owner.Header;
 
@@ -6950,27 +6943,28 @@ type
     end;
 
 var
-  PB:PByte;
-  PC:PColor32;
-  r, C:Cardinal;
-//  frmRect : TRect;
+  PB: PByte;
+  PC: PColor32;
+  r, C: Cardinal;
+//  frmRect: TRect;
 
-//  i, j : Integer;
-  TransparencyChunk:TChunktRNS;
-//  PaletteChunk:TChunkPLTE;
+//  i, j: Integer;
+  TransparencyChunk: TChunktRNS;
+//  PaletteChunk: TChunkPLTE;
 //  TransValue,
-  PaletteIndex :Byte;
-  CurBit:Integer;
-  Data:PByte;
+  PaletteIndex: Byte;
+  CurBit: Integer;
+  Data: PByte;
   ImageSource//,ImageSourceOrg
 //     ,AlphaSource
-    :PByteArray;
+    : PByteArray;
 //  ImageData:pPixelLine;
-  BytesPerRowSrc : Integer;
-  vHDR : TChunkIHDR;
+  BytesPerRowSrc: Integer;
+  vHDR: TChunkIHDR;
+  s: String;
 begin
  vHDR := Owner.Header;
- {$IFDEF DELPHI9_UP}
+ {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
     B32.SetSize(FSelfWidth, FSelfHeight);
  {$ELSE DELPHI_9_dn}
     B32.Height := 0;
@@ -6985,16 +6979,24 @@ begin
 // StretchDiBits(B32.Canvas.Handle, 0,0, vHDR.Width, vHDR.Height,0,0,
 //        vHDR.Width, vHDR.Height, vHDR.fImageData,
 //        pBitmapInfo(@vHDR.BitmapInfo)^, DIB_RGB_COLORS, SRCCOPY);
+ r :=
  StretchDiBits(B32.Canvas.Handle, 0, 0, FSelfWidth, FSelfHeight,
         0,0, FSelfWidth, FSelfHeight, FImageData,
         pBitmapInfo(@FBitmapInfo)^, DIB_RGB_COLORS, SRCCOPY);
-
+ if r <> FSelfHeight then
+  begin
+   s := 'Error, pocessed lines:'+ IntToStr(r);
+   OutputDebugStringW(PChar(s)) ;
+  end;
 // frmRect := Rect(FXOffset, FYOffset, FSelfWidth-1, FSelfHeight-1);
+ {$IFDEF FPC}
+ b32.BeginUpdate;
+ {$ENDIF FPC}
  case vHDR.ColorType of
   COLOR_GRAYSCALEALPHA,COLOR_RGBALPHA:
     begin
 
-     PB:=Pointer(FAlphaData);
+     PB := Pointer(FAlphaData);
      if PB<>nil then
       begin
        for R:=0 to FSelfHeight-1 do
@@ -7011,28 +7013,27 @@ begin
     end;
    COLOR_PALETTE:
     begin
-      TransparencyChunk:=TChunktRNS(Owner.Chunks.ItemFromClass(TChunktRNS));
-//      PaletteChunk:=TChunkPLTE(Chunks.ItemFromClass(TChunkPLTE));
+      TransparencyChunk := TChunktRNS(Owner.Chunks.ItemFromClass(TChunktRNS));
+//      PaletteChunk := TChunkPLTE(Chunks.ItemFromClass(TChunkPLTE));
       BytesPerRowSrc := (((vHDR.BitmapInfo.bmiHeader.biBitCount * FSelfWidth) +
           31) and not 31) div 8; {Number of bytes for each image row in source}
-//      ImageSourceOrg:=ImageSource;
+//      ImageSourceOrg := ImageSource;
 
-      PByte(ImageSource):=PByte(FImageData)+
+      PByte(ImageSource) := PByte(FImageData)+
                           BytesPerRowSrc * Longint(FSelfHeight-1);
-
       for r:=1 to FSelfHeight do
       begin
-        c:=0;
+        c := 0;
         {Process all the pixels in this line}
-        PC:=Pointer(b32.ScanLine[r-1]);
+        PC := Pointer(b32.ScanLine[r-1]);
         Data := @ImageSource[0];
         repeat
-          CurBit:=0;
-//            Data:= @ImageSource[c];
+          CurBit := 0;
+//            Data := @ImageSource[c];
           repeat
             if TransparencyChunk = NIL then
              begin
-               PC^:=SetAlpha(PC^, $FF);
+               PC^ := SetAlpha(PC^, $FF);
                Inc(PC);
              end
             else
@@ -7040,47 +7041,50 @@ begin
               case vHDR.BitDepth of
                  1:PaletteIndex:=(Data^ shr (7-(c Mod 8))) and 1;
                2,4:PaletteIndex:=(Data^ shr ((1-(c Mod 2))*4)) and $0F;
-               else PaletteIndex:=Data^;
+               else PaletteIndex := Data^;
               end;
               begin
                  if PaletteIndex >= TransparencyChunk.DataSize then
-                   PC^:=SetAlpha(PC^, $FF)
+                   PC^ := SetAlpha(PC^, $FF)
                   else
-                   PC^:=SetAlpha(PC^,TransparencyChunk.PaletteValues[PaletteIndex]);
+                   PC^ := SetAlpha(PC^,TransparencyChunk.PaletteValues[PaletteIndex]);
                  Inc(PC);
               end;
               Inc(CurBit,vHDR.BitmapInfo.bmiHeader.biBitCount);
              end;
             Inc(c);
-          until (CurBit>=8)or(c>=Integer(FSelfWidth));
+          until (CurBit>=8)or(c>=FSelfWidth);
           {Move to next source data}
           inc(Data);
-        until c>=Integer(FSelfWidth);
+        until c>=(FSelfWidth);
 //        Longint(ImageData):=Longint(ImageData)+BytesPerRowDest;
 //        if Stretch then j2:=trunc(j / FactorY) else j2:=j;
 //        Longint(ImageSource):=Longint(ImageSourceOrg)-BytesPerRowSrc*r;
         PByte(ImageSource) := PByte(ImageSource)-BytesPerRowSrc;
-      end
+      end;
     end
    else
    begin
      for R:=0 to FSelfHeight-1 do
       begin
-       PC:=Pointer(b32.ScanLine[r]);
+       PC := Pointer(b32.ScanLine[r]);
        for C:=0 to FSelfWidth-1 do
         begin
-          PC^:=SetAlpha(PC^,$FF);
+          PC^ := SetAlpha(PC^,$FF);
           Inc(PC);
         end;
       end;
-{    PC:=Pointer(B32.Bits);
+{    PC := Pointer(B32.Bits);
     for C:=0 to PNG.Width*PNG.Height-1 do
      begin
-      PC^:=SetAlpha(PC^,$FF);
+      PC^ := SetAlpha(PC^,$FF);
       Inc(PC);
      end;}
    end;
   end; // end case
+ {$IFDEF FPC}
+ b32.EndUpdate;
+ {$ENDIF FPC}
 
 //  b32.Canvas.Brush.Color := RGB((10* 5 mod 255), (10* 5 mod 255), (10* 5 mod 255) );
 //  Ellipse(b32.Canvas.Handle, 5, 2, vHDR.Width - 5, vHDR.Height-2);
@@ -7098,8 +7102,8 @@ begin
   if not Result or (Size <> 8) then exit; {Size must be 7}
 
   {Reads data}
-  Fnum_frames := ByteSwap(pinteger(Longint(Data) + 0)^);
-  Fnum_plays := ByteSwap(pinteger(Longint(Data) + 4)^);
+  Fnum_frames := ByteSwap(pinteger(UIntPtr(Data) + 0)^);
+  Fnum_plays := ByteSwap(pinteger(UIntPtr(Data) + 4)^);
 
   {Copies data from source}
 //  Stream.Read(Fnum_frames, 4); Fnum_frames:= ByteSwap(Fnum_frames);
@@ -7207,16 +7211,10 @@ end;
 
 
 
-procedure TPNGObject.ToBitmap32(var B32:TBitmap);
+procedure TPNGObject.ToBitmap32(var B32: TBitmap);
 type
   PColor32 = ^TColor32;
   TColor32 = type Cardinal;
-{function SetAlpha(Color32: TColor32; NewAlpha: Byte): TColor32;
-begin
-  if NewAlpha < 0 then NewAlpha := 0
-  else if NewAlpha > 255 then NewAlpha := 255;
-  Result := (Color32 and $00FFFFFF) or (TColor32(NewAlpha) shl 24);
-end;}
   function SetAlpha(Color32: TColor32; NewAlpha: Byte): TColor32; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
     begin
 //      Result := (Color32 and $00FFFFFF) or (NewAlpha shl 24);
@@ -7225,27 +7223,28 @@ end;}
 
 
 var
-  PB:PByte;
-  PC:PColor32;
-  r, C:Cardinal;
+  PB: PByte;
+  PC: PColor32;
+  r, C: Cardinal;
 
-//  i, j : Integer;
-  TransparencyChunk:TChunktRNS;
-//  PaletteChunk:TChunkPLTE;
+//  i, j: Integer;
+  TransparencyChunk: TChunktRNS;
+//  PaletteChunk: TChunkPLTE;
 //  TransValue,
-  PaletteIndex :Byte;
-  CurBit:Integer;
-  Data:PByte;
+  PaletteIndex: Byte;
+  CurBit: Integer;
+  Data: PByte;
   ImageSource//,ImageSourceOrg
 //     ,AlphaSource
-    :PByteArray;
-//  ImageData:pPixelLine;
-  BytesPerRowSrc : Integer;
-  vHDR : TChunkIHDR;
+    : PByteArray;
+//  ImageData: pPixelLine;
+  BytesPerRowSrc: Integer;
+  vHDR: TChunkIHDR;
+  s: String;
 begin
  if not HeaderPresent then
   begin
- {$IFDEF DELPHI9_UP}
+ {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
     B32.SetSize(0, 0);
  {$ELSE DELPHI_9_dn}
     B32.Height := 0;
@@ -7255,7 +7254,7 @@ begin
   end;
  vHDR := Header;
  B32.PixelFormat := pf32bit;
- {$IFDEF DELPHI9_UP}
+ {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
     B32.SetSize(vHDR.Width, vHDR.Height);
  {$ELSE DELPHI_9_dn}
     B32.Height := 0;
@@ -7263,25 +7262,36 @@ begin
     B32.Height := vHDR.Height;
  {$ENDIF DELPHI9_UP}
  if (vHDR.Width=0) or (vHDR.Height=0) then exit;
- SetStretchBltMode(B32.Canvas.Handle,COLORONCOLOR);
+ //BitBlt(B32.Canvas.Handle,0,0, Width, Height, vHDR.ImageDC, 0, 0, SRCCOPY);
+
+ SetStretchBltMode(B32.Canvas.Handle, COLORONCOLOR);
 { StretchDiBits(B32.Canvas.Handle,0,0, Width, Height,0,0,
                Width, Height, Header.Data,
                pBitmapInfo(@Header.BitmapInfo)^,DIB_RGB_COLORS,SRCCOPY);}
- StretchDiBits(B32.Canvas.Handle, 0,0, vHDR.Width, vHDR.Height,
+ r := StretchDiBits(B32.Canvas.Handle, 0,0, vHDR.Width, vHDR.Height,
         0,0, vHDR.Width, vHDR.Height, vHDR.fImageData,
         pBitmapInfo(@vHDR.BitmapInfo)^, DIB_RGB_COLORS, SRCCOPY);
+{$IFDEF FPC}
+ B32.Canvas.Changed;
+ b32.BeginUpdate;
+{$ENDIF FPC}
+ if r <> vHDR.Height then
+  begin
+   s := 'Error in StretchDiBits pocessed lines: '+ IntToStr(r);
+   OutputDebugStringW(PChar(s)) ;
+  end;
  case vHDR.ColorType of
   COLOR_GRAYSCALEALPHA,COLOR_RGBALPHA:
     begin
-     PB:=Pointer(AlphaScanline[0]);
+     PB := Pointer(AlphaScanline[0]);
      if PB<>nil then
       begin
        for R:=0 to Height-1 do
         begin
-         PC:=Pointer(b32.ScanLine[r]);
+         PC := Pointer(b32.ScanLine[r]);
          for C:=0 to vHDR.Width-1 do
           begin
-            PC^:=SetAlpha(PC^,PByte(PB)^);
+            PC^ := SetAlpha(PC^, PByte(PB)^);
             Inc(PB); Inc(PC);
           end;
         end;
@@ -7289,69 +7299,72 @@ begin
     end;
    COLOR_PALETTE:
     begin
-      TransparencyChunk:=TChunktRNS(Chunks.ItemFromClass(TChunktRNS));
+      TransparencyChunk := TChunktRNS(Chunks.ItemFromClass(TChunktRNS));
 //      PaletteChunk:=TChunkPLTE(Chunks.ItemFromClass(TChunkPLTE));
       PByte(ImageSource) := PByte(vHDR.fImageData)+
           vHDR.BytesPerRow*Longint(vHDR.Height-1);
       BytesPerRowSrc := (((vHDR.BitmapInfo.bmiHeader.biBitCount * vHDR.Width) +
           31) and not 31) div 8; {Number of bytes for each image row in source}
-//      ImageSourceOrg:=ImageSource;
-
+//      ImageSourceOrg := ImageSource;
       for r:=1 to Height do
       begin
         c:=0;
         {Process all the pixels in this line}
-        PC:=Pointer(b32.ScanLine[r-1]);
+        PC := Pointer(b32.ScanLine[r-1]);
         Data := @ImageSource[0];
         repeat
-          CurBit:=0;
+          CurBit := 0;
 //            Data:= @ImageSource[c];
           repeat
             case vHDR.BitDepth of
-              1:PaletteIndex:=(Data^ shr (7-(c Mod 8))) and 1;
-            2,4:PaletteIndex:=(Data^ shr ((1-(c Mod 2))*4)) and $0F;
-             else PaletteIndex:=Data^;
+              1:PaletteIndex := (Data^ shr (7-(c Mod 8))) and 1;
+            2,4:PaletteIndex := (Data^ shr ((1-(c Mod 2))*4)) and $0F;
+             else PaletteIndex := Data^;
             end;
 //            with ImageData[i] do
             begin
 //             for C:=0 to Width-1 do
 //              begin
                if PaletteIndex >= TransparencyChunk.DataSize then
-                 PC^:=SetAlpha(PC^, $FF)
+                 PC^ := SetAlpha(PC^, $FF)
                 else
-                 PC^:=SetAlpha(PC^,TransparencyChunk.PaletteValues[PaletteIndex]);
+                 PC^ := SetAlpha(PC^,TransparencyChunk.PaletteValues[PaletteIndex]);
                Inc(PC);
             end;
-            Inc(c);Inc(CurBit,vHDR.BitmapInfo.bmiHeader.biBitCount);
-          until (CurBit>=8)or(c>=Integer(vHDR.Width));
+            Inc(c); Inc(CurBit,vHDR.BitmapInfo.bmiHeader.biBitCount);
+          until (CurBit>=8)or(c>=(vHDR.Width));
           {Move to next source data}
           inc(Data);
-        until c>=Integer(vHDR.Width);
+        until c>=(vHDR.Width);
 //        Longint(ImageData):=Longint(ImageData)+BytesPerRowDest;
 //        if Stretch then j2:=trunc(j / FactorY) else j2:=j;
 //        Longint(ImageSource):=Longint(ImageSourceOrg)-BytesPerRowSrc*r;
         PByte(ImageSource):= PByte(ImageSource)-BytesPerRowSrc;
-      end
+      end;
     end
    else
    begin
      for R:=0 to Height-1 do
       begin
-       PC:=Pointer(b32.ScanLine[r]);
+       PC := Pointer(b32.ScanLine[r]);
        for C:=0 to vHDR.Width-1 do
         begin
-          PC^:=SetAlpha(PC^,$FF);
+          PC^ := SetAlpha(PC^,$FF);
           Inc(PC);
         end;
       end;
-{    PC:=Pointer(B32.Bits);
+{    PC := Pointer(B32.Bits);
     for C:=0 to PNG.Width*PNG.Height-1 do
      begin
-      PC^:=SetAlpha(PC^,$FF);
+      PC^ := SetAlpha(PC^,$FF);
       Inc(PC);
      end;}
    end;
   end; // end case
+ b32.Modified := True;
+{$IFDEF FPC}
+  b32.EndUpdate;
+{$ENDIF FPC}
 end;
 
  {$IFDEF UseAnimation}
@@ -7365,12 +7378,12 @@ end;
 
 procedure TAniPNG.clear;
 var
-  i : Integer;
+  i: Integer;
 begin
   for i := 0 TO Integer(Frames.Count) - 1 do
     TPNGFrame(Frames.Item[I]).Free;
-  Frames.Count:= 0;
-  FCurrentFrame:= 0;
+  Frames.Count := 0;
+  FCurrentFrame := 0;
   FNumFrames := 0;
 end;
 
@@ -7388,19 +7401,19 @@ begin
 end;
 
 
-function TAniPNG.getFullBitmap : TBitmap;
+function TAniPNG.getFullBitmap: TBitmap;
 type
-  PColor32 = ^TColor32;
+  //PColor32 = ^TColor32;
   TColor32 = type Cardinal;
   function SetAlpha(Color32: TColor32; NewAlpha: Byte): TColor32; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
     begin
       Result := (Color32 and $00FFFFFF) or (NewAlpha shl 24);
     end;
 
-  procedure Premultiply(var bmp : TBitmap);
-    function mult1(a, b: byte) : byte; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
+  procedure Premultiply(var bmp: TBitmap);
+    function mult1(a, b: byte): byte; {$IFDEF HAS_INLINE}inline;{$ENDIF HAS_INLINE}
     var
-      i : Integer;
+      i: Integer;
     begin
       if b = 255 then
         Result := a
@@ -7418,7 +7431,7 @@ type
         (B,R,G,A: Byte);
   //      (B,G,R,A: Byte);
       false:
-        (c : Cardinal);
+        (c: Cardinal);
   //   end;
     end;
     PColor32Array = ^TColor32Array;
@@ -7454,17 +7467,17 @@ type
   end;
 
 var
-  FImageWidth, FImageHeight : Integer;
+  FImageWidth, FImageHeight: Integer;
   I, j: Integer;
-  rBMP, b32 : TBitmap;
-  vHDR : TChunkIHDR;
-  vDC : HDC;
-  fr : TPNGFrame;
-  fullHeight : Integer;
-  l_Top : Integer;
-  lastDisposeOp : Byte;
-  lastFrameRect : TRect;
-  bf : {$IFDEF FPC}JwaWinGDI.{$ENDIF} BLENDFUNCTION;      // structure for alpha blending
+  rBMP, b32: TBitmap;
+  vHDR: TChunkIHDR;
+  vDC: HDC;
+  fr: TPNGFrame;
+  fullHeight: Integer;
+  l_Top: Integer;
+  lastDisposeOp: Byte;
+  lastFrameRect: TRect;
+  bf: {$IFDEF FPC}JwaWinGDI.{$ENDIF} BLENDFUNCTION;      // structure for alpha blending
 begin
   rBMP := TBitmap.Create;
   Result := rBMP;
@@ -7520,6 +7533,7 @@ begin
               b32.Canvas.Handle, 0, 0, FImageWidth, FImageHeight,
               SRCCOPY);
          b32.Free;
+}
 {
          StretchDiBits(vDC,
               0, l_Top, FImageWidth, FImageHeight,
@@ -7571,8 +7585,8 @@ begin
        end;
 
      lastDisposeOp := fr.FDisposeOp;
-     lastFrameRect := Rect(fr.XOffset, l_Top + FImageHeight + fr.YOffset,
-                           fr.XOffset + Fr.SelfWidth, l_Top + FImageHeight + fr.YOffset + Fr.SelfHeight);
+     lastFrameRect := Rect(fr.XOffset, l_Top + FImageHeight + Integer(fr.YOffset),
+                           fr.XOffset + Fr.SelfWidth, l_Top + FImageHeight + Integer(fr.YOffset + Fr.SelfHeight));
      b32 := TBitmap.Create;
      b32.PixelFormat := pf32bit;
      fr.ToBitmap32(b32);
@@ -7581,7 +7595,7 @@ begin
      if fr.FBlendOp = TPNGFrame.APNG_BLEND_OP_SOURCE then
        begin
          StretchBlt(vDC,
-            fr.XOffset, l_Top + fr.YOffset, Fr.SelfWidth, Fr.SelfHeight,
+            fr.XOffset, l_Top + Integer(fr.YOffset), Fr.SelfWidth, Fr.SelfHeight,
             b32.Canvas.Handle, 0, 0, Fr.SelfWidth, Fr.SelfHeight,
             SRCCOPY);
 
@@ -7612,7 +7626,7 @@ begin
           bf.AlphaFormat := AC_SRC_ALPHA;
 //         Premultiply(b32);
          AlphaBlend(vDC,
-            fr.FXOffset, l_Top + fr.FYOffset, fr.FSelfWidth, fr.FSelfHeight,
+            fr.FXOffset, l_Top + Integer(fr.FYOffset), fr.FSelfWidth, fr.FSelfHeight,
             b32.Canvas.Handle, 0,0, fr.FSelfWidth, fr.FSelfHeight, bf)
        end;
      b32.Free;

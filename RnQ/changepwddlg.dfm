@@ -97,8 +97,8 @@ object changePwdFrm: TchangePwdFrm
     Height = 25
     Caption = 'Save new password'
     Default = True
+    ImageName = 'save'
     TabOrder = 3
     OnClick = saveBtnClick
-    ImageName = 'save'
   end
 end

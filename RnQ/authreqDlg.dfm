@@ -77,9 +77,9 @@ object authreqFrm: TauthreqFrm
     Height = 26
     Anchors = [akTop, akRight]
     Caption = '&Authorize'
+    ImageName = 'auth.grant'
     TabOrder = 2
     OnClick = authBtnClick
-    ImageName = 'auth.grant'
   end
   object noBtn: TRnQButton
     Left = 291
@@ -88,9 +88,9 @@ object authreqFrm: TauthreqFrm
     Height = 25
     Anchors = [akTop, akRight]
     Caption = 'No'
+    ImageName = 'cancel'
     TabOrder = 3
     OnClick = noBtnClick
-    ImageName = 'cancel'
   end
   object reasonBtn: TRnQButton
     Left = 291
@@ -99,6 +99,7 @@ object authreqFrm: TauthreqFrm
     Height = 25
     Anchors = [akTop, akRight]
     Caption = 'No with &Reason'
+    ImageName = ''
     TabOrder = 4
     OnClick = reasonBtnClick
   end
@@ -109,9 +110,9 @@ object authreqFrm: TauthreqFrm
     Height = 33
     Anchors = [akLeft, akBottom]
     Caption = 'View info'
+    ImageName = 'info'
     TabOrder = 5
     OnClick = viewinfoBtnClick
-    ImageName = 'info'
   end
   object sendBtn: TRnQButton
     Left = 139
@@ -120,9 +121,9 @@ object authreqFrm: TauthreqFrm
     Height = 33
     Anchors = [akLeft, akBottom]
     Caption = 'Send message'
+    ImageName = 'msg'
     TabOrder = 6
     OnClick = sendBtnClick
-    ImageName = 'msg'
   end
   object addBtn: TRnQButton
     Left = 5
@@ -131,9 +132,9 @@ object authreqFrm: TauthreqFrm
     Height = 33
     Anchors = [akLeft, akBottom]
     Caption = 'Add to contact list'
+    ImageName = 'add.contact'
     TabOrder = 7
     OnClick = addBtnClick
-    ImageName = 'add.contact'
   end
   object addmenu: TPopupMenu
     Left = 105

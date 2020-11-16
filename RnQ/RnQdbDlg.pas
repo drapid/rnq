@@ -10,7 +10,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Forms,
-  ExtCtrls, ComCtrls, VirtualTrees, StdCtrls, Controls, Menus, VTHeaderPopup,
+  ExtCtrls, ComCtrls, VirtualTrees, StdCtrls, Controls, Menus, VirtualTrees.HeaderPopup,
   RQMenuItem, RnQButtons, RnQDialogs
   ;
 
@@ -72,7 +72,7 @@ uses
    AnsiStrings,
  {$ENDIF}
   RnQLangs, RnQStrings, RDUtils,
-  RnQSysUtils, RnQPics,
+  RDSysUtils, RnQPics,
   RQUtil, RDGlobal, RQThemes, RnQMenu, menusUnit,
   RnQConst, globalLib, chatDlg, utilLib,
   RnQProtocol, protocols_all,

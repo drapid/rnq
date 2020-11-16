@@ -160,12 +160,13 @@ type
     property OnProxyTalk: TProxyLogData read FOnProxyTalk write FOnProxyTalk;
    end;
 
-const
+resourcestring
   ProxyUnkError = 'PROXY: Unknown reply\n[%d]\n%s';
   SSLError = 'SSL: libeay32.dll or ssleay32.dll not found\n%s';
   ConnectionError = 'Connection error\n%s\n[%d] %s';
   UploadError = 'Failed to upload file! Server response';
 
+const
   ImageContentTypes: array [0 .. 25] of string = (
     'image/bmp', 'image/x-bmp', 'image/x-bitmap', 'image/x-xbitmap', 'image/x-win-bitmap', 'image/x-windows-bmp', 'image/ms-bmp', 'image/x-ms-bmp', 'application/bmp', 'application/x-bmp', 'application/x-win-bitmap',
     'image/jpeg', 'image/jpg', 'application/jpg', 'application/x-jpg',
@@ -199,6 +200,9 @@ const
 
   procedure HandleError(E: EHttpException; URL: String; ErrText: String = ''; Quiet: Boolean = True);
 
+  function ImageContentTypes2ext(pType: String): String;
+
+  function LoadFromURLStr(const URL: String; from:int64=0; size:int64=-1; POSTData: RawByteString = ''): RawByteString;
 
 var
   MainProxy: Tproxy;
@@ -208,21 +212,21 @@ implementation
 
 uses
   Windows, Base64, SysUtils, StrUtils,
-  RDUtils,
-  RnQPrefsInt,
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
 //    OverbyteIcsLogger,
   RnQDialogs,
-    RQUtil,
-    RnQLangs,
+  RnQLangs,
  {$IFDEF RNQ}
+  RnQPrefsInt,
+  RQUtil,
+  RnQGraphics32,
  {$ENDIF RNQ}
  {$IFDEF RNQ_PLUGIN}
    RDPlugins,
  {$ENDIF RNQ_PLUGIN}
-    RnQGraphics32
+  RDUtils
    ;
 
 (*
@@ -1103,12 +1107,24 @@ begin
   if Assigned(E) then
   TThread.Synchronize(nil, procedure begin
     if E.ErrorCode = 3 then
-      msgDlg(getTranslation(SSLError, [E.Message]), False, mtError)
+ {$IFDEF RNQ}
+      msgDlg(Format(SSLError, [E.Message]), False, mtError)
+ {$ELSE ~RNQ}
+        MessageDlg(Format(SSLError, [E.Message]), mtError, [mbOK], 0)
+ {$ENDIF ~RNQ}
     else if (E.ErrorCode <> 404) or not Quiet then
     if not (ErrText = '') then
-      msgDlg(getTranslation(UploadError) + ': ' + #13#10 + ErrText, False, mtError)
+ {$IFDEF RNQ}
+      msgDlg(UploadError + ': ' + #13#10 + ErrText, False, mtError)
+ {$ELSE ~RNQ}
+      MessageDlg(UploadError + ': ' + #13#10 + ErrText, mtError, [mbOK], 0)
+ {$ENDIF ~RNQ}
     else
-      msgDlg(getTranslation(ConnectionError, [URL, E.ErrorCode, E.Message]), False, mtError);
+ {$IFDEF RNQ}
+      msgDlg(Format(ConnectionError, [URL, E.ErrorCode, E.Message]), False, mtError)
+ {$ELSE ~RNQ}
+      MessageDlg(Format(ConnectionError, [URL, E.ErrorCode, E.Message]), mtError, [mbOK], 0)
+ {$ENDIF ~RNQ}
   end);
 end;
 
@@ -1136,10 +1152,12 @@ var
   // idx: Integer;
   AvStream: TMemoryStream;
   httpCli: TSslHttpCli;
+ {$IFDEF RNQ}
   ft: TPAFormat;
+ {$ENDIF RNQ}
+  t, ext: String;
 begin
   Result := false;
-  // idx:=  HasAvatar(UIN);
   try
     httpCli := TSslHttpCli.Create(nil);
     httpCli.MultiThreaded := True;
@@ -1156,6 +1174,7 @@ begin
       if Threshold > 0 then
       begin
         httpCli.Head;
+        t := httpCli.ContentType;
         if httpCli.ContentLength > Threshold then
           Exit;
       end;
@@ -1166,7 +1185,8 @@ begin
         if DoPOST then
         begin
           httpCli.SendStream := TMemoryStream.Create;
-          httpCli.SendStream.Write(POSTData[1], Length(POSTData));
+          if POSTData > '' then
+            httpCli.SendStream.Write(POSTData[1], Length(POSTData));
           httpCli.SendStream.Seek(0, 0);
           httpCli.Post;
         end
@@ -1203,9 +1223,17 @@ begin
         begin
           if ExtByContent then
           begin
+ {$IFDEF RNQ}
             ft := DetectFileFormatStream(AvStream);
             if ft <> PA_FORMAT_UNK then
-              fn := ChangeFileExt(fn, PAFormat[ft]);
+              fn := ChangeFileExt(fn, PAFormat[ft])
+             else
+ {$ENDIF RNQ}
+              begin
+                ext := ImageContentTypes2ext(t);
+                if ext > '' then
+                 fn := ChangeFileExt(fn, ext);
+              end;
           end;
           AvStream.SaveToFile(fn);
         end;
@@ -1226,7 +1254,10 @@ function LoadFromURL0(const URL: String; var fn: String; Threshold: LongInt = 0;
 var
   AvStream: TMemoryStream;
   httpCli: THttpCli;
+ {$IFDEF RNQ}
   ft: TPAFormat;
+ {$ENDIF RNQ}
+  t, ext: String;
 begin
   Result := False;
 
@@ -1236,7 +1267,7 @@ begin
       begin
        httpCli.socksServer:='';
        httpCli.socksPort:='';
-       httpCli.SocksAuthentication:=socksNoAuthentication;
+       httpCli.SocksAuthentication := socksNoAuthentication;
        httpCli.Proxy := '';
        httpCli.ProxyPort := '';
       end;
@@ -1287,7 +1318,7 @@ begin
       end
   end;
 
-  AvStream:= TMemoryStream.Create;
+  AvStream := TMemoryStream.Create;
 
   httpCli.RcvdStream:= AvStream;
   httpCli.URL := URL;
@@ -1296,6 +1327,7 @@ begin
     if Threshold > 0 then
      begin
       httpCli.Head;
+      t := httpCli.ContentType;
       if httpCli.ContentLength > Threshold then
         Exit;
      end;
@@ -1322,9 +1354,17 @@ begin
        AvStream.Seek(0,0);
        if ExtByContent then
         begin
+ {$IFDEF RNQ}
          ft := DetectFileFormatStream(AvStream);
          if ft <> PA_FORMAT_UNK then
-          fn := ChangeFileExt(fn, PAFormat[ft]);
+           fn := ChangeFileExt(fn, PAFormat[ft])
+          else
+ {$ENDIF RNQ}
+              begin
+                ext := ImageContentTypes2ext(t);
+                if ext > '' then
+                 fn := ChangeFileExt(fn, ext);
+              end;
         end;
        AvStream.SaveToFile(fn);
      end;
@@ -1360,7 +1400,77 @@ begin
     end;
   if Assigned(fs) then
     fs.Free;
+end;
 
+function LoadFromURLStr(const URL: String; from:int64=0; size:int64=-1; POSTData: RawByteString = ''): RawByteString;
+var
+  fs: TMemoryStream;
+  httpCli: TSslHttpCli;
+  found: Boolean;
+begin
+  fs := nil;
+  Result := '';
+  fs := TMemoryStream.Create;
+
+  try
+    httpCli := TSslHttpCli.Create(nil);
+    httpCli.MultiThreaded := True;
+    httpCli.URL := URL;
+    httpCli.FollowRelocation := True;
+//    httpCli.agent := pAGENT;
+    httpCli.SslContext := TSslContext.Create(NIL);
+    SetupProxy(httpCli);
+
+    httpCli.RcvdStream := fs;
+    if (from <> 0) or (size >= 0) then
+      httpCli.contentRangeBegin:=intToStr(from);
+    if size >= 0 then
+      httpCli.contentRangeEnd:=intToStr(from+size-1);
+
+    found := false;
+    try
+      if size >= 0 then
+      begin
+        httpCli.Head;
+        if httpCli.ContentLength < from then
+          Exit;
+      end;
+      try
+        // httpCli.MultiThreaded := True;
+        // httpCli.ThreadDetach;
+        if POSTData>'' then
+        begin
+          httpCli.SendStream := TMemoryStream.Create;
+          if POSTData > '' then
+            httpCli.SendStream.Write(POSTData[1], Length(POSTData));
+          httpCli.SendStream.Seek(0, 0);
+          httpCli.Post;
+        end
+        else
+          httpCli.Get;
+        // httpCli.ThreadAttach;
+        found := true;
+      except
+        on E: EHttpException do
+      end;
+
+    finally
+      httpCli.SslContext.Free;
+      httpCli.SslContext := NIL;
+      httpCli.Free;
+    end;
+  except
+
+  end;
+
+  if found and Assigned(fs) and (fs.Size > 0) then
+    begin
+      SetLength(Result, fs.Size);
+      fs.Seek(0, soFromBeginning);
+      fs.Read(Result[1], Length(Result));
+    end;
+  if Assigned(fs) then
+    fs.Free;
 end;
 
 
@@ -1387,6 +1497,18 @@ begin
     httpCli.Free;
     FreeAndNil(AvStream);
   end;
+end;
+
+function ImageContentTypes2ext(pType: String): String;
+var
+  I: Integer;
+begin
+  Result := '';
+  if pType = '' then
+    Exit;
+  for I := Low(ImageContentTypes) to High(ImageContentTypes) do
+   if ImageContentTypes[i] = pType then
+     Exit(ImageExtensions[i]);
 end;
 
 

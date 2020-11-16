@@ -56,7 +56,7 @@ implementation
 uses
   Clipbrd, math, Types,//uiTypes,
   RDUtils, RQUtil, RnQlangs, RQThemes, RnQMenu, RnQDialogs,
-  RnQSysUtils, RnQGlobal
+  RDSysUtils, RnQGlobal
 ;
 
 type

@@ -126,7 +126,7 @@ uses
  {$ENDIF}
 
   RnQBinUtils, RQUtil, RnQDialogs, RnQLangs, RnQStrings,
-  RDUtils, RnQSysUtils, RnQGlobal,
+  RDUtils, RDSysUtils, RnQGlobal,
  {$IFDEF PROTOCOL_MRA}
   Protocol_MRA, MRAcontacts,
   MRASMSDlg, MRA_proto,

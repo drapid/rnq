@@ -100,7 +100,7 @@ implementation
 
 uses
   RnQLangs, RnQFileUtil, RQUtil, RDGlobal, RQThemes, //menusUnit,
-  RnQSysUtils,
+  RDSysUtils,
   RnQMenu, RnQPics,
   langLib, uinlistLib, globalLib, utilLib,
   chatDlg, mainDlg, themesLib;

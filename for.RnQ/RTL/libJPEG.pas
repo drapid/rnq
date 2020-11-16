@@ -44,7 +44,7 @@ interface
   {$ENDIF}
 
   {$IFNDEF WIN32}
-    {$LINKLIB c}
+    { $LINKLIB c}
   {$ENDIF}
 {$ENDIF}
 

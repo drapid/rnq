@@ -50,7 +50,7 @@ implementation
 {$R *.dfm}
   uses
     StrUtils, RnQFileUtil, RQUtil, RDGlobal, RnQLangs, RQThemes,
-    RnQSysUtils, RnQPics,
+    RDSysUtils, RnQPics,
     history,
  {$IFNDEF DB_ENABLED}
 //    RegExpr,

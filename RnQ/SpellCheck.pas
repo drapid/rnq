@@ -88,7 +88,7 @@ type
 implementation
 
 uses
-  RnQGlobal, RQUtil, RnQLangs, RnQSysUtils, globalLib, chatDlg, Clipbrd;
+  RnQGlobal, RQUtil, RnQLangs, RDSysUtils, globalLib, chatDlg, Clipbrd;
 
 const
   CLSID_StdGlobalInterfaceTable: TGUID = '{00000323-0000-0000-C000-000000000046}';

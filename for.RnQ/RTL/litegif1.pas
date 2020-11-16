@@ -43,6 +43,9 @@ interface
 {$I forRnQConfig.inc}
 {$I NoRTTI.inc}
 
+{$IF DEFINED(DELPHI12_UP) OR DEFINED(FPC)}
+  {$DEFINE HAS_PTR_ARF}
+{$ENDIF}
 uses
   {$ifdef UseCLX}
     SysUtils, Types, Classes, QGraphics, QControls, QForms, QDialogs,
@@ -365,10 +368,13 @@ Function IntMax(A, B : Integer) : Integer;
 implementation
 //  uses
 //   StdCtrls, ExtCtrls,
+ {$IFNDEF FPC}
+
  {$IFDEF UNICODE}
   uses
    AnsiStrings;
  {$ENDIF UNICODE}
+ {$ENDIF}
 
 const
   TransColor = $170725;
@@ -471,7 +477,7 @@ fSignature^.rSignature := '------';
 
 new(fScreenDescriptor);
 if (fScreenDescriptor = nil) then OutOfMemoryError;
-fillchar(fScreenDescriptor^, sizeof(TGifScreenDescriptor), 0);
+ZeroMemory(fScreenDescriptor, sizeof(TGifScreenDescriptor));
 
 fImageDescriptorList := TList.Create;
 fColorTableList      := TList.Create;
@@ -534,7 +540,7 @@ fSignature^.rSignature := '------';
 // ditto the screen descriptor
 
 if (fScreenDescriptor = nil) then new(fScreenDescriptor);
-fillchar(fScreenDescriptor^, sizeof(TGifScreenDescriptor), 0);
+ZeroMemory(fScreenDescriptor, sizeof(TGifScreenDescriptor));
 
 // delete all items from image list, but leave the list
 
@@ -843,7 +849,7 @@ id^.rIndex := ix;
 
 // initialize data
 
-fillchar(id^, sizeof(TGifImageDescriptor), 0);
+ZeroMemory(id, sizeof(TGifImageDescriptor));
 
 // init the sotrage for compressed data
 
@@ -988,7 +994,7 @@ if (fExtension = nil) then fExtension := TList.Create;
 
 new(eb);
 if (eb = nil) then OutOfMemoryError;
-fillchar(eb^, sizeof(TGifExtension), 0);
+ZeroMemory(eb, sizeof(TGifExtension));
 fExtension.Add(eb);
 
 // get the type of extension
@@ -1215,7 +1221,7 @@ if (fZipData = nil) then OutOfMemoryError;
 
 // init data block
 
-fillchar(fZipData^, sizeof(TGifZip), 0);
+ZeroMemory(fZipData, sizeof(TGifZip));
 fZipData^.rID := pID;
 fZipData^.rCT := fColorTableList.Items[pID^.rLocalColorTable];
 
@@ -1499,11 +1505,11 @@ begin
 
 // store the pixel index into PixelList
 
-{$IFDEF DELPHI12_UP}
+{$IFDEF HAS_PTR_ARF}
             p := rID^.rPixelList + j;
-{$ELSE ~DELPHI12_UP}
+{$ELSE ~HAS_PTR_ARF}
             p := PByte(LongInt(rID^.rPixelList) + j);
-{$ENDIF ~DELPHI12_UP}
+{$ENDIF HAS_PTR_ARF}
             p^ := byte(i);
           end;
 
@@ -1537,11 +1543,11 @@ with fZipData^ do
         j := (rCurY * rID^.rWidth) + rCurX;
         if ((0 <= j) and (j < rID^.rPixelCount)) then
             begin
-{$IFDEF DELPHI12_UP}
+{$IFDEF HAS_PTR_ARF}
             p := rID^.rPixelList + j;
-{$ELSE ~DELPHI12_UP}
+{$ELSE ~HAS_PTR_ARF}
             p := PByte(LongInt(rID^.rPixelList) + j);
-{$ENDIF ~DELPHI12_UP}
+{$ENDIF HAS_PTR_ARF}
             n := byte(p^);
             end
         else
@@ -1662,11 +1668,11 @@ if ((x < 0) or (x >= id^.rWidth))  then GIF_Error(15);
 if ((y < 0) or (y >= id^.rHeight)) then GIF_Error(15);
 
  n := (y * id^.rWidth) + x;
-{$IFDEF DELPHI12_UP}
+{$IFDEF HAS_PTR_ARF}
   p := id^.rPixelList + n;
-{$ELSE ~DELPHI12_UP}
+{$ELSE ~HAS_PTR_ARF}
   p := PByte(LongInt(id^.rPixelList) + n);
-{$ENDIF ~DELPHI12_UP}
+{$ENDIF HAS_PTR_ARF}
  i := byte(p^);
 
 GetColorIndex := i;
@@ -1842,7 +1848,7 @@ for i := 0 to (fImageDescriptorList.Count - 1) do
         try
           Stream.Size := FileSize;
           PL := Stream.Memory;
-          FillChar(PL^, FileSize, 0);
+          ZeroMemory(PL, FileSize);
 
           with PL^.BFH do
             begin
@@ -1975,7 +1981,7 @@ begin
 try
   Stream.Size := FileSize;
   PL := Stream.Memory;
-  FillChar(PL^, FileSize, 0);
+  ZeroMemory(PL, FileSize);
 
   with PL^.BFH do
     begin          {set up the bitmap file header}

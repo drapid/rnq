@@ -80,10 +80,10 @@ object usersFrm: TusersFrm
       Caption = 'Ok'
       Default = True
       Enabled = False
+      ImageName = 'ok'
       ModalResult = 1
       TabOrder = 0
       OnClick = okBtnClick
-      ImageName = 'ok'
     end
     object newuserBtn: TRnQButton
       Left = 6
@@ -97,10 +97,10 @@ object usersFrm: TusersFrm
       Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
+      ImageName = 'new.user'
       ParentFont = False
       TabOrder = 1
       OnClick = newuserBtnClick
-      ImageName = 'new.user'
     end
     object deleteuserBtn: TRnQButton
       Left = 6
@@ -109,9 +109,9 @@ object usersFrm: TusersFrm
       Height = 25
       Hint = 'delete your user from this PC'
       Caption = 'Delete user'
+      ImageName = 'delete'
       TabOrder = 2
       OnClick = deleteuserBtnClick
-      ImageName = 'delete'
     end
     object newaccountBtn: TRnQButton
       Left = 6
@@ -120,9 +120,9 @@ object usersFrm: TusersFrm
       Height = 25
       Hint = 'create a new UIN on the server'
       Caption = 'Get new ICQ account'
+      ImageName = 'new.account'
       TabOrder = 3
       OnClick = newaccountBtnClick
-      ImageName = 'new.account'
     end
   end
   object UsersBox: TVirtualDrawTree

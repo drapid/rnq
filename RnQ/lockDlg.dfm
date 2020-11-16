@@ -60,9 +60,9 @@ object lockFrm: TlockFrm
     Height = 25
     Caption = 'Ok'
     Default = True
+    ImageName = 'ok'
     TabOrder = 1
     OnClick = OkBtnClick
-    ImageName = 'ok'
   end
   object QuitBtn: TRnQButton
     Left = 331
@@ -70,8 +70,8 @@ object lockFrm: TlockFrm
     Width = 75
     Height = 25
     Caption = 'Quit'
+    ImageName = 'quit'
     TabOrder = 2
     OnClick = QuitBtnClick
-    ImageName = 'quit'
   end
 end

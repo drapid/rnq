@@ -60,11 +60,6 @@ object prefFrm: TprefFrm
     Colors.UnfocusedSelectionColor = clBtnShadow
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
     Header.Height = 17
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
@@ -86,9 +81,9 @@ object prefFrm: TprefFrm
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = 'Reset'
+    ImageName = 'refresh'
     TabOrder = 2
     OnClick = resetBtnClick
-    ImageName = 'refresh'
   end
   object okBtn: TRnQButton
     Left = 274
@@ -98,10 +93,10 @@ object prefFrm: TprefFrm
     Anchors = [akLeft, akBottom]
     Caption = 'Ok'
     Default = True
+    ImageName = 'ok'
     ModalResult = 1
     TabOrder = 3
     OnClick = okBtnClick
-    ImageName = 'ok'
   end
   object closeBtn: TRnQButton
     Left = 362
@@ -110,9 +105,9 @@ object prefFrm: TprefFrm
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = 'Close'
+    ImageName = 'close'
     TabOrder = 4
     OnClick = closeBtnClick
-    ImageName = 'close'
   end
   object applyBtn: TRnQButton
     Left = 460
@@ -121,8 +116,8 @@ object prefFrm: TprefFrm
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = 'Apply'
+    ImageName = 'apply'
     TabOrder = 5
     OnClick = applyBtnClick
-    ImageName = 'apply'
   end
 end

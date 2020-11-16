@@ -11,8 +11,16 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.StdCtrls, RnQButtons, Vcl.ExtCtrls,
-  VirtualTrees, RnQLangs;
+  Vcl.Controls, Vcl.Forms, Vcl.StdCtrls, Vcl.ExtCtrls, VirtualTrees,
+ {$IFDEF RNQ}
+  RnQButtons,
+ {$ENDIF RNQ}
+  RnQLangs;
+
+ {$IFNDEF RNQ}
+type
+   TRnQButton = TButton;
+ {$ENDIF RNQ}
 
 type
   TFrmLangs = class(TForm)

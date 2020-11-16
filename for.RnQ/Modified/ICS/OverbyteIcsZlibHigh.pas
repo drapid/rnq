@@ -2,7 +2,7 @@
 
 Author:       Angus Robertson, Magenta Systems Ltd
 Creation:     15 December 2005
-Version:      8.00
+Version:      8.65
 Description:  High level functions for ZLIB compression and decompression
 Credit:       Based on work by Gabriel Corneanu <gabrielcorneanu(AT)yahoo.com>
               Derived from original sources by Bob Dellaca and Cosmin Truta.
@@ -54,6 +54,9 @@ Sep 10, 2010 V7.00 Angus and Arno updated ZLIB to 1.2.5, subdirectory now lowerc
 Apr 15, 2011 V7.01 Arno prepared for 64-bit.
 May 2012 - V8.00 - Arno added FireMonkey cross platform support with POSIX/MacOS
                    also IPv6 support, include files now in sub-directory
+
+Aug 12, 2020 V8.65 Lots of Longint to Integer and LongWord to Cardinal to keep MacOS64
+                     happy in Obj and Dll ubits.
 
 
 pending: compress callback not correct total count

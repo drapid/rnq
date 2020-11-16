@@ -3,7 +3,11 @@ Unit cgJpeg;
 Interface
 
 Uses
+  {$IFDEF FPC}
+   Windows, SysUtils, Classes, Graphics, libJPEG;
+  {$ELSE ~FPC}
   Winapi.Windows, System.SysUtils, System.Classes, Vcl.Graphics, libJPEG;
+  {$ENDIF FPC}
 
 Type
   TJpegImage = Class(TBitmap)

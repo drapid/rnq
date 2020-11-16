@@ -3,11 +3,10 @@
 Author:       François PIETTE
 Description:  Version defines for ICS (Internet Component Suite)
 Creation:     2003
-Version:      8.59
+Version:      8.64
 EMail:        francois.piette@overbyte.be  http://www.overbyte.be
-Support:      Use the mailing list twsocket@elists.org
-              Follow "support" link at http://www.overbyte.be for subscription.
-Legal issues: Copyright (C) 1996-2018 by François PIETTE
+Support:      https://en.delphipraxis.net/forum/37-ics-internet-component-suite/
+Legal issues: Copyright (C) 1996-2020 by François PIETTE
               Rue de Grady 24, 4053 Embourg, Belgium.
               <francois.piette@overbyte.be>
 
@@ -69,7 +68,8 @@ Jul 2018 - V8.55 - Angus added NO_DEBUG_LOG as disabled but used for testing
 Oct 2018 - V8.58 - Angus Delphi 10.3 Rio, updated BCB for 10.1 and later
 Dec 2019 - V8.59 - Angus added AUTO_X509_CERTS to enable automatic SSL/TLS ordering
                       in SocketServer and other servers.
-
+Jul 2019 - V8.62 - Angus Turn off IMMUTABLE_STRINGS warnings in case project set them.
+May 2020 - V8.64 - Angus Delphi 10.4 Sydney
 
 
   SYMBOL           Compiler version
@@ -114,6 +114,7 @@ Dec 2019 - V8.59 - Angus added AUTO_X509_CERTS to enable automatic SSL/TLS order
   DELPHI24_UP      Delphi 24 or higher  (Delphi 10.1 Berlin - BigBen - BDS18)
   DELPHI25_UP      Delphi 25 or higher  (Delphi 10.2 Tokyo - Godzilla - BDS19)
   DELPHI26_UP      Delphi 26 or higher  (Delphi 10.3 Rio - Carnival - BDS20)
+  DELPHI27_UP      Delphi 27 or higher  (Delphi 10.4 Sydney - Denali - BDS21)
 
   BCB1             C++ Builder 1
   BCB3             C++ Builder 3
@@ -141,6 +142,7 @@ Dec 2019 - V8.59 - Angus added AUTO_X509_CERTS to enable automatic SSL/TLS order
   BCB24_UP         C++ Builder 10.1 Berlin or higher
   BCB25_UP         C++ Builder 10.2 Tokyo or higher
   BCB26_UP         C++ Builder 10.3 Rio or higher
+  BCB27_UP         C++ Builder 10.4 Sydney or higher
 
   COMPILER1        Delphi 1
   COMPILER2        Delphi 2  or C++ Builder 1
@@ -168,6 +170,7 @@ Dec 2019 - V8.59 - Angus added AUTO_X509_CERTS to enable automatic SSL/TLS order
   COMPILER24       Delphi or C++ Builder 10.1 Berlin
   COMPILER25       Delphi or C++ Builder 10.2 Tokyo
   COMPILER26       Delphi or C++ Builder 10.3 Rio
+  COMPILER27       Delphi or C++ Builder 10.4 Sydney
 
   COMPILER1_UP     Delphi 1  or higher
   COMPILER2_UP     Delphi 2  or C++ Builder 1 or higher
@@ -195,6 +198,7 @@ Dec 2019 - V8.59 - Angus added AUTO_X509_CERTS to enable automatic SSL/TLS order
   COMPILER24_UP    Delphi or C++ Builder 10.1 Berlin or higher (BigBen)
   COMPILER25_UP    Delphi or C++ Builder 10.2 Tokyo or higher (Godzilla)
   COMPILER26_UP    Delphi or C++ Builder 10.3 Rio or higher (Carnival)
+  COMPILER27_UP    Delphi or C++ Builder 10.4 Sydney or higher (Denali)
 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * }
 
@@ -265,6 +269,17 @@ Dec 2019 - V8.59 - Angus added AUTO_X509_CERTS to enable automatic SSL/TLS order
 {$ENDIF}
 
 {$DEFINE VER_UNKNOWN}
+
+{$IFDEF VER340}
+  {$UNDEF VER_UNKNOWN}
+  {$DEFINE COMPILER27}
+  {$IFDEF BCB}
+    {$DEFINE BCB27}
+  {$ELSE}
+    {$DEFINE DELPHI27}
+    {$DEFINE DELPHI}
+  {$ENDIF}
+{$ENDIF}
 
 {$IFDEF VER330}
   {$UNDEF VER_UNKNOWN}
@@ -547,6 +562,35 @@ Dec 2019 - V8.59 - Angus added AUTO_X509_CERTS to enable automatic SSL/TLS order
     {$DEFINE DELPHI23}
     {$DEFINE DELPHI}
   {$ENDIF}
+{$ENDIF}
+
+{$IFDEF DELPHI27}
+  {$DEFINE DELPHI27_UP}
+  {$DEFINE DELPHI26_UP}
+  {$DEFINE DELPHI25_UP}
+  {$DEFINE DELPHI24_UP}
+  {$DEFINE DELPHI23_UP}
+  {$DEFINE DELPHI22_UP}
+  {$DEFINE DELPHI21_UP}
+  {$DEFINE DELPHI20_UP}
+  {$DEFINE DELPHI19_UP}
+  {$DEFINE DELPHI18_UP}
+  {$DEFINE DELPHI17_UP}
+  {$DEFINE DELPHI16_UP}
+  {$DEFINE DELPHI15_UP}
+  {$DEFINE DELPHI14_UP}
+  {$DEFINE DELPHI12_UP}
+  {$DEFINE DELPHI11_UP}
+  {$DEFINE DELPHI10_UP}
+  {$DEFINE DELPHI9_UP}
+  {$DEFINE DELPHI8_UP}
+  {$DEFINE DELPHI7_UP}
+  {$DEFINE DELPHI6_UP}
+  {$DEFINE DELPHI5_UP}
+  {$DEFINE DELPHI4_UP}
+  {$DEFINE DELPHI3_UP}
+  {$DEFINE DELPHI2_UP}
+  {$DEFINE DELPHI1_UP}
 {$ENDIF}
 
 {$IFDEF DELPHI26}
@@ -947,6 +991,36 @@ Dec 2019 - V8.59 - Angus added AUTO_X509_CERTS to enable automatic SSL/TLS order
 
 {$IFDEF DELPHI1}
   {$DEFINE DELPHI1_UP}
+{$ENDIF}
+
+{$IFDEF COMPILER27}
+  {$DEFINE COMPILER27_UP}
+  {$DEFINE COMPILER26_UP}
+  {$DEFINE COMPILER25_UP}
+  {$DEFINE COMPILER24_UP}
+  {$DEFINE COMPILER23_UP}
+  {$DEFINE COMPILER22_UP}
+  {$DEFINE COMPILER21_UP}
+  {$DEFINE COMPILER20_UP}
+  {$DEFINE COMPILER19_UP}
+  {$DEFINE COMPILER18_UP}
+  {$DEFINE COMPILER17_UP}
+  {$DEFINE COMPILER16_UP}
+  {$DEFINE COMPILER15_UP}
+  {$DEFINE COMPILER14_UP}
+  {$DEFINE COMPILER12_UP}
+  {$DEFINE COMPILER11_UP}
+  {$DEFINE COMPILER10_UP}
+  {$DEFINE COMPILER9_UP}
+  {$DEFINE COMPILER8_UP}
+  {$DEFINE COMPILER7_UP}
+  {$DEFINE COMPILER6_UP}
+  {$DEFINE COMPILER5_UP}
+  {$DEFINE COMPILER4_UP}
+  {$DEFINE COMPILER35_UP}
+  {$DEFINE COMPILER3_UP}
+  {$DEFINE COMPILER2_UP}
+  {$DEFINE COMPILER1_UP}
 {$ENDIF}
 
 {$IFDEF COMPILER26}
@@ -1378,6 +1452,31 @@ Dec 2019 - V8.59 - Angus added AUTO_X509_CERTS to enable automatic SSL/TLS order
   {$DEFINE COMPILER1_UP}
 {$ENDIF}
 
+{$IFDEF BCB27}
+  {$DEFINE BCB27_UP}
+  {$DEFINE BCB26_UP}
+  {$DEFINE BCB25_UP}
+  {$DEFINE BCB24_UP}
+  {$DEFINE BCB23_UP}
+  {$DEFINE BCB22_UP}
+  {$DEFINE BCB21_UP}
+  {$DEFINE BCB20_UP}
+  {$DEFINE BCB19_UP}
+  {$DEFINE BCB18_UP}
+  {$DEFINE BCB17_UP}
+  {$DEFINE BCB16_UP}
+  {$DEFINE BCB15_UP}
+  {$DEFINE BCB14_UP}
+  {$DEFINE BCB12_UP}
+  {$DEFINE BCB11_UP}
+  {$DEFINE BCB10_UP}
+  {$DEFINE BCB6_UP}
+  {$DEFINE BCB5_UP}
+  {$DEFINE BCB4_UP}
+  {$DEFINE BCB3_UP}
+  {$DEFINE BCB1_UP}
+{$ENDIF}
+
 {$IFDEF BCB26}
   {$DEFINE BCB26_UP}
   {$DEFINE BCB25_UP}
@@ -1746,4 +1845,9 @@ Dec 2019 - V8.59 - Angus added AUTO_X509_CERTS to enable automatic SSL/TLS order
 {$IFDEF DELPHI16_UP}
   {$DEFINE RTL_NAMESPACES}
 {$ENDIF}
+
+{$IFDEF DELPHI17_UP}
+  {$WARN IMMUTABLE_STRINGS OFF}
+{$ENDIF}
+
 

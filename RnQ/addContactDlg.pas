@@ -45,7 +45,7 @@ implementation
 
 uses
   RnQLangs, RQUtil, RDGlobal, RQThemes,
-  menusUnit, RnQSysUtils, RnQPics,
+  menusUnit, RDSysUtils, RnQPics,
   utilLib, globalLib, themesLib, mainDlg, roasterLib;
 
 {$R *.DFM}

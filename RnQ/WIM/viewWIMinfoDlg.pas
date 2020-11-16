@@ -234,7 +234,7 @@ uses
   clipbrd, Types,
   RDGlobal, RDUtils, RnQLangs, RnQStrings,
   RQUtil, RQThemes, RnQBinUtils,
-  RnQSysUtils, RnQGlobal, RnQPics,
+  RDSysUtils, RnQGlobal, RnQPics,
   mainDlg, langLib, roasterLib, chatDlg, utilLib,
   themesLib,
  {$IFDEF RNQ_AVATARS}
