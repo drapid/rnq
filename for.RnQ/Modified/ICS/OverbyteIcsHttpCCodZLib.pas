@@ -1,8 +1,12 @@
 unit OverbyteIcsHttpCCodZLib;
 {
+To enable ContentCoding, in THttpCli set httpoEnableContentCoding in Options
+
+
 May 2012 - V8.00 - Arno added FireMonkey cross platform support with POSIX/MacOS
                    also IPv6 support, include files now in sub-directory
 Oct 8, 2012  V8.01 - Angus, announce deflate is supported as well as gzip
+May 24, 2021 V8.67 Replaced soFromCurrent with soCurrent.
 
 }
 
@@ -97,7 +101,7 @@ begin
             ZlibDCheck (inflateBack (strm, @Strm_in_func, BackObj,
                                                  @Strm_Write, BackObj));
           //seek back when unused data
-            FStream.Seek (-strm.avail_in, soFromCurrent);
+            FStream.Seek (-strm.avail_in, soCurrent);   { V8.67 was soFromCurrent }
           //now trailer can be checked
          finally
             ZlibDCheck (inflateBackEnd (strm));

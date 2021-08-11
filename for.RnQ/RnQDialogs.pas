@@ -444,7 +444,7 @@ type
     function GetFormText: String;
   public
     procedure onTimer(Sender: TObject);
-    constructor CreateNew(AOwner: TComponent); reintroduce;
+    constructor CreateNew(AOwner: TComponent; Dummy: Integer = 0); override;
   end;
 
 procedure TMessageForm.onTimer(Sender: TObject);
@@ -460,14 +460,19 @@ begin
   end
 end;
 
-constructor TMessageForm.CreateNew(AOwner: TComponent);
+constructor TMessageForm.CreateNew(AOwner: TComponent; Dummy: Integer = 0);
 var
-  NonClientMetrics: TNonClientMetrics;
+  LPPI: Integer;
 begin
-  inherited CreateNew(AOwner);
-  NonClientMetrics.cbSize := sizeof(NonClientMetrics);
-  if SystemParametersInfo(SPI_GETNONCLIENTMETRICS, 0, @NonClientMetrics, 0) then
-    Font.Handle := CreateFontIndirect(NonClientMetrics.lfMessageFont);
+  inherited CreateNew(AOwner, Dummy);
+  Font.Assign(Screen.MessageFont);
+  LPPI := Screen.PixelsPerInch;
+  if Screen.ActiveForm <> nil then
+    LPPI := Screen.ActiveForm.CurrentPPI
+  else
+    if Application.MainForm <> nil then
+      LPPI := Application.MainForm.CurrentPPI;
+  ScaleForPPI(LPPI);
 end;
 
 procedure TMessageForm.HelpButtonClick(Sender: TObject);
@@ -558,13 +563,32 @@ var
   HorzMargin, VertMargin, HorzSpacing, VertSpacing, ButtonWidth,
   ButtonHeight, ButtonSpacing, ButtonCount, ButtonGroupWidth,
   IconTextWidth, IconTextHeight, X, ALeft: Integer;
+  IconSize: Integer;
   IconID: PChar;
   TextRect: TRect;
+  FormPPI: Integer;
   tB: TDialogButton;
+  function GetMsgIconResourceName: String;
+  begin
+    Result := '';
+    case DlgType of
+      mtWarning:
+        Result := 'MSG_WARNING';
+      mtError:
+        Result := 'MSG_ERROR';
+      mtInformation,
+      mtConfirmation:
+        Result := 'MSG_INFO';
+    end;
+  end;
 begin
   Result := TMessageForm.CreateNew(Application);
   with Result do
   begin
+    Font.Assign(Screen.MessageFont);
+    FormPPI := CurrentPPI;
+    Font.Height := Muldiv(Font.Height, FormPPI, Screen.PixelsPerInch);
+    IconSize := ScaleValue(32);
     BiDiMode := Application.BiDiMode;
     BorderStyle := bsDialog;
     Canvas.Font := Font;
@@ -611,8 +635,8 @@ begin
     IconTextHeight := TextRect.Bottom;
     if IconID <> nil then
     begin
-      Inc(IconTextWidth, 32 + HorzSpacing);
-      if IconTextHeight < 32 then IconTextHeight := 32;
+      Inc(IconTextWidth, IconSize + HorzSpacing);
+      if IconTextHeight < IconSize then IconTextHeight := IconSize;
     end;
     ButtonCount := 0;
     for B := Low(TMsgDlgBtn) to High(TMsgDlgBtn) do
@@ -624,6 +648,10 @@ begin
     ClientWidth := Max(IconTextWidth, ButtonGroupWidth) + HorzMargin * 2;
     ClientHeight := IconTextHeight + ButtonHeight + VertSpacing +
       VertMargin * 2;
+    if FormPPI > Screen.PixelsPerInch then
+      ClientHeight := ClientHeight + Muldiv(VertMargin div 2, FormPPI, Screen.PixelsPerInch)
+    else if FormPPI < Screen.PixelsPerInch then
+      ClientHeight := ClientHeight - Muldiv(VertMargin div 2, Screen.PixelsPerInch, FormPPI);
 {    begin
       GlassFrame.Enabled := True;
       GlassFrame.SheetOfGlass := True;
@@ -644,8 +672,23 @@ begin
       begin
         Name := 'Image';
         Parent := Result;
-        Picture.Icon.Handle := LoadIcon(0, IconID);
-        SetBounds(HorzMargin, VertMargin, 32, 32);
+        if TOSVersion.Check(6, 2) then
+        begin
+          Picture.WICImage.LoadFromResourceName(HInstance, GetMsgIconResourceName);
+          Picture.WICImage.InterpolationMode := wipmHighQualityCubic;
+          AutoSize := False;
+          Stretch := True;
+          Proportional := True;
+        end
+        else
+        begin
+          Picture.Icon.Handle := LoadIcon(0, IconID);
+          AutoSize := True;
+        end;
+        if Result.BiDiMode = bdRightToLeft then
+          SetBounds(Result.ClientWidth - HorzMargin - IconSize, VertMargin, IconSize, IconSize)
+        else
+          SetBounds(HorzMargin, VertMargin, IconSize, IconSize);
       end;
     TMessageForm(Result).Message := TLabel.Create(Result);
     with TMessageForm(Result).Message do

@@ -3,10 +3,10 @@
 Author:       François PIETTE
 Description:  Version defines for ICS (Internet Component Suite)
 Creation:     2003
-Version:      8.64
+Version:      8.67
 EMail:        francois.piette@overbyte.be  http://www.overbyte.be
 Support:      https://en.delphipraxis.net/forum/37-ics-internet-component-suite/
-Legal issues: Copyright (C) 1996-2020 by François PIETTE
+Legal issues: Copyright (C) 1996-2021 by François PIETTE
               Rue de Grady 24, 4053 Embourg, Belgium.
               <francois.piette@overbyte.be>
 
@@ -70,7 +70,14 @@ Dec 2019 - V8.59 - Angus added AUTO_X509_CERTS to enable automatic SSL/TLS order
                       in SocketServer and other servers.
 Jul 2019 - V8.62 - Angus Turn off IMMUTABLE_STRINGS warnings in case project set them.
 May 2020 - V8.64 - Angus Delphi 10.4 Sydney
+Mar 2021 - V8.65 - Angus added DEFINE YuOpenSSL which links OpenSSL using a pre-built
+                     DCU instead of external DLLs.
+Jul 2021 - V8.67 - Angus added DEFINE DATABASE for editions supporting it.
+                   Added Delphi 11.0
 
+
+YuOpenSSL is a commercial product from https://www.yunqa.de/ and is supplied as
+separate compiled DCUs for Delphi 5 to 10.4.
 
   SYMBOL           Compiler version
   ===============  ======================================
@@ -115,6 +122,7 @@ May 2020 - V8.64 - Angus Delphi 10.4 Sydney
   DELPHI25_UP      Delphi 25 or higher  (Delphi 10.2 Tokyo - Godzilla - BDS19)
   DELPHI26_UP      Delphi 26 or higher  (Delphi 10.3 Rio - Carnival - BDS20)
   DELPHI27_UP      Delphi 27 or higher  (Delphi 10.4 Sydney - Denali - BDS21)
+  DELPHI28_UP      Delphi 28 or higher  (Delphi 11.0 xx - Olympus - BDS22)
 
   BCB1             C++ Builder 1
   BCB3             C++ Builder 3
@@ -143,6 +151,7 @@ May 2020 - V8.64 - Angus Delphi 10.4 Sydney
   BCB25_UP         C++ Builder 10.2 Tokyo or higher
   BCB26_UP         C++ Builder 10.3 Rio or higher
   BCB27_UP         C++ Builder 10.4 Sydney or higher
+  BCB28_UP         C++ Builder 11.0 xx or higher
 
   COMPILER1        Delphi 1
   COMPILER2        Delphi 2  or C++ Builder 1
@@ -171,6 +180,7 @@ May 2020 - V8.64 - Angus Delphi 10.4 Sydney
   COMPILER25       Delphi or C++ Builder 10.2 Tokyo
   COMPILER26       Delphi or C++ Builder 10.3 Rio
   COMPILER27       Delphi or C++ Builder 10.4 Sydney
+  COMPILER28       Delphi or C++ Builder 11.0 xx
 
   COMPILER1_UP     Delphi 1  or higher
   COMPILER2_UP     Delphi 2  or C++ Builder 1 or higher
@@ -199,6 +209,7 @@ May 2020 - V8.64 - Angus Delphi 10.4 Sydney
   COMPILER25_UP    Delphi or C++ Builder 10.2 Tokyo or higher (Godzilla)
   COMPILER26_UP    Delphi or C++ Builder 10.3 Rio or higher (Carnival)
   COMPILER27_UP    Delphi or C++ Builder 10.4 Sydney or higher (Denali)
+  COMPILER28_UP    Delphi or C++ Builder 11.0 xx or higher (Olympus)
 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * }
 
@@ -212,6 +223,11 @@ May 2020 - V8.64 - Angus Delphi 10.4 Sydney
 { In most cases leave it commented and define USE_SSL in the project options }
 { if required.                                                               }
 {$DEFINE USE_SSL}
+
+{ Uncomment next define to compile ICS against YuOpenSSL. This compiles      }
+{ OpenSSL code directly into binaries and frees applications from OpenSSL    }
+{ DLLs. Download YuOpenSSL from https://www.yunqa.de.                        }
+{.DEFINE YuOpenSSL}
 
 { Next line specifies to link the ZLIB .obj files.                           }
 {$DEFINE ZLIB_OBJ}
@@ -234,6 +250,8 @@ May 2020 - V8.64 - Angus Delphi 10.4 Sydney
 { Unfortunately this adds a lot of other units, HTTPS REST, Json, OAuth2, etc }
 {$DEFINE AUTO_X509_CERTS}
 
+{ Next symbols is for editions supporting database units                      }
+{.DEFINE DATABASE}
 
 { Do not change anything below this line !                                   }
 {----------------------------------------------------------------------------}
@@ -269,6 +287,17 @@ May 2020 - V8.64 - Angus Delphi 10.4 Sydney
 {$ENDIF}
 
 {$DEFINE VER_UNKNOWN}
+
+{$IFDEF VER350}
+  {$UNDEF VER_UNKNOWN}
+  {$DEFINE COMPILER28}
+  {$IFDEF BCB}
+    {$DEFINE BCB28}
+  {$ELSE}
+    {$DEFINE DELPHI28}
+    {$DEFINE DELPHI}
+  {$ENDIF}
+{$ENDIF}
 
 {$IFDEF VER340}
   {$UNDEF VER_UNKNOWN}
@@ -562,6 +591,36 @@ May 2020 - V8.64 - Angus Delphi 10.4 Sydney
     {$DEFINE DELPHI23}
     {$DEFINE DELPHI}
   {$ENDIF}
+{$ENDIF}
+
+{$IFDEF DELPHI28}
+  {$DEFINE DELPHI28_UP}
+  {$DEFINE DELPHI27_UP}
+  {$DEFINE DELPHI26_UP}
+  {$DEFINE DELPHI25_UP}
+  {$DEFINE DELPHI24_UP}
+  {$DEFINE DELPHI23_UP}
+  {$DEFINE DELPHI22_UP}
+  {$DEFINE DELPHI21_UP}
+  {$DEFINE DELPHI20_UP}
+  {$DEFINE DELPHI19_UP}
+  {$DEFINE DELPHI18_UP}
+  {$DEFINE DELPHI17_UP}
+  {$DEFINE DELPHI16_UP}
+  {$DEFINE DELPHI15_UP}
+  {$DEFINE DELPHI14_UP}
+  {$DEFINE DELPHI12_UP}
+  {$DEFINE DELPHI11_UP}
+  {$DEFINE DELPHI10_UP}
+  {$DEFINE DELPHI9_UP}
+  {$DEFINE DELPHI8_UP}
+  {$DEFINE DELPHI7_UP}
+  {$DEFINE DELPHI6_UP}
+  {$DEFINE DELPHI5_UP}
+  {$DEFINE DELPHI4_UP}
+  {$DEFINE DELPHI3_UP}
+  {$DEFINE DELPHI2_UP}
+  {$DEFINE DELPHI1_UP}
 {$ENDIF}
 
 {$IFDEF DELPHI27}
@@ -991,6 +1050,37 @@ May 2020 - V8.64 - Angus Delphi 10.4 Sydney
 
 {$IFDEF DELPHI1}
   {$DEFINE DELPHI1_UP}
+{$ENDIF}
+
+{$IFDEF COMPILER28}
+  {$DEFINE COMPILER28_UP}
+  {$DEFINE COMPILER27_UP}
+  {$DEFINE COMPILER26_UP}
+  {$DEFINE COMPILER25_UP}
+  {$DEFINE COMPILER24_UP}
+  {$DEFINE COMPILER23_UP}
+  {$DEFINE COMPILER22_UP}
+  {$DEFINE COMPILER21_UP}
+  {$DEFINE COMPILER20_UP}
+  {$DEFINE COMPILER19_UP}
+  {$DEFINE COMPILER18_UP}
+  {$DEFINE COMPILER17_UP}
+  {$DEFINE COMPILER16_UP}
+  {$DEFINE COMPILER15_UP}
+  {$DEFINE COMPILER14_UP}
+  {$DEFINE COMPILER12_UP}
+  {$DEFINE COMPILER11_UP}
+  {$DEFINE COMPILER10_UP}
+  {$DEFINE COMPILER9_UP}
+  {$DEFINE COMPILER8_UP}
+  {$DEFINE COMPILER7_UP}
+  {$DEFINE COMPILER6_UP}
+  {$DEFINE COMPILER5_UP}
+  {$DEFINE COMPILER4_UP}
+  {$DEFINE COMPILER35_UP}
+  {$DEFINE COMPILER3_UP}
+  {$DEFINE COMPILER2_UP}
+  {$DEFINE COMPILER1_UP}
 {$ENDIF}
 
 {$IFDEF COMPILER27}
@@ -1450,6 +1540,32 @@ May 2020 - V8.64 - Angus Delphi 10.4 Sydney
 
 {$IFDEF COMPILER1}
   {$DEFINE COMPILER1_UP}
+{$ENDIF}
+
+{$IFDEF BCB287}
+  {$DEFINE BCB28_UP}
+  {$DEFINE BCB27_UP}
+  {$DEFINE BCB26_UP}
+  {$DEFINE BCB25_UP}
+  {$DEFINE BCB24_UP}
+  {$DEFINE BCB23_UP}
+  {$DEFINE BCB22_UP}
+  {$DEFINE BCB21_UP}
+  {$DEFINE BCB20_UP}
+  {$DEFINE BCB19_UP}
+  {$DEFINE BCB18_UP}
+  {$DEFINE BCB17_UP}
+  {$DEFINE BCB16_UP}
+  {$DEFINE BCB15_UP}
+  {$DEFINE BCB14_UP}
+  {$DEFINE BCB12_UP}
+  {$DEFINE BCB11_UP}
+  {$DEFINE BCB10_UP}
+  {$DEFINE BCB6_UP}
+  {$DEFINE BCB5_UP}
+  {$DEFINE BCB4_UP}
+  {$DEFINE BCB3_UP}
+  {$DEFINE BCB1_UP}
 {$ENDIF}
 
 {$IFDEF BCB27}

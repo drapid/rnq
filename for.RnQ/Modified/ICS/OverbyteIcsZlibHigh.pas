@@ -2,17 +2,15 @@
 
 Author:       Angus Robertson, Magenta Systems Ltd
 Creation:     15 December 2005
-Version:      8.65
+Version:      8.67
 Description:  High level functions for ZLIB compression and decompression
 Credit:       Based on work by Gabriel Corneanu <gabrielcorneanu(AT)yahoo.com>
               Derived from original sources by Bob Dellaca and Cosmin Truta.
               ZLIB is Copyright (C) 1995-2005 Jean-loup Gailly and Mark Adler
-EMail:        francois.piette@overbyte.be      http://www.overbyte.be
-Support:      Use the mailing list twsocket@elists.org
-              Follow "support" link at http://www.overbyte.be for subscription.
-Legal issues: Copyright (C) 2004-2011 by François PIETTE
+EMail:        http://www.overbyte.be        francois.piette@overbyte.be
+Support:      https://en.delphipraxis.net/forum/37-ics-internet-component-suite/
+Legal issues: Copyright (C) 2004-2021 by François PIETTE
               Rue de Grady 24, 4053 Embourg, Belgium.
-              <francois.piette@overbyte.be>
 
               This software is provided 'as-is', without any express or
               implied warranty.  In no event will the author be held liable
@@ -57,6 +55,7 @@ May 2012 - V8.00 - Arno added FireMonkey cross platform support with POSIX/MacOS
 
 Aug 12, 2020 V8.65 Lots of Longint to Integer and LongWord to Cardinal to keep MacOS64
                      happy in Obj and Dll ubits.
+May 24, 2021 V8.67 Replaced soFromCurrent with soCurrent.
 
 
 pending: compress callback not correct total count
@@ -311,7 +310,7 @@ begin
     buf := Pointer(BackObj.InMem);
     //what if integer overflow?
     Result := S.Size - S.Position;
-    S.Seek(Result, soFromCurrent);
+    S.Seek(Result, soCurrent);    { V8.67 was soFromCurrent }
   end
   else
   begin
@@ -372,8 +371,7 @@ begin
     try
       ZlibDCheck(inflateBack(strm, @Strm_in_func, BackObj, @Strm_out_func, BackObj));
       //seek back when unused data
-//      InStream.Seek(-strm.avail_in, soFromCurrent);
-      InStream.Seek(-strm.avail_in, soCurrent);
+      InStream.Seek(-strm.avail_in, soCurrent);    { V8.67 was soFromCurrent }
       //now trailer can be checked
     finally
       ZlibDCheck(inflateBackEnd(strm));
@@ -427,8 +425,7 @@ var
     else
     begin
       if (strm.avail_out = 0) then ExpandStream(OutStream, OutStream.Size + BufSize);
-// R.D. Commented     OutStream.Seek(LastOutCount - strm.avail_out, soFromCurrent);
-      OutStream.Seek(LastOutCount - strm.avail_out, soCurrent);
+      OutStream.Seek(LastOutCount - strm.avail_out, soCurrent);   { V8.67 was soFromCurrent }
       strm.next_out  := DMAOfStream(OutStream, strm.avail_out);
       //because we can't really know how much resize is increasing!
     end;
@@ -490,12 +487,10 @@ begin
     //adjust position of the input stream
     if UseInBuf then
       //seek back when unused data
-//R.D. Commented      InStream.Seek(-strm.avail_in, soFromCurrent)
-      InStream.Seek(-strm.avail_in, soCurrent)
+      InStream.Seek(-strm.avail_in, soCurrent)  { V8.67 was soFromCurrent }
     else
       //simple seek
-//R.D. Commented      InStream.Seek(strm.total_in, soFromCurrent);
-      InStream.Seek(strm.total_in, soCurrent);
+      InStream.Seek(strm.total_in, soCurrent);  { V8.67 was soFromCurrent }
 
     ZlibCCheck(deflateEnd(strm));
   finally

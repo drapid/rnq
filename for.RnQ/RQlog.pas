@@ -70,6 +70,8 @@ procedure loggaEvtA(s: AnsiString; const img: TPicName = '';
 procedure logEvPkt(const Head: String; const TextData: String;
                    const data: RawByteString; const img: TPicName;
                    pktType: TPktType = ptBin);
+procedure logEvPktASync(const Head: String; const TextData: String;
+      const data: RawByteString; const img: TPicName; pktType: TPktType = ptBin);
 procedure FlushLogEvFile;
 
 var
@@ -438,6 +440,26 @@ begin
 //    appendFile(logPath+eventslogFilename, s + CRLF);
 end; // loggaEvt
 
+procedure logEvPktASync(const Head: String; const TextData: String;
+      const data: RawByteString; const img: TPicName; pktType: TPktType = ptBin);
+//var
+//  h: string;
+begin
+//  h := '';
+//  s := logtimestamp+h;
+//  if logpref.evts.onwindow and assigned(logfrm) then
+  if logpref.pkts.onwindow and assigned(logFrm) then
+    begin
+//    h := s;
+    TThread.Synchronize(nil, procedure
+      begin
+        logFrm.addToLog(pktType, Head, TextData, Data, img);
+      end);
+    end;
+
+//  if logpref.evts.onfile then
+//    appendFile(logPath+eventslogFilename, s + CRLF);
+end; // loggaEvt
 
 procedure FlushLogEvFile;
 begin

@@ -14,6 +14,16 @@ interface
 type
   TPrefKey = String;
   IRnQPref = interface
+     function  getDPrefStr(const key: TPrefKey): String;
+     function  getDPrefStrList(const key: TPrefKey): TStringList;
+     function  getDPrefBool(const key: TPrefKey): Boolean;
+     function  getDPrefBlob(const key: TPrefKey): RawByteString;
+     function  getDPrefBlob64(const key: TPrefKey): RawByteString;
+     function  getDPrefInt(const key: TPrefKey): Integer;
+     function  getDPrefDate(const key: TPrefKey): TDateTime;
+     function  getDPrefDateTime(const key: TPrefKey): TDateTime;
+     function  getDPrefGuid(const key: TPrefKey): TGUID;
+
      function  getPrefStr(const key: TPrefKey; var Val: String): Boolean;
      function  getPrefStrList(const key: TPrefKey; var Val: TStringList): Boolean;
      function  getPrefBool(const key: TPrefKey; var Val: Boolean): Boolean;

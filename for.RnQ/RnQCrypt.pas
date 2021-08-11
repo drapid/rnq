@@ -54,7 +54,7 @@ function  MD5Pass2(const s: RawByteString): RawByteString;
 //  function qip_msg_crypt(s1, s2: AnsiString; n: integer): RawByteString;
   function qip_str2pass(const s: RawByteString): Integer;
 
-  function HMAC_MD5(Text, Key: RawByteString): RawByteString;
+  function HMAC_MD5(const Text: RawByteString; Key: RawByteString): RawByteString;
   function SHA1Pass(const s: RawBytestring): RawByteString;
   function HMAC_SHA1_EX( const Data: RawByteString;
                        const Key: RawByteString ): RawByteString;
@@ -62,6 +62,8 @@ function  MD5Pass2(const s: RawByteString): RawByteString;
   function DigestToString(digest: TSHA256Digest): RawByteString;
 
   function Hash256String(const key, str: RawByteString): RawByteString;
+
+  function SHA1toHex( const digest: RawByteString ): String;
 
 type
   TProgressFunc = function(p: real): Boolean;
@@ -73,7 +75,7 @@ uses
   Windows,
    {$IFDEF USE_SYMCRYPTO}
 //     SynCrypto,
-  mormot.core.crypto,
+  mormot.crypt.core,
   mormot.core.os,
     {$ELSE not SynCrypto}
      {$IFDEF USE_WE_LIBS}
@@ -448,7 +450,7 @@ begin
     end;
 end;
 
-function HMAC_MD5(Text, Key: RawByteString): RawByteString;
+function HMAC_MD5(const Text: RawByteString; Key: RawByteString): RawByteString;
 var
   ipad, opad, s: RawByteString;
   n: Integer;
@@ -603,7 +605,7 @@ var
 begin
 //   HMAC_SHA1( Data, Key, Digest);
  {$IFDEF USE_SYMCRYPTO}
-   HMAC_SHA1( Key, Data, Digest);
+   HMACSHA1( Key, Data, Digest);
  {$ELSE !USE_SYMCRYPTO}
    {$IFDEF USE_WE_LIBS}
      hmac_sha1_init(hmac_context, PAnsiChar(key), Length(key));
@@ -638,7 +640,7 @@ var
  {$ENDIF ~USE_SYMCRYPTO}
 begin
  {$IFDEF USE_SYMCRYPTO}
-  HMAC_SHA256(key, str, digest);
+  HMACSHA256(key, str, digest);
  {$ELSE !USE_SYMCRYPTO}
    {$IFDEF USE_WE_LIBS}
    hmac_SHA256_init(hmac_context, PAnsiChar(key), Length(key));
@@ -830,6 +832,17 @@ begin
 //  if length(digest) > 0 then
     for b in digest do
       result := result + LowerCase(IntToHex(Byte(b), 2));
+end;
+
+// converts SHA1 digest into a hex-string
+
+function SHA1toHex( const digest: RawByteString ): String;
+var  i: Integer;
+begin
+   Result := '';
+   for i:=1 to length(digest) do
+     Result := Result + inttohex( ord( digest[i] ), 2 );
+   Result := LowerCase( Result );
 end;
 
 end.

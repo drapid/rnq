@@ -35,20 +35,51 @@ type
   end;
 
 type
+  TRnQPref = class;
+
+  TPrefsEnumerator = class
+  private
+    FIndex: Integer;
+    fPref: TRnQPref;
+  public
+    constructor Create(pPref: TRnQPref);
+    function GetCurrent: TPrefElement; inline;
+    function MoveNext: Boolean;
+    property Current: TPrefElement read GetCurrent;
+  end;
+
   PRnQPref = ^TRnQPref;
   TRnQPref = class(TObject, IRnQPref)
    private
      fPrefStr: THashedStringList;
      fInUpdate: Boolean;
    protected
+    enumIdx: integer;
+   public
+    function  GetEnumerator: TPrefsEnumerator;
+//    procedure resetEnumeration;
+//    function  hasMore: boolean;
+//    function  getNext: TPrefElement;
+   protected
      function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
      function _AddRef: Integer; stdcall;
      function _Release: Integer; stdcall;
+     function getAt(const idx: integer): TPrefElement;
    public
+     fDefPrefs: TRnQPref;
      constructor Create;
      Destructor Destroy; OverRide;
      procedure Load(const cfg: RawByteString);
      procedure resetPrefs;
+     function  getDPrefStr(const key: TPrefKey): String;
+     function  getDPrefStrList(const key: TPrefKey): TStringList;
+     function  getDPrefBool(const key: TPrefKey): Boolean;
+     function  getDPrefBlob(const key: TPrefKey): RawByteString;
+     function  getDPrefBlob64(const key: TPrefKey): RawByteString;
+     function  getDPrefInt(const key: TPrefKey): Integer;
+     function  getDPrefDate(const key: TPrefKey): TDateTime;
+     function  getDPrefDateTime(const key: TPrefKey): TDateTime;
+     function  getDPrefGuid(const key: TPrefKey): TGUID;
      function  getPrefStr(const key: String; var Val: String): Boolean;
      function  getPrefStrList(const key: String; var Val: TStringList): Boolean;
      function  getPrefBool(const key: String; var Val: Boolean): Boolean;
@@ -211,7 +242,42 @@ end;
 
 *)
 
+{ TPrefsEnumerator }
+
+constructor TPrefsEnumerator.Create(pPref: TRnQPref);
+begin
+  inherited Create;
+  FIndex := -1;
+  fPref := pPref;
+end;
+
+function TPrefsEnumerator.GetCurrent: TPrefElement;
+begin
+  Result := fPref.getAt(FIndex);
+end;
+
+function TPrefsEnumerator.MoveNext: Boolean;
+begin
+  Result := FIndex < fPref.fPrefStr.Count - 1;
+  if Result then
+    Inc(FIndex);
+end;
+
 { TRnQPref }
+
+function TRnQPref.getAt(const idx: integer): TPrefElement;
+begin
+  if (idx>=0) and (idx<fPrefStr.count) then
+    result := TPrefElement(fPrefStr[Idx])
+   else
+    result := NIL
+end; // getAt
+
+function TRnQPref.GetEnumerator: TPrefsEnumerator;
+begin
+  Result := TPrefsEnumerator.Create(Self);
+end;
+
 
 function TRnQPref.getSelfInterface: IRnQPref;
 begin
@@ -805,6 +871,123 @@ begin
        Result := DefVal;
       end;
    end;
+end;
+
+function TRnQPref.getDPrefStr(const key: TPrefKey): String;
+var
+  val: String;
+begin
+  if getPrefStr(key, val) then
+    Exit(val)
+   else
+    if Assigned(fDefPrefs) and fDefPrefs.getPrefStr(key, val) then
+      Exit(val)
+     else
+      Exit('');
+end;
+
+function TRnQPref.getDPrefStrList(const key: TPrefKey): TStringList;
+var
+  val: TStringList;
+begin
+  if getPrefStrList(key, val) then
+    Exit(val)
+   else
+    if Assigned(fDefPrefs) and fDefPrefs.getPrefStrList(key, val) then
+      Exit(val)
+     else
+      Exit(NIL);
+end;
+
+function TRnQPref.getDPrefBool(const key: TPrefKey): Boolean;
+var
+  val: Boolean;
+begin
+  if getPrefBool(key, val) then
+    Exit(val)
+   else
+    if Assigned(fDefPrefs) and fDefPrefs.getPrefBool(key, val) then
+      Exit(val)
+     else
+      Exit(false);
+end;
+
+function TRnQPref.getDPrefBlob(const key: TPrefKey): RawByteString;
+var
+  val: RawByteString;
+begin
+  if getPrefBlob(key, val) then
+    Exit(val)
+   else
+    if Assigned(fDefPrefs) and fDefPrefs.getPrefBlob(key, val) then
+      Exit(val)
+     else
+      Exit('');
+end;
+
+function TRnQPref.getDPrefBlob64(const key: TPrefKey): RawByteString;
+var
+  val: RawByteString;
+begin
+  if getPrefBlob64(key, val) then
+    Exit(val)
+   else
+    if Assigned(fDefPrefs) and fDefPrefs.getPrefBlob64(key, val) then
+      Exit(val)
+     else
+      Exit('');
+end;
+
+function TRnQPref.getDPrefInt(const key: TPrefKey): Integer;
+var
+  val: Integer;
+begin
+  if getPrefInt(key, val) then
+    Exit(val)
+   else
+    if Assigned(fDefPrefs) and fDefPrefs.getPrefInt(key, val) then
+      Exit(val)
+     else
+      Exit(0);
+end;
+
+function TRnQPref.getDPrefDate(const key: TPrefKey): TDateTime;
+var
+  val: TDateTime;
+begin
+  if getPrefDate(key, val) then
+    Exit(val)
+   else
+    if Assigned(fDefPrefs) and fDefPrefs.getPrefDate(key, val) then
+      Exit(val)
+     else
+      Exit(0);
+end;
+
+function TRnQPref.getDPrefDateTime(const key: TPrefKey): TDateTime;
+var
+  val: TDateTime;
+begin
+  if getPrefDateTime(key, val) then
+    Exit(val)
+   else
+    if Assigned(fDefPrefs) and fDefPrefs.getPrefDateTime(key, val) then
+      Exit(val)
+     else
+      Exit(0);
+end;
+
+function TRnQPref.getDPrefGuid(const key: TPrefKey): TGUID;
+var
+  val: TGUID;
+begin
+  if getPrefGuid(key, val) then
+    Exit(val)
+   else
+    if Assigned(fDefPrefs) and fDefPrefs.getPrefGuid(key, val) then
+      Exit(val)
+     else
+      Exit(GUID_NULL);
 end;
 
 function TRnQPref.getPrefStr(const key: String; var Val: String): Boolean;
