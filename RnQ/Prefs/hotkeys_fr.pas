@@ -48,6 +48,7 @@ type
     procedure applyPage; Override;
     procedure resetPage; Override;
     procedure unInitPage; Override;
+    procedure updateVisPage; Override;
    procedure fillMacrosGrid(pMacros:Tmacros);
 //    procedure updateVisible;
   end;
@@ -156,40 +157,54 @@ begin
   actionBox.Items.Clear();
   for i:=succ(OP_none) to OP_last do
     actionBox.items.add(macroopcodeName(i));
+end;
 
+procedure ThotkeysFr.updateVisPage;
+var
+  gap_scaled: Integer;
+  gap2_scaled: Integer;
+begin
+  gap_scaled := MulDiv(GAP_SIZE, getParentCurrentDPI, FRM_PPI);
+  gap2_scaled := MulDiv(GAP_SIZE2, getParentCurrentDPI, FRM_PPI);
 
-  HKTree.width := Clientwidth - GAP_SIZE2;
-  HKTree.left := GAP_SIZE;
-  HKTree.top := GAP_SIZE;
+  HKTree.width := Clientwidth - gap2_scaled;
+  HKTree.left := gap_scaled;
+  HKTree.top := gap_scaled;
 
-  hotkey.left := 75;
-  hotkey.width := Clientwidth - hotkey.left - GAP_SIZE;
-  hotkey.top := HKTree.top + HKTree.Height + GAP_SIZE;
+  hotkey.left := MulDiv(75, getParentCurrentDPI, FRM_PPI);;
+  hotkey.width := Clientwidth - hotkey.left - gap_scaled;
+  hotkey.top := HKTree.top + HKTree.Height + gap_scaled;
 
   swChk.left := hotkey.left;
-  swChk.top := hotkey.top + hotkey.Height + GAP_SIZE;
+  swChk.top := hotkey.top + hotkey.Height + gap_scaled;
 
   winkeyChk.left := (hotkey.width div 2) + swChk.left;
   winkeyChk.top := swChk.top;
 
   actionBox.left := hotkey.left;
-  actionBox.top := swChk.top + swChk.Height + GAP_SIZE;
+  actionBox.top := swChk.top + swChk.Height + gap_scaled;
   actionBox.width := hotkey.width;
 
-  btnDefault.top := actionBox.top + actionBox.Height + GAP_SIZE;
-  btnDefault.left := GAP_SIZE;
+  btnDefault.top := actionBox.top + actionBox.Height + gap_scaled;
+  btnDefault.left := gap_scaled;
 
-  replaceBtn.top :=  btnDefault.top;
-  replaceBtn.left :=  Clientwidth - replaceBtn.width - GAP_SIZE;
+  replaceBtn.top := btnDefault.top;
+  replaceBtn.left := Clientwidth - replaceBtn.width - gap_scaled;
 
-  deleteBtn.top :=  btnDefault.top;
-  deleteBtn.left :=  replaceBtn.left - deleteBtn.width - GAP_SIZE;
+  deleteBtn.top := btnDefault.top;
+  deleteBtn.left := replaceBtn.left - deleteBtn.width - gap_scaled;
 
-  saveBtn.top :=  btnDefault.top;
-  saveBtn.left :=  deleteBtn.left - saveBtn.width - GAP_SIZE;
+  saveBtn.top := btnDefault.top;
+  saveBtn.left := deleteBtn.left - saveBtn.width - gap_scaled;
 
   Label2.top := hotkey.top + 4;
   Label3.top := actionBox.top + 4;
+
+  Label1.Left := gap_scaled;
+  Label4.Left := gap_scaled;
+  Label1.Width := Clientwidth - gap_scaled - gap_scaled;
+  Label4.Width := Label1.Width;
+
 end;
 
 procedure ThotkeysFr.unInitPage;

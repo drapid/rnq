@@ -264,7 +264,7 @@ end;
 
 procedure TviewinfoFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- childWindows.remove(self);
+  childWindows.remove(self);
   visible := FALSE;
   if displayBox.text <> contact.displayed then
    begin
@@ -475,7 +475,7 @@ with TWIMContact(contact) do
       end
     else
       birthageBox.itemIndex:=0;
-  setupbirthage;
+      setupbirthage;
   if birthL = 0 then  // Установка Birthday By self!!!
    begin
      BirthLBox.Date := Date;
@@ -489,7 +489,7 @@ with TWIMContact(contact) do
      BirthLBox.Enabled := True;
    end;
 
-  notesBox.text:=TCE(data^).notes;
+  notesBox.text := TCE(data^).notes;
     ssNoteStrEdit.Text := ssImportant;
     ssNoteStrEdit.Enabled := True;
     lclNoteStrEdit.Text := lclImportant;
@@ -683,7 +683,7 @@ begin
     end
 end;
 
-constructor TviewinfoFrm.doAll(owner_ : Tcomponent; c: TRnQcontact);
+constructor TviewinfoFrm.doAll(owner_: Tcomponent; c: TRnQcontact);
 var
   i: integer;
   comp: Tcomponent;

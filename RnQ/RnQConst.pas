@@ -44,8 +44,9 @@ const
   GAP_SIZEd2 = 3;
   GAP_SIZE   = 6;
   GAP_SIZE2  = 12;
-  FRM_HEIGHT = 400;
-  FRM_WIDTH  = 420;
+  FRM_HEIGHT = 400; // at 96 PPI
+  FRM_WIDTH  = 420; // at 96 PPI
+  FRM_PPI    = 96;
 
 type
   TwhatForm = (WF_PREF, WF_USERS, WF_WP, WF_WP_MRA, WF_SEARCH);
@@ -54,7 +55,8 @@ type
   TformXY = record
     top, left, height, width: integer;
     maximized: boolean;
-    end;
+    ppi: Integer;
+   end;
   TsortBy = ( SB_NONE, SB_ALPHA, SB_EVENT, SB_STATUS );
   Tbehaction = (BE_TRAY, BE_SOUND, BE_OPENCHAT, BE_HISTORY, BE_SAVE, BE_TIP, BE_POPUP, BE_FLASHCHAT, BE_BALLOON);
   Tbehaviour = record
@@ -207,6 +209,9 @@ const
   DBFK_BIRTHCOUNTRY_CODE = 133;
   DBFK_BIRTHADDRESS = 134;
   DBFK_BIRTHZIP = 135;
+
+
+  DBFK_PROTODATA = 207;
 
 
   // rosterItalic values

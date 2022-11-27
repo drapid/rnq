@@ -68,7 +68,9 @@ const
   UseLastSts =  'Use last set status';
 
 procedure TstartFr.Button1Click(Sender: TObject);
-begin autostart1.text := Account.AccProto.ProtoElem.MyAccNum end;
+begin
+  autostart1.text := Account.AccProto.ProtoElem.MyAccNum
+end;
 
 procedure TstartFr.startingStatusBoxDrawItem(Control: TWinControl;
   Index: Integer; Rect: TRect; State: TOwnerDrawState);

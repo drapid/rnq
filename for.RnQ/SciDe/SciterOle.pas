@@ -552,6 +552,7 @@ begin
       API.ValueInit(@sarg);
       API.Sciter_T2S(vm, arg, sarg, false);
       S2V(@sarg, oargs[i - 2]);
+      API.ValueClear(@sarg);
     end;
 
     // Call method

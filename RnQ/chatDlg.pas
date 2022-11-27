@@ -17,11 +17,16 @@ uses
   ceflib,
   historyCEF,
  {$ELSE ~CHAT_CEF} // old
-   {$IFDEF CHAT_SCI} // Sciter
-    historySCI,
-   {$ELSE ~CHAT_CEF and ~CHAT_SCI} // old
-    historyVCL,
-   {$ENDIF CHAT_SCI}
+  {$IFDEF CHAT_WEBV2} // WebView2
+     WebView2,
+     historyWV2,
+   {$ELSE ~CHAT_WV2} //
+     {$IFDEF CHAT_SCI} // Sciter
+      historySCI,
+     {$ELSE ~CHAT_CEF and ~CHAT_SCI} // old
+      historyVCL,
+     {$ENDIF CHAT_SCI}
+   {$ENDIF CHAT_WV2}
  {$ENDIF CHAT_CEF}
   Commctrl, selectContactsDlg,
  {$IFDEF FLASH_AVATARS}
@@ -953,6 +958,13 @@ begin
   InitScale(Sender, getParentCurrentDPI);
 
   lastClickIdx := -1;
+ {$IFDEF CHAT_SPELL_CHECK}
+  TMemoEx.RefreshInputPrc := procedure
+  begin
+    if Assigned(chatFrm) then
+      chatFrm.RefreshThisInput;
+  end
+ {$ENDIF CHAT_SPELL_CHECK}
 end;
 
  {$IFDEF CHAT_SPELL_CHECK}
@@ -1070,7 +1082,6 @@ var
   sheet: TtabSheet;
   chat: TchatInfo;
   pnl: Tpanel;
-//  i: Integer;
 begin
  {$IFDEF CHAT_SCI} // Sciter
   if not THistoryBox.PreLoadTemplate then
@@ -2394,7 +2405,7 @@ begin
       oldCh.who.Proto.InputChangedFor(oldCh.who, True);
        historyData.currentHB := NIl;
       oldCh.historyBox.Visible := false;
-//      oldCh.historyBox.newSession:=0;
+//      oldCh.historyBox.newSession := 0;
       if oldCh.historyBox.history<>NIL then
        begin
         FreeAndNil(oldCh.historyBox.history);
@@ -2869,7 +2880,7 @@ end;
 
 procedure TchatFrm.historyBtnClick(Sender: TObject);
 var
-//  olds,news: integer;
+//  olds, news: integer;
   ch: TchatInfo;
 begin
   ch := thisChat;
@@ -3097,11 +3108,10 @@ end;
 
 procedure TchatFrm.setStatusbar(s: String);
 begin
+  if isUploading then
+    s := GetTranslation('Uploading file') + ': ' + IntToStr(Trunc(uploadedSize / uploadSize * 100)) + '%';
   with sbar.Panels do
-   if isUploading then
-     Items[Count - 1].text := GetTranslation('Uploading file') + ': ' + IntToStr(Trunc(uploadedSize / uploadSize * 100)) + '%'
-    else
-     items[count-1].text := s
+    items[count-1].text := s
 end;
 
 procedure TchatFrm.FormMouseDown(Sender: TObject; Button: TMouseButton;
@@ -4602,7 +4612,7 @@ var
   s, s2: RawByteString;
   sU: String;
   isRnQPic: Boolean;
-//  bmp : TBitmap;
+//  bmp: TBitmap;
   fs: TFileStream;
 begin
   if OpenSaveFileDialog(Application.Handle, '*',
@@ -5423,7 +5433,6 @@ begin
     end;
 
   updateContactStatus;
-// activeICQ.sendSNAC()
  {$ENDIF PROTOCOL_ICQ}
 end;
 
@@ -5442,7 +5451,6 @@ begin
     Exit;
   TICQcontact(ch.who).crypt.qippwd := 0;
   updateContactStatus;
-// activeICQ.sendSNAC()
  {$ENDIF PROTOCOL_ICQ}
 end;
 

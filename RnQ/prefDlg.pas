@@ -122,7 +122,7 @@ begin
            not TdesignFr(prefFrm.arrPages[i].frame).BlinkPBox.Visible;
         break;
      end;}
-    for pp in prefFrm.arrPages do
+    for pp in self.arrPages do
      if pp.frameClass = TdesignFr then
       if Assigned(pp.frame) then
       with TdesignFr(pp.frame) do
@@ -388,7 +388,8 @@ begin
       FreeAndNil(arrPages[i]);
     SetLength(arrPages, 0);
   end;
-  freeAndNIL(prefFrm);
+//  freeAndNIL(prefFrm);
+  prefFrm := NIL;
 end;
 
 procedure TprefFrm.FormKeyDown(Sender: TObject; var Key: Word;
@@ -442,11 +443,13 @@ var
   pg: PPrefPage;
   protoPages: TPrefPagesArr;
   FRM_H_Scaled, FRM_W_Scaled: Integer;
+  gap_scaled: Integer;
 //  FrameClass: TClass;
   n: PVirtualNode;
 begin
-  FRM_H_Scaled := MulDiv(FRM_HEIGHT, self.Monitor.PixelsPerInch, PixelsPerInch);
-  FRM_W_Scaled := MulDiv(FRM_WIDTH, self.Monitor.PixelsPerInch, PixelsPerInch);
+  FRM_H_Scaled := MulDiv(FRM_HEIGHT, self.Monitor.PixelsPerInch, FRM_PPI);
+  FRM_W_Scaled := MulDiv(FRM_WIDTH, self.Monitor.PixelsPerInch, FRM_PPI);
+  gap_scaled := MulDiv(GAP_SIZE, self.Monitor.PixelsPerInch, FRM_PPI);
   if Length(pages) = 0 then
     begin
 {      SetLength(arrPages, Length(prefPages));
@@ -477,39 +480,39 @@ begin
          SetLength(protoPages, 0);
        end;
 
-      clientWidth :=  GAP_SIZE + PrefList.Width + GAP_SIZE + FRM_W_Scaled + GAP_SIZE;
-      clientHeight :=  GAP_SIZE + FRM_H_Scaled + GAP_SIZE + Bevel.Height + GAP_SIZE + okBtn.Height + GAP_SIZE;
+      clientWidth :=  gap_scaled + PrefList.Width + gap_scaled + FRM_W_Scaled + gap_scaled;
+      clientHeight :=  gap_scaled + FRM_H_Scaled + gap_scaled + Bevel.Height + gap_scaled + okBtn.Height + gap_scaled;
       PrefList.Visible := true;
       resetBtn.Visible := true;
 
-      resetBtn.top := clientHeight - resetBtn.height - GAP_SIZE;
-      resetBtn.left := GAP_SIZE;
+      resetBtn.top := clientHeight - resetBtn.height - gap_scaled;
+      resetBtn.left := gap_scaled;
 
 
-      applyBtn.top  := resetBtn.top;
-      applyBtn.left := clientWidth - applyBtn.Width - GAP_SIZE;
+      applyBtn.top := resetBtn.top;
+      applyBtn.left := clientWidth - applyBtn.Width - gap_scaled;
 
-      closeBtn.top  := resetBtn.top;
-      closeBtn.left := applyBtn.left - closeBtn.Width - GAP_SIZE;
+      closeBtn.top := resetBtn.top;
+      closeBtn.left := applyBtn.left - closeBtn.Width - gap_scaled;
 
-      okBtn.top  := resetBtn.top;
-      okBtn.left := closeBtn.left - okBtn.Width - GAP_SIZE;
+      okBtn.top := resetBtn.top;
+      okBtn.left := closeBtn.left - okBtn.Width - gap_scaled;
 
 
-      Bevel.left := GAP_SIZE;
-      Bevel.Width := clientWidth - GAP_SIZE - GAP_SIZE;
-      Bevel.top :=  resetBtn.top - Bevel.Height - GAP_SIZE;
+      Bevel.left := gap_scaled;
+      Bevel.Width := clientWidth - gap_scaled - gap_scaled;
+      Bevel.top :=  resetBtn.top - Bevel.Height - gap_scaled;
 
-      Self.GlassFrame.Bottom := resetBtn.height + GAP_SIZE shl 1 + 2;
+      Self.GlassFrame.Bottom := resetBtn.height + gap_scaled shl 1 + 2;
 
-      PrefList.height := Bevel.top - GAP_SIZE - GAP_SIZE;
-      PrefList.top := GAP_SIZE;
-      PrefList.left := GAP_SIZE;
+      PrefList.height := Bevel.top - gap_scaled - gap_scaled;
+      PrefList.top := gap_scaled;
+      PrefList.left := gap_scaled;
 
       framePnl.height := PrefList.height;
-      framePnl.top := GAP_SIZE;
-      framePnl.left := PrefList.left + PrefList.Width + GAP_SIZE;
-      framePnl.Width := clientWidth - framePnl.left - GAP_SIZE;
+      framePnl.top := gap_scaled;
+      framePnl.left := PrefList.left + PrefList.Width + gap_scaled;
+      framePnl.Width := clientWidth - framePnl.left - gap_scaled;
     end
    else
     begin
@@ -518,30 +521,30 @@ begin
         begin
          arrPages[i] := pages[i].Clone;
         end;
-      clientWidth :=  GAP_SIZE + FRM_W_Scaled + GAP_SIZE;
-      clientHeight :=  GAP_SIZE + FRM_H_Scaled + GAP_SIZE + Bevel.Height + GAP_SIZE + okBtn.Height + GAP_SIZE;
+      clientWidth :=  gap_scaled + FRM_W_Scaled + gap_scaled;
+      clientHeight :=  gap_scaled + FRM_H_Scaled + gap_scaled + Bevel.Height + gap_scaled + okBtn.Height + gap_scaled;
       PrefList.Visible := false;
       resetBtn.Visible := false;
 
-      applyBtn.top  := clientHeight - resetBtn.height - GAP_SIZE;
-      applyBtn.left := GAP_SIZE;
+      applyBtn.top := clientHeight - resetBtn.height - gap_scaled;
+      applyBtn.left := gap_scaled;
 
-      closeBtn.top  := applyBtn.top;
-      closeBtn.left := clientWidth - closeBtn.Width - GAP_SIZE;
+      closeBtn.top := applyBtn.top;
+      closeBtn.left := clientWidth - closeBtn.Width - gap_scaled;
 
-      okBtn.top  := applyBtn.top;
-      okBtn.left := closeBtn.left - okBtn.Width - GAP_SIZE;
+      okBtn.top := applyBtn.top;
+      okBtn.left := closeBtn.left - okBtn.Width - gap_scaled;
 
-      framePnl.top := GAP_SIZE;
-      framePnl.left := GAP_SIZE;
+      framePnl.top := gap_scaled;
+      framePnl.left := gap_scaled;
       framePnl.height := FRM_H_Scaled;
-      framePnl.Width := clientWidth - framePnl.left - GAP_SIZE;
+      framePnl.Width := clientWidth - framePnl.left - gap_scaled;
 
-      Bevel.left := GAP_SIZE;
-      Bevel.Width := clientWidth - GAP_SIZE - GAP_SIZE;
-      Bevel.top :=  applyBtn.top - Bevel.Height - GAP_SIZE;
+      Bevel.left := gap_scaled;
+      Bevel.Width := clientWidth - gap_scaled - gap_scaled;
+      Bevel.top :=  applyBtn.top - Bevel.Height - gap_scaled;
 
-      Self.GlassFrame.Bottom := resetBtn.height + GAP_SIZE shl 1 + 2;
+      Self.GlassFrame.Bottom := resetBtn.height + gap_scaled shl 1 + 2;
     end;
 
   Bevel.Visible := not(StyleServices.Enabled and DwmCompositionEnabled);
@@ -627,12 +630,12 @@ begin
     until (n=nil) or (k>i);
    end;
    if (n = NIL)or(i=0) then
-     prefFrm.PrefList.FocusedNode := prefFrm.PrefList.GetFirst
+     self.PrefList.FocusedNode := self.PrefList.GetFirst
     else
-     prefFrm.PrefList.FocusedNode := n;
-//   prefFrm.PrefList.SelectedCount := 0;
-   if prefFrm.PrefList.FocusedNode <> NIL then
-     prefFrm.PrefList.Selected[prefFrm.PrefList.FocusedNode] := True;
+     self.PrefList.FocusedNode := n;
+//   self.PrefList.SelectedCount := 0;
+   if self.PrefList.FocusedNode <> NIL then
+     self.PrefList.Selected[self.PrefList.FocusedNode] := True;
    pagesBoxClick(NIL);
 end;
 
@@ -659,12 +662,12 @@ begin
     until (n=nil);
    end;
    if (n = NIL)or(pn='') then
-     prefFrm.PrefList.FocusedNode := prefFrm.PrefList.GetFirst
+     self.PrefList.FocusedNode := self.PrefList.GetFirst
     else
-     prefFrm.PrefList.FocusedNode := n;
+     self.PrefList.FocusedNode := n;
 //   prefFrm.PrefList.SelectedCount := 0;
-   if prefFrm.PrefList.FocusedNode <> NIL then
-     prefFrm.PrefList.Selected[prefFrm.PrefList.FocusedNode] := True;
+   if self.PrefList.FocusedNode <> NIL then
+     self.PrefList.Selected[self.PrefList.FocusedNode] := True;
    pagesBoxClick(NIL);
 end;
 

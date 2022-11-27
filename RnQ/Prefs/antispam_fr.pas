@@ -77,7 +77,7 @@ type
 //    procedure addBtnClick(Sender: TObject);
     procedure Sendmessage1Click(Sender: TObject);
     procedure Viewinfo1Click(Sender: TObject);
-    function  current:TRnQcontact;
+    function  current: TRnQcontact;
     procedure MenuPopup(Sender: TObject);
   public
     procedure applyPage; Override;
@@ -221,7 +221,7 @@ var
 // i: Integer;
  it: TMenuItem;
 begin
- c := current; 
+ c := current;
  if Sender is TPopupMenu then
 //  with TPopupMenu(sender) do
    for it in TPopupMenu(sender).Items do

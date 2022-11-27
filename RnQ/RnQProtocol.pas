@@ -8,7 +8,7 @@ unit RnQProtocol;
 
 interface
 uses
-  Windows, Classes, Types, SysUtils,
+  Windows, Classes, Types, SysUtils, JSON,
   RnQNet, RDGlobal,
   RnQPrefsInt, RnQPrefsTypes,
   RnQGraphics32, RDUtils
@@ -53,10 +53,11 @@ const
   OBIMProtoID = 4;
 //  AIMProtoID = 4; //!!! AIM
   WIMProtoID = 5;
-  MAXProtoID  = 5;
+  TLGProtoID = 6;
+  MAXProtoID  = 6;
 
 //  ProtosDesc: array[1..4] of String = ('ICQ', 'AIM', 'Mail.ru Agent', 'XMPP');
-  cProtosDesc: array[MinProtoID..MAXProtoID] of String = ('ICQ', 'Mail.ru Agent', 'XMPP', 'OBIMP', 'ICQ Rest');
+  cProtosDesc: array[MinProtoID..MAXProtoID] of String = ('ICQ', 'Mail.ru Agent', 'XMPP', 'OBIMP', 'ICQ Rest', 'Telegram');
  {$ENDIF ICQ_ONLY}
 
 const
@@ -74,6 +75,9 @@ const
    {$IFDEF PROTOCOL_WIM}
       ,WIMProtoID
    {$ENDIF PROTOCOL_WIM}
+   {$IFDEF PROTOCOL_TLG}
+      ,TLGProtoID
+   {$ENDIF PROTOCOL_TLG}
  {$ENDIF ICQ_ONLY}
    ];
 
@@ -93,6 +97,9 @@ const
    {$IFDEF PROTOCOL_WIM}
       1+
    {$ENDIF PROTOCOL_WIM}
+   {$IFDEF PROTOCOL_TLG}
+      1+
+   {$ENDIF PROTOCOL_TLG}
       0;
 
 
@@ -116,6 +123,9 @@ const
    {$IFDEF PROTOCOL_WIM}
       WIMProtoID
    {$ENDIF PROTOCOL_WIM}
+   {$IFDEF PROTOCOL_TLG}
+      TLGProtoID
+   {$ENDIF PROTOCOL_TLG}
  {$ENDIF ICQ_ONLY}
    );
 
@@ -133,7 +143,7 @@ type
   TRnQCntClass = class of TRnQContact;
 
   TRnQProtocol = class;
-  TProtoNotify = procedure (Sender: TRnQProtocol; event: Integer);
+  TProtoNotify = procedure (Sender: TRnQProtocol; event: Integer; data: TJSONValue = NIL);
   TRnQProtoClass = class of TRnQProtocol;
 
   TProtoEvent=(
@@ -338,8 +348,8 @@ type
 //    function  getContact(uid: TUID): TRnQContact;
     function  ContactExists(const UID: TUID): Boolean;
 
-    function  sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK: boolean): integer; Virtual; Abstract; // returns handle
-    function  sendMsg2(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK: boolean): RawByteString; OverLoad; Virtual; // returns MsgId
+    function  sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; chatId: String; var requiredACK: boolean): integer; Virtual; Abstract; // returns handle
+    function  sendMsg2(cnt: TRnQContact; var flags: dword; const msg: string; chatId: String; var requiredACK: boolean): RawByteString; OverLoad; Virtual; // returns MsgId
     procedure UpdateGroupOf(cnt: TRnQContact); Virtual; Abstract;
     procedure UpdateGroupID(grID: Integer); Virtual; Abstract;
 
@@ -735,12 +745,12 @@ begin
   Result := '(' + _GetProtoName + ') ' + Result;
 end;
 
-function TRnQProtocol.sendMsg2(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK: boolean): RawByteString;
+function TRnQProtocol.sendMsg2(cnt: TRnQContact; var flags: dword; const msg: string; chatId: String; var requiredACK: boolean): RawByteString;
 var
   i: Integer;
 begin
   Result := '';
-  i := sendMsg(cnt, flags, msg, requiredACK);
+  i := sendMsg(cnt, flags, msg, chatId, requiredACK);
   if i >= 0 then
     Result := IntToStr(i);
 end;

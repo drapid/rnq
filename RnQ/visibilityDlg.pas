@@ -48,8 +48,8 @@ type
     procedure Selectall3Click(Sender: TObject);
     procedure NormalBoxFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
   private
-    thisProto : TRnQProtocol;
-    normal:TRnQCList;
+    thisProto: TRnQProtocol;
+    normal: TRnQCList;
     procedure setUpBoxes;
     procedure inv2normal;
     procedure inv2vis;

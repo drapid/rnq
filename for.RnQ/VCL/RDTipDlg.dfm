@@ -1,4 +1,4 @@
-object tipFrm: TtipFrm
+object RDTipFrm: TRDTipFrm
   Left = 358
   Top = 208
   BorderStyle = bsNone
@@ -11,7 +11,6 @@ object tipFrm: TtipFrm
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy

@@ -378,7 +378,12 @@ uses
   {$ELSE}
     RnQGraphics32,
   {$ENDIF USE_GDIPLUS}
-  WIM.Stickers,
+  {$IFDEF PROTOCOL_WIM}
+    WIM.Stickers,
+  {$ENDIF PROTOCOL_WIM}
+  {$IFDEF PROTOCOL_TLG}
+    TLG.Stickers,
+  {$ENDIF PROTOCOL_TLG}
   themesLib, menusUnit;
 
 function minor(const a, b: ThistoryPos): boolean; overload;
@@ -710,7 +715,7 @@ var
               and (i <= foundLink.to_)
   end; // withinTheLink
 
-//  function drawBody(cnv:Tcanvas; pTop : Integer) : Integer;
+//  function drawBody(cnv: Tcanvas; pTop: Integer): Integer;
   function drawBody(pTop: Integer): Integer;
   var
     fndSmileI: Integer;
@@ -892,7 +897,7 @@ var
              fndEmoji := BodyCurMChar + BodyText[i+2] + BodyText[i+3]
          else
             fndEmoji := BodyCurMChar;
-         if EmojiList.TryGetValue(fndEmoji, fndEmojiN) then
+         if EmojiListTryGetValue(fndEmoji, fndEmojiN) then
            begin
              fndEmojiN := TE2Str[RQteEmoji]+ fndEmojiN;
              if theme.picExists(RQteDefault, fndEmojiN) then
@@ -3347,22 +3352,22 @@ procedure ThistoryBox.DoBackground(cnv0: Tcanvas; vR: TRect; var SmlBG: TBitmap;
 //procedure ThistoryBox.DoBackground(dc: HDC);
 var
   {$IFDEF USE_GDIPLUS}
-  fnt : TGPFont;
-  fmt : TGPStringFormat;
-  br  : TGPBrush;
-  gr  : TGPGraphics;
+  fnt: TGPFont;
+  fmt: TGPStringFormat;
+  br: TGPBrush;
+  gr: TGPGraphics;
   r: TGPRectF;
   {$ELSE NOT USE_GDIPLUS}
-//  fnt : TFont;
+//  fnt: TFont;
   R: TRect;
-  hnd : THandle;
-//   br : hbrush;
+  hnd: THandle;
+//   br: hbrush;
   {$ENDIF USE_GDIPLUS}
-  hasBG0, hasUTP : Boolean;
-  uidBG, grpBG : TPicName;
-  picElm : TRnQThemedElementDtls;
-  pt : TPoint;
-  isUseCntThemes : Boolean;
+  hasBG0, hasUTP: Boolean;
+  uidBG, grpBG: TPicName;
+  picElm: TRnQThemedElementDtls;
+  pt: TPoint;
+  isUseCntThemes: Boolean;
 begin
   isUseCntThemes := UseContactThemes and Assigned(ContactsTheme) and Assigned(who);
 

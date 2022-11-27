@@ -175,8 +175,8 @@ end;
 procedure TconnectionFr.proxyprotoClick(Sender: TObject);
 begin
   updateVisPage;
-//  proxyhostBox.text:=host;
-//  proxyportBox.text:=port;
+//  proxyhostBox.text := host;
+//  proxyportBox.text := port;
 //  if useproxy1.checked then
   if Assigned(Sender) then
     if Tproxyproto(proxyproto.itemIndex)=PP_HTTPS then
@@ -203,26 +203,6 @@ begin
   proxyproto.Items.Clear();
   for pp:=low(pp) to high(pp) do
     proxyproto.Items.add(String(proxyproto2str[pp]));
-
-  proxyGroup.Width := ClientWidth - GAP_SIZE2;
-//  portBox.Width := 50; //proxyGroup.Width - portBox.left - GAP_SIZE2;
-  ServerCBox.Width := SSLChk.Left - ServerCBox.Left - GAP_SIZE2;
-
-//  portBox.left := 320 + GAP_SIZE;
-  portBox.left := ServerCBox.Left + ServerCBox.Width + portBox.EditLabel.Width
-                  + GAP_SIZE + GAP_SIZE2 + GAP_SIZE2;
-
-  LEProxyName.left := ServerCBox.left;
-  LEProxyName.Width := ServerCBox.Width;// - GAP_SIZE;
-
-  proxyhostBox.left := ServerCBox.left - 3;
-  proxyhostBox.Width := ServerCBox.Width;// - GAP_SIZE;
-
-  proxyportBox.left := portBox.left - 3;
-//  proxyportBox.Width := proxyGroup.Width - 320 - GAP_SIZE2;
-  proxyportBox.Width := portBox.Width;
-
-  proxyproto.left:=  GAP_SIZE2;
 
   updateVisPage;
 end;
@@ -398,15 +378,41 @@ begin
 end;
 
 procedure TconnectionFr.updateVisPage;
+var
+  gap_scaled: Integer;
+  gap2_scaled: Integer;
 begin
-//  proxyGroup.visible:=useproxy1.checked;
-  authChk.enabled:=(proxyproto.ItemIndex > 0)and (proxyproto.ItemIndex<>ord(PP_SOCKS4));
-  authGroup.visible:=authChk.checked and authChk.enabled;
+//  proxyGroup.visible := useproxy1.checked;
+  authChk.enabled := (proxyproto.ItemIndex > 0)and (proxyproto.ItemIndex<>ord(PP_SOCKS4));
+  authGroup.visible := authChk.checked and authChk.enabled;
   ntlmauth.Visible := authGroup.visible;
-  ntlmauth.Enabled:=authChk.checked and authChk.enabled;
+  ntlmauth.Enabled := authChk.checked and authChk.enabled;
 //  proxyuserBox.Enabled := not ntlmauth.Checked;
 //  proxypwdBox.Enabled := proxyuserBox.Enabled;
 //  l6.Enabled := proxypwdBox.Enabled;
+
+  gap_scaled := MulDiv(GAP_SIZE, getParentCurrentDPI, FRM_PPI);
+  gap2_scaled := MulDiv(GAP_SIZE2, getParentCurrentDPI, FRM_PPI);
+
+  proxyGroup.Width := ClientWidth - gap2_scaled;
+//  portBox.Width := 50; //proxyGroup.Width - portBox.left - GAP_SIZE2;
+  ServerCBox.Width := SSLChk.Left - ServerCBox.Left - gap2_scaled;
+
+//  portBox.left := 320 + GAP_SIZE;
+  portBox.left := ServerCBox.Left + ServerCBox.Width + portBox.EditLabel.Width
+                  + gap_scaled + gap2_scaled ;
+
+  LEProxyName.left := ServerCBox.left;
+  LEProxyName.Width := ServerCBox.Width;// - GAP_SIZE;
+
+  proxyhostBox.left := ServerCBox.left - 3;
+  proxyhostBox.Width := ServerCBox.Width;// - GAP_SIZE;
+
+  proxyportBox.left := portBox.left - 3;
+//  proxyportBox.Width := proxyGroup.Width - 320 - GAP_SIZE2;
+  proxyportBox.Width := portBox.Width;
+
+  proxyproto.left := gap2_scaled;
 end;
 
 end.

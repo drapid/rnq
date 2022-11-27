@@ -22,18 +22,8 @@ uses
    RDGlobal,
   RnQProtocol;//, HttpProt;
 
-//const
-//   AvatarFile = '%s\%d.jpeg';
-
-//type
-//  TPAFormat = (PA_FORMAT_UNK, PA_FORMAT_BMP, PA_FORMAT_JPEG,
-//               PA_FORMAT_GIF, PA_FORMAT_PNG, PA_FORMAT_XML);
-
 function FormatAvatarFileName(const APath: String; const AUIN: AnsiString; AFormat: TPAFormat): String;
 //function DetectAvatarFormatBuffer(pBuffer: String): TPAFormat;
-  {$IFDEF USE_GDIPLUS}
-function DetectAvatarFormatGUID(fmt: TGUID): TPAFormat;
-  {$ENDIF USE_GDIPLUS}
 function GetDomain(url: String): String;
 //function get_flashFile_from_xml(const fn: String; const uin: AnsiString): String;
 //function get_flashFile_from_xml(str: TStream; const uin: AnsiString): String;
@@ -97,7 +87,9 @@ implementation
 
  uses
    StrUtils, math,
-   RQUtil, RnQLangs, RnQDialogs, RnQNet, RnQFileUtil, RDUtils, RnQGlobal,
+   RDUtils, RQUtil, RnQDialogs, RDFileUtil,
+   RnQLangs, RnQNet, RnQFileUtil,
+   RnQGlobal,
    cgJpeg,
    RnQConst, utilLib, globalLib, RQThemes,
    Protocols_all,
@@ -169,47 +161,6 @@ function FormatAvatarFileName(const APath : String;const AUIN: AnsiString; AForm
 begin
   Result:= Format('%s%s%s', [APath, AUIN, PAFormat[AFormat]]);
 end;
-
-{function DetectAvatarFormatBuffer(pBuffer: String): TPAFormat;
-var
-  s : String;
-begin
-  s := Copy(pBuffer, 1, 4);
-  if s = 'GIF8' then
-    Result:= PA_FORMAT_GIF
-  else if (s = JPEG_HDR) or (s = JPEG_HDR2) then
-    Result:= PA_FORMAT_JPEG
-  else if StartsText('BM', s) then
-    Result:= PA_FORMAT_BMP
-  else if s = '<?xm' then
-    Result:= PA_FORMAT_XML
-  else if StartsText('‰PNG', s) then
-    Result:= PA_FORMAT_PNG
-  else
-    Result:= PA_FORMAT_UNK;
-end;
-}
-  {$IFDEF USE_GDIPLUS}
-function DetectAvatarFormatGUID(fmt: TGUID): TPAFormat;
-begin
-  if IsEqualGUID(fmt, ImageFormatJPEG) then
-    result := PA_FORMAT_JPEG
-   else
-  if IsEqualGUID(fmt, ImageFormatPNG) then
-    result := PA_FORMAT_PNG
-   else
-  if IsEqualGUID(fmt, ImageFormatGIF) then
-    result := PA_FORMAT_GIF
-   else
-  if IsEqualGUID(fmt, ImageFormatBMP) then
-    result := PA_FORMAT_BMP
-   else
-  if IsEqualGUID(fmt, ImageFormatMemoryBMP) then
-    result := PA_FORMAT_BMP
-   else
-    result := PA_FORMAT_UNK;
-end;
-  {$ENDIF USE_GDIPLUS}
 
 function GetDomain(url : String) : String;
 var

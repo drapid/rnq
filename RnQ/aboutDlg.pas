@@ -76,11 +76,9 @@ var
 implementation
 
 uses
-  DwmApi, Math, Types, UITypes,
+  Themes, DwmApi, Math, Types, UITypes,
   RQUtil, RnQLangs, RDSysUtils, RnQBinUtils, RnQGraphics32, RnQPics,
   mainDlg, utilLib, RnQConst, globalLib,
-//  aarotate,
-//  , shellapi
   themesLib;
 //var
 //  eggCounter:integer;
@@ -170,7 +168,8 @@ begin
   AboutPBox.Height  := SizeMScaled;
 //  AboutPBox.Height  := 85;
   AboutPBox.OnPaint := AboutPBoxPaint;
-  AboutPBox.ControlStyle :=AboutPBox.ControlStyle + [ csOpaque ] ;
+  AboutPBox.ControlStyle := AboutPBox.ControlStyle + [ csOpaque ] ;
+
   { $IFDEF USE_GDIPLUS}
   t1 := TTimer.Create(Self);
   t1.Interval := 40;
@@ -210,7 +209,7 @@ end;
 procedure TaboutFrm.FormShow(Sender: TObject);
   {$IFDEF USE_GDIPLUS}
 var
- ico : HICON;
+ ico: HICON;
   {$ENDIF USE_GDIPLUS}
 begin
  {$IFDEF USE_GDIPLUS}
@@ -257,27 +256,27 @@ const
   PiDiv = Pi / 180;
   {$IFDEF USE_GDIPLUS}
 var
- gr : TGPGraphics;
-  fnt : TGPFont;
-  res : Tsize;
-  gpR, resR :TGPRectF;
-//  gfmt :TGPStringFormat;
-//  br  : TGPBrush;
-  pen : TGPPen;
-// bmp : TGPBitmap;
-// ia  : TGPImageAttributes;
-// mx  : TGPMatrix;
- x, y : Integer;
-  dc  : HDC;
-  ABitmap, HOldBmp : HBITMAP;
-  fullR : TRect;
-//  D : Double;
-//  size : Double;
-{  rr  : TGPRect;
-  i, j : Integer;
-  ia : TGPImageAttributes;
-    disCM   : TColorMatrix;}
-  s : string;  
+  gr: TGPGraphics;
+  fnt: TGPFont;
+  res: Tsize;
+  gpR, resR: TGPRectF;
+//  gfmt: TGPStringFormat;
+//  br: TGPBrush;
+  pen: TGPPen;
+// bmp: TGPBitmap;
+// ia: TGPImageAttributes;
+// mx: TGPMatrix;
+ x, y: Integer;
+  dc: HDC;
+  ABitmap, HOldBmp: HBITMAP;
+  fullR: TRect;
+//  D: Double;
+//  size: Double;
+{  rr: TGPRect;
+  i, j: Integer;
+  ia: TGPImageAttributes;
+    disCM: TColorMatrix;}
+  s: string;
 begin
   x := 32;
   y := 28;

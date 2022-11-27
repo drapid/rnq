@@ -55,13 +55,13 @@ type
 
 
 //var
-//  chatButtons : array[0..0] of TRnQbtn;
+//  chatButtons: array[0..0] of TRnQbtn;
 
 implementation
 uses
   forms,
   RQUtil, RDUtils, RDSysUtils, RnQBinUtils, RnQLangs, RnQGlobal,
-  RnQGraphics32, tipDlg,
+  RnQGraphics32,
   roasterLib, utilLib, RnQConst, globalLib, iniLib, themesLib,
  {$IFDEF RNQ_PLAYER}
    uSimplePlayer,
@@ -70,7 +70,7 @@ uses
   Protocols_all,
   RnQProtocol;
 {const
-  macroses : array[0..34] of TRnQMACROS = (
+  macroses: array[0..34] of TRnQMACROS = (
   (   Name:'chat'; Cptn:'show/hide chat window'; DefShortCut:'ctrl+shift+o'; ev:),
     ( Name:'roaster'; Cptn:'show/hide contact list'; DefShortCut:''),
     ( Name:'tray'; Cptn:'simulate double-click on tray'; DefShortCut:'ctrl+shift+i'),

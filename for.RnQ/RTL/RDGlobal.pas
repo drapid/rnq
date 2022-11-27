@@ -10,7 +10,17 @@ unit RDGlobal;
 
 interface
 uses
-  Classes, Messages, Types, Forms, ExtCtrls, Graphics;
+  Classes, Messages, Types,
+  {$IFDEF FMX}
+  FMX.Forms,
+  FMX.Objects
+  {$ELSE ~FMX}
+  Forms,
+  ExtCtrls,
+  Graphics
+  {$ENDIF FMX}
+
+  ;
 
 { ************ common types used for compatibility between compilers and CPU }
 
@@ -78,9 +88,11 @@ type
   end;
 
   TRnQPntBox = class(TPaintBox)
+{$IFNDEF FMX}
   protected
 //    procedure WMPaint(var Msg: TWMPaint); message WM_PAINT;
     procedure WMEraseBkgnd(var Msg: TWmEraseBkgnd); message WM_ERASEBKGND;
+{$ENDIF ~FMX}
   public
     constructor Create(AOwner: TComponent); override;
 //    procedure PaintImages;
@@ -113,7 +125,7 @@ type
   end;
 
   function MakeSize(sz2: TSize): TGPSize; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-//  function GetSize(sz1: TGPSize): TSize; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+  function GetSize(sz1: TGPSize): TSize; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 //  function MakeSize(Width, Height: Integer): TGPSize; overload;
 
 type
@@ -130,7 +142,8 @@ type
   function MakeRect(const Rect: TRect): TGPRect; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 
 type
-  TMsgDlgType = (mtWarning, mtError, mtInformation, mtConfirmation, mtCustom);
+//  TMsgDlgType = (mtWarning, mtError, mtInformation, mtConfirmation, mtCustom);
+  TMsgDlgType = (mtWarning, mtError, mtInformation, mtConfirmation, mtBuzz, mtCustom);
   TMsgDlgTypes = set of TMsgDlgType;
   TMsgDlgBtn = (mbYes, mbNo, mbOK, mbCancel, mbAbort, mbRetry, mbIgnore,
     mbAll, mbNoToAll, mbYesToAll, mbHelp, mbClose);
@@ -185,9 +198,15 @@ const
 
   function  PicName2Str(val: TPicName): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 
+ {$IFDEF FMX}
+  function MulDiv(nNumber, nNumerator, nDenominator: Integer): Integer;
+ {$ENDIF FMX}
+
 implementation
+{$IFNDEF FMX}
    uses
      Windows, Controls;
+{$ENDIF ~FMX}
 
 constructor TRnQPntBox.Create(AOwner: TComponent);
 begin
@@ -195,6 +214,7 @@ begin
 //  ControlStyle := ControlStyle + [ csOpaque ] ;
 end;
 
+{$IFNDEF FMX}
 procedure TRnQPntBox.WMEraseBkgnd(var Msg: TWmEraseBkgnd);
 Begin
 //  inherited;
@@ -202,6 +222,25 @@ Begin
    msg.Result := LRESULT(False);
    msg.Msg := 0;
 end;
+{$ENDIF FMX}
+
+{$IFDEF FMX}
+function MathRound(AValue: Extended): Int64; inline;
+begin
+  if AValue >= 0 then
+    Result := Trunc(AValue + 0.5)
+  else
+    Result := Trunc(AValue - 0.5);
+end;
+
+function MulDiv(nNumber, nNumerator, nDenominator: Integer): Integer;
+begin
+  if nDenominator = 0 then
+    Result := -1
+  else
+    Result := MathRound(Int64(nNumber) * Int64(nNumerator) / nDenominator);
+end;
+{$ENDIF FMX}
 
   function MakePoint(p2: TPoint): TGPPoint;
   begin
@@ -214,13 +253,13 @@ end;
     Result.Width := sz2.cx;
     Result.Height := sz2.cy;
   end;
-{
+
   function GetSize(sz1: TGPSize): TSize;
   begin
     Result.cx := sz1.Width;
     Result.cy := sz1.Height;
   end;
-}
+
   constructor TGPSize.create(Width, Height: Integer);
   begin
     Self.Width := Width;

@@ -20,7 +20,7 @@ type
     TRnQHttpAuthType    = (httpAuthNone, httpAuthBasic, httpAuthNtlm);
 
 type
-  TproxyProto = (PP_NONE=0, PP_SOCKS4=1, PP_SOCKS5=2, PP_HTTPS=3);
+  TproxyProto = (PP_NONE=0, PP_SOCKS4=1, PP_SOCKS5=2, PP_HTTPS=3, PP_SYSTEM=4);
   Thostport = record
     host: String;
     port: Integer;
@@ -49,7 +49,7 @@ type
   TarrProxy = array of Tproxy;
 
 const
-  proxyProto2Str: array [TproxyProto] of AnsiString=('NONE', 'SOCKS4', 'SOCKS5', 'HTTP/S');
+  proxyProto2Str: array [TproxyProto] of AnsiString=('NONE', 'SOCKS4', 'SOCKS5', 'HTTP/S', 'SYSTEM');
 
 //var
    {:record
@@ -216,12 +216,13 @@ uses
    AnsiStrings,
  {$ENDIF UNICODE}
 //    OverbyteIcsLogger,
+  mormot.net.client,
   RnQDialogs,
   RnQLangs,
+  RDFileUtil,
  {$IFDEF RNQ}
   RnQPrefsInt,
   RQUtil,
-  RnQGraphics32,
  {$ENDIF RNQ}
  {$IFDEF RNQ_PLUGIN}
    RDPlugins,
@@ -756,7 +757,7 @@ end;
 
 procedure TRnQSocket.ClientConnected2(Sender: TObject; Error: Word);
 var
-  FOldOnData : TDataAvailable;
+  FOldOnData: TDataAvailable;
 begin
   FSocksConnected := True;
   if Assigned(FOldOnSessionConnected) then
@@ -783,34 +784,35 @@ end;
 procedure TRnQSocket.DisableProxy();
 begin
     self.http.authType := RnQNet.httpAuthNone;
-    self.http.user:='';
-    self.http.pwd:='';
-    self.http.addr:='';
-    self.http.port:='';
+    self.http.user := '';
+    self.http.pwd := '';
+    self.http.addr := '';
+    self.http.port := '';
     self.http.enabled := False;
-    self.socksServer:='';
-    self.socksPort:='';
-    self.SocksAuthentication:=socksNoAuthentication;
+    self.socksServer := '';
+    self.socksPort := '';
+    self.SocksAuthentication := socksNoAuthentication;
 end;
 
 
-procedure TRnQSocket.proxySettings(proxy : TProxy);
+procedure TRnQSocket.proxySettings(proxy: TProxy);
   procedure disblHTTP;
   begin
     http.authType := RnQNet.httpAuthNone;
-    http.user:='';
-    http.pwd:='';
-    http.addr:='';
-    http.port:='';
+    http.user := '';
+    http.pwd := '';
+    http.addr := '';
+    http.port := '';
     http.enabled := False;
   end;
   procedure disblSOCKS;
   begin
-    socksServer:='';
-    socksPort:='';
-    SocksAuthentication:=socksNoAuthentication;
+    socksServer := '';
+    socksPort := '';
+    SocksAuthentication := socksNoAuthentication;
   end;
-
+var
+  proxyAddr: String;
 begin
   if self.State <> wsClosed then
     exit;
@@ -825,30 +827,30 @@ begin
     PP_SOCKS5:
         begin
           disblHTTP;
-          socksServer:=proxy.addr.host;
+          socksServer := proxy.addr.host;
           socksPort := intToStr(proxy.addr.port);
           if proxy.proto = PP_SOCKS4 then
-            socksLevel:='4'
+            socksLevel := '4'
            else
-            socksLevel:='5';
+            socksLevel := '5';
           if proxy.auth then
-            SocksAuthentication:=socksAuthenticateUsercode
+            SocksAuthentication := socksAuthenticateUsercode
            else
-            SocksAuthentication:=socksNoAuthentication;
+            SocksAuthentication := socksNoAuthentication;
         //  if proxy.NTLM then sock.SocksAuthentication := s
         //  if not proxy.NTLM then
             begin
             //  sock.SocksAuthentication :=
-              SocksUsercode:=proxy.user;
-              SocksPassword:=proxy.pwd;
+              SocksUsercode := proxy.user;
+              SocksPassword := proxy.pwd;
             end
         end;
     PP_HTTPS:
         begin
           disblSOCKS;
           http.enabled := True;
-          http.addr:=proxy.addr.host;
-          http.port:= IntToStr(proxy.addr.port);
+          http.addr := proxy.addr.host;
+          http.port := IntToStr(proxy.addr.port);
           if proxy.auth then
             begin
                 http.user := proxy.user;
@@ -861,6 +863,11 @@ begin
            else
             http.authType := RnQNet.httpAuthNone;
         end;
+    PP_SYSTEM:
+      begin
+        proxyAddr := GetProxyForUri(proxy.addr.host);
+        { TODO -cNetwork : Add parse of system proxy }
+      end;
   end;
 end; // proxySettings
 

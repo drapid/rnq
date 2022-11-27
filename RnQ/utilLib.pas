@@ -1832,7 +1832,7 @@ begin
   if Length(send_msg) = 0 then
     exit;
   result := True;
-  oe.sID := oe.whom.Proto.sendMsg2(oe.whom, oe.flags, send_msg, result);
+  oe.sID := oe.whom.Proto.sendMsg2(oe.whom, oe.flags, send_msg, oe.whom.UID2cmp, result);
   oe.timeSent := now;
   if result then
     Account.acks.add(oe.kind, oe.whom, oe.flags, 'MSG').sID := oe.sID;

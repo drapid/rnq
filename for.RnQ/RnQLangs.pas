@@ -13,7 +13,11 @@ uses
   {$IFDEF LANGDEBUG}
   iniFiles,
   {$ENDIF}
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   Generics.Collections,
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  mormot.core.collections,
+  {$ENDIF USE_MORMOT_COLLECTIONS}
   RDFileUtil;
 
 type
@@ -27,8 +31,13 @@ type
    aLangInfo = array of ToLangInfo;
 
 //  TLangList = THashedStringList;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   TLangList = TDictionary<String, String>;
   TResLangList = TDictionary<Integer, String>;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  TLangList = IKeyValue<String, String>;
+  TResLangList = IKeyValue<Integer, String>;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
 
 type
   TMethodHook = class
@@ -48,6 +57,8 @@ type
     class var RecStrNameIdMap: TResLangList;
     class var aMethodHook: TMethodHook;
    public
+    class var LangVar: TRnQLang;
+   public
     class constructor  CreateLangs;
     class destructor DestroyLangs;
     class procedure RegisterProcedures(aOriginalProcedure, aNewProcedure: pointer);
@@ -60,7 +71,7 @@ type
     hLangsStr: THashedStringList;
   {$ENDIF}
 
-    langFN0, langFN1: String;
+    FlangFN0, FlangFN1: String;
 //    langIsUTF: Boolean;
     function TranslateString(const Str: AnsiString): String; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}// overload;//cdecl;
  {$IFDEF UNICODE}
@@ -94,6 +105,8 @@ type
 
     procedure ClearLang;
     procedure resetLang;
+    property  langFN0: String read FlangFN0;
+    property  langFN1: String read FlangFN1;
   end;
 
   function getTranslation(const key: AnsiString; const args: array of const): String; overload;
@@ -137,7 +150,6 @@ implementation
 
 var
   langList: aLangInfo;
-  LangVar: TRnQLang;
 {  lang: array of record
     key, text: string;
     end;
@@ -199,7 +211,11 @@ end;
 class constructor TRnQLang.CreateLangs;
 begin
   aMethodHook := nil;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   RecStrNameIdMap := TResLangList.Create;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  RecStrNameIdMap := Collections.NewKeyValue<Integer, String>;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
   RegisterProcedures(@System.LoadResString, @NewLoadResString);
 end;
 
@@ -207,20 +223,30 @@ class destructor TRnQLang.DestroyLangs;
 begin
   aMethodHook.Free;
   aMethodHook := NIL;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   RecStrNameIdMap.Free;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
   RecStrNameIdMap := NIL;
 end;
 
 constructor TRnQLang.Create;
 begin
 //  LangsStr := THashedStringList.Create;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   LangsStr := TLangList.Create;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  LangsStr := Collections.NewKeyValue<String, String>;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
   resetLanguage;
 end;
 
 destructor TRnQLang.Destroy;
 begin
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   FreeAndNil(LangsStr);
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  LangsStr := NIL;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
 end;
 
 procedure TRnQLang.resetLanguage;
@@ -268,7 +294,11 @@ begin
       end;
 }
      LangsStr.Clear;
+      {$IFNDEF USE_MORMOT_COLLECTIONS}
      FreeAndNil(LangsStr);
+      {$ELSE USE_MORMOT_COLLECTIONS}
+     LangsStr := NIL;
+      {$ENDIF USE_MORMOT_COLLECTIONS}
     end;
 end;
 
@@ -542,11 +572,11 @@ var
   isUTF: Boolean;
 begin
  {$IFDEF RNQ}
-  loggaEvtS('loading language: ');
+  LogEvent('loading language: ');
  {$ENDIF RNQ}
 
-  langFN0 := f.fn;
-  langFN1 := f.subFile;
+  FLangFN0 := f.fn;
+  FLangFN1 := f.subFile;
 //  langIsUTF := f.isUTF;
 
   useLang := False;
@@ -573,7 +603,11 @@ begin
        end;
      isUTF := fileIsUTF(fn);
 
+      {$IFNDEF USE_MORMOT_COLLECTIONS}
      LangsStr := TLangList.Create;
+      {$ELSE USE_MORMOT_COLLECTIONS}
+     LangsStr := Collections.NewKeyValue<String, String>;
+      {$ENDIF USE_MORMOT_COLLECTIONS}
 {
      LangsStr.Sorted := false;
 //     LangsStr.Sorted := True;
@@ -625,7 +659,7 @@ begin
   {$ENDIF}
 
  {$IFDEF RNQ}
-  loggaEvtS('language loaded');
+  LogEvent('language loaded');
  {$ENDIF RNQ}
 end;
 
@@ -727,7 +761,11 @@ Procedure TRnQLang.LangAddStr(const k: String; const v: String; Mas: TLangList);
 //  so: TPUStrObj;
 //  i: Integer;
 begin
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   Mas.AddOrSetValue(k, v);
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  Mas[k] := v;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
 (*
   i := Mas.IndexOf(k);
   if i>=0 then
@@ -809,7 +847,10 @@ begin
   if Assigned(LangsStr) then
     begin
      resetLang;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
      FreeAndNil(LangsStr);
+  {$ENDIF USE_MORMOT_COLLECTIONS}
+     LangsStr := NIL;
     end;
 end;
 
@@ -847,8 +888,8 @@ end;
 //////////////////////////////////////////////////////////////////////////
 function getTranslation(const key: AnsiString): string;
 begin
-  if useLang and Assigned(LangVar) then
-    result := LangVar.TranslateString(key)
+  if useLang and Assigned(TRnQLang.LangVar) then
+    result := TRnQLang.LangVar.TranslateString(key)
    else
     result := String(key);
   result := ansiReplaceStr(result, '\n', #13);
@@ -858,9 +899,9 @@ function getTranslation(const key: Ansistring; const args: array of const): Stri
 //var
 //  s: extended;
 begin
-  if useLang and Assigned(LangVar) then
+  if useLang and Assigned(TRnQLang.LangVar) then
     begin
-      result := LangVar.TranslateString(key);
+      result := TRnQLang.LangVar.TranslateString(key);
     end
    else
     Result := String(key);
@@ -878,8 +919,8 @@ end; // getTranslation
  {$IFDEF UNICODE}
 function getTranslation(const key: String): string;
 begin
-  if useLang and Assigned(LangVar) then
-    result := LangVar.TranslateString(key)
+  if useLang and Assigned(TRnQLang.LangVar) then
+    result := TRnQLang.LangVar.TranslateString(key)
    else
      Result := key;
   result := ansiReplaceStr(result,'\n', #13);
@@ -889,8 +930,8 @@ function getTranslation(const key: string; const args: array of const):string;
 //var
 //  s : extended;
 begin
-  if useLang and Assigned(LangVar) then
-    result := LangVar.TranslateString(key)
+  if useLang and Assigned(TRnQLang.LangVar) then
+    result := TRnQLang.LangVar.TranslateString(key)
    else
      Result := key;
   if Length(args) > 0 then
@@ -1018,8 +1059,9 @@ begin
     repeat
     if sr.name[1]<>'.' then
       begin
-        fn:=sr.name;
+        fn := sr.name;
         FullFN := lang_paths[0] + fn;
+        ts.pathType := pt_zip;
         ts.zp := TZipFile.Create;
         ts.zp.LoadFromFile(FullFN, pOnlyFileNames);
         if ts.zp.Count > 0 then
@@ -1089,13 +1131,13 @@ begin
      lv.fn := gLangFile;
      lv.subFile := gLangSubFile;
 
-     LangVar := TRnQLang.Create;
-     LangVar.loadLanguage2(lv);
+     TRnQLang.LangVar := TRnQLang.Create;
+     TRnQLang.LangVar.loadLanguage2(lv);
      lv.Free;
      if useLang then
        Exit
       else
-       FreeAndNil(LangVar);
+       FreeAndNil(TRnQLang.LangVar);
    end;
 
   refreshLangList(pLangFileMask, True, appPath, mainPath);
@@ -1107,8 +1149,8 @@ begin
   else
   if Length(langList) = 1 then
     begin
-     LangVar := TRnQLang.Create;
-     LangVar.loadLanguage2(langList[0]);
+     TRnQLang.LangVar := TRnQLang.Create;
+     TRnQLang.LangVar.loadLanguage2(langList[0]);
 //     langList[0]
     end
   else
@@ -1127,9 +1169,9 @@ begin
       begin
        gLangFile := langList[i].fn;
        gLangSubFile := langList[i].subFile;
-       LangVar := TRnQLang.Create;
+       TRnQLang.LangVar := TRnQLang.Create;
 //       LangVar.loadLanguage;
-       LangVar.loadLanguage2(langList[i]);
+       TRnQLang.LangVar.loadLanguage2(langList[i]);
       end;
    end;
 {$ELSE RNQ}
@@ -1137,9 +1179,9 @@ begin
        i := 0;
        gLangFile := langList[i].fn;
        gLangSubFile := langList[i].subFile;
-       LangVar := TRnQLang.Create;
+       TRnQLang.LangVar := TRnQLang.Create;
 //       LangVar.loadLanguage;
-       LangVar.loadLanguage2(langList[i]);
+       TRnQLang.LangVar.loadLanguage2(langList[i]);
       end;
 {$ENDIF RNQ}
   ClearLanglist;
@@ -1148,17 +1190,17 @@ end;
 procedure ClearLanguage;
 begin
  useLang := false;
- if Assigned(LangVar) then
+ if Assigned(TRnQLang.LangVar) then
    begin
-     LangVar.ClearLanguage;
-     FreeAndNil(LangVar);
+     TRnQLang.LangVar.ClearLanguage;
+     FreeAndNil(TRnQLang.LangVar);
    end;
 end;
 
 
 { TMethodHook }
 
-constructor TMethodHook.Create(pOldProc, pNewProc: pointer);
+constructor TMethodHook.Create(pOldProc, pNewProc: Pointer);
 var
   iOffset: integer;
   iMemProtect: cardinal;

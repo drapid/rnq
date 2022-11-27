@@ -9,12 +9,16 @@ unit EmojiConst;
 interface
 
 uses
-  Generics.Collections, RDGlobal;
+  RDGlobal;
+
+type
+  TEmojiContArr = TArray<Integer>;
 
 const
   emojisCount = 1276;
-  emojiExtNumbers: array [1..8] of Integer = (984, 1110, 386, 507, 501, 822, 694, 227);
-  emojiCodePoints: array [0..(emojisCount-1)] of array [1..2] of Integer = (
+  emojiContentsCount = 8;
+  emojiExtNumbers: array [1..emojiContentsCount] of Integer = (984, 1110, 386, 507, 501, 822, 694, 227);
+  emojiCodePoints: array [0..(emojisCount-1)] of array [1..2] of cardinal = (
     ($0023,$20e3), ($002a,$20e3), ($0030,$20e3), ($0031,$20e3), ($0032,$20e3), ($0033,$20e3), ($0034,$20e3), ($0035,$20e3), ($0036,$20e3), ($0037,$20e3), ($0038,$20e3), ($0039,$20e3), ($00a9,$0), ($00ae,$0), ($1f004,$0), ($1f0cf,$0), ($1f170,$0), ($1f171,$0), ($1f17e,$0), ($1f17f,$0), ($1f18e,$0), ($1f191,$0), ($1f192,$0), ($1f193,$0), ($1f194,$0), ($1f195,$0), ($1f196,$0), ($1f197,$0), ($1f198,$0), ($1f199,$0), ($1f19a,$0), ($1f1e6,$1f1e8), ($1f1e6,$1f1e9), ($1f1e6,$1f1ea), ($1f1e6,$1f1eb), ($1f1e6,$1f1ec), ($1f1e6,$1f1ee), ($1f1e6,$1f1f1), ($1f1e6,$1f1f2), ($1f1e6,$1f1f4), ($1f1e6,$1f1f6), ($1f1e6,$1f1f7), ($1f1e6,$1f1f8), ($1f1e6,$1f1f9), ($1f1e6,$1f1fa), ($1f1e6,$1f1fc), ($1f1e6,$1f1fd), ($1f1e6,$1f1ff), ($1f1e7,$1f1e6), ($1f1e7,$1f1e7),
     ($1f1e7,$1f1e9), ($1f1e7,$1f1ea), ($1f1e7,$1f1eb), ($1f1e7,$1f1ec), ($1f1e7,$1f1ed), ($1f1e7,$1f1ee), ($1f1e7,$1f1ef), ($1f1e7,$1f1f1), ($1f1e7,$1f1f2), ($1f1e7,$1f1f3), ($1f1e7,$1f1f4), ($1f1e7,$1f1f6), ($1f1e7,$1f1f7), ($1f1e7,$1f1f8), ($1f1e7,$1f1f9), ($1f1e7,$1f1fb), ($1f1e7,$1f1fc), ($1f1e7,$1f1fe), ($1f1e7,$1f1ff), ($1f1e8,$1f1e6), ($1f1e8,$1f1e8), ($1f1e8,$1f1e9), ($1f1e8,$1f1eb), ($1f1e8,$1f1ec), ($1f1e8,$1f1ed), ($1f1e8,$1f1ee), ($1f1e8,$1f1f0), ($1f1e8,$1f1f1), ($1f1e8,$1f1f2), ($1f1e8,$1f1f3), ($1f1e8,$1f1f4), ($1f1e8,$1f1f5), ($1f1e8,$1f1f7), ($1f1e8,$1f1fa), ($1f1e8,$1f1fb), ($1f1e8,$1f1fc), ($1f1e8,$1f1fd), ($1f1e8,$1f1fe), ($1f1e8,$1f1ff), ($1f1e9,$1f1ea), ($1f1e9,$1f1ec), ($1f1e9,$1f1ef), ($1f1e9,$1f1f0), ($1f1e9,$1f1f2), ($1f1e9,$1f1f4), ($1f1e9,$1f1ff), ($1f1ea,$1f1e6), ($1f1ea,$1f1e8), ($1f1ea,$1f1ea), ($1f1ea,$1f1ec),
     ($1f1ea,$1f1ed), ($1f1ea,$1f1f7), ($1f1ea,$1f1f8), ($1f1ea,$1f1f9), ($1f1ea,$1f1fa), ($1f1eb,$1f1ee), ($1f1eb,$1f1ef), ($1f1eb,$1f1f0), ($1f1eb,$1f1f2), ($1f1eb,$1f1f4), ($1f1eb,$1f1f7), ($1f1ec,$1f1e6), ($1f1ec,$1f1e7), ($1f1ec,$1f1e9), ($1f1ec,$1f1ea), ($1f1ec,$1f1eb), ($1f1ec,$1f1ec), ($1f1ec,$1f1ed), ($1f1ec,$1f1ee), ($1f1ec,$1f1f1), ($1f1ec,$1f1f2), ($1f1ec,$1f1f3), ($1f1ec,$1f1f5), ($1f1ec,$1f1f6), ($1f1ec,$1f1f7), ($1f1ec,$1f1f8), ($1f1ec,$1f1f9), ($1f1ec,$1f1fa), ($1f1ec,$1f1fc), ($1f1ec,$1f1fe), ($1f1ed,$1f1f0), ($1f1ed,$1f1f2), ($1f1ed,$1f1f3), ($1f1ed,$1f1f7), ($1f1ed,$1f1f9), ($1f1ed,$1f1fa), ($1f1ee,$1f1e8), ($1f1ee,$1f1e9), ($1f1ee,$1f1ea), ($1f1ee,$1f1f1), ($1f1ee,$1f1f2), ($1f1ee,$1f1f3), ($1f1ee,$1f1f4), ($1f1ee,$1f1f6), ($1f1ee,$1f1f7), ($1f1ee,$1f1f8), ($1f1ee,$1f1f9), ($1f1ef,$1f1ea), ($1f1ef,$1f1f2), ($1f1ef,$1f1f4),
@@ -42,7 +46,7 @@ const
     ($269c,$0), ($26a0,$0), ($26a1,$0), ($26aa,$0), ($26ab,$0), ($26b0,$0), ($26b1,$0), ($26bd,$0), ($26be,$0), ($26c4,$0), ($26c5,$0), ($26c8,$0), ($26ce,$0), ($26cf,$0), ($26d1,$0), ($26d3,$0), ($26d4,$0), ($26e9,$0), ($26ea,$0), ($26f0,$0), ($26f1,$0), ($26f2,$0), ($26f3,$0), ($26f4,$0), ($26f5,$0), ($26f7,$0), ($26f8,$0), ($26f9,$0), ($26fa,$0), ($26fd,$0), ($2702,$0), ($2705,$0), ($2708,$0), ($2709,$0), ($270a,$0), ($270b,$0), ($270c,$0), ($270d,$0), ($270f,$0), ($2712,$0), ($2714,$0), ($2716,$0), ($271d,$0), ($2721,$0), ($2728,$0), ($2733,$0), ($2734,$0), ($2744,$0), ($2747,$0), ($274c,$0),
     ($274e,$0), ($2753,$0), ($2754,$0), ($2755,$0), ($2757,$0), ($2763,$0), ($2764,$0), ($2795,$0), ($2796,$0), ($2797,$0), ($27a1,$0), ($27b0,$0), ($27bf,$0), ($2934,$0), ($2935,$0), ($2b05,$0), ($2b06,$0), ($2b07,$0), ($2b1b,$0), ($2b1c,$0), ($2b50,$0), ($2b55,$0), ($3030,$0), ($303d,$0), ($3297,$0), ($3299,$0)
   );
-  emojiExtHints: array [1..8] of String = ('People', 'Nature', 'Foods', 'Activity', 'Travel', 'Objects', 'Symbols', 'Flags');
+  emojiExtHints: array [1..emojiContentsCount] of String = ('People', 'Nature', 'Foods', 'Activity', 'Travel', 'Objects', 'Symbols', 'Flags');
 
 {
   emojiContents: array [1..8] of Array of Integer = ((933, 977, 934, 935, 936, 937, 938, 939, 940, 942, 943, 999, 1000, 1173, 944, 945, 946, 957, 956, 958, 959, 961, 962, 960, 1101, 1103, 947, 1107, 948, 987, 949, 950, 951, 1001, 1104, 984, 963, 964, 965, 966, 953, 954, 998, 1172, 968, 955, 976, 974, 969, 979, 982, 973, 981, 980, 971, 972, 967, 970, 975, 952, 978, 986, 983, 1100, 988, 1102, 1105, 985, 709, 714, 941, 672, 666, 667, 673, 668, 670, 1106, 991, 989, 990, 992, 993, 994, 997, 996, 995, 1009, 624, 620, 622, 623, 619, 1234, 1236, 621, 1235, 625, 715, 1012, 1163, 615, 616, 617, 618, 907, 906, 1108, 908, 1237, 678, 613, 614, 611, 612, 609, 608, 645, 646, 924, 663, 647, 648, 649, 650, 658, 661, 662, 659, 660, 655, 664, 675, 896, 434, 669, 665, 657, 1067, 491, 676, 656, 652, 653, 654, 1004, 674, 1002, 1003, 1008, 1011, 1010, 680, 679, 690, 688, 651, 635, 630, 631, 629, 632, 634, 633, 677, 684, 644, 641, 642, 643, 639, 640, 627, 465, 1214, 448, 626, 447, 638, 636, 637, 733, 628, 897, 686, 305),
@@ -57,9 +61,6 @@ const
                                               112, 270, 277, 271, 272, 279, 273, 275, 278, 280, 100, 283, 286, 287, 224, 46, 250, 142, 61, 86, 70, 116, 140, 284, 199, 217, 57, 216, 125, 257, 65, 131, 237, 269, 136, 96, 81, 90, 42, 40, 276, 76, 85, 104, 115, 253, 122, 186, 185, 247, 244, 251, 177));
 }
 var
-  emojiContents: TDictionary<Integer, TArray<Integer>>;
-  emojis: TDictionary<TPair<Cardinal, Cardinal>, Integer>;
-  EmojiList: TDictionary<String, TPicName>;
   singles: array of word;
 
 {
@@ -78,12 +79,36 @@ const
 
   function GetEmojiStr(num: Integer): String;
   function GetEmojiPicName(num: Integer): TPicName;
-
+  function GetEmojiCont(num: Integer): TEmojiContArr;
+  function EmojiListTryGetValue(const e: String; var p: TPicName): Boolean;
 
 implementation
 uses
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
+  Generics.Collections,
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  mormot.core.base,
+  mormot.core.collections,
+  {$ENDIF USE_MORMOT_COLLECTIONS}
   System.Character, SysUtils, Math,
   RDUtils;
+
+type
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
+  TEmojiContent = TDictionary<Integer, TEmojiContArr>;
+  TEmojiKey: TPair<Cardinal, Cardinal>;
+  TEmojis = TDictionary<TEmojiKey, Integer>;
+  TEmojiList = TDictionary<String, TPicName>;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  TEmojiContent = IKeyValue<Integer, TEmojiContArr>;
+  TEmojiKey = UInt64;
+  TEmojis = IKeyValue<TEmojiKey, Integer>;
+  TEmojiList = IKeyValue<String, TPicName>;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
+var
+  emojiContents: TEmojiContent;
+  emojis: TEmojis;
+  EmojiList: TEmojiList;
 
 function GetEmojiStr(num: Integer): String;
 begin
@@ -105,15 +130,30 @@ begin
   Result := IntToStrA(num);
 end;
 
+function GetEmojiCont(num: Integer): TEmojiContArr;
+begin
+  Result := emojiContents[num];
+end;
+
+function EmojiListTryGetValue(const e: String; var p: TPicName): Boolean;
+begin
+  Result := EmojiList.TryGetValue(e, p);
+end;
 
 var
   i: Integer;
-  key: TPair<Cardinal, Cardinal>;
+  key: TEmojiKey;
 initialization
 
-  emojiContents := TDictionary<Integer, TArray<Integer>>.Create;
-  emojiContents.Add(1, TArray<Integer>.Create(933, 977, 934, 935, 936, 937, 938, 939, 940, 942, 943, 999, 1000, 1173, 944, 945, 946, 957, 956, 958, 959, 961, 962, 960, 1101, 1103, 947, 1107, 948, 987, 949, 950, 951, 1001, 1104, 984, 963, 964, 965, 966, 953, 954, 998, 1172, 968, 955, 976, 974, 969, 979, 982, 973, 981, 980, 971, 972, 967, 970, 975, 952, 978, 986, 983, 1100, 988, 1102, 1105, 985, 709, 714, 941, 672, 666, 667, 673, 668, 670, 1106, 991, 989, 990, 992, 993, 994, 997, 996, 995, 1009, 624, 620, 622, 623, 619, 1234, 1236, 621, 1235, 625, 715, 1012, 1163, 615, 616, 617, 618, 907, 906, 1108, 908, 1237, 678, 613, 614, 611, 612, 609, 608, 645, 646, 924, 663, 647, 648, 649, 650, 658, 661, 662, 659, 660, 655, 664, 675, 896, 434, 669, 665, 657, 1067, 491, 676, 656, 652, 653, 654, 1004, 674, 1002, 1003, 1008, 1011, 1010, 680, 679, 690, 688, 651, 635, 630, 631, 629, 632, 634, 633, 677, 684, 644, 641, 642, 643, 639, 640, 627, 465, 1214, 448, 626, 447, 638, 636, 637, 733, 628, 897, 686, 305));
-  emojiContents.Add(2, TArray<Integer>.Create(598, 593, 589, 601, 592, 603, 604, 584, 591, 1110, 590, 599, 605, 600, 569, 597, 1005, 1006, 1007, 562, 564, 583, 582, 580, 579, 581, 602, 567, 596, 1113, 573, 571, 556, 574, 572, 898, 1111, 1109, 557, 578, 576, 575, 577, 588, 595, 555, 554, 550, 549, 547, 546, 548, 586, 587, 568, 560, 559, 561, 558, 566, 544, 545, 563, 1112, 863, 565, 585, 552, 551, 607, 606, 553, 594, 354, 433, 351, 352, 353, 350, 364, 1162, 365, 442, 440, 368, 367, 366, 363, 359, 360, 358, 356, 361, 357, 689, 369, 349, 432, 570, 899, 317, 316, 318, 324, 325, 326, 327, 320, 321, 322, 323, 329, 332, 330, 331, 333, 328, 1270, 334, 716, 1244, 1157, 1153, 337, 1210, 338, 339, 1154, 340, 1211, 342, 1202, 837, 710, 1247, 341, 1156, 1209, 345, 713, 343, 344, 1155, 1160, 712, 711, 313));
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
+  emojiContents := TEmojiContent.Create;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+//  emojiContents := Collections.NewKeyValue<Integer, TEmojiContArr>;
+  emojiContents := Collections.NewPlainKeyValue<Integer, TEmojiContArr>;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
+
+  emojiContents.Add(1, TEmojiContArr.Create(933, 977, 934, 935, 936, 937, 938, 939, 940, 942, 943, 999, 1000, 1173, 944, 945, 946, 957, 956, 958, 959, 961, 962, 960, 1101, 1103, 947, 1107, 948, 987, 949, 950, 951, 1001, 1104, 984, 963, 964, 965, 966, 953, 954, 998, 1172, 968, 955, 976, 974, 969, 979, 982, 973, 981, 980, 971, 972, 967, 970, 975, 952, 978, 986, 983, 1100, 988, 1102, 1105, 985, 709, 714, 941, 672, 666, 667, 673, 668, 670, 1106, 991, 989, 990, 992, 993, 994, 997, 996, 995, 1009, 624, 620, 622, 623, 619, 1234, 1236, 621, 1235, 625, 715, 1012, 1163, 615, 616, 617, 618, 907, 906, 1108, 908, 1237, 678, 613, 614, 611, 612, 609, 608, 645, 646, 924, 663, 647, 648, 649, 650, 658, 661, 662, 659, 660, 655, 664, 675, 896, 434, 669, 665, 657, 1067, 491, 676, 656, 652, 653, 654, 1004, 674, 1002, 1003, 1008, 1011, 1010, 680, 679, 690, 688, 651, 635, 630, 631, 629, 632, 634, 633, 677, 684, 644, 641, 642, 643, 639, 640, 627, 465, 1214, 448, 626, 447, 638, 636, 637, 733, 628, 897, 686, 305));
+  emojiContents.Add(2, TEmojiContArr.Create(598, 593, 589, 601, 592, 603, 604, 584, 591, 1110, 590, 599, 605, 600, 569, 597, 1005, 1006, 1007, 562, 564, 583, 582, 580, 579, 581, 602, 567, 596, 1113, 573, 571, 556, 574, 572, 898, 1111, 1109, 557, 578, 576, 575, 577, 588, 595, 555, 554, 550, 549, 547, 546, 548, 586, 587, 568, 560, 559, 561, 558, 566, 544, 545, 563, 1112, 863, 565, 585, 552, 551, 607, 606, 553, 594, 354, 433, 351, 352, 353, 350, 364, 1162, 365, 442, 440, 368, 367, 366, 363, 359, 360, 358, 356, 361, 357, 689, 369, 349, 432, 570, 899, 317, 316, 318, 324, 325, 326, 327, 320, 321, 322, 323, 329, 332, 330, 331, 333, 328, 1270, 334, 716, 1244, 1157, 1153, 337, 1210, 338, 339, 1154, 340, 1211, 342, 1202, 837, 710, 1247, 341, 1156, 1209, 345, 713, 343, 344, 1155, 1160, 712, 711, 313));
   emojiContents.Add(3, TArray<Integer>.Create(380, 379, 381, 375, 376, 377, 374, 372, 384, 373, 383, 382, 378, 370, 371, 355, 362, 397, 412, 395, 1114, 388, 387, 401, 416, 385, 396, 346, 386, 394, 347, 348, 393, 415, 402, 400, 414, 392, 390, 391, 389, 399, 398, 404, 405, 403, 413, 431, 411, 409, 410, 408, 428, 406, 407, 423, 424, 420, 421, 422, 427, 419, 418, 1161, 425, 417, 426));
   emojiContents.Add(4, TArray<Integer>.Create(1207, 488, 496, 1208, 486, 504, 497, 473, 1222, 500, 507, 541, 506, 505, 503, 487, 1225, 490, 1226, 542, 459, 1048, 498, 492, 1077, 1227, 499, 1065, 1066, 495, 895, 494, 485, 493, 449, 450, 539, 467, 455, 469, 464, 466, 460, 463, 484, 481, 479, 482, 480, 483, 468, 470, 671, 471, 474, 472, 475));
   emojiContents.Add(5, TArray<Integer>.Create(1036, 1034, 1038, 1025, 1027, 502, 1032, 1030, 1031, 1029, 1039, 1040, 1041, 501, 1063, 1053, 1033, 1026, 1037, 1035, 1046, 1045, 1044, 1016, 1024, 1042, 1017, 1018, 1021, 1043, 1015, 1019, 1020, 1023, 1022, 1014, 1095, 1232, 1096, 1097, 1224, 1094, 1049, 1223, 1099, 1013, 1098, 731, 1194, 1052, 1229, 1028, 1051, 1050, 489, 1047, 457, 458, 456, 511, 304, 929, 533, 1221, 446, 1219, 508, 928, 314, 931, 509, 1228, 518, 1092, 1093, 308, 307, 516, 510, 517, 310, 309, 513, 306, 312, 315, 335, 436, 435, 311, 512, 536, 535, 519, 930, 520, 521, 514, 522, 532, 523, 524, 525, 526, 528, 530, 531, 529, 691, 515, 1218, 865, 866, 864, 1217));
@@ -123,27 +163,53 @@ initialization
   emojiContents.Add(8, TArray<Integer>.Create(31, 34, 37, 95, 32, 39, 36, 35, 41, 38, 45, 44, 43, 47, 63, 54, 50, 49, 67, 51, 68, 56, 58, 64, 60, 48, 66, 62, 59, 53, 52, 55, 84, 153, 78, 69, 160, 72, 252, 77, 79, 80, 155, 73, 71, 82, 133, 83, 87, 88, 92, 91, 93, 94, 97, 99, 246, 123, 101, 98, 103, 107, 109, 106, 105, 110, 211, 111, 120, 114, 89, 117, 118, 124, 119, 113, 127, 126, 121, 128, 129, 134, 132, 130, 135, 145, 141, 137, 144, 143, 138, 139, 146, 75, 148, 150, 147, 149, 161, 151, 154, 282, 159, 152, 162, 171, 163, 168, 167, 172, 165, 169, 170, 184, 180, 178, 192, 194, 191, 181, 189, 179, 187, 190, 193, 108, 175, 174, 183, 176, 188, 173, 195, 182, 196, 205, 204, 202, 197, 207, 201, 198, 200, 206, 157, 203, 208, 214, 221, 219, 209, 212, 222, 210, 213, 215, 220, 218, 223, 225, 227, 228, 235, 156, 164, 274, 281, 240, 245, 229, 241, 226, 231, 239, 234, 238, 236, 230, 242, 285, 158, 102, 166, 232, 243, 249, 233, 74, 248, 265, 256, 266, 255, 258, 254, 261, 263, 260, 262, 259, 264, 268, 267, 33,
                                               112, 270, 277, 271, 272, 279, 273, 275, 278, 280, 100, 283, 286, 287, 224, 46, 250, 142, 61, 86, 70, 116, 140, 284, 199, 217, 57, 216, 125, 257, 65, 131, 237, 269, 136, 96, 81, 90, 42, 40, 276, 76, 85, 104, 115, 253, 122, 186, 185, 247, 244, 251, 177));
 
-  EmojiList := TDictionary<String, TPicName>.Create;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
+  EmojiList := TEmojiList.Create;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  EmojiList := Collections.NewKeyValue<String, TPicName>;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
   for i := 0 to emojisCount-1 do
     EmojiList.Add(GetEmojiStr(i), GetEmojiPicName(i));
 //  EmojiList.Sort;
 
-  emojis := TDictionary<TPair<Cardinal, Cardinal>, Integer>.Create;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
+  emojis := TEmojis.Create;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  emojis := Collections.NewKeyValue<TEmojiKey, Integer>;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
   for i := 0 to emojisCount-1 do
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
     emojis.Add(TPair<Cardinal, Cardinal>.Create(emojiCodePoints[i][1], emojiCodePoints[i][2]), i);
+  {$ELSE USE_MORMOT_COLLECTIONS}
+    begin
+      var q: TQWordRec;
+      q.l := emojiCodePoints[i][1];
+      q.h := emojiCodePoints[i][2];
+      emojis.Add(q.v, i);
 
+      if (q.h = 0) and (q.l <= $ffff) then
+      begin
+        SetLength(singles, Length(singles) + 1);
+        singles[Length(singles) - 1] := q.l;
+      end;
+    end;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
+
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   for key in emojis.Keys do
   if (key.Value = 0) and (key.Key <= $ffff) then
   begin
     SetLength(singles, Length(singles) + 1);
     singles[Length(singles) - 1] := key.Key;
   end;
-
+  {$ENDIF USE_MORMOT_COLLECTIONS}
 
 finalization
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   emojis.Free;
   EmojiList.Free;
   emojiContents.free;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
   emojis := NIL;
   EmojiList := NIL;
   emojiContents := NIL;

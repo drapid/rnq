@@ -35,18 +35,6 @@ uses
  {$IFDEF UNICODE}
    AnsiClasses,
  {$ENDIF UNICODE}
-   Generics.Collections,
-
- {$IFDEF USE_ZIP}
-  RnQZip,
- {$ENDIF USE_ZIP}
- {$IFDEF USE_RAR}
-//   ztvUnRar,
-    UnRAR,
- {$ENDIF USE_RAR}
- {$IFDEF USE_7Z}
-   SevenZip,
- {$ENDIF USE_7Z}
   RDFileUtil;
 
 type
@@ -204,7 +192,7 @@ type
  {$ELSE ~UNICODE}
   TObjList =  TStringList;
  {$ENDIF UNICODE}
-  TFontList = TDictionary<string, TFontObj>;
+
   PBigPicsArr = ^TBigPicsArr;
   TBigPicsArr = array of TPicObj;
 
@@ -450,6 +438,16 @@ implementation
  {$IFDEF RNQ}
    RQlog, EmojiConst,
  {$ENDIF RNQ}
+ {$IFDEF USE_ZIP}
+  RnQZip,
+ {$ENDIF USE_ZIP}
+ {$IFDEF USE_RAR}
+//   ztvUnRar,
+    UnRAR,
+ {$ENDIF USE_RAR}
+ {$IFDEF USE_7Z}
+   SevenZip,
+ {$ENDIF USE_7Z}
   RnQDialogs,
   CommCtrl, mmSystem, Types;
 type
@@ -481,7 +479,7 @@ const
   end;
 
 
-procedure InitThemePath(var ts: TThemeSourcePath; fn: String);
+procedure InitThemePath(var ts: TThemeSourcePath; const fn: String);
 var
   fn_Ext: String;
 begin
@@ -630,7 +628,7 @@ begin
 end;
 }
 
-procedure TRQtheme.debug;
+procedure TRQtheme.Debug;
 begin
  {$IFDEF RQDEBUG2}
   Fpics.SaveToFile('FPics');
@@ -648,7 +646,7 @@ end;
 constructor TRQtheme.Create;
 begin
   curToken := 101;
-  fThemeDPI := cdefaultDPI;
+  fThemeDPI := cDefaultDPI;
  {$IFDEF SMILES_ANI_ENGINE}
   FAniTimer := NIL;
   FdrawCS := TCriticalSection.Create;
@@ -1033,6 +1031,7 @@ var
   s1: String;
   ts: TThemeSourcePath;
   I: Integer;
+  pt_old: TPathType;
 begin
   Result := '';
   fn_Only := ExtractFileName(fn0);
@@ -1081,70 +1080,76 @@ begin
  {$ENDIF RNQ_FULL}
 
   Clear(subClass);
-  ts.ArcFile := '';
- {$IFDEF USE_ZIP}
-     ts.zp := NIL;
- {$ENDIF USE_ZIP}
- {$IFDEF USE_7Z}
-     ts.z7 := NIL;
- {$ENDIF USE_7Z}
- {$IFDEF USE_RAR}
-   ts.RarHnd := 0;
- {$ENDIF USE_RAR}
- if subClass = tsc_all then
-  ThemePath.fn := fn_Only;
- if loadBase then
- begin
- {$IFDEF USE_ZIP}
-//  baseArc := mypath+themesPath+'RnQ.theme.rtz';
-  baseThemePath.pathType := pt_zip;
-  baseThemePath.fn := fBasePath+themesPath+'RnQ.theme.rtz';
- {$ENDIF USE_ZIP}
-  if not FileExists(fn_full) then
- {$IFDEF USE_ZIP}
-   if FileExists(baseThemePath.fn) then
-    begin
-     fn_full := baseThemePath.fn;
-     fn_Only := 'RnQ.theme.rtz';
-     subFile := defaultThemePrefix +defaultThemePostfix;
-    end
-   else
- {$ENDIF USE_ZIP}
-    begin
-     fn_full := fBasePath+themesPath+defaultThemePrefix +defaultThemePostfix;
-     fn_Only := defaultThemePrefix +defaultThemePostfix;
-     subFile := '';
-    end;
- {$IFDEF USE_ZIP}
-  if FileExists(baseThemePath.fn) then
-    begin
-//     fs := pt_zip;
-     ts.pathType := pt_zip;
-     ts.path := '';
-//     ts.zp := TKAZip.Create(NIL);
-     ts.zp := TZipFile.Create;
-   //  ts.zp.ReadOnly := True;
-//     ts.zp.Open(baseArc);
-     ts.zp.LoadFromFile(baseThemePath.fn);
-    end
-   else
- {$ENDIF USE_ZIP}
-    begin
-//     fs := pt_path;
-     ts.pathType := pt_path;
-     ts.path := fBasePath+themesPath;
-    end;
+  ts.ArcClear;
+  if subClass = tsc_all then
+    ThemePath.fn := fn_Only;
+  if loadBase then
+   begin
+     {$IFDEF USE_ZIP}
+    //  baseArc := mypath+themesPath+'RnQ.theme.rtz';
+      baseThemePath.pathType := pt_zip;
+      baseThemePath.fn := fBasePath+themesPath+'RnQ.theme.rtz';
+     {$ENDIF USE_ZIP}
+      if not FileExists(fn_full) then
+     {$IFDEF USE_ZIP}
+       if FileExists(baseThemePath.fn) then
+        begin
+         fn_full := baseThemePath.fn;
+         fn_Only := 'RnQ.theme.rtz';
+         subFile := defaultThemePrefix +defaultThemePostfix;
+        end
+       else
+     {$ENDIF USE_ZIP}
+        begin
+         fn_full := fBasePath+themesPath+defaultThemePrefix +defaultThemePostfix;
+         fn_Only := defaultThemePrefix +defaultThemePostfix;
+         subFile := '';
+        end;
+     {$IFDEF USE_ZIP}
+      if FileExists(baseThemePath.fn) then
+        begin
+    //     fs := pt_zip;
+         ts.pathType := pt_zip;
+         ts.path := '';
+         ts.zp := TZipFile.Create;
+       //  ts.zp.ReadOnly := True;
+    //     ts.zp.Open(baseArc);
+         ts.zp.LoadFromFile(baseThemePath.fn);
+        end
+       else
+     {$ENDIF USE_ZIP}
+        begin
+    //     fs := pt_path;
+         ts.pathType := pt_path;
+         ts.path := fBasePath+themesPath;
+        end;
 
-  loadThemeScript(defaultThemePrefix+ 'Base.' + defaultThemePostfix, ts);
- {$IFDEF USE_ZIP}
-  if (fn_full <> baseThemePath.fn)and Assigned(ts.zp) then
+      loadThemeScript(defaultThemePrefix+ 'Base.' + defaultThemePostfix, ts);
+     {$IFDEF USE_ZIP}
+      if (fn_full <> baseThemePath.fn)and (ts.pathType = pt_zip) and Assigned(ts.zp) then
+        FreeAndNil(ts.zp);
+     {$ENDIF USE_ZIP}
+
+      Result := logtimestamp + 'Base ' + ts.ArcFile + ' in file ' + baseThemePath.fn + ' loaded';
+   end;
+
+  pt_old := ts.pathType;
+
+  fn_Ext := ExtractFileExt(fn_Only);
+  InitThemePath(ts, fn_full);
+
+  {$IFDEF USE_ZIP}
+  // If the same zip archive - preserve
+  if (pt_old = pt_zip) and Assigned(ts.zp) and (fn_full <> baseThemePath.fn) then
     FreeAndNil(ts.zp);
- {$ENDIF USE_ZIP}
+  {$ENDIF USE_ZIP}
+  {$IFDEF USE_7Z}
+  if (pt_old = pt_7z) and Assigned(ts.z7) then
+        FreeAndNil(ts.z7);
+//        ts.z7 := NIL;
+  {$ENDIF USE_7Z}
 
-  Result := logtimestamp + 'Base ' + ts.ArcFile + ' in file ' + baseThemePath.fn + ' loaded';
- end;
- fn_Ext := ExtractFileExt(fn_Only);
- InitThemePath(ts, fn_full);
+
  case ts.pathType of
    pt_path:
       begin
@@ -1155,13 +1160,6 @@ begin
     //      ThemePath.fn := '';
           ThemePath.subfn := '';
          end;
-     {$IFDEF USE_ZIP}
-        FreeAndNil(ts.zp);
-     {$ENDIF USE_ZIP}
-     {$IFDEF USE_7Z}
-//        FreeAndNil(ts.7z);
-        ts.z7 := NIL;
-     {$ENDIF USE_7Z}
        end;
 
      {$IFDEF USE_ZIP}
@@ -1171,7 +1169,6 @@ begin
           ThemePath.fn:= fn_Only;
         if (fn_full <> baseThemePath.fn)or not Assigned(ts.zp) then
          begin
-    //      ts.zp := TKAZip.Create(NIL);
           ts.zp := TZipFile.Create;
       //  ts.zp.ReadOnly := True;
     //      ts.zp.Open(Fn);
@@ -1208,8 +1205,8 @@ begin
           ThemePath.fn:= fn_only;
 
         try
-//           ts.z7 := TSevenZip.Create(NIL);
-           ts.z7 := CreateInArchive(CLSID_CFormat7z);
+           ts.z7 := T7zInArchive.Create('');
+//           ts.z7 := CreateInArchive(CLSID_CFormat7z);
           except
              ts.z7 := NIL;
         end;
@@ -1226,7 +1223,7 @@ begin
                      (ExtractFileExt(ts.zp.Entries.Items[i].FileName) = '.ini')  then
                    subFile := ts.zp.Entries.Items[i].FileName;}
 //                 for I := 0 to ts.z7.Files.Count - 1 do
-                 for I := 0 to ts.z7.NumberOfItems - 1 do
+                 for I := 0 to ts.z7.getNumberOfItems - 1 do
                   begin
 //                   s1 := ts.z7.Files.WStrings[i]
                    s1 := ts.z7.getItemPath(i);
@@ -1244,7 +1241,8 @@ begin
             end
            else
             begin
-             loggaEvt('Can''t load theme '+fn_full + '; Need 7za.dll or 7zxa.dll!');
+//             loggaEvt('Can''t load theme '+fn_full + '; Need 7za.dll or 7zxa.dll!');
+             msgDlg('Can''t load theme '+fn_full + '; Need 7za.dll or 7zxa.dll!', false, mtError);
              subFile := '';
              if subClass = tsc_all then
               begin
@@ -1315,8 +1313,8 @@ begin
  FreeAndNil(ts.zp);
  {$ENDIF USE_ZIP}
  {$IFDEF USE_7Z}
-// FreeAndNil(ts.z7);
-  ts.z7 := NIL;
+ FreeAndNil(ts.z7);
+//  ts.z7 := NIL;
  {$ENDIF USE_7Z}
  FThemePics.Sorted := True;
 // FGPpics.Sorted := True;
@@ -2980,13 +2978,7 @@ var
   ts: TThemeSourcePath;
 begin
   ts.pathType := pt_path;
-    {$IFDEF USE_ZIP}
-  ts.zp := nil;
-    {$ENDIF USE_ZIP}
-    {$IFDEF USE_7Z}
-  ts.z7 := nil;
-    {$ENDIF USE_7Z}
-  ts.ArcFile := '';  
+  ts.ArcClear;
   ts.path := path;
   loadThemeScript(fn, ts);
 end;
@@ -4579,6 +4571,7 @@ begin
     if sr.name[1]<>'.' then
       begin
         fn := sr.name;
+        ts.pathType := pt_zip;
   //      zp := TKAZip.Create(NIL);
   //      zp.Open(myPath+themesPath+fn);
   //      if zp.IsZipFile > 0 then
@@ -4606,6 +4599,7 @@ begin
              end;
           end;
           ts.zp.Free;
+          ts.zp := NIL;
          end;
       end;
     until findNext(sr) <> 0;
@@ -4616,8 +4610,8 @@ begin
 //  '*.7z;*.7zip;*.rt7'
  try
 //   ts.z7 := TSevenZip.Create(NIL);
-//   ts.z7 := T7zInArchive.Create('7za.dll');
-   ts.z7 := CreateInArchive(CLSID_CFormat7z);
+   ts.z7 := T7zInArchive.Create('7za.dll');
+//   ts.z7 := CreateInArchive(CLSID_CFormat7z);
   except
    ts.z7 := NIL;
  end;
@@ -4635,9 +4629,9 @@ begin
 //      ts.z7.SZFileName := theme_paths[0] + fn;
 //      zp.LoadFromFile(myPath+themesPath+fn);
       ts.z7.OpenFile(theme_paths[0] + fn);
-      if ts.z7.NumberOfItems > 0 then
+      if ts.z7.getNumberOfItems > 0 then
        begin
-        for I := 0 to ts.z7.NumberOfItems - 1 do
+        for I := 0 to ts.z7.getNumberOfItems - 1 do
         begin
 //         w := ts.z7.Files.WStrings[i];
          w := ts.z7.getItemPath(i);

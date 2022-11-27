@@ -82,7 +82,6 @@ end;
 procedure TotherFr.initPage;
 begin
   Inherited;
-  fnBoxButton.Left := fnBox.Left + fnBox.Width + 2;
 end;
 
 procedure TotherFr.PathInfoBtnClick(Sender: TObject);
@@ -145,7 +144,18 @@ begin
 end;
 
 procedure TotherFr.updateVisPage;
+var
+  gap_scaled: Integer;
+  gap2_scaled: Integer;
 begin
+  gap_scaled := MulDiv(GAP_SIZE, getParentCurrentDPI, FRM_PPI);
+  gap2_scaled := MulDiv(GAP_SIZE2, getParentCurrentDPI, FRM_PPI);
+
+  NILdoGrp.Width := TabSheet1.ClientWidth - gap2_scaled;
+  GroupBox1.width := TabSheet1.ClientWidth - gap2_scaled;
+  fnBox.width := GroupBox1.width - fnBox.Left - fnBoxButton.width - gap2_scaled;
+  fnBoxButton.Left := fnBox.Left + fnBox.Width + gap_scaled;
+
   inactivehideSpin.enabled := inactivehideChk.checked;
 end;
 

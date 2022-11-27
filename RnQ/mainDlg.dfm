@@ -11,6 +11,7 @@ object RnQmain: TRnQmain
   ClientHeight = 380
   ClientWidth = 142
   Color = 8314031
+  CustomTitleBar.Height = 20
   TransparentColorValue = clBackground
   Constraints.MinHeight = 50
   Constraints.MinWidth = 50
@@ -24,7 +25,6 @@ object RnQmain: TRnQmain
   GlassFrame.Right = 5
   GlassFrame.Bottom = 20
   GlassFrame.SheetOfGlass = True
-  OldCreateOrder = False
   Position = poDesigned
   ScreenSnap = True
   SnapBuffer = 15
@@ -207,9 +207,9 @@ object RnQmain: TRnQmain
     Width = 142
     Height = 21
     Align = alTop
+    ImageName = 'mail'
     TabOrder = 2
     OnClick = MlCntBtnClick
-    ImageName = 'mail'
     Spacing = 0
   end
   object menu: TPopupMenu

@@ -144,7 +144,11 @@ uses
  Windows {$IFDEF UseDelphi} {$ENDIF}
  ,
   Classes,
+  {$IFDEF FMX}
+  System.UITypes,
+  {$ELSE ~FMX}
   Graphics,
+  {$ENDIF FMX}
  {$IFNDEF FPC}
 //    OverbyteIcsZLibObj,
     System.ZLib,

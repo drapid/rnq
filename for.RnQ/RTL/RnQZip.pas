@@ -105,13 +105,7 @@ type
     DiskStart: LongWord;
   end;
 //  zip64_Extra_FieldPtr = ^zip64_Extra_Field;
-{
-  data_descriptor_20 = packed record
-    crc32:              ULONG;
-    compressed_size:    FILE_INT;
-    uncompressed_size:  FILE_INT;
-  end;
-}
+
   data_descriptor_zip64 = packed record
     crc32:              ULONG;
     compressed_size:    BIGINT;
@@ -170,6 +164,7 @@ type
    public
     ZipFileComment: AnsiString;
     Password: AnsiString;
+    prefixBLOB: RawByteString; // for example sfx module
 //    fCompressionLevel: Integer;
   private
     function  GetUncompressed(i: integer): RawByteString;
@@ -379,7 +374,7 @@ begin
  if UTFSupport then
    Result := UnUTF(s)
   else
-   Result := s;
+   Result := String(s);
 end;
 
 { TZipFile }
@@ -409,8 +404,10 @@ var
   cfh: TCommonFileHeader;
   additionalDescriptor: Boolean;
 begin
-    for i := 0 to High(Files) do
-      with Files[i] do
+  If prefixBLOB > '' then
+    ZipFileStream.Write(prefixBLOB[1], length(prefixBLOB));
+  for i := 0 to High(Files) do
+    with Files[i] do
       begin
         CentralDirectory[i].RelativeOffsetOfLocalHeader :=
           ZipFileStream.Position;
@@ -646,11 +643,9 @@ end;
 
 
 function TZipFile.CheckPassword(I: Integer; const pass: AnsiString): Boolean;
-var
-//  ReadBytes2: Integer;
-  l: Integer;
-
  {$IFDEF ZIP_AES}
+var
+  l: Integer;
   salt2: RawByteString;
 //  key: Ansistring;
   pwd_ver: RawByteString;
@@ -716,11 +711,11 @@ var
   FZLHeader: TZLibStreamHeader;
 //  ReadBytes: Integer;
 //  ReadBytes2: Integer;
-  l: Integer;
   LoadedCrc32: DWORD;
 
   data: Pointer;
  {$IFDEF ZIP_AES}
+  l: Integer;
   salt2: RawByteString;
 //  key: Ansistring;
   pwd_ver: RawByteString;

@@ -61,18 +61,19 @@ type
     procedure updateVisibility;
   end;
 
-procedure loggaEvtS(s: String; const img: TPicName = '';
+  procedure loggaEvtS(s: String; const img: TPicName = '';
                    const pFlush: Boolean = false);
 {
-procedure loggaEvtA(s: AnsiString; const img: TPicName = '';
+  procedure loggaEvtA(s: AnsiString; const img: TPicName = '';
                    const pFlush: Boolean = false);
 }
-procedure logEvPkt(const Head: String; const TextData: String;
+  procedure LogEvent(Text: String; const Img: TPicName = ''; const pFlush: Boolean = False);
+  procedure logEvPkt(const Head: String; const TextData: String;
                    const data: RawByteString; const img: TPicName;
                    pktType: TPktType = ptBin);
-procedure logEvPktASync(const Head: String; const TextData: String;
+  procedure logEvPktASync(const Head: String; const TextData: String;
       const data: RawByteString; const img: TPicName; pktType: TPktType = ptBin);
-procedure FlushLogEvFile;
+  procedure FlushLogEvFile;
 
 var
   logFrm: TlogFrm;
@@ -451,15 +452,42 @@ begin
   if logpref.pkts.onwindow and assigned(logFrm) then
     begin
 //    h := s;
+  if TThread.Current.ThreadID <> MainThreadID then
     TThread.Synchronize(nil, procedure
       begin
         logFrm.addToLog(pktType, Head, TextData, Data, img);
       end);
-    end;
+    end
+  else
+   logFrm.addToLog(pktType, Head, TextData, Data, img);
 
 //  if logpref.evts.onfile then
 //    appendFile(logPath+eventslogFilename, s + CRLF);
 end; // loggaEvt
+
+procedure LogEvent(Text: String; const Img: TPicName = ''; const pFlush: Boolean = False);
+var
+  Lines: TArray<String>;
+  ToWindow, ToFile, Time: String;
+begin
+  Time := LogTimestamp;
+  Lines := Text.Split([#13#10, #10]);
+  ToWindow := String.Join(#10, Lines).TrimRight([#13, #10]);
+  ToFile := Time + '> ' + String.Join(#13#10, Lines).TrimRight([#13, #10]);
+
+  if LogPref.evts.onFile then
+    LogEvFileData := LogEvFileData + ToFile + CRLF;
+
+  if pFlush then
+    FlushLogEvFile
+//  else
+//    ActionManager.Execute(AK_FLUSHEVENTS, 1000)
+    ;
+
+  if LogPref.evts.onWindow then
+    logFrm.addToLog(ptString, Lines[0], Text, '', img);
+//    AddToLog(Time, '', Lines[0], ToWindow, Img);
+end;
 
 procedure FlushLogEvFile;
 begin

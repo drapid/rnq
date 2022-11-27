@@ -205,7 +205,7 @@ end; // strFromhtml
 
 procedure msgDlg(msg: String; NeedTransl: Boolean; kind: TMsgDlgType; const uid: String = '');
 const
-  kind2str: array [TmsgDlgType] of string=('WARNING', 'ERROR', 'INFO', '', '');
+  Kind2Str: array [RDGlobal.TMsgDlgType] of String = ('WARNING', 'ERROR', 'INFO', '', 'INFO', '');
 begin
  {$IFDEF RNQ}
   if NeedTransl then
@@ -220,14 +220,31 @@ begin
  {$IFDEF RNQ}
   if msgsFrm=NIL then
  {$ENDIF RNQ}
-    messageDlg(msg, kind, [mbOk], 0, mbOk, MsgShowTime[kind])
-//  ShowMessage(msg)
+    if TThread.Current.ThreadID <> MainThreadID then
+      TThread.Synchronize(nil,
+      procedure
+      begin
+        messageDlg(msg, kind, [mbOk], 0, mbOk, MsgShowTime[kind])
+      end)
+     else
+      messageDlg(msg, kind, [mbOk], 0, mbOk, MsgShowTime[kind])
  {$IFDEF RNQ}
    else
     begin
-      msgsFrm.AddMsg(msg, kind, now, uid);
-      if BringInfoFrgd then
-        msgsFrm.BringToFront;
+      if TThread.Current.ThreadID <> MainThreadID then
+        TThread.Synchronize(nil,
+          procedure
+          begin
+            msgsFrm.AddMsg(msg, kind, now, uid);
+            if BringInfoFrgd then
+              msgsFrm.BringToFront;
+          end)
+       else
+          begin
+            msgsFrm.AddMsg(msg, kind, now, uid);
+            if BringInfoFrgd then
+              msgsFrm.BringToFront;
+          end;
     end;
  {$ENDIF RNQ}
 end; // msgDlg

@@ -11,13 +11,15 @@ unit WIM;
 interface
 
 uses
-  Windows, SysUtils, Classes, Character, Types, JSON, Generics.Collections, Threading,
-  ExtCtrls, StrUtils, Math, OverbyteIcsHttpProt,
+  Windows, SysUtils, Classes, Character,
+  mormot.core.base, mormot.crypt.Ecc, mormot.crypt.ecc256r1,
+  Types, JSON, Generics.Collections, Threading,
+  ExtCtrls, StrUtils, Math,
+  OverbyteIcsHttpProt,
   RnQGlobal, RnQNet, RQThemes, RDGlobal, RQUtil, RnQJSON,
-  RnQPrefsTypes, groupsLib,
-  RnQProtocol, WIMContacts, WIMConsts, WIM.Stickers,
-  RnQPrefsInt,
-  mormot.core.ecc256r1;
+  RnQPrefsTypes, groupsLib, RnQProtocol,
+  WIMContacts, WIMConsts, WIM.Stickers,
+  RnQPrefsInt;
 
 
 type
@@ -79,6 +81,7 @@ type
     IE_visibilityChanged,
     IE_toofast,
 
+    IE_DNSLookupDone,
     IE_connecting,
     IE_connected,
     IE_loggin,
@@ -164,6 +167,7 @@ type
   TErrorProc = reference to procedure(Resp: TPair<Integer, String>);
   THandlerProc = reference to procedure(RespStrR: RawByteString);
   TReturnData = (RT_None, RT_JSON);
+  TRestParams = TDictionary<String, String>;
 
   TrefKind = (
     REF_null,
@@ -355,7 +359,7 @@ type
     procedure SetStatus(st: Byte; vi: Byte); overload;
     function getPwd: String; override; final;
     procedure setPwd(const value: String); override; final;
-    function MakeParams(const Method: AnsiString; const BaseURL: String; const Params: TDictionary<String, String>; Sign: Boolean = True; DoublePercent: Boolean = False): String;
+    function MakeParams(const Method: AnsiString; const BaseURL: String; const Params: TRestParams; Sign: Boolean = True; DoublePercent: Boolean = False): String;
     procedure OpenICQURL(URL: String);
     function ClientLogin: Boolean;
     function StartSession: Boolean;
@@ -542,8 +546,8 @@ type
   public // All
     function CreateDataPayload(Caps: TArray<RawByteString>; const Data: TBytes = nil; Compressed: Integer = -1; CRC: Cardinal = 0; Len: Integer = 0): String;
     function SendMsgOrSticker(Cnt: TRnQContact; var Flags: dword; const Msg: String; MsgType: TMsgType; var RequiredACK: Boolean): RawByteString; // returns handle
-    function sendMsg(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): Integer; override; final; // returns handle
-    function sendMsg2(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): RawByteString; override; final; // returns handle
+    function sendMsg(Cnt: TRnQContact; var Flags: dword; const Msg: String; chatId: String; var RequiredACK: Boolean): Integer; override; final; // returns handle
+    function sendMsg2(Cnt: TRnQContact; var Flags: dword; const Msg: String; chatId: String; var RequiredACK: Boolean): RawByteString; override; final; // returns handle
     function SendSticker2(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): RawByteString;
     function SendBuzz(Cnt: TRnQContact): Boolean;
     procedure SetListener(l: TProtoNotify); override; final;
@@ -607,7 +611,7 @@ uses
    AnsiStrings, AnsiClasses,
 {$ENDIF UNICODE}
   RnQZip,
-  mormot.core.crypto,
+  mormot.crypt.core,
   RnQDialogs, RnQLangs, RDUtils, RDFileUtil, RnQCrypt, Base64,
 {$IFDEF RNQ_AVATARS}
   RnQ_Avatars,
@@ -859,7 +863,7 @@ begin
     spamList := TRnQCList.Create;
 
     savingmyinfo.running := False;
-    fECCKeys.generated := ecc_make_key(fECCKeys.pubEccKey, fECCKeys.pk);
+    fECCKeys.generated := Ecc256r1MakeKey(fECCKeys.pubEccKey, fECCKeys.pk);
 
 //    pollStream := TStringStream.Create('', TEncoding.UTF8);
     pollStream := TMemoryStream.Create();
@@ -1376,6 +1380,8 @@ begin
     Resp := CheckResponseData(JSON, lReqId);
     if Resp.Key = Integer(EAC_OK) then
       Result := True
+    else if Resp.Key = 20000 then // Ok too
+      Result := True
     else if Assigned(ErrProc) then
       ErrProc(Resp)
     else if not (ErrMsg = '') then
@@ -1607,7 +1613,7 @@ var
   sr: RawByteString;
 begin
   if isEcc then
-    PBKDF2_HMAC_SHA256(EccKey, not2Translate[2] + AIM_MD5_STRING + IntToHex(l1, 2) + u1 + IntToHex(l2, 2) + u2, 3, Key)
+    PBKDF2HMACSHA256(EccKey, not2Translate[2] + AIM_MD5_STRING + IntToHex(l1, 2) + u1 + IntToHex(l2, 2) + u2, 3, Key)
   else
   begin
     sr := MD5Pass(IntToHex(l1, 2) + (not2Translate[2]) + u1 + AIM_MD5_STRING);
@@ -1618,13 +1624,13 @@ begin
   end;
 end;
 
-function TWIMSession.SendMsg(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): Integer;
+function TWIMSession.SendMsg(Cnt: TRnQContact; var Flags: dword; const Msg: String; chatId: String; var RequiredACK: Boolean): Integer;
 begin
   Result := -1;
   SendMsgOrSticker(Cnt, flags, Msg, MSG_TEXT, RequiredACK);
 end;
 
-function TWIMSession.SendMsg2(Cnt: TRnQContact; var Flags: dword; const Msg: String; var RequiredACK: Boolean): RawByteString;
+function TWIMSession.SendMsg2(Cnt: TRnQContact; var Flags: dword; const Msg: String; chatId: String; var RequiredACK: Boolean): RawByteString;
 begin
   Result := SendMsgOrSticker(Cnt, flags, Msg, MSG_TEXT, RequiredACK);
 end;
@@ -1648,7 +1654,7 @@ var
   i, Len, Len2, Compressed, Encrypted: Integer;
   crc: Cardinal;
   ShouldEncrypt, IsBin, IsSticker: Boolean;
-  Params: TDictionary<String, String>;
+  Params: TRestParams;
   BaseURL: String;
   Handler: THandlerProc;
 begin
@@ -1739,7 +1745,7 @@ begin
   Result := CreateNewGUID;
   RequiredACK := True;
 
-  Params := TDictionary<String, String>.Create;
+  Params := TRestParams.Create;
   Params.Add('f', 'json');
   Params.Add('aimsid', fSession.aimsid);
   Params.Add('t', c.UID2cmp);
@@ -1842,7 +1848,7 @@ end;
 
 function TWIMSession.SendBuzz(Cnt: TRnQContact): Boolean;
 var
-  Params: TDictionary<String, String>;
+  Params: TRestParams;
   Pair: TJSONPair;
   c: TWIMContact;
   BaseURL: String;
@@ -1854,7 +1860,7 @@ begin
   BuzzedLastTime := Now;
   c := TWIMContact(Cnt);
 
-  Params := TDictionary<String, String>.Create;
+  Params := TRestParams.Create;
   try
     Params.Add('f', 'json');
     Params.Add('aimsid', fSession.aimsid);
@@ -1974,9 +1980,9 @@ procedure TWIMSession.SendContactAttrs(c: TWIMContact);
 var
   Query: UTF8String;
   BaseURL: String;
-  Params: TDictionary<String, String>;
+  Params: TRestParams;
 begin
-  Params := TDictionary<String, String>.Create();
+  Params := TRestParams.Create();
   BaseURL := WIM_HOST + 'buddylist/setBuddyAttribute';
   Params.Clear;
   Params.Add('buddy', String(c.UID2Cmp));
@@ -2111,13 +2117,13 @@ procedure TWIMSession.Test;
 var
   Query: UTF8String;
   BaseURL: String;
-//  Params: TDictionary<String, String>;
+//  Params: TRestParams;
 begin
   BaseURL := WIM_HOST + 'aim/getSMSInfo';
   Query := '&phone=911';
   SendSessionRequest(True, BaseURL, Query, 'Test');
 
-//  Params := TDictionary<String, String>.Create();
+//  Params := TRestParams.Create();
 //  Params.Add('f', 'json');
 //  Params.Add('k', fDevId);
 //  Params.Add('a', fAuthToken);
@@ -2146,14 +2152,14 @@ end;
 procedure TWIMSession.GetStoreStickerPacks;
 var
   BaseURL: String;
-  Params: TDictionary<String, String>;
+  Params: TRestParams;
   Handler: THandlerProc;
 begin
   if RequiresLogin then
     Exit;
 
   BaseURL := STORE_HOST + 'openstore/contentlist';
-  Params := TDictionary<String, String>.Create();
+  Params := TRestParams.Create();
   Params.Add('a', fSession.token);
   Params.Add('f', 'json');
   Params.Add('k', fSession.DevId);
@@ -2213,14 +2219,14 @@ end;
 procedure TWIMSession.SearchStoreStickerPacks(const Query: String);
 var
   BaseURL: String;
-  Params: TDictionary<String, String>;
+  Params: TRestParams;
   Handler: THandlerProc;
 begin
   if RequiresLogin then
     Exit;
 
   BaseURL := STORE_HOST + 'store/showcase';
-  Params := TDictionary<String, String>.Create();
+  Params := TRestParams.Create();
   Params.Add('a', fSession.Token);
   Params.Add('f', 'json');
   Params.Add('k', fSession.DevId);
@@ -2272,7 +2278,7 @@ var
   Tmp: TJSONValue;
   JSON: TJSONObject;
   BaseURL: String;
-  Params: TDictionary<String, String>;
+  Params: TRestParams;
   Handler: THandlerProc;
 begin
   Result := Default(TStickerPack);
@@ -2280,7 +2286,7 @@ begin
     Exit;
 
   BaseURL := STORE_HOST + 'openstore/packinfo';
-  Params := TDictionary<String, String>.Create();
+  Params := TRestParams.Create();
   Params.Add('a', fSession.Token);
   Params.Add('f', 'json');
   Params.Add('k', fSession.DevId);
@@ -2307,7 +2313,7 @@ procedure TWIMSession.BuyStickerPack(const PackId: String);
 var
   SRecord: TStickerPack;
   BaseURL: String;
-  Params: TDictionary<String, String>;
+  Params: TRestParams;
   Handler: THandlerProc;
   PID: Integer;
 begin
@@ -2328,7 +2334,7 @@ begin
     Exit;
 
   BaseURL := STORE_HOST + 'store/buy/free';
-  Params := TDictionary<String, String>.Create();
+  Params := TRestParams.Create();
   Params.Add('a', fSession.Token);
   Params.Add('f', 'json');
   Params.Add('k', fSession.DevId);
@@ -2377,7 +2383,7 @@ end;
 procedure TWIMSession.RemoveStickerPack(const PackId: String);
 var
   BaseURL: String;
-  Params: TDictionary<String, String>;
+  Params: TRestParams;
   Handler: THandlerProc;
   PID: Integer;
 begin
@@ -2395,7 +2401,7 @@ begin
     Exit;
 
   BaseURL := STORE_HOST + 'store/deletepurchase';
-  Params := TDictionary<String, String>.Create();
+  Params := TRestParams.Create();
   Params.Add('a', fSession.Token);
   Params.Add('f', 'json');
   Params.Add('k', fSession.DevId);
@@ -2452,7 +2458,7 @@ end; // sendSMS
 procedure TWIMSession.SendSaveMyInfo(c: TWIMContact);
 var
   BaseURL: String;
-  Params: TDictionary<String, String>;
+  Params: TRestParams;
 begin
   if c.birth > 0 then
     c.age := YearsBetween(Now, c.birth);
@@ -2460,7 +2466,7 @@ begin
 
   BaseURL := WIM_HOST + 'memberDir/update';
 
-  Params := TDictionary<String, String>.Create();
+  Params := TRestParams.Create();
   Params.Add('set=firstName', c.First);
   Params.Add('set=lastName', c.Last);
 //  Params.Add('set=nick', c.Nick);
@@ -2532,6 +2538,7 @@ begin
     MTYPE_AUTHREQ:
       begin
 //        parseAuthString(msg);
+        eventString := '';
         notifyListeners(IE_authReq);
       end;
     MTYPE_EEXPRESS:
@@ -3598,7 +3605,7 @@ begin
     SetStatus(Byte(LastStatus), Byte(Visibility));
 end;
 
-function TWIMSession.MakeParams(const Method: AnsiString; const BaseURL: String; const Params: TDictionary<String, String>; Sign: Boolean = True; DoublePercent: Boolean = False): String;
+function TWIMSession.MakeParams(const Method: AnsiString; const BaseURL: String; const Params: TRestParams; Sign: Boolean = True; DoublePercent: Boolean = False): String;
 var
 //  hash: String;
   hash: RawByteString;
@@ -3629,7 +3636,7 @@ end;
 procedure TWIMSession.OpenICQURL(URL: String);
 var
   BaseURL: String;
-  Params: TDictionary<String, String>;
+  Params: TRestParams;
 begin
   if fSession.token = '' then
   begin
@@ -3639,7 +3646,7 @@ begin
 
   BaseURL := 'https://www.icq.com/karma_api/karma_client2web_login.php';
 
-  Params := TDictionary<String, String>.Create();
+  Params := TRestParams.Create();
   Params.Add('ts', IntToStr(DateTimeToUnix(Now, False) - fSession.hostOffset));
   Params.Add('owner', MyAccNum);
   Params.Add('a', fSession.token);
@@ -3842,7 +3849,7 @@ var
   sU: String;
   Hash, BaseURL, UnixTime, AutoCaps: String;
   RespStr: RawByteString;
-  Params: TDictionary<String, String>;
+  Params: TRestParams;
   JSON: TJSONObject;
   UsingSaved, Relogin, SeqFailed, ProcResult: Boolean;
   UID: TGUID;
@@ -3882,7 +3889,7 @@ begin
 //  if AddExtCliCaps and (Length(ExtClientCaps) = 16) then
 //    Caps := Caps + ',' + Str2Hex(ExtClientCaps);
 
-  Params := TDictionary<String, String>.Create();
+  Params := TRestParams.Create();
   Params.Add('f', 'json');
   Params.Add('k', fSession.devid);
   Params.Add('a', fSession.token);
@@ -3983,7 +3990,7 @@ Exit;
   UnixTime := IntToStr(DateTimeToUnix(Now, False) - fSession.hostOffset);
 
 //  params.Clear;
-  Params := TDictionary<String, String>.Create();
+  Params := TRestParams.Create();
   params.Add('a', fSession.token);
   params.Add('k', fSession.devid);
   params.Add('ts', UnixTime);
@@ -4552,7 +4559,7 @@ begin
           if Result.Crypt.SupportEcc and fECCKeys.generated then
           begin
             SetLength(Result.Crypt.EccMsgKey, SizeOf(TECCSecretKey));
-            if not ecdh_shared_secret(PECCPublicKey(Result.Crypt.EccPubKey)^, fECCKeys.pk, PECCSecretKey(Result.Crypt.EccMsgKey)^) then
+            if not Ecc256r1SharedSecret(PECCPublicKey(Result.Crypt.EccPubKey)^, fECCKeys.pk, PECCSecretKey(Result.Crypt.EccMsgKey)^) then
             begin
               Result.Crypt.EccMsgKey := '';
               Result.Crypt.SupportEcc := False;
@@ -5479,10 +5486,10 @@ end;
 procedure TWIMSession.InitWebRTC;
 var
   BaseURL, UnixTime: String;
-  Params: TDictionary<String, String>;
+  Params: TRestParams;
 begin
   UnixTime := IntToStr(DateTimeToUnix(Now, False) - fSession.hostOffset);
-  Params := TDictionary<String, String>.Create;
+  Params := TRestParams.Create;
   Params.Add('a', fSession.token);
   Params.Add('f', 'json');
   Params.Add('k', fSession.devid);

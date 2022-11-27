@@ -13,6 +13,7 @@ uses
  {$IFDEF PROTOCOL_ICQ}
   Protocol_icq, ICQcontacts,
  {$ENDIF PROTOCOL_ICQ}
+  JSON, RNQJson,
   automsgDlg,
   RnQPrefsTypes,
   RnQPics,
@@ -21,7 +22,7 @@ uses
 type
   TRnQProtoHelper = class helper for TRnQProtocol
   public
-    procedure Event(event: Integer);
+    procedure Event(event: Integer; data: TJSONValue = NIL);
     procedure ShowWP;
     procedure GetOfflineMSGS;
     procedure DelOfflineMSGS;
@@ -63,7 +64,7 @@ type
   end;
 
 function  Protos_getXstsPic(cnt: TRnQContact; isSelf: Boolean = false): TPicName;
-procedure ProtoEvent(Sender: TRnQProtocol; event: Integer);
+procedure ProtoEvent(Sender: TRnQProtocol; event: Integer; data: TJSONValue = NIL);
 function  try_load_or_req_avatar(cnt: TRnQContact): Boolean;
 
 
@@ -150,6 +151,10 @@ uses
   Protocol_WIM, WIMcontacts,
   WIM, WIMConsts,
  {$ENDIF PROTOCOL_WIM}
+ {$IFDEF PROTOCOL_TLG}
+  Protocol_TLG, TLGcontacts,
+  TLG, TLGConsts,
+ {$ENDIF PROTOCOL_TLG}
 
   outboxDlg,
   events, pluginutil, pluginLib, history,
@@ -161,7 +166,7 @@ uses
   utilLib, themesLib, RQThemes, roasterLib,
   MainDlg, chatDlg;
 
-procedure TRnQProtoHelper.Event(event: Integer);
+procedure TRnQProtoHelper.Event(event: Integer; data: TJSONValue = NIL);
   {$IFDEF PROTOCOL_ICQ}
 var
   icqSess: TicqSession;
@@ -198,6 +203,11 @@ begin
   {$IFDEF PROTOCOL_WIM}
     WIMProtoID: ProcessWIMEvents(TWIMSession(Self), TWIMEvent(event));
   {$ENDIF PROTOCOL_WIM}
+  {$IFDEF PROTOCOL_TLG}
+    TLGProtoID: ProcessTLGEvents(TTLGSession(Self), TTLGEvent(event), data);
+  {$ENDIF PROTOCOL_TLG}
+    else
+      Assert(True, 'Unknown protocol');
   end;
  {$ENDIF ICQ_ONLY}
 end;
@@ -216,9 +226,9 @@ begin
  {$ENDIF PROTOCOL_MRA}
 end;
 
-procedure ProtoEvent(Sender: TRnQProtocol; event: Integer);
+procedure ProtoEvent(Sender: TRnQProtocol; event: Integer; data: TJSONValue = NIL);
 begin
-  Sender.Event(event);
+  Sender.Event(event, data);
 end;
 function  Protos_getXstsPic(cnt: TRnQContact; isSelf: Boolean = false): TPicName;
 var
@@ -520,6 +530,13 @@ begin
      Result := True;
     end;
   {$ENDIF PROTOCOL_BIM}
+  {$IFDEF PROTOCOL_TLG}
+   if self is TTLGSession then
+    begin
+     Result := TTLGSession(self).uploadAvatar(fn);
+    end
+   else
+  {$ENDIF PROTOCOL_TLG}
 end;
 
 /////////////////////////////////////////////
@@ -1146,6 +1163,9 @@ begin
   {$IFDEF PROTOCOL_WIM}
     WIMProtoID: Result := TWIMSession;
   {$ENDIF PROTOCOL_WIM}
+  {$IFDEF PROTOCOL_TLG}
+    TLGProtoID: Result := TTLGSession;
+  {$ENDIF PROTOCOL_TLG}
    else
     Result := NIL;
   end;

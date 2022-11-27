@@ -93,6 +93,9 @@ var
 const
   EMAILCHARS      = ['a'..'z','A'..'Z','0'..'9','-','_','.'];
 
+type
+  TGroupAction = (GA_None = 0, GA_Add, GA_Rename, GA_Remove);
+
 
 implementation
    uses

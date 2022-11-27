@@ -11,8 +11,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Types, StdCtrls, RnQNet, RnQProtocol, utilLib,
-  ExtCtrls, RDGlobal, RnQGraphics32, RnQButtons, RnQImageGrid,
-  System.Actions, Vcl.ActnList, Generics.Collections, Math, Character;
+  ExtCtrls, Math, Character,
+  System.Actions, Vcl.ActnList, //Generics.Collections,
+  RDGlobal, RnQGraphics32, RnQButtons, RnQImageGrid;
 
 type
   TEmojiFrm = class(TForm)
@@ -58,10 +59,20 @@ implementation
 
 uses
   RnQLangs, RnQGlobal, RQUtil, RQThemes, chatDlg,
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
+  Generics.Collections,
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  mormot.core.base,
+  mormot.core.collections,
+  {$ENDIF USE_MORMOT_COLLECTIONS}
   EmojiConst;
 
 var
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   emojiGrids: TDictionary<Integer, TAwImageGrid>;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  emojiGrids: IKeyValue<Integer, TAwImageGrid>;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
   extPos: Integer = 1;
   openedExt: Integer = 1;
   emojiSize: Integer = 22;
@@ -156,10 +167,11 @@ begin
       BorderStyle := bsNone;
       CellAlignment := taCenter;
       CellLayout := tlCenter;
-      InCellMargin := 6;
+      InCellMargin := MulDiv(6, currentPPI, cDefaultDPI);
       CellHeight := emojiSize + InCellMargin*2;
-      CellWidth := emojiSize + InCellMargin*2;
-      CellSpacing := 2;
+//      CellWidth := emojiSize + InCellMargin*2;
+      CellWidth := CellHeight;
+      CellSpacing := MulDiv(2, currentPPI, cDefaultDPI);
       Color := clBtnFace;
       WheelScrollLines := 1;
       Sorted := False;
@@ -174,9 +186,13 @@ begin
       OnClickCell := SendSelectedEmoji;
     end;
 
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
     emojiGrids.AddOrSetValue(ext, emojiGrid);
+  {$ELSE USE_MORMOT_COLLECTIONS}
+    emojiGrids[ext] := emojiGrid;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
     emojiGrid.Items.BeginUpdate;
-    for num in emojiContents[ext] do
+    for num in GetEmojiCont(ext) do
       PutEmoji(ext, num);
     emojiGrid.Items.EndUpdate;
   end
@@ -237,7 +253,7 @@ begin
       if (exts.Components[i] as TRnQSpeedButton).Tag > 0 then
         exts.Components[i].Free;
 
-  for i := 1 to emojiContents.Count do
+  for i := 1 to emojiContentsCount do
   begin
     extBtn := TRnQSpeedButton.Create(exts);
     with extBtn do
@@ -248,14 +264,14 @@ begin
       AlignWithMargins := true;
       AllowAllUp := True;
       Flat := True;
-      Margins.Bottom := 5;
-      Margins.Left := 5;
+      Margins.Bottom := MulDiv(5, currentPPI, cDefaultDPI);
+      Margins.Left := Margins.Bottom;
       Margins.Right := 0;
-      Margins.Top := 5;
+      Margins.Top := Margins.Bottom;
       Spacing := 0;
 //      VerticalOffset := 0;
       Transparent := True;
-      Width := emojiSize + 10;
+      Width := emojiSize + Margins.Bottom + Margins.Bottom;
       ImageName := TE2Str[RQteEmoji] + GetEmojiPicName(emojiExtNumbers[i]);
 {
       try
@@ -283,15 +299,24 @@ end;
 procedure TEmojiFrm.FormCreate(Sender: TObject);
 begin
 //  parentWnd := Sender As TWinControl;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   emojiGrids := TDictionary<Integer, TAwImageGrid>.Create;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  emojiGrids := Collections.NewKeyValue<Integer, TAwImageGrid>;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
 
   CreateExtBtns;
 end;
 
 procedure TEmojiFrm.FormHide(Sender: TObject);
 var
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   pair: TPair<Integer, TAwImageGrid>;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  oeVal: TAwImageGrid;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
 begin
+ {$IFNDEF USE_MORMOT_COLLECTIONS}
   for pair in emojiGrids do
   if Assigned(pair.Value) then
   if not (pair.Key = openedExt) then
@@ -299,6 +324,13 @@ begin
     pair.Value.Free;
     emojiGrids.Remove(pair.Key);
   end;
+ {$ELSE USE_MORMOT_COLLECTIONS}
+//  if not emojiGrids.TryGetValue(openedExt, oeVal) then
+//    oeVal := NIL;
+//  emojiGrids.Clear;
+//  if oeVal <> NIL then
+//    emojiGrids.Add(openedExt, oeVal);
+ {$ENDIF USE_MORMOT_COLLECTIONS}
 end;
 
 procedure TEmojiFrm.OnExtBtnClick(Sender: TObject);
@@ -408,8 +440,8 @@ begin
     EmojiFrm := TEmojiFrm.Create(parent);
   EmojiFrm.parentWnd := parent;
 
-  EmojiFrm.Height := (emojiSize + 10 + 10) * 5 + EmojiFrm.exts.Height;
-  EmojiFrm.Width := (emojiSize + 10 + 6) * emojiContents.Count;
+  EmojiFrm.Height := (emojiSize + MulDiv(10 + 10, m.PixelsPerInch, cDefaultDPI)) * 5 + EmojiFrm.exts.Height;
+  EmojiFrm.Width := (emojiSize + MulDiv(10 + 6, m.PixelsPerInch, cDefaultDPI)) * emojiContentsCount;
 
   ar[1] := Rect(t.X, t.Y - EmojiFrm.Height, t.X + EmojiFrm.Width, t.Y);
   ar[2] := Rect(t.X - EmojiFrm.Width, t.Y - EmojiFrm.Height, t.X, t.Y);

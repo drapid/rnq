@@ -3,12 +3,11 @@
 Author:       François PIETTE
 Description:  Version defines for ICS (Internet Component Suite)
 Creation:     2003
-Version:      8.67
+Version:      8.70
 EMail:        francois.piette@overbyte.be  http://www.overbyte.be
 Support:      https://en.delphipraxis.net/forum/37-ics-internet-component-suite/
-Legal issues: Copyright (C) 1996-2021 by François PIETTE
+Legal issues: Copyright (C) 1996-2022 by François PIETTE
               Rue de Grady 24, 4053 Embourg, Belgium.
-              <francois.piette@overbyte.be>
 
               This software is provided 'as-is', without any express or
               implied warranty.  In no event will the author be held liable
@@ -74,6 +73,12 @@ Mar 2021 - V8.65 - Angus added DEFINE YuOpenSSL which links OpenSSL using a pre-
                      DCU instead of external DLLs.
 Jul 2021 - V8.67 - Angus added DEFINE DATABASE for editions supporting it.
                    Added Delphi 11.0
+Oct 2022 - V8.70 - Corrected ZLIB_OBJ to USE_ZLIB_OBJ to replace OverbyteIcsZlib.inc.
+                   Added DEFINE USE_DELPHI_ZLIB to use System.Zib to avoid linking ZLIB
+                     object files twice.  Only defined for Delphi 11 and later and Posix
+                     which have ZLIB 1.2.12 (added in D11.1), but can be changed if older
+                     ZLIB versions are acceptable.
+
 
 
 YuOpenSSL is a commercial product from https://www.yunqa.de/ and is supplied as
@@ -229,8 +234,8 @@ separate compiled DCUs for Delphi 5 to 10.4.
 { DLLs. Download YuOpenSSL from https://www.yunqa.de.                        }
 {.DEFINE YuOpenSSL}
 
-{ Next line specifies to link the ZLIB .obj files.                           }
-{$DEFINE ZLIB_OBJ}
+{ Next line specifies to link the ZLIB .obj files, undefine to use ZLIB1 DLL. }
+{$DEFINE USE_ZLIB_OBJ}
 
 { Next symbol affects D2010 and later only. If defined adds RTTI directive   }
 { "$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])" to all units which  }
@@ -1966,4 +1971,13 @@ separate compiled DCUs for Delphi 5 to 10.4.
   {$WARN IMMUTABLE_STRINGS OFF}
 {$ENDIF}
 
+{$IFDEF DELPHI28_UP}               { V8.70 use System.Zlib if same version as ours, D10.1 and later }
+  {$DEFINE USE_DELPHI_ZLIB}
+{$ENDIF}
+
+{$IFNDEF MSWINDOWS}
+    {$IFDEF USE_ZLIB_OBJ}
+        {$DEFINE USE_DELPHI_ZLIB}   { V8.70 use System.Zlib on Posix }
+    {$ENDIF}
+{$ENDIF}
 

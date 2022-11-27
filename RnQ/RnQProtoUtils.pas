@@ -38,7 +38,7 @@ const
              );
 
 
-procedure logProtoPkt(what: TwhatLog; const head: String; const data: RawByteString='');
+procedure logProtoPkt(what: TwhatLog; const head: String; const data: RawByteString=''; async: Boolean = false);
 procedure FlushLogPktFile;
 
 
@@ -51,7 +51,7 @@ var
   logPktFileData: RawByteString;
 
 
-procedure logProtoPkt(what: TwhatLog; const head: String; const data: RawByteString='');
+procedure logProtoPkt(what: TwhatLog; const head: String; const data: RawByteString=''; async: Boolean = false);
 var
   sA: RawByteString;
   sU: String;
@@ -99,7 +99,10 @@ begin
     end;
 
   if (logpref.pkts.onwindow) then
-    logEvPkt(head, sU, sA, LogPics[what], pt);
+   if async then
+     logEvPktASync(head, sU, sA, LogPics[what], pt)
+    else
+     logEvPkt(head, sU, sA, LogPics[what], pt);
 
   if logpref.pkts.onfile then
    begin

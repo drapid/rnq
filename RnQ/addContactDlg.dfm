@@ -50,9 +50,9 @@ object addContactFrm: TaddContactFrm
     Height = 25
     Caption = 'Add'
     Default = True
+    ImageName = 'add.contact'
     TabOrder = 1
     OnClick = addBtnClick
-    ImageName = 'add.contact'
   end
   object LocalChk: TCheckBox
     Left = 8

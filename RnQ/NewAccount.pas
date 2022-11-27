@@ -55,8 +55,10 @@ var
   b: Byte;
 begin
  {$IFNDEF ICQ_ONLY}
+  for var p in RnQProtos do
   for b in cUsedProtos do
-    AccCBox.AddItem(cProtosDesc[b], NIL);
+    if p._getProtoID = b then
+      AccCBox.AddItem(cProtosDesc[b], NIL);
  {$ELSE ICQ_ONLY}
     AccCBox.AddItem('ICQ', NIL);
     AccCBox.AddItem('AIM', NIL);
@@ -64,6 +66,8 @@ begin
   AccCBox.ItemIndex := 0;
   if AccCBox.Items.Count <=1 then
     AccCBox.Enabled := false;
+  if AccCBox.Items.Count = 0 then
+    OkBtn.Enabled := False;
 end;
 
 function TNewAccFrm.getProto: TRnQProtoClass;
@@ -75,18 +79,22 @@ begin
  {$IFNDEF ICQ_ONLY}
   i := AccCBox.ItemIndex;
   if i in [Byte(Low(cUsedProtos))..Byte(High(cUsedProtos))] then
-    Result := getProtoClass(Byte(cUsedProtos[i]))
+//    Result := getProtoClass(Byte(cUsedProtos[i]))
+  for var p in RnQProtos do
+    if p._getProtoID = cUsedProtos[i] then
+       Exit(p);
+
 //  if i in [Byte(Low(RnQProtos))..Byte(High(RnQProtos))] then
 //    Result := RnQProtos[i]
-   else
+//   else
  {$ELSE ICQ_ONLY}
  {$ENDIF ICQ_ONLY}
 //    Result := TicqSession;
   {$IFDEF PROTOCOL_ICQ}
     Result := getProtoClass(ICQProtoID)
   {$ELSE ~PROTOCOL_ICQ}
-//    Result := NIL;
-  Result := getProtoClass(Byte(cUsedProtos[Low(cUsedProtos)]))
+    Result := NIL;
+//  Result := getProtoClass(Byte(cUsedProtos[Low(cUsedProtos)]))
   {$ENDIF PROTOCOL_ICQ}
 end;
 

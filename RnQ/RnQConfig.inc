@@ -32,6 +32,7 @@
    { $DEFINE PROTOCOL_XMP} // XMPP
    { $DEFINE PROTOCOL_BIM} // Obimp protocol
    {$DEFINE PROTOCOL_WIM} // ICQ Rest protocol
+   { $DEFINE PROTOCOL_TLG} // Telegram protocol
  {$ENDIF ~ICQ_ONLY}
 
 

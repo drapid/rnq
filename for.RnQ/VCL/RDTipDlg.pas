@@ -2,7 +2,7 @@
   This file is part of R&Q.
   Under same license
 }
-unit tipDlg;
+unit RDTipDlg;
 {$I forRnQConfig.inc}
 {$I NoRTTI.inc}
 
@@ -10,14 +10,6 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  {$IFDEF USE_GDIPLUS}
-    GDIPAPI,
-    GDIPOBJ,
-    RnQGraphics,
-  {$ELSE}
-    RnQGraphics32,
-  {$ENDIF USE_GDIPLUS}
-  RnQPrefsInt,
   Types;
 
 type
@@ -40,25 +32,58 @@ type
     end;
 
 type
-  TtipFrm = class;
-  DoPaintTip = procedure(Sender: TtipFrm; mode: Tmodes; info: Pointer; pMaxX, pMaxY: Integer; calcOnly: Boolean);
+  TRDTipFrm = class;
+  DoPaintTip = procedure(Sender: TRDTipFrm; mode: Tmodes; info: Pointer; pMaxX, pMaxY: Integer; calcOnly: Boolean);
   DoToShow = function(): Boolean;
-  DoTipDestroy = procedure(Sender: TTipFrm);
+  DoTipDestroy = procedure(Sender: TRDTipFrm);
 
-  TtipFrm = class(TForm)
+  TtipsAlign  = (alBottomRight, alBottomLeft, alTopLeft, alTopRight, alCenter);
+  TtipsAlignSet  = set of TtipsAlign;
+
+  TTipItem = class(TObject)
+   public
+    form        : TRDTipFrm;
+//    ev          : Thevent;
+    time        : TDateTime;
+    counter     : Integer;
+    showSeconds : Word;
+    x, y        : Integer;
+    destructor TTipItemDestroy;
+  end;
+
+  TRDTipFrm = class(TForm)
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FormMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+  public
+   class var
+    tipRadius: Integer; // = 15
+    TipsMaxCnt: Integer; // = 20;
+    TipsMaxTop: Integer; // = 200;
+    TipsBtwSpace : Integer;
+    TipsAlign    : TtipsAlign;
+    TipHorIndent : Integer;
+    TipVerIndent : Integer;
+    class procedure MoveTips(ParentHandle: HWND = 0);
+    class function  AddTip(var item: TTipItem; ti: TTipInfo; needW, needH: Integer; ParentHandle: HWND = 0): Boolean;
+    class procedure TipsHideAll;
+    class procedure TipsShowTop;
+    class function  Add2ShowTip(pInfo: TTipInfo; x, y, Width, Height: Integer): TRDTipFrm;
+    class procedure RemoveTip(i: Integer);
   private
     fOnPaintTip: DoPaintTip;
     fOnToShow: DoToShow;
     fOnTipDestroy: DoTipDestroy;
   protected
+   class var
+    tipsList: TList; // = NIL;
+    class constructor TRDTipFrmCreate;
+    class destructor  TRDTipFrmDestroy;
     procedure CreateParams(var Params: TCreateParams); override;
-    function preshow(): boolean;
+    function  preshow(): boolean;
     procedure postshow();
     procedure hide();
     procedure WndProc(var msg: TMessage); override;
@@ -74,7 +99,6 @@ type
     isPainting: boolean;
     processing: boolean;
     procedure showTip();
-    class function Add2ShowTip(pInfo: TTipInfo; x, y, Width, Height: Integer): TtipFrm;
 
 (*
     procedure show(pEv: Thevent; x, y: Integer); overload;
@@ -91,45 +115,8 @@ type
     property onToShow: DoToShow read fOnToShow write fOnToShow;
     property OnTipDestroy: DoTipDestroy read fOnTipDestroy write fOnTipDestroy;
     property currentPPI: Integer read GetParentCurrentDpi;
+    class property tips: TList read tipsList;
   end;
-
-
-type
-  TRnQTip = class(TObject)
-   public
-    form        : TtipFrm;
-//    ev          : Thevent;
-    time        : TDateTime;
-    counter     : Integer;
-    showSeconds : Word;
-    x, y        : Integer;
-  end;
-
-//var
-//  tipDrawType : Byte;
-type
-  TtipsAlign  = (alBottomRight, alBottomLeft, alTopLeft, alTopRight, alCenter);
-  TtipsAlignSet  = set of TtipsAlign;
-
-  procedure TipsHideAll;
-  procedure TipsShowTop;
-  procedure MoveTips(ParentHandle: HWND = 0);
-  function AddTip(var item: TRnQTip; ti: TTipInfo; needW, needH: Integer; ParentHandle: HWND = 0): Boolean;
-
-  procedure tipsSetCFG(pp: IRnQPref);
-
-const
-  TipsMaxTop: Integer = 200;
-
-var
-  TipsMaxCnt   : Integer = 20;
-  TipsBtwSpace : Integer;
-  TipsAlign    : TtipsAlign;
-  TipHorIndent : Integer;
-  TipVerIndent : Integer;
-
-var
-  tipsList: TList = NIL;
 
 implementation
 
@@ -140,19 +127,34 @@ uses
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
-  RDGlobal,
-  RQThemes, RDSysUtils;
-//  RnQDialogs, RQUtil, RnQUtils, RnQBinUtils, RnQLangs,
-//  RQlog;
-//var
-//  processing:boolean=FALSE;
-//const
-//  round_R = 15;
+  RDSysUtils;
 
-
-class function Ttipfrm.Add2ShowTip(pInfo : TTipInfo; x, y, Width, Height : Integer) : TtipFrm;
+destructor TTipItem.TTipItemDestroy;
 begin
-  Result := TtipFrm.Create(NIL);
+  if Assigned(form) then
+    begin
+      form.Close;
+      form := NIL;
+    end;
+end;
+
+class constructor TRDTipFrm.TRDTipFrmCreate;
+begin
+  tipRadius := 15;
+  TipsMaxCnt := 20;
+  TipsMaxTop := 200;
+  tipsList := NIL;
+end;
+
+class destructor TRDTipFrm.TRDTipFrmDestroy;
+begin
+  if Assigned(tipsList) then
+    FreeAndNil(tipsList);
+end;
+
+class function TRDTipFrm.Add2ShowTip(pInfo : TTipInfo; x, y, Width, Height : Integer) : TRDTipFrm;
+begin
+  Result := TRDTipFrm.Create(NIL);
   Result.info := pInfo;
 
   Result.Left := x;
@@ -161,7 +163,7 @@ begin
   Result.Height := Height;
 end;
 
-procedure Ttipfrm.showTip;
+procedure TRDTipFrm.showTip;
 begin
   if not preshow() then
     exit;
@@ -169,7 +171,7 @@ begin
   Paint;
 end;
 
-procedure Ttipfrm.hide();
+procedure TRDTipFrm.hide();
 begin
 // hide task button
 //  setwindowlong(handle, GWL_HWNDPARENT, RnQmain.handle);
@@ -187,7 +189,7 @@ begin
     end;
 end; // hide
 
-procedure TtipFrm.CreateParams(var Params: TCreateParams);
+procedure TRDTipFrm.CreateParams(var Params: TCreateParams);
 begin
   inherited CreateParams(Params);
   with Params do
@@ -201,7 +203,7 @@ begin
 end;
 
 
-function Ttipfrm.preshow():boolean;
+function TRDTipFrm.preshow():boolean;
 begin
   result := FALSE;
   if processing or mousedown then
@@ -218,23 +220,20 @@ begin
   result := TRUE;
 end; // preshow
 
-procedure Ttipfrm.postshow();
+procedure TRDTipFrm.postshow();
 var
 //  i: integer;
   R: HRGN;
 //  hwnd: THandle;
-  rad: Integer;
   st: Integer;
 begin
 {for i:=1 to length(info) do
   if info[i] = #9 then
     info[i]:=' ';}
 //  paint;
-  if not TryStrToInt(theme.GetString('tip.radius'), rad) then
-   rad := 0;
-  if rad > 0 then
+  if tipRadius > 0 then
   begin
-    R := CreateRoundRectRgn(0,0, width+1,1+height, rad,rad);
+    R := CreateRoundRectRgn(0,0, width+1,1+height, tipRadius, tipRadius);
     SetWindowRgn(Handle, R, False);
     deleteObject(R);
   end;
@@ -254,7 +253,7 @@ begin
 end; // postshow
 
 (*
-procedure Ttipfrm.show(bmp: Tbitmap; x, y: Integer);
+procedure TRDTipFrm.show(bmp: Tbitmap; x, y: Integer);
 type
   PColor32 = ^TColor32;
   TColor32 = type Cardinal;
@@ -316,7 +315,7 @@ begin
 end; // show
 
   {$IFNDEF NOT_USE_GDIPLUS}
-procedure Ttipfrm.show(gpbmp:TGPbitmap; x, y : Integer);
+procedure TRDTipFrm.show(gpbmp:TGPbitmap; x, y : Integer);
 begin
 mode:=TM_PIC_EX;
 if gpbmp=NIL then hide();
@@ -340,7 +339,7 @@ mode:=TM_PIC_EX;
 end; // show
   {$ELSE NOT_USE_GDIPLUS}
 
-procedure Ttipfrm.show(gpbmp:TRnQbitmap; x, y : Integer);
+procedure TRDTipFrm.show(gpbmp:TRnQbitmap; x, y : Integer);
 begin
   info.mode:=TM_PIC_EX;
   if gpbmp=NIL then hide();
@@ -364,7 +363,7 @@ begin
 end; // show
   {$ENDIF NOT_USE_GDIPLUS}
 
-procedure Ttipfrm.show(pEv:Thevent; x, y : Integer);
+procedure TRDTipFrm.show(pEv:Thevent; x, y : Integer);
 //var
 //  s, p : String;
 //  i, k : Integer;
@@ -395,7 +394,7 @@ begin
   postShow();
 end; // show Event
 
-procedure Ttipfrm.show(pCnt:TRnQContact; x, y : Integer);
+procedure TRDTipFrm.show(pCnt:TRnQContact; x, y : Integer);
 begin
   if pCnt = NIL then Exit;
 //  if (pCnt<>NIL) and not (BE_TIP in supportedBehactions[pEv.kind]) then exit;
@@ -407,7 +406,7 @@ begin
   postShow();
 end; // show BirthDay
 *)
-procedure Ttipfrm.WndProc(var msg:TMessage);
+procedure TRDTipFrm.WndProc(var msg:TMessage);
 begin
 case msg.msg of
   WM_ACTIVATE:
@@ -418,7 +417,7 @@ case msg.msg of
 inherited;
 end; // wndproc
 
-procedure Ttipfrm.paint;
+procedure TRDTipFrm.paint;
 var
   maxX,maxY: integer;
   work: Trect;
@@ -472,19 +471,19 @@ if not visible then
   setBounds( work.right-maxX, work.bottom-maxY, maxX, maxY);}
 end; // paint
 
-procedure TtipFrm.FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TRDTipFrm.FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
 mousedown:=FALSE;
 end;
 
-procedure TtipFrm.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TRDTipFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   hide;
   destroyHandle;
   Action := caFree;
 end;
 
-procedure TtipFrm.FormCreate(Sender: TObject);
+procedure TRDTipFrm.FormCreate(Sender: TObject);
 begin
  DoubleBuffered := False;
  info.obj := NIL;
@@ -498,7 +497,7 @@ begin
  processing := false;
 end;
 
-procedure TtipFrm.FormDestroy(Sender: TObject);
+procedure TRDTipFrm.FormDestroy(Sender: TObject);
 begin
   while isPainting do
     Application.ProcessMessages;
@@ -532,7 +531,7 @@ begin
   end;*)
 end;
 
-procedure Ttipfrm.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TRDTipFrm.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
 mousedown:=TRUE;
 actionCount:=3;
@@ -550,16 +549,16 @@ else
     end;
 end;
 
-procedure TipsHideAll;
+class procedure TRDTipFrm.TipsHideAll;
 var
-  i : Integer;
-  rt : TRnQTip;
+  i: Integer;
+  rt: TTipItem;
 begin
   If Assigned(tipsList) then
   begin
     for I := 0 to tipsList.Count - 1 do
     begin
-     rt := TRnQTip(tipsList.Items[i]);
+     rt := TTipItem(tipsList.Items[i]);
      tipsList.Items[i] := nil;
      if Assigned(rt) and Assigned(rt.form) then
          begin
@@ -574,15 +573,15 @@ begin
   end;
 end;
 
-procedure TipsShowTop;
+class procedure TRDTipFrm.TipsShowTop;
 var
-  i : Integer;
-  rt : TRnQTip;
+  i: Integer;
+  rt: TTipItem;
 begin
   If Assigned(tipsList) then
   for I := 0 to tipsList.Count - 1 do
   begin
-   rt := TRnQTip(tipsList.Items[i]);
+   rt := TTipItem(tipsList.Items[i]);
    if Assigned(rt) and Assigned(rt.form) and
       //formVisible(rt.frm) and
       not isTopMost(rt.form) then
@@ -595,12 +594,12 @@ begin
 //  setTopMost(tipFrm, TRUE);
 end;
 
-procedure MoveTips(ParentHandle: HWND = 0);
+class procedure TRDTipFrm.MoveTips(ParentHandle: HWND = 0);
 var
   i:  integer;
   minY: Integer;
   work: Trect;
-  rt: TRnQTip;
+  rt: TTipItem;
 begin
 //OutputDebugString('Processing MoveTips');
  if Assigned(tipsList) then
@@ -612,7 +611,7 @@ begin
         minY := work.Bottom - TipVerIndent;
         for I := 0 to tipsList.Count - 1 do
         begin
-         rt := TRnQTip(tipsList.Items[i]);
+         rt := TTipItem(tipsList.Items[i]);
          if Assigned(rt) and Assigned(rt.form) then
             begin
               if minY - rt.y - rt.form.Height > TipsBtwSpace then
@@ -630,7 +629,7 @@ begin
         minY := TipVerIndent;
         for I := 0 to tipsList.Count - 1 do
         begin
-         rt := TRnQTip(tipsList.Items[i]);
+         rt := TTipItem(tipsList.Items[i]);
          if Assigned(rt) and Assigned(rt.form) then
             begin
               if rt.y  - minY > TipsBtwSpace then
@@ -647,14 +646,27 @@ begin
  end;
 end;
 
-function AddTip(var item: TRnQTip; ti: TTipInfo; needW, needH: Integer; ParentHandle: HWND): Boolean;
+class procedure TRDTipFrm.RemoveTip(i: Integer);
+var
+  rt: TTipItem;
+begin
+  if Assigned(tipsList) and (i < tipsList.Count) then
+    begin
+      rt := TTipItem(tipsList.Items[i]);
+      tipsList.Items[i] := nil;
+      if rt <> NIL then
+        rt.Free;
+    end;
+end;
+
+class function TRDTipFrm.AddTip(var item: TTipItem; ti: TTipInfo; needW, needH: Integer; ParentHandle: HWND): Boolean;
 var
   i, cnt, idx: Integer;
   minX, minY: Integer;
 //  needW, needH : Integer;
   work: Trect;
   not_ok: Boolean;
-  rt: TRnQTip;
+  rt: TTipItem;
 begin
   if not Assigned(tipsList) then
     tipsList := TList.Create;
@@ -675,7 +687,7 @@ begin
        idx := 0;
         for I := 0 to tipsList.Count - 1 do
         begin
-         rt := TRnQTip(tipsList.Items[i]);
+         rt := TTipItem(tipsList.Items[i]);
          if (rt <> NIL) and Assigned(rt.form) then
           begin
             inc(cnt);
@@ -695,7 +707,7 @@ begin
            ((cnt >= tipsMaxCnt) or (minY - work.Top - TipsMaxTop < needH))
            and (idx < tipsList.Count) then
          begin
-           rt := TRnQTip(tipsList.Items[idx]);
+           rt := TTipItem(tipsList.Items[idx]);
            tipsList.Items[idx] := nil;
            if Assigned(rt) then
             begin
@@ -714,7 +726,7 @@ begin
 
         for I := 0 to tipsList.Count - 1 do
         begin
-         rt := TRnQTip(tipsList.Items[i]);
+         rt := TTipItem(tipsList.Items[i]);
          if Assigned(rt) and Assigned(rt.form) then
            if (rt.x >= 0)and (rt.y >= 0) then
              minY := min(rt.Y, minY);
@@ -731,7 +743,7 @@ begin
        idx := 0;
         for I := 0 to tipsList.Count - 1 do
         begin
-         rt := TRnQTip(tipsList.Items[i]);
+         rt := TTipItem(tipsList.Items[i]);
          if (rt <> NIL) and Assigned(rt.form) then
           begin
             inc(cnt);
@@ -751,7 +763,7 @@ begin
             ((cnt >= TipsMaxCnt) or (work.Bottom - minY - TipsMaxTop < needH))
            and (idx < tipsList.Count) then
            begin
-             rt := TRnQTip(tipsList.Items[idx]);
+             rt := TTipItem(tipsList.Items[idx]);
              tipsList.Items[idx] := nil;
              if Assigned(rt) then
                begin
@@ -770,7 +782,7 @@ begin
 
         for I := 0 to tipsList.Count - 1 do
         begin
-         rt := TRnQTip(tipsList.Items[i]);
+         rt := TTipItem(tipsList.Items[i]);
          if Assigned(rt) and Assigned(rt.form) then
            if (rt.x >= 0)and (rt.y >= 0) then
              minY := max(rt.Y + rt.form.Height, minY);
@@ -787,7 +799,7 @@ begin
         minY := work.Bottom - TipVerIndent;
         for I := 0 to tipsList.Count - 1 do
         begin
-         rt := TRnQTip(tipsList.Items[i]);
+         rt := TTipItem(tipsList.Items[i]);
          if Assigned(rt) and Assigned(rt.form) then
            if (rt.x >= 0) and (rt.y >= 0) then
              minY := min(rt.Y, minY);
@@ -802,7 +814,7 @@ begin
         minY := TipVerIndent;
         for I := 0 to tipsList.Count - 1 do
         begin
-         rt := TRnQTip(tipsList.Items[i]);
+         rt := TTipItem(tipsList.Items[i]);
          if Assigned(rt) and Assigned(rt.form) then
            if (rt.x >= 0)and (rt.y >= 0) then
              minY := max(rt.Y  + rt.form.Height, minY);
@@ -826,17 +838,18 @@ begin
       end;
   end;
 
-  item.form  := Ttipfrm.Add2ShowTip(ti, item.x, item.Y, needW, needH);
+  item.form  := TRDTipFrm.Add2ShowTip(ti, item.x, item.Y, needW, needH);
 
   tipsList.Add(item);
   Result := True;
 end;
 
+{
 procedure Check4NIL;
 var
-  i : Integer;
-//  rt : TRnQTip;
-  allClear : Boolean;
+  i: Integer;
+//  rt: TTipItem;
+  allClear: Boolean;
 begin
   If Assigned(tipsList) then
   begin
@@ -852,38 +865,8 @@ begin
     if allClear then
       FreeAndNil(tipsList);
   end;
-
 end;
-
-procedure tipsSetCFG(pp: IRnQPref);
-begin
-  if Assigned(pp) then
-    begin
-      pp.initPrefInt('show-tips-count', 20); //TipsMaxCnt);
-      pp.initPrefInt('show-tips-align', Byte(alBottomRight));
-      pp.initPrefInt('show-tips-btw-space', 2);
-      pp.initPrefInt('show-tips-ver-indent', 0);
-      pp.initPrefInt('show-tips-hor-indent', 0);
-  //TipsMaxTop
-      pp.getPrefInt('show-tips-count', TipsMaxCnt);
-      TipsAlign := TtipsAlign(byte(pp.getPrefIntDef('show-tips-align', Byte(TipsAlign))));
-      pp.getPrefInt('show-tips-btw-space', TipsBtwSpace);
-      pp.getPrefInt('show-tips-ver-indent', TipVerIndent);
-      pp.getPrefInt('show-tips-hor-indent', TipHorIndent);
-  //    pp.getPrefBool('show-tips-use-avt-size', TipsMaxAvtSizeUse);
-  //    pp.getPrefInt('show-tips-avt-size', TipsMaxAvtSize);
-    end
-   else
-    begin
-      TipsMaxCnt   := 20;
-      TipsBtwSpace := 2;
-      TipsAlign    := alBottomRight;
-      TipVerIndent := 0;
-      TipHorIndent := 0;
-
-    end;
-
-end;
+}
 
 end.
 

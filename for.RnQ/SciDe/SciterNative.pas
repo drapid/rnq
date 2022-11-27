@@ -350,7 +350,10 @@ begin
   FMethods := nil;
   FAllMethods := nil;
   if FSciterClassDef <> nil then
+  begin
+    FreeClassDef;
     Dispose(FSciterClassDef);
+  end;
   inherited;
 end;
 
@@ -411,7 +414,7 @@ begin
   FSciterClassDef.iterator   := FIteratorHandler;
   FSciterClassDef.on_gc_copy := FGCCopyHandler;
   FSciterClassDef.prototype  := 0;   // Not implemented
-  FSciterClassDef.name       := PAnsiChar(Self.FTypeName);
+  FSciterClassDef.name       := StrNew(PAnsiChar(Self.FTypeName));
 
   // Methods
   pMethods := Self.SelectMethods;
@@ -424,7 +427,7 @@ begin
   begin
     pInfo := pMethods[i];
     smethod_name := AnsiString(pInfo.Name);
-    pclass_methods.name := PAnsiChar(smethod_name);
+    pclass_methods.name := StrNew(PAnsiChar(smethod_name));
     pclass_methods.handler := @FMethodHandler;
     pclass_methods.dispatch := nil;
     pclass_methods.tag := Pointer(pInfo);
@@ -448,7 +451,7 @@ begin
     pInfo := pProps[i];
     sprop_name := AnsiString(pInfo.Name);
     pclass_props.dispatch := nil;
-    pclass_props.name := PAnsiChar(sprop_name);
+    pclass_props.name := StrNew(PAnsiChar(sprop_name));
 
     // non-indexed property getter
     if (pInfo.HasGetter) and (pInfo.GetArgsCount = 0) then
@@ -518,7 +521,7 @@ end;
 
 function TSciterClassInfo.GetSetItemHandler: tiscript_set_item;
 begin
-  Result := SetItemHandler;
+  Result := FSetItemHandler;
 end;
 
 function TSciterClassInfo.GetSetterHandler: tiscript_tagged_set_prop;

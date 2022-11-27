@@ -47,9 +47,9 @@ end;
 
 procedure TupdateFr.applyPage;
 begin
-  checkupdate.enabled:=updateChk.checked;
-  checkupdate.betas:=betaChk.checked;
-  checkupdate.every:=round(checkSpin.value);
+  checkupdate.enabled := updateChk.checked;
+  checkupdate.betas := betaChk.checked;
+  checkupdate.every := round(checkSpin.value);
 end;
 
 procedure TupdateFr.resetPage;

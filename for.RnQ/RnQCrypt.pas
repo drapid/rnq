@@ -7,8 +7,9 @@ interface
 uses
   SysUtils,
    {$IFDEF USE_SYMCRYPTO}
-//  SynCommons,
   mormot.core.base,
+  mormot.crypt.ecc256r1,
+  mormot.crypt.secure,
    {$ELSE !USE_SYMCRYPTO}
      {$IFDEF USE_WE_LIBS}
        //use Wolfgang Ehrhardt's}
@@ -65,18 +66,23 @@ function  MD5Pass2(const s: RawByteString): RawByteString;
 
   function SHA1toHex( const digest: RawByteString ): String;
 
+//  function EccCommandVerifyFile(const FileToVerify, AuthPubKey: TFileName; fileSha256: THash256): TEccValidity;
+  function verifyEccSignFile(const fileName: String; sign64, publicKey: RawByteString; allowSelfSigned: Boolean = True): Boolean;
+
 type
   TProgressFunc = function(p: real): Boolean;
 
-  function getFileMD5(fn: String; progFunc: TProgressFunc): TBytes;
+  function getFileMD5(const fn: String; progFunc: TProgressFunc): TBytes;
+  function HashFile(const aFileName: TFileName; algo: THashAlgo): THash512Rec;
 
 implementation
 uses
   Windows,
    {$IFDEF USE_SYMCRYPTO}
-//     SynCrypto,
   mormot.crypt.core,
   mormot.core.os,
+  mormot.crypt.ecc,
+  mormot.core.json,
     {$ELSE not SynCrypto}
      {$IFDEF USE_WE_LIBS}
        //use Wolfgang Ehrhardt's}
@@ -656,7 +662,7 @@ begin
 end;
 
    {$IFDEF USE_SYMCRYPTO}
-function getFileMD5(fn: String; progFunc: TProgressFunc): TBytes;
+function getFileMD5(const fn: String; progFunc: TProgressFunc): TBytes;
 var
   F: THandle;
   digest: TMD5Digest;
@@ -690,6 +696,82 @@ begin
   ansiStrings.StrPLCopy(PAnsiChar(Result), PAnsiChar(@digest), length(digest));
 end;
 
+function HashFile256(const aFileName: TFileName): THash256;
+var
+//  hasher: TSynHasher;
+  hasher: TSha256;
+  temp: RawByteString;
+  F: THandle;
+  size, tempsize: Int64;
+  n, read: integer;
+  rr: THash512Rec;
+begin
+  FillZero(result);
+  if aFileName = '' then
+    exit;
+  n := 0;
+  F := FileOpenSequentialRead(aFileName);
+  if ValidHandle(F) then
+  try
+//    hasher.Init(hfSHA256);
+    hasher.Init;
+    size := FileSize(F);
+    tempsize := 1 shl 20; // 1MB temporary buffer for reading
+    if tempsize > size then
+      tempsize := size;
+    SetLength(temp, tempsize);
+    dec(n);
+    while size > 0 do
+    begin
+      read := FileRead(F, pointer(temp)^, tempsize);
+      if read <= 0 then
+        exit;
+      hasher.Update(pointer(temp), read);
+      dec(size, read);
+    end;
+    hasher.Final(rr.Lo);
+     result := rr.Lo;
+  finally
+    FileClose(F);
+  end;
+end;
+
+function HashFile(const aFileName: TFileName; algo: THashAlgo): THash512Rec;
+var
+  hasher: TSynHasher;
+  temp: RawByteString;
+  F: THandle;
+  size, tempsize: Int64;
+  n, read: integer;
+  rr: THash512Rec;
+begin
+  FillZero(result.b);
+  if aFileName = '' then
+    exit;
+  n := 0;
+  F := FileOpenSequentialRead(aFileName);
+  if ValidHandle(F) then
+  try
+    hasher.Init(algo);
+    size := FileSize(F);
+    tempsize := 1 shl 20; // 1MB temporary buffer for reading
+    if tempsize > size then
+      tempsize := size;
+    SetLength(temp, tempsize);
+    dec(n);
+    while size > 0 do
+    begin
+      read := FileRead(F, pointer(temp)^, tempsize);
+      if read <= 0 then
+        exit;
+      hasher.Update(pointer(temp), read);
+      dec(size, read);
+    end;
+    hasher.Final(Result);
+  finally
+    FileClose(F);
+  end;
+end;
    {$ELSE NOT USE_SYMCRYPTO}
    {$IFDEF USE_WE_LIBS}
 function getFileMD5(fn: String; progFunc: TProgressFunc): TBytes;
@@ -844,5 +926,54 @@ begin
      Result := Result + inttohex( ord( digest[i] ), 2 );
    Result := LowerCase( Result );
 end;
+
+function EccCommandVerifyFile(fileSha256: THash256; const sign64: RawByteString; const AuthPubKey: RawByteString): TEccValidity;
+const
+  AuthBase64: String = '';
+var
+  auth: TEccCertificate;
+  cert: TEccSignatureCertified;
+begin
+  cert := TEccSignatureCertified.CreateFromBase64(sign64);
+  try
+    if not cert.Check then
+    begin
+      result := ecvInvalidSignature;
+      exit;
+    end;
+    auth := TEccCertificate.Create;
+    try
+//      if auth.FromAuth(AuthPubKey, AuthBase64, cert.AuthoritySerial) then
+      if auth.FromBase64(AuthPubKey) then
+        begin
+          result := cert.Verify(auth, fileSha256);
+        end
+      else
+        result := ecvUnknownAuthority;
+    finally
+      auth.Free;
+    end;
+  finally
+    cert.Free;
+  end;
+end;
+
+function verifyEccSignFile(const fileName: String; sign64, publicKey: RawByteString; allowSelfSigned: Boolean = True): Boolean;
+var
+  v: TEccValidity;
+  hash: TSha256Digest;
+//  sign64: RawByteString;
+  pub64: RawByteString;
+begin
+  if not FileExists(fileName) then
+    Exit(False);
+  hash := HashFile256(fileName);
+//  if FileExists(sigFileName) then
+//    sign64 := StringFromFile(sigFileName);
+  pub64 := JsonDecode(PUTF8Char(publicKey), 'Base64', nil, true);
+  v := EccCommandVerifyFile(hash, sign64, pub64);
+  Result := (v = ecvValidSigned) or (allowSelfSigned and (v = ecvValidSelfSigned));
+end;
+
 
 end.

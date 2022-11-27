@@ -24,7 +24,7 @@ uses
   procedure ProcessWIMEvents(var thisWIM: TWIMSession; ev: TWIMEvent);
 
 
-  //function  statusName(s:Tstatus):string;
+  //function  statusName(s: Tstatus): string;
   function  statusNameExt2(s: byte; extSts: byte = 0; const Xsts: String = ''; const sts6: String = ''): string;
   function  status2imgName(s: byte; inv: boolean=FALSE): TPicName;
   function  status2imgNameExt(s: byte; inv: boolean=FALSE; extSts: byte= 0): TPicName;
@@ -202,9 +202,9 @@ begin
     exit;
     end;
   end;}
-if inv then
+  if inv then
 //  inc(result, PIC_INVISIBLE_STATUS_ONLINE-PIC_STATUS_ONLINE);
- result := INVIS_PREFIX + result;
+    result := INVIS_PREFIX + result;
 end; // status2imgdx
 
 function status2imgNameExt(s: Byte; inv: Boolean = False; extSts: Byte = 0): TPicName;
@@ -252,7 +252,7 @@ begin
   result := VI_normal; // shut up compiler warning
 end; // str2visibility
 
-function findWIMViewInfo(c:TRnQcontact): TRnQViewInfoForm;
+function findWIMViewInfo(c: TRnQcontact): TRnQViewInfoForm;
 var
   i: Integer;
 begin

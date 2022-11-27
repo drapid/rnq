@@ -11,7 +11,6 @@ object EmojiFrm: TEmojiFrm
   ParentFont = True
   FormStyle = fsStayOnTop
   KeyPreview = True
-  OldCreateOrder = False
   ParentBiDiMode = False
   Position = poDefault
   OnCreate = FormCreate
@@ -19,8 +18,7 @@ object EmojiFrm: TEmojiFrm
   OnKeyDown = FormKeyDown
   OnPaint = FormPaint
   OnShow = FormShow
-  PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 30
   object exts: TPanel
     AlignWithMargins = True
     Left = 1

@@ -107,7 +107,7 @@
         <PreBuildEvent><![CDATA[BuiltTime.exe
 $(PreBuildEvent)]]></PreBuildEvent>
         <Icon_MainIcon>Res\MAINICON_Lite.ico</Icon_MainIcon>
-        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\Flash;..\For.rnq\RTL;..\For.rnq\VCL;..\For.rnq\SQLite;.\ICQ;.\MRA;.\Prefs;.\xmpp;..\For.rnq\XML;.\DB;..\For.rnq\External\mORMot;.\WIM;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\For.rnq;..\For.rnq\External\VTV\Source;..\For.rnq\Flash;..\For.rnq\RTL;..\For.rnq\VCL;..\For.rnq\SQLite;.\ICQ;.\MRA;.\Prefs;.\xmpp;..\For.rnq\XML;.\DB;..\For.rnq\External\mORMot2;.\WIM;..\For.rnq\ZIP;..\for.RnQ\External\mORMot2\src\core;..\for.RnQ\External\mORMot2\src\crypt;..\for.RnQ\External\mORMot2\src\net;..\for.RnQ\External\mORMot2\src\lib;.\TLG;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <SanitizedProjectName>RnQx64</SanitizedProjectName>
         <DCC_UsePackage>rtl;$(DCC_UsePackage)</DCC_UsePackage>
         <Manifest_File>Res\rnq.manifest1</Manifest_File>
@@ -118,7 +118,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MajorVer>0</VerInfo_MajorVer>
         <VerInfo_Release>9999</VerInfo_Release>
-        <DCC_Define>RNQ;USE_SSL;ZLIB_OBJ;NO_EXTENDED_RTTI;NO_DEBUG_LOG;NO_HTTP_TUNNEL_AUTHDIGEST;$(DCC_Define)</DCC_Define>
+        <DCC_Define>RNQ;USE_SSL;NO_EXTENDED_RTTI;NO_DEBUG_LOG;NO_HTTP_TUNNEL_AUTHDIGEST;ZLIBRTL;$(DCC_Define)</DCC_Define>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1125;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11.9999.1125;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1049</VerInfo_Locale>
@@ -131,6 +131,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCC_F>false</DCC_F>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
+        <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
         <Manifest_File>(None)</Manifest_File>
         <Debugger_RunParams>--debug --xxx</Debugger_RunParams>
         <VerInfo_MajorVer>1</VerInfo_MajorVer>
@@ -163,6 +165,11 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <VerInfo_Release>0</VerInfo_Release>
+        <VerInfo_MinorVer>0</VerInfo_MinorVer>
+        <VerInfo_Build>1128</VerInfo_Build>
+        <VerInfo_MajorVer>1</VerInfo_MajorVer>
+        <BT_BuildType>Debug</BT_BuildType>
         <Manifest_File>(None)</Manifest_File>
         <DCC_DebugInformation>2</DCC_DebugInformation>
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>

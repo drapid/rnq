@@ -8,7 +8,19 @@ unit RDUtils;
 
 interface
 uses
-  Windows, sysutils, classes, graphics, forms, types, RDGlobal;
+  Windows, sysutils, classes, System.UITypes,
+ {$IFDEF FMX}
+  FMX.Graphics, FMX.Types, System.UIConsts,
+ {$ELSE ~FMX}
+  Graphics,
+  Forms,
+ {$ENDIF FMX}
+  types, RDGlobal;
+
+type
+  THelpers = class
+    class function IfThen<T>(AValue: Boolean; TrueVal, FalseVal: T): T;
+  end;
 
 function  IfThen(AValue: Boolean; const ATrue: Integer; const AFalse: Integer = 0): Integer; overload;
 function  IfThen(AValue: Boolean; const s1, s2: RawByteString): RawByteString; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
@@ -137,8 +149,9 @@ function  bool2str(const b: Boolean): RawByteString;
 
  function IsEqualGUID(const guid1, guid2: TGUID): Boolean; stdcall;
 {$EXTERNALSYM IsEqualGUID}
- function CreateGUID: RawByteString;
+ function CreateGUID: RawByteString; OverLoad;
  function CreaterGUID: RawByteString;
+ procedure CreateGUID(var guid: TGUID); OverLoad;
  function SGUID2rGUID(const guid: RawByteString; Zero2Empty: Boolean = True): RawByteString;
  function GUID2rGUID(const guid: TGUID): RawByteString;
 
@@ -197,6 +210,13 @@ const
   ole32    = 'ole32.dll';
 
 
+class function THelpers.IfThen<T>(AValue: Boolean; TrueVal, FalseVal: T): T;
+begin
+  if AValue then
+    Result := TrueVal
+  else
+    Result := FalseVal
+end;
 
 function IfThen(AValue: Boolean; const ATrue: Integer; const AFalse: Integer = 0): Integer; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
@@ -555,8 +575,8 @@ function isURL(const s: String; ofs: Integer=1): Boolean;
 begin
  {$IFDEF UNICODE}
  while (Integer(s[ofs]) <= $7F) and
-        //(((s[ofs] >= '0') and (s[ofs] <= '9')) or s[ofs].IsLetter()) do
-    (((s[ofs] >= '0') and (s[ofs] <= '9')) or TCharacter.IsLetter(s[ofs])) do
+    (((s[ofs] >= '0') and (s[ofs] <= '9')) or s[ofs].IsLetter()) do
+//    (((s[ofs] >= '0') and (s[ofs] <= '9')) or TCharacter.IsLetter(s[ofs])) do
  {$ELSE nonUNICODE}
  while s[ofs] in ['0'..'9','a'..'z','A'..'Z'] do
  {$ENDIF UNICODE}
@@ -714,7 +734,8 @@ begin
   Result := Copy(s, 1, length(s));
   while i <= length(Result) do
 //  if s[i] in ['0'..'9'] then
-  if TCharacter.IsDigit(s[i]) then
+//  if TCharacter.IsDigit(s[i]) then
+  if s[i].IsDigit() then
 //   if Result[i].IsDigit then
      inc(i)
     else
@@ -870,7 +891,7 @@ begin
   if not ColorToIdent(Color, Result) then
 {$ENDIF}
     begin
-      color := ABCD_ADCB(ColorToRGB(color));
+      color := ABCD_ADCB(TColorRec.ColorToRGB(color));
       result := intToHex(color, 6);
     end;
 end;
@@ -897,7 +918,7 @@ begin
    else
 {$ENDIF}
     begin
-      color := ABCD_ADCB(ColorToRGB(color));
+      color := ABCD_ADCB(TColorRec.ColorToRGB(color));
       result := IntToHexA(color,6);
     end;
  {$ELSE nonUNICODE}
@@ -927,7 +948,7 @@ end; // str2color
 
 function Color2HTML(Color: TColor): String;
 begin
-  Color := ABCD_ADCB(ColorToRGB(Color));
+  Color := ABCD_ADCB(TColorRec.ColorToRGB(Color));
   Result := '#' + IntToHex(Color, 6);
 end;
 
@@ -1638,7 +1659,7 @@ var
   tmp: word;
 //  tmp4: DWORD;
   tmp4: ShortString;
-  tmpU: UnicodeString;
+//  tmpU: UnicodeString;
 begin
   if Value='' then
   begin
@@ -2032,6 +2053,11 @@ end;
 {$EXTERNALSYM IsEqualGUID}
 
  function CoCreateGuid(out guid: TGUID): HResult; stdcall; external 'ole32.dll';
+
+procedure CreateGUID(var guid: TGUID);
+begin
+ CoCreateGuid(guid);
+end;
 
 function CreaterGUID: RawByteString;
 var

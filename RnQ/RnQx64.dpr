@@ -88,7 +88,7 @@ uses
   RnQtrayLib in '..\for.RnQ\RnQtrayLib.pas',
   Vcl.Themes,
   Vcl.Styles,
-  tipDlg in '..\For.rnq\tipDlg.pas',
+  RDTipDlg in '..\For.rnq\VCL\RDTipDlg.pas',
   RnQLangFrm in '..\For.rnq\RnQLangFrm.pas' {FrmLangs},
   RDUtils in '..\for.RnQ\RTL\RDUtils.pas',
   {$IFDEF PROTOCOL_ICQ}

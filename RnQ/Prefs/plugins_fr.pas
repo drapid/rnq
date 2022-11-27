@@ -32,7 +32,7 @@ type
     procedure initPage(prefs: IRnQPref); Override;
     procedure applyPage; Override;
     procedure resetPage; Override;
-//    procedure updateVisible;
+    procedure updateVisPage; Override;
   end;
 
 implementation
@@ -165,22 +165,6 @@ begin
 //  theme.getPic(PIC_PREFERENCES, prefBtn.glyph);
 //  theme.getPic(PIC_REFRESH, reloadBtn.glyph);
   PluginsList.NodeDataSize := SizeOf(TPlItem);
-
-  PluginsList.width := ClientWidth - GAP_SIZE2;
-
-  reloadBtn.top :=  clientHeight - GAP_SIZE - reloadBtn.Height;
-  reloadBtn.left :=  GAP_SIZE;
-
-  prefBtn.top := reloadBtn.top;
-  prefBtn.left := reloadBtn.left + reloadBtn.Width + GAP_SIZE;
-{
-  fileBox.top := reloadBtn.top - GAP_SIZE - fileBox.Height;
-  fileBox.left := 60 + GAP_SIZE;
-  fileBox.Width := PluginsList.width - 60;
-}
-  PluginsList.top := Label1.top + Label1.height + GAP_SIZE;
-//  PluginsList.height := fileBox.top - PluginsList.top - GAP_SIZE;
-  PluginsList.height := reloadBtn.top - GAP_SIZE - PluginsList.top - GAP_SIZE;
 end;
 
 procedure TpluginsFr.fillPluginsGrid;
@@ -250,6 +234,31 @@ while plugins.hasMore do
   end;
 }
   fillPluginsGrid;  
+end;
+
+procedure TpluginsFr.updateVisPage;
+var
+  gap_scaled: Integer;
+  gap2_scaled: Integer;
+begin
+  gap_scaled := MulDiv(GAP_SIZE, getParentCurrentDPI, FRM_PPI);
+  gap2_scaled := MulDiv(GAP_SIZE2, getParentCurrentDPI, FRM_PPI);
+
+  PluginsList.width := ClientWidth - gap2_scaled;
+
+  reloadBtn.top := clientHeight - gap_scaled - reloadBtn.Height;
+  reloadBtn.left := gap_scaled;
+
+  prefBtn.top := reloadBtn.top;
+  prefBtn.left := reloadBtn.left + reloadBtn.Width + gap_scaled;
+{
+  fileBox.top := reloadBtn.top - GAP_SIZE - fileBox.Height;
+  fileBox.left := 60 + GAP_SIZE;
+  fileBox.Width := PluginsList.width - 60;
+}
+  PluginsList.top := Label1.top + Label1.height + gap_scaled;
+//  PluginsList.height := fileBox.top - PluginsList.top - GAP_SIZE;
+  PluginsList.height := reloadBtn.top - gap_scaled - PluginsList.top - gap_scaled;
 end;
 
 end.

@@ -42,28 +42,30 @@ type
 
   TThemeSourcePath = record
     pathType: TPathType;
-{    case TPathType of
-      pt_path: (path: string[255]);
-      pt_zip: (zp: TZipFile);
-//    end;}
     path: string;
     ArcFile: String;
-    {$IFDEF USE_ZIP}
-//      zp: TKAZip;
-      zp: TZipFile;
-//      zp: TVCLUnZip;
-    {$ENDIF USE_ZIP}
-    {$IFDEF USE_RAR}
-//      rarFile: String;
-       RarHnd: THandle;
-//      rr: TUnRar;
-    {$ENDIF USE_RAR}
+    procedure ArcClear;
+    case TPathType of
+           pt_path:
+             ();
+//             (fn: String)
+      {$IFDEF USE_ZIP}
+           pt_zip:
+             (zp: TZipFile);
+      {$ENDIF USE_ZIP}
+      {$IFDEF USE_RAR}
+          pt_rar:
+             (RarHnd: THandle);
+      {$ENDIF USE_RAR}
       {$IFDEF USE_7Z}
+          pt_7z:
 //       z7: TSevenZip;
 //       z7: T7zInArchive;
-       z7: I7zInArchive;
+             (z7: T7zInArchive);
       {$ENDIF USE_7Z}
- end;
+    end;
+// end;
+
 
 // file management
  {$IFDEF USE_RAR}
@@ -72,7 +74,7 @@ type
 
   function loadFile(pt: TThemeSourcePath; fn: String): RawByteString; overload;
   function loadFile(pt: TThemeSourcePath; fn: String; var ResStream: TStream): Boolean; overload;
-  function ExistsFile(pt: TThemeSourcePath; fn: String): Boolean;
+  function ExistsFile(pt: TThemeSourcePath; const fn: String): Boolean;
   function  GetStream(const fn: String): TStream;
 //  function  loadFile(fn:string): RawByteString; overload;
   function loadFileA(const fn: String): RawByteString; overload;
@@ -92,10 +94,26 @@ type
   {$ENDIF}
   function NeedPassForFile(pt: TThemeSourcePath; fn: string): Boolean;
 
+  function  DetectFileFormatStream(str: TStream): TPAFormat;
+
 //  procedure WorkThread(LV: Pointer); stdcall;
+const
+  JPEG_HDRS: array [0..6] of AnsiString = (
+    #$FF#$D8#$FF#$E0,
+    #$FF#$D8#$FF#$E1,
+    #$FF#$D8#$FF#$ED, {ADOBE}
+    #$FF#$D8#$FF#$E2, {CANON}
+    #$FF#$D8#$FF#$E3,
+    #$FF#$D8#$FF#$DB, {SAMSUNG}
+    #$FF#$D8#$FF#$FE {UNKNOWN});
+  TIF_HDR: array [0..3] of AnsiChar = #$49#$49#$2A#$00;
+  TIF_HDR2: array [0..3] of AnsiChar = #$4D#$4D#$00#$2A;
 
 implementation
   uses
+   {$IFDEF UNICODE}
+     AnsiStrings,
+   {$ENDIF UNICODE}
 // {$IFDEF USE_ZIP}
 //  KAZip,
 //  SXZipUtils,
@@ -117,9 +135,34 @@ implementation
     SysUtils
     ;
 
-function  ExistsFile(pt: TThemeSourcePath; fn: string): Boolean;
+procedure TThemeSourcePath.ArcClear;
+var
+  pt: TPathType;
+begin
+  pt := Self.pathType;
+  self.ArcFile := '';
+ {$IFDEF USE_ZIP}
+  if pt = pt_zip then
+    self.zp := NIL;
+ {$ENDIF USE_ZIP}
+ {$IFDEF USE_7Z}
+  if pt = pt_7z then
+    self.z7 := NIL;
+ {$ENDIF USE_7Z}
+ {$IFDEF USE_RAR}
+  if pt = pt_rar then
+    self.RarHnd := 0;
+ {$ENDIF USE_RAR}
+end;
+
+function ExistsFile(pt: TThemeSourcePath; const fn: string): Boolean;
   function fullpath(const fn: string): string;
-  begin if ansipos(':',fn)=0 then result:=pt.path+fn else result:=fn end;
+  begin
+    if ansipos(':',fn)=0 then
+      result := pt.path+fn
+     else
+      result := fn
+  end;
    {$IFDEF USE_RAR}
 var
   hArcData: THandle;
@@ -155,8 +198,8 @@ begin
            //  ZipFile.CentralDirectory
 //              i := pt.z7.GetIndexByFilename(pt.path+ fn);
              s := pt.path + fn;
-             isFound := False;
-              for I := 0 to pt.z7.NumberOfItems - 1 do
+//             isFound := False;
+              for var I := 0 to pt.z7.getNumberOfItems - 1 do
 //              if (pt.z7.getItemPath(i) =pt.path) and
 //                 (pt.z7.GetItemName(i) = fn) then
                if (pt.z7.getItemPath(i) = s) then
@@ -258,9 +301,6 @@ begin
       //        Write(CR, 'File header broken');
             if hArcData <> pt.RarHnd then
              RARCloseArchive(hArcData);
-//            result := loadFile(ZipStream);
-//            result := CreateAni(ZipStream, b);
-//            ResStream.Free;
 //             Result := True;
            end;
          if WeLoadedDLL then
@@ -412,7 +452,7 @@ begin
 //              i := pt.z7.GetIndexByFilename(pt.path+ fn);
              s := pt.path + fn;
              isFound := False;
-              for I := 0 to pt.z7.NumberOfItems - 1 do
+              for I := 0 to pt.z7.getNumberOfItems - 1 do
 //              if (pt.z7.getItemPath(i) =pt.path) and
 //                 (pt.z7.GetItemName(i) = fn) then
                if (pt.z7.getItemPath(i) = s) then
@@ -1021,7 +1061,7 @@ begin
   Result := DirectoryExists(fpath);
   if not Result then
     begin
-      Result := CreateDirRecursive(s);
+      Result := (s = '') or CreateDirRecursive(s);
       if Result then
         Result := CreateDir(fpath);
     end;
@@ -1058,5 +1098,46 @@ begin
 end;
 {$ENDIF USE_ZIP}
 
+function DetectFileFormatStream(str: TStream): TPAFormat;
+var
+//  s: String;
+  s: array[0..3] of AnsiChar;
+begin
+  str.Seek(0, soBeginning);
+//  str.Position := 0;
+  Result := PA_FORMAT_UNK;
+  if str.Read(s, 4) < 4 then
+    Result := PA_FORMAT_UNK
+  else
+//  s := Copy(pBuffer, 1, 4);
+  if s = 'GIF8' then
+    Result := PA_FORMAT_GIF
+  else if MatchStr(s, JPEG_HDRS) then
+    Result := PA_FORMAT_JPEG
+  else if AnsiStartsText(AnsiString('BM'), s) then
+    Result := PA_FORMAT_BMP
+  else if s = '<?xm' then
+    Result := PA_FORMAT_XML
+  else if AnsiStartsText(AnsiString('CWS'), s) then
+    Result := PA_FORMAT_SWF
+  else if AnsiStartsText(AnsiString('FWS'), s) then
+    Result := PA_FORMAT_SWF
+  else if AnsiStartsText(AnsiString('‰PNG'), s) then
+    Result := PA_FORMAT_PNG
+  else if (s = TIF_HDR) or (s = TIF_HDR2) then
+    Result := PA_FORMAT_TIF
+  else if (s= 'RIFF') then
+    begin
+      if str.Read(s, 4) < 4 then
+        Result := PA_FORMAT_UNK
+       else
+        if str.Read(s, 4) < 4 then
+          Result := PA_FORMAT_UNK
+         else if s = 'WEBP' then
+          Result := PA_FORMAT_WEBP;
+    end
+//  else
+//    Result := PA_FORMAT_UNK;
+end;
 
 end.

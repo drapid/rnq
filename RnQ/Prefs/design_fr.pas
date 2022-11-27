@@ -13,7 +13,7 @@ uses
   ActiveX,
   StdCtrls, ExtCtrls, ComCtrls, RDGlobal,
   RnQPrefsInt, RnQPrefsTypes,
-  RnQSpin, VirtualTrees;
+  RnQSpin, VirtualTrees, Vcl.Mask;
 
 type
   TdesignFr = class(TPrefFrame)
@@ -101,6 +101,7 @@ type
     procedure initPage(prefs: IRnQPref); Override; final;
     procedure applyPage; Override; final;
     procedure resetPage; Override; final;
+    procedure updateVisPage; Override;
     { Public declarations }
    procedure resetAutosize;
    procedure prefToggleShowGroups;
@@ -270,16 +271,31 @@ begin
  {$ELSE}
    ShXstChk.visible := False;
  {$ENDIF}
-  GrBox2.width := CommonTab.Clientwidth - GAP_SIZE2;
+  IconsList.NodeDataSize := SizeOf(TIcItem);
+  fillIconsGrid;
+
+// Получаем список всех кодировок
+//  EnumSystemCodePages(
+end;
+
+procedure TdesignFr.updateVisPage;
+var
+  gap_scaled: Integer;
+  gap2_scaled: Integer;
+begin
+  gap_scaled := MulDiv(GAP_SIZE, getParentCurrentDPI, FRM_PPI);
+  gap2_scaled := MulDiv(GAP_SIZE2, getParentCurrentDPI, FRM_PPI);
+
+  GrBox2.width := CommonTab.Clientwidth - gap2_scaled;
   sortbyGrp.width := GrBox2.width;
   IconsGrp.Width := GrBox2.width;
-  autosizeGrp.left := GAP_SIZE;
-  autosizeGrp.width := (CommonTab.Clientwidth - autosizeGrp.left) div 2 - GAP_SIZE;
+  autosizeGrp.left := gap_scaled;
+  autosizeGrp.width := (CommonTab.Clientwidth - autosizeGrp.left) div 2 - gap_scaled;
   //dockGrp.left:= autosizeGrp.left + autosizeGrp.width + GAP_SIZE;
   dockGrp.width := autosizeGrp.width;
-  dockGrp.left := GrBox2.width - dockGrp.width + GAP_SIZE;
+  dockGrp.left := GrBox2.width - dockGrp.width + gap_scaled;
 
-  italicGrp.top :=  autosizeGrp.top + autosizeGrp.height + GAP_SIZE;
+  italicGrp.top :=  autosizeGrp.top + autosizeGrp.height + gap_scaled;
   italicGrp.left := autosizeGrp.left;
   italicGrp.width := autosizeGrp.width;
 
@@ -291,18 +307,13 @@ begin
   filterbarGrp.left := roasterbarGrp.left + roasterbarGrp.width + 4;
   filterbarGrp.width := roasterbarGrp.width;
 
-  TtlGrBox.top := italicGrp.top + italicGrp.height + GAP_SIZE;
+  TtlGrBox.top := italicGrp.top + italicGrp.height + gap_scaled;
   TtlGrBox.left := italicGrp.left;
   TtlGrBox.width := GrBox2.width;
 
-  transpGr.top :=  GAP_SIZE;
-  transpGr.left := GAP_SIZE;
+  transpGr.top :=  gap_scaled;
+  transpGr.left := gap_scaled;
   transpGr.width := GrBox2.width;
-  IconsList.NodeDataSize := SizeOf(TIcItem);
-  fillIconsGrid;
-
-// Получаем список всех кодировок
-//  EnumSystemCodePages(
 end;
 
 procedure TdesignFr.applyPage;

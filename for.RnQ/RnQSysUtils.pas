@@ -12,6 +12,10 @@ interface
 uses
   windows, sysutils, Forms, graphics, Classes;
 
+  procedure TrimWorkingSet;
+  function IsElevated: Boolean;
+  function IsTopMostWindow(Wnd: HWND): Boolean;
+  function SetTopMostWindow(Wnd: HWND; Val: Boolean): Boolean;
 
 implementation
 
@@ -39,7 +43,8 @@ begin
       s := Format('Failed to load library "%0:s".'#13#10' Error (%1:d) %2:s', [AnsiString(pdli.szDll),
           pdli.dwLastError, SysErrorMessage(pdli.dwLastError)]);
  {$IFDEF RNQ}
-      RQLog.loggaEvtS(s, PIC_ASTERISK);
+//      RQLog.loggaEvtS(s, PIC_ASTERISK);
+      RQLog.LogEvent(s, PIC_ASTERISK);
  {$ENDIF RNQ}
       raise EAbort.Create(s);
 //      raise ELoadLibraryError.CreateFmt(
@@ -56,7 +61,8 @@ begin
            pdli.dwLastError,
            SysErrorMessage(pdli.dwLastError)]);
  {$IFDEF RNQ}
-         RQLog.loggaEvtS(s, PIC_ASTERISK);
+//         RQLog.loggaEvtS(s, PIC_ASTERISK);
+         RQLog.LogEvent(s, PIC_ASTERISK);
  {$ENDIF RNQ}
          raise EAbort.Create(s);
 //         raise EGetProcAddressError.CreateFmt(
@@ -70,7 +76,8 @@ begin
            pdli.dlp.dwOrdinal, AnsiString(pdli.szDll),
           pdli.dwLastError, SysErrorMessage(pdli.dwLastError)]);
  {$IFDEF RNQ}
-         RQLog.loggaEvtS(s, PIC_ASTERISK);
+//         RQLog.loggaEvtS(s, PIC_ASTERISK);
+         RQLog.LogEvent(s, PIC_ASTERISK);
  {$ENDIF RNQ}
          raise EAbort.Create(s);
 //         raise EGetProcAddressError.CreateFmt(
@@ -80,6 +87,63 @@ begin
         end;
 
     dliNoteEndProcessing: ;
+  end;
+end;
+
+procedure TrimWorkingSet;
+var
+  MainHandle: THandle;
+begin
+  try
+    MainHandle := OpenProcess(PROCESS_ALL_ACCESS, False, GetCurrentProcessID);
+    SetProcessWorkingSetSize(MainHandle, High(SIZE_T), High(SIZE_T));
+    CloseHandle(MainHandle);
+  except end;
+end;
+
+function IsElevated: Boolean;
+var
+  hToken, hProcess: THandle;
+  pTokenInformation: pointer;
+  ReturnLength: DWord;
+  TokenInformation: TTokenElevation;
+begin
+  Result := False;
+  hProcess := GetCurrentProcess;
+  try
+    if OpenProcessToken(hProcess, TOKEN_QUERY, hToken) then
+    try
+      TokenInformation.TokenIsElevated := 0;
+      pTokenInformation := @TokenInformation;
+      GetTokenInformation(hToken, TokenElevation, pTokenInformation, sizeof(TokenInformation), ReturnLength);
+      Result := (TokenInformation.TokenIsElevated > 0);
+    finally
+      CloseHandle(hToken);
+    end;
+  except
+    Result := false;
+  end;
+end;
+
+function IsTopMostWindow(Wnd: HWND): Boolean;
+begin
+  Result := (Wnd > 0) and ((GetWindowLongPtr(Wnd, GWL_EXSTYLE) and WS_EX_TOPMOST) > 0);
+end;
+
+function SetTopMostWindow(Wnd: HWND; Val: Boolean): Boolean;
+var
+  ExStyle: Integer;
+begin
+  ExStyle := GetWindowLongPtr(Wnd, GWL_EXSTYLE);
+  if Val then
+  begin
+    Result := SetWindowLongPtr(Wnd, GWL_EXSTYLE, ExStyle or WS_EX_TOPMOST) = ExStyle;
+    SetWindowPos(Wnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE + SWP_NOSIZE + SWP_NOACTIVATE);
+  end
+    else
+  begin
+    Result := SetWindowLongPtr(Wnd, GWL_EXSTYLE, ExStyle and not WS_EX_TOPMOST) = ExStyle;
+    SetWindowPos(Wnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE + SWP_NOSIZE + SWP_NOACTIVATE);
   end;
 end;
 

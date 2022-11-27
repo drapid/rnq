@@ -10,7 +10,14 @@ interface
 
 
 uses
-  windows, sysutils, Forms, graphics, Classes,
+  windows, sysutils, IOUtils,
+  {$IFDEF FMX}
+  FMX.Types,
+  FMX.Forms,
+  {$ELSE ~FMX}
+  Forms, graphics,
+  {$ENDIF FMX}
+  Classes,
   RDGlobal;
 
 type
@@ -34,17 +41,22 @@ type
 //  procedure HideFromProcess;
 
   //function  getSpecialFolder(const what: string): string;
+  {$IFNDEF FMX}
   function  getSpecialFolder(const what: Integer): String;
+  function  desktopWorkArea(clHandle: THandle): TRect;
+  {$ENDIF FMX}
   function  expandEnv(const env: String): String;
   //function  getURLfromFav(fn: string): string;
-  function  desktopWorkArea(clHandle: THandle): TRect;
   function  ForceForegroundWindow(hwnd: THandle; doRestore: boolean=TRUE): Boolean;
 
+  {$IFNDEF FMX}
   //function  getRegion(bmp: TGPBitmap): HRGN;
   function  getRegion(bmp: Tbitmap): HRGN;
   function  isTopMost(frm: Tform): boolean;
   function  setTopMost(frm: Tform; val: boolean): boolean;
   function  formVisible(frm: Tform): boolean;
+  procedure applyTaskButton(frm: Tform);
+  {$ENDIF FMX}
 
 { Clipboard }
 
@@ -56,16 +68,18 @@ type
     applicationFullPath: string): boolean;
 
   function  validFilename(const s: string): string;
+  {$IFNDEF FMX}
   procedure addLinkToFavorites(const link: string);
 
-  procedure dockSet(const hnd: HWND; const pOn: boolean; const pCallbackMessage: Integer);
   procedure setAppBarSize(const hnd: HWND; const R: TRect;
                           const pCallbackMessage: Integer;
                           const pIsLeft: Boolean);
+  {$ENDIF ~FMX}
+
+  procedure dockSet(const hnd: HWND; const pOn: boolean; const pCallbackMessage: Integer);
   function  IsCanShowNotifications: Boolean;
   function  GetScaleFactor(hnd: HWND): Integer; deprecated 'Need to add support for scaled monitors';
 
-  procedure applyTaskButton(frm: Tform);
 
   procedure WaitOrKill(var Thread: THandle; Time: cardinal);
 
@@ -226,6 +240,7 @@ begin
 end;
 }
 
+  {$IFNDEF FMX}
 function getSpecialFolder(const what: Integer): string;
 var
   szPath: array[0..MAX_PATH] of Char;
@@ -237,6 +252,7 @@ begin
    else
     result := '';
 end;
+  {$ENDIF ~FMX}
 {
 function getSpecialFolder(const what: string): string;
 const
@@ -268,6 +284,7 @@ begin
     Result := env;
 end;
 
+  {$IFNDEF FMX}
 function getCLMon(clHanlde: THandle): TMonitor;
 var
   mon: TMonitor;
@@ -288,6 +305,7 @@ begin
   else
     result := mon.WorkareaRect;
 end;
+  {$ENDIF FMX}
 
 function ForceForegroundWindow(hwnd: THandle; doRestore: boolean=TRUE): boolean;
 const
@@ -427,6 +445,7 @@ begin
 end;
 }
 
+  {$IFNDEF FMX}
     {$WARN UNSAFE_CODE OFF}
 function getRegion(bmp: Tbitmap): HRGN;
 var
@@ -521,11 +540,15 @@ begin
   end;
 end; // getRegion2
     {$WARN UNSAFE_CODE ON}
+  {$ENDIF ~FMX}
 
 function isTopMost(frm: Tform): boolean;
 begin
-  //result := frm.FormStyle=fsStayOnTop
+  {$IFDEF FMX}
+  result := frm.FormStyle = TFormStyle.StayOnTop;
+  {$ELSE ~FMX}
   result := Assigned(frm) and ((getWindowLong(frm.handle, GWL_EXSTYLE) and WS_EX_TOPMOST) > 0)
+  {$ENDIF FMX}
 end; // isTopMost
 
 function setTopMost(frm: Tform; val: boolean): boolean;
@@ -538,24 +561,39 @@ begin
    else
 with frm do
   begin
-  i := getWindowLong(handle, GWL_EXSTYLE);
-  if val then
-    begin
-    result := setWindowLong(handle, GWL_EXSTYLE,  i or WS_EX_TOPMOST) = i;
-    SetWindowPos(Handle, HWND_TOPMOST, 0,0,0,0, SWP_NOMOVE+SWP_NOSIZE+SWP_NOACTIVATE)
-    end
-  else
-    begin
-    result := setWindowLong(handle, GWL_EXSTYLE,  i and not WS_EX_TOPMOST) = i;
-    SetWindowPos(Handle, HWND_NOTOPMOST, Left, Top, Width, Height, SWP_NOMOVE+SWP_NOSIZE+SWP_NOACTIVATE);
-    end;
+  {$IFDEF FMX}
+    if val then
+      begin
+        frm.FormStyle := TFormStyle.StayOnTop;
+        frm.BringToFront;
+      end
+     else
+      begin
+        if frm.FormStyle = TFormStyle.StayOnTop then
+          frm.FormStyle = TFormStyle.fsNormal
+      end;
+  {$ELSE ~FMX}
+    i := getWindowLong(handle, GWL_EXSTYLE);
+    if val then
+      begin
+      result := setWindowLong(handle, GWL_EXSTYLE,  i or WS_EX_TOPMOST) = i;
+      SetWindowPos(Handle, HWND_TOPMOST, 0,0,0,0, SWP_NOMOVE+SWP_NOSIZE+SWP_NOACTIVATE)
+      end
+    else
+      begin
+      result := setWindowLong(handle, GWL_EXSTYLE,  i and not WS_EX_TOPMOST) = i;
+      SetWindowPos(Handle, HWND_NOTOPMOST, Left, Top, Width, Height, SWP_NOMOVE+SWP_NOSIZE+SWP_NOACTIVATE);
+      end;
+  {$ENDIF FMX}
   end;
 end; // setTopMost
 
+  {$IFNDEF FMX}
 function formVisible(frm: Tform): boolean;
 begin
   result := (frm<>NIL) and isWindowVisible(frm.handle)
 end;
+  {$ENDIF ~FMX}
 
 
 { Clipboard }
@@ -797,6 +835,7 @@ begin
    end;
 end; // validFilename
 
+  {$IFNDEF FMX}
 procedure addLinkToFavorites(const link: string);
 var
   s: string;
@@ -813,6 +852,7 @@ begin
   writeln(f, 'URL='+link);
   closeFile(f);
 end; // addLinkToFavorites
+  {$ENDIF ~FMX}
 
 procedure dockSet(const hnd: HWND; const pOn: boolean; const pCallbackMessage: Integer);
 var
@@ -827,6 +867,7 @@ begin
     SHAppBarMessage(ABM_REMOVE, abd);
 end; // dockSet
 
+  {$IFNDEF FMX}
 procedure setAppBarSize(const hnd: HWND; const R: TRect;
                         const pCallbackMessage: Integer;
                         const pIsLeft: Boolean);
@@ -860,6 +901,7 @@ begin
     abd.uedge := ABE_RIGHT;
   SHAppBarMessage(ABM_SETPOS, abd);
 end; // setAppBarSize
+  {$ENDIF ~FMX}
 
 
 function  IsCanShowNotifications: Boolean;
@@ -917,6 +959,7 @@ end; // mostRecentFileFrom
 }
 
 
+  {$IFNDEF FMX}
 procedure applyTaskButton(frm:Tform);
 var
   i:integer;
@@ -926,6 +969,7 @@ begin
   i:=getWindowLong(frm.handle, GWL_EXSTYLE);
   setWindowLong(frm.handle, GWL_EXSTYLE, i or WS_EX_APPWINDOW);
 end;
+  {$ENDIF ~FMX}
 
 procedure WaitOrKill(var Thread: THandle; Time: cardinal);
 begin

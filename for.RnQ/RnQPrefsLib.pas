@@ -20,7 +20,8 @@ type
       ET_Blob   : (bVal: PAnsiChar);
       ET_Blob64 : (rVal: PAnsiChar);
       ET_Double : (dVal: Double);
-      ET_Date   : (tVal: TDateTime);
+      ET_Date   : (dtVal: TDateTime);
+      ET_Time   : (tVal: TDateTime);
       ET_Bool   : (yVal: Boolean);
   end;
 
@@ -33,6 +34,13 @@ type
     function AsBlob: RawByteString;
     function Clone: TPrefElement;
   end;
+
+  PPrefElementRec = ^TPrefElementRec;
+  TPrefElementRec = record
+    Key: String;
+    Element: TPrefElement;
+  end;
+
 
 type
   TRnQPref = class;
@@ -98,10 +106,13 @@ type
      function  getPrefVal(const key: String): TPrefElement;
 
      function  getAllPrefs: RawByteString;
+     function  getArrPrefs(piArray: TArray<String>): RawByteString;
+     function  GetDBAllPrefs: THashedStringList;
 
      procedure DeletePref(const key: String);
      function  prefExists(const key: String): Boolean;
 
+     procedure addPrefVal(const key: String; const Val: TPrefElement);
      procedure addPrefBlobOld(const key: String; const Val: RawByteString);
      procedure addPrefBlob64(const key: String; const Val: RawByteString);
      procedure addPrefInt(const key: String; const Val: Integer);
@@ -146,10 +157,12 @@ type
 implementation
 
 uses
-   SysUtils, Character, ExtCtrls, StdCtrls, Controls, Types,
+   SysUtils, Character, ExtCtrls, StdCtrls, Controls, Types, StrUtils,
    RDUtils,
  {$IFDEF RNQ}
-   RnQSpin,
+   {$IFDEF RNQ_VCL}
+     RnQSpin,
+   {$ENDIF RNQ_VCL}
    RQlog,
  {$ENDIF RNQ}
  {$IFDEF RNQ_PLUGIN}
@@ -284,6 +297,24 @@ begin
   Result := Self;
 end;
 
+procedure TRnQPref.addPrefVal(const key: String; const Val: TPrefElement);
+var
+  El: TPrefElement;
+  i: Integer;
+begin
+  i := fPrefStr.IndexOf(key);
+  if i>=0 then
+    begin
+      el := TPrefElement(fPrefStr.Objects[i]);
+//     so := TPUStrObj(Mas.Objects[i]);
+//      FreeMemory(so.Str);
+      el.Clear;
+      fPrefStr.Objects[i] := val;
+    end
+   else
+    fPrefStr.AddObject(key, Val);
+end;
+
 procedure TRnQPref.addPrefBlobOld(const key: String;
   const Val: RawByteString);
 var
@@ -329,7 +360,6 @@ begin
 //  Result :=
     fPrefStr.AddObject(key, el);
 end;
-
 
 procedure TRnQPref.addPrefBlob64(const key: String;
                                  const Val: RawByteString);
@@ -445,33 +475,35 @@ begin
     if (pp is TCheckBox) {and (TCheckBox(pp).HelpKeyword > '')} then
      begin
       if TCheckBox(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object [' + TCheckBox(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        LogEvent('Parameter object [' + TCheckBox(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         addPrefBool(TCheckBox(pp).HelpKeyword, TCheckBox(pp).Checked);
      end
     else
+   {$IFDEF RNQ_VCL}
     if (pp is TrnqSpinEdit) then
       if TrnqSpinEdit(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object [' + TrnqSpinEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        LogEvent('Parameter object [' + TrnqSpinEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         addPrefInt(TrnqSpinEdit(pp).HelpKeyword, TrnqSpinEdit(pp).AsInteger)
     else
+   {$ENDIF RNQ_VCL}
     if (pp is TEdit) then
       if TEdit(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object [' + TEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        LogEvent('Parameter object [' + TEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         addPrefStr(TEdit(pp).HelpKeyword, TEdit(pp).Text)
     else
     if (pp is TLabeledEdit) then
       if TControl(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object [' + TControl(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        LogEvent('Parameter object [' + TControl(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         addPrefStr(TControl(pp).HelpKeyword, TLabeledEdit(pp).Text)
     else
     if (pp is TRadioButton) then
      begin
       if TControl(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object [' + TControl(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        LogEvent('Parameter object [' + TControl(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         addPrefBool(TCheckBox(pp).HelpKeyword, TRadioButton(pp).Checked);
      end
@@ -480,14 +512,14 @@ end;
 procedure TRnQPref.getPrefArrParam(param: array of TObject);
 var
   pp: TObject;
-  i: Integer;
+//  i: Integer;
   b: Boolean;
 begin
   for pp in param do
     if (pp is TCheckBox) {and (TCheckBox(pp).HelpKeyword > '')} then
      begin
       if TCheckBox(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object [' + TCheckBox(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        LogEvent('Parameter object [' + TCheckBox(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         begin
           b := TCheckBox(pp).Checked;
@@ -496,22 +528,24 @@ begin
         end;
      end
     else
+   {$IFDEF RNQ_VCL}
     if (pp is TrnqSpinEdit) then
      begin
       if TrnqSpinEdit(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object [' + TrnqSpinEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        LogEvent('Parameter object [' + TrnqSpinEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         begin
-          i := TrnqSpinEdit(pp).AsInteger;
+          var i := TrnqSpinEdit(pp).AsInteger;
           getPrefInt(TrnqSpinEdit(pp).HelpKeyword, i);
           TrnqSpinEdit(pp).AsInteger := i;
         end;
      end
     else
+   {$ENDIF RNQ_VCL}
     if (pp is TEdit) then
      begin
       if TEdit(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object [' + TEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        LogEvent('Parameter object [' + TEdit(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         begin
           TEdit(pp).Text := getPrefStrDef(TControl(pp).HelpKeyword, '');
@@ -521,7 +555,7 @@ begin
     if (pp is TRadioButton) then
      begin
       if TControl(pp).HelpKeyword = '' then
-        loggaEvtS('Parameter object [' + TControl(pp).Name + '], not have parameter-name', PIC_ASTERISK)
+        LogEvent('Parameter object [' + TControl(pp).Name + '], not have parameter-name', PIC_ASTERISK)
        else
         begin
           b := TRadioButton(pp).Checked;
@@ -764,7 +798,28 @@ begin
       Result := Result + AnsiString(fPrefStr.Strings[i]) + '='+
         TPrefElement(fPrefStr.Objects[i]).AsBlob + CRLF;
    end;
+end;
 
+function TRnQPref.getArrPrefs(piArray: TArray<String>): RawByteString;
+var
+  I: Integer;
+//  s: String;
+begin
+  Result := '';
+  if fPrefStr.Count > 0 then
+   for I := 0 to fPrefStr.Count - 1 do
+    if StrUtils.MatchText(fPrefStr.Strings[I], piArray) then
+      if Assigned(fPrefStr.Objects[I]) then
+        Result := Result + AnsiString(fPrefStr.Strings[I]) + '=' + TPrefElement(fPrefStr.Objects[I]).AsBlob + CRLF;
+end;
+
+
+function TRnQPref.GetDBAllPrefs: THashedStringList;
+var
+  I: Integer;
+begin
+  Result := THashedStringList.Create;
+  Result.Assign(fPrefStr);
 end;
 
 function TRnQPref.getPrefBlob(const key: String; var Val: RawByteString): Boolean;

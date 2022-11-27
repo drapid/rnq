@@ -47,7 +47,7 @@ type
 
 implementation
 uses
-   RnQTips, RDGlobal, RnQLangs, tipDlg,
+   RnQTips, RDGlobal, RnQLangs, RDTipDlg,
    RnQConst, events, globalLib;
 {$R *.dfm}
 
@@ -67,11 +67,11 @@ begin
   transparency.forTray := traytranspChk.checked;
   transparency.tray := transpTray.position;
 
-  TipsMaxCnt :=  TipsMaxCntSpin.AsInteger;
-  TipsBtwSpace := TipsSpaceSpn.AsInteger;
-  TipsAlign := TtipsAlign( byte(PosGrp.ItemIndex) );
-  TipVerIndent := VerIndSpn.AsInteger;
-  TipHorIndent := HorIndSpn.AsInteger;
+  TRDTipFrm.TipsMaxCnt :=  TipsMaxCntSpin.AsInteger;
+  TRDTipFrm.TipsBtwSpace := TipsSpaceSpn.AsInteger;
+  TRDTipFrm.TipsAlign := TtipsAlign( byte(PosGrp.ItemIndex) );
+  TRDTipFrm.TipVerIndent := VerIndSpn.AsInteger;
+  TRDTipFrm.TipHorIndent := HorIndSpn.AsInteger;
 end;
 
 procedure TTipsFr.resetPage;
@@ -79,13 +79,13 @@ begin
   traytranspChk.checked  := transparency.forTray;
   transpTray.position    := transparency.tray;
 
-  TipsMaxCntSpin.AsInteger := TipsMaxCnt;
-  TipsSpaceSpn.AsInteger   := TipsBtwSpace;
+  TipsMaxCntSpin.AsInteger := TRDTipFrm.TipsMaxCnt;
+  TipsSpaceSpn.AsInteger   := TRDTipFrm.TipsBtwSpace;
 
-  VerIndSpn.AsInteger := TipVerIndent;
-  HorIndSpn.AsInteger := TipHorIndent;
+  VerIndSpn.AsInteger := TRDTipFrm.TipVerIndent;
+  HorIndSpn.AsInteger := TRDTipFrm.TipHorIndent;
 
-  PosGrp.ItemIndex := byte( TipsAlign );
+  PosGrp.ItemIndex := byte( TRDTipFrm.TipsAlign );
 end;
 
 

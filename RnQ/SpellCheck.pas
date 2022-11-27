@@ -9,8 +9,15 @@ unit SpellCheck;
 interface
 
 uses
-  System.SysUtils, System.Types, Winapi.Windows, Winapi.Messages, System.Classes, System.Character, System.Threading, System.StrUtils,
-  Generics.Collections, Vcl.Graphics, Vcl.StdCtrls, Vcl.Menus, Vcl.Controls, Vcl.Forms, Winapi.ActiveX, System.Win.ComObj,
+  System.SysUtils, System.Types, Winapi.Windows, Winapi.Messages, System.Classes, System.Character, System.StrUtils,
+  System.Threading, Winapi.ActiveX, System.Win.ComObj,
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
+  Generics.Collections,
+  {$ELSE USE_MORMOT_COLLECTIONS}
+//  mormot.core.base,
+  mormot.core.collections,
+  {$ENDIF USE_MORMOT_COLLECTIONS}
+  Vcl.Graphics, Vcl.StdCtrls, Vcl.Menus, Vcl.Controls, Vcl.Forms,
   MsSpellCheckLib_TLB;
 
 
@@ -27,7 +34,12 @@ type
     procedure EndWrite; inline;
   end;
 
-
+  TWrongWords = TArray<Integer>;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
+  TSpellWrong = TList<TWrongWords>;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  TSpellWrong = IList<TWrongWords>;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
 
   TMemoEx = class(TMemo)
   private
@@ -44,17 +56,22 @@ type
     destructor Destroy; override;
    public
     class var
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
       spellLangs: TList<DWORD>;
-      spellWrong: TList<TArray<Integer>>;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+      spellLangs: IList<DWORD>;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
+      spellWrong: TSpellWrong;
       spellGIT: IGlobalInterfaceTable;
       spellLock: TMultiReadSingleWrite;
       spellTask: ITask;
       spellText: String;
+      RefreshInputPrc: TThreadProcedure;
 
     class constructor Create;
     class destructor Destroy;
-    class function GetSpellWrongCopy: TList<TArray<Integer>>;
-    class procedure AssignSpellWrongCopy(var copy: TList<TArray<Integer>>);
+    class function GetSpellWrongCopy: TSpellWrong;
+    class procedure AssignSpellWrongCopy(var copy: TSpellWrong);
     class procedure DoInitSpellCheck;
     class function ExecSpellCheck: Boolean;
     class procedure DoSpellCheck;
@@ -88,7 +105,8 @@ type
 implementation
 
 uses
-  RnQGlobal, RQUtil, RnQLangs, RDSysUtils, globalLib, chatDlg, Clipbrd;
+  RnQGlobal, RQUtil, RnQLangs, RDSysUtils, globalLib,
+  Clipbrd;
 
 const
   CLSID_StdGlobalInterfaceTable: TGUID = '{00000323-0000-0000-C000-000000000046}';
@@ -104,8 +122,13 @@ end;
 procedure ReleaseThreading;
 begin
   FreeAndNil(TMemoEx.spellLock);
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   FreeAndNil(TMemoEx.spellLangs);
   FreeAndNil(TMemoEx.spellWrong);
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  TMemoEx.spellLangs := NIL;
+  TMemoEx.spellWrong := NIL;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
   CoUninitialize;
 end;
 
@@ -136,21 +159,38 @@ begin
   Result := AnsiCompareStr(TMemoEx.spellText, txt) <> 0;
 end;
 
-class function TMemoEx.GetSpellWrongCopy: TList<TArray<Integer>>;
+class function TMemoEx.GetSpellWrongCopy: TSpellWrong;
 begin
-  Result := TList<TArray<Integer>>.Create;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
+  Result := TSpellWrong.Create;
   spellLock.BeginRead;
   Result.AddRange(spellWrong);
   spellLock.EndRead;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  Result := Collections.NewPlainList<TWrongWords>;
+  spellLock.BeginRead;
+  for var w in spellWrong do
+    Result.Add(w);
+  spellLock.EndRead;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
 end;
 
-class procedure TMemoEx.AssignSpellWrongCopy(var copy: TList<TArray<Integer>>);
+class procedure TMemoEx.AssignSpellWrongCopy(var copy: TSpellWrong);
 begin
   spellLock.BeginWrite;
   spellWrong.Clear;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   spellWrong.AddRange(copy);
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  for var w in copy do
+    spellWrong.Add(w);
+  {$ENDIF USE_MORMOT_COLLECTIONS}
   spellLock.EndWrite;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   copy.Free;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  copy := NIL;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
 end;
 
 class procedure TMemoEx.DoInitSpellCheck;
@@ -171,10 +211,17 @@ begin
     for cookie in spellLangs do
       spellGIT.RevokeInterfaceFromGlobal(cookie);
 
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
   FreeAndNil(spellLangs);
   FreeAndNil(spellWrong);
   spellLangs := TList<DWORD>.Create;
-  spellWrong := TList<TArray<Integer>>.Create;
+  spellWrong := TSpellWrong.Create;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  spellLangs := NIL;
+  spellWrong := NIL;
+  spellLangs := Collections.NewList<DWORD>;
+  spellWrong := Collections.NewPlainList<TWrongWords>;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
 
   if Succeeded(CoCreateInstance(CLASS_SpellCheckerFactory, nil, CLSCTX_INPROC_SERVER, IID_ISpellCheckerFactory, iscf)) and Assigned(iscf) then
   begin
@@ -205,7 +252,7 @@ end;
 //function ExecSpellCheck(ch: Pointer): Boolean;
 class function TMemoEx.ExecSpellCheck: Boolean;
 var
-  spellWrongCopy: TList<TArray<Integer>>;
+  spellWrongCopy: TSpellWrong;
   checker: ISpellChecker;
   lngCnt: Integer;
 
@@ -273,7 +320,11 @@ begin
 //Freq := Freq div 1000;
 //QueryPerformanceCounter(StartCount);
   Result := False;
-  spellWrongCopy := TList<TArray<Integer>>.Create;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
+  spellWrongCopy := TSpellWrong.Create;
+  {$ELSE USE_MORMOT_COLLECTIONS}
+  spellWrongCopy := Collections.NewPlainList<TWrongWords>;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
   lngCnt := 0;
   if Assigned(spellLangs) then
    for cookie in spellLangs do
@@ -301,20 +352,23 @@ begin
 //OutputDebugString(PChar(floattostr(TimingSeconds)));
 end;
 
-procedure RefreshInput;
+procedure RefreshInput(prc: TThreadProcedure);
 begin
-  TThread.Synchronize(nil, procedure
-  begin
-    if Assigned(chatFrm) then
-      chatFrm.RefreshThisInput;
-  end);
+  TThread.Synchronize(nil, prc);
 end;
 
 class procedure TMemoEx.DoSpellCheck;
+{
+  procedure prc;
+  begin
+    if Assigned(chatFrm) then
+      chatFrm.RefreshThisInput;
+  end
+}
 begin
   if not EnableSpellCheck then
   begin
-    RefreshInput;
+    RefreshInput(RefreshInputPrc);
     Exit;
   end;
 
@@ -329,7 +383,7 @@ begin
       Exit;
 
     if ExecSpellCheck then
-      RefreshInput;
+      RefreshInput(RefreshInputPrc);
 
     CoUninitialize;
   end);
@@ -382,7 +436,7 @@ end;
 
 procedure TMemoEx.WMPaint(var Message: TWMPaint);
 var
-  spellWrongCopy: TList<TArray<Integer>>;
+  spellWrongCopy: TSpellWrong;
   wrong: TArray<Integer>;
   DC: HDC;
   cnv: TCanvas;
@@ -467,7 +521,10 @@ begin
 }
     except end;
   finally
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
     spellWrongCopy.Free;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
+    spellWrongCopy := NIL;
     DeleteObject(cnv.Pen.Handle);
     cnv.Handle := 0;
     cnv.Unlock;
@@ -494,13 +551,14 @@ begin
     Self.Text := txt;
     SetSpellText(txt);
     Self.SetCaretPos(cpos);
-    chatFrm.SpellCheck;
+//    chatFrm.SpellCheck;
+    TMemoEx.DoSpellCheck;
   end;
 end;
 
 procedure TMemoEx.WMContextMenu(var Message: TWMContextMenu);
 var
-  spellWrongCopy: TList<TArray<Integer>>;
+  spellWrongCopy: TSpellWrong;
   wrong: TArray<Integer>;
   c: TPoint;
   pos, i: Integer;
@@ -562,7 +620,10 @@ begin
       end;
       Break;
     end;
+  {$IFNDEF USE_MORMOT_COLLECTIONS}
     spellWrongCopy.Free;
+  {$ENDIF USE_MORMOT_COLLECTIONS}
+    spellWrongCopy := NIL;
 
     if (SuggestMenu.Items.Count > 0) or not (word = '') then
     begin

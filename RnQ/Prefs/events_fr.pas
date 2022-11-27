@@ -137,8 +137,8 @@ var
   i: integer;
   ac: Tbehaction;
   b: boolean;
-  AcItem : PAcItem;
-  n : PVirtualNode;
+  AcItem: PAcItem;
+  n: PVirtualNode;
 begin
   i := eventBox.itemIndex + 1;
 {  trigBox.items.Clear;
@@ -183,8 +183,8 @@ procedure TeventsFr.trigBoxClickCheck(Sender: TObject);
 var
   i: integer;
 //  ac: Tbehaction;
-  n : PVirtualNode;
-  AcItem : PAcItem;
+  n: PVirtualNode;
+  AcItem: PAcItem;
 begin
   i := eventBox.itemIndex + 1;
   if i = 0 then Exit;
@@ -230,9 +230,9 @@ end;
 procedure TeventsFr.TrigListDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
-//  x,y : Integer;
-  AcItem : PAcItem;
-  oldMode : Integer;
+//  x,y: Integer;
+  AcItem: PAcItem;
+  oldMode: Integer;
 begin
 //  if PaintInfo.Column in [0..0] then
   begin
@@ -291,7 +291,7 @@ end;
 
 procedure TeventsFr.TipsChkClick(Sender: TObject);
 var
-  st:byte;
+  st: byte;
 begin
   st := currentStatus;
   if st =$FF then Exit;
@@ -347,7 +347,7 @@ procedure TeventsFr.eventBoxMeasureItem(Control: TWinControl; Index: Integer;
   var Height: Integer);
 var
 //  st: byte;
-  Img : AnsiString;
+  Img: AnsiString;
 begin
   if (index >=0) and (TComboBox(Control).items.Count >= index)
      and (TComboBox(Control).items.objects[index] <> NIL) then

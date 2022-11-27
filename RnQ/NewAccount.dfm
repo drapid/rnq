@@ -63,10 +63,10 @@ object NewAccFrm: TNewAccFrm
     Anchors = [akRight, akBottom]
     Caption = 'Ok'
     Default = True
+    ImageName = 'ok'
     ModalResult = 1
     TabOrder = 2
     OnClick = OkBtnClick
-    ImageName = 'ok'
   end
   object CnclBtn: TRnQButton
     Left = 201
@@ -76,8 +76,8 @@ object NewAccFrm: TNewAccFrm
     Anchors = [akRight, akBottom]
     Cancel = True
     Caption = 'Cancel'
+    ImageName = 'cancel'
     ModalResult = 2
     TabOrder = 3
-    ImageName = 'cancel'
   end
 end

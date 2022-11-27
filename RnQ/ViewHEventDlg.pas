@@ -40,8 +40,6 @@ type
     procedure MemoKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   end;
 
-//var
-//  Form1: TForm1;
   function  viewTextWindow(prefs: IRnQPref; const title, body: string; const bin: RawByteString = ''): Tform;
 
 implementation

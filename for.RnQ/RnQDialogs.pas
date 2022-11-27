@@ -17,13 +17,13 @@ interface
  uses Windows;
 {$ENDIF}
 
-
 var
   IconIDs: array[TMsgDlgType] of PChar = (IDI_EXCLAMATION, IDI_HAND,
-    IDI_ASTERISK, IDI_QUESTION, nil);
+    IDI_ASTERISK, IDI_QUESTION, IDI_ASTERISK, nil);
   IconNames: array[TMsgDlgType] of TPicName = (PIC_EXCLAMATION, PIC_HAND,
-    PIC_ASTERISK, PIC_QUEST, '');
-  MsgShowTime: array[TMsgDlgType] of integer = (60, 99, 30, 60, 60);
+    PIC_ASTERISK, PIC_QUEST, PIC_ASTERISK, '');
+  MsgShowTime: array[TMsgDlgType] of integer = (60, 99, 30, 60, 15, 60);
+
 {
 const
   mbYesNo = [mbYes, mbNo];
@@ -63,7 +63,7 @@ resourcestring
  function InputQuery(const ACaption, APrompt: string;
    var Value: string): Boolean;
  function MessageDlg(const Msg: string; DlgType: TMsgDlgType;
-  Buttons: TMsgDlgButtons; HelpCtx: Longint): integer; Overload;
+  Buttons: TMsgDlgButtons; HelpCtx: Longint = 0): integer; Overload;
  function MessageDlg(const Msg: string; DlgType: TMsgDlgType;
   Buttons: TMsgDlgButtons; HelpCtx: Longint; pDefaultButton: TMsgDlgBtn;
   Seconds: integer): integer; Overload;
@@ -72,12 +72,25 @@ resourcestring
 
  function OpenSaveFileDialog(ParentHandle: THandle;
    const DefExt, Filter, InitialDir, Title: string;
-   var FileNames: string; IsOpenDialog: Boolean; Multi: Boolean = false): Boolean;
+   var FileNames: string; IsOpenDialog: Boolean;
+   Multi: Boolean = false; pFlags: Cardinal = 0): Boolean;
 
 
 // function OpenDirDialogW(ParentHandle: THandle; Title : WideString; var DirName: WideString) : boolean;
  function OpenDirDialog(ParentHandle: THandle; Title: String; var DirName: String): boolean;
  function ChooseFontDlg(ParentHandle: THandle; Title: String; var Font: TFont): boolean;
+
+var
+  Captions: array [TMsgDlgType] of Pointer = (
+    @SMsgDlgWarning,
+    @SMsgDlgError,
+    @SMsgDlgInformation,
+    @SMsgDlgConfirm,
+    @SMsgDlgBuzz,
+    nil
+  );
+
+
 
 implementation
 uses
@@ -86,10 +99,13 @@ uses
   {$IFDEF usesVCL}
    Controls,
  {$IFDEF RNQ}
-   RnQLangs, RQThemes, RnQGlobal, RnQButtons,
+   RnQLangs,
+ {$ENDIF RNQ}
+ {$IFDEF RNQ_VCL}
+   RQThemes, RnQGlobal, RnQButtons,
  {$ELSE}
    NotRnQUtils,
- {$ENDIF RNQ}
+ {$ENDIF RNQ_VCL}
    RDUtils,
  {$IFDEF RNQ_PLUGIN}
    RDPlugins,
@@ -98,7 +114,7 @@ uses
    SysUtils, StrUtils;
 
 type
- {$IFDEF RNQ}
+ {$IFDEF RNQ_VCL}
 //      with TRnQSpeedButton.Create(Form) do
   TDialogButton = TRnQButton;
  {$ELSE ~RNQ}
@@ -117,7 +133,7 @@ end;
 
 function OpenSaveFileDialog(ParentHandle: THandle;
    const DefExt, Filter, InitialDir, Title: string; var FileNames: string;
-   IsOpenDialog: Boolean; Multi: Boolean = false): Boolean;
+   IsOpenDialog: Boolean; Multi: Boolean = false; pFlags: Cardinal = 0): Boolean;
 const
    OPENFILENAME_SIZE_VERSION_400 = 76;
 var
@@ -149,6 +165,7 @@ begin
        lpstrDefExt := PChar(DefExt);
    end;
   try
+   ofn.Flags := ofn.Flags or pFlags;
    if IsOpenDialog then
    begin
      i := -1;
@@ -431,6 +448,9 @@ var
 
 type
   TMessageForm = class(TForm)
+  public
+    class var
+      MsgSuffix: String;
   private
     FTimer: TTimer;
     FSeconds: Integer;
@@ -536,8 +556,6 @@ begin
 end;
 
 var
-  Captions: array[TMsgDlgType] of Pointer = (@SMsgDlgWarning, @SMsgDlgError,
-    @SMsgDlgInformation, @SMsgDlgConfirm, nil);
   ButtonNames: array[TMsgDlgBtn] of string = (
     'Yes', 'No', 'OK', 'Cancel', 'Abort', 'Retry', 'Ignore', 'All', 'NoToAll',
     'YesToAll', 'Help', 'Close');
@@ -664,8 +682,8 @@ begin
      else
       Caption := Application.Title;
  {$IFDEF RNQ}
-    if rnqUser > '' then
-      Caption := Caption  + '( ' + rnqUser + ' )';
+    if TMessageForm.msgSuffix > '' then
+      Caption := Caption + ' ' + TMessageForm.msgSuffix;
  {$ENDIF RNQ}
     if IconID <> nil then
       with TImage.Create(Result) do

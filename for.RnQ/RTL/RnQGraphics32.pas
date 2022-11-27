@@ -194,7 +194,6 @@ type
 
     function  isSupportedPicFile(fn: string): boolean;
     function  getSupPicExts: String;
-    function  DetectFileFormatStream(str: TStream): TPAFormat;
   procedure  StretchPic(var bmp: TBitmap; maxH, maxW: Integer); overload;
   procedure  StretchPic(var bmp: TRnQBitmap; maxH, maxW: Integer); overload;
 
@@ -352,16 +351,6 @@ type
 {$ENDIF FPC}
 
 const
-  JPEG_HDRS: array [0..6] of AnsiString = (
-    #$FF#$D8#$FF#$E0,
-    #$FF#$D8#$FF#$E1,
-    #$FF#$D8#$FF#$ED, {ADOBE}
-    #$FF#$D8#$FF#$E2, {CANON}
-    #$FF#$D8#$FF#$E3,
-    #$FF#$D8#$FF#$DB, {SAMSUNG}
-    #$FF#$D8#$FF#$FE {UNKNOWN});
-  TIF_HDR: array [0..3] of AnsiChar = #$49#$49#$2A#$00;
-  TIF_HDR2: array [0..3] of AnsiChar = #$4D#$4D#$00#$2A;
   CLSID_WICWEBPDecoder: TGUID = '{C747A836-4884-47B8-8544-002C41BD63D2}';
   CLSID_WICHeifDecoder: TGUID = '{e9a4a80a-44fe-4de4-8971-7150b10a5199}';
   GUID_ContainerFormatHeif: TGUID = '{e1e62521-6787-405b-a339-500715b5763f}';
@@ -2885,7 +2874,7 @@ var
 //     AlphaLine: PByteArray;
 //     HasAlpha, HasBitmask: Boolean;
 //     Color, TransparencyColor: TColor;
-     PB:PColor32;
+     PB: PColor32;
 begin
   //Convert a PNG object to an alpha-blended icon resource
   ImageBits := nil;
@@ -3407,48 +3396,6 @@ begin
   end;
 end; // isSupportedPicFile
 
-
-function DetectFileFormatStream(str: TStream): TPAFormat;
-var
-//  s: String;
-  s: array[0..3] of AnsiChar;
-begin
-  str.Seek(0, soBeginning);
-//  str.Position := 0;
-  Result := PA_FORMAT_UNK;
-  if str.Read(s, 4) < 4 then
-    Result := PA_FORMAT_UNK
-  else
-//  s := Copy(pBuffer, 1, 4);
-  if s = 'GIF8' then
-    Result := PA_FORMAT_GIF
-  else if MatchStr(s, JPEG_HDRS) then
-    Result := PA_FORMAT_JPEG
-  else if AnsiStartsText(AnsiString('BM'), s) then
-    Result := PA_FORMAT_BMP
-  else if s = '<?xm' then
-    Result := PA_FORMAT_XML
-  else if AnsiStartsText(AnsiString('CWS'), s) then
-    Result := PA_FORMAT_SWF
-  else if AnsiStartsText(AnsiString('FWS'), s) then
-    Result := PA_FORMAT_SWF
-  else if AnsiStartsText(AnsiString('‰PNG'), s) then
-    Result := PA_FORMAT_PNG
-  else if (s = TIF_HDR) or (s = TIF_HDR2) then
-    Result := PA_FORMAT_TIF
-  else if (s= 'RIFF') then
-    begin
-      if str.Read(s, 4) < 4 then
-        Result := PA_FORMAT_UNK
-       else
-        if str.Read(s, 4) < 4 then
-          Result := PA_FORMAT_UNK
-         else if s = 'WEBP' then
-          Result := PA_FORMAT_WEBP;
-    end
-//  else
-//    Result := PA_FORMAT_UNK;
-end;
 
 procedure  StretchPic(var bmp: TBitmap; maxH, maxW: Integer);
 var

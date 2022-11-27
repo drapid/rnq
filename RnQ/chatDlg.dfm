@@ -8,7 +8,6 @@ object chatFrm: TchatFrm
   ParentFont = True
   GlassFrame.Bottom = 55
   KeyPreview = True
-  OldCreateOrder = True
   ScreenSnap = True
   OnActivate = FormActivate
   OnAfterMonitorDpiChanged = FormAfterMonitorDpiChanged
@@ -27,8 +26,7 @@ object chatFrm: TchatFrm
   DesignSize = (
     620
     347)
-  PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 30
   object fp: TBevel
     Left = 0
     Top = 0
@@ -395,7 +393,7 @@ object chatFrm: TchatFrm
     Left = 302
     Top = 8
     Width = 119
-    Height = 21
+    Height = 38
     AutoDropDown = True
     Style = csDropDownList
     Anchors = [akTop, akRight]
@@ -426,10 +424,10 @@ object chatFrm: TchatFrm
     Width = 75
     Height = 25
     Caption = 'Search'
+    ImageName = 'search'
     TabOrder = 0
     Visible = False
     OnClick = SBSearchClick
-    ImageName = 'search'
   end
   object CLPanel: TPanel
     Left = 618

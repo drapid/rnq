@@ -64,7 +64,8 @@ contains
   RnQStrings in 'RnQStrings.pas',
   Base64 in 'RTL\Base64.pas',
   VirtualTreesReg in 'External\VTV\Design\VirtualTreesReg.pas',
-  VirtualTrees in 'External\VTV\Source\VirtualTrees.pas';
+  VirtualTrees in 'External\VTV\Source\VirtualTrees.pas',
+  Sciter in 'SciDe\Sciter.pas';
 
 end.
 

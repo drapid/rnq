@@ -227,8 +227,8 @@ procedure TAllHistSrchForm.SchBtnClick(Sender: TObject);
     ParentNode := NIL;
     if reChk.Checked then
       begin
-{      re:=TRegExpr.Create;
-      re.ModifierI:=not caseChk.checked;
+{      re := TRegExpr.Create;
+      re.ModifierI := not caseChk.checked;
       re.Expression := SearchEdit.Text;
         try
           re.Compile

@@ -79,7 +79,7 @@ uses
 
   OverbyteIcsWinSock,
   OverbyteIcsSSLEAY,
-  tipDlg, history,
+  history, RnQTips,
   MenuSmiles, menusUnit,
  {$IFDEF DB_ENABLED}
    RnQDB,
@@ -576,13 +576,7 @@ begin
   pp.addPrefBool('show-statusbar', RnQmain.bar.Visible);
   pp.addPrefBool('show-filterbar', RnQmain.FilterBar.Visible);
   pp.addPrefBool('show-contact-tip', RnQmain.roster.ShowHint);
-  pp.addPrefInt('show-tips-count', TipsMaxCnt);
-  pp.addPrefInt('show-tips-align', byte(TipsAlign));
-  pp.addPrefInt('show-tips-btw-space', TipsBtwSpace);
-  pp.addPrefInt('show-tips-ver-indent', TipVerIndent);
-  pp.addPrefInt('show-tips-hor-indent', TipHorIndent);
-  pp.addPrefBool('show-tips-use-avt-size', TipsMaxAvtSizeUse);
-  pp.addPrefInt('show-tips-avt-size', TipsMaxAvtSize);
+  tipsSaveCFG(pp);
 
 
   pp.addPrefBool('popup-automsg', popupAutomsg);
@@ -985,13 +979,7 @@ begin
   pp.getPrefBool('send-added-you', sendTheAddedYou);
   pp.getPrefBool('show-groups', showGroups);
   RnQmain.roster.ShowHint := pp.getPrefBoolDef('show-contact-tip', RnQmain.roster.ShowHint);
-  pp.getPrefInt('show-tips-count', TipsMaxCnt);
-  TipsAlign := TtipsAlign(byte(pp.getPrefIntDef('show-tips-align', Byte(TipsAlign))));
-  pp.getPrefInt('show-tips-btw-space', TipsBtwSpace);
-  pp.getPrefInt('show-tips-ver-indent', TipVerIndent);
-  pp.getPrefInt('show-tips-hor-indent', TipHorIndent);
-  pp.getPrefBool('show-tips-use-avt-size', TipsMaxAvtSizeUse);
-  pp.getPrefInt('show-tips-avt-size', TipsMaxAvtSize);
+  tipsSetCFG(pp);
   pp.getPrefBool('close-auth-after-reply', closeAuthAfterReply);
   pp.getPrefBool('close-ft-after-end', CloseFTWndAuto);
   pp.getPrefBool('quoting-cursor-below', quoting.cursorBelow);
@@ -1712,6 +1700,7 @@ begin
   plugins := Tplugins.create;
   portsListen := TPortList.Create;
   GSSL_DLL_DIR := modulesPath;
+  SetDllDirectoryW(modulesPath);
 
   cache := myPath + 'Cache\';
   if not DirectoryExists(cache) then
