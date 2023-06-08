@@ -3,8 +3,8 @@
   Under same license
 }
 unit RDSysUtils;
-{$I ForRnQConfig.inc}
-{$I NoRTTI.inc}
+{$I ..\ForRnQConfig.inc}
+{$I ..\noRTTI.inc}
 
 interface
 
@@ -84,6 +84,7 @@ type
   procedure WaitOrKill(var Thread: THandle; Time: cardinal);
 
   function resolveLnk(const fn: String): String;
+  procedure ResolveLinkInfo(LinkPath: string; Handle: THandle; var ProgramPath, ProgramWorkPath, ProgramInfo, ProgramParams: string);
 
 implementation
 
@@ -1000,5 +1001,35 @@ result:=fn;
   end;
 end; // resolveLnk
 
+procedure ResolveLinkInfo(LinkPath: string; Handle: THandle; var ProgramPath, ProgramWorkPath, ProgramInfo, ProgramParams: string);
+Var
+   Desc : Array[0..MAX_PATH] of Char;
+   IU   : IUnknown;
+   SL   : IShellLink;
+   PF   : IPersistFile;
+   HRES : HRESULT;
+   FD   : TWin32FindData;
+begin
+     CoInitialize(nil);
+     IU := CreateComObject(CLSID_ShellLink);
+     SL := IU as IShellLink;
+     PF := SL as IPersistFile;
+
+     olecheck(PF.Load(PWideChar(WideString(LinkPath)), STGM_READ));
+     olecheck(SL.Resolve(Handle, SLR_ANY_MATCH));
+     olecheck(SL.GetPath(Desc, MAX_PATH, FD, SLGP_UNCPRIORITY));
+     ProgramPath := StrPas(Desc);
+
+
+     SL.GetDescription(Desc, MAX_PATH);
+     ProgramInfo := StrPas(Desc);
+
+     SL.GetWorkingDirectory(Desc, MAX_PATH);
+     ProgramWorkPath := StrPas(Desc);
+
+     SL.GetArguments(Desc, MAX_PATH);
+     ProgramParams := StrPas(Desc);
+
+end;
 
 end.

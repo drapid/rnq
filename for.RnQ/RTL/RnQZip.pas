@@ -43,6 +43,9 @@ uses
 
 type
 
+  TCompressionLevel = OverbyteIcsZLibHigh.TCompressionLevel;
+  TZStreamType = OverbyteIcsZLibHigh.TZStreamType;
+
   TZLibStreamHeader = packed record
      CMF: Byte;
      FLG: Byte;
@@ -234,6 +237,10 @@ implementation
      AES_HMAC,
    {$ENDIF ~USE_SYMCRYPTO}
   {$ENDIF ZIP_AES}
+ {$IFDEF ZIP_ZSTD}
+   zstd, ZSTDLib,
+ {$ENDIF ZIP_ZSTD}
+
  {$IFNDEF FPC}
 //   System.ZLibConst,
   {$IFDEF UNICODE}
@@ -245,9 +252,10 @@ implementation
 
 const
   ZL_DEF_COMPRESSIONMETHOD  = $8;  { Deflate }
-  ZL_ENCH_COMPRESSIONMETHOD = $9;  { Enchanced Deflate }
+  ZL_ENCH_COMPRESSIONMETHOD = $9;  { Enhanced Deflate }
   ZL_BZIP2_COMPRESSIONMETHOD = 12; { BZIP2 }
   ZL_LZMA_COMPRESSIONMETHOD  = 14;  { LZMA }
+  ZL_ZSTD_COMPRESSIONMETHOD  = 93;  { ZSTD }
   ZL_WINZIP_AES_COMPRESSIONMETHOD = 99; { AES encrypted}
 
   ZL_DEF_COMPRESSIONINFO    = $7;  { 32k window for Deflate }
@@ -618,13 +626,8 @@ end;
 
 function TZipFile.GetUncompressed(I: Integer): RawByteString;
 var
- // Decompressor: TDecompressionStream;
   ResultStream: TMemoryStream;
   UncSize: Int64;
-{  CompressedStream: TMemoryStream;
-  AHeader: AnsiString;
-  ReadBytes: Integer;
-  LoadedCrc32: DWORD;}
 begin
  if (I<0) or (I>High(Files)) then
   raise Exception.Create('Index out of range.');
@@ -647,18 +650,13 @@ function TZipFile.CheckPassword(I: Integer; const pass: AnsiString): Boolean;
 var
   l: Integer;
   salt2: RawByteString;
-//  key: Ansistring;
   pwd_ver: RawByteString;
-//  pwd_verW: Word;
   {$IFDEF USE_SYMCRYPTO}
-//    aes: TAESCTR;
     cx: fcrypt_ctx;
    {$ELSE not SynCrypto}
     cx: fcrypt_ctx;
   {$ENDIF ~USE_SYMCRYPTO}
-//  cx: T_fcrypt_ctx;
   s1: RawByteString;
-//  data : TData_Type;
  {$ENDIF ZIP_AES}
 begin
  if (I<0) or (I>High(Files)) then
@@ -668,30 +666,22 @@ begin
   end;
  if Files[I].CommonFileHeader.CompressionMethod=99 then // Encrypted
   begin
-//    raise EZDecompressionError.CreateFmt('Encryption is not supported',[]);
  {$IFDEF ZIP_AES}
-//    Password := '123';
     l := SALT_LENGTH[CentralDirectory[i].AESInfo.AESMode];
-//    l := SALT_LENGTH(CentralDirectory[i].AESInfo.AESMode);
    SetLength(salt2, l);
-//   CopyMemory(@salt2[1], @Files[I].CompressedData[1], l);
    Move(Pointer(Files[I].CompressedData)^, Pointer(salt2)^, l);
   {$IFDEF USE_SYMCRYPTO}
-//   aes := TAESCTR.Create(@pass[1], Length(pass));
-//   aes.IV := (salt2);
     fcrypt_init(CentralDirectory[i].AESInfo.AESMode, pass, salt2, pwd_ver, cx);
   {$ELSE ~USE_SYMCRYPTO}
     AES_HMAC.fcrypt_init(CentralDirectory[i].AESInfo.AESMode, pass, salt2, pwd_ver, cx);
   {$ENDIF ~USE_SYMCRYPTO}
-//    AES_HMAC.fcrypt_end(cx);
-//    fcrypt_init(CentralDirectory[i].AESInfo.AESMode, @pass[1], Length(pass), @salt2[1], pwd_verW, cx);
-//    SetLength(pwd_ver, 2);
-//    CopyMemory(@pwd_ver[1], @pwd_verW, 2);
 
     s1 := Copy(Files[I].CompressedData, l+1, 2);
     if s1 <> pwd_ver then
       Result := false
      else
+ {$ELSE ~ZIP_AES}
+    raise EZDecompressionError.CreateFmt('Encryption is not supported', []);
  {$ENDIF ZIP_AES}
       Result := True;
   end
@@ -702,31 +692,21 @@ end;
 
 procedure TZipFile.Uncompress2Stream(I: Integer; Stream: TStream; pAutoLoad: Boolean = True);
 var
-//  Decompressor: TDecompressionStream;
-//  CompressedStream: TMemoryStream;
-// UncompressedStream: TStringStream;
-// CompressedStream: TStringStream;
- ComprStream: TMemoryStream;
+  ComprStream: TMemoryStream;
   AHeader: RawByteString;
   FZLHeader: TZLibStreamHeader;
-//  ReadBytes: Integer;
-//  ReadBytes2: Integer;
   LoadedCrc32: DWORD;
 
   data: Pointer;
  {$IFDEF ZIP_AES}
   l: Integer;
   salt2: RawByteString;
-//  key: Ansistring;
   pwd_ver: RawByteString;
   cx: fcrypt_ctx;
   s1, s2: RawByteString;
-//  data: TData_Type;
   dataLen: Integer;
   Cont_Size: Integer;
 
-//  pwd_verW: word;
-//  cx: DIFileEncrypt.T_fcrypt_ctx;
  {$ENDIF ZIP_AES}
 
   ZLH: Word;
@@ -755,13 +735,10 @@ begin
      end;
    end;
 
-// AHeader := Chr(120)+Chr(156);
  AHeader := RawByteString(#$78)+#$9C;
   ZLH := Files[I].CommonFileHeader.CompressionMethod;
   if (ZLH=8)or (ZLH=9)or (ZLH = 99) Then
      Begin
-//  FZLHeader.CMF := $78;
-//  FZLHeader.FLG := $9C;
        FZLHeader.CMF := (ZL_DEF_COMPRESSIONINFO shl 4);               { 32k Window size }
        FZLHeader.CMF := FZLHeader.CMF or ZL_DEF_COMPRESSIONMETHOD;    { Deflate }
        Compress := ZL_DEFAULT_COMPRESSION;
@@ -776,7 +753,6 @@ begin
        FZLHeader.FLG := FZLHeader.FLG and not ZL_FCHECK_MASK;
        ZLH           := (FZLHeader.CMF * 256) + FZLHeader.FLG;
        Inc(FZLHeader.FLG, 31 - (ZLH mod 31));
-//       Result := Result + Stream.Write(FZLHeader,SizeOf(FZLHeader));
        SetLength(AHeader, 2);
        AHeader[1] := AnsiChar(FZLHeader.CMF);
        AHeader[2] := AnsiChar(FZLHeader.FLG);
@@ -785,114 +761,99 @@ begin
  if Files[I].CommonFileHeader.CompressionMethod=0 then //not compressed
   begin
    Stream.Write(Files[I].CompressedData[1], length(Files[I].CompressedData));
-//   Result:=Files[I].CompressedData;
   end else
  if Files[I].CommonFileHeader.CompressionMethod=99 then // Encrypted
   begin
-//    raise EZDecompressionError.CreateFmt('Encryption is not supported',[]);
  {$IFDEF ZIP_AES}
-//    Password := '123';
     l := SALT_LENGTH[CentralDirectory[i].AESInfo.AESMode];
-//    l := SALT_LENGTH(CentralDirectory[i].AESInfo.AESMode);
     SetLength(salt2, l);
     Move(Pointer(Files[I].CompressedData)^, Pointer(salt2)^, l);
 
     fcrypt_init(CentralDirectory[i].AESInfo.AESMode, Password, salt2, pwd_ver, cx);
-//    fcrypt_init(CentralDirectory[i].AESInfo.AESMode, @Password[1], Length(Password), @salt2[1], pwd_verW, cx);
-//    SetLength(pwd_ver, 2);
-//    CopyMemory(@pwd_ver[1], @pwd_verW, 2);
     s1 := Copy(Files[I].CompressedData, l+1, 2);
     if s1 <> pwd_ver then
-//     raise EZDecompressionError.CreateFmt('Wrong password',[]);
       raise Exception.Create('Wrong password.');
 
     Cont_Size := l+2;
     dataLen := Files[I].CommonFileHeader.FileDesc.CompressedSize - Cont_Size - 10;//MAC_LENGTH;
-//    if dataLen > 0 then
      begin
       s2 := Copy(Files[I].CompressedData, Cont_Size + dataLen + 1, 10);
       ComprStream := TMemoryStream.Create;
       ComprStream.Write(AHeader[1], 2);
       ComprStream.Write(Files[I].CompressedData[Cont_Size+1], dataLen);
       ComprStream.Position := 0;
-      data := Pointer(cardinal(ComprStream.Memory)+2);
-  //    data := ComprStream.Memory+2;
-  //    ReadBytes := 0;
-  //      for l := 1 to Files[I].CommonFileHeader.UncompressedSize div SizeOf(buf) do
+      data := Pointer(UINT_PTR(ComprStream.Memory)+2);
       if dataLen > 0 then
        fcrypt_decrypt(data, dataLen, cx);
-//      fcrypt_decrypt(data, dataLen, cx2);
-//      AES_HMAC.fcrypt_decrypt(data, dataLen, fcrypt_ctx((@cx2)^));
-  //        fcrypt_decrypt(ComprStream.Memory, dataLen, cx);
-{       l := dataLen;
-       while l >= 16 do
-        begin
-         fcrypt_decrypt(data, 16, cx);
-         dec(l, 16);
-         inc(Cardinal(data), 16);
-        end;
-      if l > 0 then
-       fcrypt_decrypt(data, l, cx);
-}  
       s1 := fcrypt_end(cx);
 
       if dataLen > 0 then
       if CentralDirectory[i].AESInfo.CompressMethod = 0 then
         begin
-  //        ComprStream.Position := 0;
           ComprStream.Position := 2;
           Stream.CopyFrom(ComprStream, dataLen);
-  //        Stream.Write(data, dataLen);
-  //      Stream.Write(Files[I].CompressedData[Cont_Size+1], dataLen)
-
-  //      Stream.Write(Files[I].CompressedData[Cont_Size+1], dataLen)
           ComprStream.Free;
         end
        else
         begin
           ComprStream.Position := 0;
-  //        CompressedStream.CopyFrom(ComprStream, dataLen);
           try
              ZLibDecompressStream(ComprStream, Stream);
-  //           ZDecompressStream(ComprStream, Stream);
-//           ReadBytes := Stream.Size;
           finally
-      //     UncompressedStream.Free;
-  //          CompressedStream.Free;
            ComprStream.Free;
           end;
         end;
      end;
 //    Files[I].CommonFileHeader.Crc32 := 0;
+ {$ELSE ~ZIP_AES}
+    raise EZDecompressionError.CreateFmt('Encryption is not supported', []);
  {$ENDIF ZIP_AES}
   end else
+   if Files[I].CommonFileHeader.CompressionMethod = ZL_DEF_COMPRESSIONMETHOD then // ZLib
+
    begin
-//    UncompressedStream:=TStringStream.Create(AHeader+Files[I].CompressedData);
-//     CompressedStream := TStringStream.Create(AHeader+Files[I].CompressedData);
       ComprStream := TMemoryStream.Create;
       ComprStream.SetSize(Length(AHeader) + Length(Files[I].CompressedData));
       CopyMemory(ComprStream.Memory, @AHeader[1], Length(AHeader));
       data := ComprStream.Memory;
       INT_PTR(data) := INT_PTR(data) + Length(AHeader);
-//      inc(data, Length(AHeader));
       CopyMemory(data, @Files[I].CompressedData[1], Length(Files[I].CompressedData));
       ZLibDecompressStream(ComprStream, Stream);
-//      ZDecompressStream(ComprStream, Stream);
       ComprStream.Free;
-//    LoadedCRC32:=ZipCRC32(Result);
-//  LoadedCRC32 := ZCrc32($FFFFFFFF, @Result[1], Length(Result)) XOR $FFFFFFFF;
     Stream.Position := 0;
     LoadedCRC32 := ZipCrc32($FFFFFFFF, Stream) XOR $FFFFFFFF;
-//  LoadedCRC32 := Crc32($FFFFFFFF, TMemoryStream(Stream).Memory, Stream.Size) XOR $FFFFFFFF;
     if LoadedCRC32<>Files[I].CommonFileHeader.FileDesc.Crc32 then
       raise EZipFileCRCError.CreateFmt('CRC Error in "%s".',[Files[I].getFileName]);
-   end;
+   end
+ {$IFDEF ZIP_ZSTD}
+   else
+   if Files[I].CommonFileHeader.CompressionMethod = ZL_ZSTD_COMPRESSIONMETHOD then // ZLib
+   begin
+     if FileExists(ZSTDDllName) then
+     begin
+      ComprStream := TMemoryStream.Create;
+      ComprStream.SetSize(Length(Files[I].CompressedData));
+      data := ComprStream.Memory;
+      CopyMemory(data, @Files[I].CompressedData[1], Length(Files[I].CompressedData));
+      ZSTDDecompressStream(ComprStream, Stream);
+      ComprStream.Free;
+      Stream.Position := 0;
+      LoadedCRC32 := ZipCrc32($FFFFFFFF, Stream) XOR $FFFFFFFF;
+      if LoadedCRC32<>Files[I].CommonFileHeader.FileDesc.Crc32 then
+        raise EZipFileCRCError.CreateFmt('CRC Error in "%s".', [Files[I].getFileName]);
+     end
+     else
+       raise Exception.Create('ZStd dll not found "' + ZSTDDllName + '".');
+   end
+ {$ENDIF ZIP_ZSTD}
+  else
+    raise EZipFileCRCError.CreateFmt('Unknown compression method "%d".',[Files[I].CommonFileHeader.CompressionMethod]);
 end;
 
 
-Function TZipFile.ExtractToStream(const fn : String; Stream : TStream) : Boolean;
+Function TZipFile.ExtractToStream(const fn: String; Stream: TStream): Boolean;
 var
-  i : Integer;
+  i: Integer;
 begin
   i := IndexOf(fn);
   if i >=0 then
@@ -907,15 +868,11 @@ begin
    Result := False;
 end;
 
-Function TZipFile.ExtractToStream(i : Integer; Stream : TStream) : Boolean;
-//var
-// S:String;
+Function TZipFile.ExtractToStream(i: Integer; Stream: TStream): Boolean;
 begin
  if (I<0) or (I>High(Files)) then
   raise Exception.Create('Index out of range.');
-// S:=GetUncompressed(i);
  Uncompress2Stream(i, Stream);
-// if s > '' then
  if (Stream.Size > 0)or(Files[I].CommonFileHeader.FileDesc.UncompressedSize=0) then
  begin
 //  Stream.Write(S[1],length(S));
@@ -930,8 +887,6 @@ procedure TZipFile.SetUncompressed(i: integer; const Value: RawByteString);
 const
   TestRPNG = RawByteString(#$CC#$7D#$42#$93#$04#$FE#$63#$7C#$B0#$46#$AD#$CE#$8F#$85#$63#$11);
 var
-//  Compressor: TCompressionStream;
-//  CompressedStream: TStringStream;
   resStream: TMemoryStream;
   UnComprStream: TMemoryStream;
   Data: Pointer;
@@ -943,21 +898,13 @@ var
   salt2: RawByteString;
   pwd_ver: RawByteString;
   cx: fcrypt_ctx;
-//  cx: T_fcrypt_ctx;
-//  pwd_verW: Word;
   s1: RawByteString;
   l, ofs: Integer;
-//  data1: Pointer;
-//  EncrSize: Cardinal;
  {$ENDIF ZIP_AES}
 begin
   if i > High(Files) then // exit;
     raise Exception.Create('Index out of range.');
-//  compressedStream := TStringStream.Create('');
   try {+}
-//    compressor := TcompressionStream.Create(CompressedStream, clMax);
-//    compressor := TcompressionStream.Create(CompressedStream, clDefault);
-//    compressor := TcompressionStream.Create(clDefault, CompressedStream);
     if Value = '' then
       begin
         ComprSize := 2;
@@ -975,7 +922,6 @@ begin
     //    ZlibCompressStreamEx(UnComprStream, resStream, clMax, zsZLib, false);
         ZLibCompressStreamEx(UnComprStream, resStream, clMax, zsZLib, True);
         UnComprStream.Free;
-    //    ZCompressStream(UnComprStream, resStream, clMax);
         ComprSize := resStream.Size - 6;
         resStream.Position := 0;
         Data := resStream.Memory;
@@ -986,8 +932,6 @@ begin
     isEncr := Files[i].pass > '';
     if isEncr then
       begin
-//       salt2 := 'Testing encription';
-//       salt2 := #$FA#$48#$CB#$73#$F9#$65#$A2#$87#$85#$83#$CE#$79#$60#$3C#$08#$90;
        salt2 := TestRPNG;
        aesMode := 3;
        l := SALT_LENGTH[aesMode];
@@ -995,20 +939,9 @@ begin
        fcrypt_init(aesMode, Files[i].pass, salt2, pwd_ver, cx);
        if ComprSize > 0 then
         begin
-//         ofs := ComprSize mod 16;
-//         EncrSize := ComprSize - ofs;
-//         fcrypt_encrypt(data, EncrSize, cx);
          fcrypt_encrypt(data, ComprSize, cx);
-{         if ofs > 0 then
-          begin
-           data1 := data;
-           inc(Cardinal(Data1), EncrSize);
-           fcrypt_encrypt(data1, ofs, cx);
-          end;}
         end;
        s1 := fcrypt_end(cx);
-//        SetLength(s1, 10);
-//        fcrypt_end(@s1[1], cx);
        ofs := l + 2 + ComprSize + 10;
        SetLength(Files[i].CompressedData, ofs);
        ofs := 1;
@@ -1029,27 +962,10 @@ begin
        end;
     if Assigned(resStream) then
       resStream.Free;
-(*    Files[i].CompressedData := Copy(compressedStream.DataString, 3,
-      length(compressedStream.DataString) - 6);
-
-    try {+}
-      compressor.Write(PByte(Value)^, length(Value));
-     finally
-      compressor.Free;
-    end;
-    Files[i].CompressedData := Copy(compressedStream.DataString, 3,
-      length(compressedStream.DataString) - 6);
-    //strip the 2 byte headers and 4 byte footers
-*)
     Files[i].LocalFileHeaderSignature := (dwLocalFileHeaderSignature);
     with Files[i].CommonFileHeader do
     begin
-//      VersionNeededToExtract := 20;
-//      GeneralPurposeBitFlag := 0;
-//      CompressionMethod := 8;
       LastModFileTimeDate := DateTimeToFileDate(Now);
-//      Crc32 := ZipCRC32(Value);
-//      Crc32 := OverbyteIcsZLibObj.Crc32($FFFFFFFF, @Value[1], Length(Value)) XOR $FFFFFFFF;
    {$IFDEF ZIP_AES}
       if isEncr then
         begin
@@ -1062,32 +978,20 @@ begin
         begin
           CompressionMethod := 8;
           GeneralPurposeBitFlag := GeneralPurposeBitFlag and (not 1);
-//          Crc32 := ZipCrc32($FFFFFFFF, @Value[1], Length(Value)) XOR $FFFFFFFF;
           FileDesc.Crc32 := ZipCrc32($FFFFFFFF, Pointer(Value), Length(Value)) XOR $FFFFFFFF;
         end;
 
       FileDesc.CompressedSize   := length(Files[i].CompressedData);
       FileDesc.UncompressedSize := length(Value);
-//      FilenameLength   := length(Files[i].filename);
-//      ExtraFieldLength := length(Files[i].extrafield);
     end;
 
     with CentralDirectory[i] do
     begin
       CentralFileHeaderSignature := dwCentralFileHeaderSignature;
-//      VersionMadeBy := 20;
       CommonFileHeader := Files[i].CommonFileHeader;
-//      FileCommentLength := 0;
-//      DiskNumberStart := 0;
-//      InternalFileAttributes := 0;
-      //      ExternalFileAttributes := 0;
-//      RelativeOffsetOfLocalHeader := 0;
-//      filename := Files[i].filename;
-//      extrafield := Files[i].extrafield;
       fileComment := '';
     end;
   finally
-//    compressedStream.Free;
   end;
 end;
 
@@ -1240,7 +1144,6 @@ end;
 
 procedure TZipFile.SetName(i: integer; const Value: string);
 begin
-//  Files[i].filename := Value;
   if Files[i].UTFSupport then
     Files[i].filename := StringToTBytes(Value, CP_UTF8)
    else
@@ -1251,7 +1154,6 @@ end;
 function  TZipFile.IndexOf(const s: String): Integer;
 var
   I: Integer;
-//  s1 : AnsiString;
   b1, b8: TBytes;
 begin
   Result := -1;

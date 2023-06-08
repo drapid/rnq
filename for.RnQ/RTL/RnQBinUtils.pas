@@ -3,8 +3,8 @@
   Under same license
 }
 unit RnQBinUtils;
-{$I ForRnQConfig.inc}
-{$I NoRTTI.inc}
+{$I ..\ForRnQConfig.inc}
+{$I ..\NoRTTI.inc}
 
 { $INLINE ON}
 

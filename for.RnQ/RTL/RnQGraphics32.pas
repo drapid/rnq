@@ -18,9 +18,7 @@ uses
   Graphics,
   Forms,
   Controls,
- {$IFDEF RNQ}
   RDFileUtil,
- {$ENDIF RNQ}
   RDGlobal
   ;
 

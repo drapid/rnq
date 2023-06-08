@@ -3,8 +3,8 @@
   Under same license
 }
 unit RDUtils;
-{$I ForRnQConfig.inc}
-{$I NoRTTI.inc}
+{$I ..\ForRnQConfig.inc}
+{$I ..\NoRTTI.inc}
 
 interface
 uses

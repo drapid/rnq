@@ -93,6 +93,7 @@ const
 }
 
 type
+  TTrayEventHandle = procedure(sender: Tobject; ev: TtrayEvent) of object;
   TtrayIcon = class
     private
 //      data: TNotifyIconData;
@@ -106,7 +107,7 @@ type
       procedure notify(ev: TtrayEvent);
     public
       UsrData: pointer;  // user data
-      onEvent: procedure(sender: Tobject; ev: TtrayEvent) of object;
+      onEvent: TTrayEventHandle; //procedure(sender: Tobject; ev: TtrayEvent) of object;
       constructor Create(hndl: HWND; pg: PGUID = NIL);
       destructor Destroy; override;
       procedure minimize;

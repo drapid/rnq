@@ -3,8 +3,8 @@
   Under same license
 }
 unit RDGlobal;
-{$I ForRnQConfig.inc}
-{$I NoRTTI.inc}
+{$I ..\ForRnQConfig.inc}
+{$I ..\NoRTTI.inc}
 
  { $ DEFINE RNQ_PLAYER}
 

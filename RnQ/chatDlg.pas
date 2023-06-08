@@ -3111,7 +3111,7 @@ begin
   if isUploading then
     s := GetTranslation('Uploading file') + ': ' + IntToStr(Trunc(uploadedSize / uploadSize * 100)) + '%';
   with sbar.Panels do
-    items[count-1].text := s
+    items[Count-1].text := s
 end;
 
 procedure TchatFrm.FormMouseDown(Sender: TObject; Button: TMouseButton;
