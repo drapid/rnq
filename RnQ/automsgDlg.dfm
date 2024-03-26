@@ -4,8 +4,8 @@ object automsgFrm: TautomsgFrm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Auto message'
-  ClientHeight = 324
-  ClientWidth = 198
+  ClientHeight = 315
+  ClientWidth = 192
   Color = clBtnFace
   Constraints.MinWidth = 200
   Font.Charset = DEFAULT_CHARSET
@@ -13,20 +13,18 @@ object automsgFrm: TautomsgFrm
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poMainFormCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
   DesignSize = (
-    198
-    324)
-  PixelsPerInch = 96
+    192
+    315)
   TextHeight = 13
   object Bevel1: TBevel
     Left = 6
     Top = 120
-    Width = 187
+    Width = 175
     Height = 3
     Anchors = [akLeft, akTop, akRight]
     ExplicitWidth = 193
@@ -34,7 +32,7 @@ object automsgFrm: TautomsgFrm
   object Panel1: TPanel
     Left = 16
     Top = 133
-    Width = 169
+    Width = 157
     Height = 17
     Anchors = [akLeft, akTop, akRight]
     BevelOuter = bvLowered
@@ -46,34 +44,38 @@ object automsgFrm: TautomsgFrm
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 3
+    ExplicitWidth = 169
   end
   object msgBox: TMemo
     Left = 0
     Top = 0
-    Width = 197
+    Width = 185
     Height = 89
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
     OnKeyPress = msgBoxKeyPress
+    ExplicitWidth = 197
   end
   object popupChk: TCheckBox
     Left = 8
-    Top = 290
+    Top = 281
     Width = 189
     Height = 17
     Anchors = [akLeft, akBottom]
     Caption = 'pop up on status change'
     TabOrder = 8
+    ExplicitTop = 290
   end
   object ok2enterChk: TCheckBox
     Left = 8
-    Top = 306
+    Top = 297
     Width = 189
     Height = 17
     Anchors = [akLeft, akBottom]
     Caption = 'ok on double ENTER'
     TabOrder = 9
     OnClick = ok2enterChkClick
+    ExplicitTop = 306
   end
   object PredBox: TVirtualDrawTree
     Left = 16
@@ -83,7 +85,7 @@ object automsgFrm: TautomsgFrm
     DefaultNodeHeight = 15
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Height = 17
+    Header.Height = 13
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
     TabOrder = 4
@@ -92,17 +94,20 @@ object automsgFrm: TautomsgFrm
     TreeOptions.SelectionOptions = [toFullRowSelect, toMiddleClickSelect, toRightClickSelect]
     OnChange = PredBoxChange
     OnDrawNode = PredBoxDrawNode
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
     Columns = <>
   end
   object nameBox: TEdit
     Left = 15
     Top = 239
-    Width = 169
+    Width = 157
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 5
     Visible = False
     OnKeyPress = nameBoxKeyPress
+    ExplicitWidth = 169
   end
   object okBtn: TRnQButton
     Left = 8

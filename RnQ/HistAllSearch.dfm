@@ -2,8 +2,8 @@ object AllHistSrchForm: TAllHistSrchForm
   Left = 0
   Top = 0
   Caption = 'Search in all history files'
-  ClientHeight = 398
-  ClientWidth = 325
+  ClientHeight = 389
+  ClientWidth = 319
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,25 +11,25 @@ object AllHistSrchForm: TAllHistSrchForm
   Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
-  OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
   DesignSize = (
-    325
-    398)
-  PixelsPerInch = 96
+    319
+    389)
   TextHeight = 13
   object SearchEdit: TLabeledEdit
     Left = 16
     Top = 24
-    Width = 294
+    Width = 282
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     EditLabel.Width = 70
     EditLabel.Height = 13
     EditLabel.Caption = 'Text to search'
     TabOrder = 0
+    Text = ''
+    ExplicitWidth = 294
   end
   object caseChk: TCheckBox
     Left = 16
@@ -58,7 +58,7 @@ object AllHistSrchForm: TAllHistSrchForm
   object SchBtn: TRnQButton
     Left = 16
     Top = 97
-    Width = 294
+    Width = 282
     Height = 25
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Search'
@@ -66,16 +66,17 @@ object AllHistSrchForm: TAllHistSrchForm
     ImageName = ''
     TabOrder = 4
     OnClick = SchBtnClick
+    ExplicitWidth = 294
   end
   object HistPosTree: TVirtualDrawTree
     Left = 16
     Top = 128
-    Width = 294
-    Height = 262
+    Width = 282
+    Height = 253
     Anchors = [akLeft, akTop, akRight, akBottom]
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Height = 17
+    Header.Height = 13
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
     TabOrder = 5
@@ -84,6 +85,10 @@ object AllHistSrchForm: TAllHistSrchForm
     OnFreeNode = HistPosTreeFreeNode
     OnGetNodeWidth = HistPosTreeGetNodeWidth
     OnKeyPress = HistPosTreeKeyPress
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
+    ExplicitWidth = 294
+    ExplicitHeight = 262
     Columns = <>
   end
 end

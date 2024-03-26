@@ -5,7 +5,12 @@ unit RnQNet.Uploads;
 interface
 
 uses
-  Classes, JSON, OverbyteIcsWSocket, OverbyteIcsHttpProt, OverbyteIcsNtlmMsgs, OverbyteIcsWSockBuf,
+  Classes,
+ {$IFDEF FPC}
+  fpJSON, WSocket, HttpProt, WSockBuf,
+ {$ELSE ~FPC}
+  JSON, OverbyteIcsWSocket, OverbyteIcsHttpProt, OverbyteIcsNtlmMsgs, OverbyteIcsWSockBuf,
+ {$ENDIF FPC}
 {$IFDEF UseNTLMAuthentication}
   RnQHttpAuth,
 {$ENDIF}
@@ -18,10 +23,12 @@ resourcestring
   UploadError = 'Failed to upload file! Server response';
   FileNotExists = 'File doesn''t exist';
 
+  {$IFDEF USE_SSL}
 //  function UploadFileRGhost(const Filename: String; pOnSendData: TDocDataEvent): String;
   function UploadFileRGhost(FileStream: TStream; FileName: String; pOnSendData: TDocDataEvent): String;
   function UploadFileRnQ(FileStream: TStream; const Filename: String; pOnSendData: TDocDataEvent): String;
   function UploadTarFileRnQ(const Filenames: String; pOnSendData: TDocDataEvent): String;
+  {$ENDIF USE_SSL}
 
   function CreateZip(str: TStringList): TMemoryStream;
 
@@ -89,6 +96,7 @@ begin
             [AnsiString('--') + boundry, name, value]);
 end;
 
+{$IFDEF USE_SSL}
 function UploadFileRGhost(FileStream: TStream; FileName: String; pOnSendData: TDocDataEvent): String;
 var
   AvStream, TokenStream: TMemoryStream;
@@ -459,6 +467,7 @@ begin
       FreeAndNil(AvStream);
   end;
 end;
+{$ENDIF USE_SSL}
 
 function CreateZip(str: TStringList): TMemoryStream;
 var

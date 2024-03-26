@@ -7,8 +7,7 @@ interface
 
 uses
   Windows,
-//  SynCrypto,
-  mormot.core.crypto,
+  mormot.crypt.core,
   RDGlobal
   ;
 
@@ -36,8 +35,8 @@ function  hmac_sha1_key(const key: RawByteString; key_len: Integer; var cx: hmac
 procedure hmac_sha1_data(const data: Pointer; data_len: Integer; var cx: hmac_ctx);
 procedure hmac_sha1_end(mac: PByte; mac_len: Integer; cx: hmac_ctx);
 
-procedure hmac_sha(const key: RawByteString; key_len: Integer;
-          const data: Pointer; data_len : Int64;
+procedure hmac_sha_(const key: RawByteString; key_len: Integer;
+          const data: Pointer; data_len: Int64;
           var mac: RawByteString; const mac_len: Integer);
 
 function derive_key(const pwd: RawByteString;  // the PASSWORD
@@ -82,7 +81,8 @@ const
 type
   Pint = ^Cardinal;
 type
-  fcrypt_ctx = record
+  pCrypt_CTX = ^fcrypt_ctx;
+  fCrypt_ctx = record
     nonce    : array[0..BLOCK_SIZE-1] of Byte;  //* the CTR nonce          */
     encr_bfr : array[0..BLOCK_SIZE-1] of Byte;  //* encrypt buffer         */
     aes_ctx  : TAES;
@@ -103,13 +103,15 @@ function fcrypt_init(
     var cx: fcrypt_ctx) : Integer;      //* the file encryption context (output) */
 
 //* perform 'in place' encryption or decryption and authentication               */
-procedure fcrypt_encrypt(data : Pointer; data_len : Integer; var cx : fcrypt_ctx);
-procedure fcrypt_decrypt(data : Pointer; data_len : Integer; var cx : fcrypt_ctx);
+procedure fcrypt_encrypt(data: Pointer; data_len: Integer; var cx: fcrypt_ctx);
+procedure fcrypt_decrypt(data: Pointer; data_len: Integer; var cx: fcrypt_ctx);
 
 //* close encryption/decryption and return the MAC value */
 //* the return value is the length of the MAC            */
 function fcrypt_end(var cx: fcrypt_ctx)  //* the context (input)      */
                 : RawByteString;          //* the MAC value (output)   */
+
+function getPRNG(len: Integer): RawByteString;
 
 implementation
 
@@ -118,10 +120,10 @@ uses
     ;
 
 
-function derive_key(const pwd : RawByteString;  // the PASSWORD
-               const salt : RawByteString;      //* the SALT and its */
-               const iter : Integer;         //* the number of iterations */
-               const key_len : Integer)//* and its required length  */
+function derive_key(const pwd: RawByteString;  // the PASSWORD
+               const salt: RawByteString;      //* the SALT and its */
+               const iter: Integer;         //* the number of iterations */
+               const key_len: Integer)//* and its required length  */
                : RawByteString;
 var
   i, j, k, n_blk: Integer;
@@ -313,7 +315,7 @@ begin
 end;
 
 //* 'do it all in one go' subroutine     */
-procedure hmac_sha(const key: RawByteString; key_len: Integer;
+procedure hmac_sha_(const key: RawByteString; key_len: Integer;
           const data: Pointer; data_len: Int64;
           var mac: RawByteString; const mac_len: Integer);
 var
@@ -444,6 +446,13 @@ begin
 //	memset(cx, 0, sizeof(fcrypt_ctx));	//* clear the encryption context	*/
   FillMemory(@cx, sizeof(fcrypt_ctx), 0);
 //	Result  MAC_LENGTH(res);				//* return MAC length in bytes   */
+end;
+
+
+function getPRNG(len: Integer): RawByteString;
+begin
+  SetLength(Result, len);
+  TAesPrng.Fill(@Result[1], len);
 end;
 
 end.

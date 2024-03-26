@@ -11,8 +11,10 @@ interface
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   StdCtrls,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree, VirtualTrees.AncestorVCL,
+  VirtualTrees.DrawTree, VirtualTrees.Types,
   RnQPrefsInt, RnQPrefsTypes,
-  RnQButtons, VirtualTrees;
+  RnQButtons;
 
 type
   TpluginsFr = class(TPrefFrame)

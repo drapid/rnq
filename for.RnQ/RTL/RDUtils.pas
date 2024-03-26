@@ -5,6 +5,9 @@
 unit RDUtils;
 {$I ..\ForRnQConfig.inc}
 {$I ..\NoRTTI.inc}
+ {$IFDEF FPC}
+   {$DEFINE UNICODE}
+ {$ENDIF FPC}
 
 interface
 uses
@@ -40,15 +43,15 @@ function  BoundsSize(srcCX, srcCY, maxCX, maxCY: Longint): TSize; overload;
 // strings
 function  isURL(const s: string; ofs: Integer=1): boolean;
 //function  ipos(const ss: string; const s: string): Integer; OverLoad;
-function  ipos(const ss, s: string; ofs: integer=1): integer; OverLoad;
+function  ipos(const ss, s: unicodeString; ofs: integer=1): integer; OverLoad;
 function  ipos(const ss, s: RawByteString; ofs: integer=1): integer; OverLoad;
 function  capitalize(const s: string): string;
 procedure convertAllNewlinesToCRLF(var s: string);
 function  separated(const sep: string; ss: array of string): string;
-function  template(const src: string; table: array of string): string;
+function  template(const src: AnsiString; table: array of AnsiString): AnsiString;
  {$IFDEF UNICODE}
  overload;
-function  template(const src: AnsiString; table: array of AnsiString): AnsiString; overload;
+ function  template(const src: UnicodeString; table: array of UnicodeString): UnicodeString; overload;
  {$ENDIF UNICODE}
 //function  TLV(code: Integer; data: String): String;
 function  newline2slashn(s: String): String;
@@ -59,14 +62,18 @@ function  matches(const s: String; from: Integer; const sub: String): boolean; {
 function  matchesA(const s: RawByteString; from: Integer; const sub: RawByteString): Boolean; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 function  Imatches(const s: String; from: Integer; const sub: String): Boolean;
 function  dupString(const s: AnsiString): AnsiString; {$IFDEF UNICODE}overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
-function  dupString(const s: String): String; overload; inline;
+function  dupString(const s: UnicodeString): UnicodeString; overload; inline;
                                               {$ENDIF UNICODE}
 function  trailing(const s, ss: string): Boolean;
 procedure swap4(var a, b: Integer); overload;
 procedure swap4(var src, dest; count: dword; cond: Boolean); overload;
 procedure swap8(var a, b: TDateTime);
 // Convert
+{$IFDEF UNICODE}
 function  ip2str(ip: UInt32): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+{$ELSE ~UNICODE}
+function  ip2str(ip: UInt32): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+{$ENDIF UNICODE}
 function  str2ip(const s: RawByteString): UInt32;
 function  qword_BE2verU(d: UInt64): String;
 function  qword_LE2verU(d: UInt64): String;
@@ -74,7 +81,7 @@ function  bool2str(const b: Boolean): RawByteString;
   function ABCD_ADCB(d: dword): dword; assembler;
   function str2color(const s: AnsiString): Tcolor;
   function color2str(color: Tcolor): AnsiString;
-  function color2strU(color: Tcolor): String;
+  function color2strU(color: Tcolor): UnicodeString;
   function Color2HTML(Color: TColor): String;
   function IntToHexA(Value: Integer; Digits: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}
   function IntToHexAL(Value: Integer; Digits: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}
@@ -86,7 +93,7 @@ function  bool2str(const b: Boolean): RawByteString;
 // Strings
   function WideBEToUTF8(const Value: RawByteString): RawByteString;
 // function unUTF(const s: AnsiString) : AnsiString;
-  function UnUTF(const s: RawByteString): String;
+  function UnUTF(const s: RawByteString): UnicodeString;
   function UTF(const s: String): RawByteString; inline; deprecated 'Use UTF8Encode instead';
   function StrToUTF8(const Value: AnsiString): RawByteString; OverLoad;
   function StrToUnicode(const Value: AnsiString): RawByteString; overload;
@@ -94,8 +101,12 @@ function  bool2str(const b: Boolean): RawByteString;
  {$IFDEF UNICODE}
   function WideBEToStr(const Value: RawByteString): UnicodeString;
   function StrToUTF8(const Value: UnicodeString): RawByteString; OverLoad;
-  function StrToUnicode(const Value: String): RawByteString; overload;
-  function StrToUnicodeLE(const Value: String): RawByteString; overload;
+  function StrToUnicode(const Value: UnicodeString): RawByteString; overload;
+  function StrToUnicodeLE(const Value: UnicodeString): RawByteString; overload;
+  {$ELSE}
+   {$IFDEF FPC}
+  function StrToUTF8(const Value: UnicodeString): RawByteString; OverLoad;
+   {$ENDIF FPC}
  {$ENDIF UNICODE}
 
   function UTF8ToStr(const Value: RawByteString): String;
@@ -117,25 +128,36 @@ function  bool2str(const b: Boolean): RawByteString;
  {$ENDIF UNICODE}
   function  findInStrings(const s: AnsiString; ss: array of AnsiString): Integer; overload;
   function  findInStrings(const s: AnsiString; ss, separator: RawByteString): Integer; overload;
-  function  findInStrings(const s: String; ss: Tstrings): Integer; overload;
+  function  findInStrings(const s: UnicodeString; ss: Tstrings): Integer; overload;
 
   function  chop(i: Integer; var s: RawByteString): RawByteString; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   function  chop(i, l: Integer; var s: RawByteString): RawByteString; overload;
   function  chop(const ss: RawByteString; var s: RawByteString): RawByteString; overload;
   function  chopline(var s: RawByteString): RawByteString; overload;
   function  choplineV(const s: RawByteString; var pos0: Integer): RawByteString;
+  function  chop(const ss: RawByteString; var s: AnsiString): RawByteString; overload;
+  function  chop(i, l: Integer; var s: AnsiString): AnsiString; overload;
 
  {$IFDEF UNICODE}
 { split S in position where SS is found, the first part is returned
   the second part following SS is left in S }
-  function chop(const ss: String; var s: UnicodeString): String; overload;
+  function chop(const ss: UnicodeString; var s: UnicodeString): UnicodeString; overload;
 // same as before, but specifying separator length
-  function chop(i, l: Integer; var s: UnicodeString): String; overload;
+  function chop(i, l: Integer; var s: UnicodeString): UnicodeString; overload;
 // same as before, but separator is I
-  function chop(i: Integer; var s: UnicodeString): String; overload;
+  function chop(i: Integer; var s: UnicodeString): UnicodeString; overload;
 // same as chop(lineterminator, s)
-  function chopline(var s: UnicodeString): String; overload;
+  function chopline(var s: UnicodeString): UnicodeString; overload;
  {$ENDIF UNICODE}
+ {$IFDEF STRING_NOT_UNICODE}
+ { split S in position where SS is found, the first part is returned
+   the second part following SS is left in S }
+  //function chop(const ss: String; var s: String): String; overload;
+ // same as before, but specifying separator length
+  //function chop(i, l: Integer; var s: String): String; overload;
+  function chop(i: Integer; var s: String): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE} OverLoad;
+  function chopline(var s: String): String; overload;
+ {$ENDIF STRING_NOT_UNICODE}
 
  {$IFDEF UNICODE}
   function  isOnlyDigits(const s: AnsiString): Boolean; overload;
@@ -173,7 +195,7 @@ function  bool2str(const b: Boolean): RawByteString;
   function str2hex(const s: RawByteString; const Delim: AnsiChar): AnsiString; overload;
   function str2hexL(const s: RawByteString): RawByteString;
   function  hexToInt(const s: RawByteString): Cardinal; overload;
-  function  hexToInt(const s: String): Cardinal; overload;
+  function  hexToInt(const s: UnicodeString): Cardinal; overload;
   function  strings2str(const split: string; ss: Tstrings): string; overload;
   function  strings2str(const split: string; const ss: array of string): string; overload;
   procedure str2strings(const split: String; src: string; var ss: Tstrings); deprecated;
@@ -203,6 +225,10 @@ implementation
     {$IFDEF DELPHI9_UP}
      AnsiStrings,
     {$ENDIF DELPHI9_UP}
+  {$ELSE}
+    {$IFDEF FPC}
+    Character,
+    {$ENDIF}
   {$ENDIF UNICODE}
     RnQBinUtils;
 
@@ -575,8 +601,11 @@ function isURL(const s: String; ofs: Integer=1): Boolean;
 begin
  {$IFDEF UNICODE}
  while (Integer(s[ofs]) <= $7F) and
+    {$IFDEF FPC}
+    (((s[ofs] >= '0') and (s[ofs] <= '9')) or TCharacter.IsLetter(s[ofs])) do
+     {$ELSE ~FPC}
     (((s[ofs] >= '0') and (s[ofs] <= '9')) or s[ofs].IsLetter()) do
-//    (((s[ofs] >= '0') and (s[ofs] <= '9')) or TCharacter.IsLetter(s[ofs])) do
+    {$ENDIF ~FPC}
  {$ELSE nonUNICODE}
  while s[ofs] in ['0'..'9','a'..'z','A'..'Z'] do
  {$ENDIF UNICODE}
@@ -595,7 +624,7 @@ end; // ipos
 }
 // case insensitive version
 {$IFDEF FPC}
-function ipos(const ss, s: string; ofs: integer=1): integer;
+function ipos(const ss, s: UnicodeString; ofs: integer=1): integer;
 begin
   Result := Pos(LowerCase(ss), LowerCase(s));
 end;
@@ -676,7 +705,7 @@ begin
       result := result+ifThen(result>'', ',')+ss[i];
 end; // separated
 
-function template(const src: string; table: array of string): string;
+function template(const src: AnsiString; table: array of AnsiString): AnsiString;
 var
   i: Integer;
 begin
@@ -686,12 +715,12 @@ begin
    begin
 //    result:=AnsiReplaceText(result, table[i], table[i+1]);
     result := AnsiReplaceStr(result, table[i], table[i+1]);
-    inc(i,2);
+    inc(i, 2);
    end;
 end; // template
 
  {$IFDEF UNICODE}
-function  template(const src: AnsiString; table: array of AnsiString): AnsiString;
+function template(const src: UnicodeString; table: array of UnicodeString): UnicodeString;
 var
   i: Integer;
 begin
@@ -734,8 +763,11 @@ begin
   Result := Copy(s, 1, length(s));
   while i <= length(Result) do
 //  if s[i] in ['0'..'9'] then
-//  if TCharacter.IsDigit(s[i]) then
-  if s[i].IsDigit() then
+  {$IFDEF FPC}
+    if TCharacter.IsDigit(s[i]) then
+  {$ELSE ~FPC}
+    if s[i].IsDigit() then
+  {$ENDIF ~FPC}
 //   if Result[i].IsDigit then
      inc(i)
     else
@@ -763,7 +795,7 @@ begin
     Result := False
   else
 {$IFDEF MSWINDOWS}
-    Result := CompareStringW(LOCALE_USER_DEFAULT, 0, //NORM_IGNORECASE,
+    Result := CompareString(LOCALE_USER_DEFAULT, 0, //NORM_IGNORECASE,
       P, L, PChar(sub), L) = 2;
 {$ENDIF}
 {$IFDEF LINUX}
@@ -817,7 +849,7 @@ begin
     Result := False
   else
 {$IFDEF MSWINDOWS}
-    Result := CompareStringW(LOCALE_USER_DEFAULT, NORM_IGNORECASE,
+    Result := CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE,
       P, L, PChar(sub), L) = 2;
 {$ENDIF}
 {$IFDEF LINUX}
@@ -831,7 +863,7 @@ begin
 end;
 
 {$IFDEF UNICODE}
-function dupString(const s: string): string;
+function dupString(const s: UnicodeString): UnicodeString;
 begin
   result := copy(s, 1, length(s))
 end;
@@ -875,7 +907,7 @@ function ABCD_ADCB(d: dword): dword; assembler;
 end; // ABCD_ADCB
 {$ENDIF}
 
- {$IFDEF UNICODE}
+ { $IFDEF UNICODE}
 function color2strU(color: Tcolor): UnicodeString;
  {$IFDEF FPC}
 var
@@ -886,16 +918,20 @@ begin
       Result := s;
     end
    else
+   begin
+     color := ABCD_ADCB(ColorToRGB(color));
+     result := intToHex(color, 6);
+   end;
 {$ELSE}
 begin
   if not ColorToIdent(Color, Result) then
-{$ENDIF}
     begin
       color := ABCD_ADCB(TColorRec.ColorToRGB(color));
       result := intToHex(color, 6);
     end;
+ {$ENDIF}
 end;
- {$ENDIF UNICODE}
+ { $ENDIF UNICODE}
 
 function color2str(color: Tcolor): AnsiString;
  {$IFDEF UNICODE}
@@ -908,6 +944,10 @@ begin
       Result := s;
     end
    else
+   begin
+     color := ABCD_ADCB(ColorToRGB(color));
+     result := IntToHexA(color,6);
+   end;
 {$ELSE}
 var
   res: String;
@@ -916,11 +956,11 @@ begin
   if ColorToIdent(Color, Res) then
     Result := AnsiString(res)
    else
-{$ENDIF}
     begin
       color := ABCD_ADCB(TColorRec.ColorToRGB(color));
       result := IntToHexA(color,6);
     end;
+  {$ENDIF}
  {$ELSE nonUNICODE}
 begin
 //color := ABCD_ADCB(ColorToRGB(color));
@@ -948,7 +988,11 @@ end; // str2color
 
 function Color2HTML(Color: TColor): String;
 begin
+  {$IFDEF FPC}
+  Color := ABCD_ADCB(ColorToRGB(Color));
+  {$ELSE ~FPC}
   Color := ABCD_ADCB(TColorRec.ColorToRGB(Color));
+  {$ENDIF ~FPC}
   Result := '#' + IntToHex(Color, 6);
 end;
 
@@ -1641,7 +1685,7 @@ asm
 @exit:
 end;}
 
-function UTF8ToStrSmart3(const Value: RawByteString): String;
+function UTF8ToStrSmart3(const Value: RawByteString): UnicodeString;
 var
   Len: cardinal;
 
@@ -1654,12 +1698,18 @@ var
   i,
   j,
   k: cardinal;
+ {$IFDEF FPC}
+  pc: PUnicodeChar;
+ {$ELSE ~FPC}
   pc: PChar;
+ {$ENDIF FPC}
   c: byte;
   tmp: word;
 //  tmp4: DWORD;
   tmp4: ShortString;
-//  tmpU: UnicodeString;
+ {$ifdef FPC}
+  tmpU: UnicodeString;
+ {$ENDif FPC}
 begin
   if Value='' then
   begin
@@ -1787,7 +1837,7 @@ begin
   if j<Len then SetLength(Result,j);
 end;
 
-function UnUTF(const s: RawByteString): String;
+function UnUTF(const s: RawByteString): UnicodeString;
 {$IFNDEF UNICODE}
 var
 //  ss: RawString;
@@ -2017,6 +2067,32 @@ begin
   StringToWideChar(Value, buffer, BufLen);
   SetLength(Result, BufLen-2);
 end;
+{$ELSE}
+  {$IFDEF FPC}
+  {Convert string to UTF8 format}
+ function StrToUTF8(const Value: UnicodeString): RawByteString;
+ var
+ //  buffer: Pointer;
+   ResLen, BufLen: LongWord;
+ //  lpBuf: Pointer;
+ begin
+   if Value='' then
+     exit('');
+   BufLen := Length(Value) * 4;
+ //  GetMem(buffer, BufLen); FillChar(buffer^, BufLen, 0);
+ //  GetMem(lpBuf, BufLen); FillChar(lpBuf^, BufLen, 0);
+ //  StringToWideChar(Value, buffer, BufLen);
+ //  Buffer := @Value[1];
+   SetLength(Result, BufLen);
+   ResLen := WideCharToMultiByte(CP_UTF8, 0, @Value[1], Length(Value), PAnsiChar(Result), BufLen, nil, nil);
+  // ResLen includes the byte for the terminating null character.
+
+  //  FreeMem(buffer, BufLen);
+ //  Result := PAnsiChar(lpBuf);
+ //  FreeMem(lpBuf, BufLen);
+   SetLength(Result, ResLen); //
+ end;
+  {$ENDIF FPC}
  {$ENDIF UNICODE}
 
 //{$IF CompilerVersion >= 24}
@@ -2114,7 +2190,7 @@ begin
     end;
 end;
 
-function findInStrings(const s: string; ss: Tstrings): Integer;
+function findInStrings(const s: UnicodeString; ss: Tstrings): Integer;
 begin
   result := 0;
   while result < ss.count do
@@ -2186,7 +2262,7 @@ begin
     end;
 end; // hexToInt
 
-function hexToInt(const s: String): Cardinal;
+function hexToInt(const s: UnicodeString): Cardinal;
 var
   i, v, c: Cardinal;
 begin
@@ -2565,6 +2641,10 @@ function chop(const ss: RawByteString; var s: RawByteString): RawByteString;
 begin
   result := chop(pos(ss,s), length(ss), s)
 end;
+function chop(const ss: RawByteString; var s: AnsiString): RawByteString;
+begin
+  result := chop(pos(ss,s), length(ss), s)
+end;
 
 function chop(i: Integer; var s: RawByteString): RawByteString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
@@ -2583,6 +2663,17 @@ begin
   delete(s, 1, i-1+l);
 end; // chop
 
+function chop(i, l: Integer; var s: AnsiString): AnsiString;
+begin
+  if i=0 then
+    begin
+      result := s;
+      s := '';
+      exit;
+    end;
+  result := copy(s,1,i-1);
+  delete(s, 1, i-1+l);
+end; // chop
 
 function chopline(var s: RawByteString): RawByteString;
 var
@@ -2641,7 +2732,7 @@ begin
 end; // chopline
 
  {$IFDEF UNICODE}
-function chop(i, l: Integer; var s: String): String;
+function chop(i, l: Integer; var s: UnicodeString): UnicodeString;
 begin
   if i=0 then
     begin
@@ -2653,12 +2744,12 @@ begin
   delete(s, 1, i-1+l);
 end; // chop
 
-function chop(i: Integer; var s: String): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+function chop(i: Integer; var s: UnicodeString): UnicodeString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 begin
   result := chop(i,1,s)
 end;
 
-function chop(const ss: String; var s: String): String;
+function chop(const ss: UnicodeString; var s: UnicodeString): UnicodeString;
 var
   p: Integer;
 begin
@@ -2672,7 +2763,7 @@ begin
     end;
 end;
 
-function chopline(var s: String): String;
+function chopline(var s: UnicodeString): UnicodeString;
 var
   i: Integer;
 begin
@@ -2694,8 +2785,37 @@ begin
       end;
   result := chop(0,0,s);
 end; // chopline
+{$ENDIF UNICODE}
 
- {$ENDIF UNICODE}
+ {$IFDEF STRING_NOT_UNICODE}
+function chop(i: Integer; var s: String): String; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+begin
+  result := chop(i,1,s)
+end;
+
+function chopline(var s: String): String; overload;
+var
+  i: Integer;
+begin
+  for i:=1 to length(s) do
+    case s[i] of
+      #10:
+        begin
+          result := chop(i,s);
+          exit;
+        end;
+      #13:
+        begin
+          if (i < length(s)) and (s[i+1]=#10) then
+            result := chop(i,2,s)
+           else
+            result := chop(i,s);
+          exit;
+        end;
+      end;
+  result := chop(0,0,s);
+end; // chopline
+  {$ENDIF STRING_NOT_UNICODE}
 
 {
 function  UnDelimiter(s: String): String;

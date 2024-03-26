@@ -17,7 +17,7 @@ uses
   windows, sysutils, graphics, classes, extctrls,
   forms, stdctrls, controls, menus,
   comctrls, messages, types,
-  VirtualTrees,
+  VirtualTrees.Types,
   strutils,
 //    GDIPAPI, GDIPOBJ,
   outboxLib,

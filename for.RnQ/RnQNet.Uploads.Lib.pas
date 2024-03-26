@@ -30,7 +30,7 @@ type
     onDestroy: TNotifyEvent;
 
     constructor create;
-    destructor Destroy; override;
+    destructor  Destroy; override;
     function   addFile(const src: string; dst: string=''; data: Tobject=NIL): boolean; virtual;
     function   count(): integer;
     procedure  reset(); virtual;
@@ -82,17 +82,17 @@ begin
   fh := fileopen(src, fmOpenRead+fmShareDenyNone);
   if fh = -1 then
     exit;
-  result:=TRUE;
+  result := TRUE;
   if dst = '' then
     dst := extractFileName(src);
-  i:=length(flist);
+  i := length(flist);
   setLength(flist, i+1);
-  flist[i].src:=src;
-  flist[i].dst:=dst;
-  flist[i].data:=data;
+  flist[i].src := src;
+  flist[i].dst := dst;
+  flist[i].data := data;
   flist[i].size := sizeOfFile(src);
   flist[i].mtime := getMtime(fh);
-  flist[i].firstByte:=-1;
+  flist[i].firstByte := -1;
   fileClose(fh);
   invalidate();
 end; // addFile

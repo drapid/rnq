@@ -1,23 +1,21 @@
 object chatFr: TchatFr
   Left = 0
   Top = 0
-  ClientHeight = 429
-  ClientWidth = 428
+  ClientHeight = 420
+  ClientWidth = 422
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = True
-  PixelsPerInch = 96
   TextHeight = 13
   object ChatPrefPages: TPageControl
     AlignWithMargins = True
     Left = 6
     Top = 6
-    Width = 416
-    Height = 417
+    Width = 410
+    Height = 408
     Margins.Left = 6
     Margins.Top = 6
     Margins.Right = 6
@@ -25,11 +23,13 @@ object chatFr: TchatFr
     ActivePage = CommonSheet
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 416
+    ExplicitHeight = 417
     object CommonSheet: TTabSheet
       Caption = 'Common'
       DesignSize = (
-        408
-        389)
+        402
+        380)
       object sendonenterLbl: TLabel
         Left = 36
         Top = 99
@@ -50,72 +50,79 @@ object chatFr: TchatFr
       object singleChk: TCheckBox
         Left = 6
         Top = 28
-        Width = 452
+        Width = 440
         Height = 17
         HelpKeyword = 'single-message-by-default'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Single-message by default'
         TabOrder = 1
+        ExplicitWidth = 452
       end
       object statusontabChk: TCheckBox
         Left = 6
         Top = 50
-        Width = 452
+        Width = 440
         Height = 17
         HelpKeyword = 'show-status-on-tabs'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Show contact status on tabs'
         TabOrder = 2
+        ExplicitWidth = 452
       end
       object cursorbelowChk: TCheckBox
         Left = 6
         Top = 122
-        Width = 452
+        Width = 440
         Height = 17
         HelpKeyword = 'quoting-cursor-below'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Place cursor below quoted text'
         TabOrder = 3
+        ExplicitWidth = 452
       end
       object quoteselectedChk: TCheckBox
         Left = 6
         Top = 145
-        Width = 452
+        Width = 440
         Height = 17
         HelpKeyword = 'quote-selected'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Quote selected text (if any)'
         TabOrder = 4
+        ExplicitWidth = 452
       end
       object chatOnTopChk: TCheckBox
         Left = 6
         Top = 170
-        Width = 452
+        Width = 440
         Height = 17
         HelpKeyword = 'chat-always-on-top'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Chat window is always on top'
         TabOrder = 5
+        ExplicitWidth = 452
       end
       object ChkDefCP: TCheckBox
         Left = 6
         Top = 5
-        Width = 452
+        Width = 440
         Height = 17
         HelpKeyword = 'system-cp-flag'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use system default codepage for clipboard'
         TabOrder = 6
+        ExplicitWidth = 452
       end
       object PlugPanelChk: TCheckBox
         Left = 6
         Top = 193
-        Width = 452
+        Width = 440
         Height = 17
         HelpKeyword = 'use-plugin-panel'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use plugin-panel in center'
         TabOrder = 7
+        ExplicitWidth = 452
       end
       object HintsShowChk: TCheckBox
         Left = 6
@@ -158,35 +165,38 @@ object chatFr: TchatFr
       Caption = 'History'
       ImageIndex = 4
       DesignSize = (
-        408
-        389)
+        402
+        380)
       object stylecodesChk: TCheckBox
         Left = 6
         Top = 3
-        Width = 285
+        Width = 273
         Height = 17
         HelpKeyword = 'font-style-codes'
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Font style codes'
         TabOrder = 0
+        ExplicitWidth = 285
       end
       object autodeselectChk: TCheckBox
         Left = 6
         Top = 47
-        Width = 332
+        Width = 320
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Auto-deselect'
         TabOrder = 1
+        ExplicitWidth = 332
       end
       object autocopyChk: TCheckBox
         Left = 6
         Top = 24
-        Width = 332
+        Width = 320
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Auto-copy in clipboard'
         TabOrder = 2
+        ExplicitWidth = 332
       end
       object DrawEmojiChk: TCheckBox
         Left = 6
@@ -309,19 +319,21 @@ object chatFr: TchatFr
       ImageIndex = 2
       TabVisible = False
       DesignSize = (
-        408
-        389)
+        402
+        380)
       object IconsGrp: TGroupBox
         Left = 3
         Top = 3
-        Width = 391
-        Height = 383
+        Width = 379
+        Height = 374
         Anchors = [akLeft, akTop, akRight, akBottom]
         Caption = 'Show buttons'
         TabOrder = 0
+        ExplicitWidth = 391
+        ExplicitHeight = 383
         DesignSize = (
-          391
-          383)
+          379
+          374)
         object SpinBtn: TRnQSpinButton
           Left = 266
           Top = 23
@@ -334,7 +346,7 @@ object chatFr: TchatFr
           Left = 12
           Top = 18
           Width = 248
-          Height = 351
+          Height = 342
           Anchors = [akLeft, akTop, akBottom]
           DefaultNodeHeight = 16
           DragMode = dmAutomatic
@@ -342,13 +354,16 @@ object chatFr: TchatFr
           DragType = dtVCL
           Header.AutoSizeIndex = 0
           Header.DefaultHeight = 17
-          Header.Height = 17
+          Header.Height = 13
           Header.MainColumn = -1
           Header.Options = [hoColumnResize, hoDrag]
           TabOrder = 1
           TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning, toFullRowDrag]
           TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection]
           TreeOptions.SelectionOptions = [toFullRowSelect]
+          Touch.InteractiveGestures = [igPan, igPressAndTap]
+          Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
+          ExplicitHeight = 351
           Columns = <>
         end
       end
@@ -357,8 +372,8 @@ object chatFr: TchatFr
       Caption = 'Spell check'
       ImageIndex = 5
       DesignSize = (
-        408
-        389)
+        402
+        380)
       object langLbl: TLabel
         Left = 6
         Top = 32
@@ -422,7 +437,7 @@ object chatFr: TchatFr
         Colors.SelectionRectangleBorderColor = cl3DLight
         Header.AutoSizeIndex = 0
         Header.DefaultHeight = 17
-        Header.Height = 17
+        Header.Height = 13
         Header.MainColumn = -1
         Header.Options = [hoColumnResize, hoDrag]
         TabOrder = 1
@@ -431,6 +446,8 @@ object chatFr: TchatFr
         TreeOptions.SelectionOptions = [toFullRowSelect]
         OnDrawNode = LangListDrawNode
         OnFreeNode = LangListFreeNode
+        Touch.InteractiveGestures = [igPan, igPressAndTap]
+        Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
         Columns = <>
       end
       object refreshBtn: TButton
@@ -454,13 +471,14 @@ object chatFr: TchatFr
       object GroupBox2: TGroupBox
         Left = 6
         Top = 303
-        Width = 314
+        Width = 302
         Height = 55
         Anchors = [akLeft, akTop, akRight]
         BiDiMode = bdLeftToRight
         Caption = 'Spelling errors highlight style'
         ParentBiDiMode = False
         TabOrder = 4
+        ExplicitWidth = 314
         object ColorBtn: TColorPickerButton
           Left = 93
           Top = 22

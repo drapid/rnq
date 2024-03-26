@@ -113,7 +113,7 @@ uses
     dynamic_bass,
    {$ENDIF RNQ_PLAYER}
    RQThemes,
-   VirtualTrees, RQlog, RQmsgs,
+   VirtualTrees.Types, RQlog, RQmsgs,
   RnQlangs,
  {$ENDIF RNQ}
  {$IFDEF RNQ_PLUGIN}

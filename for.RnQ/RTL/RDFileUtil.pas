@@ -97,22 +97,32 @@ type
   function  DetectFileFormatStream(str: TStream): TPAFormat;
 
 //  procedure WorkThread(LV: Pointer); stdcall;
+
+type
+  TMimeChunk = array[0..3] of AnsiChar;
+
 const
-  JPEG_HDRS: array [0..6] of AnsiString = (
-    #$FF#$D8#$FF#$E0,
-    #$FF#$D8#$FF#$E1,
-    #$FF#$D8#$FF#$ED, {ADOBE}
-    #$FF#$D8#$FF#$E2, {CANON}
-    #$FF#$D8#$FF#$E3,
-    #$FF#$D8#$FF#$DB, {SAMSUNG}
-    #$FF#$D8#$FF#$FE {UNKNOWN});
-  TIF_HDR: array [0..3] of AnsiChar = #$49#$49#$2A#$00;
-  TIF_HDR2: array [0..3] of AnsiChar = #$4D#$4D#$00#$2A;
+ JPEG_HDRS: array [0..6] of TMimeChunk = (
+   #$FF#$D8#$FF#$E0,
+   #$FF#$D8#$FF#$E1,
+   #$FF#$D8#$FF#$ED, {ADOBE}
+   #$FF#$D8#$FF#$E2, {CANON}
+   #$FF#$D8#$FF#$E3,
+   #$FF#$D8#$FF#$DB, {SAMSUNG}
+   #$FF#$D8#$FF#$FE {UNKNOWN}
+  );
+
+ TIF_HDR:  TMimeChunk = #$49#$49#$2A#$00;
+ TIF_HDR2: TMimeChunk = #$4D#$4D#$00#$2A;
+
+
 
 implementation
   uses
    {$IFDEF UNICODE}
+    {$IFNDEF FPC}
      AnsiStrings,
+    {$ENDIF ~FPC}
    {$ENDIF UNICODE}
 // {$IFDEF USE_ZIP}
 //  KAZip,
@@ -1098,10 +1108,45 @@ begin
 end;
 {$ENDIF USE_ZIP}
 
+function AnsiIndexStrA(const AText: RawByteString; const AValues: array of RawByteString): Integer;
+var
+  i : longint;
+begin
+  result:=-1;
+  if (high(AValues)=-1) or (High(AValues)>MaxInt) Then
+    Exit;
+  for i:=low(AValues) to High(Avalues) do
+     if (avalues[i]=AText) Then
+       exit(i);                                 // make sure it is the first val.
+end;
+
+function AnsiMatchStrA(const AText: RawByteString; const AValues: array of RawByteString): Boolean;
+begin
+  Result := AnsiIndexStrA(AText,Avalues)<>-1;
+end;
+
+function AnsiIndexStrC(const AText: TMimeChunk; const AValues: array of TMimeChunk): Integer;
+var
+  i : longint;
+begin
+  result:=-1;
+  if (high(AValues)=-1) or (High(AValues)>MaxInt) Then
+    Exit;
+  for i:=low(AValues) to High(Avalues) do
+     if (avalues[i]=AText) Then
+       exit(i);                                 // make sure it is the first val.
+end;
+
+function AnsiMatchStrC(const AText: TMimeChunk; const AValues: array of TMimeChunk): Boolean;
+begin
+  Result := AnsiIndexStrC(AText,Avalues)<>-1;
+end;
+
+
 function DetectFileFormatStream(str: TStream): TPAFormat;
 var
 //  s: String;
-  s: array[0..3] of AnsiChar;
+  s: TMimeChunk;
 begin
   str.Seek(0, soBeginning);
 //  str.Position := 0;
@@ -1112,7 +1157,7 @@ begin
 //  s := Copy(pBuffer, 1, 4);
   if s = 'GIF8' then
     Result := PA_FORMAT_GIF
-  else if MatchStr(s, JPEG_HDRS) then
+  else if AnsiMatchStrC(s, JPEG_HDRS) then
     Result := PA_FORMAT_JPEG
   else if AnsiStartsText(AnsiString('BM'), s) then
     Result := PA_FORMAT_BMP

@@ -299,9 +299,9 @@ type
     procedure initPic(var picElm: TRnQThemedElementDtls); overload;
     function  GetBigPic(const picName: TPicName; var mem: TMemoryStream): Boolean;
     function  GetBigSmile(const picName: TPicName; var mem: TMemoryStream): Boolean;
-    function HasOrigPic(pTE: TRnQThemedElement; const picName: TPicName): Boolean;
-    function GetOrigPic(pTE: TRnQThemedElement; const picName: TPicName; var mem: TMemoryStream): Boolean; Deprecated 'Use GetBigPic instead';
-    function GetOrigSmile(const picName: TPicName; var mem: TMemoryStream): Boolean; Deprecated 'Use GetBigSmile instead';
+    function  HasOrigPic(pTE: TRnQThemedElement; const picName: TPicName): Boolean;
+    function  GetOrigPic(pTE: TRnQThemedElement; const picName: TPicName; var mem: TMemoryStream): Boolean; Deprecated 'Use GetBigPic instead';
+    function  GetOrigSmile(const picName: TPicName; var mem: TMemoryStream): Boolean; Deprecated 'Use GetBigSmile instead';
     function  GetPicSize(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0;
                              const DPI: Integer = cDefaultDPI): Tsize; overload;
 //    function  GetPicSize(name: String; var ThemeToken: Integer;
@@ -310,8 +310,8 @@ type
                              const DPI: Integer = cDefaultDPI): Tsize; overload;
     function  GetPicOld(const PicName: TPicName; pic: TBitmap; AddPic: Boolean = True): Boolean;
     procedure GetPicOrigin(const name: TPicName; var OrigPic: TPicName; var rr: TGPRect);
-    function GetPicRect(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0): TGPRect; Deprecated 'Use GetPicOrigin instead';
-    function GetPicSprite(pTE: TRnQThemedElement; const picName: TPicName): TPicName; Deprecated 'Use GetPicOrigin instead';
+    function  GetPicRect(pTE: TRnQThemedElement; const name: TPicName; minSize: Integer = 0): TGPRect; Deprecated 'Use GetPicOrigin instead';
+    function  GetPicSprite(pTE: TRnQThemedElement; const picName: TPicName): TPicName; Deprecated 'Use GetPicOrigin instead';
 //    function  GetIcoBad(name : String) : TIcon;
     function  GetString(const name: TPicName; isAdd: Boolean = True): String;
     function  GetSound(const name: TPicName): String;
@@ -3508,7 +3508,7 @@ begin
    begin
      v := line;
      k := trim(chop(';', v));
-     if isSupportedPicFile(UnUTF(k)) then
+     if isPicFile(UnUTF(k)) then
       begin
         if Assigned(loadedpic) then
           loadedPic.Free;

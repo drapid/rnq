@@ -5,7 +5,7 @@ unit RnQNet;
 interface
  uses
   Classes, OverbyteIcsWSocket, OverbyteIcsHttpProt,
-  OverbyteIcsNtlmMsgs, OverbyteIcsWSockBuf,
+  OverbyteIcsNtlmMsgs, OverbyteIcsWSockBuf, OverbyteIcsSslBase,
 {$IFDEF UseNTLMAuthentication}
   RnQHttpAuth,
 {$ENDIF}

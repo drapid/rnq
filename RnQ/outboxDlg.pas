@@ -25,7 +25,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, ExtCtrls, ComCtrls, Menus, VirtualTrees, RnQButtons,
+  StdCtrls, ExtCtrls, ComCtrls, Menus,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree, VirtualTrees.AncestorVCL,
+  VirtualTrees.DrawTree, VirtualTrees.Types,
+  RnQButtons,
   outboxLib,
   RnQProtocol
   ;

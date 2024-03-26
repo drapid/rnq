@@ -11,11 +11,13 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.StdCtrls, Vcl.ExtCtrls, VirtualTrees,
+  Vcl.Controls, Vcl.Forms, Vcl.StdCtrls, Vcl.ExtCtrls,
+  VirtualTrees.Types, VirtualTrees.DrawTree,
  {$IFDEF RNQ}
   RnQButtons,
  {$ENDIF RNQ}
-  RnQLangs;
+  RnQLangs, VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree,
+  VirtualTrees.AncestorVCL;
 
  {$IFNDEF RNQ}
 type

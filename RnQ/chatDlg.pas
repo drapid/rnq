@@ -11,7 +11,8 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ComCtrls, StdCtrls, Menus, ExtCtrls, ToolWin, ActnList, RnQButtons,
-  VirtualTrees, StrUtils, System.Actions,
+  VirtualTrees.Types, VirtualTrees.BaseTree, VirtualTrees.AncestorVcl,
+  StrUtils, System.Actions,
   history,
  {$IFDEF CHAT_CEF} // Chromium
   ceflib,
@@ -447,167 +448,10 @@ uses
     RnQ_FAM;
  {$ENDIF}
 
+type
+  TBVTCracker = class(TBaseVirtualTree);
+
 {$R *.DFM}
-
-(*procedure TPageControl.CNDrawitem(var Message: TWMDrawItem);
-var
-{  Color1: TColor;
-  Color2: TColor;
-  c: TRnQContact;
-  ci: TchatInfo;
-  hnd: HDC;
-  ev: Thevent;
-  pic, p: TPicName;
-  ss: String;
-}
-  Rgn: HRGN;
-  Rect: TRect;
-
-
-  R : Trect;
-  c:TRnQcontact;
-  ev:Thevent;
-  themePage: TThemedTab;
-//  themePage: TThemedButton;
-  Details: TThemedElementDetails;
-//  oldMode: Integer;
-  ci : TchatInfo;
-  ss  : String;
-  p : TPicName;
-  fl : Cardinal;
-  hnd : HDC;
-//  ImElm  : TRnQThemedElementDtls;
-  Pic : TPicName;
-  Active : Boolean;
-  str : WideString;
-begin
-  hnd := Message.DrawItemStruct.HDC;
-  Rect := Message.DrawItemStruct.rcItem;
-  SelectClipRgn(hnd, 0);
-
-  ci := chatFrm.chats.byIdx(Message.DrawItemStruct.itemID);
-  if ci = nil then
-    exit;
-
-  r := Rect;
-  Active := Message.DrawItemStruct.itemState = 1;
-  c := ci.who;
-
-  if StyleServices.Enabled then
-    begin
-      inc(r.Top, 1);
-      if not active then
-        inc(r.Right, 1);
-
-//      inc(r.Top, 1);
-      fl := BF_LEFT or BF_RIGHT or BF_TOP;
-      if Active then
-        begin
-          themePage := ttTopTabItemSelected; //ttTabItemSelected
-        end
-       else
-        begin
-          themePage := ttTopTabItemNormal; //ttTabItemNormal;
-          inc(fl, BF_BOTTOM);
-          dec(r.Left, 2);
-          inc(r.Bottom, 3);
-        end;
-;
-      Details := StyleServices.GetElementDetails(themePage);
-      StyleServices.DrawElement(hnd, Details, r);
-      StyleServices.DrawEdge(hnd, Details, r, 1, fl);//BF_RECT );
-    end
-   else
-    begin
-      fillrect(hnd, r, CreateSolidBrush(clGray));
-    end;
-  inc(r.left,4);
-  inc(r.top, 4);
-  dec(r.right); //dec(r.bottom);
-
-//  oldMode:=
- SetBKMode(hnd, TRANSPARENT);
-  if ci.chatType = CT_IM then
-  begin
-    ev := eventQ.firstEventFor(c);
-    if (ev<>NIL) //then
-//      begin
-//      if
-      and ((blinking or c.fProto.getStatusDisable.blinking) or not blinkWithStatus) then
-       begin
-        if (blinking or c.fProto.getStatusDisable.blinking) then
-          inc(R.left, 1 + ev.Draw(hnd, R.left,R.top).cx)
-        else
-          inc(R.left, 1 + ev.PicSize.cx);
-       end
-    else
-     begin
-       {$IFDEF RNQ_FULL}
-        if c.typing.bIsTyping then
-//          inc(R.left, 1+theme.drawPic(hnd, R.left,R.top, PIC_TYPING).cx)
-          pic := PIC_TYPING
-        else
-       {$ENDIF}
-        if showStatusOnTabs then
-         begin
-          {$IFDEF RNQ_FULL}
-           {$IFDEF CHECK_INVIS}
-           if c.isInvisible and c.isOffline then
-             pic := status2imgName(byte(SC_ONLINE), True)
-  //         with theme.GetPicSize('')
-//            inc(R.left, 1+ statusDrawExt(hnd, R.left,R.top, byte(SC_ONLINE), True).cx)
-           else
-  //           theme.drawPic(control.canvas, R.left,R.top, status2imgName(SC_ONLINE, True)).cx);
-           {$ENDIF}
-          {$ENDIF}
-             pic := c.statusImg;
-         end;
-       inc(R.left, 1 + theme.drawPic(hnd, R.left,R.top, Pic).cx)
-     end;
-    if active then
-      p := 'chat.tab.active'
-     else
-      p := 'chat.tab.inactive';
-    theme.ApplyFont(p, Self.Canvas.Font);
-
-    if UseContactThemes and Assigned(ContactsTheme) then
-     begin
-      ContactsTheme.ApplyFont(TPicName('group.') + TPicName(AnsiLowerCase(c.getGroupName)) + '.'+p, Self.Canvas.Font);
-      ContactsTheme.ApplyFont(TPicName(c.UID2cmp) + '.'+p, Self.Canvas.Font);
-     end;
-
-// hnd := Self.Canvas.Handle;
-
-  //  Font.Style := Font.Style + [fsStrikeOut];
-//    inc(r.top, 2);
-    dec(r.Right);
-
-      if active then
-       begin
-//        inc(r.top, 2);
-//        inc(R.left,2);
-         dec(R.Bottom, 2);
-       end
-      else
-       ;
-
-        ss := dupAmperstand(c.displayed);
-      DrawText(hnd, PChar(ss), Length(ss), r,
-              DT_LEFT or DT_SINGLELINE or DT_VCENTER);// or DT_ DT_END_ELLIPSIS);
-  end
-  else
-    begin
-      inc(R.left, 1+theme.drawPic(hnd, R.left,R.top, 'plugintab' + IntToStrA(chatFrm.chats.byIdx(tabindex).id)).cx);
-      inc(r.top, 2);
-      str := ci.lastInputText;
-      TextOut(hnd, r.Left, r.Top, @str[1], Length(ci.lastInputText));
-    end;
-
-  Message.Result := 1;
-//  inherited;
-
-end;
-*)
 
 procedure TPanel.WMEraseBkgnd(var msg: TWMEraseBkgnd);
 begin
@@ -4281,7 +4125,7 @@ begin
   hr := pagectrl.TabRect(tabindex);
   hr.TopLeft :=  HintData.Tree.ScreenToClient(pagectrl.ClientToScreen(hr.TopLeft));
   hr.BottomRight := HintData.Tree.ScreenToClient(pagectrl.ClientToScreen(hr.BottomRight));
-  hintdata.Tree.LastHintRect := hr;
+  TBVTCracker(hintdata.Tree).LastHintRect := hr;
 
  {$WARN UNSAFE_CODE OFF}
  {$WARN UNSAFE_CAST OFF}

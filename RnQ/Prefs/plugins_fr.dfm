@@ -2,16 +2,14 @@ object pluginsFr: TpluginsFr
   Left = 0
   Top = 0
   VertScrollBar.Tracking = True
-  ClientHeight = 376
-  ClientWidth = 420
+  ClientHeight = 367
+  ClientWidth = 414
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = True
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 6
@@ -26,9 +24,9 @@ object pluginsFr: TpluginsFr
     Width = 121
     Height = 25
     Caption = '&Reload'
+    ImageName = 'refresh'
     TabOrder = 0
     OnClick = reloadBtnClick
-    ImageName = 'refresh'
   end
   object prefBtn: TRnQButton
     Left = 144
@@ -36,9 +34,9 @@ object pluginsFr: TpluginsFr
     Width = 113
     Height = 25
     Caption = '&Preferences'
+    ImageName = 'preferences'
     TabOrder = 1
     OnClick = prefBtnClick
-    ImageName = 'preferences'
   end
   object PluginsList: TVirtualDrawTree
     Left = 8
@@ -48,11 +46,6 @@ object pluginsFr: TpluginsFr
     DragType = dtVCL
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
     Header.Height = 17
     Header.Options = [hoColumnResize, hoDrag, hoVisible]
     TabOrder = 2
@@ -61,16 +54,18 @@ object pluginsFr: TpluginsFr
     TreeOptions.SelectionOptions = [toFullRowSelect]
     OnDrawNode = PluginsListDrawNode
     OnFreeNode = PluginsListFreeNode
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
     Columns = <
       item
         Position = 0
+        Text = 'Name'
         Width = 220
-        WideText = 'Name'
       end
       item
         Position = 1
+        Text = 'Filename'
         Width = 150
-        WideText = 'Filename'
       end>
   end
 end

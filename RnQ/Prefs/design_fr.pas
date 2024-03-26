@@ -11,9 +11,12 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ActiveX,
-  StdCtrls, ExtCtrls, ComCtrls, RDGlobal,
+  StdCtrls, ExtCtrls, ComCtrls,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree, VirtualTrees.AncestorVCL,
+  VirtualTrees.DrawTree, VirtualTrees.Types,
+  RDGlobal,
   RnQPrefsInt, RnQPrefsTypes,
-  RnQSpin, VirtualTrees, Vcl.Mask;
+  RnQSpin, Vcl.Mask;
 
 type
   TdesignFr = class(TPrefFrame)

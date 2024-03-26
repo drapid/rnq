@@ -17,6 +17,10 @@ uses
   function IsTopMostWindow(Wnd: HWND): Boolean;
   function SetTopMostWindow(Wnd: HWND; Val: Boolean): Boolean;
 
+function MenuFadeEnabled: Boolean;
+function TooltipFadeEnabled: Boolean;
+function SelectionFadeEnabled: Boolean;
+
 implementation
 
 uses
@@ -146,6 +150,40 @@ begin
     SetWindowPos(Wnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE + SWP_NOSIZE + SWP_NOACTIVATE);
   end;
 end;
+
+function MenuFadeEnabled: Boolean;
+var
+  Animated: BOOL;
+  FadeIn: BOOL;
+begin
+  Animated := False;
+  SystemParametersInfo(SPI_GETMENUANIMATION, 0, @Animated, 0);
+  FadeIn := False;
+  SystemParametersInfo(SPI_GETMENUFADE, 0, @FadeIn, 0);
+  Result := Animated and FadeIn;
+end;
+
+function TooltipFadeEnabled: Boolean;
+var
+  Animated: BOOL;
+  FadeInOut: BOOL;
+begin
+  Animated := False;
+  SystemParametersInfo(SPI_GETTOOLTIPANIMATION, 0, @Animated, 0);
+  FadeInOut := False;
+  SystemParametersInfo(SPI_GETTOOLTIPFADE, 0, @FadeInOut, 0);
+  Result := Animated and FadeInOut;
+end;
+
+function SelectionFadeEnabled: Boolean;
+var
+  FadeOut: BOOL;
+begin
+  FadeOut := False;
+  SystemParametersInfo(SPI_GETSELECTIONFADE, 0, @FadeOut, 0);
+  Result := FadeOut;
+end;
+
 
 
 (*

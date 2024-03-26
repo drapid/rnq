@@ -10,10 +10,12 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  ExtCtrls, StdCtrls, ComCtrls, RnQButtons, RnQSpin,
+  ExtCtrls, StdCtrls, ComCtrls,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree, VirtualTrees.AncestorVCL,
+  VirtualTrees.DrawTree, VirtualTrees.Types,
+  RnQButtons, RnQSpin,
   RnQProtocol, RDGlobal,
-  RnQPrefsInt, RnQPrefsTypes,
-  VirtualTrees;
+  RnQPrefsInt, RnQPrefsTypes;
 
 type
   TeventsFr = class(TPrefFrame)

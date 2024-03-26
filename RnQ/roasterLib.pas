@@ -9,7 +9,8 @@ unit roasterLib;
 interface
 
 uses
-  classes, windows, stdctrls, graphics, VirtualTrees,
+  classes, windows, stdctrls, graphics,
+  VirtualTrees.Types, VirtualTrees.BaseTree,
   chatDlg, RDGlobal, RnQPics,
   ThemesLib, RnQProtocol;
 

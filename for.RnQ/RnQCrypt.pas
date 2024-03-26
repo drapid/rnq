@@ -83,6 +83,7 @@ uses
   mormot.core.os,
   mormot.crypt.ecc,
   mormot.core.json,
+  mormot.core.text,
     {$ELSE not SynCrypto}
      {$IFDEF USE_WE_LIBS}
        //use Wolfgang Ehrhardt's}
@@ -500,14 +501,14 @@ begin
     md5.Update(Text[1], length(Text));
   md5.Final(MD5Digest);
   SetLength(s, length(MD5Digest));
-  ansiStrings.StrPLCopy(PAnsiChar(s), PAnsiChar(@MD5Digest), length(MD5Digest));
+  {$IFNDEF FPC}SysUtils.{$ENDIF ~FPC}StrPLCopy(PAnsiChar(s), PAnsiChar(@MD5Digest), length(MD5Digest));
   md5.Init;
   md5.Update(opad[1], length(opad));
   if Length(s) > 0 then
     md5.Update(s[1], length(s));
   md5.Final(MD5Digest);
   SetLength(Result, length(MD5Digest));
-  ansiStrings.StrPLCopy(PAnsiChar(Result), PAnsiChar(@MD5Digest), length(MD5Digest));
+  {$IFNDEF FPC}SysUtils.{$ENDIF ~FPC}StrPLCopy(PAnsiChar(Result), PAnsiChar(@MD5Digest), length(MD5Digest));
  {$ELSE !USE_SYMCRYPTO}
   MD5Init(MD5Context);
   MD5Update(MD5Context, @ipad[1], length(ipad));
@@ -560,7 +561,7 @@ begin
      {$ENDIF USE_WE_LIBS}
  {$ENDIF USE_SYMCRYPTO}
   SetLength(Result, length(SHA1Digest));
-  ansiStrings.StrPLCopy(PAnsiChar(Result), PAnsiChar(@SHA1Digest), length(SHA1Digest));
+  {$IFNDEF FPC}SysUtils.{$ENDIF ~FPC}StrPLCopy(PAnsiChar(Result), PAnsiChar(@SHA1Digest), length(SHA1Digest));
 end;
 {
 function HMAC_SHA1(Text, Key: RawByteString): RawByteString;
@@ -685,7 +686,7 @@ begin
           i := FileRead(F, pointer(buf[1])^, sizeof(buf));
           Inc(fPos, i);
           md5.Update(buf[1], i);
-          if not( Assigned(progFunc) and progFunc((fPos / fSize.V))) then
+          if Assigned(progFunc) and not( progFunc((fPos / fSize.V))) then
             exit;
         until i < sizeof(buf);
    finally
@@ -693,7 +694,7 @@ begin
     md5.Final(digest);
   end;
   SetLength(Result, length(digest));
-  ansiStrings.StrPLCopy(PAnsiChar(Result), PAnsiChar(@digest), length(digest));
+  {$IFNDEF FPC}SysUtils.{$ENDIF ~FPC}StrPLCopy(PAnsiChar(Result), PAnsiChar(@digest), length(digest));
 end;
 
 function HashFile256(const aFileName: TFileName): THash256;
@@ -723,10 +724,10 @@ begin
     dec(n);
     while size > 0 do
     begin
-      read := FileRead(F, pointer(temp)^, tempsize);
+      read := FileRead(F, temp[1], tempsize);
       if read <= 0 then
         exit;
-      hasher.Update(pointer(temp), read);
+      hasher.Update(@temp[1], read);
       dec(size, read);
     end;
     hasher.Final(rr.Lo);
@@ -743,7 +744,7 @@ var
   F: THandle;
   size, tempsize: Int64;
   n, read: integer;
-  rr: THash512Rec;
+  //rr: THash512Rec;
 begin
   FillZero(result.b);
   if aFileName = '' then
@@ -798,7 +799,7 @@ begin
     //    MD5updateBuffer(context, @buf, i);
         if i > 0 then
           MD5Update(context, @buf, i);
-        if not progFunc(0.0+pos / size) then
+        if Assigned(progFunc) and not progFunc(0.0+pos / size) then
           exit;
       until i < sizeof(buf);
    finally
@@ -835,7 +836,7 @@ begin
     //    MD5updateBuffer(context, @buf, i);
         if i > 0 then
           md5.Update(buf, i);
-        if not progFunc(0.0+pos / size) then
+        if Assigned(progFunc) and not progFunc(0.0+pos / size) then
           exit;
       until i < sizeof(buf);
    finally
@@ -928,8 +929,8 @@ begin
 end;
 
 function EccCommandVerifyFile(fileSha256: THash256; const sign64: RawByteString; const AuthPubKey: RawByteString): TEccValidity;
-const
-  AuthBase64: String = '';
+//const
+  //AuthBase64: String = '';
 var
   auth: TEccCertificate;
   cert: TEccSignatureCertified;

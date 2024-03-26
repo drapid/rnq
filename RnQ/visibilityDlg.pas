@@ -10,8 +10,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree, VirtualTrees.AncestorVCL,
+  VirtualTrees.DrawTree, VirtualTrees.Types,
   RnQProtocol,
-  StdCtrls, Menus, RnQButtons, VirtualTrees;
+  StdCtrls, Menus, RnQButtons;
 
 type
   TvisibilityFrm = class(TForm)

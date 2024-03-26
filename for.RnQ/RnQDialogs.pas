@@ -11,10 +11,14 @@ unit RnQDialogs;
 interface
 {$IFDEF usesVCL}
  uses
-   Windows, Forms, StdCtrls, Graphics, Classes, Consts, Math, ExtCtrls, CommDlg,
-   UITypes, RDGlobal;
+   Windows, Forms, StdCtrls, Graphics, Classes,
+   {$IFNDEF FPC}
+   Consts,
+   {$ENDIF ~FPC}
+   Math, ExtCtrls,
+   System.UITypes, RDGlobal;
 {$ELSE}
- uses Windows;
+ uses Windows, Winapi.CommDlg;
 {$ENDIF}
 
 var
@@ -80,6 +84,7 @@ resourcestring
  function OpenDirDialog(ParentHandle: THandle; Title: String; var DirName: String): boolean;
  function ChooseFontDlg(ParentHandle: THandle; Title: String; var Font: TFont): boolean;
 
+{$IFDEF usesVCL}
 var
   Captions: array [TMsgDlgType] of Pointer = (
     @SMsgDlgWarning,
@@ -89,15 +94,17 @@ var
     @SMsgDlgBuzz,
     nil
   );
+{$ENDIF usesVCL}
 
 
 
 implementation
 uses
   ShlObj,
+    Messages, CommCtrl, ActiveX,
 //   ShellAPI, ShlObj,
   {$IFDEF usesVCL}
-   Controls,
+   Controls, CommDlg,
  {$IFDEF RNQ}
    RnQLangs,
  {$ENDIF RNQ}
@@ -173,7 +180,11 @@ begin
        i := GetCurrentDirectory(length(szDir), szDir);
        if Multi then
          ofn.Flags := ofn.Flags or OFN_ALLOWMULTISELECT or OFN_EXPLORER or OFN_LONGNAMES;
+{$IFDEF FPC}
+       if GetOpenFileName(@ofn) then
+{$ELSE ~FPC}
        if GetOpenFileName(ofn) then
+{$ENDIF FPC}
        begin
          Result := True;
          if Multi then
@@ -208,7 +219,11 @@ begin
      i := -1;
      try
        i := GetCurrentDirectory(length(szDir), szDir);
-       if GetSaveFileName(ofn) then
+{$IFDEF FPC}
+       if GetOpenFileName(@ofn) then
+{$ELSE ~FPC}
+       if GetOpenFileName(ofn) then
+{$ENDIF FPC}
        begin
          Result := True;
          FileNames := StrPas(szFile);
@@ -485,14 +500,28 @@ var
   LPPI: Integer;
 begin
   inherited CreateNew(AOwner, Dummy);
+  {$IFDEF FPC}
+  Font.Assign(Screen.SystemFont);
+  {$ELSE ~FPC}
   Font.Assign(Screen.MessageFont);
+  {$ENDIF ~FPC}
   LPPI := Screen.PixelsPerInch;
   if Screen.ActiveForm <> nil then
+  {$IFDEF FPC}
+    LPPI := Screen.ActiveForm.PixelsPerInch
+  {$ELSE FPC}
     LPPI := Screen.ActiveForm.CurrentPPI
+  {$ENDIF FPC}
   else
     if Application.MainForm <> nil then
+    {$IFDEF FPC}
+      LPPI := Application.MainForm.PixelsPerInch;
+    {$ELSE FPC}
       LPPI := Application.MainForm.CurrentPPI;
+    {$ENDIF FPC}
+  {$IFNDEF FPC}
   ScaleForPPI(LPPI);
+  {$ENDIF ~FPC}
 end;
 
 procedure TMessageForm.HelpButtonClick(Sender: TObject);
@@ -545,6 +574,7 @@ var
   I: integer;
 begin
   DividerLine := StringOfChar('-', 27) + sLineBreak;
+  ButtonCaptions := '';
   for I := 0 to ComponentCount - 1 do
     if Components[I] is TDialogButton then
       ButtonCaptions := ButtonCaptions + TDialogButton(Components[I]).Caption +
@@ -603,10 +633,16 @@ begin
   Result := TMessageForm.CreateNew(Application);
   with Result do
   begin
+    {$IFDEF FPC}
+    Font.Assign(Screen.SystemFont);
+    FormPPI := PixelsPerInch;
+    IconSize := ScaleFormTo96(32);
+    {$ELSE FPC}
     Font.Assign(Screen.MessageFont);
     FormPPI := CurrentPPI;
-    Font.Height := Muldiv(Font.Height, FormPPI, Screen.PixelsPerInch);
     IconSize := ScaleValue(32);
+    {$ENDIF FPC}
+    Font.Height := Muldiv(Font.Height, FormPPI, Screen.PixelsPerInch);
     BiDiMode := Application.BiDiMode;
     BorderStyle := bsDialog;
     Canvas.Font := Font;
@@ -634,8 +670,11 @@ begin
           TextRect := Rect(0,0,0,0);
           Windows.DrawText( canvas.handle,
             PChar(LoadResString(ButtonCaptions[B])), -1,
-            TextRect, DT_CALCRECT or DT_LEFT or DT_SINGLELINE or
-            DrawTextBiDiModeFlagsReadingOnly);
+            TextRect, DT_CALCRECT or DT_LEFT or DT_SINGLELINE
+  {$IFNDEF FPC}
+            or DrawTextBiDiModeFlagsReadingOnly
+  {$ENDIF ~FPC}
+            );
           with TextRect do ButtonWidths[B] := Right - Left + 8;
         end;
         if ButtonWidths[B] > ButtonWidth then
@@ -646,8 +685,11 @@ begin
     ButtonSpacing := MulDiv(mcButtonSpacing, DialogUnits.X, 4);
     SetRect(TextRect, 0, 0, Screen.Width div 2, 0);
     DrawText(Canvas.Handle, PChar(Msg), Length(Msg)+1, TextRect,
-      DT_EXPANDTABS or DT_CALCRECT or DT_WORDBREAK or
-      DrawTextBiDiModeFlagsReadingOnly);
+      DT_EXPANDTABS or DT_CALCRECT or DT_WORDBREAK
+  {$IFNDEF FPC}
+      or DrawTextBiDiModeFlagsReadingOnly
+  {$ENDIF ~FPC}
+      );
     IconID := IconIDs[DlgType];
     IconTextWidth := TextRect.Right;
     IconTextHeight := TextRect.Bottom;
@@ -690,6 +732,7 @@ begin
       begin
         Name := 'Image';
         Parent := Result;
+ {$IFNDEF FPC}
         if TOSVersion.Check(6, 2) then
         begin
           Picture.WICImage.LoadFromResourceName(HInstance, GetMsgIconResourceName);
@@ -699,6 +742,7 @@ begin
           Proportional := True;
         end
         else
+  {$ENDIF ~FPC}
         begin
           Picture.Icon.Handle := LoadIcon(0, IconID);
           AutoSize := True;
@@ -795,38 +839,38 @@ end;
 function ChooseFontDlg(ParentHandle: THandle; Title: String; var Font: TFont): boolean;
 var
   vCF: TChooseFont;
-  ff: LOGFONT;
+  ff: Windows.LOGFONT;
 begin
-  ff.lfCharSet := Font.Charset;
 //  ff.lfHeight  := Font.Height;
+  ff.lfCharSet := Font.Charset;
   StrPCopy(ff.lfFaceName, Font.Name);
+  ff.lfHeight := Font.Height;
+  {$IFDEF DELPHI9_UP}
+   ff.lfOrientation := Font.Orientation;
+  {$ENDIF DELPHI9_UP}
   ff.lfPitchAndFamily := DEFAULT_PITCH;// or FF_SWISS;
 
-  if fsBold in font.Style then
+  if TFontStyle.fsBold in font.Style then
    begin
    ff.lfWeight := FW_BOLD
    end
   else
 //   ff.lfWeight := FW_NORMAL;
     ff.lfWeight := FW_REGULAR;
-  ff.lfItalic := -byte(fsItalic in font.Style);
-  ff.lfUnderline := -byte(fsUnderline in font.Style);
+  ff.lfItalic := -byte(TFontStyle.fsItalic in font.Style);
+  ff.lfUnderline := -byte(TFontStyle.fsUnderline in font.Style);
   ff.lfEscapement := 0;
-  ff.lfStrikeOut := -byte(fsStrikeOut in font.Style);
+  ff.lfStrikeOut := -byte(TFontStyle.fsStrikeOut in font.Style);
   ff.lfQuality := DEFAULT_QUALITY;
-  ff.lfHeight := Font.Height;
-  {$IFDEF DELPHI9_UP}
-   ff.lfOrientation := Font.Orientation;
-  {$ENDIF DELPHI9_UP}
 // ff.lfItalic := Font.
   With vcf do begin
       lStructSize := SizeOf(TChooseFont);
       hWndOwner := ParentHandle;
 //      hInstance := CF_ENABLETEMPLATE;
       nFontType := SCREEN_FONTTYPE; //SIMULATED_FONTTYPE;
-      if fsBold in font.Style then
+      if TFontStyle.fsBold in font.Style then
         nFontType := nFontType or BOLD_FONTTYPE;
-      if fsItalic in font.Style then
+      if TFontStyle.fsItalic in font.Style then
         nFontType := nFontType or ITALIC_FONTTYPE;
 
       rgbColors := ColorToRGB(Font.Color);
@@ -836,7 +880,11 @@ begin
       Flags := CF_SCREENFONTS or CF_EFFECTS {or CF_NOSTYLESEL }or CF_INITTOLOGFONTSTRUCT;
   end;
   try
+{$IFDEF FPC}
+    Result := ChooseFont(@vCF);
+{$ELSE ~FPC}
     Result := ChooseFont(vCF);
+{$ENDIF FPC}
    except
     Result := False;
    end;

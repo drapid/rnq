@@ -10,8 +10,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, ExtCtrls, RnQButtons, VirtualTrees,
-  RnQProtocol;
+  StdCtrls, ExtCtrls,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree, VirtualTrees.AncestorVCL,
+  VirtualTrees.DrawTree, VirtualTrees.Types,
+  RnQButtons,
+  RnQProtocol, Vcl.Mask;
 
 type
   TAllHistSrchForm = class(TForm)

@@ -11,7 +11,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  ExtCtrls, RnQButtons, RnQDialogs, VirtualTrees, StdCtrls,
+  ExtCtrls, StdCtrls,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree, VirtualTrees.AncestorVCL,
+  VirtualTrees.DrawTree, VirtualTrees.Types,
+  RnQButtons, RnQDialogs,
   RnQProtocol, RnQConst, globalLib;
 
 type

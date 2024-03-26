@@ -11,7 +11,9 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   StdCtrls, ExtCtrls, Menus, ActiveX, ActnList,
-  VirtualTrees, RDGlobal, RQMenuItem, RnQButtons, RnQDialogs, RnQtrayLib,
+  VirtualTrees.BaseAncestorVCL,
+  VirtualTrees.BaseTree, VirtualTrees.AncestorVCL, VirtualTrees.DrawTree,
+  VirtualTrees.Types, RDGlobal, RQMenuItem, RnQButtons, RnQDialogs, RnQtrayLib,
   pluginLib, RnQProtocol, System.Actions;
 
 const

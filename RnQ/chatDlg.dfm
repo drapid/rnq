@@ -2,8 +2,8 @@ object chatFrm: TchatFrm
   Left = 180
   Top = 204
   Caption = 'Chat window'
-  ClientHeight = 347
-  ClientWidth = 620
+  ClientHeight = 329
+  ClientWidth = 608
   Color = clBtnFace
   ParentFont = True
   GlassFrame.Bottom = 55
@@ -24,13 +24,13 @@ object chatFrm: TchatFrm
   OnResize = FormResize
   OnShow = FormShow
   DesignSize = (
-    620
-    347)
-  TextHeight = 30
+    608
+    329)
+  TextHeight = 20
   object fp: TBevel
     Left = 0
     Top = 0
-    Width = 620
+    Width = 608
     Height = 37
     Align = alTop
     Shape = bsBottomLine
@@ -38,9 +38,9 @@ object chatFrm: TchatFrm
     ExplicitWidth = 509
   end
   object CLSplitter: TSplitter
-    Left = 615
+    Left = 603
     Top = 37
-    Height = 255
+    Height = 237
     Align = alRight
     ExplicitLeft = 488
     ExplicitTop = 64
@@ -48,14 +48,16 @@ object chatFrm: TchatFrm
   end
   object panel: TPanel
     Left = 0
-    Top = 292
-    Width = 620
+    Top = 274
+    Width = 608
     Height = 33
     Align = alBottom
     BevelOuter = bvNone
     FullRepaint = False
     ParentBackground = False
     TabOrder = 6
+    ExplicitTop = 292
+    ExplicitWidth = 620
     object sendBtn: TRnQToolButton
       Left = 9
       Top = 8
@@ -321,8 +323,8 @@ object chatFrm: TchatFrm
   end
   object sbar: TStatusBar
     Left = 0
-    Top = 325
-    Width = 620
+    Top = 307
+    Width = 608
     Height = 22
     Panels = <
       item
@@ -348,12 +350,14 @@ object chatFrm: TchatFrm
     OnDblClick = sbarDblClick
     OnMouseUp = sbarMouseUp
     OnDrawPanel = sbarDrawPanel
+    ExplicitTop = 325
+    ExplicitWidth = 620
   end
   object pagectrl: TPageControl
     Left = 0
     Top = 37
-    Width = 615
-    Height = 255
+    Width = 603
+    Height = 237
     Align = alClient
     HotTrack = True
     MultiLine = True
@@ -368,9 +372,11 @@ object chatFrm: TchatFrm
     OnMouseLeave = pagectrlMouseLeave
     OnMouseMove = pagectrlMouseMove
     OnMouseUp = pagectrl00MouseUp
+    ExplicitWidth = 615
+    ExplicitHeight = 255
   end
   object caseChk: TCheckBox
-    Left = 427
+    Left = 403
     Top = 10
     Width = 97
     Height = 17
@@ -378,9 +384,10 @@ object chatFrm: TchatFrm
     Caption = 'Case sensitive'
     TabOrder = 4
     Visible = False
+    ExplicitLeft = 427
   end
   object reChk: TCheckBox
-    Left = 535
+    Left = 511
     Top = 10
     Width = 76
     Height = 17
@@ -388,12 +395,13 @@ object chatFrm: TchatFrm
     Caption = 'Reg.Exp.'
     TabOrder = 5
     Visible = False
+    ExplicitLeft = 535
   end
   object directionGrp: TComboBox
-    Left = 302
+    Left = 278
     Top = 8
     Width = 119
-    Height = 38
+    Height = 28
     AutoDropDown = True
     Style = csDropDownList
     Anchors = [akTop, akRight]
@@ -410,13 +418,14 @@ object chatFrm: TchatFrm
   object w2sBox: TEdit
     Left = 96
     Top = 8
-    Width = 200
+    Width = 176
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     Constraints.MinWidth = 30
     TabOrder = 2
     Visible = False
     OnKeyDown = w2sBoxKeyDown
+    ExplicitWidth = 200
   end
   object SBSearch: TRnQButton
     Left = 8
@@ -430,10 +439,10 @@ object chatFrm: TchatFrm
     OnClick = SBSearchClick
   end
   object CLPanel: TPanel
-    Left = 618
+    Left = 606
     Top = 37
     Width = 2
-    Height = 255
+    Height = 237
     Align = alRight
     DockSite = True
     ParentColor = True
@@ -441,5 +450,7 @@ object chatFrm: TchatFrm
     OnDockDrop = CLPanelDockDrop
     OnDockOver = CLPanelDockOver
     OnUnDock = CLPanelUnDock
+    ExplicitLeft = 618
+    ExplicitHeight = 255
   end
 end

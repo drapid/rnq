@@ -2,40 +2,41 @@ object RnQdbFrm: TRnQdbFrm
   Left = 418
   Top = 137
   Caption = 'Contacts database'
-  ClientHeight = 446
-  ClientWidth = 290
+  ClientHeight = 428
+  ClientWidth = 278
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object panel: TPanel
     Left = 0
-    Top = 319
-    Width = 290
+    Top = 301
+    Width = 278
     Height = 127
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitTop = 319
+    ExplicitWidth = 290
     DesignSize = (
-      290
+      278
       127)
     object GroupBox1: TGroupBox
       Left = 8
       Top = 8
-      Width = 276
+      Width = 252
       Height = 52
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Purge contacts'
       TabOrder = 1
+      ExplicitWidth = 276
       object nilChk: TRadioButton
         Left = 8
         Top = 24
@@ -50,11 +51,12 @@ object RnQdbFrm: TRnQdbFrm
     object removenilhistoriesChk: TCheckBox
       Left = 8
       Top = 70
-      Width = 275
+      Width = 251
       Height = 17
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Remove histories for unexistant contacts'
       TabOrder = 0
+      ExplicitWidth = 275
     end
     object purgeBtn: TRnQButton
       Left = 8
@@ -62,6 +64,7 @@ object RnQdbFrm: TRnQdbFrm
       Width = 99
       Height = 25
       Caption = '&Purge'
+      ImageName = ''
       TabOrder = 2
       OnClick = purgeBtnClick
     end
@@ -71,6 +74,7 @@ object RnQdbFrm: TRnQdbFrm
       Width = 100
       Height = 25
       Caption = 'View report'
+      ImageName = ''
       TabOrder = 3
       Visible = False
       OnClick = reportBtnClick
@@ -78,13 +82,15 @@ object RnQdbFrm: TRnQdbFrm
   end
   object barPnl: TPanel
     Left = 0
-    Top = 297
-    Width = 290
+    Top = 279
+    Width = 278
     Height = 22
     Align = alBottom
     AutoSize = True
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitTop = 297
+    ExplicitWidth = 290
     object resizeBtn: TRnQSpeedButton
       Left = 0
       Top = 0
@@ -111,17 +117,12 @@ object RnQdbFrm: TRnQdbFrm
   object dbTree: TVirtualDrawTree
     Left = 0
     Top = 0
-    Width = 290
-    Height = 297
+    Width = 278
+    Height = 279
     Align = alClient
     Colors.UnfocusedColor = clMedGray
     Header.AutoSizeIndex = 1
     Header.DefaultHeight = 17
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
     Header.Height = 17
     Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
     Header.PopupMenu = VTHPMenu
@@ -132,45 +133,49 @@ object RnQdbFrm: TRnQdbFrm
     OnCompareNodes = dbTreeCompareNodes
     OnDrawNode = dbTreeDrawNode
     OnHeaderClick = dbTreeHeaderClick
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
+    ExplicitWidth = 290
+    ExplicitHeight = 297
     Columns = <
       item
         Position = 0
+        Text = 'UIN'
         Width = 90
-        WideText = 'UIN'
       end
       item
         Position = 1
+        Text = 'Nickname'
         Width = 159
-        WideText = 'Nickname'
       end
       item
         MinWidth = 20
         Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark]
         Position = 2
-        WideText = 'Important'
+        Text = 'Important'
       end
       item
         MinWidth = 100
         Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark]
         Position = 3
+        Text = 'Avatar MD5'
         Width = 100
-        WideText = 'Avatar MD5'
       end
       item
         Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark]
         Position = 4
-        WideText = 'Birthday'
+        Text = 'Birthday'
       end
       item
         Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark]
         Position = 5
-        WideText = 'Days to Bd'
+        Text = 'Days to Bd'
       end
       item
         Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark]
         Position = 6
+        Text = 'Last time seen online'
         Width = 130
-        WideText = 'Last time seen online'
       end>
   end
   object VTHPMenu: TVTHeaderPopupMenu

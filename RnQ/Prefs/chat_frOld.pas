@@ -10,9 +10,12 @@ interface
 
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, utilLib, RDGlobal,
+  StdCtrls, ComCtrls,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree, VirtualTrees.AncestorVCL,
+  VirtualTrees.DrawTree, VirtualTrees.Types,
+  utilLib, RDGlobal,
   RnQPrefsInt, RnQPrefsTypes,
-  RnQSpin, ComCtrls, VirtualTrees, RnQButtons;
+  RnQSpin, RnQButtons;
 
 type
   TchatFr = class(TPrefFrame)

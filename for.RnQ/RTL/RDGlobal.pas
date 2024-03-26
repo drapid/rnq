@@ -67,7 +67,9 @@ type
 
 type
  {$IFNDEF UNICODE}
+  {$IFNDEF FPC}
   RawByteString = AnsiString;
+  {$ENDIF ~FPC}
  {$ENDIF UNICODE}
   TPicName = AnsiString;
 //  TPicName = String;

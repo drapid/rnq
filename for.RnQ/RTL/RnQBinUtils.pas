@@ -6,6 +6,9 @@ unit RnQBinUtils;
 {$I ..\ForRnQConfig.inc}
 {$I ..\NoRTTI.inc}
 
+{$IFDEF FPC}
+  {$DEFINE UNICODE}
+{$ENDIF FPC}
 { $INLINE ON}
 
 interface

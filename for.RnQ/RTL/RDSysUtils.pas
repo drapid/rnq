@@ -10,7 +10,7 @@ interface
 
 
 uses
-  windows, sysutils, IOUtils,
+  windows, sysutils, //IOUtils,
   {$IFDEF FMX}
   FMX.Types,
   FMX.Forms,
@@ -86,12 +86,39 @@ type
   function resolveLnk(const fn: String): String;
   procedure ResolveLinkInfo(LinkPath: string; Handle: THandle; var ProgramPath, ProgramWorkPath, ProgramInfo, ProgramParams: string);
 
+{$IFDEF FPC}
+// // Taskbar notification definitions
+type
+  QUERY_USER_NOTIFICATION_STATE = Integer;
+  {$EXTERNALSYM QUERY_USER_NOTIFICATION_STATE}
+const
+  QUNS_NOT_PRESENT             = 1;  // The user is not present.  Heuristic check for modes like: screen saver, locked machine, non-active FUS session
+  {$EXTERNALSYM QUNS_NOT_PRESENT}
+  QUNS_BUSY                    = 2;  // The user is busy.  Heuristic check for modes like: full-screen app
+  {$EXTERNALSYM QUNS_BUSY}
+  QUNS_RUNNING_D3D_FULL_SCREEN = 3;  // full-screen (exlusive-mode) D3D app
+  {$EXTERNALSYM QUNS_RUNNING_D3D_FULL_SCREEN}
+  QUNS_PRESENTATION_MODE       = 4;  // Windows presentation mode (laptop feature) is turned on
+  {$EXTERNALSYM QUNS_PRESENTATION_MODE}
+  QUNS_ACCEPTS_NOTIFICATIONS   = 5;  // notifications can be freely sent
+  {$EXTERNALSYM QUNS_ACCEPTS_NOTIFICATIONS}
+  QUNS_QUIET_TIME              = 6;   // We are in OOBE quiet period
+  {$EXTERNALSYM QUNS_QUIET_TIME}
+
+function SHQueryUserNotificationState(
+  var pquns: QUERY_USER_NOTIFICATION_STATE): HResult; stdcall;
+{$ENDIF FPC}
+
 implementation
 
 uses
   wininet, Registry, shellapi, multimon, ActiveX,
   ComObj, ShlObj, StrUtils,
   RDUtils;
+
+{$IFDEF FPC}
+function SHQueryUserNotificationState; external shell32 name 'SHQueryUserNotificationState';
+{$ENDIF FPC}
 
 function connectionAvailable: boolean;
 var
@@ -571,7 +598,7 @@ with frm do
      else
       begin
         if frm.FormStyle = TFormStyle.StayOnTop then
-          frm.FormStyle = TFormStyle.fsNormal
+          frm.FormStyle := TFormStyle.Normal
       end;
   {$ELSE ~FMX}
     i := getWindowLong(handle, GWL_EXSTYLE);
@@ -862,10 +889,17 @@ begin
   abd.cbsize := sizeOf(abd);
   abd.hWnd := hnd;
   abd.uCallbackMessage := pCallbackMessage;
+  {$IFDEF FPC}
+  if pOn then
+    SHAppBarMessage(ABM_NEW, @abd)
+  else
+    SHAppBarMessage(ABM_REMOVE, @abd);
+  {$ELSE ~FPC}
   if pOn then
     SHAppBarMessage(ABM_NEW, abd)
   else
     SHAppBarMessage(ABM_REMOVE, abd);
+  {$ENDIF FPC}
 end; // dockSet
 
   {$IFNDEF FMX}
@@ -900,7 +934,11 @@ begin
     abd.uedge := ABE_LEFT
    else
     abd.uedge := ABE_RIGHT;
+  {$IFDEF FPC}
+  SHAppBarMessage(ABM_SETPOS, @abd);
+  {$ELSE ~FPC}
   SHAppBarMessage(ABM_SETPOS, abd);
+  {$ENDIF FPC}
 end; // setAppBarSize
   {$ENDIF ~FMX}
 

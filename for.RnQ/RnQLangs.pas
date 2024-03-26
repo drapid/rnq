@@ -43,10 +43,10 @@ type
   TMethodHook = class
   private
     aOriginal: packed array[ 0..4 ] of byte;
-    pOldProc, pNewProc: pointer;
+    pOldProc, pNewProc: Pointer;
     pPosition: PByteArray;
   public
-    constructor Create( pOldProc, pNewProc: pointer );
+    constructor Create( pOldProc, pNewProc: Pointer );
     destructor Destroy; override;
   end;
 
@@ -61,8 +61,10 @@ type
    public
     class constructor  CreateLangs;
     class destructor DestroyLangs;
-    class procedure RegisterProcedures(aOriginalProcedure, aNewProcedure: pointer);
+    class procedure RegisterProcedures(aOriginalProcedure, aNewProcedure: Pointer);
+  {$IFNDEF FPC}
     class function LoadResString(ResStringRec: PResStringRec): String;
+  {$ENDIF ~FPC}
    private
 //    LangPath: TThemePath;
     LangsStr: TLangList;
@@ -157,9 +159,11 @@ var
 }
 
 {Replacement for System.LoadResString}
+{$IFNDEF FPC}
 function NewLoadResString(ResStringRec: PResStringRec): String;
 begin
-  if ResStringRec = nil then Exit;
+  if ResStringRec = nil then
+    Exit;
   if ResStringRec.Identifier >= 64 * 1024 then
   begin
     Result := PChar(ResStringRec.Identifier);
@@ -169,6 +173,7 @@ begin
     Result := TRnQLang.LoadResString(ResStringRec);
   end;
 end;
+{$ENDIF ~FPC}
 
 
 
@@ -216,7 +221,9 @@ begin
   {$ELSE USE_MORMOT_COLLECTIONS}
   RecStrNameIdMap := Collections.NewKeyValue<Integer, String>;
   {$ENDIF USE_MORMOT_COLLECTIONS}
+ {$IFNDEF FPC}
   RegisterProcedures(@System.LoadResString, @NewLoadResString);
+ {$ENDIF ~FPC}
 end;
 
 class destructor TRnQLang.DestroyLangs;
@@ -854,6 +861,7 @@ begin
     end;
 end;
 
+{$IFNDEF FPC}
 class function TRnQLang.LoadResString(ResStringRec: PResStringRec): String;
 var
   Buffer: array [0..4095] of char;
@@ -883,6 +891,7 @@ begin
     end;
   end;
 end;
+{$ENDIF ~FPC}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -1095,7 +1104,9 @@ procedure ClearLangList;
   procedure Clear1LangList(var tl: aLangInfo);
   var
    t: ToLangInfo;
-//   i: Integer;
+  {$IFNDEF DELPHI9_UP}
+   i: Integer;
+  {$ENDIF ~DELPHI9_UP}
   begin
  {$IFDEF DELPHI9_UP}
    for t in tl do begin

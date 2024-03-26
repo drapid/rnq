@@ -13,6 +13,12 @@ uses
   graphics, ShellApi, Types;
 
 const
+ {$IFDEF FPC}
+ NIF_SHOWTIP = $00000080;
+ NIIF_USER       = $00000004;
+ NIIF_LARGE_ICON = $00000020;
+ NIIF_RESPECT_QUIET_TIME = $00000080;
+ {$ENDIF FPC}
   WM_TRAY = WM_USER+1;
   cTRAY_uID = 100;
   flags_v2 = NIF_MESSAGE or NIF_ICON or NIF_TIP;
@@ -105,6 +111,9 @@ type
       trayIconGuid: TGUID;
       procedure wndProc(var Message: TMessage);
       procedure notify(ev: TtrayEvent);
+{$IFDEF FPC}
+      function getwnd: HWND;
+{$ENDIF FPC}
     public
       UsrData: pointer;  // user data
       onEvent: TTrayEventHandle; //procedure(sender: Tobject; ev: TtrayEvent) of object;
@@ -122,6 +131,7 @@ type
     function  balloon(msg: string; secondsTimeout: real=3; kind: TBalloonIconType=bitNONE; title: string=''):boolean;
  {$ENDIF Use_Baloons}
       procedure setIcon(icon: Ticon); overload;
+      procedure setIcon(bmp: TBitmap); overload;
       procedure setIcon(icon: HIcon); overload;
 {$IFDEF RNQ}
       procedure setIcon(const iName: TPicName); overload;
@@ -130,7 +140,7 @@ type
       procedure setGUID(const g: TGUID);
 //      procedure setIconFile(fn: String);
       procedure updateHandle(hndl: HWND);
-      property Hidden: boolean read fHidden;
+      property  Hidden: boolean read fHidden;
     end; // TtrayIcon
 
 {$IFDEF RNQ}
@@ -177,13 +187,24 @@ uses
   RnQStrings, RnQLangs,
   RQUtil, RQThemes, RnQGlobal,
 {$ENDIF RNQ}
+  RnQGraphics32,
+ {$IFDEF FPC}
+  LCLIntf, Controls,
+ {$ENDIF FPC}
   RDUtils
 //  dwTaskbarComponents, dwTaskbarList,
 //  fspTaskbarCommon, fspTaskbarApi,
   ;
 
 const
+  szClassName = 'TTrayIconClass';
+  szAppTitle = 'RD_tray';
+  //uIDTrayIcon = 25;
+
+const
      NIF_INFO = $00000010;
+var
+  msgTaskbarRestart: DWord = DWord(-1);
 
 {
 type
@@ -324,6 +345,87 @@ end;
 
 {$ENDIF RNQ}
 
+{$IFDEF FPC}
+function TrayWndProc(Handle: HWND; iMsg: UINT; WParam_: WPARAM; LParam_:LPARAM):LRESULT; stdcall;
+var
+  pt: TPoint;
+  vwsTrayIcon: TtrayIcon;
+begin
+  //if iMsg = WM_USER + uIDTrayIcon then
+  if iMsg = WM_TRAY then
+  begin
+    vwsTrayIcon := TtrayIcon(PtrUInt(LCLIntf.GetWindowLong(Handle, GWL_USERDATA)));
+    case LParam_ of
+      WM_RBUTTONUP:
+      begin
+        vwsTrayIcon.notify(TE_RCLICK);
+      end;
+      WM_LBUTTONUP:
+      begin
+        vwsTrayIcon.notify(TE_CLICK);
+      end;
+      WM_LBUTTONDBLCLK:
+        vwsTrayIcon.notify(TE_2CLICK);
+    end;
+
+    Result := 1;
+    Exit;
+  end
+  else
+  if iMsg = WM_CREATE then
+  begin
+      msgTaskbarRestart := RegisterWindowMessage('TaskbarCreated');
+    SetWindowLongPtrW(Handle, GWL_USERDATA, PtrInt(PCREATESTRUCT(LParam_)^.lpCreateParams));
+  end
+  else
+  if (iMsg = msgTaskbarRestart) then
+  begin
+    // add taskbar icon
+    vwsTrayIcon := TtrayIcon(PtrUInt(LCLIntf.GetWindowLong(Handle, GWL_USERDATA)));
+    if Assigned(vwsTrayIcon) then
+      //TWin32WSCustomTrayIcon.AddIcon(vwsTrayIcon);
+      vwsTrayIcon.update;
+  end;
+
+  Result := DefWindowProc(Handle, iMsg, WParam_, LParam_);
+end;
+
+function TtrayIcon.getwnd: HWND;
+var
+  Window: Windows.TWNDClassEx;
+begin
+  if not GetClassInfoEx(hInstance, szClassName, @Window) then
+  begin
+    Window := Default(Windows.TWNDClassEx);
+    Window.cbSize := SizeOf(TWndClassEx);
+    Window.style := CS_OWNDC;
+    Window.lpfnWndProc := @TrayWndProc;
+    Window.cbClsExtra := 0;
+    Window.cbWndExtra := 0;
+    Window.hInstance := hInstance;
+    Window.hCursor := Windows.LoadCursor(0, IDC_ARROW);
+    Window.hbrBackground := HBRUSH(GetStockObject(NULL_BRUSH));
+    Window.lpszMenuName := nil;
+    Window.lpszClassName := szClassName;
+    Windows.RegisterClassEx(Window);
+  end;
+
+  Result := CreateWindowEx(
+        0,            //* Ensure that there will be no button in the bar */
+        szClassName,        //* Name of the registered class */
+        szAppTitle,         //* Title of the window */
+        0,                  //* Style of the window */
+        0,                  //* x-position (at beginning) */
+        0,                  //* y-position (at beginning) */
+        CW_USEDEFAULT,      //* window width */
+        CW_USEDEFAULT,      //* window height */
+        0,                  //* handle to parent or owner window */
+        0,                  //* handle to menu */
+        hInstance,          //* handle to application instance */
+        Self);               //* pointer to window-creation data */
+end;
+{$ENDIF FPC}
+
 constructor TtrayIcon.create(hndl: HWND; pg: PGUID = NIL);
 //var
 //  FGUID: TGUID;
@@ -346,7 +448,11 @@ begin
      else
       cbSize := NOTIFYIconDataW_V2_SIZE;
 
+{$IFDEF FPC}
+   Wnd := getwnd;
+{$ELSE FPC}
    Wnd := classes.AllocateHWnd(wndproc);
+{$ENDIF FPC}
    AllocatedHWnd := Wnd <>0;
    if not AllocatedHWnd then
      Wnd := hndl;
@@ -367,8 +473,9 @@ begin
   end;
 // tbcmp := TRnQTaskbarComponent.Create(Application);
 
- setIcon(application.icon);
- setTip(application.title);
+  ico := NIL;
+  setIcon(application.icon);
+  setTip(application.title);
 
 {
 //        if fspTaskbarMainAppWnd = 0 then
@@ -381,7 +488,9 @@ end; // create
 
 destructor TtrayIcon.Destroy;
 begin
+ {$IFNDEF FPC}
   classes.DeallocateHWnd(data.wnd);
+ {$ENDIF ~FPC}
   if Assigned(ico) then
    ico.Free;
   ico := NIL;
@@ -407,7 +516,7 @@ begin
    end;
   hide;
   data.wnd := hndl;
-  Shell_NotifyIcon(NIM_ADD, @data);
+  Shell_NotifyIconW(NIM_ADD, @data);
 
  // Для балунов тоже нада бы...
 end;
@@ -428,8 +537,8 @@ begin
  tbcmp.SendUpdateMessage;}
 
  if shown and not hidden then
-  if not Shell_NotifyIcon(NIM_MODIFY, @data) then
-    Shell_NotifyIcon(NIM_ADD, @data);
+  if not Shell_NotifyIconW(NIM_MODIFY, @data) then
+    Shell_NotifyIconW(NIM_ADD, @data);
 
 {
  if Assigned(pTaskBarList) then
@@ -456,9 +565,23 @@ begin
   if ico = NIL then
     ico := TIcon.Create;
   ico.Handle := icon;
-  data.hIcon := icon;
+  data.hIcon := ico.Handle;
   if TrayIconDataVersion = 4 then
-    data.hBalloonIcon := Ico.Handle;
+    data.hBalloonIcon := data.hIcon;
+  update;
+end;
+
+procedure TtrayIcon.setIcon(bmp: TBitmap);
+begin
+
+  // ToDo Copy BMP to ICO
+  ico := bmp2ico3(bmp);
+  if ico = NIL then
+    ico := TIcon.Create;
+//  ico.Handle := icon;
+  data.hIcon := ico.Handle;
+  if TrayIconDataVersion = 4 then
+    data.hBalloonIcon := data.hIcon;
   update;
 end;
 
@@ -495,10 +618,13 @@ begin
 end; // setIconFile}
 
 procedure TtrayIcon.setTip(const s: String);
+var
+  ws: WideString;
 begin
 //  strPCopy(data.szTip, s);
   ZeroMemory(@data.szTip[0], 128);
-  strLCopy(data.szTip, PChar(s), Length(s));
+  ws := s;
+  strLCopy(data.szTip, PWideChar(ws), Length(ws));
   update;
 end; // setTip
 
@@ -524,21 +650,21 @@ procedure TtrayIcon.show;
 begin
   shown := true;
   fHidden := False;
-  Shell_NotifyIcon(NIM_ADD, @data)
+  Shell_NotifyIconW(NIM_ADD, @data)
 end; { show }
 
 procedure TtrayIcon.hide;
 begin
  fHidden := True;
- Shell_NotifyIcon(NIM_DELETE, @data)
+ Shell_NotifyIconW(NIM_DELETE, @data)
 end;
 
 function TtrayIcon.balloon(msg: string; secondsTimeout: real=3; kind: TBalloonIconType=bitNONE; title: string=''):boolean;
 begin
   data.dwInfoFlags := aBalloonIconTypes[kind];
 
-    StrLCopy(PWideChar(@data.szInfo[0]), PChar(msg), sizeOf(data.szInfo)-1);
-    StrLCopy(PWideChar(@data.szInfoTitle[0]), PChar(title), sizeOf(data.szInfoTitle)-1);
+    StrLCopy(PWideChar(@data.szInfo[0]), PWideChar(msg), sizeOf(data.szInfo)-1);
+    StrLCopy(PWideChar(@data.szInfoTitle[0]), PWideChar(title), sizeOf(data.szInfoTitle)-1);
 
   data.uVersion := round(secondsTimeout*1000);
   data.uFlags := data.uFlags or NIF_INFO;
@@ -576,14 +702,14 @@ begin
     Wnd := data.Wnd;
     uID := data.uID;
     uFlags := NIF_INFO;
-    StrLCopy(PWideChar(@szInfo[0]), PChar(BalloonText), 255);
+    StrLCopy(PWideChar(@szInfo[0]), PWideChar(BalloonText), 255);
 //    StrPCopy(szTip, BalloonText);
     uTimeout := 30000;
-    StrLCopy(PWideChar(@szInfoTitle[0]), PChar(BalloonTitle), 63);
+    StrLCopy(PWideChar(@szInfoTitle[0]), PWideChar(BalloonTitle), 63);
     dwInfoFlags := aBalloonIconTypes[BalloonIconType];
     guidItem := data.guidItem;
   end;
-  Shell_NotifyIcon(NIM_MODIFY, @NID_50);
+  Shell_NotifyIconW(NIM_MODIFY, @NID_50);
 end;
 
 procedure TtrayIcon.hideBalloon;
@@ -607,7 +733,7 @@ begin
 //    StrPCopy(PWideChar(@szInfoTitle[0]), '');
 //     := trayIcon.data.;
   end;
-  Shell_NotifyIcon(NIM_MODIFY, @NID_50);
+  Shell_NotifyIconW(NIM_MODIFY, @NID_50);
 end;
 
 procedure TTrayIcon.wndproc(var Message: TMessage);

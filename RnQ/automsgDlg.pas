@@ -10,7 +10,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  ExtCtrls, StdCtrls, RnQButtons, VirtualTrees;
+  ExtCtrls, StdCtrls,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree, VirtualTrees.AncestorVCL,
+  VirtualTrees.DrawTree, VirtualTrees.Types,
+  RnQButtons;
 
 type
   TautomsgFrm = class(TForm)

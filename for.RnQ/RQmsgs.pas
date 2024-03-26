@@ -10,9 +10,9 @@ interface
 
 uses
   Windows, Messages, SysUtils,
-  Classes, Graphics, Controls, Forms,
-  RDGlobal, RnQButtons, RQMenuItem,
-  VirtualTrees, ExtCtrls, StdCtrls;
+  Classes, Graphics, Controls, Forms, ExtCtrls, StdCtrls,
+  VirtualTrees.BaseTree, VirtualTrees.Types, VirtualTrees.DrawTree,
+  RnQButtons, RQMenuItem, RDGlobal;
 
 type
   TmsgsFrm = class(TForm)
@@ -127,7 +127,7 @@ begin
   with Pmsg(sender.getnodedata(PaintInfo.Node))^ do
   begin
     with theme.drawPic(PaintInfo.Canvas.Handle, r.left, r.top-GAP_Y,
-           IconNames[ kind ], isFirst) do
+           IconNames[ kind ], isFirst, GetParentCurrentDpi) do
 //    with theme.getPicSize(RQteDefault, IconNames[kind], 16) do
      begin
       s := datetimeToStr( time )+CRLF;
@@ -177,12 +177,7 @@ begin
     NodeHeight := 1;
     exit;
    end;
-//  if Tmsg(Pmsg(sender.getnodedata(node))^).text = '' then
-//   Exit;
   s := m.text;
-//  s := Pmsg(sender.getnodedata(node))^.text;
-//  l := Length(msgs)-index-1;
-//  s:=msgs[l].text;
   if s = '' then
     begin
      NodeHeight := 1;
@@ -385,34 +380,34 @@ var
   n: PVirtualNode;
   SetFirst: Boolean;
 begin
-      if msgList.FocusedNode = msgList.GetFirst then
-        SetFirst := True
-       else
-        SetFirst := False;
-      msgList.BeginUpdate;
-      n := msgList.AddChild(nil);
-      vmsg := msgList.GetNodeData(n);
-      vmsg.text := msg;
-      vmsg.kind := kind;
-      vmsg.time := vTime;
-      vmsg.UID  := uid;
-      n.States := n.States - [vsHeightMeasured];
-      msgList.MeasureItemHeight(msgList.Canvas, n);
-      msgList.EndUpdate;
-      FSeconds := max(MsgShowTime[kind], FSeconds);
+  if msgList.FocusedNode = msgList.GetFirst then
+    SetFirst := True
+   else
+    SetFirst := False;
+  msgList.BeginUpdate;
+    n := msgList.AddChild(nil);
+    vmsg := msgList.GetNodeData(n);
+    vmsg.text := msg;
+    vmsg.kind := kind;
+    vmsg.time := vTime;
+    vmsg.UID  := uid;
+    n.States := n.States - [vsHeightMeasured];
+    msgList.MeasureItemHeight(msgList.Canvas, n);
+  msgList.EndUpdate;
+  FSeconds := max(MsgShowTime[kind], FSeconds);
 //      vmsg := nil;
-      if SetFirst then
-       begin
-         msgList.ClearSelection;
-         msgList.FocusedNode := n;
-         msgList.Selected[n] := True;
-       end;
-      theme.pic2ico(RQteFormIcon, iconNames[kind], self.Icon);
+  if SetFirst then
+   begin
+     msgList.ClearSelection;
+     msgList.FocusedNode := n;
+     msgList.Selected[n] := True;
+   end;
+  theme.pic2ico(RQteFormIcon, iconNames[kind], self.Icon);
 //      theme.GetIco2(iconNames[kind], self.Icon);
-      if not self.Visible then
-        showForm(self)
-       else
-        msgList.InvalidateNode(n);
+  if not self.Visible then
+    showForm(self)
+   else
+    msgList.InvalidateNode(n);
 end;
 
 procedure TmsgsFrm.CopyText(Sender: TObject);

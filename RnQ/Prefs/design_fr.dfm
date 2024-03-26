@@ -2,26 +2,26 @@ object designFr: TdesignFr
   Left = 0
   Top = 0
   VertScrollBar.Tracking = True
-  ClientHeight = 412
-  ClientWidth = 420
+  ClientHeight = 403
+  ClientWidth = 414
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = True
-  PixelsPerInch = 96
   TextHeight = 13
   object plBg: TPanel
     Left = 0
     Top = 0
-    Width = 420
-    Height = 412
+    Width = 414
+    Height = 403
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 6
     TabOrder = 0
+    ExplicitWidth = 420
+    ExplicitHeight = 412
     object PageCtrl: TPageControl
       Left = 6
       Top = 6
@@ -32,13 +32,9 @@ object designFr: TdesignFr
       TabOrder = 0
       object CommonTab: TTabSheet
         Caption = 'Common'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         DesignSize = (
-          400
-          372)
+          394
+          363)
         object Label3: TLabel
           Left = 297
           Top = 190
@@ -145,20 +141,22 @@ object designFr: TdesignFr
         object ShXstInMnuChk: TCheckBox
           Left = 6
           Top = 98
-          Width = 350
+          Width = 338
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Show XStatus buttons in menus'
           TabOrder = 2
+          ExplicitWidth = 350
         end
         object BlnsShowChk: TCheckBox
           Left = 6
           Top = 167
-          Width = 350
+          Width = 338
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Show balloons tips in tray (Win2K+)'
           TabOrder = 5
+          ExplicitWidth = 350
         end
         object ChkExtStsMainMenu: TCheckBox
           Left = 6
@@ -238,13 +236,9 @@ object designFr: TdesignFr
       object RstrSheet: TTabSheet
         Caption = 'Roaster'
         ImageIndex = 3
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         DesignSize = (
-          400
-          372)
+          394
+          363)
         object indentChk: TCheckBox
           Left = 6
           Top = 261
@@ -256,7 +250,7 @@ object designFr: TdesignFr
         object sortbyGrp: TRadioGroup
           Left = 6
           Top = 6
-          Width = 375
+          Width = 363
           Height = 61
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Sort contacts'
@@ -267,6 +261,7 @@ object designFr: TdesignFr
             'by last event time'
             'by status')
           TabOrder = 0
+          ExplicitWidth = 375
         end
         object EyeLevChk: TCheckBox
           Left = 6
@@ -302,12 +297,7 @@ object designFr: TdesignFr
             DragType = dtVCL
             Header.AutoSizeIndex = 0
             Header.DefaultHeight = 17
-            Header.Font.Charset = DEFAULT_CHARSET
-            Header.Font.Color = clWindowText
-            Header.Font.Height = -11
-            Header.Font.Name = 'Tahoma'
-            Header.Font.Style = []
-            Header.Height = 17
+            Header.Height = 13
             Header.MainColumn = -1
             Header.Options = [hoColumnResize, hoDrag]
             TabOrder = 1
@@ -318,6 +308,8 @@ object designFr: TdesignFr
             OnDragDrop = IconsListDragDrop
             OnDrawNode = IconsListDrawNode
             OnFreeNode = IconsListFreeNode
+            Touch.InteractiveGestures = [igPan, igPressAndTap]
+            Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
             Columns = <>
           end
         end
@@ -357,17 +349,13 @@ object designFr: TdesignFr
       object TabSheet2: TTabSheet
         Caption = 'Contact list'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         DesignSize = (
-          400
-          372)
+          394
+          363)
         object dockGrp: TRadioGroup
           Left = 203
           Top = 6
-          Width = 182
+          Width = 170
           Height = 80
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Contact list docking'
@@ -376,6 +364,7 @@ object designFr: TdesignFr
             'docking'
             'docking+resize')
           TabOrder = 1
+          ExplicitWidth = 182
         end
         object italicGrp: TRadioGroup
           Left = 6
@@ -392,7 +381,7 @@ object designFr: TdesignFr
         object roasterbarGrp: TRadioGroup
           Left = 219
           Top = 90
-          Width = 86
+          Width = 74
           Height = 76
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Roaster bar'
@@ -401,6 +390,7 @@ object designFr: TdesignFr
             'Bottom'
             'Off')
           TabOrder = 3
+          ExplicitWidth = 86
         end
         object autosizeGrp: TRadioGroup
           Left = 6
@@ -417,11 +407,12 @@ object designFr: TdesignFr
         object TtlGrBox: TGroupBox
           Left = 11
           Top = 172
-          Width = 374
+          Width = 362
           Height = 84
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Window title bar'
           TabOrder = 5
+          ExplicitWidth = 374
           object roastertitleBox: TLabeledEdit
             Left = 15
             Top = 34
@@ -431,6 +422,7 @@ object designFr: TdesignFr
             EditLabel.Height = 13
             EditLabel.Caption = 'Contact list window title'
             TabOrder = 0
+            Text = ''
           end
           object hideoncloseChk00: TRadioButton
             Left = 16
@@ -446,7 +438,7 @@ object designFr: TdesignFr
         object filterbarGrp: TRadioGroup
           Left = 307
           Top = 90
-          Width = 78
+          Width = 66
           Height = 76
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Filter bar'
@@ -455,6 +447,7 @@ object designFr: TdesignFr
             'Bottom'
             'Off')
           TabOrder = 4
+          ExplicitWidth = 78
         end
         object ShowBrdrChk: TCheckBox
           Left = 6
@@ -492,23 +485,20 @@ object designFr: TdesignFr
       object TabSheet3: TTabSheet
         Caption = 'Transparency'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         DesignSize = (
-          400
-          372)
+          394
+          363)
         object transpGr: TGroupBox
           Left = 11
           Top = 11
-          Width = 375
+          Width = 363
           Height = 162
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Transparency (works only with Windows XP/2000)'
           TabOrder = 0
+          ExplicitWidth = 375
           DesignSize = (
-            375
+            363
             162)
           object Label14: TLabel
             Left = 32
@@ -534,13 +524,14 @@ object designFr: TdesignFr
             Caption = 'Min'
           end
           object Label2: TLabel
-            Left = 335
+            Left = 323
             Top = 69
             Width = 20
             Height = 13
             Alignment = taRightJustify
             Anchors = [akTop, akRight]
             Caption = 'Max'
+            ExplicitLeft = 335
           end
           object roastertranspChk: TCheckBox
             Left = 15
@@ -563,7 +554,7 @@ object designFr: TdesignFr
           object transpActive: TTrackBar
             Left = 129
             Top = 87
-            Width = 233
+            Width = 221
             Height = 28
             Anchors = [akLeft, akTop, akRight]
             Max = 255
@@ -572,11 +563,12 @@ object designFr: TdesignFr
             OnChange = transpChange
             OnEnter = transpChange
             OnExit = transpExit
+            ExplicitWidth = 233
           end
           object transpInactive: TTrackBar
             Left = 129
             Top = 121
-            Width = 233
+            Width = 221
             Height = 28
             Anchors = [akLeft, akTop, akRight]
             Max = 255
@@ -585,16 +577,13 @@ object designFr: TdesignFr
             OnChange = transpChange
             OnEnter = transpChange
             OnExit = transpExit
+            ExplicitWidth = 233
           end
         end
       end
       object avtTS: TTabSheet
         Caption = 'Avatars'
         ImageIndex = 4
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object AvtShwChtChk: TCheckBox
           Left = 6
           Top = 6

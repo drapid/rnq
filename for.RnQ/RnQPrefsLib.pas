@@ -108,6 +108,8 @@ type
      function  getAllPrefs: RawByteString;
      function  getArrPrefs(piArray: TArray<String>): RawByteString;
      function  GetDBAllPrefs: THashedStringList;
+     function  GetDBPrefs(piArray: TArray<String>): THashedStringList;
+
 
      procedure DeletePref(const key: String);
      function  prefExists(const key: String): Boolean;
@@ -806,13 +808,12 @@ var
 //  s: String;
 begin
   Result := '';
-  if fPrefStr.Count > 0 then
+  if Assigned(piArray) and (fPrefStr.Count > 0) then
    for I := 0 to fPrefStr.Count - 1 do
     if StrUtils.MatchText(fPrefStr.Strings[I], piArray) then
       if Assigned(fPrefStr.Objects[I]) then
         Result := Result + AnsiString(fPrefStr.Strings[I]) + '=' + TPrefElement(fPrefStr.Objects[I]).AsBlob + CRLF;
 end;
-
 
 function TRnQPref.GetDBAllPrefs: THashedStringList;
 var
@@ -820,6 +821,18 @@ var
 begin
   Result := THashedStringList.Create;
   Result.Assign(fPrefStr);
+end;
+
+function TRnQPref.GetDBPrefs(piArray: TArray<String>): THashedStringList;
+var
+  I: Integer;
+begin
+  Result := GetDBAllPrefs;
+  if Assigned(piArray) and (Result.Count > 0) then
+   for I := Result.Count - 1 downto 0 do
+    if StrUtils.MatchText(Result.Strings[I], piArray) then
+      Result.Delete(I);
+
 end;
 
 function TRnQPref.getPrefBlob(const key: String; var Val: RawByteString): Boolean;

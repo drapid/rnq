@@ -12,6 +12,9 @@ interface
 
 uses
   Messages, Windows, SysUtils, Types, Classes,
+  {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
+    System.UITypes,
+  {$ENDIF DELPHI9_UP}
   {$IFDEF FPC}
   LCLType,
   {$ENDIF FPC}
@@ -191,6 +194,7 @@ type
 }
 
     function  isSupportedPicFile(fn: string): boolean;
+    function  isPicFile(const fn: string; onlySupported: Boolean = false): Boolean;
     function  getSupPicExts: String;
   procedure  StretchPic(var bmp: TBitmap; maxH, maxW: Integer); overload;
   procedure  StretchPic(var bmp: TRnQBitmap; maxH, maxW: Integer); overload;
@@ -234,6 +238,12 @@ type
   function  blend(c1, c2: Tcolor; left: real): Tcolor;
 //function  traspBmp1(bmp: Tbitmap; bg: Tcolor; transpLevel: integer): Tbitmap;
 
+{$IFDEF FPC}
+  function TransparentBlt(hdcSrc: HDC; nXOriginSrc, nYOriginSrc, nWidthSrc,
+    nHeightSrc: Integer; hdcDest: HDC; nXOriginDest, nYOriginDest, nWidthDest,
+    nHeightDest: Integer; crTransparent: LongWord): BOOL; stdcall;
+{$ENDIF}
+
 // convert
   function pic2ico(pic: Tbitmap): Ticon;
   function bmp2ico2(bitmap: Tbitmap): Ticon;
@@ -255,6 +265,7 @@ type
   procedure LoadPictureStream2(str: TStream; var bmp: TBitmap);
   function  JPEGTurbo: Boolean;
 
+
 const
   icon_size = 16;
 
@@ -263,9 +274,9 @@ implementation
    StrUtils,
    math, mmSystem, Themes, UxTheme,
  {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
-   UITypes,
    DwmApi,
    {$IFNDEF FPC}
+   System.Net.Mime,
    wincodec,
    {$IFDEF UNICODE}
      AnsiStrings,
@@ -3354,6 +3365,7 @@ begin
 //            [foCompact, foIncludeAll, foIncludeExtension], nil);
 // !!!!!!!!!!!!!!!!!         ADDD       WBMP, GIF         !!!!!!!!!!!!!
 end;
+
 function isSupportedPicFile(fn: string): boolean;
 //var
 //  Extensions: TStringList;
@@ -3394,6 +3406,48 @@ begin
   end;
 end; // isSupportedPicFile
 
+function isPicFile(const fn: string; onlySupported: Boolean = false): Boolean;
+var
+  ext: String;
+ {$IFNDEF FPC}
+  k: TMimeTypes.TKind;
+ {$ENDIF ~FPC}
+  t: String;
+//  Extensions: TStringList;
+//  i: Integer;
+begin
+//  result := true;
+  result := false;
+  ext := lowercase(SysUtils.ExtractFileExt(fn));
+  {$IFNDEF FPC}
+  if not onlySupported then
+    begin
+      TMimeTypes.Default.GetExtInfo(ext, t, k);
+      Result := StartsText('image/', t);
+    end
+   else
+  {$ENDIF ~FPC}
+    begin
+//      if Length(ext) > 3 then // dot + extension
+      if (Length(ext) > 3) and StartsText('.', ext) then
+      begin
+        ext := Copy(fn, 2, Length(fn)-1);
+        if (ext = 'bmp')or(ext = 'wbmp')or(ext = 'wbm')or(ext = 'gif')or
+            (ext = 'ico')or(ext = 'icon')or(ext='png')or(ext='jpg')or(ext='jpeg')or
+            (ext='dll')or
+            (isWEBPSupport and (ext='webp'))or
+            (isHEIFSupport and ((fn='heic')or (fn='heif'))) or
+            (isTIFFSupport and ((ext='tiff')or (ext='tiff')))
+        then
+         begin
+          result := true;
+          exit;
+         end
+        else
+         result := false;
+      end;
+    end;
+end; // isSupportedPicFile
 
 procedure  StretchPic(var bmp: TBitmap; maxH, maxW: Integer);
 var
@@ -3833,8 +3887,8 @@ begin
   R.Right  := MAXWORD;
   R.Bottom := MAXWORD;
    oldFont := SelectObject(DC, Font.Handle);
-   DrawTextW(DC, PChar(Text), -1, R, DT_CALCRECT or fmt);
-   GetTextExtentPoint32W(DC,pchar(Text),length(Text), res);
+   DrawText(DC, PChar(Text), -1, R, DT_CALCRECT or fmt);
+   GetTextExtentPoint32(DC,pchar(Text),length(Text), res);
    SelectObject(DC, oldFont);
   R.Right := res.cx;
   R.Bottom := res.cy;
@@ -3885,7 +3939,7 @@ begin
 //         FillRect(tempDC, R, GetStockObject(BLACK_BRUSH));
          FillRect(tempDC, R, GetStockObject(WHITE_BRUSH));
 //         FillRect(tempDC, R, GetStockObject(LTGRAY_BRUSH));
-         DrawTextW(tempDC, PChar(Text), Length(Text), R, fmt);
+         DrawText(tempDC, PChar(Text), Length(Text), R, fmt);
          SelectObject(tempDC, oldFont);
           h := res.cY-1;  // Сразу вычетаем 1 !!!
           w := res.cx-1;  // Сразу вычетаем 1 !!!
@@ -4213,13 +4267,13 @@ begin
   {$ENDIF NOT_USE_GDIPLUS}
 end;
 
-function gpColorFromAlphaColor (Alpha: Byte; Color: TColor): Cardinal;
+function gpColorFromAlphaColor (Alpha: Byte; Color: Graphics.TColor): Cardinal;
 begin
     Result := (Alpha shl 24) or (ABCD_ADCB(
               ColorToRGB(Color)) and $ffffff);
 end;
 
-function color2hls(clr: Tcolor): Thls;
+function color2hls(clr: Graphics.Tcolor): Thls;
 var
   r,g,b,a,z,d: double;
 begin

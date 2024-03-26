@@ -4,20 +4,18 @@ object visibilityFrm: TvisibilityFrm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Visibility'
-  ClientHeight = 295
-  ClientWidth = 510
+  ClientHeight = 286
+  ClientWidth = 504
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = True
   PopupMenu = PMenu3
   OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 0
@@ -75,7 +73,7 @@ object visibilityFrm: TvisibilityFrm
     DefaultNodeHeight = 16
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Height = 17
+    Header.Height = 13
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
     PopupMenu = PMenu1
@@ -86,6 +84,8 @@ object visibilityFrm: TvisibilityFrm
     OnClick = invisibleBoxClick
     OnDrawNode = InvisBoxDrawNode
     OnFreeNode = NormalBoxFreeNode
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
     Columns = <>
   end
   object NormalBox: TVirtualDrawTree
@@ -96,7 +96,7 @@ object visibilityFrm: TvisibilityFrm
     DefaultNodeHeight = 16
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Height = 17
+    Header.Height = 13
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
     PopupMenu = PMenu2
@@ -107,6 +107,8 @@ object visibilityFrm: TvisibilityFrm
     OnClick = normalBoxClick
     OnDrawNode = InvisBoxDrawNode
     OnFreeNode = NormalBoxFreeNode
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
     Columns = <>
   end
   object VisibleBox: TVirtualDrawTree
@@ -117,7 +119,7 @@ object visibilityFrm: TvisibilityFrm
     DefaultNodeHeight = 16
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Height = 17
+    Header.Height = 13
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
     PopupMenu = PMenu3
@@ -128,6 +130,8 @@ object visibilityFrm: TvisibilityFrm
     OnClick = visibleBoxClick
     OnDrawNode = InvisBoxDrawNode
     OnFreeNode = NormalBoxFreeNode
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
     Columns = <>
   end
   object move2inv: TRnQButton

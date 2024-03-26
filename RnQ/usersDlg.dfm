@@ -4,8 +4,8 @@ object usersFrm: TusersFrm
   ActiveControl = UsersBox
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Users'
-  ClientHeight = 257
-  ClientWidth = 314
+  ClientHeight = 248
+  ClientWidth = 308
   Color = clBtnFace
   Constraints.MinHeight = 270
   Constraints.MinWidth = 280
@@ -13,28 +13,28 @@ object usersFrm: TusersFrm
   GlassFrame.Enabled = True
   GlassFrame.Right = 130
   KeyPreview = True
-  OldCreateOrder = True
   OnClose = FormClose
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   OnPaint = FormPaint
   OnShow = FormShow
-  PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 20
   object P1: TPanel
-    Left = 184
+    Left = 178
     Top = 0
     Width = 130
-    Height = 257
+    Height = 248
     Align = alRight
     BevelOuter = bvNone
     DoubleBuffered = False
     ParentColor = True
     ParentDoubleBuffered = False
     TabOrder = 1
+    ExplicitLeft = 184
+    ExplicitHeight = 257
     DesignSize = (
       130
-      257)
+      248)
     object importBtn: TRnQSpeedButton
       Left = 6
       Top = 163
@@ -128,12 +128,12 @@ object usersFrm: TusersFrm
   object UsersBox: TVirtualDrawTree
     Left = 0
     Top = 0
-    Width = 184
-    Height = 257
+    Width = 178
+    Height = 248
     Align = alClient
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Height = 17
+    Header.Height = 20
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
     TabOrder = 0
@@ -150,6 +150,10 @@ object usersFrm: TusersFrm
     OnFreeNode = UsersBoxFreeNode
     OnKeyDown = FormKeyDown
     OnKeyPress = usersBoxKeyPress
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
+    ExplicitWidth = 184
+    ExplicitHeight = 257
     Columns = <>
   end
 end

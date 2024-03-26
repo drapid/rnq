@@ -2,26 +2,26 @@ object antispamFr: TantispamFr
   Left = 0
   Top = 0
   VertScrollBar.Tracking = True
-  ClientHeight = 421
-  ClientWidth = 468
+  ClientHeight = 412
+  ClientWidth = 462
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = True
-  PixelsPerInch = 96
   TextHeight = 13
   object plBg: TPanel
     Left = 0
     Top = 0
-    Width = 468
-    Height = 421
+    Width = 462
+    Height = 412
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 6
     TabOrder = 0
+    ExplicitWidth = 468
+    ExplicitHeight = 421
     object PageControl1: TPageControl
       Left = 6
       Top = 6
@@ -32,10 +32,6 @@ object antispamFr: TantispamFr
       TabOrder = 0
       object TabSheet1: TTabSheet
         Caption = 'Filter'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object IgnoreAuthNILChk: TCheckBox
           Left = 6
           Top = 75
@@ -164,10 +160,6 @@ object antispamFr: TantispamFr
       object TabSheet2: TTabSheet
         Caption = 'Bot'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Label1: TLabel
           Left = 64
           Top = 60
@@ -291,27 +283,18 @@ object antispamFr: TantispamFr
       object IgnoreSht: TTabSheet
         Caption = 'Ignore list'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         DesignSize = (
-          448
-          381)
+          442
+          372)
         object IgnoreTree: TVirtualDrawTree
           Left = 6
           Top = 31
-          Width = 327
+          Width = 315
           Height = 319
           Anchors = [akLeft, akTop, akRight]
           Header.AutoSizeIndex = 0
           Header.DefaultHeight = 17
-          Header.Font.Charset = DEFAULT_CHARSET
-          Header.Font.Color = clWindowText
-          Header.Font.Height = -11
-          Header.Font.Name = 'Tahoma'
-          Header.Font.Style = []
-          Header.Height = 17
+          Header.Height = 13
           Header.MainColumn = -1
           Header.Options = [hoColumnResize, hoDrag]
           TabOrder = 0
@@ -320,49 +303,58 @@ object antispamFr: TantispamFr
           TreeOptions.SelectionOptions = [toFullRowSelect, toMiddleClickSelect, toRightClickSelect]
           OnDrawNode = IgnoreTreeDrawNode
           OnFreeNode = IgnoreTreeFreeNode
+          Touch.InteractiveGestures = [igPan, igPressAndTap]
+          Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
+          ExplicitWidth = 327
           Columns = <>
         end
         object AddIgnBtn: TRnQButton
-          Left = 336
+          Left = 324
           Top = 36
           Width = 109
           Height = 25
           Anchors = [akTop, akRight]
           Caption = 'Add'
+          ImageName = 'add'
           TabOrder = 1
           OnClick = AddIgnBtnClick
-          ImageName = 'add'
+          ExplicitLeft = 336
         end
         object AddIgnSrvBtn: TRnQButton
-          Left = 336
+          Left = 324
           Top = 86
           Width = 109
           Height = 25
           Anchors = [akTop, akRight]
           Caption = 'Add to server'
+          ImageName = ''
           TabOrder = 2
           OnClick = AddIgnSrvBtnClick
+          ExplicitLeft = 336
         end
         object RmvIgnSrvBtn: TRnQButton
-          Left = 336
+          Left = 324
           Top = 136
           Width = 109
           Height = 25
           Anchors = [akTop, akRight]
           Caption = 'Remove from server'
+          ImageName = ''
           TabOrder = 3
           Visible = False
+          ExplicitLeft = 336
         end
         object RmvIgnBtn: TRnQButton
-          Left = 336
+          Left = 324
           Top = 183
           Width = 109
           Height = 25
           Anchors = [akTop, akRight]
           Caption = 'Remove'
+          ImageName = 'delete'
           TabOrder = 4
           OnClick = RmvIgnBtnClick
-          ImageName = 'delete'
+          ExplicitLeft = 336
         end
         object UseIgnChk: TCheckBox
           Left = 6

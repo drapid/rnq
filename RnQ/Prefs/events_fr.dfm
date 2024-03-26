@@ -1,16 +1,14 @@
 object eventsFr: TeventsFr
   Left = 414
   Top = 227
-  ClientHeight = 447
-  ClientWidth = 470
+  ClientHeight = 438
+  ClientWidth = 464
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = True
-  PixelsPerInch = 96
   TextHeight = 13
   object Label3: TLabel
     Left = 422
@@ -24,8 +22,8 @@ object eventsFr: TeventsFr
     AlignWithMargins = True
     Left = 6
     Top = 6
-    Width = 458
-    Height = 435
+    Width = 452
+    Height = 426
     Margins.Left = 6
     Margins.Top = 6
     Margins.Right = 6
@@ -33,15 +31,13 @@ object eventsFr: TeventsFr
     ActivePage = MainTS
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 458
+    ExplicitHeight = 435
     object MainTS: TTabSheet
       Caption = 'Common'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
-        450
-        407)
+        444
+        398)
       object Label4: TLabel
         Left = 339
         Top = 281
@@ -171,18 +167,19 @@ object eventsFr: TeventsFr
         Width = 75
         Height = 25
         Caption = 'test it'
+        ImageName = 'play'
         TabOrder = 4
         OnClick = TestVolSButtonClick
-        ImageName = 'play'
       end
       object EvntGrp: TGroupBox
         Left = 6
         Top = 3
-        Width = 438
+        Width = 426
         Height = 233
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Events'
         TabOrder = 0
+        ExplicitWidth = 438
         object Label1: TLabel
           Left = 0
           Top = 27
@@ -273,6 +270,7 @@ object eventsFr: TeventsFr
           Width = 54
           Height = 25
           Caption = 'test it'
+          ImageName = ''
           TabOrder = 3
           OnClick = RnQSpeedButton1Click
         end
@@ -284,7 +282,7 @@ object eventsFr: TeventsFr
           DefaultNodeHeight = 16
           Header.AutoSizeIndex = 0
           Header.DefaultHeight = 17
-          Header.Height = 17
+          Header.Height = 13
           Header.MainColumn = -1
           Header.Options = [hoColumnResize, hoDrag]
           TabOrder = 4
@@ -294,13 +292,15 @@ object eventsFr: TeventsFr
           OnChecked = TrigListChecked
           OnDrawNode = TrigListDrawNode
           OnFreeNode = TrigListFreeNode
+          Touch.InteractiveGestures = [igPan, igPressAndTap]
+          Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
           Columns = <>
         end
       end
       object eventBox: TComboBox
         Left = 52
         Top = 2
-        Width = 327
+        Width = 315
         Height = 26
         Style = csOwnerDrawVariable
         Anchors = [akLeft, akTop, akRight]
@@ -314,21 +314,18 @@ object eventsFr: TeventsFr
     object DisEvTS: TTabSheet
       Caption = 'Extra disabling'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
-        450
-        407)
+        444
+        398)
       object GroupBox1: TGroupBox
         Left = 6
         Top = 3
-        Width = 426
+        Width = 414
         Height = 126
         Anchors = [akLeft, akTop, akRight]
         Caption = 'on status'
         TabOrder = 0
+        ExplicitWidth = 426
         object Label2: TLabel
           Left = 0
           Top = 32
@@ -387,7 +384,7 @@ object eventsFr: TeventsFr
       object statusBox: TComboBox
         Left = 61
         Top = 2
-        Width = 362
+        Width = 350
         Height = 26
         Style = csOwnerDrawVariable
         Anchors = [akLeft, akTop, akRight]
@@ -411,21 +408,18 @@ object eventsFr: TeventsFr
     object LogTS: TTabSheet
       Caption = 'Log'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
-        450
-        407)
+        444
+        398)
       object PckLogGrp: TGroupBox
         Left = 6
         Top = 6
-        Width = 356
+        Width = 344
         Height = 105
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Log packets'
         TabOrder = 0
+        ExplicitWidth = 356
         object pktclearChk: TCheckBox
           Left = 14
           Top = 72
@@ -454,11 +448,12 @@ object eventsFr: TeventsFr
       object EvLogGrp: TGroupBox
         Left = 6
         Top = 117
-        Width = 356
+        Width = 344
         Height = 100
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Log events'
         TabOrder = 1
+        ExplicitWidth = 356
         object evtwndChk: TCheckBox
           Left = 14
           Top = 24
@@ -488,10 +483,6 @@ object eventsFr: TeventsFr
     object BDTS: TTabSheet
       Caption = 'Birthday'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LDays1: TLabel
         Left = 349
         Top = 24

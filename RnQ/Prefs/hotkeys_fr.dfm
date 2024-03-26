@@ -2,23 +2,21 @@ object hotkeysFr: ThotkeysFr
   Left = 0
   Top = 0
   VertScrollBar.Tracking = True
-  ClientHeight = 376
-  ClientWidth = 420
+  ClientHeight = 367
+  ClientWidth = 414
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = True
   OnContextPopup = FrameContextPopup
   DesignSize = (
-    420
-    376)
-  PixelsPerInch = 96
+    414
+    367)
   TextHeight = 13
   object Label1: TLabel
-    Left = 40
+    Left = 28
     Top = 328
     Width = 368
     Height = 20
@@ -36,6 +34,7 @@ object hotkeysFr: ThotkeysFr
     ParentFont = False
     ShowAccelChar = False
     WordWrap = True
+    ExplicitLeft = 40
   end
   object Label2: TLabel
     Left = 37
@@ -54,7 +53,7 @@ object hotkeysFr: ThotkeysFr
     Caption = 'Action'
   end
   object Label4: TLabel
-    Left = 239
+    Left = 227
     Top = 347
     Width = 171
     Height = 13
@@ -67,12 +66,13 @@ object hotkeysFr: ThotkeysFr
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
+    ExplicitLeft = 239
   end
   object hotkey: THotKey
     Left = 79
     Top = 213
-    Width = 311
-    Height = 22
+    Width = 299
+    Height = 21
     Anchors = [akLeft, akTop, akRight]
     InvalidKeys = [hcShift]
     Modifiers = []
@@ -89,20 +89,21 @@ object hotkeysFr: ThotkeysFr
   object actionBox: TComboBox
     Left = 71
     Top = 262
-    Width = 341
+    Width = 329
     Height = 21
     Style = csDropDownList
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 4
   end
   object winkeyChk: TCheckBox
-    Left = 272
+    Left = 260
     Top = 240
     Width = 119
     Height = 17
     Anchors = [akTop, akRight]
     Caption = 'WIN key'
     TabOrder = 3
+    ExplicitLeft = 272
   end
   object HKTree: TVirtualDrawTree
     Left = 8
@@ -111,11 +112,6 @@ object hotkeysFr: ThotkeysFr
     Height = 185
     Header.AutoSizeIndex = 0
     Header.DefaultHeight = 17
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
     Header.Height = 17
     Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
     TabOrder = 0
@@ -125,25 +121,27 @@ object hotkeysFr: ThotkeysFr
     OnChange = HKTreeChange
     OnDrawNode = HKTreeDrawNode
     OnFreeNode = HKTreeFreeNode
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
     Columns = <
       item
         Position = 0
+        Text = 'Action'
         Width = 237
-        WideText = 'Action'
       end
       item
         MaxWidth = 200
         MinWidth = 90
         Position = 1
+        Text = 'Hotkey'
         Width = 100
-        WideText = 'Hotkey'
       end
       item
         MaxWidth = 60
         MinWidth = 45
         Position = 2
+        Text = 'SW'
         Width = 55
-        WideText = 'SW'
       end>
   end
   object btnDefault: TRnQButton
@@ -152,9 +150,9 @@ object hotkeysFr: ThotkeysFr
     Width = 81
     Height = 25
     Caption = 'Default'
+    ImageName = 'reset'
     TabOrder = 5
     OnClick = btnDefaultClick
-    ImageName = 'reset'
   end
   object saveBtn: TRnQButton
     Left = 144
@@ -162,9 +160,9 @@ object hotkeysFr: ThotkeysFr
     Width = 81
     Height = 25
     Caption = 'Save'
+    ImageName = 'save'
     TabOrder = 6
     OnClick = saveBtnClick
-    ImageName = 'save'
   end
   object deleteBtn: TRnQButton
     Left = 231
@@ -172,9 +170,9 @@ object hotkeysFr: ThotkeysFr
     Width = 81
     Height = 25
     Caption = 'Delete'
+    ImageName = 'delete'
     TabOrder = 7
     OnClick = deleteBtnClick
-    ImageName = 'delete'
   end
   object replaceBtn: TRnQButton
     Left = 325
@@ -182,8 +180,8 @@ object hotkeysFr: ThotkeysFr
     Width = 75
     Height = 25
     Caption = 'Replace'
+    ImageName = 'replace'
     TabOrder = 8
     OnClick = replaceBtnClick
-    ImageName = 'replace'
   end
 end

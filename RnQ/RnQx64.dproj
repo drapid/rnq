@@ -394,7 +394,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
             <Form>NewAccFrm</Form>
         </DCCReference>
         <DCCReference Include="..\for.RnQ\RnQtrayLib.pas"/>
-        <DCCReference Include="..\For.rnq\tipDlg.pas"/>
+        <DCCReference Include="..\For.rnq\VCL\RDTipDlg.pas"/>
         <DCCReference Include="..\For.rnq\RnQLangFrm.pas">
             <Form>FrmLangs</Form>
         </DCCReference>

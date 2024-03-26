@@ -38,7 +38,7 @@ var
 implementation
 
 uses
-  Windows, Forms, virtualtrees, SysUtils, Math, StrUtils,
+  Windows, Forms, virtualtrees.Types, SysUtils, Math, StrUtils,
   RQUtil, RnQMenu, RnQbuttons, RnQGlobal, RnQGraphics32, RnQPics,
   utilLib, RnQConst, globalLib, chatDlg,
  {$IFDEF CHAT_CEF} // Chromium

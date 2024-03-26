@@ -51,7 +51,7 @@ var
 begin
   result := -1;
 
-  if not GetFileAttributesEx(PWideChar(aFileName), GetFileExInfoStandard, @info) then
+  if not GetFileAttributesEx(PChar(aFileName), GetFileExInfoStandard, @info) then
     Exit;
 
   result := Int64(info.nFileSizeLow) or Int64(info.nFileSizeHigh shl 32);

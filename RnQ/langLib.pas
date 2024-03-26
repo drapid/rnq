@@ -34,7 +34,7 @@ implementation
 
 uses
   utilLib, globalLib, chatDlg, mainDlg, SyncObjs, ComCtrls, // CheckLst,
-  RnQButtons, RQUtil, RQLog, RDGlobal, Types, VirtualTrees,
+  RnQButtons, RQUtil, RQLog, RDGlobal, Types, VirtualTrees.DrawTree,
   stdctrls, ExtCtrls, menus, controls, sysUtils, strUtils;
 
 

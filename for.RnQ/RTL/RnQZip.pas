@@ -30,10 +30,11 @@ unit RnQZip;
 interface
 
 uses
-  SysUtils, Classes, Types, Windows,
+{$IFDEF RTL_NAMESPACES}System.SysUtils{$ELSE}SysUtils{$ENDIF},
+{$IFDEF RTL_NAMESPACES}System.Classes{$ELSE}Classes{$ENDIF},
+  Types, Windows,
  {$IFDEF FPC}
   ZLib,
-  ZStream,
   ZlibHigh,
  {$ELSE ~FPC}
   System.ZLib,
@@ -43,8 +44,13 @@ uses
 
 type
 
+  {$IFDEF FPC}
+  TCompressionLevel = ZlibHigh.TCompressionLevel;
+  TZStreamType = ZlibHigh.TZStreamType;
+  {$ELSE ~FPC}
   TCompressionLevel = OverbyteIcsZLibHigh.TCompressionLevel;
   TZStreamType = OverbyteIcsZLibHigh.TZStreamType;
+  {$ENDIF FPC}
 
   TZLibStreamHeader = packed record
      CMF: Byte;
@@ -248,7 +254,7 @@ implementation
   {$ENDIF UNICODE}
  {$ENDIF}
    RDFileUtil, RDUtils,
-     Math;
+   Math;
 
 const
   ZL_DEF_COMPRESSIONMETHOD  = $8;  { Deflate }
@@ -273,7 +279,7 @@ const
 
 
 
-   SALT_LENGTH: array[1..3] of byte = (8, 12, 16);
+  SALT_LENGTH: array[1..3] of byte = (8, 12, 16);
 
 //procedure make_crc_table;
 var
@@ -304,7 +310,7 @@ end;
 function ZipCrc32(crc: Cardinal; const buffer: PByteArray; size: Cardinal): Cardinal;
 var
   c: Cardinal;
-  n: Int64;
+  n: NativeInt;
   a: Byte;
 begin
  c := crc;
@@ -681,7 +687,7 @@ begin
       Result := false
      else
  {$ELSE ~ZIP_AES}
-    raise EZDecompressionError.CreateFmt('Encryption is not supported', []);
+    raise Exception.Create('Encryption is not supported!');
  {$ENDIF ZIP_AES}
       Result := True;
   end
@@ -806,7 +812,7 @@ begin
      end;
 //    Files[I].CommonFileHeader.Crc32 := 0;
  {$ELSE ~ZIP_AES}
-    raise EZDecompressionError.CreateFmt('Encryption is not supported', []);
+    raise Exception.CreateFmt('Encryption is not supported', []);
  {$ENDIF ZIP_AES}
   end else
    if Files[I].CommonFileHeader.CompressionMethod = ZL_DEF_COMPRESSIONMETHOD then // ZLib
@@ -884,8 +890,6 @@ begin
 end;
 
 procedure TZipFile.SetUncompressed(i: integer; const Value: RawByteString);
-const
-  TestRPNG = RawByteString(#$CC#$7D#$42#$93#$04#$FE#$63#$7C#$B0#$46#$AD#$CE#$8F#$85#$63#$11);
 var
   resStream: TMemoryStream;
   UnComprStream: TMemoryStream;
@@ -932,9 +936,9 @@ begin
     isEncr := Files[i].pass > '';
     if isEncr then
       begin
-       salt2 := TestRPNG;
        aesMode := 3;
        l := SALT_LENGTH[aesMode];
+       salt2 := getPRNG(l);
        SetLength(salt2, l);
        fcrypt_init(aesMode, Files[i].pass, salt2, pwd_ver, cx);
        if ComprSize > 0 then

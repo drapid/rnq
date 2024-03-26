@@ -6990,7 +6990,7 @@ begin
  if r <> FSelfHeight then
   begin
    s := 'Error, pocessed lines:'+ IntToStr(r);
-   OutputDebugStringW(PChar(s)) ;
+   OutputDebugString(PChar(s)) ;
   end;
 // frmRect := Rect(FXOffset, FYOffset, FSelfWidth-1, FSelfHeight-1);
  {$IFDEF FPC}
@@ -7282,7 +7282,7 @@ begin
  if r <> vHDR.Height then
   begin
    s := 'Error in StretchDiBits pocessed lines: '+ IntToStr(r);
-   OutputDebugStringW(PChar(s)) ;
+   OutputDebugString(PChar(s)) ;
   end;
  case vHDR.ColorType of
   COLOR_GRAYSCALEALPHA,COLOR_RGBALPHA:

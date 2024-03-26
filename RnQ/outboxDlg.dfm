@@ -2,8 +2,8 @@ object outboxFrm: ToutboxFrm
   Left = 241
   Top = 198
   Caption = 'Outbox'
-  ClientHeight = 367
-  ClientWidth = 551
+  ClientHeight = 358
+  ClientWidth = 545
   Color = clBtnFace
   Font.Charset = RUSSIAN_CHARSET
   Font.Color = clWindowText
@@ -12,23 +12,23 @@ object outboxFrm: ToutboxFrm
   Font.Style = []
   GlassFrame.Enabled = True
   GlassFrame.Bottom = 40
-  OldCreateOrder = True
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnResize = FormResize
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 551
-    Height = 328
+    Width = 545
+    Height = 319
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 5
     TabOrder = 0
+    ExplicitWidth = 551
+    ExplicitHeight = 328
     object Splitter2: TSplitter
       Left = 145
       Top = 5
@@ -61,11 +61,12 @@ object outboxFrm: ToutboxFrm
       object Panel4: TPanel
         Left = 0
         Top = 0
-        Width = 396
+        Width = 390
         Height = 105
         Align = alTop
         BevelOuter = bvNone
         TabOrder = 1
+        ExplicitWidth = 396
         object groupbox: TGroupBox
           Left = 0
           Top = 0
@@ -106,11 +107,11 @@ object outboxFrm: ToutboxFrm
       Left = 5
       Top = 5
       Width = 140
-      Height = 318
+      Height = 309
       Align = alLeft
       Header.AutoSizeIndex = 0
       Header.DefaultHeight = 17
-      Header.Height = 17
+      Header.Height = 13
       Header.MainColumn = -1
       Header.Options = [hoColumnResize, hoDrag]
       PopupMenu = menu
@@ -120,27 +121,33 @@ object outboxFrm: ToutboxFrm
       TreeOptions.SelectionOptions = [toFullRowSelect, toMiddleClickSelect, toRightClickSelect]
       OnChange = listChange
       OnDrawNode = listDrawNode
+      Touch.InteractiveGestures = [igPan, igPressAndTap]
+      Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
+      ExplicitHeight = 318
       Columns = <>
     end
   end
   object Panel2: TPanel
     Left = 0
-    Top = 328
-    Width = 551
+    Top = 319
+    Width = 545
     Height = 39
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitTop = 328
+    ExplicitWidth = 551
     DesignSize = (
-      551
+      545
       39)
     object Bevel: TBevel
       Left = 5
       Top = 0
-      Width = 541
+      Width = 529
       Height = 3
       Anchors = [akLeft, akTop, akRight]
       Shape = bsBottomLine
+      ExplicitWidth = 541
     end
     object deleteBtn: TRnQButton
       Left = 5
@@ -167,7 +174,7 @@ object outboxFrm: ToutboxFrm
       OnClick = saveBtnClick
     end
     object closeBtn: TRnQButton
-      Left = 456
+      Left = 444
       Top = 9
       Width = 75
       Height = 25
@@ -178,6 +185,7 @@ object outboxFrm: ToutboxFrm
       ModalResult = 2
       TabOrder = 2
       OnClick = closeBtnClick
+      ExplicitLeft = 456
     end
   end
   object menu: TPopupMenu

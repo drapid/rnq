@@ -9,11 +9,12 @@ unit RQlog;
 interface
 
 uses
-  Windows, Messages, SysUtils,
-  Classes, Graphics, Controls, Forms,
-  StdCtrls, ExtCtrls, Menus, RDGlobal,
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  StdCtrls, ExtCtrls, Menus,
+  VirtualTrees.Types, VirtualTrees.BaseTree, VirtualTrees.DrawTree,
+  RDGlobal
 //  RQThemes,
-  VirtualTrees;
+  ;
 
 type
   TPktType = (ptNone, ptBin, ptJSON, ptXML, ptString, ptUTF8);
@@ -108,13 +109,13 @@ begin
     else
      SetLast := False;
 
- n := LogList.AddChild(nil);
- it := LogList.GetNodeData(n);
- it.pktType := pt;
- it.Cpt := s;
- it.Text := Text;
- it.Img := Img;
- it.PktData := data;
+  n := LogList.AddChild(nil);
+  it := LogList.GetNodeData(n);
+  it.pktType := pt;
+  it.Cpt := s;
+  it.Text := Text;
+  it.Img := Img;
+  it.PktData := data;
 
   if (fShowPackets and (pt <> ptNone))or(fShowEvents and (pt = ptNone)) then
     begin
