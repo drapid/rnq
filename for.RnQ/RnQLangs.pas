@@ -908,7 +908,9 @@ function getTranslation(const key: Ansistring; const args: array of const): Stri
 //var
 //  s: extended;
 begin
-  if useLang and Assigned(TRnQLang.LangVar) then
+  if key = '' then
+    Exit(key)
+  else if useLang and Assigned(TRnQLang.LangVar) then
     begin
       result := TRnQLang.LangVar.TranslateString(key);
     end
@@ -928,18 +930,22 @@ end; // getTranslation
  {$IFDEF UNICODE}
 function getTranslation(const key: String): string;
 begin
-  if useLang and Assigned(TRnQLang.LangVar) then
+  if key = '' then
+    Exit(key)
+  else if useLang and Assigned(TRnQLang.LangVar) then
     result := TRnQLang.LangVar.TranslateString(key)
    else
      Result := key;
   result := ansiReplaceStr(result,'\n', #13);
 end; // getTranslation
 
-function getTranslation(const key: string; const args: array of const):string;
+function getTranslation(const key: string; const args: array of const): String;
 //var
 //  s : extended;
 begin
-  if useLang and Assigned(TRnQLang.LangVar) then
+  if key = '' then
+    Exit(key)
+  else if useLang and Assigned(TRnQLang.LangVar) then
     result := TRnQLang.LangVar.TranslateString(key)
    else
      Result := key;
@@ -956,7 +962,7 @@ end; // getTranslation
 
 
 procedure refreshLangList(pLangFileMask: String; pOnlyFileNames: Boolean; appPath: String; mainPath: String = '');
- procedure ProcessFile(Const fn, subfile: String; s: RawByteString; isUTF: Boolean);
+ procedure ProcessFile(Const fn, subfile: UnicodeString; s: RawByteString; isUTF: Boolean);
  var
   line, k, v, section: RawByteString;
   procedure InternalprocessTheme(var ati: aLangInfo);
@@ -966,8 +972,8 @@ procedure refreshLangList(pLangFileMask: String; pOnlyFileNames: Boolean; appPat
       n := Length(ati);
       setlength(ati, n+1);
       ati[n] := ToLangInfo.Create;
-      ati[n].fn:=fn;
-      ati[n].subFile:=subfile;
+      ati[n].fn := fn;
+      ati[n].subFile := subfile;
 //      ati[n].isUTF := isUTF;
       section:='';
 
@@ -994,10 +1000,10 @@ procedure refreshLangList(pLangFileMask: String; pOnlyFileNames: Boolean; appPat
         v := '';
         if section='desc' then
           with ati[n] do
-            desc:=desc+ UnUTF(line)+CRLF;
+            desc := desc+ UnUTF(line)+CRLF;
         end;
       with ati[n] do
-        desc:=trimright(desc);
+        desc := trimright(desc);
 
   end;
  begin
@@ -1010,21 +1016,23 @@ procedure refreshLangList(pLangFileMask: String; pOnlyFileNames: Boolean; appPat
   end;
 const
 //   langsFiles : array[0..1] of string = ('RnQ*.utflng', 'RnQ*.lng');
-   langsFiles2: array[0..1] of string = ('*.utflng', '*.lng');
-   ZipLangs: array[0..0] of string = ('.zlng');
+   langsFiles2: array[0..1] of UnicodeString = ('*.utflng', '*.lng');
+   ZipLangs: array[0..0] of UnicodeString = ('.zlng');
 var
+ {$IFDEF FPC}
+  sr: TUnicodeSearchRec;
+ {$ELSE ~FPC}
   sr: TSearchRec;
+ {$ENDIF FPC}
   I, e: Integer;
-//  str: TStringStream;
-//  str2: TMemoryStream;
   ts: TThemeSourcePath;
-  fn, FullFN: String;
+  fn, FullFN: UnicodeString;
   //subFile,
   sA: RawByteString;
   w: String;
 //  lang_paths : array[0..1] of string;
-  lang_paths: array of string;
-  lang_subpaths: array of string;
+  lang_paths: array of UnicodeString;
+  lang_subpaths: array of Unicodestring;
   ti: Integer;
 begin
   setLength(lang_paths, 2);
@@ -1046,11 +1054,12 @@ begin
  for ti := Low(lang_paths) to High(lang_paths) do
   for e := 0 to Length(langsFiles2) - 1 do
   begin
-    if findFirst(lang_paths[ti] + pLangFileMask + langsFiles2[e], faAnyFile, sr) = 0 then
+    fn := lang_paths[ti] + pLangFileMask + langsFiles2[e];
+    if findFirst(fn, faAnyFile, sr) = 0 then
       repeat
       if sr.name[1]<>'.' then
         begin
-        fn:=sr.name;
+        fn := sr.name;
         if pOnlyFileNames then
           sA := ''
          else

@@ -8,7 +8,9 @@ unit RnQPrefsInt;
 
 interface
  uses
-   Windows, Forms, Classes,// iniFiles,
+   Windows, Classes,
+//   Forms,
+   // iniFiles,
    RDGlobal;
 
 type

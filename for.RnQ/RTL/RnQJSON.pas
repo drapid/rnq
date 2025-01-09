@@ -182,7 +182,11 @@ begin
   Result := False;
   JSON := nil;
 {$IFDEF FPC}
-  TmpJSON := GetJSON(RespStrR, True);
+  try
+    TmpJSON := GetJSON(RespStrR, True);
+   except
+    TmpJSON := NIL;
+  end;
 {$ELSE ~FPC}
 {$IF RTLVersion >= 33}
   TmpJSON := TJSONObject.ParseJSONValue(RespStrR, True, true);

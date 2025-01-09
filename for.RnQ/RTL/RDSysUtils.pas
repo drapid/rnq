@@ -11,6 +11,7 @@ interface
 
 uses
   windows, sysutils, //IOUtils,
+  shellapi, ShlObj,
   {$IFDEF FMX}
   FMX.Types,
   FMX.Forms,
@@ -83,8 +84,10 @@ type
 
   procedure WaitOrKill(var Thread: THandle; Time: cardinal);
 
-  function resolveLnk(const fn: String): String;
-  procedure ResolveLinkInfo(LinkPath: string; Handle: THandle; var ProgramPath, ProgramWorkPath, ProgramInfo, ProgramParams: string);
+  function  resolveLnk(const fn: UnicodeString): UnicodeString;
+  procedure ResolveLinkInfo(LinkPath: UnicodeString; Handle: THandle; var ProgramPath, ProgramWorkPath, ProgramInfo, ProgramParams: UnicodeString);
+
+  function  GetThumbFromCache(AFileName: UnicodeString; out Bmp: TBitmap; AMaxSize: Integer = 120): HRESULT;
 
 {$IFDEF FPC}
 // // Taskbar notification definitions
@@ -109,15 +112,79 @@ function SHQueryUserNotificationState(
   var pquns: QUERY_USER_NOTIFICATION_STATE): HResult; stdcall;
 {$ENDIF FPC}
 
+
+const
+  CLSID_LocalThumbnailCache: TGuid = '{50EF4544-AC9F-4A8E-B21B-8A26180DB13F}';
+  CLSID_SharedBitmap: TGuid = '{4db26476-6787-4046-b836-e8412a9e8a27}';
+
+type
+  {$EXTERNALSYM WTS_FLAGS}
+  WTS_FLAGS = (
+    WTS_EXTRACT = 0,
+    WTS_INCACHEONLY = 1,
+    WTS_FASTEXTRACT = 2,
+    WTS_FORCEEXTRACTION = 4,
+    WTS_SLOWRECLAIM = 8,
+    WTS_EXTRACTDONOTCACHE = 32,
+    WTS_SCALETOREQUESTEDSIZE = 64,
+    WTS_SKIPFASTEXTRACT = 128,
+    WTS_EXTRACTINPROC = 256
+  );
+
+  {$EXTERNALSYM WTS_CACHEFLAGS}
+  WTS_CACHEFLAGS = (
+    WTS_DEFAULT = 0,
+    WTS_LOWQUALITY = 1,
+    WTS_CACHED = 2
+  );
+  PWTS_CACHEFLAGS = ^WTS_CACHEFLAGS;
+
+  {$EXTERNALSYM WTS_ALPHATYPE}
+  WTS_ALPHATYPE = (
+    WTSAT_UNKNOWN = 0,
+    WTSAT_RGB = 1,
+    WTSAT_ARGB = 2
+  );
+
+  {$EXTERNALSYM WTS_THUMBNAILID}
+  WTS_THUMBNAILID = record
+    rgbKey: array[0..15] of Byte;
+  end;
+  PWTS_THUMBNAILID = ^WTS_THUMBNAILID;
+
+  {$EXTERNALSYM ISharedBitmap}
+  ISharedBitmap = interface(IUnknown)
+    ['{091162a4-bc96-411f-aae8-c5122cd03363}']
+    function GetSharedBitmap(out phbm: HBITMAP): HRESULT; stdcall;
+    function GetSize(out pSize: TSize): HRESULT; stdcall;
+    function GetFormat(out pat: WTS_ALPHATYPE): HRESULT; stdcall;
+    function InitializeBitmap(hbm: HBITMAP; wtsAT: WTS_ALPHATYPE): HRESULT; stdcall;
+    function Detach(out phbm: HBITMAP): HRESULT; stdcall;
+  end;
+
+  {$EXTERNALSYM IThumbnailCache}
+  IThumbnailCache = interface(IUnknown)
+    ['{F676C15D-596A-4ce2-8234-33996F445DB1}']
+    function GetThumbnail(pShellItem: IShellItem; cxyRequestedThumbSize: UINT;
+      flags: WTS_FLAGS; out ppvThumb: ISharedBitmap; pOutFlags: PWTS_CACHEFLAGS;
+      pThumbnailID: PWTS_THUMBNAILID): HRESULT; stdcall;
+    function GetThumbnailByID(thumbnailID: WTS_THUMBNAILID; cxyRequestedThumbSize: UINT;
+      out ppvThumb: ISharedBitmap; pOutFlags: PWTS_CACHEFLAGS): HRESULT; stdcall;
+  end;
+
 implementation
 
 uses
-  wininet, Registry, shellapi, multimon, ActiveX,
-  ComObj, ShlObj, StrUtils,
+  wininet, Registry, multimon, ActiveX,
+  ComObj, StrUtils,
+ {$IFDEF FPC}
+  Win32Extra,
+ {$ENDIF FPC}
   RDUtils;
 
 {$IFDEF FPC}
-function SHQueryUserNotificationState; external shell32 name 'SHQueryUserNotificationState';
+  function SHQueryUserNotificationState; external shell32 name 'SHQueryUserNotificationState';
+
 {$ENDIF FPC}
 
 function connectionAvailable: boolean;
@@ -1020,42 +1087,52 @@ begin
  end;
 end;
 
-function resolveLnk(const fn: String): String;
+function resolveLnk(const fn: UnicodeString): UnicodeString;
 Var
-  sl: IShellLink;
-  buffer: array [0..MAX_PATH] of char;
-  fd: Twin32finddata;
+  sl: IShellLinkW;
+  buffer: array [0..MAX_PATH] of WideChar;
+  fd: TWin32FindDataW;
+  fnW: WideString;
 begin
-result:=fn;
+  result := fn;
   try
+    fnW := result;
     olecheck(coCreateInstance(CLSID_ShellLink, nil, CLSCTX_INPROC_SERVER, IShellLink, sl));
-    olecheck((sl as IPersistFile).load(pwidechar(widestring(fn)), STGM_READ));
-    if (sl as IPersistFile).Load(PWideChar(WideString(fn)), STGM_READ) = 0 then begin
+    olecheck((sl as IPersistFile).load(pwidechar(fnW), STGM_READ));
+    if (sl as IPersistFile).Load(PWideChar(fnW), STGM_READ) = 0 then begin
       olecheck(sl.resolve(0, SLR_ANY_MATCH or SLR_NO_UI));
+     {$IFDEF FPC}
+      olecheck(sl.getPath(Buffer, MAX_PATH, @fd, 0));
+     {$ELSE ~FPC}
       olecheck(sl.getPath(Buffer, MAX_PATH, fd, 0));
+     {$ENDIF FPC}
       result := buffer;
     end;
   except // convertion failed, but keep original filename
   end;
 end; // resolveLnk
 
-procedure ResolveLinkInfo(LinkPath: string; Handle: THandle; var ProgramPath, ProgramWorkPath, ProgramInfo, ProgramParams: string);
+procedure ResolveLinkInfo(LinkPath: UnicodeString; Handle: THandle; var ProgramPath, ProgramWorkPath, ProgramInfo, ProgramParams: UnicodeString);
 Var
-   Desc : Array[0..MAX_PATH] of Char;
+   Desc : Array[0..MAX_PATH] of WideChar;
    IU   : IUnknown;
-   SL   : IShellLink;
+   SL   : IShellLinkW;
    PF   : IPersistFile;
    HRES : HRESULT;
-   FD   : TWin32FindData;
+   FD   : TWin32FindDataW;
 begin
-     CoInitialize(nil);
-     IU := CreateComObject(CLSID_ShellLink);
-     SL := IU as IShellLink;
-     PF := SL as IPersistFile;
+  CoInitialize(nil);
+  IU := CreateComObject(CLSID_ShellLink);
+  SL := IU as IShellLinkW;
+  PF := SL as IPersistFile;
 
-     olecheck(PF.Load(PWideChar(WideString(LinkPath)), STGM_READ));
-     olecheck(SL.Resolve(Handle, SLR_ANY_MATCH));
-     olecheck(SL.GetPath(Desc, MAX_PATH, FD, SLGP_UNCPRIORITY));
+  olecheck(PF.Load(PWideChar(WideString(LinkPath)), STGM_READ));
+  olecheck(SL.Resolve(Handle, SLR_ANY_MATCH));
+ {$IFDEF FPC}
+  olecheck(SL.GetPath(Desc, MAX_PATH, @FD, SLGP_UNCPRIORITY));
+ {$ELSE ~FPC}
+  olecheck(SL.GetPath(Desc, MAX_PATH, FD, SLGP_UNCPRIORITY));
+ {$ENDIF FPC}
      ProgramPath := StrPas(Desc);
 
 
@@ -1068,6 +1145,100 @@ begin
      SL.GetArguments(Desc, MAX_PATH);
      ProgramParams := StrPas(Desc);
 
+end;
+
+
+Procedure MirrorVertical(var Picture: TBitmap);
+var BMP: TBitmap;
+     i,j: integer;
+begin
+BMP := TBitmap.Create;
+BMP.Assign(Picture);
+for i := 0 to BMP.Height-1 do
+  for j := 0 to BMP.Width-1 do
+   Picture.canvas.Pixels[j, BMP.Height-i-1] := BMP.canvas.Pixels[j, i];
+BMP.free;
+end;
+
+procedure ResizeBitmap(Bitmap: TBitmap; const NewWidth, NewHeight: integer);
+begin
+  Bitmap.Canvas.StretchDraw(
+    Rect(0, 0, NewWidth, NewHeight),
+    Bitmap);
+  Bitmap.SetSize(NewWidth, NewHeight);
+end;
+
+function GetThumbFromCache(AFileName: UnicodeString; out Bmp: TBitmap; AMaxSize: Integer = 120): HRESULT;
+var
+  thumbcache: IThumbnailCache;
+  sharedbmp: ISharedBitmap;
+  shellitem: IShellItem;
+  thumbflags: PWTS_CACHEFLAGS;
+  thumbid: PWTS_THUMBNAILID;
+  thumbsize: TSize;
+  hBmp: HBITMAP;
+  pat: WTS_ALPHATYPE;
+begin
+  if not Assigned(Bmp) then
+    Exit;
+
+  Result := CoInitialize(Nil);
+
+  Result := CoCreateInstance(
+    CLSID_LocalThumbnailCache,
+    nil,
+    CLSCTX_INPROC,
+    IThumbnailCache,
+    thumbcache
+  );
+
+  if Succeeded(Result) then
+  begin
+    Result := SHCreateItemFromParsingName(
+      PWideChar(AFileName),
+      nil,
+      IShellItem,
+      shellitem
+    );
+
+    if Succeeded(Result) then
+    begin
+      Result := thumbcache.GetThumbnail(
+        shellitem,
+        AMaxSize,
+        WTS_EXTRACT,
+        sharedbmp,
+        nil, //thumbflags,
+        nil //thumbid
+      );
+
+      if Succeeded(Result) then
+      begin
+        sharedbmp.GetSize(thumbsize);
+        sharedbmp.GetFormat(pat);
+
+        Result := sharedbmp.GetSharedBitmap(hBmp);
+        if Succeeded(Result) then
+        begin
+          bmp.SetSize(thumbsize.cx, thumbsize.cy);
+          bmp.Handle := hBmp;
+         {$IFDEF FPC}
+          bmp.FreeImage;
+         {$ELSE ~FPC}
+          bmp.Dormant;
+         {$ENDIF FPC}
+          if pat = WTSAT_RGB then
+            bmp.PixelFormat := pf24bit;
+
+          ResizeBitmap(bmp, AMaxSize, MulDiv(AMaxSize,thumbsize.cy, thumbsize.cx));
+          //FlipBmp(bmp);
+          MirrorVertical(Bmp);
+        end;
+      end;
+
+      CoUninitialize;
+    end;
+  end;
 end;
 
 end.

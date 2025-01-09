@@ -196,9 +196,17 @@ begin
   block.Size := 0;
 //  block.WriteString(pre+s);
   if Length(pre) > 0 then
+    {$IFDEF FPC}
+    block.Write(pre[1], Length(pre));
+    {$ELSE ~FPC}
     block.WriteData(@pre[1], Length(pre));
+    {$ENDIF ~FPC}
   if Length(s) > 0 then
+    {$IFDEF FPC}
+    block.Write(s[1], Length(s));
+    {$ELSE ~FPC}
     block.WriteData(@s[1], Length(s));
+    {$ENDIF ~FPC}
   block.seek(0, soBeginning);
 end; // headerInit
 

@@ -8,7 +8,8 @@ unit RnQPrefsLib;
 
 interface
 uses
-   Windows, Forms, Classes, iniFiles,
+   Windows, Classes, iniFiles,
+//   Forms,
    RDGlobal, RnQPrefsInt;
 
 type
@@ -32,6 +33,7 @@ type
     procedure Clear;
     Destructor Destroy; OverRide;
     function AsBlob: RawByteString;
+    function AsStr: String;
     function Clone: TPrefElement;
   end;
 
@@ -106,6 +108,7 @@ type
      function  getPrefVal(const key: String): TPrefElement;
 
      function  getAllPrefs: RawByteString;
+     function  getAllPrefsU: String;
      function  getArrPrefs(piArray: TArray<String>): RawByteString;
      function  GetDBAllPrefs: THashedStringList;
      function  GetDBPrefs(piArray: TArray<String>): THashedStringList;
@@ -159,9 +162,13 @@ type
 implementation
 
 uses
-   SysUtils, Character, ExtCtrls, StdCtrls, Controls, Types, StrUtils,
+   SysUtils, Character, Types, StrUtils,
+//   ExtCtrls,
+   StdCtrls,
+   Controls,
    RDUtils,
  {$IFDEF RNQ}
+   Vcl.ExtCtrls,
    {$IFDEF RNQ_VCL}
      RnQSpin,
    {$ENDIF RNQ_VCL}
@@ -792,14 +799,28 @@ var
 //  s: String;
 begin
   Result := '';
-  for I := 0 to fPrefStr.Count - 1 do
-   begin
-//     s := fPrefStr.Strings[i];
-//     if s > '' then
-     if Assigned(fPrefStr.Objects[i]) then
-      Result := Result + AnsiString(fPrefStr.Strings[i]) + '='+
-        TPrefElement(fPrefStr.Objects[i]).AsBlob + CRLF;
-   end;
+  if fPrefStr.Count > 0 then
+    for I := 0 to fPrefStr.Count - 1 do
+     begin
+       if Assigned(fPrefStr.Objects[i]) then
+        Result := Result + AnsiString(fPrefStr.Strings[i]) + '='+
+          TPrefElement(fPrefStr.Objects[i]).AsBlob + CRLF;
+     end;
+end;
+
+function TRnQPref.getAllPrefsU: String;
+var
+  I: Integer;
+//  s: String;
+begin
+  Result := '';
+  if fPrefStr.Count > 0 then
+    for I := 0 to fPrefStr.Count - 1 do
+     begin
+       if Assigned(fPrefStr.Objects[i]) then
+        Result := Result + fPrefStr.Strings[i] + '='+
+          TPrefElement(fPrefStr.Objects[i]).AsStr + CrLfS;
+     end;
 end;
 
 function TRnQPref.getArrPrefs(piArray: TArray<String>): RawByteString;
@@ -816,8 +837,6 @@ begin
 end;
 
 function TRnQPref.GetDBAllPrefs: THashedStringList;
-var
-  I: Integer;
 begin
   Result := THashedStringList.Create;
   Result.Assign(fPrefStr);
@@ -1468,6 +1487,38 @@ begin
     ET_Date: Result := AnsiString(FormatDateTime(Def_DateFormat, elem.tVal));
     ET_Bool: Result := yesno[elem.yVal];
     ET_Time: Result := AnsiString(FormatDateTime(Def_DateTimeFormat, elem.tVal));
+  end;
+end;
+
+function TPrefElement.AsStr: String;
+begin
+  case ElType of
+    ET_String: begin
+                 if elem.sVal <> NIL then
+                   Result := StrPas(elem.sVal)
+                  else
+                   Result := '';
+               end;
+    ET_Integer: begin
+                 Result := IntToStr(elem.iVal);
+                end;
+    ET_Blob:   begin
+                 if elem.bVal <> NIL then
+//                   Result := AnsiStrings.StrPas(elem.bVal)
+                   Result := Base64EncodeString(ansistrings.StrPas(elem.rVal))
+                  else
+                   Result := '';
+               end;
+    ET_Blob64:   begin
+                 if elem.rVal <> NIL then
+                   Result := Base64EncodeString(ansistrings.StrPas(elem.rVal))
+                  else
+                   Result := '';
+               end;
+    ET_Double: Str(elem.dVal : 0:4, Result);// :=  FloatToStr(elem.dVal);
+    ET_Date: Result := FormatDateTime(Def_DateFormat, elem.tVal);
+    ET_Time: Result := FormatDateTime(Def_DateTimeFormat, elem.tVal);
+    ET_Bool: Result := yesno[elem.yVal];
   end;
 end;
 

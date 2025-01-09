@@ -187,7 +187,6 @@ uses
   RnQStrings, RnQLangs,
   RQUtil, RQThemes, RnQGlobal,
 {$ENDIF RNQ}
-  RnQGraphics32,
  {$IFDEF FPC}
   LCLIntf, Controls,
  {$ENDIF FPC}
@@ -488,6 +487,7 @@ end; // create
 
 destructor TtrayIcon.Destroy;
 begin
+  hide;
  {$IFNDEF FPC}
   classes.DeallocateHWnd(data.wnd);
  {$ENDIF ~FPC}
@@ -574,11 +574,9 @@ end;
 procedure TtrayIcon.setIcon(bmp: TBitmap);
 begin
 
-  // ToDo Copy BMP to ICO
-  ico := bmp2ico3(bmp);
   if ico = NIL then
     ico := TIcon.Create;
-//  ico.Handle := icon;
+  ico.Handle := bmp2ico32(bmp);
   data.hIcon := ico.Handle;
   if TrayIconDataVersion = 4 then
     data.hBalloonIcon := data.hIcon;
@@ -624,7 +622,7 @@ begin
 //  strPCopy(data.szTip, s);
   ZeroMemory(@data.szTip[0], 128);
   ws := s;
-  strLCopy(data.szTip, PWideChar(ws), Length(ws));
+  strLCopy(data.szTip, PWideChar(ws), Length(s));
   update;
 end; // setTip
 
@@ -762,5 +760,9 @@ begin
   if assigned(onEvent) then
     onEvent(self, ev)
 end;
+
+INITIALIZATION
+  if CheckWin32Version(6, 1) then
+    TrayIconDataVersion := 4;
 
 end.

@@ -2015,8 +2015,8 @@ try
     MStream.Size := Sizeof(LayoutType) + (1 shl (8+2)) + MaskPixelSize;
     MPL := MStream.Memory;
     Move(PL^, MPL^, MStream.Size);   {for now, this is a direct copy}
-    MPL^.BIH.biBitCount := 8;
-    MPL^.BFH.bfSize := MStream.Size;
+    MPL.BIH.biBitCount := 8;
+    MPL.BFH.bfSize := MStream.Size;
     PDWORD(PByte(PL) + Sizeof(LayoutType))^ := 0;
     MPix := PByte(PByte(MPL) + Sizeof(LayoutType) + (1 shl (8+2)));   {where mask pixels start}
     PDWORD(PByte(MPix) - 4)^ := $FF;

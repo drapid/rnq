@@ -23,10 +23,6 @@ package for_rnq;
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
-{$DEFINE DEBUG}
-{$DEFINE RNQ}
-{$DEFINE USE_VST}
-{$DEFINE USE_VT_SAVES}
 {$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'For R&Q'}
 {$IMPLICITBUILD OFF}
@@ -48,8 +44,10 @@ contains
   RQMenuItem in 'RQMenuItem.pas',
   RnQGlobal in 'RnQGlobal.pas',
   RQThemes in 'RQThemes.pas',
+ {$IFDEF RNQ}
   RQmsgs in 'RQmsgs.pas' {msgsFrm},
   RQlog in 'RQlog.pas' {logFrm},
+ {$ENDIF RNQ}
   incapsulate in 'incapsulate.pas',
   RnQButtons in 'VCL\RnQButtons.pas',
   RnQSpin in 'VCL\RnQSpin.pas',
@@ -63,8 +61,6 @@ contains
   RnQSysUtils in 'RnQSysUtils.pas',
   RnQStrings in 'RnQStrings.pas',
   Base64 in 'RTL\Base64.pas',
-  VirtualTreesReg in 'External\VTV\Design\VirtualTreesReg.pas',
-  VirtualTrees in 'External\VTV\Source\VirtualTrees.pas',
   Sciter in 'SciDe\Sciter.pas';
 
 end.

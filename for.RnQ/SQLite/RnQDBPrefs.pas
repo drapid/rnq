@@ -184,7 +184,10 @@ implementation
 //   SynCommons,
    RnQ2SQL,
  {$ENDIF DB_ENABLED}
-   RnQStrings, RQUtil, RnQSpin, RDUtils, RQlog,
+   RnQStrings, RQUtil, RnQSpin, RDUtils,
+ {$IFDEF RNQ}
+   RQlog,
+ {$ENDIF RNQ}
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}

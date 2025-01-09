@@ -21,7 +21,6 @@ uses
   Graphics,
   Forms,
   Controls,
-  RDFileUtil,
   RDGlobal
   ;
 
@@ -296,6 +295,7 @@ implementation
  {$IFDEF RNQ}
    RnQGlobal,
  {$ENDIF RNQ}
+   RDFileUtil,
     litegif1,
     cgJpeg,
     uIconStream
@@ -361,6 +361,7 @@ type
 
 const
   CLSID_WICWEBPDecoder: TGUID = '{C747A836-4884-47B8-8544-002C41BD63D2}';
+  CLSID_WICWebpDecoder2: TGUID = '{7693e886-51c9-4070-8419-9f70738ec8fa}';
   CLSID_WICHeifDecoder: TGUID = '{e9a4a80a-44fe-4de4-8971-7150b10a5199}';
   GUID_ContainerFormatHeif: TGUID = '{e1e62521-6787-405b-a339-500715b5763f}';
 
@@ -586,7 +587,7 @@ begin
 end;
 {$ENDIF FPC}
 
-procedure InitTransAlpha(bmp: TBitmap);
+procedure InitTransAlpha(var bmp: TBitmap);
 var
  Scan32: pColor32Array;
  I, X: Cardinal;
@@ -597,6 +598,9 @@ var
 begin
 //  if not bmp.Transparent then
 //    Exit;
+  if bmp.PixelFormat <> pf32bit then
+    Exit;
+
   Bt := bmp.Transparent;
   h := bmp.Height-1; // Сразу вычетаем 1 !!!
   w := bmp.Width-1;  // Сразу вычетаем 1 !!!
@@ -647,6 +651,8 @@ var
 // A1: Double;
  h, w: Integer;
 begin
+  if bmp.PixelFormat <> pf32bit then
+    Exit;
   h := bmp.Height-1; // Сразу вычетаем 1 !!!
   w := bmp.Width-1;  // Сразу вычетаем 1 !!!
 {$IFDEF FPC}
@@ -673,13 +679,15 @@ begin
 {$ENDIF FPC}
 end;
 
-procedure Demultiply(bmp: TBitmap);
+procedure Demultiply(var bmp: TBitmap);
 var
  Scan32: pColor32Array;
  I, X: Cardinal;
  A1: Double;
  h, w: Integer;
 begin
+  if bmp.PixelFormat <> pf32bit then
+    Exit;
   h := bmp.Height-1;
   w := bmp.Width-1;
 {$IFDEF FPC}
@@ -812,18 +820,25 @@ begin
     pic.get_Width(a);
     pic.get_Height(b);
 
+    if not Assigned(bmp) then
+      begin
+        bmp := TBitmap.Create;
+        bmp.PixelFormat := pf24bit;
+      end;
+
     w := MulDiv(a, GetDeviceCaps(bmp.canvas.Handle, LOGPIXELSX), 2540);
     h := MulDiv(b, GetDeviceCaps(bmp.canvas.Handle, LOGPIXELSY), 2540);
     r.Left := 0;
     r.Top := 0;
     r.Right := w;
     r.Bottom := h;
-    if not Assigned(bmp) then
-      begin
-        bmp := TBitmap.Create;
-        bmp.PixelFormat := pf24bit;
-      end;
+ {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
     bmp.SetSize(w, h);
+ {$ELSE DELPHI9_UP}
+    bmp.Height := 0;
+    bmp.Width := w;
+    bmp.Height := h;
+ {$ENDIF DELPHI9_UP}
     pic.Render(bmp.canvas.Handle, 0, 0, w, h, 0, b, a, -b, r);
     pic := NIL;
   end;
@@ -831,7 +846,7 @@ end;
 
 { $ENDIF ~FPC}
 
-function  loadPic2(const fn: string; var bmp: TRnQBitmap):boolean;
+function loadPic2(const fn: string; var bmp: TRnQBitmap): Boolean;
 begin
   Result := loadPic(fn, bmp);
   if not Result then
@@ -842,7 +857,7 @@ begin
      end;
 end;
 
-function  loadPic(const fn: string; var bmp: TRnQBitmap; idx : Integer = 0):boolean;
+function loadPic(const fn: string; var bmp: TRnQBitmap; idx: Integer = 0): Boolean;
 var
   Stream: TStream;
    {$IFDEF USE_FLASH}
@@ -1026,9 +1041,10 @@ begin
     nil);
   Result:=StrPas( C );
 end;
-function LoadIconFromStream(str : TStream) : HIcon;
+
+function LoadIconFromStream(str: TStream): HIcon;
 {var
-  MStr : TMemoryStream;
+  MStr: TMemoryStream;
 begin
   if str is TMemoryStream then
     MStr := TMemoryStream( str )
@@ -1069,9 +1085,9 @@ begin
   UnInit_libJPEG;
 end;
 
-function  loadPic(var str0: TStream; var bmp: TRnQBitmap; idx: Integer = 0;
+function loadPic(var str0: TStream; var bmp: TRnQBitmap; idx: Integer = 0;
                   ff: TPAFormat = PA_FORMAT_UNK; name: string = '';
-                  PreserveStream: Boolean = false): boolean;
+                  PreserveStream: Boolean = false): Boolean;
 var
   png: TPNGObject;
  {$IFNDEF FPC}
@@ -1080,19 +1096,9 @@ var
   NonAnimated: Boolean;
   vJpg: TJPEGImage;
 
-//  {$IFNDEF RNQ_LITE}
-//  vJpg, vJpgBad: TsdJpegFormat;
-//  vJpg, vJpgBad: jpeg_decompress_struct;
-//  JPegR: TFPReaderJPEG;
-  pic: IPicture;
-  a, b: Integer;
-  h, w: Integer;
-  r: TRect;
-
   vBmp: TBitmap;
 //  {$ENDIF RNQ_LITE}
   IcoStream: TIconStream;
-  MemStream: TMemoryStream;
   i: Integer;
   Frame: TAniFrame;
 //  Grph: TGraphic;
@@ -1164,8 +1170,42 @@ begin
 //              if not PreserveStream then
 //                FreeAndNil(str0);
              end;
+        {$IFNDEF FPC}
             if not Assigned(vBmp) then
+              begin
+                WICpic := TWICImage.Create;
+                try
+                  WICpic.LoadFromStream(str0);
+                  if not WICpic.empty then
+                  begin
+                    if not Assigned(bmp) then
+                      bmp := TRnQBitmap.Create
+                    else
+                      bmp.Clear;
+                    bmp.f32Alpha := False;
+                    bmp.fFormat := ff;
 
+                    begin
+                      if not Assigned(bmp.fBmp) then
+                        bmp.fBmp := TBitmap.Create;
+                      bmp.fBmp.PixelFormat := pf24bit;
+                      bmp.fBmp.Assign(WICpic);
+                      bmp.fWidth := bmp.fBmp.Width;
+                      bmp.fHeight := bmp.fBmp.Height;
+                    end;
+                    Result := True;
+                  end;
+                 finally
+                   WICPic.Free;
+                   if not PreserveStream then
+                    begin
+                     str0.Free;
+                     str0 := NIL;
+                    end;
+                end;
+              end;
+        {$ELSE}
+            if not Assigned(vBmp) then
           try
 
 //           vBmp := JPegR.GetBMP(str);
@@ -1190,32 +1230,7 @@ begin
            MemStream := TMemoryStream.Create;
            MemStream.CopyFrom(str0, str0.Size);
            MemStream.Position := 0;
-           LoadPictureStream(MemStream, pic);
-           if pic <> NIL then
-             begin
-//              scr := CreateDC('DISPLAY', nil, nil, nil);
-              pic.get_Width(a);
-              pic.get_Height(b);
-
-              vBmp := TBitmap.Create;
-              vBmp.PixelFormat := pf24bit;
-//              w := MulDiv(a, GetDeviceCaps(scr, LOGPIXELSX), 2540);
-//              h := MulDiv(b, GetDeviceCaps(scr, LOGPIXELSY), 2540);
-              w := MulDiv(a, GetDeviceCaps(vBmp.Canvas.Handle, LOGPIXELSX), 2540);
-              h := MulDiv(b, GetDeviceCaps(vBmp.Canvas.Handle, LOGPIXELSY), 2540);
-            //  a := 50; b := 120;
-              r.Left := 0; r.Top := 0; r.Right := w; r.Bottom := h;
- {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
-              vBmp.SetSize(w, h);
- {$ELSE DELPHI9_UP}
-              vBmp.Height := 0;
-              vBmp.Width := w;
-              vBmp.Height := h;
- {$ENDIF DELPHI9_UP}
-              pic.Render(vBmp.Canvas.Handle, 0, 0, w, h, 0, b, a, -b, r);
-              pic := NIL;
-             end;
-
+           LoadPictureStream2(MemStream, vBmp);
            finally
             FreeAndNil(MemStream);
             if not PreserveStream then
@@ -1226,6 +1241,7 @@ begin
              except
             end;
            end;
+        {$ENDIF}
           except
 //           vJpgBad := vJpg;
 //           vJpg := NIL;
@@ -1491,29 +1507,42 @@ begin
        exit;
      end;
    {$IFNDEF FPC}
-    PA_FORMAT_TIF, PA_FORMAT_WEBP, PA_FORMAT_HEIF,  PA_FORMAT_HEIC:
+    PA_FORMAT_TIF, PA_FORMAT_WEBP, PA_FORMAT_HEIF, PA_FORMAT_HEIC:
       begin
         WICpic := TWICImage.Create;
         try
-          WICpic.LoadFromStream(str0);
+          try
+            WICpic.LoadFromStream(str0);
+           except
+           //
+          end;
           if not WICpic.empty then
           begin
             if not Assigned(bmp) then
               bmp := TRnQBitmap.Create
             else
               bmp.Clear;
-            bmp.f32Alpha := false;
+            bmp.f32Alpha := True;
             bmp.fFormat := ff;
 
             begin
               if not Assigned(bmp.fBmp) then
                 bmp.fBmp := TBitmap.Create;
-              bmp.fBmp.PixelFormat := pf24bit;
-              bmp.f32Alpha := false;
+              if bmp.f32Alpha then
+                begin
+                  bmp.fBmp.PixelFormat := pf32bit;
+                  bmp.fBmp.AlphaFormat := afDefined;
+                end
+               else
+                bmp.fBmp.PixelFormat := pf24bit;
               bmp.fBmp.Assign(WICpic);
               bmp.fWidth := bmp.fBmp.Width;
               bmp.fHeight := bmp.fBmp.Height;
             end;
+            if WICpic.IsAnimating then
+              begin
+                bmp.FNumFrames := WICpic.FrameCount;
+              end;
 
             Result := True;
           end;
@@ -3333,6 +3362,12 @@ begin
        isWEBPSupport := true;
       end;
 
+    if (not isWEBPSupport) and Succeeded( FImagingFactory.CreateComponentInfo(CLSID_WICWEBPDecoder2, ctInfo) ) then
+      begin
+       ctInfo := NIL;
+       isWEBPSupport := true;
+      end;
+
     if Succeeded( FImagingFactory.CreateComponentInfo(CLSID_WICHeifDecoder, ctInfo) ) then
       begin
        ctInfo := NIL;
@@ -4989,13 +5024,24 @@ with result.Canvas do
   result.transparentcolor := bmp.transparentcolor;
 end; // traspBmp
 
+procedure initLibs(path: String = '');
+var
+  h: HMODULE;
+begin
+  h := LoadLibraryW(PWideChar( path + 'jpegturbo.dll'));
+  if h <> 0 then
+  begin
+    fJPEGTurbo := True;
+    FreeLibrary(h);
+    TJpegImage.LibPathName := path + 'jpegturbo.dll';
+  end else
+    fJPEGTurbo := False;
+end;
+
+
 var
   DC: HDC;
   ColorBits: Byte;
-  h: HMODULE;
- {$IFNDEF RNQ}
-  modulesPath: String;
- {$ENDIF RNQ}
 
 initialization
   DC := GetDC(0);
@@ -5028,18 +5074,12 @@ initialization
   // Stock objects doesn't have to be deleted.
   SystemPalette16 := GetStockObject(DEFAULT_PALETTE);
 {$endif}
- {$IFNDEF RNQ}
-  modulesPath := '';
- {$ENDIF RNQ}
 
-  h := LoadLibraryW(PWideChar( modulesPath + 'jpegturbo.dll'));
-  if h <> 0 then
-  begin
-    fJPEGTurbo := True;
-    FreeLibrary(h);
-    TJpegImage.LibPathName := modulesPath + 'jpegturbo.dll';
-  end else
-    fJPEGTurbo := False;
+ {$IFDEF RNQ}
+  initLibs(modulesPath);
+ {$ELSE ~RNQ}
+  initLibs();
+ {$ENDIF RNQ}
 
 finalization
   if ThePalette <> 0 then

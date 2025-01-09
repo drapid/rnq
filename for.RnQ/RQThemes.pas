@@ -435,8 +435,10 @@ implementation
   RDUtils,
   RnQGlobal, RnQLangs,
   RQUtil,
+  EmojiConst,
  {$IFDEF RNQ}
-   RQlog, EmojiConst,
+   RQlog,
+   mmSystem,
  {$ENDIF RNQ}
  {$IFDEF USE_ZIP}
   RnQZip,
@@ -449,7 +451,7 @@ implementation
    SevenZip,
  {$ENDIF USE_7Z}
   RnQDialogs,
-  CommCtrl, mmSystem, Types;
+  CommCtrl, Types;
 type
   TRQsection=(_null, _pics, _icons, _smiles, _sounds, _ico, _smile, _str, _desc, _fontfile);
 const
@@ -887,8 +889,10 @@ begin
 
   if pTSC in [tsc_all, tsc_sounds] then
   begin
+   {$IFDEF RNQ}
     if Fsounds.Count > 0 then
       SoundStop;
+   {$ENDIF RNQ}
     For i := 0 to Fsounds.Count-1 do
      begin
       so := TSndObj(Fsounds.Objects[i]);
@@ -2149,6 +2153,7 @@ var
   i: Integer;
 //  s: String;
 begin
+ {$IFDEF RNQ}
   result := True;
   i := Fsounds.IndexOf(AnsiLowerCase(name));
   if i >= 0 then
@@ -2162,6 +2167,7 @@ begin
      end;
    end
   else
+ {$ENDIF RNQ}
    result := false;
 end;
 
@@ -4449,10 +4455,11 @@ begin
 end;
 
 procedure TRQtheme.refreshThemelist;
- procedure ProcessFile(Const fn, subfile: String; s: RawByteString);
+ procedure ProcessFile(Const fn, subfile: String; const s2: RawByteString);
  var
   line, k, v, section: RawByteString;
-  procedure InternalprocessTheme(var ati: aThemeinfo);
+  p: Integer;
+  procedure InternalProcessTheme(var ati: aThemeinfo);
   var
     n: integer;
   begin
@@ -4462,9 +4469,10 @@ procedure TRQtheme.refreshThemelist;
       ati[n].fn := fn;
       ati[n].subFile := subfile;
       section := '';
-      while s>'' do
+//      while s>'' do
+      while p < Length(s2) do
         begin
-        line := chopline(s);
+        line := choplineV(s2, p);
         if (line>'') and (line[1]='[') then
           begin
           line := trim(line);
@@ -4490,20 +4498,22 @@ procedure TRQtheme.refreshThemelist;
         desc := trimright(desc);
   end;
  begin
-     line := trim(chopline(s));
+//     line := trim(chopline(s));
+   p := 1;
+   line := trim(choplineV(s2, p));
     if (line='&RQ theme file version 1')
        or (line='R&Q theme file version 1') then
      begin
-      InternalprocessTheme(themelist2);
+      InternalProcessTheme(themelist2);
      end
     else
      if (line='R&Q smiles file version 1') then
      begin
-      InternalprocessTheme(smileList);
+      InternalProcessTheme(smileList);
      end;
      if (line='R&Q sounds file version 1') then
      begin
-      InternalprocessTheme(soundList);
+      InternalProcessTheme(soundList);
      end;
   end;
   procedure addDefTheme(var ati: aThemeinfo);
@@ -4572,16 +4582,10 @@ begin
       begin
         fn := sr.name;
         ts.pathType := pt_zip;
-  //      zp := TKAZip.Create(NIL);
-  //      zp.Open(myPath+themesPath+fn);
-  //      if zp.IsZipFile > 0 then
         ts.zp := TZipFile.Create;
         ts.zp.LoadFromFile(theme_paths[ti] + fn, True);
         if ts.zp.Count > 0 then
          begin
-  {        for I := 0 to zp.Entries.Count - 1 do
-           if (LastDelimiter('\/:', zp.Entries.Items[i].FileName) <= 0)and
-              (ExtractFileExt(zp.Entries.Items[i].FileName) = '.ini')  then}
           for I := 0 to ts.zp.Count - 1 do
           begin
            w := ts.zp.Name[i];
@@ -5647,7 +5651,9 @@ initialization
   if (csDesigning in Application.ComponentState) then
    begin
      logpref.evts.onfile := True;
+ {$IFDEF RNQ}
      loggaEvtS('default theme loading', '', True);
+ {$ENDIF RNQ}
      theme.load('', '', True);
    end;
 
@@ -5657,7 +5663,9 @@ finalization
 
   theme.Free;
   theme := NIL;
+ {$IFDEF RNQ}
   loggaEvtS('Theme unloaded', '', True);
+ {$ENDIF RNQ}
 
 //  RQSmiles.free;
 //  RQSmiles := NIL;

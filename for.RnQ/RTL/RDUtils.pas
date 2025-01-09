@@ -83,9 +83,9 @@ function  bool2str(const b: Boolean): RawByteString;
   function color2str(color: Tcolor): AnsiString;
   function color2strU(color: Tcolor): UnicodeString;
   function Color2HTML(Color: TColor): String;
-  function IntToHexA(Value: Integer; Digits: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}
-  function IntToHexAL(Value: Integer; Digits: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}
-  function IntToStrA(Value: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}  overload;
+  function IntToHexA(Value: UInt32; Digits: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}
+  function IntToHexAL(Value: UInt32; Digits: Integer): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}
+  function IntToStrA(Value: UInt32): AnsiString; {$IFNDEF UNICODE}{$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}{$ENDIF UNICODE}  overload;
   function intToStrA(i, d: Integer): AnsiString; overload;
   function intToStr(i, d: Integer): string; overload;
   function strToIntA(s: RawByteString): Integer;
@@ -211,6 +211,10 @@ function  bool2str(const b: Boolean): RawByteString;
   function Int64AsDouble(Value: int64): double; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   function TryStrToLongWord(const S: string; var Value: LongWord): Boolean;
 
+  function bmp2ico32(bitmap: Tbitmap): HICON;
+  function bmp2ico24(bitmap: Tbitmap): HICON;
+  procedure ico2bmp2(pIcon: HIcon; bmp: TBitmap);
+
 { $IFNDEF UNICODE }
 var
   RnQDefaultSystemCodePage: Integer;
@@ -220,6 +224,7 @@ var
 implementation
   uses
     StrUtils, Math,
+    commctrl,
   {$IFDEF UNICODE}
     Character,
     {$IFDEF DELPHI9_UP}
@@ -998,15 +1003,15 @@ end;
 
 
  {$IF DEFINED(WIN64) OR DEFINED(FPC)}
-  function IntToHexA(Value: Integer; Digits: Integer): AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+  function IntToHexA(Value: UInt32; Digits: Integer): AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   begin
     Result := IntToHex(Value, Digits);
   end;
-  function IntToStrA(Value : Integer) : AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+  function IntToStrA(Value : UInt32) : AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   begin
     Result := intToStr(Value);
   end;
-  function IntToHexAL(Value: Integer; Digits: Integer): AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
+  function IntToHexAL(Value: UInt32; Digits: Integer): AnsiString; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   begin
     Result := LowerCase(IntToHex(Value, Digits));
   end;
@@ -1067,7 +1072,7 @@ asm // StackAlignSafe
 @D5:
 end;
 
-function IntToHexA(Value: Integer; Digits: Integer): AnsiString;
+function IntToHexA(Value: UInt32; Digits: Integer): AnsiString;
 //  FmtStr(Result, '%.*x', [Digits, Value]);
 asm
         CMP     EDX, 32        // Digits < buffer length?
@@ -1144,7 +1149,7 @@ asm // StackAlignSafe
 @D5:
 end;
 
-function IntToHexAL(Value: Integer; Digits: Integer): AnsiString;
+function IntToHexAL(Value: UInt32; Digits: Integer): AnsiString;
 //  FmtStr(Result, '%.*x', [Digits, Value]);
 asm
         CMP     EDX, 32        // Digits < buffer length?
@@ -1168,7 +1173,7 @@ asm
         POP     ESI
 end;
 
-function IntToStrA(Value: Integer): AnsiString;
+function IntToStrA(Value: UInt32): AnsiString;
 //  FmtStr(Result, '%d', [Value]);
 asm
         PUSH    ESI
@@ -1764,7 +1769,7 @@ begin
       end;
       {$ifdef FPC}
       widestringmanager.Ansi2UnicodeMoveProc(@tmp4[1],
-        CP_UTF8, tmpU, len - j);
+        CP_UTF8, tmpU, 4); //len - j);
       Move(Pointer(tmpU)^,pc^,length(tmpU)*2);
       k := length(tmpU);
       {$else}
@@ -1804,7 +1809,7 @@ begin
       end;
 //      Result[j]:=chr(tmp);
       inc(j);
-      pc^ := chr(tmp);
+      pc^ := WideChar(tmp);
       inc(pc);
       continue;
     end;
@@ -1825,7 +1830,8 @@ begin
       tmp := tmp or (c and $3F);
 //      Result[j]:=chr(tmp);
       inc(j);
-      pc^ := chr(tmp);
+      //pc^ := chr(tmp);
+      pc^ := WideChar(tmp);
       inc(pc);
     end
     else begin
@@ -2703,6 +2709,8 @@ var
   i, l: Integer;
 begin
   l := Length(s);
+  if pos0 < 1 then
+    pos0 := 1;
   if pos0 < l then
     for i := pos0 to l do
       case s[i] of
@@ -2908,6 +2916,74 @@ begin
   if Result then
     Value := LongWord(Int64Value);
 end;
+
+function bmp2ico32(bitmap: Tbitmap): HICON;
+var
+  il: THandle;
+  i: Integer;
+  mh: THandle;
+  sz: Integer;
+begin
+  mh := bitmap.MaskHandle;
+  sz := min(bitmap.Width, bitmap.Height);
+  if mh <> 0 then
+    il := ImageList_Create(sz, sz, ILC_COLOR32 or ILC_MASK, 0, 0)
+   else
+    il := ImageList_Create(sz, sz, ILC_COLOR32, 0, 0)
+    ;
+  i := ImageList_Add(il, bitmap.Handle, mh);
+  if i >= 0 then
+    Result := ImageList_ExtractIcon(0, il, i)
+   else
+    Result := 0;
+  ImageList_Destroy(il);
+end;
+
+function bmp2ico24(bitmap: Tbitmap): HICON;
+var
+  il: THandle;
+  i: Integer;
+begin
+//  il := ImageList_Create(Min(bitmap.Width, iconX), Min(bitmap.Height, iconY), ILC_COLOR32 or ILC_MASK, 0, 0);
+  il := ImageList_Create(min(bitmap.Width, bitmap.Height), min(bitmap.Width,bitmap.Height), ILC_COLOR24 or ILC_MASK, 0, 0);
+  i := ImageList_Add(il, bitmap.Handle, bitmap.MaskHandle);
+  if i >= 0 then
+    Result := ImageList_ExtractIcon(0, il, i)
+   else
+    Result := 0;
+  ImageList_Destroy(il);
+end;
+
+procedure ico2bmp2(pIcon: HIcon; bmp: TBitmap);
+var
+  ilH: HIMAGELIST;
+  iconX, iconY: integer;
+begin
+//  il := TCustomImageList.Create(NIL);
+{   ilH:=  ImageList_Create(icon_size, icon_size, ILC_COLOR32// or ILC_MASK
+   , 0, 0);
+  ImageList_AddIcon(ilH, ico.Handle);
+  ImageList_Draw(ilH, 0, bmp.Canvas.Handle, 0, 0, ILD_NORMAL);
+  ImageList_Destroy(ilh);}
+
+  iconX := GetSystemMetrics(SM_CXICON);
+  iconY := GetSystemMetrics(SM_CYICON);
+
+ {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
+  bmp.SetSize(iconX, iconY);
+ {$ELSE DELPHI_9_dn}
+  bmp.Height := 0;
+  bmp.Width := iconX;
+  bmp.Height := iconY;
+ {$ENDIF DELPHI9_UP}// By Rapid D
+  bmp.TransparentColor := $010100;
+  ilH := ImageList_Create(iconX, iconY, ILC_COLOR32 or ILC_MASK, 0, 0);
+  ImageList_AddIcon(ilH, pIcon);
+    ImageList_DrawEx(ilH, 0, bmp.Canvas.Handle, 0, 0, 0, 0, bmp.TransparentColor, CLR_NONE, ILD_NORMAL);
+  ImageList_Destroy(ilH);
+  bmp.Transparent := True;
+end;
+
 
 { $IFNDEF UNICODE }
 initialization

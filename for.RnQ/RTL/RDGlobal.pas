@@ -133,6 +133,7 @@ type
 type
   PGPRect = ^TGPRect;
   TGPRect = packed record
+     function rect: TRect;
       case Integer of
       0: (X, Y, Width, Height: Integer);
       1: (TopLeft : TGPPoint; size: TGPSize);
@@ -308,6 +309,14 @@ end;
         Result.Height := Self.Height;
       end
   end;
+
+function TGPRect.rect: TRect;
+begin
+  Result.Left := Self.X;
+  Result.Top  := Self.Y;
+  Result.Right:= Self.X + Self.Width;
+  Result.Bottom := Self.Y + Self.Height;
+end;
 
   function MakeRect(x, y, width, height: Integer): TGPRect; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   begin

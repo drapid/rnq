@@ -75,13 +75,13 @@ resourcestring
 {$ENDIF}
 
  function OpenSaveFileDialog(ParentHandle: THandle;
-   const DefExt, Filter, InitialDir, Title: string;
-   var FileNames: string; IsOpenDialog: Boolean;
+   const DefExt, Filter, InitialDir, Title: UnicodeString;
+   var FileNames: UnicodeString; IsOpenDialog: Boolean;
    Multi: Boolean = false; pFlags: Cardinal = 0): Boolean;
 
 
 // function OpenDirDialogW(ParentHandle: THandle; Title : WideString; var DirName: WideString) : boolean;
- function OpenDirDialog(ParentHandle: THandle; Title: String; var DirName: String): boolean;
+ function OpenDirDialog(ParentHandle: THandle; Title: UnicodeString; var DirName: UnicodeString): boolean;
  function ChooseFontDlg(ParentHandle: THandle; Title: String; var Font: TFont): boolean;
 
 {$IFDEF usesVCL}
@@ -139,15 +139,15 @@ begin
 end;
 
 function OpenSaveFileDialog(ParentHandle: THandle;
-   const DefExt, Filter, InitialDir, Title: string; var FileNames: string;
+   const DefExt, Filter, InitialDir, Title: UnicodeString; var FileNames: UnicodeString;
    IsOpenDialog: Boolean; Multi: Boolean = false; pFlags: Cardinal = 0): Boolean;
 const
    OPENFILENAME_SIZE_VERSION_400 = 76;
 var
-   ofn: TOpenFilename;
-   szFile: array[0..32000] of Char;
-   szDir: array[0..32000] of Char;
-   vDir: String;
+   ofn: TOpenFilenameW;
+   szFile: array[0..32000] of WideChar;
+   szDir: array[0..32000] of WideChar;
+   fltr, vDir: UnicodeString;
    i, j: Integer;
 //   vEnd : Boolean;
 begin
@@ -163,13 +163,14 @@ begin
      lpstrFile := szFile;
      nMaxFile := SizeOf(szFile);
      if (Title <> '') then
-       lpstrTitle := PChar(Title);
+       lpstrTitle := PWideChar(Title);
      if (InitialDir <> '') then
-       lpstrInitialDir := PChar(InitialDir);
+       lpstrInitialDir := PWideChar(InitialDir);
      StrPCopy(lpstrFile, FileNames);
-     lpstrFilter := PChar(CharReplace(Filter, '|', #0) + #0#0);
+     fltr := CharReplace(Filter, '|', #0) + #0#0;
+     lpstrFilter := PWideChar(fltr);
    if DefExt <> '' then
-       lpstrDefExt := PChar(DefExt);
+       lpstrDefExt := PWideChar(DefExt);
    end;
   try
    ofn.Flags := ofn.Flags or pFlags;
@@ -177,11 +178,11 @@ begin
    begin
      i := -1;
      try
-       i := GetCurrentDirectory(length(szDir), szDir);
+       i := GetCurrentDirectoryW(length(szDir), szDir);
        if Multi then
          ofn.Flags := ofn.Flags or OFN_ALLOWMULTISELECT or OFN_EXPLORER or OFN_LONGNAMES;
 {$IFDEF FPC}
-       if GetOpenFileName(@ofn) then
+       if GetOpenFileNameW(@ofn) then
 {$ELSE ~FPC}
        if GetOpenFileName(ofn) then
 {$ENDIF FPC}
@@ -211,16 +212,16 @@ begin
        end;
       finally
        if i > 0 then
-         SetCurrentDirectory(szDir);
+         SetCurrentDirectoryW(szDir);
      end;
    end
    else
    begin
      i := -1;
      try
-       i := GetCurrentDirectory(length(szDir), szDir);
+       i := GetCurrentDirectoryW(length(szDir), szDir);
 {$IFDEF FPC}
-       if GetOpenFileName(@ofn) then
+       if GetOpenFileNameW(@ofn) then
 {$ELSE ~FPC}
        if GetOpenFileName(ofn) then
 {$ENDIF FPC}
@@ -230,7 +231,7 @@ begin
        end;
       finally
        if i > 0 then
-         SetCurrentDirectory(szDir);
+         SetCurrentDirectoryW(szDir);
      end;
    end;
   except
@@ -238,7 +239,7 @@ begin
   end;
 end;
 
-function OpenDirDialog(ParentHandle: THandle; Title: String; var DirName: String): boolean;
+function OpenDirDialog(ParentHandle: THandle; Title: UnicodeString; var DirName: UnicodeString): boolean;
 {$IFNDEF BIF_NONEWFOLDERBUTTON}
 const
   BIF_UAHINT = $100;   // Add a UA hint to the dialog, in place of the edit box. May not be combined with BIF_EDITBOX
@@ -247,10 +248,10 @@ const
 var
 //   TitleName: string;
    lpItemID: PItemIDList;
-   BrowseInfo: TBrowseInfo;
-//   BrowseInfo: TBrowseInfoW;
-   DisplayName: array[0..MAX_PATH] of char;
-   TempPath: array[0..MAX_PATH] of char;
+   //BrowseInfo: TBrowseInfo;
+   BrowseInfo: TBrowseInfoW;
+   DisplayName: array[0..MAX_PATH] of WideChar;
+   TempPath: array[0..MAX_PATH] of WideChar;
 //   TempPath: array[0..MAX_PATH] of WideChar;
 //   TempPath : PWideChar;
 begin
@@ -260,14 +261,13 @@ begin
 //   TitleName := 'Please specify a directory';
 
 //   BrowseInfo.lpszTitle := PWideChar(Title);
-   BrowseInfo.lpszTitle := PChar(Title);
+   BrowseInfo.lpszTitle := PWideChar(Title);
    BrowseInfo.ulFlags := BIF_RETURNONLYFSDIRS or BIF_NEWDIALOGSTYLE or BIF_NONEWFOLDERBUTTON or BIF_UAHINT;
-   lpItemID := SHBrowseForFolder(BrowseInfo);
-//   lpItemID := SHBrowseForFolderW(BrowseInfo);
+   lpItemID := SHBrowseForFolderW(BrowseInfo);
    if lpItemId <> nil then
    begin
-//    SHGetPathFromIDListW(lpItemID, TempPath);
-    SHGetPathFromIDList(lpItemID, TempPath);
+    SHGetPathFromIDListW(lpItemID, TempPath);
+//    SHGetPathFromIDList(lpItemID, TempPath);
     Result := True;
 //    DirName := WideCharToString(TempPath);
     DirName := StrPas(TempPath);

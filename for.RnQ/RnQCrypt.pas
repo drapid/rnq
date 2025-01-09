@@ -83,7 +83,6 @@ uses
   mormot.core.os,
   mormot.crypt.ecc,
   mormot.core.json,
-  mormot.core.text,
     {$ELSE not SynCrypto}
      {$IFDEF USE_WE_LIBS}
        //use Wolfgang Ehrhardt's}

@@ -26,7 +26,9 @@ implementation
 uses
   wininet, Registry, shellapi, multimon,
   ComObj, ShlObj, StrUtils,
-  RQlog,
+ {$IFDEF RNQ}
+   RQlog,
+ {$ENDIF RNQ}
   RDUtils, RDGlobal, RnQGlobal;
 
 type

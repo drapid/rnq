@@ -4,8 +4,13 @@ unit RnQNet;
 
 interface
  uses
-  Classes, OverbyteIcsWSocket, OverbyteIcsHttpProt,
-  OverbyteIcsNtlmMsgs, OverbyteIcsWSockBuf, OverbyteIcsSslBase,
+  Classes,
+  OverbyteIcsWSocket, OverbyteIcsHttpProt,
+  OverbyteIcsNtlmMsgs, OverbyteIcsWSockBuf,
+  OverbyteIcsTypes,
+{$IFDEF USE_SSL}
+  OverbyteIcsSslBase,
+{$ENDIF}
 {$IFDEF UseNTLMAuthentication}
   RnQHttpAuth,
 {$ENDIF}
@@ -51,18 +56,9 @@ type
 const
   proxyProto2Str: array [TproxyProto] of AnsiString=('NONE', 'SOCKS4', 'SOCKS5', 'HTTP/S', 'SYSTEM');
 
-//var
-   {:record
-    enabled: boolean;
-    auth: boolean;
-    proto: TproxyProto;
-//    addr: array [Tproxyproto] of Thostport;
-    NTLM: boolean;
-    user, pwd: string;
-    end; }
    Procedure CopyProxyArr(var pATo: TarrProxy; const pAFrom: TarrProxy);
    Procedure ClearProxyArr(var pa: TarrProxy);
-//procedure proxy_http_Enable(v_icq: TicqSession);
+//   procedure proxy_http_Enable(v_icq: TicqSession);
 //   procedure proxy_http_Enable(sock: TRnQSocket);
 
 
@@ -231,9 +227,9 @@ uses
    ;
 
 (*
-procedure proxy_http_Enable(v_icq : TicqSession);
+procedure proxy_http_Enable(v_icq: TicqSession);
 begin
-  v_icq.sock.http.enabled:=proxy.enabled and (proxy.proto=PP_HTTPS);
+  v_icq.sock.http.enabled := proxy.enabled and (proxy.proto=PP_HTTPS);
   if (proxy.proto=PP_HTTPS) then
    begin
     v_icq.sock.http.addr:=proxy.addr.host;
@@ -1101,9 +1097,9 @@ begin
         httpCli.ProxyUsername := MainProxy.user;
         httpCli.ProxyPassword := MainProxy.pwd;
         if MainProxy.NTLM then
-          httpCli.ProxyAuth := OverbyteIcsHttpProt.httpAuthNtlm
+          httpCli.ProxyAuth := OverbyteIcsTypes.httpAuthNtlm
         else
-          httpCli.ProxyAuth := OverbyteIcsHttpProt.httpAuthBasic;
+          httpCli.ProxyAuth := OverbyteIcsTypes.httpAuthBasic;
       end
     end
   end;
@@ -1317,9 +1313,9 @@ begin
               httpCli.ProxyUsername:= MainProxy.user;
               httpCli.ProxyPassword:= MainProxy.pwd;
               if MainProxy.NTLM then
-                httpCli.ProxyAuth := OverbyteIcsHttpProt.httpAuthNtlm
+                httpCli.ProxyAuth := OverbyteIcsTypes.httpAuthNtlm
                else
-                httpCli.ProxyAuth := OverbyteIcsHttpProt.httpAuthBasic;
+                httpCli.ProxyAuth := OverbyteIcsTypes.httpAuthBasic;
              end
            end
       end

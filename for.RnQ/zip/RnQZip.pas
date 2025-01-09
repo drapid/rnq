@@ -33,8 +33,8 @@ uses
 {$IFDEF RTL_NAMESPACES}System.SysUtils{$ELSE}SysUtils{$ENDIF},
 {$IFDEF RTL_NAMESPACES}System.Classes{$ELSE}Classes{$ENDIF},
   Types, Windows,
+  mormot.core.base,
  {$IFDEF FPC}
-  ZLib,
   ZlibHigh,
  {$ELSE ~FPC}
   System.ZLib,
@@ -233,6 +233,14 @@ function ZDecompressStr3(const sa: RawByteString; StreamType: TZStreamType = zsZ
 
 function ZCompressBytes(const sa: TBytes; StreamType: TZStreamType = zsZLib): TBytes;
 function ZDecompressBytes(const sa: TBytes): TBytes;
+
+ {$IFDEF ZIP_ZSTD}
+function ZSTDCompressStr(const sa: RawByteString): RawByteString;
+function ZSTDDecompressStr(const sa: RawByteString): RawByteString;
+ {$ENDIF ZIP_ZSTD}
+
+function ZLibVersion: String;
+function ZStdVersion: String;
 
 implementation
   uses
@@ -1006,17 +1014,8 @@ var
  {$IFDEF ZIP_AES}
   isEncr: Boolean;
   vAES_DATA: TAESExtraData;
-//  salt2: RawByteString;
-//  pwd_ver: RawByteString;
-//  cx: fcrypt_ctx;
-//  cx: T_fcrypt_ctx;
-//  pwd_verW: Word;
-//  s1: RawByteString;
-//  ofs: Integer;
-//  l: Integer;
-//  dataLen: Integer;
-//  Cont_Size: Integer;
  {$ENDIF ZIP_AES}
+  fn: String;
 begin
 //  Result := -1;
   SetLength(Files, High(Files) + 2);
@@ -1025,10 +1024,11 @@ begin
   if UTF8Support then
     Files[h].CommonFileHeader.GeneralPurposeBitFlag := Files[h].CommonFileHeader.GeneralPurposeBitFlag or (1 shl 11); // UTF8 support
 
+  fn := ToZipName(name);
   if UTF8Support then
-    Files[h].filename := StringToTBytes(name)
+    Files[h].filename := StringToTBytes(fn)
    else
-    Files[h].filename := StringToTBytes(name, 437)
+    Files[h].filename := StringToTBytes(fn, 437)
   ;
   Files[h].extrafield := '';
   Files[h].pass := pPass;
@@ -1158,12 +1158,13 @@ end;
 function  TZipFile.IndexOf(const s: String): Integer;
 var
   I: Integer;
+  fn: String;
   b1, b8: TBytes;
 begin
   Result := -1;
-  b8 := StringToTBytes(ToZipName(s), CP_UTF8);
-  b1 := StringToTBytes(ToZipName(s), 437);
-// s1 := ToZipName(s);
+  fn := ToZipName(s);
+  b8 := StringToTBytes(fn, CP_UTF8);
+  b1 := StringToTBytes(fn, 437);
   for I := 0 to Length(Files) - 1 do
 //  if AnsiSameText(Files[i].filename, b) then
   if (Files[i].UTFSupport) then
@@ -1416,6 +1417,58 @@ begin
   DestBuf.free;
 end;
 
+{$IFDEF ZIP_ZSTD}
+function ZSTDCompressStr(const sa: RawByteString): RawByteString;
+var
+  buf, destbuf: TRawByteStringStream;
+begin
+  if sa = '' then
+    Exit('');
+
+  buf := TRawByteStringStream.Create(sa);
+  destBuf := TRawByteStringStream.Create;
+  buf.Position := 0;
+  ZSTDCompressStream(buf, destBuf, 0);
+  buf.free;
+  Result := destbuf.DataString;
+  destBuf.free;
+end;
+
+function ZSTDDecompressStr(const sa: RawByteString): RawByteString;
+var
+  buf, destbuf: TRawByteStringStream;
+//  buf, destBuf: TMemoryStream;
+begin
+  if sa = '' then
+    Exit('');
+  buf := TRawByteStringStream.Create(sa);
+  destBuf := TRawByteStringStream.Create;
+  buf.Position := 0;
+  ZstdDecompressStream(buf, destBuf);
+  buf.free;
+  Result := destbuf.DataString;
+  destBuf.free;
+end;
+{$ENDIF ZIP_ZSTD}
+
+function ZLibVersion: String;
+begin
+  //Result := 'ZLib: ' + ZLIB_VERSION;
+ Result := 'ZLib: ' + ZlibGetVersionDll;
+end;
+
+function ZStdVersion: String;
+begin
+ {$IFDEF ZIP_ZSTD}
+  try
+    Result := 'libZStd: ' + ZSTD_versionString;
+   except
+    Result := 'libZStd: "' + ZSTDDllName + '" not found';
+  end;
+ {$ELSE ~ZIP_ZSTD}
+  Result := 'libZStd: Disabled';
+ {$ENDIF ZIP_ZSTD}
+end;
 
 end.
 
