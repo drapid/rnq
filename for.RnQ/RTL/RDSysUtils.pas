@@ -15,6 +15,7 @@ uses
   {$IFDEF FMX}
   FMX.Types,
   FMX.Forms,
+  FMX.Graphics,
   {$ELSE ~FMX}
   Forms, graphics,
   {$ENDIF FMX}
@@ -177,6 +178,9 @@ implementation
 uses
   wininet, Registry, multimon, ActiveX,
   ComObj, StrUtils,
+ {$IFNDEF FMX}
+  RnQ.Graphics.Utils,
+ {$ENDIF ~FMX}
  {$IFDEF FPC}
   Win32Extra,
  {$ENDIF FPC}
@@ -1118,7 +1122,7 @@ Var
    IU   : IUnknown;
    SL   : IShellLinkW;
    PF   : IPersistFile;
-   HRES : HRESULT;
+//   HRES : HRESULT;
    FD   : TWin32FindDataW;
 begin
   CoInitialize(nil);
@@ -1133,39 +1137,18 @@ begin
  {$ELSE ~FPC}
   olecheck(SL.GetPath(Desc, MAX_PATH, FD, SLGP_UNCPRIORITY));
  {$ENDIF FPC}
-     ProgramPath := StrPas(Desc);
+  ProgramPath := StrPas(Desc);
 
 
-     SL.GetDescription(Desc, MAX_PATH);
-     ProgramInfo := StrPas(Desc);
+  SL.GetDescription(Desc, MAX_PATH);
+  ProgramInfo := StrPas(Desc);
 
-     SL.GetWorkingDirectory(Desc, MAX_PATH);
-     ProgramWorkPath := StrPas(Desc);
+  SL.GetWorkingDirectory(Desc, MAX_PATH);
+  ProgramWorkPath := StrPas(Desc);
 
-     SL.GetArguments(Desc, MAX_PATH);
-     ProgramParams := StrPas(Desc);
+  SL.GetArguments(Desc, MAX_PATH);
+  ProgramParams := StrPas(Desc);
 
-end;
-
-
-Procedure MirrorVertical(var Picture: TBitmap);
-var BMP: TBitmap;
-     i,j: integer;
-begin
-BMP := TBitmap.Create;
-BMP.Assign(Picture);
-for i := 0 to BMP.Height-1 do
-  for j := 0 to BMP.Width-1 do
-   Picture.canvas.Pixels[j, BMP.Height-i-1] := BMP.canvas.Pixels[j, i];
-BMP.free;
-end;
-
-procedure ResizeBitmap(Bitmap: TBitmap; const NewWidth, NewHeight: integer);
-begin
-  Bitmap.Canvas.StretchDraw(
-    Rect(0, 0, NewWidth, NewHeight),
-    Bitmap);
-  Bitmap.SetSize(NewWidth, NewHeight);
 end;
 
 function GetThumbFromCache(AFileName: UnicodeString; out Bmp: TBitmap; AMaxSize: Integer = 120): HRESULT;
@@ -1173,72 +1156,80 @@ var
   thumbcache: IThumbnailCache;
   sharedbmp: ISharedBitmap;
   shellitem: IShellItem;
-  thumbflags: PWTS_CACHEFLAGS;
-  thumbid: PWTS_THUMBNAILID;
+//  thumbflags: PWTS_CACHEFLAGS;
+//  thumbid: PWTS_THUMBNAILID;
   thumbsize: TSize;
   hBmp: HBITMAP;
   pat: WTS_ALPHATYPE;
 begin
+  Result := $80000001;
+ {$IFDEF FMX}
+   Exit;
+ {$ELSE ~FMX}
+
   if not Assigned(Bmp) then
     Exit;
+  try
+    Result := CoInitialize(Nil);
 
-  Result := CoInitialize(Nil);
-
-  Result := CoCreateInstance(
-    CLSID_LocalThumbnailCache,
-    nil,
-    CLSCTX_INPROC,
-    IThumbnailCache,
-    thumbcache
-  );
-
-  if Succeeded(Result) then
-  begin
-    Result := SHCreateItemFromParsingName(
-      PWideChar(AFileName),
+    Result := CoCreateInstance(
+      CLSID_LocalThumbnailCache,
       nil,
-      IShellItem,
-      shellitem
+      CLSCTX_INPROC,
+      IThumbnailCache,
+      thumbcache
     );
 
     if Succeeded(Result) then
     begin
-      Result := thumbcache.GetThumbnail(
-        shellitem,
-        AMaxSize,
-        WTS_EXTRACT,
-        sharedbmp,
-        nil, //thumbflags,
-        nil //thumbid
+      Result := SHCreateItemFromParsingName(
+        PWideChar(AFileName),
+        nil,
+        IShellItem,
+        shellitem
       );
 
       if Succeeded(Result) then
       begin
-        sharedbmp.GetSize(thumbsize);
-        sharedbmp.GetFormat(pat);
+        Result := thumbcache.GetThumbnail(
+          shellitem,
+          AMaxSize,
+          WTS_EXTRACT,
+          sharedbmp,
+          nil, //thumbflags,
+          nil //thumbid
+        );
 
-        Result := sharedbmp.GetSharedBitmap(hBmp);
         if Succeeded(Result) then
         begin
-          bmp.SetSize(thumbsize.cx, thumbsize.cy);
-          bmp.Handle := hBmp;
-         {$IFDEF FPC}
-          bmp.FreeImage;
-         {$ELSE ~FPC}
-          bmp.Dormant;
-         {$ENDIF FPC}
-          if pat = WTSAT_RGB then
-            bmp.PixelFormat := pf24bit;
+          sharedbmp.GetSize(thumbsize);
+          sharedbmp.GetFormat(pat);
 
-          ResizeBitmap(bmp, AMaxSize, MulDiv(AMaxSize,thumbsize.cy, thumbsize.cx));
-          //FlipBmp(bmp);
-          MirrorVertical(Bmp);
+          Result := sharedbmp.GetSharedBitmap(hBmp);
+          if Succeeded(Result) then
+          begin
+            bmp.SetSize(thumbsize.cx, thumbsize.cy);
+            bmp.Handle := hBmp;
+           {$IFDEF FPC}
+            bmp.FreeImage;
+           {$ELSE ~FPC}
+            bmp.Dormant;
+           {$ENDIF FPC}
+            if pat = WTSAT_RGB then
+              bmp.PixelFormat := pf24bit;
+
+            StretchPic(bmp, AMaxSize, MulDiv(AMaxSize,thumbsize.cy, thumbsize.cx));
+            FlipVertical(Bmp);
+          end;
         end;
-      end;
 
-      CoUninitialize;
+        CoUninitialize;
+      end;
     end;
+   except
+    Result := $80000001;
   end;
+ {$ENDIF FMX}
 end;
 
 end.

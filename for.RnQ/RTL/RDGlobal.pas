@@ -11,6 +11,9 @@ unit RDGlobal;
 interface
 uses
   Classes, Messages, Types,
+  {$IFNDEF FPC}
+  UITypes,
+  {$ENDIF ~FPC}
   {$IFDEF FMX}
   FMX.Forms,
   FMX.Objects
@@ -101,6 +104,34 @@ type
   end;
 
 type
+  PColor32 = ^TColor32;
+ {$IFDEF FPC}
+  TColor32 = packed record
+   case boolean of
+    True:
+      (B,R,G,A: Byte);
+//      (B,G,R,A: Byte);
+    false:
+      (color : Cardinal);
+//   end;
+  end;
+ {$ELSE ~FPC}
+  TColor32 = TAlphaColorRec;
+ {$ENDIF}
+  PColor32Array = ^TColor32Array;
+  TColor32Array = array [0..MaxInt div SizeOf(TColor32) - 1] of TColor32;
+
+
+  PColor24 = ^TColor24;
+
+  TColor24= packed record
+    B,R,G: Byte;
+  end;
+  PColor24Array = ^TColor24Array;
+  TColor24Array = array [0..MaxInt div SizeOf(TColor24) - 1] of TColor24;
+
+
+type
   PGPPoint = ^TGPPoint;
   TGPPoint = packed record
     X: Integer;
@@ -144,6 +175,7 @@ type
   function MakeRect(location: TGPPoint; size: TGPSize): TGPRect; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   function MakeRect(const Rect: TRect): TGPRect; overload; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
 
+ {$IFNDEF FMX}
 type
 //  TMsgDlgType = (mtWarning, mtError, mtInformation, mtConfirmation, mtCustom);
   TMsgDlgType = (mtWarning, mtError, mtInformation, mtConfirmation, mtBuzz, mtCustom);
@@ -151,6 +183,7 @@ type
   TMsgDlgBtn = (mbYes, mbNo, mbOK, mbCancel, mbAbort, mbRetry, mbIgnore,
     mbAll, mbNoToAll, mbYesToAll, mbHelp, mbClose);
   TMsgDlgButtons = set of TMsgDlgBtn;
+ {$ENDIF ~FMX}
 
 type
   TPAFormat = (PA_FORMAT_UNK, PA_FORMAT_BMP, PA_FORMAT_JPEG,
@@ -180,12 +213,11 @@ const
   Def_DateFormat     = 'DD.MM.YYYY';
 
 const
-  AlphaMask = $FF000000;
-
-
   GByte = 1024*1024*1024;
   MByte = 1024*1024;
 
+const
+  AlphaMask = $FF000000;
   cDefaultDPI = 96;
 
 var

@@ -135,8 +135,10 @@ function  bool2str(const b: Boolean): RawByteString;
   function  chop(const ss: RawByteString; var s: RawByteString): RawByteString; overload;
   function  chopline(var s: RawByteString): RawByteString; overload;
   function  choplineV(const s: RawByteString; var pos0: Integer): RawByteString;
+  function  chopCRLFV(const s: RawByteString; var pos0: Integer): RawByteString;
   function  chop(const ss: RawByteString; var s: AnsiString): RawByteString; overload;
   function  chop(i, l: Integer; var s: AnsiString): AnsiString; overload;
+
 
  {$IFDEF UNICODE}
 { split S in position where SS is found, the first part is returned
@@ -211,9 +213,11 @@ function  bool2str(const b: Boolean): RawByteString;
   function Int64AsDouble(Value: int64): double; {$IFDEF HAS_INLINE} inline; {$ENDIF HAS_INLINE}
   function TryStrToLongWord(const S: string; var Value: LongWord): Boolean;
 
+ {$IFNDEF FMX}
   function bmp2ico32(bitmap: Tbitmap): HICON;
   function bmp2ico24(bitmap: Tbitmap): HICON;
   procedure ico2bmp2(pIcon: HIcon; bmp: TBitmap);
+ {$ENDIF ~FMX}
 
 { $IFNDEF UNICODE }
 var
@@ -2739,6 +2743,42 @@ begin
   pos0 := Length(s)+1;
 end; // chopline
 
+function  chopCRLFV(const s: RawByteString; var pos0: Integer): RawByteString;
+var
+  i, l: Integer;
+begin
+  l := Length(s);
+  if pos0 < 1 then
+    pos0 := 1;
+  if pos0 < l then
+    for i := pos0 to l do
+//      case s[i] of
+//        #10:
+//          begin
+//            result := Copy(s, pos0, i-pos0);
+//            pos0 := i+1;
+//            exit;
+//          end;
+//        #13:
+      if s[i] = #13 then
+          begin
+            if (i < length(s)) and (s[i+1]=#10) then
+              begin
+                result := Copy(s, pos0, i-pos0);
+                pos0 := i+2;
+              end
+             else
+              begin
+                result := Copy(s, pos0, i-pos0);
+                pos0 := i+1;
+              end;
+            exit;
+          end;
+//      end;
+  result := Copy(s, pos0);
+  pos0 := Length(s)+1;
+end; // chopline
+
  {$IFDEF UNICODE}
 function chop(i, l: Integer; var s: UnicodeString): UnicodeString;
 begin
@@ -2917,6 +2957,7 @@ begin
     Value := LongWord(Int64Value);
 end;
 
+{$IFNDEF FMX}
 function bmp2ico32(bitmap: Tbitmap): HICON;
 var
   il: THandle;
@@ -2983,6 +3024,7 @@ begin
   ImageList_Destroy(ilH);
   bmp.Transparent := True;
 end;
+{$ENDIF FMX}
 
 
 { $IFNDEF UNICODE }

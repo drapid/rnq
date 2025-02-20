@@ -21,6 +21,7 @@ uses
 
 const
   ZSTDDllDefaultName = 'libzstd.dll';
+  ZSTDDllDefaultName2 = 'zstd.dll';
 
 {$IFDEF ZSTD_STATIC_LINKING}
 const
@@ -1192,14 +1193,27 @@ var
   _ZSTD_sizeof_DDict: TZSTD_sizeof_DDict;
 
 procedure InitZSTD;
+var
+  libLoaded: Boolean;
+  libLoadedFN: UnicodeString;
 begin
   EnterCriticalSection(ZSTDLock);
   try
-    if ZSTD <> 0 then Exit;
+    if ZSTD <> 0 then
+      Exit;
     if ZSTDDllName = '' then
-      ZSTDDllName := ZSTDDllDefaultName;
-    ZSTD := LoadLibraryW(PWideChar(ZSTDDllName));
-    if ZSTD = 0 then Exit;
+      begin
+       libLoadedFN := ZSTDDllDefaultName;
+       if not FileExists(libLoadedFN) then
+         libLoadedFN := ZSTDDllDefaultName2;
+      end
+     else
+      libLoadedFN := ZSTDDllName;
+    ZSTD := LoadLibraryW(PWideChar(libLoadedFN));
+    if ZSTD = 0 then
+      Exit;
+    if ZSTDDllName = '' then
+      ZSTDDllName := libLoadedFN;
 
     @_ZSTD_versionNumber                       := GetProcAddress(ZSTD, sZSTD_versionNumber);
     @_ZSTD_versionString                       := GetProcAddress(ZSTD, sZSTD_versionString);
@@ -1272,7 +1286,8 @@ end;
 
 procedure DoneZSTD;
 begin
-  if ZSTD <> 0 then FreeLibrary(ZSTD);
+  if ZSTD <> 0 then
+    FreeLibrary(ZSTD);
 end;
 
 function ZSTD_versionNumber(doError: Boolean = True): unsigned;
