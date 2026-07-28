@@ -13,11 +13,12 @@ interface
 uses
   Windows, sysutils, classes, System.UITypes,
  {$IFDEF FMX}
-  FMX.Graphics, FMX.Types, System.UIConsts,
+  FMX.Graphics, FMX.Types,
  {$ELSE ~FMX}
   Graphics,
-  Forms,
+//  Forms,
  {$ENDIF FMX}
+  System.UIConsts,
   types, RDGlobal;
 
 type

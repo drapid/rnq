@@ -31,7 +31,7 @@ object RnQdbFrm: TRnQdbFrm
     object GroupBox1: TGroupBox
       Left = 8
       Top = 8
-      Width = 252
+      Width = 250
       Height = 52
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Purge contacts'
@@ -51,7 +51,7 @@ object RnQdbFrm: TRnQdbFrm
     object removenilhistoriesChk: TCheckBox
       Left = 8
       Top = 70
-      Width = 251
+      Width = 249
       Height = 17
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Remove histories for unexistant contacts'

@@ -168,7 +168,7 @@ end;
 
 procedure TAllHistSrchForm.HistPosTreeGetNodeWidth(Sender: TBaseVirtualTree;
   HintCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
-  var NodeWidth: Integer);
+  var NodeWidth: TDimension);
 begin
   NodeWidth := 200;
 end;

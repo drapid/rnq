@@ -7,22 +7,26 @@ unit RDGlobal;
 {$I ..\NoRTTI.inc}
 
  { $ DEFINE RNQ_PLAYER}
+ {$IF DEFINED(VCL) OR DEFINED(RNQ)}
+  {$DEFINE UI}
+ {$IFEND VCL}
 
 interface
 uses
-  Classes, Messages, Types,
-  {$IFNDEF FPC}
-  UITypes,
-  {$ENDIF ~FPC}
+  Classes, Types,
+  Messages,
+  System.UITypes,
+ {$IFDEF UI}
   {$IFDEF FMX}
   FMX.Forms,
   FMX.Objects
   {$ELSE ~FMX}
   Forms,
   ExtCtrls,
-  Graphics
+  Graphics,
   {$ENDIF FMX}
-
+ {$ENDIF UI}
+  SysUtils
   ;
 
 { ************ common types used for compatibility between compilers and CPU }
@@ -92,6 +96,7 @@ type
     Str: PChar;
   end;
 
+ {$IFDEF UI}
   TRnQPntBox = class(TPaintBox)
 {$IFNDEF FMX}
   protected
@@ -102,6 +107,7 @@ type
     constructor Create(AOwner: TComponent); override;
 //    procedure PaintImages;
   end;
+ {$ENDIF UI}
 
 type
   PColor32 = ^TColor32;
@@ -178,11 +184,19 @@ type
  {$IFNDEF FMX}
 type
 //  TMsgDlgType = (mtWarning, mtError, mtInformation, mtConfirmation, mtCustom);
+  {$IFDEF RNQ}
   TMsgDlgType = (mtWarning, mtError, mtInformation, mtConfirmation, mtBuzz, mtCustom);
+  {$ELSE !RNQ}
+  TMsgDlgType    = System.UITypes.TMsgDlgType;
+  {$ENDIF RNQ}
   TMsgDlgTypes = set of TMsgDlgType;
+{
   TMsgDlgBtn = (mbYes, mbNo, mbOK, mbCancel, mbAbort, mbRetry, mbIgnore,
     mbAll, mbNoToAll, mbYesToAll, mbHelp, mbClose);
   TMsgDlgButtons = set of TMsgDlgBtn;
+}
+  TMsgDlgBtn = System.UITypes.TMsgDlgBtn;
+  TMsgDlgButtons = System.UITypes.TMsgDlgButtons;
  {$ENDIF ~FMX}
 
 type
@@ -278,11 +292,17 @@ type
  {$ENDIF !USE_MORMOT}
 
 implementation
+
 {$IFNDEF FMX}
    uses
-     Windows, Controls;
+     Windows
+  {$IFDEF UI}
+     , Controls
+  {$ENDIF UI}
+     ;
 {$ENDIF ~FMX}
 
+ {$IFDEF UI}
 constructor TRnQPntBox.Create(AOwner: TComponent);
 begin
   inherited;
@@ -298,6 +318,7 @@ Begin
    msg.Msg := 0;
 end;
 {$ENDIF FMX}
+ {$ENDIF UI}
 
 {$IFDEF FMX}
 function MathRound(AValue: Extended): Int64; inline;

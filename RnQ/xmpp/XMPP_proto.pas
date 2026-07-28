@@ -32,6 +32,9 @@ type
   TMechsSet = set of TMechanism;
 
 const
+  cSupMechs: TMechsSet = [SM_PLAIN, SM_MD5, SM_SCRAM_SHA1];
+
+const
   MechanismNames: array[TMechanism] of String =
        ( 'PLAIN', 'DIGEST-MD5', 'XOAUTH', 'X-OAUTH2', 'X-GOOGLE-TOKEN', 'SCRAM-SHA-1',
          'SCRAM-SHA-256', 'SCRAM-SHA-1-PLUS', 'SCRAM-SHA-256-PLUS'
@@ -108,6 +111,22 @@ const
 
   nsStream        = 'stream';
 
+// XEP-0280: Message Carbons
+const
+  XEP0280_Message_Carbons = 'urn:xmpp:carbons:2';
+  XEP0280_Carbons_Rules   = 'urn:xmpp:carbons:rules:0'; // optional
+
+// XEP-0313: Message Archive Management (MAM)
+const
+  XEP0313_MAM2            = 'urn:xmpp:mam:2';
+  XEP0313_MAM_NS          = 'urn:xmpp:mam:2'; // Main namespace
+  XEP0313_FORWARD         = 'urn:xmpp:forward:0'; // need for forwarded messages
+  XEP0359_STANZA_ID       = 'urn:xmpp:sid:0';    // stanza-id (for MAM)
+
+// XEP-0297: Stanza Forwarding (for MAM and Carbons)
+const
+  XEP0297_Forward         = 'urn:xmpp:forward:0';
+
 implementation
 uses
  {$IFDEF UNICODE}
@@ -115,7 +134,7 @@ uses
  {$ENDIF UNICODE}
   RnQbinUtils;
 
-function  XMPPstatus2imgName(s: TXMPPstatus; inv: boolean=FALSE): TPicName;
+function XMPPstatus2imgName(s: TXMPPstatus; inv: boolean=FALSE): TPicName;
 begin
  if s in [LOW(TXMPPstatus)..HIGH(TXMPPstatus)] then
   result := 'status.' + XMPPstatus2img[s]

@@ -118,7 +118,7 @@ implementation
   {$IFDEF USE_GDIPLUS}
     GDIPAPI, GDIPOBJ,
   {$ELSE}
-   RnQGraphics32,
+   RnQ.Graphics.Utils,
   {$ENDIF USE_GDIPLUS}
  {$IFDEF UNICODE}
    AnsiStrings,

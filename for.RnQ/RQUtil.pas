@@ -10,7 +10,7 @@ unit RQUtil;
 interface
  uses
    Windows, Graphics, Classes, //ExtCtrls,
-   Controls, UITypes,
+   Controls, UITypes, Dialogs,
  {$IFDEF UNICODE}
    AnsiStrings, AnsiClasses,
  {$ENDIF UNICODE}

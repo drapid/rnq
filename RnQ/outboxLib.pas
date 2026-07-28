@@ -71,10 +71,11 @@ type
    public
     function add(kind: Integer; dest: TRnQContact; flags: integer=0; const info: string=''): Toevent; overload;
     function add(kind: Integer; dest: TRnQContact; flags: integer; cl: TRnQCList): Toevent; overload;
-    function getAt(idx: integer): TOevent;
+    function getAt(idx: Integer): TOevent;
     function remove(ev: TOevent): boolean; overload;
     function stFor(who: TRnQContact): boolean;
-    function findID(id: RawByteString): integer;
+    function findID(id: RawByteString): Integer; OverLoad;
+    function findID(id: Integer): Integer; OverLoad;
 
     procedure updateScreenFor(cnt: TRnQContact);
     end; // Toutbox
@@ -348,6 +349,22 @@ begin
    end;
   result := -1;
 end; // findID
+
+function Toutbox.findID(id: Integer): Integer;
+var
+  e: TOEvent;
+  idS: RawByteString;
+begin
+  idS := IntToStrA(id);
+  for result:=count-1 downto 0 do
+   begin
+    e := getAt(result);
+    if ( e<> NIL) AND (e.sID = idS) then
+     exit;
+   end;
+  result := -1;
+end; // findID
+
 
 ////////////////////////////////////////////////////////////////////////
 

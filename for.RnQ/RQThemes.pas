@@ -435,13 +435,14 @@ implementation
   RDUtils,
   RnQGlobal, RnQLangs,
   RQUtil,
+  RnQ.Graphics.Utils,
   EmojiConst,
  {$IFDEF RNQ}
    RQlog,
    mmSystem,
  {$ENDIF RNQ}
  {$IFDEF USE_ZIP}
-  RnQZip,
+  RD.Zip,
  {$ENDIF USE_ZIP}
  {$IFDEF USE_RAR}
 //   ztvUnRar,
@@ -1314,12 +1315,15 @@ begin
  {$ENDIF USE_RAR}
 
  {$IFDEF USE_ZIP}
- FreeAndNil(ts.zp);
+  if ts.pathType = pt_zip then
+    FreeAndNil(ts.zp);
  {$ENDIF USE_ZIP}
  {$IFDEF USE_7Z}
  FreeAndNil(ts.z7);
 //  ts.z7 := NIL;
  {$ENDIF USE_7Z}
+ ts.zp := NIL;
+
  FThemePics.Sorted := True;
 // FGPpics.Sorted := True;
 // FIntPics.Sorted := True;

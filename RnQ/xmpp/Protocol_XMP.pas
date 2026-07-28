@@ -14,7 +14,7 @@ interface
 
 
   procedure loggaXMPPPkt(what: TwhatLog; data: RawByteString='');
-//  function  findMRAViewInfo(c:TRnQContact):TviewMRAInfoFrm;
+//  function  findMRAViewInfo(c: TRnQContact): TviewMRAInfoFrm;
   procedure ProcessXMPPEvents(thisXMP: TxmppSession; ev: TxmppEvent);
 
   function  XMPPstr2status(const s: RawByteString): byte;
@@ -400,7 +400,7 @@ begin
   //   roasterLib.updateHiddenNodes;
   //   chatFrm.userChanged(c);
        redraw(c);
-      dbUpdateDelayed:=TRUE;
+      dbUpdateDelayed := TRUE;
     end;
    {$IFDEF RNQ_AVATARS}
   IE_avatar_changed:

@@ -20,6 +20,8 @@ uses
   {$ENDIF FPC}
  {$IFDEF FMX}
   FMX.Graphics,
+  FMX.Types,
+  FMX.Helpers.Win,
  {$ELSE ~FMX}
   Graphics,
  {$ENDIF FMX}
@@ -95,6 +97,7 @@ type
   function  MidColor(const clr1, clr2: Cardinal; koef: Double): Cardinal; overLoad;
   function  blend(c1, c2: Tcolor; left: real): Tcolor;
 //function  traspBmp1(bmp: Tbitmap; bg: Tcolor; transpLevel: integer): Tbitmap;
+  function getBytesPerRow(img: TBitmap): Integer;
 
 {$IFDEF FPC}
   function TransparentBlt(hdcSrc: HDC; nXOriginSrc, nYOriginSrc, nWidthSrc,
@@ -211,14 +214,19 @@ var
 begin
 //  if not bmp.Transparent then
 //    Exit;
+ {$IFDEF FMX}
+//  if bmp.PixelFormat <> TPixelFormat.RGBA then
+    Exit;
+ {$ELSE !FMX}
   if bmp.PixelFormat <> pf32bit then
     Exit;
+
+  Trans.Color := ColorToRGB(bmp.TransparentColor) and not AlphaMask;
 
   Bt := bmp.Transparent;
   h := bmp.Height-1; // Сразу вычетаем 1 !!!
   w := bmp.Width-1;  // Сразу вычетаем 1 !!!
 
-  Trans.Color := ColorToRGB(bmp.TransparentColor) and not AlphaMask;
 {$IFDEF FPC}
   bmp.BeginUpdate;
 {$ENDIF FPC}
@@ -239,6 +247,7 @@ begin
 {$IFDEF FPC}
   bmp.EndUpdate;
 {$ENDIF FPC}
+ {$ENDIF FMX}
 end;
 
 procedure Premultiply(var bmp: TBitmap);
@@ -264,6 +273,9 @@ var
 // A1: Double;
  h, w: Integer;
 begin
+ {$IFDEF FMX}
+  Exit;
+ {$ELSE !FMX}
   if bmp.PixelFormat <> pf32bit then
     Exit;
   h := bmp.Height-1; // Сразу вычетаем 1 !!!
@@ -290,6 +302,7 @@ begin
 {$IFDEF FPC}
   bmp.EndUpdate;
 {$ENDIF FPC}
+ {$ENDIF FMX}
 end;
 
 procedure Demultiply(var bmp: TBitmap);
@@ -299,6 +312,9 @@ var
  A1: Double;
  h, w: Integer;
 begin
+ {$IFDEF FMX}
+  Exit;
+ {$ELSE !FMX}
   if bmp.PixelFormat <> pf32bit then
     Exit;
   h := bmp.Height-1;
@@ -324,6 +340,7 @@ begin
 {$IFDEF FPC}
   bmp.EndUpdate;
 {$ENDIF FPC}
+ {$ENDIF FMX}
 end;
 
 {procedure LoadPictureFile(Name: String; var gpPicture: IPicture);
@@ -427,6 +444,14 @@ var
   h, w: integer;
   r: TRect;
 begin
+ {$IFDEF FMX}
+  if not Assigned(bmp) then
+    begin
+      bmp := TBitmap.Create;
+//      bmp.PixelFormat := TPixelFormat.RGB;
+    end;
+  bmp.LoadFromStream(str);
+ {$ELSE !FMX}
   LoadPictureStream(str, pic);
   if pic <> nil then
   begin
@@ -455,6 +480,7 @@ begin
     pic.Render(bmp.canvas.Handle, 0, 0, w, h, 0, b, a, -b, r);
     pic := NIL;
   end;
+ {$ENDIF FMX}
 end;
 
 { $ENDIF ~FPC}
@@ -476,6 +502,23 @@ begin
 end;
 
 function LoadIconFromStream(str: TStream): HIcon;
+{$IFDEF FMX}
+var
+  bmp: TBitmap;
+begin
+  bmp := NIL;
+  try
+    bmp := TBitmap.CreateFromStream(str);
+   except
+    Result := 0;
+    bmp := NIL;
+  end;
+  if Assigned(bmp) then
+    begin
+      Result := BitmapToIcon(bmp);
+      bmp.Free;
+    end;
+{$ELSE !FMX}
 {var
   MStr: TMemoryStream;
 begin
@@ -506,6 +549,7 @@ begin
   icn.LoadFromStream(str);
   Result := CopyIcon(icn.Handle);
   icn.Free;
+{$ENDIF FMX}
 end;
 
 
@@ -1062,6 +1106,9 @@ begin
   Result.cy := 0;
   if not Assigned(stream) then
     Exit;
+ {$IFDEF FMX}
+   Exit;
+ {$ELSE !FMX}
   stream.position := 0;
   Stream.Read(B, SizeOf(Byte));
   fTypeField := B;
@@ -1109,7 +1156,7 @@ begin
           begin
             if not Assigned(pic) then
               begin
-                pic := Tbitmap.create;
+                pic := TBitmap.Create;
               end
              else
               begin
@@ -1140,6 +1187,7 @@ begin
 //  else
 //    raise Exception.Create(sUnsuportedWBMPType);
   end;
+ {$ENDIF FMX}
 end;
 
 (*
@@ -1185,7 +1233,10 @@ end;
 
 function createBitmap(dx, dy: integer; PPI: Integer = cDefaultDPI): Tbitmap;
 begin
-  result := Tbitmap.create;
+ {$IFDEF FMX}
+  Result := TBitmap.Create(dx, dy);
+ {$ELSE !FMX}
+  result := TBitmap.Create;
   Result.PixelFormat := pf24bit;
   Result.Canvas.Font.PixelsPerInch := PPI;
  {$IF DEFINED(DELPHI9_UP) OR DEFINED(FPC)}
@@ -1194,6 +1245,7 @@ begin
   result.width := dx;
   result.height := dy;
  {$ENDIF DELPHI9_UP}
+ {$ENDIF FMX}
 end;
 
 function createBitmap(cnv: Tcanvas): Tbitmap;
@@ -1784,29 +1836,29 @@ function hls2color(hls: Thls): Tcolor;
 var
   r,g,b, p,q,t: double;
 begin
-with hls do
+  with hls do
   if s = 0 then
     begin
-    r:=l;
-    g:=l;
-    b:=l;
+      r:=l;
+      g:=l;
+      b:=l;
     end
-  else
+   else
     begin
-    p:=l*(1.0-s);
-    q:=l*(1.0-(s*frac(h)));
-    t:=l*(1.0-(s*(1.0-frac(h))));
+      p:=l*(1.0-s);
+      q:=l*(1.0-(s*frac(h)));
+      t:=l*(1.0-(s*(1.0-frac(h))));
 
-    case trunc(h) of
-      0:begin r:=l; g:=t; b:=p end;
-      1:begin r:=q; g:=l; b:=p end;
-      2:begin r:=p; g:=l; b:=t end;
-      3:begin r:=p; g:=q; b:=l end;
-      4:begin r:=t; g:=p; b:=l end;
-      else begin r:=l; g:=p; b:=q end;
-      end;
+      case trunc(h) of
+        0:begin r:=l; g:=t; b:=p end;
+        1:begin r:=q; g:=l; b:=p end;
+        2:begin r:=p; g:=l; b:=t end;
+        3:begin r:=p; g:=q; b:=l end;
+        4:begin r:=t; g:=p; b:=l end;
+        else begin r:=l; g:=p; b:=q end;
+        end;
     end;
-result:=round(r*255)+round(g*255) shl 8+round(b*255) shl 16;
+  result := round(r*255)+round(g*255) shl 8+round(b*255) shl 16;
 end; // hls2color
 
 function addLuminosity(clr: Tcolor; q: real): Tcolor;
@@ -1871,61 +1923,61 @@ var
   x, y: Integer;
   tc: TColor;
 begin
-if bitmap=NIL then
-  begin
-  result := NIL;
-  exit;
-  end;
+  if bitmap=NIL then
+   begin
+    result := NIL;
+    exit;
+   end;
 
 // iconX := icon_size;
 // iconY := icon_size;
 
- iconX := GetSystemMetrics(SM_CXICON);
- iconY := GetSystemMetrics(SM_CYICON);
+  iconX := GetSystemMetrics(SM_CXICON);
+  iconY := GetSystemMetrics(SM_CYICON);
 
- IconBitmap:= createBitmap(iconX, iconY);
- IconBitmap.PixelFormat := bitmap.PixelFormat;
- StretchBlt(IconBitmap.Canvas.Handle, 0, 0, iconX, iconY,
+  IconBitmap := createBitmap(iconX, iconY);
+  IconBitmap.PixelFormat := bitmap.PixelFormat;
+  StretchBlt(IconBitmap.Canvas.Handle, 0, 0, iconX, iconY,
             bitmap.Canvas.Handle, 0, 0, bitmap.Width, bitmap.Height, SRCCOPY);
-// iconX := GetSystemMetrics(SM_CXICON);
-//iconY := GetSystemMetrics(SM_CYICON);
-//IconBitmap:= TBitmap.Create;
-//IconBitmap.Width:= iconX;
-//IconBitmap.Height:= iconY;
-IconBitmap.TransparentColor:=Bitmap.TransparentColor;
-tc:=Bitmap.TransparentColor and $FFFFFF;
-Bitmap.transparent:=FALSE;
-//IconBitmap.Width :=
-{with IconBitmap.Canvas do
-  begin
-  dx:=bitmap.width*2;
-  dy:=bitmap.height*2;
-  if (dx < iconX) and (dy < iconY) then
+  // iconX := GetSystemMetrics(SM_CXICON);
+  //iconY := GetSystemMetrics(SM_CYICON);
+  //IconBitmap:= TBitmap.Create;
+  //IconBitmap.Width:= iconX;
+  //IconBitmap.Height:= iconY;
+  IconBitmap.TransparentColor:=Bitmap.TransparentColor;
+  tc:=Bitmap.TransparentColor and $FFFFFF;
+  Bitmap.transparent:=FALSE;
+  //IconBitmap.Width :=
+  {with IconBitmap.Canvas do
     begin
-    brush.color:=tc;
-    fillrect(clipRect);
-    x:=(iconX-dx) div 2;
-    y:=(iconY-dy) div 2;
-    StretchDraw(Rect(x,y,x+dx,y+dy), Bitmap);
-    end
-  else
-    IconBitmap.Canvas.StretchDraw(Rect(0, 0, iconX, iconY), Bitmap);
-  end;}
-MaskBitmap:= TBitmap.Create;
-MaskBitmap.Assign(IconBitmap);
-Bitmap.transparent:=TRUE;
-with IconBitmap.Canvas do
-  for y:= 0 to iconY - 1 do
-    for x:= 0 to iconX - 1 do
-      if Pixels[x, y]=tc then
-        Pixels[x, y]:=clBlack;
-IconInfo.fIcon:= True;
-IconInfo.hbmMask:= MaskBitmap.MaskHandle;
-IconInfo.hbmColor:= IconBitmap.Handle;
-Result:= TIcon.Create;
-Result.Handle:= CreateIconIndirect(IconInfo);
-MaskBitmap.Free;
-IconBitmap.Free;
+    dx:=bitmap.width*2;
+    dy:=bitmap.height*2;
+    if (dx < iconX) and (dy < iconY) then
+      begin
+      brush.color:=tc;
+      fillrect(clipRect);
+      x:=(iconX-dx) div 2;
+      y:=(iconY-dy) div 2;
+      StretchDraw(Rect(x,y,x+dx,y+dy), Bitmap);
+      end
+    else
+      IconBitmap.Canvas.StretchDraw(Rect(0, 0, iconX, iconY), Bitmap);
+    end;}
+  MaskBitmap:= TBitmap.Create;
+  MaskBitmap.Assign(IconBitmap);
+  Bitmap.transparent:=TRUE;
+  with IconBitmap.Canvas do
+    for y:= 0 to iconY - 1 do
+      for x:= 0 to iconX - 1 do
+        if Pixels[x, y]=tc then
+          Pixels[x, y]:=clBlack;
+  IconInfo.fIcon:= True;
+  IconInfo.hbmMask:= MaskBitmap.MaskHandle;
+  IconInfo.hbmColor:= IconBitmap.Handle;
+  Result:= TIcon.Create;
+  Result.Handle:= CreateIconIndirect(IconInfo);
+  MaskBitmap.Free;
+  IconBitmap.Free;
 end; // bmp2ico
 
 function bmp2ico3(bitmap: Tbitmap): Ticon;
@@ -2042,45 +2094,45 @@ begin
     result := NIL;
     exit;
    end;
-iconX := GetSystemMetrics(SM_CXICON);
-iconY := GetSystemMetrics(SM_CYICON);
-IconBitmap := TBitmap.Create;
-IconBitmap.Width := iconX;
-IconBitmap.Height := iconY;
-IconBitmap.TransparentColor := Bitmap.TransparentColor;
-tc := Bitmap.TransparentColor and $FFFFFF;
-Bitmap.transparent := FALSE;
-//IconBitmap.Width :=
-with IconBitmap.Canvas do
-  begin
-  dx := bitmap.width*2;
-  dy := bitmap.height*2;
-  if (dx < iconX) and (dy < iconY) then
+  iconX := GetSystemMetrics(SM_CXICON);
+  iconY := GetSystemMetrics(SM_CYICON);
+  IconBitmap := TBitmap.Create;
+  IconBitmap.Width := iconX;
+  IconBitmap.Height := iconY;
+  IconBitmap.TransparentColor := Bitmap.TransparentColor;
+  tc := Bitmap.TransparentColor and $FFFFFF;
+  Bitmap.transparent := FALSE;
+  //IconBitmap.Width :=
+  with IconBitmap.Canvas do
     begin
-    brush.color := tc;
-    fillrect(clipRect);
-    x := (iconX-dx) div 2;
-    y := (iconY-dy) div 2;
-    StretchDraw(Rect(x,y,x+dx,y+dy), Bitmap);
-    end
-  else
-    IconBitmap.Canvas.StretchDraw(Rect(0, 0, iconX, iconY), Bitmap);
-  end;
-MaskBitmap := TBitmap.Create;
-MaskBitmap.Assign(IconBitmap);
-Bitmap.transparent := TRUE;
-with IconBitmap.Canvas do
-  for y:= 0 to iconY - 1 do
-    for x:= 0 to iconX - 1 do
-      if Pixels[x, y]=tc then
-        Pixels[x, y] := clBlack;
-IconInfo.fIcon := True;
-IconInfo.hbmMask := MaskBitmap.MaskHandle;
-IconInfo.hbmColor := IconBitmap.Handle;
-Result := TIcon.Create;
-Result.Handle := CreateIconIndirect(IconInfo);
-MaskBitmap.Free;
-IconBitmap.Free;
+    dx := bitmap.width*2;
+    dy := bitmap.height*2;
+    if (dx < iconX) and (dy < iconY) then
+      begin
+      brush.color := tc;
+      fillrect(clipRect);
+      x := (iconX-dx) div 2;
+      y := (iconY-dy) div 2;
+      StretchDraw(Rect(x,y,x+dx,y+dy), Bitmap);
+      end
+    else
+      IconBitmap.Canvas.StretchDraw(Rect(0, 0, iconX, iconY), Bitmap);
+    end;
+  MaskBitmap := TBitmap.Create;
+  MaskBitmap.Assign(IconBitmap);
+  Bitmap.transparent := TRUE;
+  with IconBitmap.Canvas do
+    for y:= 0 to iconY - 1 do
+      for x:= 0 to iconX - 1 do
+        if Pixels[x, y]=tc then
+          Pixels[x, y] := clBlack;
+  IconInfo.fIcon := True;
+  IconInfo.hbmMask := MaskBitmap.MaskHandle;
+  IconInfo.hbmColor := IconBitmap.Handle;
+  Result := TIcon.Create;
+  Result.Handle := CreateIconIndirect(IconInfo);
+  MaskBitmap.Free;
+  IconBitmap.Free;
 end; // bmp2ico
 
 function pic2ico(pic: Tbitmap): Ticon;
@@ -2457,6 +2509,19 @@ with result.Canvas do
   result.transparent := bmp.transparent;
   result.transparentcolor := bmp.transparentcolor;
 end; // traspBmp
+
+function getBytesPerRow(img: TBitmap): Integer;
+const
+  BitCounts: array [pf1Bit..pf32Bit] of Byte = (1,4,8,16,16,24,32);
+begin
+  Result := 0;
+  if (not Assigned(img)) or (img.Height=0) or (img.Width = 0) then
+    Exit;
+    { in-place }
+  if img.PixelFormat = pfDevice then
+    Exit;
+  Result := BytesPerScanline(img.Width, BitCounts[img.PixelFormat], 32);
+end;
 
 initialization
 

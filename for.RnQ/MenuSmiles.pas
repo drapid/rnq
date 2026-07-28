@@ -11,8 +11,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   ExtCtrls, RDGlobal, RQThemes,
-  RnQPrefsInt,
-  RnQGraphics32;
+  RnQPrefsInt;
 
 type
   TOnGetHNDL = function: HWND of object;
@@ -87,6 +86,7 @@ uses
    Types, UITypes,
    RnQLangs, RnQGlobal,
    RQUtil,
+   RnQ.Graphics.Utils,
    math;
 
 {$R *.dfm}

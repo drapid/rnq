@@ -10,7 +10,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, ExtCtrls, Vcl.ComCtrls, Menus,
+  StdCtrls, ExtCtrls, Vcl.ComCtrls, Menus, Dialogs,
   VirtualTrees.BaseTree, VirtualTrees.BaseAncestorVCL, VirtualTrees.AncestorVCL,
   VirtualTrees.DrawTree, VirtualTrees.Types,
   RnQButtons, RnQDialogs,
@@ -455,7 +455,7 @@ end;
 
 procedure TselectCntsFrm.listGetNodeWidth(Sender: TBaseVirtualTree;
   HintCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
-  var NodeWidth: Integer);
+  var NodeWidth: TDimension);
 begin
   NodeWidth := 20;
 end;

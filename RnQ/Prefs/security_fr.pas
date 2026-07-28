@@ -10,7 +10,7 @@ interface
 
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, RnQButtons,
+  StdCtrls, Dialogs, RnQButtons,
   RnQPrefsInt, RnQPrefsTypes,
   RDGlobal, ExtCtrls;
 

@@ -3,10 +3,10 @@
 Author:       François PIETTE
 Description:  Version defines for ICS (Internet Component Suite)
 Creation:     2003
-Version:      8.70
+Version:      V9.5
 EMail:        francois.piette@overbyte.be  http://www.overbyte.be
 Support:      https://en.delphipraxis.net/forum/37-ics-internet-component-suite/
-Legal issues: Copyright (C) 1996-2022 by François PIETTE
+Legal issues: Copyright (C) 1996-2025 by François PIETTE
               Rue de Grady 24, 4053 Embourg, Belgium.
 
               This software is provided 'as-is', without any express or
@@ -78,11 +78,41 @@ Oct 2022 - V8.70 - Corrected ZLIB_OBJ to USE_ZLIB_OBJ to replace OverbyteIcsZlib
                      object files twice.  Only defined for Delphi 11 and later and Posix
                      which have ZLIB 1.2.12 (added in D11.1), but can be changed if older
                      ZLIB versions are acceptable.
+Jul 2023 - V8.71 - Added Delphi 12.0 VER360.
+Aug 08, 2023 V9.0  Updated version to major release 9.
+Mar 07, 2024 V9.1  Updated Athens to D12.
+                   Added DEFINE OpenSSL_Resource_Files to link the OpenSSL DLLs into the
+                     application, must specify which version here.
+                   Added DEFINE OpenSSL_ProgramData which causes ICS to look for the
+                     OpenSSL DLLs in a common directory rather than the common path or the
+                     the directory specified in GSSL_DLL_DIR.
+                   Added DEFINE OpenSSL_CA_Bundle_Small/Medium/Large to build ICS with one
+                     of these root certificate authority bundles as a resource files.
+                   Added DEFINE OpenSSL_AutoLoad_CA_Bundle that will load OpenSSL and a
+                     Root CA Bundle into IcsSslRootCAStore on start-up if the OverbyteIcsSslBase
+                     unit is linked, disable if your application should not load OpenSSL.
+                   Added checks to treat future versions of Delphi as current latest, better
+                     than unknown version.
+Apr 15, 2024 V9.2  Added DEFINE OpenSSL_33 for OpenSSL 3.3, and DEFINE OpenSSL_34 (due Oct 2024).
+Aug 09, 2024 V9.3  YuOpenSSL and OpenSSL_Resource_Files only supported on Windows, not Posix.
+                   Added DEFINEs OpenSSL_Check_Signed and OpenSSL_Check_SignCert that default
+                     globals GSSL_SignTest_Check and GSSL_SignTest_Certificate on start-up
+                     to determine if the OpenSSL DLLs digital signatures should be checked.
+                   Added DEFINEs MSCRYPT_Clients, MSCRYPT_Servers and MSCRYPT_Tools that
+                     determine which types of component should have access to the Windows
+                     Certificate Store, not doing so saves a lot of code.  A fourth DEFINE
+                     MSCRYPT_Any is set if any of these three are defined for common code.
+                     Note all these are undefined for non-Windows platforms, and for C++
+                     Builder that no-one has yet managed to fix.
+                   BEWARE, Windows Certificate Store is not available without these changes.
+Oct 25, 2024 V9.4  Enabled DEFINE OpenSSL_34 for OpenSSL 3.4, added DEFINE OpenSSL_35.
+Apr 09, 2025 V9.5  Added DEFINE OpenSSL_36 (due Oct 2025) and OpenSSL_40 (due Apr 2026),
+                   Enabled DEFINE OpenSSL_35 for OpenSSL 3.5.
 
 
 
 YuOpenSSL is a commercial product from https://www.yunqa.de/ and is supplied as
-separate compiled DCUs for Delphi 5 to 10.4.
+separate compiled DCUs for Delphi 5 to 12.
 
   SYMBOL           Compiler version
   ===============  ======================================
@@ -101,6 +131,20 @@ separate compiled DCUs for Delphi 5 to 10.4.
   DELPHI14         Delphi 2010
   DELPHI15         Delphi XE
   DELPHI16         Delphi XE2
+  DELPHI17         Delphi XE3  - WaterDragon - BDS10
+  DELPHI18         Delphi XE4  - Quitessence - BDS11
+  DELPHI19         Delphi XE5  - Zephyr - BDS12
+  DELPHI20         Delphi XE6  - Proteus - BDS14
+  DELPHI21         Delphi XE7  - Carpathia - BDS15
+  DELPHI22         Delphi XE8  - Elbrus - BDS16
+  DELPHI23         Delphi 10 Seattle - Aitana - BDS17
+  DELPHI24         Delphi 10.1 Berlin - BigBen - BDS18
+  DELPHI25         Delphi 10.2 Tokyo - Godzilla - BDS19
+  DELPHI26         Delphi 10.3 Rio - Carnival - BDS20
+  DELPHI27         Delphi 10.4 Sydney - Denali - BDS21
+  DELPHI28         Delphi 11.0, 11.1, 11.2, 11.3 Alexandria - Olympus - BDS22
+  DELPHI29         Delphi 12.0, 12.1, 12.2 Athens - Yukon - BDS23
+
   DELPHI1_UP       Delphi 1  or higher
   DELPHI2_UP       Delphi 2  or higher
   DELPHI3_UP       Delphi 3  or higher
@@ -127,7 +171,8 @@ separate compiled DCUs for Delphi 5 to 10.4.
   DELPHI25_UP      Delphi 25 or higher  (Delphi 10.2 Tokyo - Godzilla - BDS19)
   DELPHI26_UP      Delphi 26 or higher  (Delphi 10.3 Rio - Carnival - BDS20)
   DELPHI27_UP      Delphi 27 or higher  (Delphi 10.4 Sydney - Denali - BDS21)
-  DELPHI28_UP      Delphi 28 or higher  (Delphi 11.0 xx - Olympus - BDS22)
+  DELPHI28_UP      Delphi 28 or higher  (Delphi 11.0, 11.1, 11.2, 11.3 Alexandria - Olympus - BDS22)
+  DELPHI29_UP      Delphi 29 or higher  (Delphi 12.0, 12.1, 12.2, 12.3 Athens - Yukon - BDS23)
 
   BCB1             C++ Builder 1
   BCB3             C++ Builder 3
@@ -151,12 +196,13 @@ separate compiled DCUs for Delphi 5 to 10.4.
   BCB20_UP         C++ Builder XE6  or higher
   BCB21_UP         C++ Builder XE7  or higher
   BCB22_UP         C++ Builder XE8  or higher
-  BCB23_UP         C++ Builder 10 Seattle  or higher
-  BCB24_UP         C++ Builder 10.1 Berlin or higher
-  BCB25_UP         C++ Builder 10.2 Tokyo or higher
-  BCB26_UP         C++ Builder 10.3 Rio or higher
-  BCB27_UP         C++ Builder 10.4 Sydney or higher
-  BCB28_UP         C++ Builder 11.0 xx or higher
+  BCB23_UP         C++ Builder 10  or higher
+  BCB24_UP         C++ Builder 10.1 or higher
+  BCB25_UP         C++ Builder 10.2 or higher
+  BCB26_UP         C++ Builder 10.3 or higher
+  BCB27_UP         C++ Builder 10.4 or higher
+  BCB28_UP         C++ Builder 11.0, 11.1, 11.2, 11.3 or higher
+  BCB29_UP         C++ Builder 12.0, 12.1, 12.2 or higher
 
   COMPILER1        Delphi 1
   COMPILER2        Delphi 2  or C++ Builder 1
@@ -180,12 +226,13 @@ separate compiled DCUs for Delphi 5 to 10.4.
   COMPILER20       Delphi or C++ Builder XE6
   COMPILER21       Delphi or C++ Builder XE7
   COMPILER22       Delphi or C++ Builder XE8
-  COMPILER23       Delphi or C++ Builder 10 Seattle
-  COMPILER24       Delphi or C++ Builder 10.1 Berlin
-  COMPILER25       Delphi or C++ Builder 10.2 Tokyo
-  COMPILER26       Delphi or C++ Builder 10.3 Rio
-  COMPILER27       Delphi or C++ Builder 10.4 Sydney
-  COMPILER28       Delphi or C++ Builder 11.0 xx
+  COMPILER23       Delphi or C++ Builder 10
+  COMPILER24       Delphi or C++ Builder 10.1
+  COMPILER25       Delphi or C++ Builder 10.2
+  COMPILER26       Delphi or C++ Builder 10.3
+  COMPILER27       Delphi or C++ Builder 10.4
+  COMPILER28       Delphi or C++ Builder 11.0, 11.1, 11.2, 11.3
+  COMPILER29       Delphi or C++ Builder 12.0, 12.1, 12.2, 12.3
 
   COMPILER1_UP     Delphi 1  or higher
   COMPILER2_UP     Delphi 2  or C++ Builder 1 or higher
@@ -198,65 +245,131 @@ separate compiled DCUs for Delphi 5 to 10.4.
   COMPILER8_UP     Delphi 8  or higher
   COMPILER9_UP     Delphi 9  or higher
   COMPILER10_UP    Delphi or C++ Builder 2006 or higher
-  COMPILER11_UP    Delphi or C++ Builder 2007 or higher (Highlander)
-  COMPILER12_UP    Delphi or C++ Builder 2009 or higher (Tiburon)
-  COMPILER14_UP    Delphi or C++ Builder 2010 or higher (Weaver)
-  COMPILER15_UP    Delphi or C++ Builder XE   or higher (Fulcrum)
-  COMPILER16_UP    Delphi or C++ Builder XE2  or higher (Pulsar)
-  COMPILER17_UP    Delphi or C++ Builder XE3  or higher (WaterDragon)
-  COMPILER18_UP    Delphi or C++ Builder XE4  or higher (Quitessence)
-  COMPILER19_UP    Delphi or C++ Builder XE5  or higher (Zephyr)
-  COMPILER20_UP    Delphi or C++ Builder XE6  or higher (Proteus)
-  COMPILER21_UP    Delphi or C++ Builder XE7  or higher (Carpathia)
-  COMPILER22_UP    Delphi or C++ Builder XE8  or higher (Elbrus)
-  COMPILER23_UP    Delphi or C++ Builder 10 Seattle or higher (Aitana)
-  COMPILER24_UP    Delphi or C++ Builder 10.1 Berlin or higher (BigBen)
-  COMPILER25_UP    Delphi or C++ Builder 10.2 Tokyo or higher (Godzilla)
-  COMPILER26_UP    Delphi or C++ Builder 10.3 Rio or higher (Carnival)
-  COMPILER27_UP    Delphi or C++ Builder 10.4 Sydney or higher (Denali)
-  COMPILER28_UP    Delphi or C++ Builder 11.0 xx or higher (Olympus)
+  COMPILER11_UP    Delphi or C++ Builder 2007 or higher
+  COMPILER12_UP    Delphi or C++ Builder 2009 or higher
+  COMPILER14_UP    Delphi or C++ Builder 2010 or higher
+  COMPILER15_UP    Delphi or C++ Builder XE   or higher
+  COMPILER16_UP    Delphi or C++ Builder XE2  or higher
+  COMPILER17_UP    Delphi or C++ Builder XE3  or higher
+  COMPILER18_UP    Delphi or C++ Builder XE4  or higher
+  COMPILER19_UP    Delphi or C++ Builder XE5  or higher
+  COMPILER20_UP    Delphi or C++ Builder XE6  or higher
+  COMPILER21_UP    Delphi or C++ Builder XE7  or higher
+  COMPILER22_UP    Delphi or C++ Builder XE8  or higher
+  COMPILER23_UP    Delphi or C++ Builder 10  or higher
+  COMPILER24_UP    Delphi or C++ Builder 10.1 or higher
+  COMPILER25_UP    Delphi or C++ Builder 10.2 or higher
+  COMPILER26_UP    Delphi or C++ Builder 10.3 or higher
+  COMPILER27_UP    Delphi or C++ Builder 10.4 or higher
+  COMPILER28_UP    Delphi or C++ Builder 11.0, 11.1, 11.2, 11.3  or higher
+  COMPILER29_UP    Delphi or C++ Builder 12.0, 12.1, 12.2, 12.3 or higher
+
 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * }
 
 { User defines: Enable or disable these defines depending on how you want    }
 { your ICS Packages to be compiled.                                          }
 
-{ If NO_ADV_MT is defined, then there is less multithread code compiled.     }
-{.$DEFINE NO_ADV_MT}
-
-{ Uncomment next line to always include SSL code into the binary.            }
-{ In most cases leave it commented and define USE_SSL in the project options }
-{ if required.                                                               }
+{ Comment out the next line to remove SSL code from the binary.              }
+{ Beware many components and features will be unavailable.                   }
 {$DEFINE USE_SSL}
 
 { Uncomment next define to compile ICS against YuOpenSSL. This compiles      }
 { OpenSSL code directly into binaries and frees applications from OpenSSL    }
 { DLLs. Download YuOpenSSL from https://www.yunqa.de.                        }
-{.DEFINE YuOpenSSL}
+{$IFDEF MSWINDOWS}
+   {.$DEFINE YuOpenSSL}
+{$ENDIF}
+
+{ Next symbols is for editions supporting database units                      }
+{.$DEFINE DATABASE}
+
+{ Uncomment next define to link the OpenSSL DLLs into the application as     }
+{ resource files which first time run are extracted to shell path            }
+{ CSIDL_COMMON_APPDATA and sub-directory "ICS-OpenSSl" with a version        }
+{ subdirectory, so usually "C:\ProgramData\ICS-OpenSSl\3012\"                }
+{ Ignored with DEFINE YuOpenSSL.                                             }
+{$IFDEF MSWINDOWS}
+  {D$DEFINE OpenSSL_Resource_Files}
+{$ENDIF}
+
+{ Note only one specific major/minor version can be linked, as specified     }
+{ here, which is used in OverbyteIcsLIBEAY.pas to save and load the files.   }
+{ Ignored unless OpenSSL_Resource_Files defined                              }
+{.$DEFINE OpenSSL_30}      { LTS supported until Sept 2026 }
+{.$DEFINE OpenSSL_31}      { no longer updated for ICS }
+{.$DEFINE OpenSSL_32}      { supported until Dec 2025 }
+{.$DEFINE OpenSSL_33}      { released April 2024, support until April 2026   }
+{.$DEFINE OpenSSL_34}      { released October 2024, support until Oct 2026   }
+{$DEFINE OpenSSL_35}       { released April 2025, LTS support until April 2030  }
+{.$DEFINE OpenSSL_36}      { due October 2025, support until Oct 2027        }
+{.$DEFINE OpenSSL_40}      { due April 2026, support until April 2028        }
+
+{ Comment out next define if you don't want ICS to look for the OpenSSL DLLs }
+{ in shell path CSIDL_COMMON_APPDATA and sub-directory "ICS-OpenSSl" which   }
+{ usually "C:\ProgramData\ICS-OpenSSL", note no version sub-directory so     }
+{ DLLs extracted from other ICS applications will not be found.              }
+{ Ignored with DEFINEs YuOpenSSL and OpenSSL_Resource_Files                  }
+{$IFDEF MSWINDOWS}
+  {D$DEFINE OpenSSL_ProgramData}
+{$ENDIF}
+
+{ ICS has three optional root certificate authority bundles that can be      }
+{ linked as resources, only one of these should be uncommented.              }
+{.DEFINE OpenSSL_CA_Bundle_Small}
+{.$DEFINE OpenSSL_CA_Bundle_Medium}
+{$DEFINE OpenSSL_CA_Bundle_Large}
+
+{ ICS will auto load OpenSSL and Root CA Bundle into IcsSslRootCAStore on    }
+{ start-up if the OverbyteIcsSslBase unit is linked, disable if your         }
+{ application should not load OpenSSL on startup, but when needed.           }
+{D$DEFINE OpenSSL_AutoLoad_CA_Bundle}
+
+{ V9.3 ICS will check the OpenSSL DLLs are digitally signed during loading   }
+{ and stop if corrupted or unsigned, optionally the signing certificate can  }
+{ be verified as well but this requires COM to be started which may be slow. }
+{$DEFINE OpenSSL_Check_Signed}
+{$DEFINE OpenSSL_Check_SignCert}
+
+{ V9.3 Allow greater control over whether the Windows Certificate Store is  }
+{ is available in diferent types of components.                             }
+{ Undefining MSCRYPT_Clients stops client SSL handshake verification using  }
+{ the Windows Store (CertVerMethod = CertVerWinStore) which is not necessary}
+{ since ICS now includes it's own Root CA Bundle (see above).               }
+{ Undefining MSCRYPT_Servers stops IcsHosts in servers accessing server     }
+{ certificates in the Windows Store.                                        }
+{ Undefining MSCRYPT_Tools stops TSslX509Certs saving certificates to the   }
+{ Windows Store, and many PemTools functions.                               }
+{$DEFINE MSCRYPT_Clients}
+{$DEFINE MSCRYPT_Servers}
+{$DEFINE MSCRYPT_Tools)
 
 { Next line specifies to link the ZLIB .obj files, undefine to use ZLIB1 DLL. }
 {$DEFINE USE_ZLIB_OBJ}
+
+{ If NO_ADV_MT is defined, then there is less multithread code compiled.     }
+{.$DEFINE NO_ADV_MT}
 
 { Next symbol affects D2010 and later only. If defined adds RTTI directive   }
 { "$RTTI EXPLICIT METHODS([]) FIELDS([]) PROPERTIES([])" to all units which  }
 { disables all the inherited RTTI options and sets the new ones to not emit  }
 { any extended RTTI information.                                             }
-{$DEFINE NO_EXTENDED_RTTI}
-{$DEFINE NO_HTTP_TUNNEL_AUTHDIGEST}// By Rapid D
+{$DEFINE NO_EXTENDED_RTTI} // Uncommented by Rapid D
 
 { Next symbols include extra features.                                       }
 {$DEFINE BUILTIN_TIMEOUT}
 {$DEFINE BUILTIN_THROTTLE}
 
 { Next symbol removes a lot of debug logging code, to save space }
-{$DEFINE NO_DEBUG_LOG}  // remove dot By Rapid D
+{$DEFINE NO_DEBUG_LOG} // Uncommented by Rapid D
 
 { Next symbol enables automatic SSL/TLS ordering in SocketServer and other servers }
-{ Unfortunately this adds a lot of other units, HTTPS REST, Json, OAuth2, etc }
+{ Unfortunately this adds a lot of other units, HTTPS REST, Json, OAuth2, etc      }
 {$DEFINE AUTO_X509_CERTS}
 
-{ Next symbols is for editions supporting database units                      }
-{.DEFINE DATABASE}
+{$IFNDEF CPUX64}
+  {$DEFINE DYNAMIC_LINK} // Added by Rapid D  to dynamic load ncrypt.dll
+{$ENDIF CPUX64}
 
 { Do not change anything below this line !                                   }
 {----------------------------------------------------------------------------}
@@ -293,7 +406,40 @@ separate compiled DCUs for Delphi 5 to 10.4.
 
 {$DEFINE VER_UNKNOWN}
 
-{$IFDEF VER350}
+{$IFDEF VER380}              { D14? need to correct defines }
+  {$UNDEF VER_UNKNOWN}
+  {$DEFINE COMPILER29}
+  {$IFDEF BCB}
+    {$DEFINE BCB29}
+  {$ELSE}
+    {$DEFINE DELPHI29}
+    {$DEFINE DELPHI}
+  {$ENDIF}
+{$ENDIF}
+
+{$IFDEF VER370}              { D13? need to correct defines }
+  {$UNDEF VER_UNKNOWN}
+  {$DEFINE COMPILER29}
+  {$IFDEF BCB}
+    {$DEFINE BCB29}
+  {$ELSE}
+    {$DEFINE DELPHI29}
+    {$DEFINE DELPHI}
+  {$ENDIF}
+{$ENDIF}
+
+{$IFDEF VER360}              { D12 }
+  {$UNDEF VER_UNKNOWN}
+  {$DEFINE COMPILER29}
+  {$IFDEF BCB}
+    {$DEFINE BCB29}
+  {$ELSE}
+    {$DEFINE DELPHI29}
+    {$DEFINE DELPHI}
+  {$ENDIF}
+{$ENDIF}
+
+{$IFDEF VER350}            { D11 }
   {$UNDEF VER_UNKNOWN}
   {$DEFINE COMPILER28}
   {$IFDEF BCB}
@@ -304,7 +450,7 @@ separate compiled DCUs for Delphi 5 to 10.4.
   {$ENDIF}
 {$ENDIF}
 
-{$IFDEF VER340}
+{$IFDEF VER340}             { D10.4 }
   {$UNDEF VER_UNKNOWN}
   {$DEFINE COMPILER27}
   {$IFDEF BCB}
@@ -596,6 +742,37 @@ separate compiled DCUs for Delphi 5 to 10.4.
     {$DEFINE DELPHI23}
     {$DEFINE DELPHI}
   {$ENDIF}
+{$ENDIF}
+
+{$IFDEF DELPHI29}
+  {$DEFINE DELPHI29_UP}
+  {$DEFINE DELPHI28_UP}
+  {$DEFINE DELPHI27_UP}
+  {$DEFINE DELPHI26_UP}
+  {$DEFINE DELPHI25_UP}
+  {$DEFINE DELPHI24_UP}
+  {$DEFINE DELPHI23_UP}
+  {$DEFINE DELPHI22_UP}
+  {$DEFINE DELPHI21_UP}
+  {$DEFINE DELPHI20_UP}
+  {$DEFINE DELPHI19_UP}
+  {$DEFINE DELPHI18_UP}
+  {$DEFINE DELPHI17_UP}
+  {$DEFINE DELPHI16_UP}
+  {$DEFINE DELPHI15_UP}
+  {$DEFINE DELPHI14_UP}
+  {$DEFINE DELPHI12_UP}
+  {$DEFINE DELPHI11_UP}
+  {$DEFINE DELPHI10_UP}
+  {$DEFINE DELPHI9_UP}
+  {$DEFINE DELPHI8_UP}
+  {$DEFINE DELPHI7_UP}
+  {$DEFINE DELPHI6_UP}
+  {$DEFINE DELPHI5_UP}
+  {$DEFINE DELPHI4_UP}
+  {$DEFINE DELPHI3_UP}
+  {$DEFINE DELPHI2_UP}
+  {$DEFINE DELPHI1_UP}
 {$ENDIF}
 
 {$IFDEF DELPHI28}
@@ -1055,6 +1232,38 @@ separate compiled DCUs for Delphi 5 to 10.4.
 
 {$IFDEF DELPHI1}
   {$DEFINE DELPHI1_UP}
+{$ENDIF}
+
+{$IFDEF COMPILER29}
+  {$DEFINE COMPILER29_UP}
+  {$DEFINE COMPILER28_UP}
+  {$DEFINE COMPILER27_UP}
+  {$DEFINE COMPILER26_UP}
+  {$DEFINE COMPILER25_UP}
+  {$DEFINE COMPILER24_UP}
+  {$DEFINE COMPILER23_UP}
+  {$DEFINE COMPILER22_UP}
+  {$DEFINE COMPILER21_UP}
+  {$DEFINE COMPILER20_UP}
+  {$DEFINE COMPILER19_UP}
+  {$DEFINE COMPILER18_UP}
+  {$DEFINE COMPILER17_UP}
+  {$DEFINE COMPILER16_UP}
+  {$DEFINE COMPILER15_UP}
+  {$DEFINE COMPILER14_UP}
+  {$DEFINE COMPILER12_UP}
+  {$DEFINE COMPILER11_UP}
+  {$DEFINE COMPILER10_UP}
+  {$DEFINE COMPILER9_UP}
+  {$DEFINE COMPILER8_UP}
+  {$DEFINE COMPILER7_UP}
+  {$DEFINE COMPILER6_UP}
+  {$DEFINE COMPILER5_UP}
+  {$DEFINE COMPILER4_UP}
+  {$DEFINE COMPILER35_UP}
+  {$DEFINE COMPILER3_UP}
+  {$DEFINE COMPILER2_UP}
+  {$DEFINE COMPILER1_UP}
 {$ENDIF}
 
 {$IFDEF COMPILER28}
@@ -1547,7 +1756,34 @@ separate compiled DCUs for Delphi 5 to 10.4.
   {$DEFINE COMPILER1_UP}
 {$ENDIF}
 
-{$IFDEF BCB287}
+{$IFDEF BCB29}
+  {$DEFINE BCB29_UP}
+  {$DEFINE BCB28_UP}
+  {$DEFINE BCB27_UP}
+  {$DEFINE BCB26_UP}
+  {$DEFINE BCB25_UP}
+  {$DEFINE BCB24_UP}
+  {$DEFINE BCB23_UP}
+  {$DEFINE BCB22_UP}
+  {$DEFINE BCB21_UP}
+  {$DEFINE BCB20_UP}
+  {$DEFINE BCB19_UP}
+  {$DEFINE BCB18_UP}
+  {$DEFINE BCB17_UP}
+  {$DEFINE BCB16_UP}
+  {$DEFINE BCB15_UP}
+  {$DEFINE BCB14_UP}
+  {$DEFINE BCB12_UP}
+  {$DEFINE BCB11_UP}
+  {$DEFINE BCB10_UP}
+  {$DEFINE BCB6_UP}
+  {$DEFINE BCB5_UP}
+  {$DEFINE BCB4_UP}
+  {$DEFINE BCB3_UP}
+  {$DEFINE BCB1_UP}
+{$ENDIF}
+
+{$IFDEF BCB28}
   {$DEFINE BCB28_UP}
   {$DEFINE BCB27_UP}
   {$DEFINE BCB26_UP}
@@ -1979,5 +2215,34 @@ separate compiled DCUs for Delphi 5 to 10.4.
     {$IFDEF USE_ZLIB_OBJ}
         {$DEFINE USE_DELPHI_ZLIB}   { V8.70 use System.Zlib on Posix }
     {$ENDIF}
+{$ENDIF}
+
+{ V9.3 Allow greater control over whether the Windows Certificate Store is  }
+{ is available in diferent types of components.                             }
+
+{ V9.3 MSCrypt has errors building with C++ Builder that no-one has yet managed to fix }
+{$IFDEF BCB}
+  {$UNDEF MSCRYPT_Clients}
+  {$UNDEF MSCRYPT_Servers}
+  {$UNDEF MSCRYPT_Tools}
+{$ENDIF}
+
+{ V9.3 MSCrypt has is Windows only }
+{$IFNDEF MSWINDOWS}
+  {$UNDEF MSCRYPT_Clients}
+  {$UNDEF MSCRYPT_Servers}
+  {$UNDEF MSCRYPT_Tools}
+{$ENDIF}
+
+{ V9.3 general MSCrypt define }
+{$UNDEF MSCRYPT_Any}
+{$IFDEF MSCRYPT_Clients}
+    {$DEFINE MSCRYPT_Any}
+{$ENDIF}
+{$IFDEF MSCRYPT_Servers}
+    {$DEFINE MSCRYPT_Any}
+{$ENDIF}
+{$IFDEF MSCRYPT_Tools)
+    {$DEFINE MSCRYPT_Any}
 {$ENDIF}
 

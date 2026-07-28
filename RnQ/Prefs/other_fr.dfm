@@ -10,9 +10,7 @@ object otherFr: TotherFr
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = True
   OnResize = FrameResize
-  PixelsPerInch = 96
   TextHeight = 13
   object plBg: TPanel
     Left = 0
@@ -33,10 +31,6 @@ object otherFr: TotherFr
       TabOrder = 0
       object TabSheet1: TTabSheet
         Caption = 'Common'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         DesignSize = (
           400
           360)
@@ -167,11 +161,12 @@ object otherFr: TotherFr
         object GroupBox1: TGroupBox
           Left = 6
           Top = 230
-          Width = 385
+          Width = 383
           Height = 68
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Web browser'
           TabOrder = 8
+          ExplicitWidth = 385
           object fnBoxButton: TRnQSpeedButton
             Left = 311
             Top = 17
@@ -230,6 +225,7 @@ object otherFr: TotherFr
           EditLabel.Height = 13
           EditLabel.Caption = 'Receiving files path'
           TabOrder = 10
+          Text = ''
         end
       end
     end

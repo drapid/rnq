@@ -60,7 +60,7 @@ object selectCntsFrm: TselectCntsFrm
       ExplicitWidth = 176
     end
     object saveBtn: TRnQSpeedButton
-      Left = 149
+      Left = 147
       Top = 16
       Width = 20
       Height = 20
@@ -80,7 +80,7 @@ object selectCntsFrm: TselectCntsFrm
       ExplicitLeft = 159
     end
     object addBtn: TRnQSpeedButton
-      Left = 110
+      Left = 108
       Top = 16
       Width = 20
       Height = 20
@@ -100,7 +100,7 @@ object selectCntsFrm: TselectCntsFrm
       ExplicitLeft = 120
     end
     object subBtn: TRnQSpeedButton
-      Left = 130
+      Left = 128
       Top = 16
       Width = 20
       Height = 20
@@ -120,7 +120,7 @@ object selectCntsFrm: TselectCntsFrm
       ExplicitLeft = 140
     end
     object delBtn: TRnQSpeedButton
-      Left = 167
+      Left = 165
       Top = 16
       Width = 20
       Height = 20
@@ -142,7 +142,7 @@ object selectCntsFrm: TselectCntsFrm
     object uinlistBox: TComboBox
       Left = 5
       Top = 16
-      Width = 103
+      Width = 101
       Height = 19
       Anchors = [akLeft, akTop, akRight]
       Font.Charset = ANSI_CHARSET

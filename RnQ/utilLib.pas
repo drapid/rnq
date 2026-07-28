@@ -16,7 +16,7 @@ interface
 uses
   windows, sysutils, graphics, classes, extctrls,
   forms, stdctrls, controls, menus,
-  comctrls, messages, types,
+  comctrls, messages, Dialogs, types,
   VirtualTrees.Types,
   strutils,
 //    GDIPAPI, GDIPOBJ,

@@ -11,7 +11,7 @@ interface
 
 uses
   classes, sysutils, types,
-    RnQGraphics32,
+  RnQGraphics32,
   RDGlobal, RnQProtocol;
 
 type
@@ -41,13 +41,14 @@ type
     caps_hash: String;
     caps: array of string;
   end;
+  TXMP_RESRCArr = array of TXMP_RESRC;
 
 type
   TxmppContact = class(TRnQContact)
    public
     invisible: boolean;
     gender: Byte;
-    resources: array of TXMP_RESRC;
+    resources: TXMP_RESRCArr;
     defRes: Int8;
     f_offline_sts: TXMPPstatus;
 //    ssPhones: AnsiString;
@@ -108,14 +109,14 @@ type
 IMPLEMENTATION
 
 uses
-  RnQLangs, RnQConst, globalLib, mainDlg,
-  utilLib, RQUtil, StrUtils,
-    RnQBinUtils, RDUtils,
+  RnQLangs, RnQConst, StrUtils,
+  globalLib, mainDlg, utilLib,
+  RnQBinUtils, RDUtils, RQUtil,
  {$IFDEF UNICODE}
    AnsiStrings,
  {$ENDIF UNICODE}
-   viewXMPPinfoDlg,
-    XMPP_proto, XMPPv1;
+  viewXMPPinfoDlg,
+  XMPP_proto, XMPPv1;
 //    mra_Proto, Protocol_MRA, MRAv1;
 
 constructor TxmppContact.create(pProto: TRnQProtocol; const uin_: TUID);

@@ -26,7 +26,7 @@ object chatFrm: TchatFrm
   DesignSize = (
     608
     329)
-  TextHeight = 20
+  TextHeight = 15
   object fp: TBevel
     Left = 0
     Top = 0
@@ -376,7 +376,7 @@ object chatFrm: TchatFrm
     ExplicitHeight = 255
   end
   object caseChk: TCheckBox
-    Left = 403
+    Left = 401
     Top = 10
     Width = 97
     Height = 17
@@ -387,7 +387,7 @@ object chatFrm: TchatFrm
     ExplicitLeft = 427
   end
   object reChk: TCheckBox
-    Left = 511
+    Left = 509
     Top = 10
     Width = 76
     Height = 17
@@ -398,10 +398,10 @@ object chatFrm: TchatFrm
     ExplicitLeft = 535
   end
   object directionGrp: TComboBox
-    Left = 278
+    Left = 276
     Top = 8
     Width = 119
-    Height = 28
+    Height = 23
     AutoDropDown = True
     Style = csDropDownList
     Anchors = [akTop, akRight]
@@ -418,7 +418,7 @@ object chatFrm: TchatFrm
   object w2sBox: TEdit
     Left = 96
     Top = 8
-    Width = 176
+    Width = 174
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     Constraints.MinWidth = 30

@@ -9,15 +9,13 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
   Color = clBtnFace
   ParentFont = True
   KeyPreview = True
-  OldCreateOrder = True
   Position = poDesigned
   OnClose = FormClose
   OnCreate = FormCreate
   OnKeyPress = FormKeyPress
   OnPaint = FormPaint
   OnShow = FormShow
-  PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 15
   object pagectrl: TPageControl
     Left = 0
     Top = 33
@@ -32,71 +30,71 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
       object Label7: TLabel
         Left = 3
         Top = 264
-        Width = 29
-        Height = 13
+        Width = 33
+        Height = 15
         Caption = 'About'
         Transparent = True
         Visible = False
       end
       object Label8: TLabel
-        Left = 227
+        Left = 225
         Top = 75
-        Width = 51
-        Height = 13
+        Width = 53
+        Height = 15
         Alignment = taRightJustify
         Caption = 'IP address'
         Transparent = True
       end
       object Label2: TLabel
-        Left = 39
+        Left = 36
         Top = 75
-        Width = 35
-        Height = 13
+        Width = 38
+        Height = 15
         Alignment = taRightJustify
         Caption = 'Gender'
         Transparent = True
       end
       object Label14: TLabel
-        Left = 34
+        Left = 30
         Top = 168
-        Width = 39
-        Height = 13
+        Width = 43
+        Height = 15
         Alignment = taRightJustify
         Caption = 'Country'
         Transparent = True
       end
       object Label13: TLabel
-        Left = 221
+        Left = 216
         Top = 121
-        Width = 56
-        Height = 13
+        Width = 61
+        Height = 15
         Alignment = taRightJustify
         Caption = 'Language 1'
         Transparent = True
       end
       object Label17: TLabel
-        Left = 221
+        Left = 216
         Top = 144
-        Width = 56
-        Height = 13
+        Width = 61
+        Height = 15
         Alignment = taRightJustify
         Caption = 'Language 2'
         Transparent = True
       end
       object Label18: TLabel
-        Left = 221
+        Left = 216
         Top = 167
-        Width = 56
-        Height = 13
+        Width = 61
+        Height = 15
         Alignment = taRightJustify
         Caption = 'Language 3'
         Transparent = True
       end
       object Label20: TLabel
-        Left = 326
+        Left = 321
         Top = 236
-        Width = 21
-        Height = 13
+        Width = 26
+        Height = 15
         Alignment = taRightJustify
         Caption = 'GMT'
         Transparent = True
@@ -119,10 +117,10 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         OnClick = mailBtnClick
       end
       object birthageLbl: TLabel
-        Left = 52
+        Left = 50
         Top = 189
-        Width = 19
-        Height = 13
+        Width = 21
+        Height = 15
         Alignment = taRightJustify
         Caption = 'Age'
         Transparent = True
@@ -158,13 +156,14 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
       object aboutBox: TMemo
         AlignWithMargins = True
         Left = 3
-        Top = 280
+        Top = 278
         Width = 418
         Height = 112
         Align = alBottom
         MaxLength = 480
         ScrollBars = ssVertical
         TabOrder = 27
+        ExplicitTop = 280
       end
       object ipBox: TEdit
         Left = 281
@@ -180,7 +179,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Left = 77
         Top = 71
         Width = 140
-        Height = 21
+        Height = 23
         Style = csDropDownList
         TabOrder = 6
       end
@@ -188,7 +187,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Left = 77
         Top = 163
         Width = 140
-        Height = 21
+        Height = 23
         Style = csDropDownList
         Sorted = True
         TabOrder = 14
@@ -197,7 +196,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Left = 281
         Top = 117
         Width = 140
-        Height = 21
+        Height = 23
         Style = csDropDownList
         Sorted = True
         TabOrder = 11
@@ -206,7 +205,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Left = 281
         Top = 140
         Width = 140
-        Height = 21
+        Height = 23
         Style = csDropDownList
         Sorted = True
         TabOrder = 13
@@ -215,7 +214,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Left = 281
         Top = 163
         Width = 140
-        Height = 21
+        Height = 23
         Style = csDropDownList
         Sorted = True
         TabOrder = 15
@@ -233,97 +232,105 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Top = 3
         Width = 140
         Height = 21
-        EditLabel.Width = 19
-        EditLabel.Height = 13
+        EditLabel.Width = 24
+        EditLabel.Height = 21
         EditLabel.Caption = 'Nick'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 1
+        Text = ''
       end
       object lastBox: TLabeledEdit
         Left = 281
         Top = 26
         Width = 140
         Height = 21
-        EditLabel.Width = 49
-        EditLabel.Height = 13
+        EditLabel.Width = 54
+        EditLabel.Height = 21
         EditLabel.Caption = 'Last name'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 3
+        Text = ''
       end
       object firstBox: TLabeledEdit
         Left = 77
         Top = 25
         Width = 140
         Height = 21
-        EditLabel.Width = 50
-        EditLabel.Height = 13
+        EditLabel.Width = 55
+        EditLabel.Height = 21
         EditLabel.Caption = 'First name'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 2
+        Text = ''
       end
       object emailBox: TLabeledEdit
         Left = 77
         Top = 48
         Width = 119
         Height = 21
-        EditLabel.Width = 28
-        EditLabel.Height = 13
+        EditLabel.Width = 34
+        EditLabel.Height = 21
         EditLabel.Caption = 'E-mail'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 4
+        Text = ''
       end
       object displayBox: TLabeledEdit
         Left = 77
         Top = 3
         Width = 140
         Height = 21
-        EditLabel.Width = 46
-        EditLabel.Height = 13
+        EditLabel.Width = 51
+        EditLabel.Height = 21
         EditLabel.Caption = 'Displayed'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 0
+        Text = ''
       end
       object uinBox: TLabeledEdit
         Left = 281
         Top = 48
         Width = 140
         Height = 21
-        EditLabel.Width = 18
-        EditLabel.Height = 13
+        EditLabel.Width = 20
+        EditLabel.Height = 21
         EditLabel.Caption = 'UIN'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 5
+        Text = ''
       end
       object statusBox: TLabeledEdit
         Left = 281
         Top = 94
         Width = 119
         Height = 21
-        EditLabel.Width = 31
-        EditLabel.Height = 13
+        EditLabel.Width = 32
+        EditLabel.Height = 21
         EditLabel.Caption = 'Status'
         EditLabel.OnDblClick = statusBoxSubLabelDblClick
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 9
+        Text = ''
       end
       object cityBox: TLabeledEdit
         Left = 77
         Top = 117
         Width = 140
         Height = 21
-        EditLabel.Width = 19
-        EditLabel.Height = 13
+        EditLabel.Width = 21
+        EditLabel.Height = 21
         EditLabel.Caption = 'City'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 10
+        Text = ''
       end
       object stateBox: TLabeledEdit
         Left = 77
@@ -331,55 +338,59 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Width = 140
         Height = 21
         EditLabel.Width = 26
-        EditLabel.Height = 13
+        EditLabel.Height = 21
         EditLabel.Caption = 'State'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 12
+        Text = ''
       end
       object zipBox: TLabeledEdit
         Left = 77
         Top = 233
         Width = 140
         Height = 21
-        EditLabel.Width = 14
-        EditLabel.Height = 13
+        EditLabel.Width = 17
+        EditLabel.Height = 21
         EditLabel.Caption = 'Zip'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 23
+        Text = ''
       end
       object timeBox: TLabeledEdit
         Left = 279
         Top = 233
         Width = 38
         Height = 21
-        EditLabel.Width = 36
-        EditLabel.Height = 13
+        EditLabel.Width = 42
+        EditLabel.Height = 21
         EditLabel.Caption = 'his time'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 24
+        Text = ''
       end
       object cellularBox: TLabeledEdit
         Left = 77
         Top = 209
         Width = 140
         Height = 21
-        EditLabel.Width = 35
-        EditLabel.Height = 13
+        EditLabel.Width = 40
+        EditLabel.Height = 21
         EditLabel.Caption = 'Cellular'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 21
+        Text = ''
       end
       object birthBox: TDateTimePicker
         Left = 220
         Top = 186
         Width = 92
-        Height = 21
-        Date = 39050.677962962960000000
-        Time = 39050.677962962960000000
+        Height = 23
+        Date = 39050.000000000000000000
+        Time = 0.677962962960009500
         TabOrder = 18
         OnChange = birthBoxChange
       end
@@ -400,7 +411,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Left = 77
         Top = 186
         Width = 140
-        Height = 21
+        Height = 23
         Style = csDropDownList
         TabOrder = 16
         OnChange = birthageBoxChange
@@ -414,18 +425,19 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Top = 257
         Width = 313
         Height = 21
-        EditLabel.Width = 37
-        EditLabel.Height = 13
+        EditLabel.Width = 39
+        EditLabel.Height = 21
         EditLabel.Caption = 'XStatus'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 26
+        Text = ''
       end
       object BirthLBox: TDateTimePicker
         Left = 336
         Top = 186
         Width = 85
-        Height = 21
+        Height = 23
         Date = 38421.000000000000000000
         Format = 'dd.MM.yyyy'
         Time = 38421.000000000000000000
@@ -452,7 +464,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Left = 353
         Top = 233
         Width = 66
-        Height = 21
+        Height = 23
         Style = csDropDownList
         TabOrder = 25
       end
@@ -460,7 +472,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Left = 77
         Top = 94
         Width = 140
-        Height = 21
+        Height = 23
         Style = csDropDownList
         TabOrder = 8
       end
@@ -469,10 +481,10 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
       Caption = '&Work'
       ImageIndex = 6
       object Label1: TLabel
-        Left = 32
+        Left = 28
         Top = 187
-        Width = 39
-        Height = 13
+        Width = 43
+        Height = 15
         Alignment = taRightJustify
         Caption = 'Country'
         Transparent = True
@@ -482,23 +494,25 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Top = 23
         Width = 336
         Height = 21
-        EditLabel.Width = 49
-        EditLabel.Height = 13
+        EditLabel.Width = 54
+        EditLabel.Height = 15
         EditLabel.Caption = 'Workpage'
         ReadOnly = True
         TabOrder = 0
+        Text = ''
       end
       object workCityEdt: TLabeledEdit
         Left = 77
         Top = 131
         Width = 140
         Height = 21
-        EditLabel.Width = 19
-        EditLabel.Height = 13
+        EditLabel.Width = 21
+        EditLabel.Height = 21
         EditLabel.Caption = 'City'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 5
+        Text = ''
       end
       object workStateEdt: TLabeledEdit
         Left = 77
@@ -506,17 +520,18 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Width = 140
         Height = 21
         EditLabel.Width = 26
-        EditLabel.Height = 13
+        EditLabel.Height = 21
         EditLabel.Caption = 'State'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 6
+        Text = ''
       end
       object WorkCntryBox: TComboBox
         Left = 77
         Top = 185
         Width = 140
-        Height = 21
+        Height = 23
         Style = csDropDownList
         Sorted = True
         TabOrder = 7
@@ -527,13 +542,14 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Width = 140
         Height = 21
         CharCase = ecLowerCase
-        EditLabel.Width = 14
-        EditLabel.Height = 13
+        EditLabel.Width = 17
+        EditLabel.Height = 21
         EditLabel.Caption = 'Zip'
         LabelPosition = lpLeft
         MaxLength = 9
         ReadOnly = True
         TabOrder = 8
+        Text = ''
         OnChange = OnlyDigitChange
       end
       object WorkCellEdit: TLabeledEdit
@@ -541,48 +557,52 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Top = 239
         Width = 140
         Height = 21
-        EditLabel.Width = 35
-        EditLabel.Height = 13
+        EditLabel.Width = 40
+        EditLabel.Height = 21
         EditLabel.Caption = 'Cellular'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 9
+        Text = ''
       end
       object WorkPosEdit: TLabeledEdit
         Left = 77
         Top = 50
         Width = 140
         Height = 21
-        EditLabel.Width = 37
-        EditLabel.Height = 13
+        EditLabel.Width = 43
+        EditLabel.Height = 21
         EditLabel.Caption = 'Position'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 2
+        Text = ''
       end
       object WorkDeptEdit: TLabeledEdit
         Left = 77
         Top = 77
         Width = 140
         Height = 21
-        EditLabel.Width = 57
-        EditLabel.Height = 13
+        EditLabel.Width = 63
+        EditLabel.Height = 21
         EditLabel.Caption = 'Department'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 3
+        Text = ''
       end
       object WorkCompanyEdit: TLabeledEdit
         Left = 77
         Top = 104
         Width = 140
         Height = 21
-        EditLabel.Width = 45
-        EditLabel.Height = 13
+        EditLabel.Width = 52
+        EditLabel.Height = 21
         EditLabel.Caption = 'Company'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 4
+        Text = ''
       end
       object GoWkPgBtn: TRnQButton
         Left = 350
@@ -591,6 +611,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Height = 25
         Hint = 'Open this address'
         Caption = 'GO'
+        ImageName = ''
         TabOrder = 1
         OnClick = GoWkPgBtnClick
       end
@@ -599,10 +620,11 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Top = 327
         Width = 329
         Height = 21
-        EditLabel.Width = 50
-        EditLabel.Height = 13
+        EditLabel.Width = 53
+        EditLabel.Height = 15
         EditLabel.Caption = 'Life status'
         TabOrder = 10
+        Text = ''
       end
       object RnQButton2: TRnQButton
         Left = 15
@@ -610,9 +632,9 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Width = 90
         Height = 25
         Caption = 'Apply'
+        ImageName = 'apply'
         TabOrder = 11
         OnClick = RnQButton2Click
-        ImageName = 'apply'
       end
     end
     object TabSheet2: TTabSheet
@@ -626,8 +648,8 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
       object Label28: TLabel
         Left = 265
         Top = 244
-        Width = 40
-        Height = 13
+        Width = 45
+        Height = 15
         Caption = 'UIN-lists'
       end
       object dontdeleteChk: TCheckBox
@@ -652,12 +674,13 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Top = 201
         Width = 125
         Height = 21
-        EditLabel.Width = 29
-        EditLabel.Height = 13
+        EditLabel.Width = 33
+        EditLabel.Height = 21
         EditLabel.Caption = 'Group'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 10
+        Text = ''
       end
       object publicChk: TCheckBox
         Left = 8
@@ -672,11 +695,12 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Top = 23
         Width = 336
         Height = 21
-        EditLabel.Width = 51
-        EditLabel.Height = 13
+        EditLabel.Width = 59
+        EditLabel.Height = 15
         EditLabel.Caption = 'Homepage'
         ReadOnly = True
         TabOrder = 0
+        Text = ''
       end
       object GroupBox9: TGroupBox
         Left = 3
@@ -689,7 +713,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
           Left = 16
           Top = 16
           Width = 129
-          Height = 21
+          Height = 23
           Style = csDropDownList
           TabOrder = 0
         end
@@ -697,7 +721,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
           Left = 16
           Top = 48
           Width = 129
-          Height = 21
+          Height = 23
           Style = csDropDownList
           TabOrder = 1
         end
@@ -705,7 +729,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
           Left = 16
           Top = 80
           Width = 129
-          Height = 21
+          Height = 23
           Style = csDropDownList
           TabOrder = 2
         end
@@ -734,7 +758,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
           Left = 16
           Top = 110
           Width = 129
-          Height = 21
+          Height = 23
           Style = csDropDownList
           TabOrder = 6
         end
@@ -751,60 +775,65 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Top = 317
         Width = 120
         Height = 21
-        EditLabel.Width = 76
-        EditLabel.Height = 13
+        EditLabel.Width = 82
+        EditLabel.Height = 21
         EditLabel.Caption = 'Info updated to'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 7
+        Text = ''
       end
       object membersinceBox: TLabeledEdit
         Left = 121
         Top = 290
         Width = 120
         Height = 21
-        EditLabel.Width = 67
-        EditLabel.Height = 13
+        EditLabel.Width = 72
+        EditLabel.Height = 21
         EditLabel.Caption = 'Registered on'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 6
+        Text = ''
       end
       object onlinesinceBox: TLabeledEdit
         Left = 121
         Top = 263
         Width = 120
         Height = 21
-        EditLabel.Width = 57
-        EditLabel.Height = 13
+        EditLabel.Width = 65
+        EditLabel.Height = 21
         EditLabel.Caption = 'Online since'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 5
+        Text = ''
       end
       object lastonlineBox: TLabeledEdit
         Left = 121
         Top = 236
         Width = 120
         Height = 21
-        EditLabel.Width = 100
-        EditLabel.Height = 13
+        EditLabel.Width = 111
+        EditLabel.Height = 21
         EditLabel.Caption = 'Last time seen online'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 4
+        Text = ''
       end
       object lastmsgBox: TLabeledEdit
         Left = 121
         Top = 209
         Width = 120
         Height = 21
-        EditLabel.Width = 88
-        EditLabel.Height = 13
+        EditLabel.Width = 97
+        EditLabel.Height = 21
         EditLabel.Caption = 'Last message time'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 3
+        Text = ''
       end
       object goBtn: TRnQButton
         Left = 350
@@ -813,6 +842,7 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Height = 25
         Hint = 'Open this address'
         Caption = 'GO'
+        ImageName = ''
         TabOrder = 1
         OnClick = goBtnClick
       end
@@ -820,10 +850,6 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
     object InterSheet: TTabSheet
       Caption = '&Client'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Bevel1: TBevel
         Left = 16
         Top = 308
@@ -833,8 +859,8 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
       object Label26: TLabel
         Left = 32
         Top = 324
-        Width = 51
-        Height = 13
+        Width = 53
+        Height = 15
         Caption = 'IP address'
       end
       object resolveBtn: TRnQSpeedButton
@@ -862,8 +888,8 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
       object CapsLabel: TLabel
         Left = 3
         Top = 77
-        Width = 82
-        Height = 13
+        Width = 93
+        Height = 15
         Caption = 'Client capabilities'
       end
       object ipbox2: TMemo
@@ -887,24 +913,26 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Top = 19
         Width = 102
         Height = 21
-        EditLabel.Width = 70
-        EditLabel.Height = 13
+        EditLabel.Width = 79
+        EditLabel.Height = 21
         EditLabel.Caption = 'Direct protocol'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 0
+        Text = ''
       end
       object clientBox: TLabeledEdit
         Left = 75
         Top = 46
         Width = 102
         Height = 21
-        EditLabel.Width = 27
-        EditLabel.Height = 13
+        EditLabel.Width = 31
+        EditLabel.Height = 21
         EditLabel.Caption = 'Client'
         LabelPosition = lpLeft
         ReadOnly = True
         TabOrder = 1
+        Text = ''
       end
       object CliCapsMemo: TMemo
         Left = 3
@@ -920,10 +948,11 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Top = 72
         Width = 217
         Height = 21
-        EditLabel.Width = 107
-        EditLabel.Height = 13
+        EditLabel.Width = 122
+        EditLabel.Height = 15
         EditLabel.Caption = 'Attached mail for login'
         TabOrder = 3
+        Text = ''
       end
       object LUPDDATEEdt: TEdit
         Left = 192
@@ -945,14 +974,10 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
     object TabSheet1: TTabSheet
       Caption = '&Notes'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object notesBox: TMemo
         AlignWithMargins = True
         Left = 3
-        Top = 143
+        Top = 141
         Width = 418
         Height = 249
         Align = alBottom
@@ -973,48 +998,48 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
           Top = 17
           Width = 345
           Height = 21
-          EditLabel.Width = 48
-          EditLabel.Height = 13
+          EditLabel.Width = 53
+          EditLabel.Height = 21
           EditLabel.Caption = 'Important'
-          EditLabel.Layout = tlCenter
           LabelPosition = lpLeft
           LabelSpacing = 8
           TabOrder = 0
+          Text = ''
         end
         object localMailEdt: TLabeledEdit
           Left = 66
           Top = 44
           Width = 286
           Height = 21
-          EditLabel.Width = 28
-          EditLabel.Height = 13
+          EditLabel.Width = 34
+          EditLabel.Height = 21
           EditLabel.Caption = 'E-Mail'
-          EditLabel.Layout = tlCenter
           LabelPosition = lpLeft
           LabelSpacing = 8
           TabOrder = 1
+          Text = ''
         end
         object CellularEdt: TLabeledEdit
           Left = 66
           Top = 71
           Width = 286
           Height = 21
-          EditLabel.Width = 35
-          EditLabel.Height = 13
+          EditLabel.Width = 40
+          EditLabel.Height = 21
           EditLabel.Caption = 'Cellular'
-          EditLabel.Layout = tlCenter
           LabelPosition = lpLeft
           LabelSpacing = 8
           TabOrder = 2
+          Text = ''
         end
         object ApplyMyTextBtn: TRnQButton
           Left = 355
           Top = 44
           Width = 56
           Height = 45
+          ImageName = 'apply'
           TabOrder = 3
           OnClick = ApplyMyTextBtnClick
-          ImageName = 'apply'
         end
       end
       object lclNoteStrEdit: TLabeledEdit
@@ -1022,13 +1047,13 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
         Top = 112
         Width = 352
         Height = 21
-        EditLabel.Width = 48
-        EditLabel.Height = 13
+        EditLabel.Width = 53
+        EditLabel.Height = 21
         EditLabel.Caption = 'Important'
-        EditLabel.Layout = tlCenter
         LabelPosition = lpLeft
         LabelSpacing = 8
         TabOrder = 2
+        Text = ''
       end
     end
     object avtTS: TTabSheet
@@ -1037,15 +1062,16 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
       OnShow = avtTSShow
       DesignSize = (
         424
-        395)
+        393)
       object AVTGrp: TGroupBox
         Left = 88
         Top = 0
-        Width = 333
+        Width = 331
         Height = 153
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Avatar'
         TabOrder = 1
+        ExplicitWidth = 333
         object AvtPBox: TPaintBox
           Left = 8
           Top = 16
@@ -1068,9 +1094,9 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
           Width = 150
           Height = 22
           Caption = 'Clear avatar'
+          ImageName = 'clear'
           TabOrder = 0
           OnClick = ClrAvtBtnClick
-          ImageName = 'clear'
         end
         object avtSaveBtn: TRnQButton
           Left = 176
@@ -1078,9 +1104,9 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
           Width = 150
           Height = 25
           Caption = 'Change own avatar'
+          ImageName = 'save.net'
           TabOrder = 1
           OnClick = avtSaveBtnClick
-          ImageName = 'save.net'
         end
         object avtLoadBtn: TRnQButton
           Left = 176
@@ -1088,9 +1114,9 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
           Width = 150
           Height = 25
           Caption = 'Load avatar'
+          ImageName = 'load.net'
           TabOrder = 2
           OnClick = avtLoadBtnClick
-          ImageName = 'load.net'
         end
       end
       object IcShRGrp: TRadioGroup
@@ -1109,11 +1135,12 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
       object PhtGrp: TGroupBox
         Left = 3
         Top = 159
-        Width = 418
+        Width = 416
         Height = 234
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Photo'
         TabOrder = 2
+        ExplicitWidth = 418
         object RnQSpeedButton2: TRnQSpeedButton
           Left = 261
           Top = 24
@@ -1138,9 +1165,9 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
           Width = 150
           Height = 25
           Caption = 'Load thumb'
+          ImageName = 'load.net'
           TabOrder = 0
           OnClick = PhtLoadBtnClick
-          ImageName = 'load.net'
         end
         object PhtBigLoadBtn: TRnQButton
           Left = 261
@@ -1148,9 +1175,9 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
           Width = 150
           Height = 25
           Caption = 'Load photo'
+          ImageName = 'load.net'
           TabOrder = 1
           OnClick = PhtBigLoadBtnClick
-          ImageName = 'load.net'
         end
         object PhtLoadBtn2: TRnQButton
           Left = 261
@@ -1158,9 +1185,9 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
           Width = 150
           Height = 25
           Caption = 'Load photo 2'
+          ImageName = 'load.net'
           TabOrder = 2
           OnClick = PhtLoadBtn2Click
-          ImageName = 'load.net'
         end
         object PhtLoadBtn3: TRnQButton
           Left = 261
@@ -1168,24 +1195,20 @@ object viewXMPPinfoFrm: TviewXMPPinfoFrm
           Width = 150
           Height = 25
           Caption = 'Load photo 3'
+          ImageName = 'load.net'
           TabOrder = 3
           OnClick = PhtLoadBtn3Click
-          ImageName = 'load.net'
         end
       end
     end
     object PrivacyTab: TTabSheet
       Caption = 'Privacy'
       ImageIndex = 6
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label4: TLabel
         Left = 35
         Top = 32
-        Width = 31
-        Height = 13
+        Width = 34
+        Height = 15
         Caption = 'Label4'
       end
       object FontSelectBtn: TRnQSpeedButton

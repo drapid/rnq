@@ -14,30 +14,30 @@ object histUtilsFrm: ThistUtilsFrm
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   OnShow = FormShow
   DesignSize = (
     282
     374)
-  PixelsPerInch = 96
   TextHeight = 13
   object loadHistBtn: TRnQSpeedButton
     Left = 8
     Top = 48
-    Width = 259
+    Width = 257
     Height = 22
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Add history from another clients'
     OnClick = loadHistBtnClick
+    ExplicitWidth = 259
   end
   object loadHist1Btn: TRnQSpeedButton
     Left = 8
     Top = 80
-    Width = 259
+    Width = 257
     Height = 22
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Add history from one contact to another'
     OnClick = loadHist1BtnClick
+    ExplicitWidth = 259
   end
   object Label1: TLabel
     Left = 16
@@ -49,7 +49,7 @@ object histUtilsFrm: ThistUtilsFrm
   object Label2: TLabel
     Left = 16
     Top = 0
-    Width = 243
+    Width = 241
     Height = 42
     Alignment = taCenter
     Anchors = [akLeft, akTop, akRight]
@@ -65,15 +65,17 @@ object histUtilsFrm: ThistUtilsFrm
     ParentFont = False
     Layout = tlCenter
     WordWrap = True
+    ExplicitWidth = 243
   end
   object Memo1: TMemo
     Left = 8
     Top = 128
-    Width = 267
+    Width = 265
     Height = 237
     Anchors = [akLeft, akTop, akRight, akBottom]
     ScrollBars = ssVertical
     TabOrder = 0
+    ExplicitWidth = 267
   end
   object RepHistBtn: TRnQButton
     Left = 80
@@ -81,6 +83,7 @@ object histUtilsFrm: ThistUtilsFrm
     Width = 147
     Height = 25
     Caption = 'Repair bad history files'
+    ImageName = ''
     TabOrder = 1
     Visible = False
     OnClick = RepHistBtnClick

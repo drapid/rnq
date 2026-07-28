@@ -10,9 +10,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, ComCtrls, ExtCtrls, RnQButtons, RnQSpin,
+  StdCtrls, ComCtrls, ExtCtrls, Dialogs, RnQButtons, RnQSpin,
   RnQPrefsInt, RnQPrefsTypes,
-  RDGlobal;
+  RDGlobal, Vcl.Mask;
 
 type
   TotherFr = class(TPrefFrame)

@@ -90,7 +90,8 @@ implementation
    RDUtils, RQUtil, RnQDialogs, RDFileUtil,
    RnQLangs, RnQNet, RnQFileUtil,
    RnQGlobal,
-   cgJpeg,
+//   cgJpeg,
+   RnQ.Graphics.Utils,
    RnQConst, utilLib, globalLib, RQThemes,
    Protocols_all,
  {$IFDEF PROTOCOL_ICQ}

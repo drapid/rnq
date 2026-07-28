@@ -10,11 +10,9 @@ interface
 
 uses
   Windows, Messages, Types, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, ExtCtrls, ComCtrls, clipbrd,
+  StdCtrls, ExtCtrls, ComCtrls, clipbrd, Dialogs,
   Menus,
   strutils, RnQButtons, RnQSpin,
-//  OverbyteIcsWSocket,
-//  wsocket,
   {$IFNDEF NOT_USE_GDIPLUS}
     RnQGraphics,
   {$ELSE}
@@ -22,7 +20,7 @@ uses
   {$ENDIF NOT_USE_GDIPLUS}
   RnQDialogs, RnQNet,
   globalLib, RnQProtocol
-  ,XMPPcontacts;
+  ,XMPPcontacts, Vcl.Mask;
 
 type
 //  TviewinfoFrm = class(TForm)
@@ -198,7 +196,7 @@ type
     procedure TickAniTimer(Sender: TObject);
    {$ENDIF RNQ_AVATARS}
   public
-//    contact: TICQContact;
+//    contact: TRnQContact;
    {$IFDEF RNQ_AVATARS}
     FAniTimer: TTimer;
     contactAvt,
@@ -226,8 +224,9 @@ implementation
 
 uses
   RDUtils, RDGlobal, RnQLangs, RnQStrings,
+  RDSysUtils, RnQ.Graphics.Utils,
   RQUtil, RQThemes, RnQSysUtils, RnQPics,
-  RQCodes,
+  //RQCodes,
   utilLib, RnQConst,
   mainDlg, langLib, roasterLib, chatDlg,
  {$IFDEF RNQ_AVATARS}
@@ -237,14 +236,13 @@ uses
   Protocols_all,
   themesLib,
   XMPPv1,
-//  RQ_ICQ, ICQConsts, Protocol_ICQ, ICQv9,
   menusUnit;
 
 {$R *.DFM}
 
 procedure TviewXMPPinfoFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- childWindows.remove(self);
+  childWindows.remove(self);
   visible := FALSE;
 (*
   if displayBox.text <> contact.displayed then
@@ -448,7 +446,7 @@ with TxmppContact(contact) do
  {$IFDEF UseNotSSI}
             TICQSession(contact.iProto.ProtoElem).useSSI and
  {$ENDIF UseNotSSI}
-            contact.fProto.isOnline;
+            contact.Proto.isOnline;
   dontdeleteChk.checked:=TCE(data^).dontdelete;
 {
   publicChk.checked := pPublicEmail;
@@ -466,10 +464,10 @@ with TxmppContact(contact) do
   lastupdateBox.ReadOnly  := True;
   onlinesinceBox.ReadOnly := True;
   membersinceBox.ReadOnly := True;
-  if contact.group < 0 then
+  if contact.groupId < 0 then
     groupBox.text := '('+getTranslation('Noone')+')'
   else
-    groupBox.text := groups.id2name(contact.group);
+    groupBox.text := contact.getGroupName;
 // end; // end with
   groupBox.ReadOnly := True;
   uinlistsBox.text:='';
@@ -611,12 +609,12 @@ procedure TviewXMPPinfoFrm.updateBtnClick(Sender: TObject);
 var
   wpS: TwpSearch;
 begin
-  if OnlFeature(contact.fProto) then
+  if OnlFeature(contact.Proto) then
     begin
      wpS.email := contact.UID2cmp;
 //     TICQSession(contact.iProto.ProtoElem).sendQueryInfo(StrToIntDef(wpS.uin, 0));
 //     wpS.token := TICQcontact(contact).InfoToken;
-     TXMPPSession(contact.fProto).sendWPsearch(wpS, 0);
+     TXMPPSession(contact.Proto).sendWPsearch(wpS, 0);
     end
 end;
 
@@ -680,7 +678,7 @@ begin
   inherited create(owner_);
   position := poDefaultPosOnly;
   contact := c;
-  itsme := c.fProto.isMyAcc(c);
+  itsme := c.Proto.isMyAcc(c);
   readOnlyContact := not itsme;
   applyCommonSettings(self);
 (*
@@ -813,7 +811,7 @@ var
   c: TXMPPcontact;
 //  i, j: Integer;
 begin
-if not contact.fProto.isMyAcc(contact) then
+if not contact.isMyAcc then
   begin
 //  addGroupsToMenu(self, contact.fProto, addmenu.items, addcontactAction, True);
   addGroupsToMenu(self, addmenu.items, addcontactAction, True);
@@ -821,10 +819,10 @@ if not contact.fProto.isMyAcc(contact) then
     addmenu.popup(x,y);
   end
 else
-  if OnlFeature(contact.fProto) then
+  if OnlFeature(contact.Proto) then
     begin
 //    c:=Tcontact.create(0);
-    c := TXMPPcontact(contact.fProto.getMyInfo);
+    c := TXMPPcontact(contact.Proto.getMyInfo);
     c.uid:=contact.uid;
     c.nick:=nickBox.text;
     c.first:=firstbox.Text;
@@ -1186,7 +1184,7 @@ var
 begin
   wpS.email := contact.uid;
 //  wpS.token := TICQcontact(contact).InfoToken;
-  TXMPPSession(contact.fProto).sendWPsearch(wpS, 0);
+  TXMPPSession(contact.Proto).sendWPsearch(wpS, 0);
 end;
 
 procedure TviewXMPPinfoFrm.StatusBtnClick(Sender: TObject);
@@ -1218,8 +1216,8 @@ begin
     ssCell := CellularEdt.Text;
     ssMail := localMailEdt.Text;
    end;}
-  if not contact.CntIsLocal and contact.fProto.isOnline then
-    TXMPPSession(contact.fProto).SSI_UpdateContact(TXMPPcontact(contact));
+  if not contact.CntIsLocal and contact.Proto.isOnline then
+    TXMPPSession(contact.Proto).SSI_UpdateContact(TXMPPcontact(contact));
 end;
 
 procedure TviewXMPPinfoFrm.avtLoadBtnClick(Sender: TObject);
@@ -1306,7 +1304,7 @@ var
   itsme : Boolean;
 begin
    {$IFDEF RNQ_AVATARS}
-  itsme := contact.fProto.ismyAcc(contact);
+  itsme := contact.isMyAcc;
 {  if itsme then
    begin
     if TXMPPSession(contact.fProto).SSI_deleteAvatar then

@@ -4,14 +4,17 @@ unit XMPPv1;
 
 interface
 uses
-   Windows, Classes, //WinSock,
-   RnQProtocol, RnQNet, RnQBinUtils, RDGlobal, RQThemes,
-   XMPPContacts, XMPP_proto,
+  Windows, Classes,
+  RnQProtocol,
+  RnQNet, RnQBinUtils, RDGlobal, RQThemes,
+  XMPPContacts, XMPP_proto,
+  OMEMO,
   RnQPrefsInt, RnQPrefsTypes,
   NativeXML, RnQXml;
 
 type
   TmsgID = Integer;
+//  TmsgID = RawByteString;
   TxmppEvent = (
     IE_error,
     IE_online,
@@ -39,6 +42,7 @@ type
     IE_visibilityChanged,
     IE_toofast,
 
+    IE_DNSLookupDone,
     IE_connecting,
     IE_connected,
     IE_loggin,
@@ -51,6 +55,7 @@ type
     IE_serverDisconnected,
     IE_serverSent,
     IE_serverGot,
+    IE_serverGotX,
     IE_dcConnected,
     IE_dcDisconnected,
     IE_dcSent,
@@ -194,7 +199,8 @@ type
     REF_contacts,
     REF_auth,
     REF_sms,
-    REF_addcontact
+    REF_addcontact,
+    REF_ICON
   );
 
 
@@ -234,14 +240,15 @@ type
                           cnt: TxmppContact;
                         end;
 
-    serviceServerAddr   : AnsiString;
-    serviceServerPort   : AnsiString;
+    serviceServerAddr  : AnsiString;
+    serviceServerPort  : AnsiString;
     spamList,
     aVisibleList,
     aInvisibleList,
     tempVisibleList,
     aRoster           : TRnQCList;
-    P_pwd              : String;
+    P_pwd             : String;
+    FOMEMO            : TOMEMOManager;
     procedure setVisibility(vis: TxmppVisibility);
 //    function  addRef(k: TrefKind; uin: TUID): integer;
     function  addRef(k: TrefKind; cnt: TxmppContact): TmsgID;
@@ -281,6 +288,14 @@ type
     procedure parse_discoCaps(pXMLEl: TsdElement);
 
     procedure SSIdeleteContact(c: TxmppContact);
+    procedure EnableCarbons;
+    procedure DisableCarbons;
+    function  HasFeature(pXMLEl: TsdElement; const aVar: string): Boolean;
+    procedure RequestMAM(const withJID: string = ''; const beforeId: string = ''; const limit: Integer = 100);
+    procedure RequestServerDisco;
+    procedure InitOMEMO;
+    procedure PublishOMEMODeviceList;
+    procedure PublishOMEMOBundle;
    public
      AccJID: String;
      ServerJID: String;
@@ -320,6 +335,10 @@ type
     eventContactRes     : Txmpp_cnt_res;
     eventContacts       : TRnQCList;
     eventWP             : TwpResult;
+    AllowedMechs        : TMechsSet;
+    fSupportsMAM        : Boolean;
+    fCarbonsEnabled     : Boolean;
+    fSupportsCarbons    : Boolean;
 
 //        class function NewInstance: TObject; override; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
@@ -392,7 +411,7 @@ type
 //    function  validUid1(const uin: TUID): boolean;
 //    function  getContact(uid: TUID): TRnQContact;
 
-    function  sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK: boolean): integer; Overload; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}// returns handle
+    function  sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; chatId: String; var requiredACK: boolean): integer; Overload; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}// returns handle
 //    function  sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK: boolean): integer; OverLoad;// returns handle
     function  sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK: boolean; CnTResourse: String): integer; Overload;
     function  SendSMS(cnt: TRnQContact; const phnN: AnsiString; const msg: String): Integer;
@@ -459,17 +478,22 @@ var
 implementation
 
 uses
-     SysUtils, DateUtils, StrUtils,
+  SysUtils, DateUtils, StrUtils,
  {$IFDEF UNICODE}
-   AnsiStrings,
+  AnsiStrings,
   AnsiClasses,
  {$ENDIF UNICODE}
-  OverbyteIcsWSocket, //OverbyteIcsSHA1,
-  Base64, RnQCrypt, AES_HMAC_Syn, SynCrypto,
+  OverbyteIcsTypes, OverbyteIcsUtils, OverbyteIcsWSocket,
+  Base64, RnQCrypt,
+  mormot.crypt.core,
+  mormot.crypt.secure,
+  mormot.crypt.openssl,
+  mormot.lib.openssl11,
   RQUtil, RDUtils, RnQDialogs, RnQLangs, RnQStrings,
   RnQFileUtil,
   Protocol_XMP,
-  RnQConst, globalLib, themesLib, utilLib,
+  RnQConst, RnQGlobal,
+  globalLib, themesLib, utilLib,
   xmpp_fr;
 { TxmppSession }
 
@@ -844,44 +868,48 @@ begin
                  if StartsStr('getpic', pXMLEl.AttributeValueByName['id']) then
                    parse_Avatar(pXMLEl)
                  else
-                   begin
-                 if pXMLEl.ContainerCount > 0 then
                   begin
-                   item := TsdElement(pXMLEl.Containers[0]);
-                   if Item.Name = 'bind' then
-                     begin
-                       if (item.ContainerCount > 0) then
-                        begin
-                          item := TsdElement(item.Containers[0]);
+                   if pXMLEl.ContainerCount > 0 then
+                    begin
+                     item := TsdElement(pXMLEl.Containers[0]);
+                     if Item.Name = 'bind' then
+                       begin
+                         if (item.ContainerCount > 0) then
+                          begin
+                            item := TsdElement(item.Containers[0]);
                             vS := item.ValueUnicode;
   //                          vS :=  Items.Value('jid');
-                          if vS > '' then
-                            AccJID := vS;
-                        end;
-                      XMPPCL_SetStatus(aRoster, SC_OFFLINE);
+                            if vS > '' then
+                              AccJID := vS;
+                          end;
+                        XMPPCL_SetStatus(aRoster, SC_OFFLINE);
   //                      ICQCL_setStatus(aRoster, ICQcontacts.SC_OFFLINE);
-                      req_roster();
-                      curStatus := TxmppStatus(startingStatus);
-                      send_Status();
-                      phase := online_;
-                      notifyListeners(IE_online);
-                     end
-                    else
-                   if Item.Name = 'query' then
-                     begin
+                        req_roster();
+                        curStatus := TxmppStatus(startingStatus);
+                        send_Status();
+                        phase := online_;
+                        RequestServerDisco();
+                        InitOMEMO;
+                        PublishOMEMODeviceList;
+                        PublishOMEMOBundle;
+                        notifyListeners(IE_online);
+                       end
+                      else
+                     if Item.Name = 'query' then
+                       begin
                          vS := item.AttributeValueByNameWide['xmlns'];
-                       if vS = 'jabber:iq:roster' then
-                        begin // Process roster
-                          process_roster(item, item.AttributeValueByName['id']='rstr1');
-                        end
-                       else if vS = 'http://jabber.org/protocol/disco#info' then
-                        begin // Process disco
-                          parse_discoCaps(pXMLEl);
-                        end
-                       ;
-                     end;
+                         if vS = 'jabber:iq:roster' then
+                          begin // Process roster
+                            process_roster(item, item.AttributeValueByName['id']='rstr1');
+                          end
+                         else
+                         if vS = XEP0030_Service_Discovery then
+                          begin
+                           parse_discoCaps(pXMLEl);
+                          end;
+                       end;
+                    end;
                   end;
-                   end;
                end
              else
              if vS = 'get' then
@@ -891,7 +919,7 @@ begin
                    item := TsdElement(pXMLEl.Containers[0]);
                    if Item.Name = 'query' then
                      begin
-                       vS := item.AttributeValueByName['xmlns'];
+                       vS := item.AttributeValueByNameWide['xmlns'];
                        if vS = XEP0092_Software_Version then
                          begin
                            send_version(pXMLEl);
@@ -904,7 +932,7 @@ begin
                      end
                    else if Item.Name = 'ping' then // XEP-0199: XMPP Ping
                      begin
-                       vS := item.AttributeValueByName['xmlns'];
+                       vS := item.AttributeValueByNameWide['xmlns'];
                        if vS = XEP0199_XMPP_Ping then
                          begin
                            send_ping(pXMLEl);
@@ -1074,7 +1102,8 @@ begin
   readList(LT_TEMPVIS).Clear;
   readList(LT_SPAM).Clear;
 
-  FreeAndNil(eventContacts);
+  if eventContacts <> NIL then
+    FreeAndNil(eventContacts);
   eventContactRes.cnt := NIL;
 end;
 
@@ -2097,10 +2126,13 @@ end;
 procedure TxmppSession.parse_features(pXMLEl: TsdElement);
 var
   xml: TRnQXML;
-//  item: TsdElement;
+  item: TsdElement;
 //  i, k: Integer;
 //  u, d: AnsiString;
+  i: Integer;
+  varName: string;
 begin
+
 //  if pXML.Root.Name = 'success' then
    begin
       xml := TRnQXML.CreateEx(NIL, false, false, True, 'iq');
@@ -2140,7 +2172,41 @@ begin
          end;
        sendXML(xml);
        xml.Free;
-     exit;
+//     exit;
+{
+  features := pXMLEl.FindNode('features');
+
+  if HasFeature(features, XEP0280_Message_Carbons) then
+    EnableCarbons;  // Enable Auto
+
+  if HasFeature(features, XEP0313_MAM2) then
+    fSupportsMAM := True;
+}
+     if not Assigned(pXMLEl) then Exit;
+
+     // Searching <features> or direct children
+     for i := 0 to pXMLEl.ContainerCount - 1 do
+      begin
+        item := TsdElement(pXMLEl.Containers[i]);
+        if (item.Name = 'feature') or (item.Name = 'features') then
+        begin
+          varName := item.AttributeValueByNameWide['var'];  // или AttributeValueByName['var']
+
+          if varName = XEP0280_Message_Carbons then
+          begin
+            fSupportsCarbons := True;
+            EnableCarbons;  // Just enable
+          end
+          else if varName = XEP0313_MAM2 then
+          begin
+            fSupportsMAM := True;
+            // Now we can request a history: RequestMAM;
+          end
+          else if varName = XEP0030_Service_Discovery then
+            // here add code for disco
+          ;
+        end;
+      end;
    end;
 end;
 
@@ -2311,7 +2377,7 @@ begin
            item2 := item.NodeByName('group');
            if Assigned(item2) then
              begin
-               vS2 := item2.Value;
+               vS2 := item2.ValueUnicode;
                cnt.SetGroupName(vS2);
              end
             else
@@ -2343,7 +2409,7 @@ begin
  notifyListeners(IE_numOfContactsChanged);
 end;
 
-procedure TxmppSession.parse_presence(pXMLEl : TsdElement);
+procedure TxmppSession.parse_presence(pXMLEl: TsdElement);
 var
   vS, s2, s3: String;
   sA: RawByteString;
@@ -2352,8 +2418,8 @@ var
   resNum: Int8;
   isGTalk: Boolean;
   st: TXMPPstatus;
-  item2 : TXmlNode;
-  cont : TxmppContact;
+  item2: TXmlNode;
+  cont: TxmppContact;
 begin
   vS := pXMLEl.AttributeValueByNameWide['from'];
   uid := vS;
@@ -2533,20 +2599,47 @@ var
   cnt: TxmppContact;
   resNum: Int8;
   rid: TUID;
+  q: TXmlNode;
+  item: TsdElement;
+  varName: String;
 begin
   n1 := pXMLEl.NodeByName('query');
   if Assigned(n1) then
   begin
     vS := pXMLEl.AttributeValueByNameWide['from'];
+    if vS = ServerJID  then
+      begin
+        // here we process query xmlns='http://jabber.org/protocol/disco#info'
+        q := pXMLEl.NodeByName('query');
+        if Assigned(q) and (q.ContainerCount > 0) then
+        for i := 0 to q.ContainerCount - 1 do
+        begin
+          item := TsdElement(q.Containers[i]);
+          if item.Name = 'feature' then
+          begin
+            varName := item.AttributeValueByNameWide['var'];
 
-    cnt := getxmppContact(vS);
-    if not Assigned(cnt) then
-      Exit;
-    resNum := cnt.AddRes(vS);
-    if resNum < 0 then
-      Exit;
-    l := TList.Create;
-    vS := pXMLEl.AttributeValueByNameWide['id'];
+            if varName = XEP0280_Message_Carbons then
+            begin
+              fSupportsCarbons := True;
+              EnableCarbons;          // Enable only if exists this feature
+            end
+            else if varName = XEP0313_MAM2 then
+              fSupportsMAM := True;
+          end;
+        end;
+      end
+     else
+      begin // It's contact's info
+
+        cnt := getxmppContact(vS);
+        if not Assigned(cnt) then
+          Exit;
+        resNum := cnt.AddRes(vS);
+        if resNum < 0 then
+          Exit;
+        l := TList.Create;
+        vS := pXMLEl.AttributeValueByNameWide['id'];
     isFullDisco := vS = 'disco1';
     if isFullDisco then
      begin
@@ -2582,6 +2675,7 @@ begin
     l.Clear;
     l.Free;
   end;
+  end;
 
 end;
 
@@ -2590,6 +2684,9 @@ var
   vS, vS2, vType: String;
 //  elms: TRnQXMLNamedElems;
   I, cnt: Integer;
+  c2: TxmppContact;
+  omemo: TOMEMOEncryptedMessage;
+//  plain: RawUtf8;
 begin
   vS := pXMLEl.AttributeValueByNameWide['type'];
   vS2 := pXMLEl.AttributeValueByNameWide['from'];
@@ -2602,6 +2699,37 @@ begin
       notifyListeners(IE_msgError);
       Exit;
     end;
+  c2 := getxmppContact(vS2);
+
+  if IsOMEMOMessage(pXMLEl) then
+  begin
+    if not Assigned(FOMEMO) or not FOMEMO.IsReady then
+    begin
+      // don't have keys Ч ignoiring or show info-message
+      Exit;
+    end;
+
+    omemo := ParseOMEMOEncrypted(pXMLEl, FOMEMO.DeviceID);
+
+    if not omemo.HasOurKey then
+    begin
+      // message not for this device id Ч it's ok when multi-device
+      Exit;
+    end;
+
+    if not omemo.HasPayload then
+    begin
+      // empty payload: sometime key transport / ratchet-only
+      // we can process it later
+      Exit;
+    end;
+
+    // TODO Stage 2b: decripting
+    // plain := FOMEMO.DecryptMessage(omemo);
+    // if plain <> '' then notifyListeners(... plain ...);
+
+    Exit; // do not show as plain text in <body>
+  end;
 
   eventContactRes.cnt := getxmppContact(vS2);
   eventFlags := 0;
@@ -2630,6 +2758,7 @@ var
   item: TsdElement;
   n: TXmlNode;
   caps: UTF8String;
+  st: String;
 begin
       xml := TRnQXML.CreateEx(nil, false, false, True, 'presence');
 //        xml.Prolog.Version := '1.0';
@@ -2647,8 +2776,11 @@ begin
              caps := caps+' '+mediaCaps_;
            n.AttributeAdd(UTF8String('ext'), mediaCaps_);
            n.AttributeAdd('xmlns', 'http://jabber.org/protocol/caps');
-
-           NodeNew('show').Value := XMPPstatus2codeStr[curStatus];
+           if curStatus in [Low(TXMPPStatus)..High(TXMPPStatus)] then
+             st := XMPPstatus2codeStr[curStatus]
+            else
+             st := XMPPstatus2codeStr[TXMPPStatus.SC_ONLINE];
+           NodeNew('show').Value := st;
            NodeNew('status').ValueUnicode := curXStatus.Desc;
          end;
 {
@@ -2658,7 +2790,7 @@ begin
        xml.Free;
 end;
 
-function TxmppSession.sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; var requiredACK: boolean): integer; // returns handle
+function TxmppSession.sendMsg(cnt: TRnQContact; var flags: dword; const msg: string; chatId: String; var requiredACK: boolean): integer; // returns handle
 begin
  Result := sendMsg(cnt, flags, msg, requiredACK, ''); // returns handle
 end;
@@ -2722,9 +2854,9 @@ begin
 end;
 
 
-procedure TxmppSession.parse_Ack(const pkt : RawByteString; seq : Integer);
+procedure TxmppSession.parse_Ack(const pkt: RawByteString; seq: Integer);
 var
-  ofs, st : Integer;
+  ofs, st: Integer;
 begin
   ofs := 1;
 {  st := readINT(pkt, ofs);
@@ -2736,12 +2868,12 @@ begin
     notifyListeners(IE_msgError);}
 end;
 
-procedure TxmppSession.parse_CntAddAck(pkt : RawByteString; seq : Integer);
+procedure TxmppSession.parse_CntAddAck(pkt: RawByteString; seq: Integer);
 var
-  st : Integer;
-  ofs : Integer;
-  id  : Integer;
-  cnt : TxmppContact;
+  st: Integer;
+  ofs: Integer;
+  id: Integer;
+  cnt: TxmppContact;
 begin
   ofs := 1;
 {  st := readINT(pkt, ofs);
@@ -2777,20 +2909,21 @@ begin
      end;}
 end;
 
-procedure TxmppSession.Parse_offlineMsg(pkt : RawByteString);
-var
-  id : Int64;
-  i, ofs : Integer;
-  mraMsgFlags : Integer;
-  mail : AnsiString;
-  s : AnsiString;
-  msg : AnsiString;
-  bnd, dt : AnsiString;
-  c : TxmppContact;
-  isBase64 : Boolean;
+procedure TxmppSession.Parse_offlineMsg(pkt: RawByteString);
+{var
+  id: Int64;
+  i, ofs: Integer;
+  mraMsgFlags: Integer;
+  mail: AnsiString;
+  s: AnsiString;
+  msg: AnsiString;
+  bnd, dt: AnsiString;
+  c: TxmppContact;
+  isBase64: Boolean;
+}
 begin
-  ofs := 1;
-{
+{  ofs := 1;
+
 //  id := readINT(pkt, ofs);
   id := readQWORD(pkt, ofs);
   if delOfflineMsgs then
@@ -2938,14 +3071,14 @@ begin
 }
 end;
 
-procedure TxmppSession.parse_auth(const pkt : RawByteString);
-var
-  mail : AnsiString;
-  ofs : Integer;
-//  c : TMRAContact;
+procedure TxmppSession.parse_auth(const pkt: RawByteString);
+//var
+//  mail: AnsiString;
+//  ofs: Integer;
+//  c: TMRAContact;
 begin
-  ofs := 1;
-{  mail := getDLS(pkt, ofs);
+{  ofs := 1;
+  mail := getDLS(pkt, ofs);
   eventContact := getMRAContact(mail);
   if Assigned(eventContact) then
     begin
@@ -2956,10 +3089,10 @@ begin
 }
 end;
 
-procedure TxmppSession.parse_Anketa(const pkt : RawByteString; seq : Integer);
+procedure TxmppSession.parse_Anketa(const pkt: RawByteString; seq: Integer);
 type
   TField = record
-     fName, fValue : String;
+     fName, fValue: String;
    end;
   TFieldsArray = array of TField;
 var
@@ -2977,7 +3110,19 @@ var
   i: Integer;
 begin
   vS := pXMLEl.AttributeValueByNameWide['from'];
-  cont := getxmppContact(vS);
+  if vS <> '' then
+    cont := getxmppContact(vS)
+   else
+     begin
+       vS := pXMLEl.AttributeValueByNameWide['id'];
+       if StartsStr('getpic', vS) then
+         vS := Copy(vS, 7, 50000);
+       if TryStrToInt(vS, i) then
+         begin
+           if (i >= 1) and (i < maxRefs) and (refs[i].kind = REF_ICON) and (refs[i].cnt <> NIL) then
+             cont := refs[i].cnt;
+         end;
+     end;
   if Assigned(cont) then
   begin
 //   vS := pXMLEl.AttributeValueByNameWide['type'];
@@ -3030,8 +3175,8 @@ begin
 end;
 
 procedure TxmppSession.sendDeleteOfflineMsgs;
-var
-  i,k : Integer;
+//var
+//  i,k : Integer;
 begin
 {  k := Length(OfflMsgs);
   if k>0 then
@@ -3082,10 +3227,10 @@ begin
 }
 end;
 
-function TxmppSession.SendSMS(cnt : TRnQContact; const phnN : AnsiString; const msg : String) : Integer;
+function TxmppSession.SendSMS(cnt: TRnQContact; const phnN: AnsiString; const msg: String): Integer;
 var
-  mraMsgFlags : Integer;
-//  mail, s : AnsiString;
+  mraMsgFlags: Integer;
+//  mail, s: AnsiString;
 begin
   mraMsgFlags := 0;
 {  Result := sendPkt(MRIM_CS_SMS_SEND, //dword_LEasStr(SNACref)+
@@ -3098,7 +3243,7 @@ begin
 }
 end;
 
-procedure TxmppSession.sendAck(const mail : AnsiString; id : TmsgID);
+procedure TxmppSession.sendAck(const mail: AnsiString; id: TmsgID);
 begin
 {  sendPkt(MRIM_CS_MESSAGE_RECV, //dword_LEasStr(SNACref)+
                     Length_DLE(mail)+
@@ -3107,14 +3252,14 @@ begin
 }
 end;
 
-function TxmppSession.getFlapBuf : RawByteString;
+function TxmppSession.getFlapBuf: RawByteString;
 begin
   Result := q.str
 end;
 
-procedure TxmppSession.AuthGrant(Cnt : TRnQContact);
+procedure TxmppSession.AuthGrant(Cnt: TRnQContact);
 var
-  xml : TRnQXML;
+  xml: TRnQXML;
 begin
   xml := TRnQXML.CreateEx(nil, false, false, True, 'presence');
 //        xml.Prolog.Version := '1.0';
@@ -3135,9 +3280,9 @@ begin
   xml.Free;
 end;
 
-procedure TxmppSession.AuthCancel(Cnt : TRnQContact);
+procedure TxmppSession.AuthCancel(Cnt: TRnQContact);
 var
-  xml : TRnQXML;
+  xml: TRnQXML;
 begin
   xml := TRnQXML.CreateEx(nil, false, false, True, 'presence');
 //        xml.Prolog.Version := '1.0';
@@ -3158,9 +3303,9 @@ begin
   xml.Free;
 end;
 
-procedure TxmppSession.AuthRequest(cnt : TRnQContact; const reason : String);
+procedure TxmppSession.AuthRequest(cnt: TRnQContact; const reason: String);
 var
-  xml : TRnQXML;
+  xml: TRnQXML;
 begin
   xml := TRnQXML.CreateEx(nil, false, false, True, 'presence');
 //        xml.Prolog.Version := '1.0';
@@ -3181,10 +3326,10 @@ begin
   xml.Free;
 end;
 
-procedure TxmppSession.SSIAddContact(c : TxmppContact);
+procedure TxmppSession.SSIAddContact(c: TxmppContact);
 var
-  xml : TRnQXML;
-  item : TsdElement;
+  xml: TRnQXML;
+  item: TsdElement;
 begin
   xml := TRnQXML.CreateEx(nil, false, false, True, 'iq');
 //        xml.Prolog.Version := '1.0';
@@ -3197,23 +3342,24 @@ begin
 //             toS := toS + '/' + CnTResourse;
            AttributeAdd('type', 'set');
 //           Properties.Add('from', getMyInfo.UID2cmp);
+           AttributeAdd('id', intToStr(MSGref));
            item := TsdElement(NodeNew('query'));
            Item.AttributeAdd('xmlns', 'jabber:iq:roster');
            Item := TsdElement(item.NodeNew('item'));
            Item.AttributeAdd('jid', c.UID2cmp);
            Item.AttributeAdd('name', c.displayed4All);
 //           item.NodeNew('group').Value := groups.id2name(c.fGroupID);
-           item.NodeNew('group').Value := groups.id2name(c.group);
+           item.NodeNew('group').ValueUnicode := groups.id2name(c.groupId);
          end;
   sendXML(xml);
   xml.Free;
 //    Exit;
 end;
 
-procedure TxmppSession.SSIdeleteContact(c : TxmppContact);
+procedure TxmppSession.SSIdeleteContact(c: TxmppContact);
 var
-  xml : TRnQXML;
-  item : TsdElement;
+  xml: TRnQXML;
+  item: TsdElement;
 begin
   xml := TRnQXML.CreateEx(nil, false, false, True, 'iq');
 //        xml.Prolog.Version := '1.0';
@@ -3225,6 +3371,7 @@ begin
 //           if CnTResourse > '' then
 //             toS := toS + '/' + CnTResourse;
            AttributeAdd('type', 'set');
+           AttributeAdd('id', intToStr(MSGref));
 //           Properties.Add('from', getMyInfo.UID2cmp);
            item := TsdElement(NodeNew('query'));
            Item.AttributeAdd('xmlns', 'jabber:iq:roster');
@@ -3236,14 +3383,14 @@ begin
   xml.Free;
 end;
 
-procedure TxmppSession.SSI_updateContact(c : TxmppContact);
+procedure TxmppSession.SSI_updateContact(c: TxmppContact);
 begin
 
 end;
 
-procedure TxmppSession.ReqUserInfo(cnt : TRnQContact);
+procedure TxmppSession.ReqUserInfo(cnt: TRnQContact);
 //var
-//  u, d : AnsiString;
+//  u, d: AnsiString;
 begin
 {  if not Assigned(cnt) or not isReady then
     Exit;
@@ -3270,13 +3417,14 @@ begin
 
              AttributeAdd('to', cnt.UID2cmp);
              AttributeAdd('type', 'get');
-             AttributeAdd('id', 'getpic'+ intToStr(FLAPseq));
+             AttributeAdd('id', 'getpic'+ intToStr(MSGref));
 
              item := TsdElement(NodeNew('vCard'));
              Item.AttributeAdd('xmlns', 'vcard-temp');
            end;
      sendXML(xml);
      xml.Free;
+     addRef(REF_ICON, TxmppContact(cnt));
      Result := True;
     end
    else
@@ -3348,7 +3496,7 @@ begin
 }
 end;
 
-function TxmppSession.getPrefPage : TPrefFrameClass;
+function TxmppSession.getPrefPage: TPrefFrameClass;
 begin
   Result := TxmppFr;
 end;
@@ -3364,6 +3512,164 @@ begin
   contact := getxmppContact(cnt.UID);
 end;
 
+procedure TxmppSession.EnableCarbons;
+var
+  xml: TRnQXML;
+begin
+  if not isReady or fCarbonsEnabled then
+    Exit;
+
+  xml := TRnQXML.CreateEx(nil, False, False, True, 'iq');
+  with xml.Root do
+  begin
+    AttributeAdd('type', 'set');
+    AttributeAdd('id', 'carbons-enable-' + IntToStr(FLAPseq));
+    NodeNew('enable').AttributeAdd('xmlns', XEP0280_Message_Carbons);
+  end;
+  sendXML(xml);
+  xml.Free;
+
+  fCarbonsEnabled := True; // можно обновить после IQ-result
+end;
+
+procedure TxmppSession.DisableCarbons;
+var
+  xml: TRnQXML;
+begin
+  if not isReady then Exit;
+
+  xml := TRnQXML.CreateEx(nil, False, False, True, 'iq');
+  with xml.Root do
+  begin
+    AttributeAdd('type', 'set');
+    AttributeAdd('id', 'carbons-disable-' + IntToStr(FLAPseq));
+    NodeNew('disable').AttributeAdd('xmlns', XEP0280_Message_Carbons);
+  end;
+  sendXML(xml);
+  xml.Free;
+
+  fCarbonsEnabled := False; // можно обновить после IQ-result
+end;
+
+function TxmppSession.HasFeature(pXMLEl: TsdElement; const aVar: string): Boolean;
+var
+  item: TsdElement;
+  i: Integer;
+begin
+  Result := False;
+  if not Assigned(pXMLEl) then Exit;
+
+  for i := 0 to pXMLEl.ContainerCount - 1 do
+  begin
+    item := TsdElement(pXMLEl.Containers[i]);
+    if (item.Name = 'feature') and
+       (item.AttributeValueByNameWide['var'] = aVar) then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
+end;
+
+procedure TxmppSession.RequestMAM(const withJID: string = ''; const beforeId: string = ''; const limit: Integer = 100);
+var
+  xml: TRnQXML;
+//  query, x: TsdElement;
+  query, x: TXMLNode;
+begin
+  if not fSupportsMAM or not isReady then Exit;
+
+  xml := TRnQXML.CreateEx(nil, False, False, True, 'iq');
+  with xml.Root do
+  begin
+    AttributeAdd('type', 'set');
+    AttributeAdd('id', 'mam-query-' + IntToStr(FLAPseq));
+
+    query := NodeNew('query');
+    query.AttributeAdd('xmlns', XEP0313_MAM2);
+    if withJID <> '' then
+      query.AttributeAdd('queryid', 'q' + IntToStr(FLAPseq)); // optional
+
+    // Form дл€ фильтров (Data Forms XEP-0004)
+    x := query.NodeNew('x');
+    x.AttributeAdd('xmlns', 'jabber:x:data');
+    x.AttributeAdd('type', 'submit');
+
+    // ѕример: фильтр по JID
+    if withJID <> '' then
+    begin
+      // добавить field {var='with', value=withJID}
+    end;
+
+    // RSM (Result Set Management) дл€ paging
+    if beforeId <> '' then
+    begin
+      // <set xmlns='http://jabber.org/protocol/rsm'><before>beforeId</before><max>limit</max></set>
+    end;
+  end;
+
+  sendXML(xml);
+  xml.Free;
+end;
+
+procedure TxmppSession.RequestServerDisco;
+var
+  xml: TRnQXML;
+begin
+  if not isReady then
+    Exit;
+
+  xml := TRnQXML.CreateEx(nil, False, False, True, 'iq');
+  with xml.Root do
+  begin
+    AttributeAdd('type', 'get');
+    AttributeAdd('id', 'disco-server-' + IntToStr(FLAPseq));
+    AttributeAdd('to', ServerJID); // или AccJID без ресурса
+//    AttributeAdd('from', AccJID);
+//    AttributeAdd('from', getMyInfo.UID2cmp);
+    with NodeNew('query') do
+      AttributeAdd('xmlns', XEP0030_Service_Discovery);
+  end;
+  sendXML(xml);
+  xml.Free;
+end;
+
+procedure TxmppSession.InitOMEMO;
+begin
+  if not Assigned(FOMEMO) then
+    FOMEMO := TOMEMOManager.Create;
+  if not FOMEMO.IsReady then
+    FOMEMO.Initialize;
+end;
+
+procedure TxmppSession.PublishOMEMODeviceList;
+var
+  xml: TRnQXML;
+begin
+  if not isReady or not FOMEMO.IsReady then Exit;
+//  xml := FOMEMO.BuildDeviceListXML(ServerJID); // или bare JID аккаунта
+  xml := FOMEMO.BuildDeviceListXML(); // или bare JID аккаунта
+  try
+    sendXML(xml);
+  finally
+    xml.Free;
+  end;
+end;
+
+procedure TxmppSession.PublishOMEMOBundle;
+var
+  xml: TRnQXML;
+begin
+  if not isReady or not FOMEMO.IsReady then
+    Exit;
+//  xml := FOMEMO.BuildBundleXML(ServerJID);
+  xml := FOMEMO.BuildBundleXML();
+  try
+    sendXML(xml);
+  finally
+    xml.Free;
+  end;
+end;
 
 procedure InitxmppProto;
 var
@@ -3401,11 +3707,13 @@ begin
   setLength(xmppVisMenu, 2);
   xmppVisMenu[0] := Byte(mVI_normal);
   xmppVisMenu[1] := Byte(mVI_privacy);
+  OpenSslDefaultPath := modulesPath;
+  RegisterOpenSsl;
 end;
 
 procedure UnInitxmppProto;
 var
-  b2 : Byte;
+  b2: Byte;
 begin
   for b2 := byte(LOW(TxmppStatus)) to byte(HIGH(TxmppStatus)) do
     with XMPPstatuses[B2] do
@@ -3432,8 +3740,6 @@ end;
 INITIALIZATION
   InitxmppProto;
   RegisterProto(TxmppSession);
-//  MRAHelper := TMRAHelper.Create;
-//  RegisterProto(MRAHelper);
 
 FINALIZATION
   UnInitxmppProto;

@@ -10,7 +10,13 @@ interface
 
 uses
   Messages, windows, RDGlobal,
-  graphics, ShellApi, Types;
+ {$IFDEF FMX}
+  FMX.Graphics,
+//  FMX.Types,
+ {$ELSE ~FMX}
+  graphics,
+ {$ENDIF FMX}
+  ShellApi, Types;
 
 const
  {$IFDEF FPC}
@@ -106,7 +112,11 @@ type
       data: TNotifyIconDataW_V4;
       AllocatedHWnd: Boolean;
       shown, fHidden: Boolean;
+ {$IFDEF FMX}
+      Ico: HIcon;
+ {$ELSE ~FMX}
       Ico: TIcon;
+ {$ENDIF FMX}
       useGUID: Boolean;
       trayIconGuid: TGUID;
       procedure wndProc(var Message: TMessage);
@@ -130,7 +140,9 @@ type
     procedure hideBalloon;
     function  balloon(msg: string; secondsTimeout: real=3; kind: TBalloonIconType=bitNONE; title: string=''):boolean;
  {$ENDIF Use_Baloons}
+ {$IFNDEF FMX}
       procedure setIcon(icon: Ticon); overload;
+ {$ENDIF ~FMX}
       procedure setIcon(bmp: TBitmap); overload;
       procedure setIcon(icon: HIcon); overload;
 {$IFDEF RNQ}
@@ -182,7 +194,14 @@ var
 implementation
 
 uses
-  forms, sysutils, classes,
+  SysUtils, classes,
+ {$IFDEF FMX}
+  FMX.Forms,
+  FMX.Helpers.Win,
+ {$ELSE ~FMX}
+  forms,
+//  RnQGraphics32,
+ {$ENDIF FMX}
 {$IFDEF RNQ}
   RnQStrings, RnQLangs,
   RQUtil, RQThemes, RnQGlobal,
@@ -471,9 +490,12 @@ begin
       uFlags := flags_v2;
   end;
 // tbcmp := TRnQTaskbarComponent.Create(Application);
-
+  {$IFDEF FMX}
+  ico := 0;
+ {$ELSE ~FMX}
   ico := NIL;
   setIcon(application.icon);
+ {$ENDIF ~FMX}
   setTip(application.title);
 
 {
@@ -491,9 +513,15 @@ begin
  {$IFNDEF FPC}
   classes.DeallocateHWnd(data.wnd);
  {$ENDIF ~FPC}
+ {$IFDEF FMX}
+  if ico <> 0 then
+   DestroyIcon(ico);
+  ico := 0;
+ {$ELSE ~FMX}
   if Assigned(ico) then
    ico.Free;
   ico := NIL;
+ {$ENDIF FMX}
 //  tbcmp.Free;
 end;
 
@@ -546,6 +574,7 @@ begin
 }
 end; { update }
 
+ {$IFNDEF FMX}
 procedure TtrayIcon.setIcon(icon: Ticon);
 begin
   if icon=NIL then
@@ -559,13 +588,23 @@ begin
     data.hBalloonIcon := Ico.Handle;
   update;
 end; { setIcon }
+ {$ENDIF ~FMX}
 
 procedure TtrayIcon.setIcon(icon: HIcon);
 begin
+ {$IFDEF FMX}
+  if ico = icon then
+    exit;
+  if ico <> 0 then
+    DestroyIcon(ico);
+  ico := CopyIcon(icon);
+  data.hIcon := ico;
+ {$ELSE ~FMX}
   if ico = NIL then
     ico := TIcon.Create;
   ico.Handle := icon;
   data.hIcon := ico.Handle;
+ {$ENDIF FMX}
   if TrayIconDataVersion = 4 then
     data.hBalloonIcon := data.hIcon;
   update;
@@ -573,11 +612,17 @@ end;
 
 procedure TtrayIcon.setIcon(bmp: TBitmap);
 begin
-
+ {$IFDEF FMX}
+  if ico <> 0 then
+    DestroyIcon(ico);
+  ico := BitmapToIcon(bmp);
+  data.hIcon := ico;
+ {$ELSE ~FMX}
   if ico = NIL then
     ico := TIcon.Create;
   ico.Handle := bmp2ico32(bmp);
   data.hIcon := ico.Handle;
+ {$ENDIF FMX}
   if TrayIconDataVersion = 4 then
     data.hBalloonIcon := data.hIcon;
   update;

@@ -10,7 +10,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Forms,
-  ExtCtrls, ComCtrls, StdCtrls, Controls, Menus,
+  ExtCtrls, ComCtrls, StdCtrls, Controls, Menus, Dialogs,
   VirtualTrees,
   VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree, VirtualTrees.AncestorVCL,
   VirtualTrees.DrawTree, VirtualTrees.Types, VirtualTrees.HeaderPopup,

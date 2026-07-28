@@ -10,6 +10,10 @@ unit RD.Zip;
  { $DEFINE ZIP_AES}
 { $ENDIF RNQ}
 
+{$IFNDEF FPC}
+ {$DEFINE DEFLATE64}
+{$ENDIF FPC}
+
 // ToDo http://www.winzip.com/aes_info.htm
 // Copyright 2005 Patrik Spanel
 // scilib@sendme.cz
@@ -33,7 +37,9 @@ uses
 {$IFDEF RTL_NAMESPACES}System.SysUtils{$ELSE}SysUtils{$ENDIF},
 {$IFDEF RTL_NAMESPACES}System.Classes{$ELSE}Classes{$ENDIF},
   Types, Windows,
+ {$IFDEF USE_MORMOT}
   mormot.core.base,
+ {$ENDIF USE_MORMOT}
  {$IFDEF FPC}
   ZlibHigh,
  {$ELSE ~FPC}
@@ -133,7 +139,7 @@ type
     uncompressed_size:  BIGINT;
   end;
 
-  NTFS_extra_field = packed record
+  TNTFSExtraData = packed record
     Tag: WORD; { $000a }
     Size: WORD;
     Reserved: LongWord;
@@ -164,6 +170,7 @@ type
     function UTFSupport: Boolean;
   end;
 
+  PEndOfCentralDir = ^TEndOfCentralDir;
   TEndOfCentralDir = packed record
     EndOfCentralDirSignature: DWORD; //    4 bytes  (0x06054b50)
     NumberOfThisDisk: WORD; //             2 bytes
@@ -295,6 +302,7 @@ const
   ZL_LZMA_COMPRESSIONMETHOD  = 14;  { LZMA }
   ZL_ZSTD_COMPRESSIONMETHOD  = 93;  { ZSTD }
   ZL_WINZIP_AES_COMPRESSIONMETHOD = 99; { AES encrypted}
+  CP_OEM = CP_OEMCP;
 
   ZL_DEF_COMPRESSIONINFO    = $7;  { 32k window for Deflate }
   ZL_PRESET_DICT            = $20;

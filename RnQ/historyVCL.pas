@@ -362,6 +362,7 @@ uses
  {$ENDIF ~DB_ENABLED}
   RDSysUtils, RnQLangs, RDFileUtil, RnQFileUtil, RDUtils, RnQBinUtils,
   RQUtil, RnQButtons, RnQGlobal, RnQCrypt, RnQPics,
+  RnQ.Graphics.Utils,
   RnQConst, globalLib, mainDlg, utilLib,
 //  chatDlg,
   ViewPicDimmedDlg, ViewHEventDlg,
@@ -1755,6 +1756,7 @@ var
 
     if ev.kind = EK_Sticker then
       begin
+       {$IF DEFINED(PROTOCOL_WIM) OR DEFINED(PROTOCOL_TLG)}
         extStiker := TStringList.Create;
         extStiker.Delimiter := ':';
         extStiker.StrictDelimiter := true;
@@ -1799,6 +1801,8 @@ var
 
         end;
         extStiker.Free;
+        extStiker := NIL;
+       {$IFEND}
       end;
 
     newLineB(x, y);

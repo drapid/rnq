@@ -36,6 +36,7 @@ implementation
 uses
   math, StrUtils, Base64,
   RDUtils, RnQGraphics32, RDSysUtils, RnQBinUtils,
+  RnQ.Graphics.Utils,
   RQUtil, RDGlobal, RQThemes, RnQLangs, RnQGlobal,
   RnQConst, globalLib,
   RnQtrayLib, RnQPics,

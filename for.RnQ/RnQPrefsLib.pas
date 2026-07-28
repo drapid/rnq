@@ -6,6 +6,10 @@ unit RnQPrefsLib;
 {$I ForRnQConfig.inc}
 {$I NoRTTI.inc}
 
+ {$IFDEF RNQ}
+   {$DEFINE PREFS_AS_JSON}
+ {$ENDIF RNQ}
+
 interface
 uses
    Windows, Classes, iniFiles,
@@ -107,6 +111,9 @@ type
      function  getPrefIntDef(const key: String; const DefVal: Integer = -1): Integer;
      function  getPrefVal(const key: String): TPrefElement;
 
+ {$IFDEF PREFS_AS_JSON}
+     function  getAllPrefsJS(pHumanReadable: Boolean = false): RawByteString;
+ {$ENDIF PREFS_AS_JSON}
      function  getAllPrefs: RawByteString;
      function  getAllPrefsU: String;
      function  getArrPrefs(piArray: TArray<String>): RawByteString;
@@ -119,6 +126,8 @@ type
 
      procedure addPrefVal(const key: String; const Val: TPrefElement);
      procedure addPrefBlobOld(const key: String; const Val: RawByteString);
+     procedure addPrefBlobOld64(const key: String; const Val: RawByteString); OverLoad;
+     procedure addPrefBlobOld64(const key: String; const Val: String); OverLoad;
      procedure addPrefBlob64(const key: String; const Val: RawByteString);
      procedure addPrefInt(const key: String; const Val: Integer);
      procedure addPrefBool(const key: String; const Val: Boolean);
@@ -163,9 +172,13 @@ implementation
 
 uses
    SysUtils, Character, Types, StrUtils,
+ {$IFDEF FMX}
+   FMX.StdCtrls, FMX.Controls,
+ {$ELSE ~FMX}
 //   ExtCtrls,
    StdCtrls,
    Controls,
+ {$ENDIF FMX}
    RDUtils,
  {$IFDEF RNQ}
    Vcl.ExtCtrls,
@@ -174,6 +187,10 @@ uses
    {$ENDIF RNQ_VCL}
    RQlog,
  {$ENDIF RNQ}
+ {$IFDEF PREFS_AS_JSON}
+   mormot.core.json,
+   mormot.core.text,
+ {$ENDIF PREFS_AS_JSON}
  {$IFDEF RNQ_PLUGIN}
    RDPlugins,
  {$ENDIF RNQ_PLUGIN}
@@ -371,6 +388,68 @@ begin
     fPrefStr.AddObject(key, el);
 end;
 
+procedure TRnQPref.addPrefBlobOld64(const key: String;
+                                 const Val: RawByteString);
+var
+  El: TPrefElement;
+  i: Integer;
+  valB: RawByteString;
+begin
+  if key = '' then
+    Exit;
+  i := fPrefStr.IndexOf(key);
+  if i>=0 then
+    begin
+      el := TPrefElement(fPrefStr.Objects[i]);
+      el.Clear;
+    end
+   else
+    el := TPrefElement.Create;
+  try
+    valB := Base64DecodeString(Val);
+   except
+    valB := '';
+  end;
+  el.ElType := ET_Blob;
+  El.elem.rVal := AllocMem((Length(valB)+1));
+  if Length(valB) > 0 then
+    CopyMemory(el.elem.rVal, Pointer(valB), Length(valB));
+  if i<0 then
+//  Result :=
+    fPrefStr.AddObject(key, el);
+end;
+
+procedure TRnQPref.addPrefBlobOld64(const key: String;
+                                 const Val: String);
+var
+  El: TPrefElement;
+  i: Integer;
+  valB: RawByteString;
+begin
+  if key = '' then
+    Exit;
+  i := fPrefStr.IndexOf(key);
+  if i>=0 then
+    begin
+      el := TPrefElement(fPrefStr.Objects[i]);
+      el.Clear;
+    end
+   else
+    el := TPrefElement.Create;
+  try
+    valB := Base64DecodeString(Val);
+   except
+    valB := '';
+  end;
+  el.ElType := ET_Blob;
+  El.elem.rVal := AllocMem((Length(valB)+1));
+  if Length(valB) > 0 then
+    CopyMemory(el.elem.rVal, Pointer(valB), Length(valB));
+  if i<0 then
+//  Result :=
+    fPrefStr.AddObject(key, el);
+end;
+
 procedure TRnQPref.addPrefBlob64(const key: String;
                                  const Val: RawByteString);
 var
@@ -479,8 +558,13 @@ end;
 
 procedure TRnQPref.addPrefParam(param: TObject);
 begin
+ {$IFDEF FMX}
+  if param is TCheckBox then
+    addPrefBool(TCheckBox(param).HelpKeyword, TCheckBox(param).IsChecked);
+ {$ELSE ~FMX}
   if param is TCheckBox then
     addPrefBool(TCheckBox(param).HelpKeyword, TCheckBox(param).Checked);
+ {$ENDIF ~FMX}
 end;
 
  {$IFDEF RNQ}
@@ -831,6 +915,55 @@ begin
      end;
 end;
 
+ {$IFDEF PREFS_AS_JSON}
+function TRnQPref.getAllPrefsJS(pHumanReadable: Boolean = false): RawByteString;
+var
+  I: Integer;
+  j: TJsonWriter;
+  str: TMemoryStream;
+  pr: TTextWriterWriteObjectOptions;
+begin
+  Result := '';
+  if fPrefStr.Count > 0 then
+   begin
+    str := TMemoryStream.Create;
+    j := TJsonWriter.Create(str);
+    if pHumanReadable then
+      pr := [woHumanReadable]
+     else
+      pr := [];
+//    j2 := TJsonWriter.Create(str2);
+    j.Add(['{"prefs":'], TTextWriterKind.twNone);
+
+    j.BlockBegin('[', pr);
+    for I := 0 to fPrefStr.Count - 1 do
+     begin
+       if Assigned(fPrefStr.Objects[i]) then
+         if TPrefElement(fPrefStr.Objects[i]).ElType = ET_Integer then
+           j.AddJsonEscape(['p','{','k', (fPrefStr.Strings[i]),
+              't', Integer(TPrefElement(fPrefStr.Objects[i]).ElType),
+              'v', TPrefElement(fPrefStr.Objects[i]).elem.iVal, '}'])
+          else
+         if TPrefElement(fPrefStr.Objects[i]).ElType = ET_Bool then
+           j.AddJsonEscape(['p','{','k', (fPrefStr.Strings[i]),
+              't', Integer(TPrefElement(fPrefStr.Objects[i]).ElType),
+              'v', TPrefElement(fPrefStr.Objects[i]).elem.yVal, '}'])
+          else
+           j.AddJsonEscape(['p','{','k', (fPrefStr.Strings[i]),
+              't', Integer(TPrefElement(fPrefStr.Objects[i]).ElType),
+              'b', TPrefElement(fPrefStr.Objects[i]).AsBlob, '}']);
+        if i < fPrefStr.Count-1 then
+          j.BlockAfterItem(pr);
+     end;
+    j.BlockEnd(']', pr);
+    j.Add(['}'], TTextWriterKind.twNone);
+    Result := j.Text;
+    j.Free;
+    str.Free;
+   end;
+end;
+ {$ENDIF PREFS_AS_JSON}
+
 function TRnQPref.getArrPrefs(piArray: TArray<String>): RawByteString;
 var
   I: Integer;
@@ -876,10 +1009,10 @@ begin
        Result := True;
        el := TPrefElement(fPrefStr.Objects[i]);
        if el.ElType = ET_Blob then
-         Val := ansistrings.StrPas(el.elem.bVal)
+         Val := {$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(el.elem.bVal)
         else
        if el.ElType = ET_Blob64 then
-         Val := ansistrings.StrPas(el.elem.rVal)
+         Val := {$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(el.elem.rVal)
         else
          Result := False;
       end
@@ -900,10 +1033,10 @@ begin
        Result := True;
        el := TPrefElement(fPrefStr.Objects[i]);
        if el.ElType = ET_Blob then
-         Val := Base64DecodeString(ansistrings.StrPas(el.elem.bVal))
+         Val := Base64DecodeString({$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(el.elem.bVal))
         else
        if el.ElType = ET_Blob64 then
-         Val := ansistrings.StrPas(el.elem.rVal)
+         Val := {$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(el.elem.rVal)
         else
          Result := False;
       end
@@ -922,7 +1055,7 @@ begin
       begin
        el := TPrefElement(fPrefStr.Objects[i]);
        if el.ElType = ET_Blob then
-         Result := AnsiStrings.StrPas(el.elem.bVal)
+         Result := {$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(el.elem.bVal)
         else
          Result := DefVal;
       end
@@ -950,13 +1083,13 @@ begin
 
        if el.ElType = ET_Blob then
          begin
-           sr := ansistrings.StrPas(el.elem.rVal);
+           sr := {$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(el.elem.rVal);
            if sr > '' then
              Result := Base64DecodeString(sr);
          end
         else
          if el.ElType = ET_Blob64 then
-           Result := ansistrings.StrPas(el.elem.rVal)
+           Result := {$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(el.elem.rVal)
           else
            Result := DefVal;
       end
@@ -1099,7 +1232,7 @@ begin
         Result := True;
        el := TPrefElement(fPrefStr.Objects[i]);
        if el.ElType = ET_Blob then
-         Val := UnUTF(AnsiStrings.StrPas(el.elem.bVal))
+         Val := UnUTF({$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(el.elem.bVal))
         else
        if el.ElType = ET_String then
          Val := StrPas(el.elem.sVal)
@@ -1147,7 +1280,7 @@ begin
       begin
        el := TPrefElement(fPrefStr.Objects[i]);
        if el.ElType = ET_Blob then
-         Result := UnUTF(AnsiStrings.StrPas(el.elem.bVal))
+         Result := UnUTF({$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(el.elem.bVal))
         else
        if el.ElType = ET_String then
          Result := StrPas(el.elem.sVal)
@@ -1167,7 +1300,7 @@ end;
     yyy = AnsiString('yes');
   begin
 //    result := comparetext(l,)=0
-    result := AnsiStrings.StrIComp(l, PAnsiChar(yyy)) = 0
+    result := {$IFNDEF FPC} ansistrings.{$ENDIF}StrIComp(l, PAnsiChar(yyy)) = 0
   end;
 
 function TRnQPref.getPrefBool(const key: String; var Val: Boolean): Boolean;
@@ -1491,13 +1624,13 @@ begin
                 end;
     ET_Blob:   begin
                  if elem.bVal <> NIL then
-                   Result := AnsiStrings.StrPas(elem.bVal)
+                   Result := {$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(elem.bVal)
                   else
                    Result := '';
                end;
     ET_Blob64:   begin
                  if elem.rVal <> NIL then
-                   Result := Base64EncodeString(ansistrings.StrPas(elem.rVal))
+                   Result := Base64EncodeString({$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(elem.rVal))
                   else
                    Result := '';
                end;
@@ -1523,13 +1656,13 @@ begin
     ET_Blob:   begin
                  if elem.bVal <> NIL then
 //                   Result := AnsiStrings.StrPas(elem.bVal)
-                   Result := Base64EncodeString(ansistrings.StrPas(elem.rVal))
+                   Result := Base64EncodeString({$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(elem.rVal))
                   else
                    Result := '';
                end;
     ET_Blob64:   begin
                  if elem.rVal <> NIL then
-                   Result := Base64EncodeString(ansistrings.StrPas(elem.rVal))
+                   Result := Base64EncodeString({$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(elem.rVal))
                   else
                    Result := '';
                end;
@@ -1592,7 +1725,7 @@ begin
     ET_Blob:   begin
                  if elem.bVal <> NIL then
                    begin
-                    l := AnsiStrings.StrLen(elem.bVal);
+                    l := {$IFNDEF FPC} ansistrings.{$ENDIF}StrLen(elem.bVal);
                     Result.elem.bVal := AllocMem((l+1));
                     CopyMemory(Result.elem.bVal, elem.bVal, l);
                    end
@@ -1602,7 +1735,7 @@ begin
     ET_Blob64:   begin
                  if elem.rVal <> NIL then
                    begin
-                    l := ansistrings.StrLen(elem.rVal);
+                    l := {$IFNDEF FPC} ansistrings.{$ENDIF}StrLen(elem.rVal);
                     Result.elem.rVal := AllocMem((l+1));
                     CopyMemory(Result.elem.rVal, elem.rVal, l);
                    end
@@ -1675,7 +1808,7 @@ begin
              else
             if vt0 = ET_Blob then
                begin
-                 s := UnUTF(ansistrings.StrPas(val0.bVal));
+                 s := UnUTF({$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(val0.bVal));
                  l := Length(s);
                  val.sVal := AllocMem((l+1) * SizeOf(Char));
                  CopyMemory(val.sVal, Pointer(s), l*SizeOf(Char));
@@ -1697,7 +1830,7 @@ begin
           ET_Blob:   begin
                        if val0.bVal <> NIL then
                          begin
-                          strA := ansistrings.StrPas(val0.bVal)
+                          strA := {$IFNDEF FPC} ansistrings.{$ENDIF}StrPas(val0.bVal)
 //                          l := StrLen(val0.bVal);
 //                          val.bVal := AllocMem((l+1));
 //                          CopyMemory(val.bVal, val0.bVal, l);
@@ -1712,7 +1845,7 @@ begin
         end;
         if strA > '' then
           begin
-            l := ansistrings.StrLen(val0.bVal);
+            l := {$IFNDEF FPC} ansistrings.{$ENDIF}StrLen(val0.bVal);
             val.bVal := AllocMem((l+1));
             CopyMemory(val.bVal, val0.bVal, l);
           end

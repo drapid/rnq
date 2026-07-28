@@ -1,12 +1,12 @@
 object HistoryData: THistoryData
-  Height = 329
-  Width = 523
-  PixelsPerInch = 168
+  Height = 235
+  Width = 374
+  PixelsPerInch = 120
   object histmenu: TPopupMenu
     OwnerDraw = True
     OnPopup = histmenuPopup
-    Left = 152
-    Top = 28
+    Left = 109
+    Top = 20
     object add2rstr: TMenuItem
       Action = hAaddtoroaster
     end
@@ -81,8 +81,8 @@ object HistoryData: THistoryData
     end
   end
   object ActList1: TActionList
-    Left = 68
-    Top = 28
+    Left = 49
+    Top = 20
     object hAaddtoroaster: TAction
       Category = 'histMenu'
       Caption = 'Add to contact list'

@@ -10,11 +10,12 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, ExtCtrls, Menus, ActiveX, ActnList,
-  VirtualTrees.BaseAncestorVCL,
+  StdCtrls, ExtCtrls, Menus, ActiveX, ActnList, Dialogs, System.Actions,
+  VirtualTrees, VirtualTrees.BaseAncestorVCL, VirtualTrees.Types,
   VirtualTrees.BaseTree, VirtualTrees.AncestorVCL, VirtualTrees.DrawTree,
-  VirtualTrees.Types, RDGlobal, RQMenuItem, RnQButtons, RnQDialogs, RnQtrayLib,
-  pluginLib, RnQProtocol, System.Actions;
+  RDGlobal, RQMenuItem, RnQButtons, RnQDialogs, RnQtrayLib,
+  pluginLib, RnQProtocol
+  ;
 
 const
   WM_RESOLVE_DNS = WM_USER + 687;
@@ -529,6 +530,8 @@ implementation
 uses
   Themes, UxTheme, DwmApi, Types,
   Clipbrd, ShellAPI, strutils, math,
+  OverbyteIcsUtils,
+  RnQ.Graphics.Utils,
   addContactDlg, chatDlg,
    {$IFDEF RNQ_FULL2}
 //     importDlg,
@@ -552,7 +555,6 @@ uses
  {$ENDIF}
   hook,
   OverbyteIcsWSocket,
-  OverbyteIcsUtils,
   RnQFileUtil, RDFileUtil, RDUtils, RDSysUtils,
   RQUtil, RQLog, RQThemes, RnQMenu, RnQPics,
   RnQLangs, RnQStrings, RnQNet, RnQGlobal,

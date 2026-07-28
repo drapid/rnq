@@ -166,7 +166,7 @@ implementation
 
 uses
   UxTheme, DwmApi, Types, UITypes,
-  RnQGraphics32, RQUtil, RQThemes,
+  RnQGraphics32, RnQ.Graphics.Utils, RQUtil, RQThemes,
   RnQStrings, RnQLangs, RDUtils, RDSysUtils,
   mainDlg, sysutils, utilLib, RnQConst, globalLib,
  {$IFDEF PROTOCOL_ICQ}

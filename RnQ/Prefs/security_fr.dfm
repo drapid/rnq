@@ -9,8 +9,6 @@ object securityFr: TsecurityFr
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = True
-  PixelsPerInch = 96
   TextHeight = 13
   object cryptGroup: TGroupBox
     Left = 8
@@ -33,6 +31,7 @@ object securityFr: TsecurityFr
       Width = 141
       Height = 25
       Caption = 'Change password'
+      ImageName = ''
       TabOrder = 1
       OnClick = histcryptChangeBtnClick
     end
@@ -127,6 +126,7 @@ object securityFr: TsecurityFr
     Width = 209
     Height = 25
     Caption = 'Set password for account'
+    ImageName = ''
     TabOrder = 9
     OnClick = SetAccPassBtnClick
   end
@@ -136,6 +136,7 @@ object securityFr: TsecurityFr
     Width = 209
     Height = 25
     Caption = 'Set password for history'
+    ImageName = ''
     TabOrder = 10
     OnClick = HistCryptBtnClick
   end

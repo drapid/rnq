@@ -1309,7 +1309,10 @@ begin
   if Assigned(@_ZSTD_versionString) then
     Result := _ZSTD_versionString
   else
-    begin Result := nil; RaiseLastOSError(ERROR_PROC_NOT_FOUND); end;
+    begin
+      Result := nil;
+     // RaiseLastOSError(ERROR_PROC_NOT_FOUND);
+    end;
 end;
 
 function ZSTD_compress(dst: Pointer; dstCapacity: size_t; src: Pointer; srcSize: size_t; compressionLevel: int): size_t;

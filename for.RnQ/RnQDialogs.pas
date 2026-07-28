@@ -15,6 +15,7 @@ interface
    {$IFNDEF FPC}
    Consts,
    {$ENDIF ~FPC}
+   Dialogs,
    Math, ExtCtrls,
    System.UITypes, RDGlobal;
 {$ELSE}

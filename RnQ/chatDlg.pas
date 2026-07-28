@@ -10,7 +10,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  ComCtrls, StdCtrls, Menus, ExtCtrls, ToolWin, ActnList, RnQButtons,
+  ComCtrls, StdCtrls, Menus, ExtCtrls, ToolWin, ActnList, Dialogs,
+  RnQButtons,
   VirtualTrees.Types, VirtualTrees.BaseTree, VirtualTrees.AncestorVcl,
   StrUtils, System.Actions,
   history,
@@ -414,7 +415,7 @@ uses
   Clipbrd, ShellAPI, Themes, DateUtils,
   math, Types, System.Threading,
   Base64,
-  RDFileUtil, RQUtil, RDUtils, RDSysUtils,
+  RDFileUtil, RQUtil, RDUtils, RDSysUtils, RnQ.Graphics.Utils,
   RnQConst, globalLib, //searchhistDlg,
   outboxlib, utilLib, outboxDlg, RnQTips, RnQPics,
   langLib, roasterLib,

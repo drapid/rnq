@@ -196,8 +196,8 @@ type
 
   TZSTDDecompressStream = class(TStream)
   public
-    constructor Create(ASource: TStream); overload;
-    constructor Create(ASource: TStream; const AOption: TZSTDDecompressOptions); overload;
+    constructor Create(ASource: TStream; OwnsStream: Boolean); overload;
+    constructor Create(ASource: TStream; const AOption: TZSTDDecompressOptions; OwnsStream: Boolean = False); overload;
     destructor Destroy; override;
     function Seek(const AOffset: Int64; AOrigin: TSeekOrigin): Int64; override;
     function Read(var ABuffer; ACount: Longint): Longint; override;
@@ -215,6 +215,7 @@ type
     FOutput: ZSTD_outBuffer;
     FStream: ZSTD_DStream;
     FSeekBuffer: Pointer;
+    FOwnsStream: Boolean;
   end;
 
 implementation
@@ -701,16 +702,17 @@ end;
 // TZSTDDecompressStream
 //**************************************************************************************************
 
-constructor TZSTDDecompressStream.Create(ASource: TStream);
+constructor TZSTDDecompressStream.Create(ASource: TStream; OwnsStream: Boolean);
 begin
   inherited Create;
   FSource := ASource;
   FOptions.Init;
+  FOwnsStream := OwnsStream;
 end;
 
-constructor TZSTDDecompressStream.Create(ASource: TStream; const AOption: TZSTDDecompressOptions);
+constructor TZSTDDecompressStream.Create(ASource: TStream; const AOption: TZSTDDecompressOptions; OwnsStream: Boolean);
 begin
-  Create(ASource);
+  Create(ASource, OwnsStream);
   FOptions := AOption;
 end;
 

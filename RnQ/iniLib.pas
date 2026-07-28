@@ -38,7 +38,7 @@ implementation
 
 uses
   menus, windows, graphics, classes, sysutils, forms, shellapi,
-  controls, types, strutils, SysConst, iniFiles,
+  controls, types, strutils, SysConst, iniFiles, Dialogs,
   ThemesLib,
   RnQDialogs, RnQLangs, RnQNet, RnQtrayLib, RnQGlobal,
   RnQPrefsTypes,

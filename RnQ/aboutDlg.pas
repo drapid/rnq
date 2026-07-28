@@ -77,7 +77,8 @@ implementation
 
 uses
   Themes, DwmApi, Math, Types, UITypes,
-  RQUtil, RnQLangs, RDSysUtils, RnQBinUtils, RnQGraphics32, RnQPics,
+  RQUtil, RnQLangs, RDSysUtils, RnQBinUtils,
+  RnQGraphics32, RnQ.Graphics.Utils, RnQPics,
   mainDlg, utilLib, RnQConst, globalLib,
   themesLib;
 //var

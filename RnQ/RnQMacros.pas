@@ -61,7 +61,7 @@ implementation
 uses
   forms,
   RQUtil, RDUtils, RDSysUtils, RnQBinUtils, RnQLangs, RnQGlobal,
-  RnQGraphics32,
+  RnQGraphics32, RnQ.Graphics.Utils,
   roasterLib, utilLib, RnQConst, globalLib, iniLib, themesLib,
  {$IFDEF RNQ_PLAYER}
    uSimplePlayer,

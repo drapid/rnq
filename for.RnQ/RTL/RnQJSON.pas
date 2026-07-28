@@ -28,7 +28,10 @@ type
 
 implementation
 uses
-  SysUtils, //System.Generics.Collections,
+  SysUtils,
+ {$IFNDEF FPC}
+  System.Generics.Collections,
+ {$ENDIF ~FPC}
   RDGlobal, RDUtils;
 
 
