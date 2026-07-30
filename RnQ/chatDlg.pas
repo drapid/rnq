@@ -4940,7 +4940,8 @@ begin
     pagectrlChange(pageCtrl);
 
  {$WARN UNSAFE_CAST OFF}
-    result := Integer(pnl2);
+//    result := Integer(pnl2);
+    result := chat.id;
  {$WARN UNSAFE_CAST ON}
   end;
 end;

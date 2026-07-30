@@ -1736,7 +1736,7 @@ begin
         if Output = nil then
           GetMem(Output, OutputSize) else ReallocMem(Output, OutputSize);
         {Copies the new data}
-        CopyMemory(Pointer(Longint(Output) + OutputSize - Integer(total_out)),
+        CopyMemory(Pointer(IntPtr(Output) + OutputSize - Integer(total_out)),
           @Buffer, total_out);
       end {if (InflateRet = Z_STREAM_END) or (InflateRet = 0)}
       {Now tests for errors}

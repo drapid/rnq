@@ -8,7 +8,7 @@ uses
   RnQProtocol,
   RnQNet, RnQBinUtils, RDGlobal, RQThemes,
   XMPPContacts, XMPP_proto,
-  OMEMO,
+  OMEMO, OMEMOSessions,
   RnQPrefsInt, RnQPrefsTypes,
   NativeXML, RnQXml;
 
@@ -248,6 +248,7 @@ type
     tempVisibleList,
     aRoster           : TRnQCList;
     P_pwd             : String;
+    fDeviceID         : Integer;
     FOMEMO            : TOMEMOManager;
     procedure setVisibility(vis: TxmppVisibility);
 //    function  addRef(k: TrefKind; uin: TUID): integer;
@@ -485,6 +486,7 @@ uses
  {$ENDIF UNICODE}
   OverbyteIcsTypes, OverbyteIcsUtils, OverbyteIcsWSocket,
   Base64, RnQCrypt,
+  mormot.core.base,
   mormot.crypt.core,
   mormot.crypt.secure,
   mormot.crypt.openssl,
@@ -1722,6 +1724,7 @@ begin
   getOfflineMsgs := TRUE;
   delOfflineMsgs := TRUE;
 
+  fDeviceID := -1;
 //        ServerJID := 'ya.ru';
 //        ServerJID := 'talk.google.com';
 end;
@@ -1760,6 +1763,7 @@ begin
   pp.addPrefBool('get-offline-msgs', getOfflineMsgs);
   pp.addPrefBool('del-offline-msgs', delOfflineMsgs);
 
+  pp.addPrefInt('xmpp-device-id', fDeviceID);
 end;
 
 procedure TxmppSession.SetPrefs(pp: IRnQPref);
@@ -1805,6 +1809,8 @@ begin
 
   pp.getPrefBool('get-offline-msgs', getOfflineMsgs);
   pp.getPrefBool('del-offline-msgs', delOfflineMsgs);
+
+  fDeviceID := pp.getPrefIntDef('xmpp-device-id');
 end;
 
 //procedure TxmppSession.sendPkt(s: AnsiString);
@@ -2686,7 +2692,9 @@ var
   I, cnt: Integer;
   c2: TxmppContact;
   omemo: TOMEMOEncryptedMessage;
-//  plain: RawUtf8;
+  bare: String;
+  sess: TOMEMOSession;
+  plain: RawUtf8;
 begin
   vS := pXMLEl.AttributeValueByNameWide['type'];
   vS2 := pXMLEl.AttributeValueByNameWide['from'];
@@ -2717,6 +2725,20 @@ begin
       Exit;
     end;
 
+    bare := TxmppContact.trimUID(omemo.FromJid);
+    sess := FOMEMO.Sessions.GetSession(bare, omemo.SenderDeviceId);
+
+    if sess = nil then
+    begin
+      if not omemo.OurKey.IsPreKey then
+      begin
+        // нет сессии и не prekey Ч нельз€ расшифровать
+        Exit;
+      end;
+      sess := FOMEMO.EstablishFromPreKey(bare, omemo);
+      if sess = nil then Exit;
+    end;
+
     if not omemo.HasPayload then
     begin
       // empty payload: sometime key transport / ratchet-only
@@ -2725,8 +2747,12 @@ begin
     end;
 
     // TODO Stage 2b: decripting
-    // plain := FOMEMO.DecryptMessage(omemo);
-    // if plain <> '' then notifyListeners(... plain ...);
+    plain := FOMEMO.DecryptOMEMO(omemo);
+    if plain <> '' then
+     begin
+      eventMsg := strFromHTML(plain);
+      notifyListeners(IE_msg);
+     end;
 
     Exit; // do not show as plain text in <body>
   end;
@@ -3639,7 +3665,8 @@ begin
   if not Assigned(FOMEMO) then
     FOMEMO := TOMEMOManager.Create;
   if not FOMEMO.IsReady then
-    FOMEMO.Initialize;
+    FOMEMO.Initialize(fDeviceID, 'R&Q');
+  fDeviceID := FOMEMO.DeviceID;
 end;
 
 procedure TxmppSession.PublishOMEMODeviceList;

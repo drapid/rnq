@@ -41,8 +41,19 @@ type
 
 type
   TMethodHook = class
+  const
+   {$ifdef CPUX64}
+    pBytes: Integer = 5;
+   {$ELSE CPUX32}
+    pBytes: Integer = 5;
+   {$ENDIF CPUX64}
   private
+
+   {$ifdef CPUX64}
+    aOriginal: packed array[ 0..8 ] of byte;
+   {$ELSE x86}
     aOriginal: packed array[ 0..4 ] of byte;
+   {$ENDIF CPUX64}
     pOldProc, pNewProc: Pointer;
     pPosition: PByteArray;
   public
@@ -1222,20 +1233,20 @@ end;
 
 constructor TMethodHook.Create(pOldProc, pNewProc: Pointer);
 var
-  iOffset: integer;
-  iMemProtect: cardinal;
+  iOffset: IntPtr;
+  iMemProtect: IntPtr;
   i: integer;
 begin
   Self.pOldProc := pOldProc;
   Self.pNewProc := pNewProc;
 
   pPosition := pOldProc;
-  iOffset := integer( pNewProc ) - integer( pointer( pPosition ) ) - 5;
+  iOffset := IntPtr( pNewProc ) - IntPtr( pointer( pPosition ) ) - pBytes;
 
-  for i := 0 to 4 do
+  for i := 0 to pBytes-1 do
     aOriginal[ i ] := pPosition^[ i ];
 
-  VirtualProtect( pointer( pPosition ), 5, PAGE_EXECUTE_READWRITE,
+  VirtualProtect( pointer( pPosition ), pBytes, PAGE_EXECUTE_READWRITE,
     @iMemProtect );
 
   pPosition^[ 0 ] := $E9;
@@ -1243,13 +1254,22 @@ begin
   pPosition^[ 2 ] := byte( iOffset shr 8 );
   pPosition^[ 3 ] := byte( iOffset shr 16 );
   pPosition^[ 4 ] := byte( iOffset shr 24 );
+ {$ifdef CPUX64}
+  if pBytes = 9 then
+   begin
+    pPosition^[ 5 ] := byte( iOffset shr 32 );
+    pPosition^[ 6 ] := byte( iOffset shr 40 );
+    pPosition^[ 7 ] := byte( iOffset shr 48 );
+    pPosition^[ 8 ] := byte( iOffset shr 56 );
+   end;
+ {$ENDIF CPUX64}
 end;
 
 destructor TMethodHook.Destroy;
 var
   i: integer;
 begin
-  for i := 0 to 4 do
+  for i := 0 to pBytes-1 do
     pPosition^[ i ] := aOriginal[ i ];
   inherited;
 end;

@@ -304,12 +304,12 @@ case _byte_at(data,1) of
           end;
  {$ENDIF PROTOCOL_ICQ}
         end;
-      PC_POPUP_ADD: if minimum(2+4+4) then        // By Rapid D
+      PC_POPUP_ADD: if minimum(2+4+SizeOf(Pointer)) then        // By Rapid D
         begin
           bmp := TBitmap.Create;
-          bmp.Handle := _int_at(data,3);
+          bmp.Handle := _ptr_at(data,3);
 //          TipAdd(bmp, _int_at(data,7));
-          TipAdd3(NIL, bmp, NIL, _int_at(data,7));
+          TipAdd3(NIL, bmp, NIL, _int_at(data, 3 + SizeOf(Pointer)));
 //          bmp.ReleaseHandle;
           FreeAndNil(bmp);
         end;
@@ -401,19 +401,19 @@ case _byte_at(data,1) of
                if Assigned(cnt) then
                  chatFrm.openOn(cnt);
              end;
-      PC_ADDBUTTON : if minimum(2+4+4+4) then
+      PC_ADDBUTTON : if minimum(2+SizeOf(Pointer)+SizeOf(Pointer)+4) then
           begin
-            tS :=_istring_at(data, 11);
+            tS :=_istring_at(data, 3+SizeOf(Pointer)*2);
             if length(data)>2+4+4+4+length(tS) then
              tS :=_istring_at(data, 2+4+4+4+1+length(tS))
             else
              tS := '';
             resStr := //#00#00#00 + //outBuffer+char(PM_DATA) +
-                        _int(chatFrm.plugBtns.Add(Pointer(_int_at(data, 3)),
-                              HIcon(_int_at(data, 7)), _istring_at(data, 11), tS)+1);
+                        _int(chatFrm.plugBtns.Add(Pointer(_ptr_at(data, 3)),
+                              HIcon(_ptr_at(data, 3+SizeOf(Pointer))), _istring_at(data, 3+SizeOf(Pointer)*2), tS)+1);
           end;
       PC_DELBUTTON: if minimum(4) then chatFrm.plugBtns.Del(_int_at(data, 3)-1);
-      PC_MODIFY_BUTTON : if minimum(2+4+4+4) then
+      PC_MODIFY_BUTTON : if minimum(2+4+SizeOf(Pointer)+4) then
           begin
             tS :=_istring_at(data, 11);
             if length(data)>2+4+4+4+length(tS) then
@@ -421,14 +421,14 @@ case _byte_at(data,1) of
             else
              tS := '';
             chatFrm.plugBtns.Modify(_int_at(data, 3)-1,
-                HIcon(_int_at(data, 7)), _istring_at(data, 11), tS);
+                HIcon(_ptr_at(data, 7)), _istring_at(data, 7+SizeOf(Pointer)), tS);
           end;
       PC_ADDCONTACTMENU : if minimum(2+4) then
           begin
             i := RnQmain.AddContactMenuItem(
-                    PCLISTMENUITEM(Pointer(_int_at(data, 2+1))) // Proc
+                    PCLISTMENUITEM(Pointer(_ptr_at(data, 2+1))) // Proc
 {                _int_at(data, 2+1+4),       // menuIcon
-                _istring_at(data, 2+1+4+4),  // menuCaption
+                _istring_at(data, 2+1+4+4),  // menuCaption (x64: +4)
                 _istring_at(data, 15),  // menuHint
                 _int_at(data, 19),      // position
                 _istring_at(data, 23),  // PopupName
@@ -455,11 +455,11 @@ case _byte_at(data,1) of
       PC_MODIFYCONTACTMENU : if minimum(2+4+4) then
           begin
 //            i :=
-            RnQmain.UpdateContactMenuItem(_int_at(data, 2+1),
-                    PCLISTMENUITEM(Pointer(_int_at(data, 2+4+1)))); // Proc
+            RnQmain.UpdateContactMenuItem(_ptr_at(data, 2+1),
+                    PCLISTMENUITEM(Pointer(_ptr_at(data, 2+SizeOf(Pointer)+1)))); // Proc
           end;
       PC_DELETECONTACTMENU: if minimum(2+4) then
-        RnQmain.DelContactMenuItem(_int_at(data, 3));
+        RnQmain.DelContactMenuItem(_ptr_at(data, 3));
 {      PC_UNLOAD:
          begin
           unloadPluginName := _istring_at(data, 3);
@@ -471,12 +471,12 @@ case _byte_at(data,1) of
       PC_TAB_ADD:
       begin
         //msgDlg(_istring_at(data, 3), mtInformation);
-        resStr := _int(CHAT_TAB_ADD(_int_at(data, 3), _int_at(data, 7), _istring_at(data, 11)));
+        resStr := _int(CHAT_TAB_ADD(_int_at(data, 3), _ptr_at(data, 7), _istring_at(data, 11{$IFDEF cpux64}+4{$ENDIF cpux64})));
       end;
       PC_TAB_MODIFY:
       begin
         //msgDlg(_istring_at(data, 3), mtInformation);
-        CHAT_TAB_MODIFY(_int_at(data, 3), _int_at(data, 7), _istring_at(data, 11));
+        CHAT_TAB_MODIFY(_int_at(data, 3), _ptr_at(data, 7), _istring_at(data, 11{$IFDEF cpux64}+4{$ENDIF cpux64}));
       end;
       PC_TAB_DELETE:
       begin
@@ -569,7 +569,7 @@ case _byte_at(data,1) of
           if w=NIL then
             resStr := AnsiChar(PM_ERROR)+AnsiChar(PERR_UNEXISTENT)
            else
-            resStr := AnsiChar(PM_DATA)+_int([ w.handle, w.left, w.top, w.width, w.height ]);
+            resStr := AnsiChar(PM_DATA) + _ptr(w.Handle) + _int([w.left, w.top, w.width, w.height ]);
         end;
       PG_AUTOMSG: resStr := AnsiChar(PM_DATA)+_istring(automessages[0]);
       PG_CHAT_UIN:
@@ -735,7 +735,7 @@ begin
   //fun(NIL);
   loggaEvtS(filename+': initializing');
   s := cast(_event(PE_INITIALIZE)
-    +_int(integer(@callback))+_int(APIversion)
+    +_ptr(IntPtr(@callback))+_int(APIversion)
     +_istring(myPath)+_istring(AccPath)+_int(StrToIntDef(lastUser, 0))
   );
   if (s>'') then

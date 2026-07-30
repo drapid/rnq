@@ -8,11 +8,13 @@ uses
 
 function _int(i: integer): RawByteString; overload;
 function _int(ints: array of integer): RawByteString; overload;
+function _ptr(i: integer): RawByteString;
 function _byte_at(p: pointer; ofs: integer=0): byte; overload;
 function _byte_at(const s: RawByteString; idx: integer=1): byte; overload;
 function _int_at(p: pointer; ofs: integer=0): integer; overload;
 function _int_at(const s: RawByteString; idx: integer=1): integer; overload;
-function _ptr_at(p: pointer; ofs: integer=0): pointer;
+function _ptr_at(p: pointer; ofs: integer=0): pointer; OverLoad;
+function _ptr_at(const s: RawByteString; idx: integer=1): UIntPtr; overload;
 function _istring(const s: RawByteString): RawByteString; inline;
 function _istring_at(p: pointer; ofs: integer=0): RawByteString; overload;
 function _istring_at(const s: RawByteString; idx: integer=1): RawByteString; overload;
@@ -32,6 +34,12 @@ function _int(i: integer): RawByteString; overload;
 begin
   setLength(result, 4);
   move(i, result[1], 4);
+end; // _int
+
+function _ptr(i: integer): RawByteString;
+begin
+  setLength(result, SizeOf(Pointer));
+  move(i, result[1], SizeOf(Pointer));
 end; // _int
 
 function _int(ints: array of integer): RawByteString; overload;
@@ -63,11 +71,14 @@ end;
 function _int_at(const s: RawByteString; idx: integer=1): integer; overload; inline;
 begin result := _int_at(@s[idx]) end;
 
-function _ptr_at(p: pointer; ofs: integer=0): pointer;
+function _ptr_at(p: pointer; ofs: integer=0): pointer; OverLoad;
 begin
   inc( PByte(p), ofs);
   result := pointer(_int_at(p))
 end;
+
+function _ptr_at(const s: RawByteString; idx: integer=1): UIntPtr; overload; inline;
+begin result := UIntPtr(_ptr_at(@s[idx])) end;
 
 function _istring(const s: RawByteString): RawByteString; inline;
 begin result := _int(length(s))+s end;

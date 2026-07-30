@@ -1213,7 +1213,7 @@ begin
   begin
     Msg.Msg := CM_BUTTONPRESSED;
     Msg.WParam := FGroupIndex;
-    Msg.LParam := Longint(Self);
+    Msg.LParam := LPARAM(Self);
     Msg.Result := 0;
     Parent.Broadcast(Msg);
   end;
@@ -1341,18 +1341,21 @@ var
 begin
   if Message.WParam = FGroupIndex then
   begin
-    Sender := TRnQSpeedButton(Message.LParam);
-    if Sender <> Self then
+    if (Message.LParam <> 0) and not IsBadReadPtr(Pointer(Message.LParam), 4) then
     begin
-      if Sender.Down and FDown then
+      Sender := TObject(Message.LParam) as TRnQSpeedButton;
+      if Assigned(Sender) and (Sender <> Self) then
       begin
-        FDown := False;
-        FState := bsUp;
-        if (Action is TCustomAction) then
-          TCustomAction(Action).Checked := False;
-        Invalidate;
+        if Sender.Down and FDown then
+        begin
+          FDown := False;
+          FState := bsUp;
+          if (Action is TCustomAction) then
+            TCustomAction(Action).Checked := False;
+          Invalidate;
+        end;
+        FAllowAllUp := Sender.AllowAllUp;
       end;
-      FAllowAllUp := Sender.AllowAllUp;
     end;
   end;
 end;
@@ -3956,7 +3959,7 @@ begin
   begin
     Msg.Msg := CM_BUTTONPRESSED;
     Msg.WParam := FGroupIndex;
-    Msg.LParam := Longint(Self);
+    Msg.LParam := LPARAM(Self);
     Msg.Result := 0;
     Parent.Broadcast(Msg);
   end;
@@ -5575,7 +5578,7 @@ begin
   begin
     Msg.Msg := CM_BUTTONPRESSED;
     Msg.WParam := FGroupIndex;
-    Msg.LParam := Longint(Self);
+    Msg.LParam := LPARAM(Self);
     Msg.Result := 0;
     Parent.Broadcast(Msg);
   end;
