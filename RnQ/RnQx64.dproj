@@ -119,7 +119,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MajorVer>0</VerInfo_MajorVer>
         <VerInfo_Release>9999</VerInfo_Release>
-        <DCC_Define>RNQ;USE_SSL;NO_EXTENDED_RTTI;NO_DEBUG_LOG;NO_HTTP_TUNNEL_AUTHDIGEST;ZLIBRTL;$(DCC_Define)</DCC_Define>
+        <DCC_Define>RNQ;USE_SSL;NO_EXTENDED_RTTI;NO_DEBUG_LOG;NO_HTTP_TUNNEL_AUTHDIGEST;ZLIBRTL;USE_OPENSSL;$(DCC_Define)</DCC_Define>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.11.9999.1125;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=R&amp;Q;ProductVersion=0.11.9999.1125;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1049</VerInfo_Locale>

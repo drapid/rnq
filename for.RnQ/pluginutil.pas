@@ -8,7 +8,7 @@ uses
 
 function _int(i: integer): RawByteString; overload;
 function _int(ints: array of integer): RawByteString; overload;
-function _ptr(i: integer): RawByteString;
+function _ptr(i: UIntPtr): RawByteString;
 function _byte_at(p: pointer; ofs: integer=0): byte; overload;
 function _byte_at(const s: RawByteString; idx: integer=1): byte; overload;
 function _int_at(p: pointer; ofs: integer=0): integer; overload;
@@ -36,7 +36,7 @@ begin
   move(i, result[1], 4);
 end; // _int
 
-function _ptr(i: integer): RawByteString;
+function _ptr(i: UIntPtr): RawByteString;
 begin
   setLength(result, SizeOf(Pointer));
   move(i, result[1], SizeOf(Pointer));
@@ -74,7 +74,7 @@ begin result := _int_at(@s[idx]) end;
 function _ptr_at(p: pointer; ofs: integer=0): pointer; OverLoad;
 begin
   inc( PByte(p), ofs);
-  result := pointer(_int_at(p))
+  result := pointer(p);
 end;
 
 function _ptr_at(const s: RawByteString; idx: integer=1): UIntPtr; overload; inline;

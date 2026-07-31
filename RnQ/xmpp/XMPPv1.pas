@@ -1,4 +1,4 @@
-unit XMPPv1;
+п»їunit XMPPv1;
 {$I RnQConfig.inc}
 {$I NoRTTI.inc}
 
@@ -7,6 +7,7 @@ uses
   Windows, Classes,
   RnQProtocol,
   RnQNet, RnQBinUtils, RDGlobal, RQThemes,
+  RD.Zip,
   XMPPContacts, XMPP_proto,
   OMEMO, OMEMOSessions,
   RnQPrefsInt, RnQPrefsTypes,
@@ -295,8 +296,12 @@ type
     procedure RequestMAM(const withJID: string = ''; const beforeId: string = ''; const limit: Integer = 100);
     procedure RequestServerDisco;
     procedure InitOMEMO;
+    procedure resetOMemoKeys;
     procedure PublishOMEMODeviceList;
     procedure PublishOMEMOBundle;
+    function  OmemoKeysFileName: string;
+    procedure SaveOMEMOKeys;
+    procedure LoadOMEMOKeys;
    public
      AccJID: String;
      ServerJID: String;
@@ -361,13 +366,15 @@ type
 
     function  getPwd: String; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure setPwd(const value: String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
-    function pwdEqual(const pass: String): Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  pwdEqual(const pass: String): Boolean; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
 
     constructor Create(const id: TUID);
     destructor Destroy; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure ResetPrefs; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure GetPrefs(pp: IRnQPref); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure SetPrefs(pp: IRnQPref); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure SaveDB(pZip: TZipFile; const folder: String; const pass: AnsiString); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    procedure LoadDB(pZip: TZipFile; const folder: String); OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure Clear; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     function  getDefHost: Thostport; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
     procedure connect; overload;
@@ -462,6 +469,9 @@ type
     function  RequestIcon(cnt: TRnQContact): Boolean;
     procedure OpenGroupChat(chat: String; Nick: String; pass: String='');
     function  getPrefPage: TPrefFrameClass; OverRide; {$IFDEF DELPHI9_UP} final; {$ENDIF DELPHI9_UP}
+    function  getOMEMOPreKey: RawByteString;
+    function  getOMEMOKey: RawByteString;
+    property  deviceId: Integer read fDeviceId;
    protected
     procedure goneOffline; // called going offline
     // event managing
@@ -1195,14 +1205,16 @@ aVisibleList    := TRnQCList.create;
 aInvisibleList  := TRnQCList.create;
 tempVisibleList := TRnQCList.create;
 spamList        := TRnQCList.Create;
-
+  FOMEMO := TOMEMOManager.Create;
 end;
 
 destructor TxmppSession.Destroy;
 begin
-  Q.free;
-  sock.free;
-  aRoster.free;
+  FOMEMO.Free;
+  FOMEMO := NIL;
+  Q.free; Q := NIL;
+  sock.free; sock := NIL;
+  aRoster.free; aRoster := NIL;
   aVisibleList.free;
   aInvisibleList.free;
   tempvisibleList.free;
@@ -1676,7 +1688,7 @@ begin
  else
    begin
      UpdateGroupOf(c);
-//      SSI_UpdateGroup(TICQcontact(c));      // Зря тут!!!
+//      SSI_UpdateGroup(TICQcontact(c));      // Р—СЂСЏ С‚СѓС‚!!!
    end;
   ;
 end;
@@ -1764,6 +1776,71 @@ begin
   pp.addPrefBool('del-offline-msgs', delOfflineMsgs);
 
   pp.addPrefInt('xmpp-device-id', fDeviceID);
+end;
+
+procedure TxmppSession.SaveDB(pZip: TZipFile; const folder: String; const pass: AnsiString);
+var
+  str: TMemoryStream;
+  path: String;
+begin
+  inherited;
+  str := TMemoryStream.Create;
+  FOMEMO.SaveKeysToStream(str);
+  str.Position := 0;
+  path := includeTrailingPathDelimiter(folder);
+  pZip.AddOrReplaceFile('omemo.keys', 0, pass, str);
+  str.Position := 0;
+  pZip.AddOrReplaceFile(path + 'omemo.keys', 0, pass, str);
+  str.Clear;
+  FOMEMO.Sessions.SaveToStream(str);
+  str.Position := 0;
+  pZip.AddOrReplaceFile('omemo.sessions', 0, pass, str);
+  str.Position := 0;
+  pZip.AddOrReplaceFile(path + 'omemo.sessions', 0, pass, str);
+  str.Free;
+  str := NIL;
+end;
+
+procedure TxmppSession.LoadDB(pZip: TZipFile; const folder: String);
+var
+  str: TMemoryStream;
+  cont: Boolean;
+  path: String;
+  ok: Boolean;
+begin
+  inherited;
+  str := TMemoryStream.Create;
+  path := includeTrailingPathDelimiter(folder);
+  try
+    if pZip.IndexOf(path + 'omemo.keys') >= 0 then
+      begin
+        if pZip.ExtractToStream(path + 'omemo.keys', str) then
+          FOMEMO.LoadKeysFromStream(str);
+      end
+     else
+      if pZip.ExtractToStream('omemo.keys', str) then
+        FOMEMO.LoadKeysFromStream(str);
+    cont := True;
+   except
+    cont := False;
+//    FOMEMO.Clear;
+  end;
+  str.Clear;
+  if cont then
+    try
+      if pZip.IndexOf(path + 'omemo.sessions') >= 0 then
+        begin
+          if pZip.ExtractToStream(path + 'omemo.sessions', str) then
+            ok := FOMEMO.Sessions.LoadFromStream(str, fDeviceID);
+        end
+       else
+        if pZip.ExtractToStream('omemo.sessions', str) then
+          ok := FOMEMO.Sessions.LoadFromStream(str, fDeviceID);
+     except
+      FOMEMO.Sessions.Clear;
+    end;
+  str.Free;
+  str := NIL;
 end;
 
 procedure TxmppSession.SetPrefs(pp: IRnQPref);
@@ -2196,7 +2273,7 @@ begin
         item := TsdElement(pXMLEl.Containers[i]);
         if (item.Name = 'feature') or (item.Name = 'features') then
         begin
-          varName := item.AttributeValueByNameWide['var'];  // или AttributeValueByName['var']
+          varName := item.AttributeValueByNameWide['var'];  // РёР»Рё AttributeValueByName['var']
 
           if varName = XEP0280_Message_Carbons then
           begin
@@ -2276,7 +2353,7 @@ var
   xml: TRnQXML;
   item: TsdElement;
 begin
-  // Поддержка только пока следующих расширений
+  // РџРѕРґРґРµСЂР¶РєР° С‚РѕР»СЊРєРѕ РїРѕРєР° СЃР»РµРґСѓСЋС‰РёС… СЂР°СЃС€РёСЂРµРЅРёР№
   //  XEP-0092: Software Version (jabber_iq_version)
 {
   Result := UTF8Encode(CompressSpaces(Format(
@@ -2713,7 +2790,7 @@ begin
   begin
     if not Assigned(FOMEMO) or not FOMEMO.IsReady then
     begin
-      // don't have keys — ignoiring or show info-message
+      // don't have keys вЂ” ignoiring or show info-message
       Exit;
     end;
 
@@ -2721,7 +2798,7 @@ begin
 
     if not omemo.HasOurKey then
     begin
-      // message not for this device id — it's ok when multi-device
+      // message not for this device id вЂ” it's ok when multi-device
       Exit;
     end;
 
@@ -2732,7 +2809,7 @@ begin
     begin
       if not omemo.OurKey.IsPreKey then
       begin
-        // нет сессии и не prekey — нельзя расшифровать
+        // РЅРµС‚ СЃРµСЃСЃРёРё Рё РЅРµ prekey вЂ” РЅРµР»СЊР·СЏ СЂР°СЃС€РёС„СЂРѕРІР°С‚СЊ
         Exit;
       end;
       sess := FOMEMO.EstablishFromPreKey(bare, omemo);
@@ -3555,7 +3632,7 @@ begin
   sendXML(xml);
   xml.Free;
 
-  fCarbonsEnabled := True; // можно обновить после IQ-result
+  fCarbonsEnabled := True; // РјРѕР¶РЅРѕ РѕР±РЅРѕРІРёС‚СЊ РїРѕСЃР»Рµ IQ-result
 end;
 
 procedure TxmppSession.DisableCarbons;
@@ -3574,7 +3651,7 @@ begin
   sendXML(xml);
   xml.Free;
 
-  fCarbonsEnabled := False; // можно обновить после IQ-result
+  fCarbonsEnabled := False; // РјРѕР¶РЅРѕ РѕР±РЅРѕРІРёС‚СЊ РїРѕСЃР»Рµ IQ-result
 end;
 
 function TxmppSession.HasFeature(pXMLEl: TsdElement; const aVar: string): Boolean;
@@ -3616,18 +3693,18 @@ begin
     if withJID <> '' then
       query.AttributeAdd('queryid', 'q' + IntToStr(FLAPseq)); // optional
 
-    // Form для фильтров (Data Forms XEP-0004)
+    // Form РґР»СЏ С„РёР»СЊС‚СЂРѕРІ (Data Forms XEP-0004)
     x := query.NodeNew('x');
     x.AttributeAdd('xmlns', 'jabber:x:data');
     x.AttributeAdd('type', 'submit');
 
-    // Пример: фильтр по JID
+    // РџСЂРёРјРµСЂ: С„РёР»СЊС‚СЂ РїРѕ JID
     if withJID <> '' then
     begin
-      // добавить field {var='with', value=withJID}
+      // РґРѕР±Р°РІРёС‚СЊ field {var='with', value=withJID}
     end;
 
-    // RSM (Result Set Management) для paging
+    // RSM (Result Set Management) РґР»СЏ paging
     if beforeId <> '' then
     begin
       // <set xmlns='http://jabber.org/protocol/rsm'><before>beforeId</before><max>limit</max></set>
@@ -3650,7 +3727,7 @@ begin
   begin
     AttributeAdd('type', 'get');
     AttributeAdd('id', 'disco-server-' + IntToStr(FLAPseq));
-    AttributeAdd('to', ServerJID); // или AccJID без ресурса
+    AttributeAdd('to', ServerJID); // РёР»Рё AccJID Р±РµР· СЂРµСЃСѓСЂСЃР°
 //    AttributeAdd('from', AccJID);
 //    AttributeAdd('from', getMyInfo.UID2cmp);
     with NodeNew('query') do
@@ -3660,13 +3737,30 @@ begin
   xml.Free;
 end;
 
+procedure TxmppSession.resetOMemoKeys;
+begin
+  fDeviceID := -1;
+  FOMEMO.Reset;
+  FOMEMO.Initialize(fDeviceID, 'R&Q');
+  fDeviceID := FOMEMO.DeviceID;
+end;
+
 procedure TxmppSession.InitOMEMO;
 begin
   if not Assigned(FOMEMO) then
     FOMEMO := TOMEMOManager.Create;
+
+//  if not FOMEMO.IsReady then
+//    LoadOMEMOKeys;
+
   if not FOMEMO.IsReady then
+  begin
     FOMEMO.Initialize(fDeviceID, 'R&Q');
-  fDeviceID := FOMEMO.DeviceID;
+    fDeviceID := FOMEMO.DeviceID;
+//    SaveOMEMOKeys;
+  end
+  else
+    fDeviceID := FOMEMO.DeviceID;
 end;
 
 procedure TxmppSession.PublishOMEMODeviceList;
@@ -3674,8 +3768,8 @@ var
   xml: TRnQXML;
 begin
   if not isReady or not FOMEMO.IsReady then Exit;
-//  xml := FOMEMO.BuildDeviceListXML(ServerJID); // или bare JID аккаунта
-  xml := FOMEMO.BuildDeviceListXML(); // или bare JID аккаунта
+//  xml := FOMEMO.BuildDeviceListXML(ServerJID); // РёР»Рё bare JID Р°РєРєР°СѓРЅС‚Р°
+  xml := FOMEMO.BuildDeviceListXML(); // РёР»Рё bare JID Р°РєРєР°СѓРЅС‚Р°
   try
     sendXML(xml);
   finally
@@ -3695,6 +3789,69 @@ begin
     sendXML(xml);
   finally
     xml.Free;
+  end;
+end;
+
+function TxmppSession.getOMEMOPreKey: RawByteString;
+begin
+  if Assigned(FOMEMO) then
+
+  Result := FOMEMO.Bundle.SignedPreKey.Key.Pub;
+//  Result := FOMEMO.Bundle.SignedPreKey.Signature;
+
+//  Result := FOMEMO.Bundle.IdentityPubRaw;
+end;
+
+function TxmppSession.getOMEMOKey: RawByteString;
+begin
+  if Assigned(FOMEMO) then
+
+//  Result := FOMEMO.Bundle.SignedPreKey.Key.Pub;
+//  Result := FOMEMO.Bundle.SignedPreKey.Signature;
+
+  Result := FOMEMO.Bundle.IdentityPubRaw;
+end;
+
+function TxmppSession.OmemoKeysFileName: string;
+var
+  base, bare: string;
+begin
+  { РџСЂРёРјРµСЂ: <userData>\RnQ\accounts\<barejid>\omemo.keys
+    Р—Р°РјРµРЅРёС‚Рµ base РЅР° РІР°С€ AccPath / PathToMyFiles / Р°РЅР°Р»РѕРі. }
+  bare := LowerCase(StringReplace(String(MyAccount), '/', '_', [rfReplaceAll]));
+  bare := StringReplace(bare, '@', '_at_', [rfReplaceAll]);
+//  base := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) +
+//          'accounts' + PathDelim + bare;
+  base := usersPath + 'xmpp' + PathDelim;
+  ForceDirectories(base);
+  Result := base + PathDelim + 'omemo.keys';
+end;
+
+procedure TxmppSession.SaveOMEMOKeys;
+begin
+  if not Assigned(FOMEMO) or not FOMEMO.IsReady then
+    Exit;
+  try
+    FOMEMO.SaveKeysToFile(OmemoKeysFileName);
+  except
+    on E: Exception do
+      ; // loggaEvtS('OMEMO save keys: ' + E.Message);
+  end;
+  { device id СѓР¶Рµ РІ GetPrefs в†’ xmpp-device-id }
+  fDeviceID := FOMEMO.DeviceID;
+end;
+
+procedure TxmppSession.LoadOMEMOKeys;
+begin
+  if not Assigned(FOMEMO) then
+    FOMEMO := TOMEMOManager.Create;
+  if FOMEMO.IsReady then Exit;
+  try
+    if FOMEMO.LoadKeysFromFile(OmemoKeysFileName) then
+      fDeviceID := FOMEMO.DeviceID;
+  except
+    on E: Exception do
+      ; // РїРѕРІСЂРµР¶РґС‘РЅРЅС‹Р№ С„Р°Р№Р» в†’ СЃРіРµРЅРµСЂРёСЂСѓРµРј Р·Р°РЅРѕРІРѕ
   end;
 end;
 

@@ -11,7 +11,8 @@ uses
   Windows, Classes, Types, SysUtils, JSON,
   RnQNet, RDGlobal,
   RnQPrefsInt, RnQPrefsTypes,
-  RnQGraphics32, RDUtils
+  RnQGraphics32, RDUtils,
+  RD.Zip
    ;
 //    contacts;
 
@@ -304,6 +305,8 @@ type
     procedure GetPrefs(pp: IRnQPref); Virtual;
     procedure SetPrefs(pp: IRnQPref); Virtual;
     procedure ResetPrefs; Virtual;
+    procedure SaveDB(pZip: TZipFile; const folder: String; const pass: AnsiString); Virtual;
+    procedure LoadDB(pZip: TZipFile; const folder: String); Virtual;
     procedure Clear; Virtual; Abstract;
     function  getDefHost: Thostport; virtual;
 
@@ -562,6 +565,7 @@ type
 //    function  idxBySSID(ssid: Word): integer;
     function  buinlist: RawByteString;
     function  toIntArray: TIntegerDynArray;
+    function  getDBstrU: RawByteString;
     procedure ForEach(const AIteratorEvent: TProc<TRnQContact> );
     procedure ForEachAsync(const AIteratorEvent: TProc<TRnQContact> );
 
@@ -595,6 +599,10 @@ var
   function  Raw2UID(const s: RawByteString): TUID;
   function  UID2RAW(const u: TUID): RawByteString;
   function  UID2FN(const u: TUID): TFileName;
+
+  function  db2strU(db: TRnQCList): RawByteString;
+  procedure clearDB(db: TRnQCList);
+  procedure freeDB(var db: TRnQCList);
 
 const
  // Flags for messages
@@ -753,6 +761,33 @@ begin
   i := sendMsg(cnt, flags, msg, chatId, requiredACK);
   if i >= 0 then
     Result := IntToStr(i);
+end;
+
+procedure TRnQProtocol.SaveDB(pZip: TZipFile; const folder: String; const pass: AnsiString);
+  procedure AddFile2Zip(const fn: String; const cfg: RawByteString);
+  begin
+    if cfg > '' then
+     begin
+         pZip.AddFile(fn, 0, pass, cfg);
+     end
+     else
+      pZip.RemoveFile(fn);
+  end;
+begin
+  AddFile2Zip(groupsFilename, groups.toString);
+  AddFile2Zip(rosterFileName1, Self.readList(LT_ROSTER).toString);
+//    msgDlg(getTranslation('Error saving contact list'),mtError);
+  AddFile2Zip(visibleFileName1, Self.readList(LT_VISIBLE).toString);
+//    msgDlg(getTranslation('Error saving visible list'),mtError);
+  AddFile2Zip(invisibleFileName1, Self.readList(LT_INVISIBLE).toString);
+//    msgDlg(getTranslation('Error saving invisible list'),mtError);
+  AddFile2Zip(ignoreFileName1, ignorelist.toString);
+//    msgDlg(getTranslation('Error saving ignore list'),mtError);
+end;
+
+procedure TRnQProtocol.LoadDB(pZip: TZipFile; const folder: String);
+begin
+
 end;
 
 procedure TRnQProtocol.GetPrefs(pp: IRnQPref);
@@ -1623,6 +1658,37 @@ begin
     result[i] :=  TRnQContact(items[i]).UIDasInt;
 end; // toIntArray
 
+function TRnQCList.getDBstrU: RawByteString;
+var
+ dim: integer;
+
+  procedure addStr(const s: RawByteString);
+   var
+     i: Integer;
+  begin
+    if Length(s) > 0 then
+    begin
+      i := length(result);
+      while dim+length(s) > i do
+        inc(i, 10000);
+      if i > length(result) then
+        setLength(result, i);
+      system.move(Pointer(s)^, result[dim+1], length(s));
+      inc(dim, length(s));
+    end;
+  end; // addStr
+var
+  cnt: TRnQContact;
+begin
+  result := '';
+  dim := 0;
+  for cnt in Self do
+    if Assigned(cnt) then
+      addStr(cnt.GetDBrow);
+
+  setLength(result, dim);
+end; // db2str
+
 function TRnQCList.getCount(group: integer; OnlyOnline: Boolean = false): integer;
 var
   i: integer;
@@ -1889,6 +1955,57 @@ begin
     end;
   Result := s;
 end;
+
+function db2strU(db: TRnQCList): RawByteString;
+var
+ dim: integer;
+
+  procedure addStr(const s: RawByteString);
+   var
+     i: Integer;
+  begin
+    if Length(s) > 0 then
+    begin
+      i := length(result);
+      while dim+length(s) > i do
+        inc(i, 10000);
+      if i > length(result) then
+        setLength(result, i);
+      system.move(Pointer(s)^, result[dim+1], length(s));
+      inc(dim, length(s));
+    end;
+  end; // addStr
+var
+  cnt: TRnQContact;
+begin
+  result := '';
+  dim := 0;
+  for cnt in db do
+    if Assigned(cnt) then
+      addStr(cnt.GetDBrow);
+
+  setLength(result, dim);
+end; // db2str
+
+procedure clearDB(db: TRnQCList);
+var
+  i: integer;
+begin
+  for i:=0 to TList(db).count-1 do
+    with db.getAt(i) do
+      free;
+  db.clear;
+end; // clearDB
+
+procedure freeDB(var db: TRnQCList);
+begin
+  if not Assigned(db) then
+    Exit;
+  clearDB(db);
+  db.free;
+  db := NIL;
+end; // freeDB
+
 
 var
   TZinfo: TTimeZoneInformation;

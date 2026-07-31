@@ -1962,6 +1962,8 @@ begin
   if Assigned(Account.AccProto) then
     Account.AccProto.SetPrefs(MainPrefs);
 
+  Account.AccProto.LoadDB(dbZip, 'proto');
+
   startTimer;
   setProgBar(nil, 7/maxProg);
 

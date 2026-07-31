@@ -1199,7 +1199,7 @@ begin
   result := 0;
   while result < chats.count do
    begin
-     SendMessage(pagectrl.Handle, TCM_GETITEMRECT, result, Longint(@R));
+     SendMessage(pagectrl.Handle, TCM_GETITEMRECT, result, LPARAM(@R));
      if ptInRect(R, point(x,y)) then
        exit;
      inc(result);
@@ -2448,7 +2448,7 @@ begin
   i := chats.IdxOf(c);
   if (i < 0) or (i >= pagectrl.PageCount) then
     exit;
-  SendMessage(pagectrl.Handle, TCM_GETITEMRECT, i, Longint(@R));
+  SendMessage(pagectrl.Handle, TCM_GETITEMRECT, i, LPARAM(@R));
   R.right := R.left + 30;
   inc(r.Top, 1);
   dec(r.Bottom, 1);
@@ -2523,7 +2523,7 @@ begin
      pageCtrl.pages[idx].caption := chats.byIdx(idx).lastInputText +    // additional spaces for icon
        StringOfChar('_', 2 + theme.getPicSize(RQteDefault, 'plugintab' + IntToStrA(chats.byIdx(idx).ID), 16, getParentCurrentDPI).cx div w);
  {$WARN UNSAFE_CODE OFF}
-     SendMessage(pagectrl.Handle, TCM_GETITEMRECT, idx, Longint(@R));
+     SendMessage(pagectrl.Handle, TCM_GETITEMRECT, idx, LPARAM(@R));
      //R.right := R.left+20;
      invalidateRect(pagectrl.handle, @R, TRUE);
  {$WARN UNSAFE_CODE ON}
@@ -2609,7 +2609,7 @@ begin
   {
     TCItem.iImage := GetImageIndex(I);
     if SendMessage(Handle, TCM_SETITEM, I,
-      Longint(@TCItem)) = 0 then
+      LPARAM(@TCItem)) = 0 then
       TabControlError(Format(sTabFailSet, [FTabs[I], I]));
   end;
   TabsChanged;
@@ -4050,7 +4050,7 @@ begin
     begin
       TCItem.iImage := GetImageIndex(I);
       if SendMessage(Handle, TCM_SETITEM, I,
-        Longint(@TCItem)) = 0 then
+        LPARAM(@TCItem)) = 0 then
         TabControlError(Format(sTabFailSet, [FTabs[I], I]));
     end;
     TabsChanged;

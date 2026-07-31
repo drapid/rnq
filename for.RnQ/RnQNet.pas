@@ -31,6 +31,7 @@ type
     port: Integer;
   end;
 
+  PProxy  = ^TProxy;
   Tproxy = record
     name: string;
     user: String;
@@ -60,7 +61,7 @@ const
    Procedure ClearProxyArr(var pa: TarrProxy);
 //   procedure proxy_http_Enable(v_icq: TicqSession);
 //   procedure proxy_http_Enable(sock: TRnQSocket);
-
+  function ProxyArr2Cfg(arr: TarrProxy): RawByteString;
 
 type
   ThttpProxyInfo = record
@@ -214,7 +215,7 @@ uses
 //    OverbyteIcsLogger,
   mormot.net.client,
   RnQDialogs,
-  RnQLangs,
+  RnQLangs, RnQCrypt,
   RDFileUtil,
  {$IFDEF RNQ}
   RnQPrefsInt,
@@ -380,6 +381,40 @@ begin
    end;
 end;
 
+function ProxyArr2Cfg(arr: TarrProxy): RawByteString;
+var
+  pP: PProxy;
+  k: Integer;
+begin
+  Result := '';
+  if Length(arr)>0 then
+  for k := 0 to Length(arr) - 1 do
+  begin
+    pP := @arr[k];
+   if pP.name = '' then
+     pP.name := 'Proxy' + IntToStr(k+1);
+
+   Result := Result
+   + 'proxy-name='     + StrToUTF8(pP.name)+CRLF
+//   + 'proxy='+yesno[pProxys[i].enabled]+CRLF
+    +'proxy-serv-host='+ AnsiString(pP.serv.host)+CRLF
+    +'proxy-serv-port='+ IntToStrA(pP.serv.port)+CRLF
+   + 'proxy-auth='     + yesnoLower[pP.auth]+CRLF
+   + 'proxy-user='     + StrToUTF8(pP.user)+CRLF
+//   + 'proxy-pass='     +passCrypt(pP.pwd)+CRLF
+   + 'proxy-pass64='   +Base64EncodeString(passCrypt(UTF8Encode(pP.pwd)))+CRLF
+   + 'proxy-ntlm='     +yesnoLower[pP.NTLM]+CRLF
+   + 'connection-ssl=' +yesnoLower[pP.ssl]+CRLF
+   + 'proxy-proto='    +proxyproto2str[pP.proto]+CRLF
+{   for pp:=low(pp) to high(pp) do cfg:=cfg
+     +'proxy-'+proxyproto2str[pp]+'-host='+proxyes[i].addr[pp].host+CRLF
+     +'proxy-'+proxyproto2str[pp]+'-port='+proxyes[i].addr[pp].port+CRLF;
+}
+     +'proxy-host='    + AnsiString(pP.addr.host)+CRLF
+     +'proxy-port='    + IntToStrA(pP.addr.port)+CRLF;
+   Result := Result + '------------------' + CRLF;
+  end;
+end;
 { TRnQSocket }
 
 constructor TRnQSocket.Create(AOwner: TComponent);

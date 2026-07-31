@@ -510,6 +510,12 @@ with TxmppContact(contact) do
        for k := Low(cnt.resources[j].caps) to High(cnt.resources[j].Caps) do
         CliCapsMemo.Lines.Append(cnt.resources[j].Caps[k]);
     end;
+   if cnt.isMyAcc then
+     begin
+       CliCapsMemo.Lines.Add('deviceId=' + IntToStr(TxmppSession(cnt.Proto).deviceId));
+       CliCapsMemo.Lines.Add('OMEMO PreKey=' + hexDumpS(TxmppSession(cnt.Proto).getOMEMOPreKey));
+       CliCapsMemo.Lines.Add('OMEMO Key=' + hexDumpS(TxmppSession(cnt.Proto).getOMEMOKey));
+     end;
 
   clientBox.ReadOnly    := True;
   protoBox.ReadOnly     := True;

@@ -30,7 +30,10 @@ uses
   RnQXml, NativeXml;
 
 const
-  OMEMO_AXOLOTL_NS    = 'eu.siacs.conversations.axolotl';
+  OMEMO_AXOLOTL_NS           = 'eu.siacs.conversations.axolotl';
+  OMEMO_AXOLOTL_DEVICELIST   = 'eu.siacs.conversations.axolotl.devicelist';
+  // bundle node: eu.siacs.conversations.axolotl.bundles:DEVICEID
+
   OMEMO2_NS           = 'urn:xmpp:omemo:2';
   OMEMO2_DEVICES_NODE = 'urn:xmpp:omemo:2:devices';
   OMEMO2_BUNDLES_NODE = 'urn:xmpp:omemo:2:bundles';
@@ -39,6 +42,11 @@ const
   OMEMO_SIG_LEN = 64;
   OMEMO_PREKEY_COUNT = 100;
   OMEMO_MAX_SKIP = 1000;
+
+const
+  OMEMO_KEYS_MAGIC = $4F4D4B31; // 'OMK1'
+  OMEMO_KEYS_VER   = 1;
+
 
   { OpenSSL NID / EVP type for X25519 — в trunk mORMot2 константы нет,
     но OpenSslGenerateKeys принимает integer. Не меняем mORMot2. }
@@ -153,12 +161,14 @@ type
 
     procedure Initialize(pDeviceID: Integer; const pDeviceLabel: String);
     function  IsReady: Boolean;
+    procedure Reset;
 
     property DeviceID: Integer read FDeviceID;
     property Bundle: TOMEMOBundle read FBundle;
     property Sessions: TOMEMOSessionStore read FSessions;
 
     function BuildDeviceListXML: TRnQXML;
+    function BuildAxolotlDeviceListXML: TRnQXML;
     function BuildBundleXML: TRnQXML;
     function EstablishFromPreKey(
       const BareJid: RawUtf8;
@@ -166,6 +176,11 @@ type
     procedure InitRecvChainAfterX3DH(S: TOMEMOSession;
       const AliceRatchetPub: RawByteString);
     function DecryptOMEMO(const Msg: TOMEMOEncryptedMessage): RawUtf8;
+    function  SaveKeysToStream(fs: TStream): Boolean;
+    function  SaveKeysToFile(const FileName: String): Boolean;
+    function  LoadKeysFromStream(fs: TStream): Boolean;
+    function  LoadKeysFromFile(const FileName: String): Boolean;
+//    procedure ApplyLoadedState; // FReady := True после Load
   end;
 
   function ParseOMEMOEncrypted(const MsgEl: TsdElement;
@@ -208,7 +223,7 @@ begin
   end;
 end;
 
-function Sha512(const s: Pointer; sLength: Integer): RawUtf8;
+function Sha512(const s: Pointer; sLength: Integer): RawUtf8; OverLoad;
 var
   sha: TSha512;
   dig: TSha512Digest;
@@ -216,6 +231,14 @@ begin
   sha.Full(s, sLength, dig);
   BinToHexLower(@dig, SizeOf(dig), result);
   FillZero(dig);
+end;
+
+procedure Sha512(const s: Pointer; sLength: Integer; d: TSha512Digest); OverLoad;
+var
+  sha: TSha512;
+//  dig: TSha512Digest;
+begin
+  sha.Full(s, sLength, d);
 end;
 
 function Ed25519SeedToX25519Priv(const Seed32: RawByteString): RawByteString;
@@ -227,8 +250,9 @@ var
 begin
   Result := '';
   if Length(Seed32) <> 32 then Exit;
-  hs := Sha512(pointer(Seed32), 32);
-  Move512(@h, @hs[1]);
+//  hs := Sha512(pointer(Seed32), 32);
+  Sha512(pointer(Seed32), 32, h);
+//  Move512(@h, @hs[1]);
 //  Sha512(@h, SizeOf(TSha512Digest), pointer(Seed32), 32);
   h[0]  := h[0] and $F8;
   h[31] := h[31] and $7F;
@@ -475,6 +499,17 @@ begin
     Length(Msg), Length(PubDer), Length(Sig));
 end;
 
+procedure TOMEMOManager.Reset;
+begin
+  FReady := False;
+  FillZero(FBundle.IdentityPrivDer);
+  FillZero(FBundle.IdentityX25519.Priv);
+  FillZero(FBundle.SignedPreKey.Key.Priv);
+  SetLength(FBundle.PreKeys, 0);
+  Sessions.Clear;
+  FDeviceID := -1;
+end;
+
 procedure TOMEMOManager.Initialize(pDeviceID: Integer; const pDeviceLabel: String);
 var
   i: Integer;
@@ -617,6 +652,29 @@ begin
       end;
     end;
   end;
+end;
+
+function TOMEMOManager.BuildAxolotlDeviceListXML: TRnQXML;
+var
+  pub, item, list, device: TsdElement;
+begin
+  Result := TRnQXML.CreateEx(nil, False, False, True, 'iq');
+  with Result.Root do
+  begin
+    AttributeAdd('type', 'set');
+    AttributeAdd('id', Format('omemo-axo-dl-%d', [FDeviceID]));
+    pub := TsdElement(NodeNew('pubsub'));
+    pub.AttributeAdd('xmlns', 'http://jabber.org/protocol/pubsub');
+    pub := TsdElement(pub.NodeNew('publish'));
+    pub.AttributeAdd('node', OMEMO_AXOLOTL_DEVICELIST);
+    item := TsdElement(pub.NodeNew('item'));
+    item.AttributeAdd('id', 'current');
+    list := TsdElement(item.NodeNew('list'));
+    list.AttributeAdd('xmlns', OMEMO_AXOLOTL_NS);
+    device := TsdElement(list.NodeNew('device'));
+    device.AttributeAdd('id', IntToStr(FDeviceID));
+  end;
+  // + publish-options access_model=open (как в BuildDeviceListXML)
 end;
 
 function TOMEMOManager.BuildBundleXML: TRnQXML;
@@ -1378,6 +1436,150 @@ begin
 
   Result := plain; // UTF-8 текст
   sess.PendingMsg := '';
+end;
+
+procedure WriteBlob(Stream: TStream; const S: RawByteString);
+var
+  n: Integer;
+begin
+  n := Length(S);
+  Stream.WriteBuffer(n, SizeOf(n));
+  if n > 0 then
+    Stream.WriteBuffer(pointer(S)^, n);
+end;
+
+function ReadBlob(Stream: TStream): RawByteString;
+var
+  n: Integer;
+begin
+  Stream.ReadBuffer(n, SizeOf(n));
+  if (n < 0) or (n > 1024 * 1024) then
+    raise Exception.Create('OMEMO keys: bad blob size');
+  SetLength(Result, n);
+  if n > 0 then
+    Stream.ReadBuffer(pointer(Result)^, n);
+end;
+
+function TOMEMOManager.SaveKeysToStream(fs: TStream): Boolean;
+var
+  ver, i, n, id: Integer;
+  magic: Cardinal;
+begin
+  Result := False;
+  if not FReady then Exit;
+  magic := OMEMO_KEYS_MAGIC;
+  ver := OMEMO_KEYS_VER;
+  fs.WriteBuffer(magic, SizeOf(magic));
+  fs.WriteBuffer(ver, SizeOf(ver));
+  fs.WriteBuffer(FDeviceID, SizeOf(FDeviceID));
+
+  WriteBlob(fs, FDeviceLabel);
+  WriteBlob(fs, FBundle.IdentityPrivDer);
+  WriteBlob(fs, FBundle.IdentityPubDer);
+  WriteBlob(fs, FBundle.IdentityPubRaw);
+  WriteBlob(fs, FBundle.IdentityX25519.Priv);
+  WriteBlob(fs, FBundle.IdentityX25519.Pub);
+
+  id := FBundle.SignedPreKey.ID;
+  fs.WriteBuffer(id, SizeOf(id));
+  WriteBlob(fs, FBundle.SignedPreKey.Key.Priv);
+  WriteBlob(fs, FBundle.SignedPreKey.Key.Pub);
+  WriteBlob(fs, FBundle.SignedPreKey.Signature);
+
+  n := Length(FBundle.PreKeys);
+  fs.WriteBuffer(n, SizeOf(n));
+  for i := 0 to n - 1 do
+  begin
+    id := FBundle.PreKeys[i].ID;
+    fs.WriteBuffer(id, SizeOf(id));
+    WriteBlob(fs, FBundle.PreKeys[i].Key.Priv);
+    WriteBlob(fs, FBundle.PreKeys[i].Key.Pub);
+  end;
+  Result := True;
+end;
+
+function TOMEMOManager.SaveKeysToFile(const FileName: string): Boolean;
+var
+  fs: TFileStream;
+begin
+  Result := False;
+  if not FReady then Exit;
+  ForceDirectories(ExtractFilePath(FileName));
+  fs := TFileStream.Create(FileName, fmCreate);
+  try
+    Result := SaveKeysToStream(fs);
+  finally
+    fs.Free;
+  end;
+end;
+
+function TOMEMOManager.LoadKeysFromStream(fs: TStream): Boolean;
+var
+  magic: Cardinal;
+  ver, i, n, id: Integer;
+begin
+  Result := False;
+  if fs.Size < 8 then
+    Exit;
+  fs.Position := 0;
+  fs.ReadBuffer(magic, SizeOf(magic));
+  if magic <> OMEMO_KEYS_MAGIC then
+    raise Exception.Create('OMEMO keys: bad magic');
+  fs.ReadBuffer(ver, SizeOf(ver));
+  if ver <> OMEMO_KEYS_VER then
+    raise Exception.Create('OMEMO keys: unsupported version');
+
+  fs.ReadBuffer(FDeviceID, SizeOf(FDeviceID));
+  FDeviceLabel := ReadBlob(fs);
+
+  FBundle.IdentityPrivDer := ReadBlob(fs);
+  FBundle.IdentityPubDer  := ReadBlob(fs);
+  FBundle.IdentityPubRaw  := ReadBlob(fs);
+  FBundle.IdentityX25519.Priv := ReadBlob(fs);
+  FBundle.IdentityX25519.Pub  := ReadBlob(fs);
+
+  fs.ReadBuffer(id, SizeOf(id));
+  FBundle.SignedPreKey.ID := id;
+  FBundle.SignedPreKey.Key.Priv := ReadBlob(fs);
+  FBundle.SignedPreKey.Key.Pub  := ReadBlob(fs);
+  FBundle.SignedPreKey.Signature := ReadBlob(fs);
+
+  fs.ReadBuffer(n, SizeOf(n));
+  if (n < 0) or (n > 1000) then
+    raise Exception.Create('OMEMO keys: bad prekey count');
+  SetLength(FBundle.PreKeys, n);
+  for i := 0 to n - 1 do
+  begin
+    fs.ReadBuffer(id, SizeOf(id));
+    FBundle.PreKeys[i].ID := id;
+    FBundle.PreKeys[i].Key.Priv := ReadBlob(fs);
+    FBundle.PreKeys[i].Key.Pub  := ReadBlob(fs);
+  end;
+
+  { минимальная sanity-check }
+  if (FDeviceID <= 0) or
+     (Length(FBundle.IdentityPrivDer) = 0) or
+     (Length(FBundle.IdentityPubRaw) <> OMEMO_KEY_LEN) or
+     (Length(FBundle.IdentityX25519.Priv) <> OMEMO_KEY_LEN) or
+     (Length(FBundle.SignedPreKey.Key.Priv) <> OMEMO_KEY_LEN) then
+    Exit;
+
+  FReady := True;
+  Result := True;
+end;
+
+function TOMEMOManager.LoadKeysFromFile(const FileName: string): Boolean;
+var
+  fs: TFileStream;
+begin
+  Result := False;
+  if not FileExists(FileName) then Exit;
+  fs := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
+  try
+    Result := LoadKeysFromStream(fs);
+  finally
+    fs.Free;
+  end;
 end;
 
 end.

@@ -141,7 +141,7 @@ uses
    JwaWinGDI,
    paszlib, zbase,
  {$ENDIF}
- Windows {$IFDEF UseDelphi} {$ENDIF}
+ Windows
  ,
   Classes,
   {$IFDEF FMX}

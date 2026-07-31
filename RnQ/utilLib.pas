@@ -78,8 +78,6 @@ procedure startTimer;
 procedure stopMainTimer;
 procedure contactCreation(c: TRnQContact);
 procedure contactDestroying(c: TRnQContact);
-procedure clearDB(db: TRnQCList);
-procedure freeDB(var db: TRnQCList);
 function  isSpam(var wrd: String; c: TRnQContact; msg: string=''; flags: dword=0): boolean;
 function  filterRefuse(c: TRnQContact; const msg: string=''; flags: dword=0; ev: Thevent = NIL): boolean;
 function  rosterImgNameFor(c: TRnQcontact): TPicName;
@@ -128,7 +126,6 @@ function  ints2cl(proto: TRnQProtocol; a: TintegerDynArray): TRnQCList;
 function  beh2str(kind: integer): RawByteString;
 procedure str2beh(const b, s: RawByteString); overload;
 function  str2beh(s: AnsiString): Tbehaviour; overload;
-function  db2strU(db: TRnQCList): RawByteString;
 // window management
 procedure toggleMainfrmBorder(setBrdr: Boolean = false; IsBrdr: Boolean = True);
 procedure applySnap();
@@ -669,15 +666,13 @@ var
 //  var
 //    fIDX: Integer;
   begin
-//    if cfg > '' then
+    if cfg > '' then
      begin
-//      fIDX := zf.AddFile(fn);
-//      fIDX := zf.AddFile(fn, 0, '123');
-//      fIDX := zf.AddFile(fn, 0, AccPass);
-//      zf.Data[fIDX] := cfg;
 //       fIDX :=
          zf.AddFile(fn, 0, AccPass, cfg);
-     end;
+     end
+     else
+      zf.RemoveFile(fn);
 //    zf.Files[fIDX].CommonFileHeader.VersionNeededToExtract
   end;
 var
@@ -692,7 +687,7 @@ begin
   if fantomWork then
     Exit;
 //  if reason>'' then
-    loggaEvtS('Save DB5. Reason: '+ reason);
+    loggaEvtS('Save DB6. Reason: '+ reason);
 {
     groups.save;          -- OK
     saveLists(MainProto); -- OK
@@ -707,12 +702,11 @@ begin
     if reopenchats then chatFrm.savePages; -- OK
     SaveExtSts;           -- OK
     SaveSpamQuests;       -- OK
+   + Files from Proto
 }
 
   zf := TZipFile.Create;
 //  i := 0;
-//  zf.AddFile(dbFileName);
-//  zf.Data[i] := db2str(contactsDB);
   zf.ZipFileComment := 'DB file of R&Q ver.' + IntToStrA(RnQBuild);
 
   cfg := db2strU(TRnQProtocol.contactsDB);
@@ -730,15 +724,6 @@ begin
   AddFile2Zip(AboutFileName, cfg);
   cfg := '';
 
-  AddFile2Zip(groupsFilename, groups.toString);
-  AddFile2Zip(rosterFileName1, pr.readList(LT_ROSTER).toString);
-//    msgDlg(getTranslation('Error saving contact list'),mtError);
-  AddFile2Zip(visibleFileName1, pr.readList(LT_VISIBLE).toString);
-//    msgDlg(getTranslation('Error saving visible list'),mtError);
-  AddFile2Zip(invisibleFileName1, pr.readList(LT_INVISIBLE).toString);
-//    msgDlg(getTranslation('Error saving invisible list'),mtError);
-  AddFile2Zip(ignoreFileName1, ignorelist.toString);
-//    msgDlg(getTranslation('Error saving ignore list'),mtError);
 //  if NILdoWith = 2 then
    begin
     AddFile2Zip(nilFileName1, notinlist.toString);
@@ -822,35 +807,10 @@ begin
   end;
   AddFile2Zip(SpamQuestsFilename, cfg);
 
-  cfg := '';
-  if Length(pProxys)>0 then
-  for k := 0 to Length(pProxys) - 1 do
-  begin
-   if pProxys[k].name = '' then
-     pProxys[k].name := 'Proxy' + IntToStr(k+1);
-
-   cfg := cfg
-   + 'proxy-name='     + StrToUTF8(pProxys[k].name)+CRLF
-//   + 'proxy='+yesno[pProxys[i].enabled]+CRLF
-    +'proxy-serv-host='+ AnsiString(pProxys[k].serv.host)+CRLF
-    +'proxy-serv-port='+ IntToStrA(pProxys[k].serv.port)+CRLF
-   + 'proxy-auth='     + yesnoLower[pProxys[k].auth]+CRLF
-   + 'proxy-user='     + StrToUTF8(pProxys[k].user)+CRLF
-//   + 'proxy-pass='     +passCrypt(pProxys[k].pwd)+CRLF
-   + 'proxy-pass64='   +Base64EncodeString(passCrypt(UTF8Encode(pProxys[k].pwd)))+CRLF
-   + 'proxy-ntlm='     +yesnoLower[pProxys[k].NTLM]+CRLF
-   + 'connection-ssl=' +yesnoLower[pProxys[k].ssl]+CRLF
-   + 'proxy-proto='    +proxyproto2str[pProxys[k].proto]+CRLF
-{   for pp:=low(pp) to high(pp) do cfg:=cfg
-     +'proxy-'+proxyproto2str[pp]+'-host='+proxyes[i].addr[pp].host+CRLF
-     +'proxy-'+proxyproto2str[pp]+'-port='+proxyes[i].addr[pp].port+CRLF;
-}
-     +'proxy-host='    + AnsiString(pProxys[k].addr.host)+CRLF
-     +'proxy-port='    + IntToStrA(pProxys[k].addr.port)+CRLF;
-   cfg := cfg + '------------------' + CRLF;
-  end;
+  cfg := ProxyArr2Cfg(pProxys);
   AddFile2Zip(proxiesFileName, cfg);
 
+  pr.SaveDB(zf, 'proto', AccPass);
 //  try
     memStream := TMemoryStream.Create;
     zf.SaveToStream(memStream);
@@ -2513,56 +2473,6 @@ begin
   end;
   result := enableIgnoreList and ignorelist.exists(c);
 end; // filterRefuse
-
-function db2strU(db: TRnQCList): RawByteString;
-var
- dim: integer;
-
-  procedure addStr(const s: RawByteString);
-   var
-     i: Integer;
-  begin
-    if Length(s) > 0 then
-    begin
-      i := length(result);
-      while dim+length(s) > i do
-        inc(i, 10000);
-      if i > length(result) then
-        setLength(result, i);
-      system.move(Pointer(s)^, result[dim+1], length(s));
-      inc(dim, length(s));
-    end;
-  end; // addStr
-var
-  cnt: TRnQContact;
-begin
-  result := '';
-  dim := 0;
-  for cnt in db do
-    if Assigned(cnt) then
-      addStr(cnt.GetDBrow);
-
-  setLength(result, dim);
-end; // db2str
-
-procedure clearDB(db: TRnQCList);
-var
-  i: integer;
-begin
-  for i:=0 to TList(db).count-1 do
-    with db.getAt(i) do
-      free;
-  db.clear;
-end; // clearDB
-
-procedure freeDB(var db: TRnQCList);
-begin
-  if not Assigned(db) then
-    Exit;
-  clearDB(db);
-  db.free;
-  db := NIL;
-end; // freeDB
 
 procedure contactCreation(c: TRnQContact);
 begin

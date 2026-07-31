@@ -90,6 +90,7 @@ type
   end;
   Pzip64ExtraData = ^Tzip64ExtraData;
 
+  PLocalFileHeader = ^TLocalFile;
   TLocalFile = packed record
     LocalFileHeaderSignature: DWORD; //    4 bytes  (0x04034b50)
     CommonFileHeader: TCommonFileHeader; //
@@ -101,9 +102,21 @@ type
  { TODO -oRapid D -cIncrease load speed : Add support of "preview" loading }
     DataOffset: Int64;
     DataLoaded: Boolean;
+    procedure Clear;
     function UTFSupport: Boolean;
     function getFileName: String;
+    function LocateExtra(aID: word): pointer;
+    function IsFolder: Boolean;
   end;
+
+  //// extra file information structure header
+  TFileInfoExtra = record
+    /// contains the ID of the block, e.g. ZIP64_EXTRA_ID or UNICODEPATH_EXTRA_ID
+    id: word;
+    /// block size in bytes
+    size: word;
+  end;
+  PFileInfoExtra = ^TFileInfoExtra;
 
  {$IFDEF ZIP_AES}
   TAESExtraData = packed record
@@ -135,8 +148,8 @@ type
 
   data_descriptor_zip64 = packed record
     crc32:              ULONG;
-    compressed_size:    BIGINT;
-    uncompressed_size:  BIGINT;
+    compressed_size:    UInt64;
+    uncompressed_size:  UInt64;
   end;
 
   TNTFSExtraData = packed record
@@ -145,25 +158,45 @@ type
     Reserved: LongWord;
     Tag1: WORD; { $0001 }
     Size1: WORD;
-    Mtime: BIGINT;
-    Atime: BIGINT;
-    Ctime: BIGINT;
+    Mtime: QWORD;
+    Atime: QWORD;
+    Ctime: QWORD;
   end;
-//  NTFS_extra_fieldPtr = ^NTFS_extra_field;
+//  PNTFSExtraData = ^TNTFSExtraData;
 
-  TFileHeader = packed record
-    CentralFileHeaderSignature: DWORD; //   4 bytes  (0x02014b50)
-    VersionMadeBy: WORD; //                 2 bytes
-    CommonFileHeader: TCommonFileHeader; //
-    FileCommentLength: WORD; //             2 bytes
-    DiskNumberStart: WORD; //               2 bytes
-    InternalFileAttributes: WORD; //        2 bytes
-    ExternalFileAttributes: DWORD; //       4 bytes
-    RelativeOffsetOfLocalHeader: DWORD; //  4 bytes
+  //// extra file information structure, storing UTF-8 path name
+  // - as generated e.g. by the build-in zip on latest Windows 10 Home
+  // - see 'Unicode Path Extra Field' in Info-ZIP APPNOTE.TXT
+  TUTF8ExtraData = packed record
+    /// contains UNICODEPATH_EXTRA_ID = $7075
+    id: word;
+    /// block size
+    size: word;
+    /// version of this extra field, currently 1
+    version: byte;
+    /// File Name Field CRC32 Checksum
+    nameCRC32: cardinal;
+    /// UTF-8 version of the entry File Name of size bytes length
+//    utf8Name: AnsiChar;
+    utf8Name: RawByteString;
+  end;
+  PUTF8ExtraData = ^TUTF8ExtraData;
+
+
+  PFileHeader = ^TFileHeader;
+  TFileHeader = packed record  // 4+2+26+2+2+2+4+4 = 46 bytes
+    CentralFileHeaderSignature: DWORD;   // 4 bytes  (0x02014b50)
+    VersionMadeBy: WORD;                 // 2 bytes
+    CommonFileHeader: TCommonFileHeader; // 26 bytes
+    FileCommentLength: WORD;             // 2 bytes
+    DiskNumberStart: WORD;               // 2 bytes
+    InternalFileAttributes: WORD;        // 2 bytes
+    ExternalFileAttributes: DWORD;       // 4 bytes
+    RelativeOffsetOfLocalHeader: DWORD;  // 4 bytes
     filename: TBytes; //variable size
     extrafield: RawByteString; //variable size
     fileComment: AnsiString; //variable size
-
+    z64Info: Tzip64ExtraData;
  {$IFDEF ZIP_AES}
     AESInfo: TAESExtraData; // By Rapid D
  {$ENDIF ZIP_AES}
@@ -205,24 +238,32 @@ type
     prefixBLOB: RawByteString; // for example sfx module
 //    fCompressionLevel: Integer;
   private
-    function  GetUncompressed(i: integer): RawByteString;
-    procedure SetUncompressed(i: integer; const Value: RawByteString);
-    procedure Uncompress2Stream(I: Integer; Stream: TStream; pAutoLoad: Boolean = True);
-    function  GetDateTime(i: integer): TDateTime;
-    procedure SetDateTime(i: integer; const Value: TDateTime);
+    function  GetUncompressed(const i: integer): RawByteString;
+    procedure SetUncompressed(const i: integer; const Value: RawByteString); OverLoad;
+    procedure SetUncompressed(const i: integer; vs: System.Classes.TStream); OverLoad;
+    procedure Uncompress2Stream(const I: Integer; Stream: TStream; pAutoLoad: Boolean = True);
+    function  GetDateTime(const i: integer): TDateTime;
+    procedure SetDateTime(const i: integer; const Value: TDateTime);
     function  GetCount: integer;
-    function  GetName(i: integer): String;
-    procedure SetName(i: integer; const Value: String);
-    function  GetItem(i: integer): TZipItem;
+    function  GetName(const i: integer): String;
+    procedure SetName(const i: integer; const Value: String);
+    function  GetItem(const i: integer): TZipItem;
+    procedure SetFile(pIdx: Integer; const pZipFn: String; FAttribute: DWord = 0; const pPass: AnsiString = '';
+                             const pData: RawByteString = '');
   public
     constructor Create;
-    function  AddFile(const name: string; FAttribute: DWord = 0; const pPass: AnsiString = '';
+    function  AddFile(const name: String; FAttribute: DWord = 0; const pPass: AnsiString = '';
                        const pData: RawByteString = ''): Integer;
     function  AddExtFile(const pFileName: String; const name: string = '';
                          FAttribute: DWord = 0; const pPass: AnsiString = ''): Integer;
-    procedure SaveToFile(const filename: string);
+    function  AddOrReplaceFile(const name: String; FAttribute: DWord = 0; const pPass: AnsiString = '';
+                       const pData: RawByteString = ''): Integer; OverLoad;
+    function  AddOrReplaceFile(const name: string; FAttribute: DWord = 0; const pPass: AnsiString = '';
+                             pData: TStream = NIL): Integer; OverLoad;
+    function  RemoveFile(const name: String): Boolean;
+    procedure SaveToFile(const filename: String);
     procedure SaveToStream(ZipFileStream: TStream);
-    procedure LoadFromFile(const filename: string; pPreview: Boolean = false);
+    procedure LoadFromFile(const filename: String; pPreview: Boolean = false);
     procedure LoadFromStream(const ZipFileStream: TStream; pPreview: Boolean = false);
     function  IndexOf(const s: String): Integer;
     Function  ExtractToStream(const fn: String; Stream: TStream): Boolean; Overload;
@@ -230,14 +271,14 @@ type
     function  IsEncrypted(i: Integer): Boolean;
     function  CheckPassword(I: Integer; const pass: AnsiString): Boolean;
     property  Count: integer read GetCount;
-    property  Items[i: integer]: TZipItem read GetItem;
+    property  Items[const i: integer]: TZipItem read GetItem;
 //    property Uncompressed[i: integer]: AnsiString read GetUncompressed;
                                                   //write SetUncompressed;
-    property Data[i: integer]: RawByteString read  GetUncompressed
+    property Data[const i: integer]: RawByteString read  GetUncompressed
                                              write SetUncompressed;
 //    property CompressionLevel: Integer read fCompressionLevel write fCompressionLevel;
-    property DateTime[i: integer]: TDateTime read GetDateTime write SetDateTime;
-    property Name[i: integer]: string read GetName write SetName;
+    property DateTime[const i: integer]: TDateTime read GetDateTime write SetDateTime;
+    property Name[const i: integer]: string read GetName write SetName;
     property UTF8Support: Boolean read aUTF8Support default True;
   end;
 
@@ -425,21 +466,66 @@ begin
   DiskStart := 0;
 end;
 
+procedure TLocalFile.Clear;
+begin
+  CompressedData := '';
+  extraField := '';
+  pass := '';
+  SetLength(Self.filename, 0);
+end;
+
 function TLocalFile.UTFSupport: Boolean;
 begin
   result := Self.CommonFileHeader.GeneralPurposeBitFlag and (1 shl 11) > 0
 end;
 
 function TLocalFile.getFileName: String;
-var
-  s: AnsiString;
+//var
+//  s: AnsiString;
 begin
- SetLength(s, CommonFileHeader.FilenameLength);
- CopyMemory(@s[1], filename, CommonFileHeader.FilenameLength);
+  if Length(filename) = 0 then
+    Exit('');
  if UTFSupport then
-   Result := UnUTF(s)
+   Result := UnUTF(filename)
   else
-   Result := String(s);
+   begin
+//     SetLength(s, CommonFileHeader.FilenameLength);
+//     Result := String(s);
+     Result := TBytesToString(filename, CP_OEM);
+   end;
+end;
+
+function TLocalFile.LocateExtra(aID: word): pointer;
+var
+  p: PFileInfoExtra;
+  remaining, len: PtrInt;
+begin
+  result := nil;
+  remaining := Length(extrafield);
+//  remaining := CommonFileHeader.ExtraFieldLength;
+  if remaining = 0 then
+    exit;
+//  if Length(extrafield) <> remaining then
+//    Exit(NIL);
+  p := pointer(PAnsiChar(@extrafield[1]));
+  repeat
+    if p^.id = aID then
+    begin
+      result := p; // we found it
+      exit;
+    end;
+    len := p^.size + SizeOf(p^);
+    inc(PByte(p), len);
+    dec(remaining, len);
+  until remaining <= 0;
+end;
+
+function TLocalFile.IsFolder: Boolean;
+//var
+//  s: AnsiString;
+begin
+  result := (Length(filename) > 0) and
+            (ord(filename[length(filename)-1]) in [ord('\'), ord('/')]);
 end;
 
 { TZipFile }
@@ -535,7 +621,6 @@ begin
     ZipFileStream.Write(EndOfCentralDirectory, SizeOf(EndOfCentralDirectory));
     ZipFileStream.Write(PByte(ZipFileComment)^, length(ZipFileComment));
 end;
-
 
 procedure TZipFile.LoadFromStream(const ZipFileStream: TStream; pPreview: Boolean = false);
 var
@@ -681,20 +766,23 @@ begin
   end;
 end;
 
-function TZipFile.GetUncompressed(I: Integer): RawByteString;
+function TZipFile.GetUncompressed(const I: Integer): RawByteString;
 var
-  ResultStream: TMemoryStream;
-  UncSize: Int64;
+//  ResultStream: TMemoryStream;
+//  UncSize: Int64;
+  ResultStream: TRawByteStringStream;
 begin
  if (I<0) or (I>High(Files)) then
   raise Exception.Create('Index out of range.');
- ResultStream := TMemoryStream.Create;
+// ResultStream := TMemoryStream.Create;
+ ResultStream := TRawByteStringStream.Create;
  try
    Uncompress2Stream(i, ResultStream);
-   UncSize := ResultStream.Size;
-   SetLength(Result, UncSize);
-   if UncSize > 0 then
-    CopyMemory(Pointer(Result), ResultStream.Memory, UncSize);
+//   UncSize := ResultStream.Size;
+//   SetLength(Result, UncSize);
+//   if UncSize > 0 then
+//    CopyMemory(Pointer(Result), ResultStream.Memory, UncSize);
+   Result := ResultStream.DataString;
   except
     Result := '';
  end;
@@ -747,7 +835,7 @@ begin
 end;
 
 
-procedure TZipFile.Uncompress2Stream(I: Integer; Stream: TStream; pAutoLoad: Boolean = True);
+procedure TZipFile.Uncompress2Stream(const I: Integer; Stream: TStream; pAutoLoad: Boolean = True);
 var
   ComprStream: TMemoryStream;
   AHeader: RawByteString;
@@ -770,12 +858,12 @@ var
   Compress: Byte;
   ZipFileStream: TFileStream;
 begin
- if (I<0) or (I>High(Files)) then
-  raise Exception.Create('Index out of range.');
- if not Files[i].DataLoaded and (not pAutoLoad or (fFN = '')) then
-  raise Exception.Create('File was not decompressed.');
+  if (I<0) or (I>High(Files)) then
+    raise Exception.Create('Index out of range.');
+  if not Files[i].DataLoaded and (not pAutoLoad or (fFN = '')) then
+    raise Exception.Create('File was not decompressed.');
 
- if pAutoLoad and not Files[i].DataLoaded and (fFN > '') then
+  if pAutoLoad and not Files[i].DataLoaded and (fFN > '') then
    begin
      ZipFileStream := TFileStream.Create(fFN, fmOpenRead or fmShareDenyWrite);
      try
@@ -817,7 +905,8 @@ begin
  Stream.Size := 0;
  if Files[I].CommonFileHeader.CompressionMethod=0 then //not compressed
   begin
-   Stream.Write(Files[I].CompressedData[1], length(Files[I].CompressedData));
+   if length(Files[I].CompressedData) > 0 then
+     Stream.Write(Files[I].CompressedData[1], length(Files[I].CompressedData));
   end else
  if Files[I].CommonFileHeader.CompressionMethod=99 then // Encrypted
   begin
@@ -940,10 +1029,41 @@ begin
 // SetLength(s, 0);
 end;
 
-procedure TZipFile.SetUncompressed(i: integer; const Value: RawByteString);
+function TZipFile.RemoveFile(const name: String): Boolean;
+var
+  fn: String;
+  h, i, j: Integer;
+
+begin
+  Result := False;
+  h := -1;
+  fn := ToZipName(name);
+  if Length(Files) > 0 then
+   for I := Low(files) to High(files) do
+    begin
+      if Files[i].getFileName = fn then
+       begin
+        h := i;
+        Break;
+       end;
+    end;
+  if h >= 0 then
+    begin
+      Files[h].Clear;
+      if h < High(Files) then
+        begin
+          for I := h+1 to High(Files) do
+            Files[i] := Files[i+1];
+        end;
+      SetLength(Files, Length(Files)-1);
+    end;
+end;
+
+procedure TZipFile.SetUncompressed(const i: integer; const Value: RawByteString);
 var
   resStream: TMemoryStream;
-  UnComprStream: TMemoryStream;
+//  UnComprStream: TMemoryStream;
+  UnComprStream: TRawByteStringStream;
   Data: Pointer;
   ComprDataNIL: RawByteString;
   ComprSize: Int64;
@@ -970,13 +1090,15 @@ begin
       end
      else
       begin
-        UnComprStream := TMemoryStream.Create;
-        UnComprStream.SetSize(Length(Value));
-        CopyMemory(UnComprStream.Memory, Pointer(Value), Length(Value));
+//        UnComprStream := TMemoryStream.Create;
+//        UnComprStream.SetSize(Length(Value));
+//        CopyMemory(UnComprStream.Memory, Pointer(Value), Length(Value));
+        UnComprStream := TRawByteStringStream.Create(Value);
         resStream := TMemoryStream.Create;
     //    ZlibCompressStreamEx(UnComprStream, resStream, clMax, zsZLib, false);
         ZLibCompressStreamEx(UnComprStream, resStream, clMax, zsZLib, True);
         UnComprStream.Free;
+        UnComprStream := NIL;
         ComprSize := resStream.Size - 6;
         resStream.Position := 0;
         Data := resStream.Memory;
@@ -1050,6 +1172,193 @@ begin
   end;
 end;
 
+procedure TZipFile.SetUncompressed(const i: integer; vs: TStream);
+var
+  resStream: TMemoryStream;
+//  UnComprStream: TMemoryStream;
+  Data: Pointer;
+  ComprDataNIL: RawByteString;
+  ComprSize: Int64;
+ {$IFDEF ZIP_AES}
+  isEncr: Boolean;
+  aesMode: byte;
+  salt2: RawByteString;
+  pwd_ver: RawByteString;
+  cx: fcrypt_ctx;
+  s1: RawByteString;
+  l, ofs: Integer;
+ {$ENDIF ZIP_AES}
+begin
+  if i > High(Files) then // exit;
+    raise Exception.Create('Index out of range.');
+  try {+}
+    if not Assigned(vs) or (vs = NIL) or (vs.Size = 0) then
+      begin
+        ComprSize := 2;
+        resStream := NIL;
+        ComprDataNIL := dupString(RawByteString(#03#00));
+//        Files[i].CompressedData := ;
+        data := @ComprDataNIL[1];
+      end
+     else
+      begin
+        resStream := TMemoryStream.Create;
+        ZLibCompressStreamEx(vs, resStream, clMax, zsZLib, True);
+        ComprSize := resStream.Size - 6;
+        resStream.Position := 0;
+        Data := resStream.Memory;
+        inc(INT_PTR(Data), 2);
+      end;
+
+ {$IFDEF ZIP_AES}
+    isEncr := Files[i].pass > '';
+    if isEncr then
+      begin
+       aesMode := 3;
+       l := SALT_LENGTH[aesMode];
+       salt2 := getPRNG(l);
+       SetLength(salt2, l);
+       fcrypt_init(aesMode, Files[i].pass, salt2, pwd_ver, cx);
+       if ComprSize > 0 then
+        begin
+         fcrypt_encrypt(data, ComprSize, cx);
+        end;
+       s1 := fcrypt_end(cx);
+       ofs := l + 2 + ComprSize + 10;
+       SetLength(Files[i].CompressedData, ofs);
+       ofs := 1;
+       CopyMemory(@Files[i].CompressedData[ofs], Pointer(salt2), l);
+       inc(ofs, l); // Salt
+       CopyMemory(@Files[i].CompressedData[ofs], Pointer(pwd_ver), 2);
+       inc(ofs, 2); // Pwd_ver
+      CopyMemory(@Files[i].CompressedData[ofs], Data, ComprSize);
+       inc(ofs, ComprSize); // Data
+       CopyMemory(@Files[i].CompressedData[ofs], Pointer(s1), 10);
+      end
+     else
+ {$ENDIF ZIP_AES}
+//      if Value > '' then
+       begin
+        SetLength(Files[i].CompressedData, ComprSize);
+        CopyMemory(Pointer(Files[i].CompressedData), Data, ComprSize);
+       end;
+    if Assigned(resStream) then
+      resStream.Free;
+    Files[i].LocalFileHeaderSignature := (dwLocalFileHeaderSignature);
+    with Files[i].CommonFileHeader do
+    begin
+      LastModFileTimeDate := DateTimeToFileDate(Now);
+   {$IFDEF ZIP_AES}
+      if isEncr then
+        begin
+          CompressionMethod := 99;
+          GeneralPurposeBitFlag := GeneralPurposeBitFlag or 1;
+          FileDesc.Crc32 := 0;
+        end
+       else
+   {$ENDIF ZIP_AES}
+        begin
+          CompressionMethod := 8;
+          GeneralPurposeBitFlag := GeneralPurposeBitFlag and (not 1);
+          FileDesc.Crc32 := ZipCrc32($FFFFFFFF, vs) XOR $FFFFFFFF;
+        end;
+
+      FileDesc.CompressedSize   := length(Files[i].CompressedData);
+      FileDesc.UncompressedSize := vs.Size;
+    end;
+
+    with CentralDirectory[i] do
+    begin
+      CentralFileHeaderSignature := dwCentralFileHeaderSignature;
+      CommonFileHeader := Files[i].CommonFileHeader;
+      fileComment := '';
+    end;
+  finally
+  end;
+end;
+
+function TZipFile.AddOrReplaceFile(const name: string; FAttribute: DWord = 0; const pPass: AnsiString = '';
+                             const pData: RawByteString = ''): Integer;
+var
+  h: Integer;
+ {$IFDEF ZIP_AES}
+  isEncr: Boolean;
+  vAES_DATA: TAESExtraData;
+ {$ENDIF ZIP_AES}
+  fn: String;
+  i: Integer;
+begin
+//  Result := -1;
+  h := -1;
+  fn := ToZipName(name);
+  if Length(Files) > 0 then
+   for I := Low(files) to High(files) do
+    begin
+      if Files[i].getFileName = fn then
+       begin
+        h := i;
+        Break;
+       end;
+    end;
+  if h < 0 then
+   begin
+    SetLength(Files, High(Files) + 2);
+    SetLength(CentralDirectory, length(Files));
+    h := High(Files);
+   end
+   else
+    begin
+      Files[i].CompressedData := '';
+    end;
+
+  if UTF8Support then
+    Files[h].CommonFileHeader.GeneralPurposeBitFlag := Files[h].CommonFileHeader.GeneralPurposeBitFlag or (1 shl 11); // UTF8 support
+
+  SetFile(h, fn, FAttribute, pPass, pData);
+end;
+
+function TZipFile.AddOrReplaceFile(const name: string; FAttribute: DWord = 0; const pPass: AnsiString = '';
+                             pData: TStream = NIL): Integer;
+var
+  h: Integer;
+ {$IFDEF ZIP_AES}
+  isEncr: Boolean;
+  vAES_DATA: TAESExtraData;
+ {$ENDIF ZIP_AES}
+  fn: String;
+  i: Integer;
+begin
+//  Result := -1;
+  h := -1;
+  fn := ToZipName(name);
+  if Length(Files) > 0 then
+   for I := Low(files) to High(files) do
+    begin
+      if Files[i].getFileName = fn then
+       begin
+        h := i;
+        Break;
+       end;
+    end;
+  if h < 0 then
+   begin
+    SetLength(Files, High(Files) + 2);
+    SetLength(CentralDirectory, length(Files));
+    h := High(Files);
+   end
+   else
+    begin
+      Files[i].CompressedData := '';
+    end;
+
+  if UTF8Support then
+    Files[h].CommonFileHeader.GeneralPurposeBitFlag := Files[h].CommonFileHeader.GeneralPurposeBitFlag or (1 shl 11); // UTF8 support
+
+  SetFile(h, fn, FAttribute, pPass, '');
+  SetUncompressed(h, pData);
+  Result := h;
+end;
+
 function TZipFile.AddFile(const name: string; FAttribute: DWord = 0; const pPass: AnsiString = '';
                              const pData: RawByteString = ''): Integer;
 var
@@ -1068,17 +1377,34 @@ begin
     Files[h].CommonFileHeader.GeneralPurposeBitFlag := Files[h].CommonFileHeader.GeneralPurposeBitFlag or (1 shl 11); // UTF8 support
 
   fn := ToZipName(name);
+  SetFile(h, fn, FAttribute, pPass, pData);
+  Result := h;
+end;
+
+procedure TZipFile.SetFile(pIdx: Integer; const pZipFn: String; FAttribute: DWord = 0; const pPass: AnsiString = '';
+                             const pData: RawByteString = '');
+var
+//  h: Integer;
+ {$IFDEF ZIP_AES}
+  isEncr: Boolean;
+  vAES_DATA: TAESExtraData;
+ {$ENDIF ZIP_AES}
+//  fn: String;
+  pf: PLocalFileHeader;
+begin
+  pf := @Files[pIdx];
   if UTF8Support then
-    Files[h].filename := StringToTBytes(fn)
+    pf.filename := StringToTBytes(pZipFn)
    else
-    Files[h].filename := StringToTBytes(fn, 437)
+//    pf.filename := StringToTBytes(pZipFn, 437)
+    pf.filename := StringToTBytes(pZipFn, CP_OEM)
   ;
-  Files[h].extrafield := '';
-  Files[h].pass := pPass;
+  pf.extrafield := '';
+  pf.pass := pPass;
  {$IFDEF ZIP_AES}
   isEncr := pPass > '';
 
-  Files[h].LocalFileHeaderSignature := dwLocalFileHeaderSignature;
+  pf.LocalFileHeaderSignature := dwLocalFileHeaderSignature;
 
   if isEncr then
    begin
@@ -1088,13 +1414,18 @@ begin
      vAES_DATA.Vendor   := Byte('E') shl 8 + byte('A');
      vAES_DATA.AESMode  := $03; // $03	- 256-bit encryption key
      vAES_DATA.CompressMethod := 8;
-     SetLength(Files[h].extrafield, SIZEOF(TAESExtraData));
-     CopyMemory(PAnsiChar(Files[h].extrafield), @vAES_DATA, SizeOf(TAESExtraData));
+     SetLength(pf.extrafield, SIZEOF(TAESExtraData));
+     CopyMemory(PAnsiChar(pf.extrafield), @vAES_DATA, SizeOf(TAESExtraData));
    end;
  {$ENDIF ZIP_AES}
 
-  with Files[h].CommonFileHeader do
+  with pf.CommonFileHeader do
   begin
+ {$IFDEF ZIP_AES}
+    if isEncr then
+      VersionNeededToExtract := 51
+     else
+ {$ENDIF ZIP_AES}
     VersionNeededToExtract := 20;
 (*
  {$IFDEF ZIP_AES}
@@ -1116,36 +1447,30 @@ begin
     LastModFileTimeDate := DateTimeToFileDate(Now);
     FileDesc.Crc32 := 0;
     FileDesc.UncompressedSize := 0;
-    FilenameLength := length(Files[h].filename);
-    ExtraFieldLength := length(Files[h].extrafield);
+    FilenameLength := length(pf.filename);
+    ExtraFieldLength := length(pf.extrafield);
   end;
 
-  with CentralDirectory[h] do
+  with CentralDirectory[pIdx] do
   begin
     CentralFileHeaderSignature := dwCentralFileHeaderSignature;
-    VersionMadeBy := 20;
-    CommonFileHeader := Files[h].CommonFileHeader;
+//    VersionMadeBy := 0; // 0=MS-DOS
+    VersionMadeBy := 10; // 11=Windows NTFS
+    CommonFileHeader := pf.CommonFileHeader;
     FileCommentLength := 0;
     DiskNumberStart := 0;
     InternalFileAttributes := 0;
     ExternalFileAttributes := FAttribute;
     RelativeOffsetOfLocalHeader := 0;
-    filename := Files[h].filename;
-    extrafield := Files[h].extrafield;
+    filename := pf.filename;
+    extrafield := pf.extrafield;
     fileComment := '';
   end;
 
-  SetUncompressed(h, pData);
-{  if Length(data) > 0 then
-    begin
-    end
-   else
-    Files[h].CompressedData := ''; //start with an empty file
-}
-  Result := h;
+  SetUncompressed(pIdx, pData);
 end;
 
-function TZipFile.AddExtFile(const pFileName : String; const name: string = '';
+function TZipFile.AddExtFile(const pFileName: String; const name: string = '';
                     FAttribute: DWord = 0; const pPass: AnsiString = ''): Integer;
 var
   buf: RawByteString;
@@ -1161,7 +1486,7 @@ begin
 end;
 
 
-function TZipFile.GetDateTime(i: integer): TDateTime;
+function TZipFile.GetDateTime(const i: integer): TDateTime;
 begin
   if i > High(Files) then // begin Result:=0; exit; end;
     raise Exception.Create('Index out of range.');
@@ -1172,7 +1497,7 @@ begin
   end;
 end;
 
-procedure TZipFile.SetDateTime(i: integer; const Value: TDateTime);
+procedure TZipFile.SetDateTime(const i: integer; const Value: TDateTime);
 begin
   if i > High(Files) then //exit;
     raise Exception.Create('Index out of range.');
@@ -1184,7 +1509,7 @@ begin
   Result := High(Files) + 1;
 end;
 
-function TZipFile.GetName(i: integer): string;
+function TZipFile.GetName(const i: integer): string;
 begin
   if Files[i].UTFSupport then
     Result := TBytesToString(Files[i].filename, CP_UTF8)
@@ -1195,16 +1520,17 @@ begin
    ;
 end;
 
-procedure TZipFile.SetName(i: integer; const Value: string);
+procedure TZipFile.SetName(const i: integer; const Value: string);
 begin
   if Files[i].UTFSupport then
     Files[i].filename := StringToTBytes(Value, CP_UTF8)
    else
-    Files[i].filename := StringToTBytes(Value, 437)
+//    Files[i].filename := StringToTBytes(Value, 437)
+    Files[i].filename := StringToTBytes(Value, CP_OEM);
     ;
 end;
 
-function TZipFile.GetItem(i: integer): TZipItem;
+function TZipFile.GetItem(const i: integer): TZipItem;
 var
   ch: Char;
 begin
@@ -1239,7 +1565,8 @@ begin
   Result := -1;
   fn := ToZipName(s);
   b8 := StringToTBytes(fn, CP_UTF8);
-  b1 := StringToTBytes(fn, 437);
+//  b1 := StringToTBytes(fn, 437);
+  b1 := StringToTBytes(fn, CP_OEM);
   for I := 0 to Length(Files) - 1 do
 //  if AnsiSameText(Files[i].filename, b) then
   if (Files[i].UTFSupport) then
@@ -1411,37 +1738,53 @@ end;
 
 function zCompressStr(const sa: RawByteString; Level: TCompressionLevel = clMax; StreamType: TZStreamType = zsZLib): RawByteString;
 var
-  buf, destBuf: TMemoryStream;
+//  buf, destBuf: TMemoryStream;
+  buf, destbuf: TRawByteStringStream;
 begin
   if sa = '' then
     Exit('');
-  buf := TMemoryStream.create;
-  destBuf := TMemoryStream.create;
-  buf.Write(sa[1], Length(sa));
+//  buf := TMemoryStream.create;
+//  destBuf := TMemoryStream.create;
+//  buf.Write(sa[1], Length(sa));
+  buf := TRawByteStringStream.Create(sa);
+  destBuf := TRawByteStringStream.Create;
   buf.Position := 0;
   ZlibCompressStreamEx(buf, destBuf, clMax, StreamType, false);
   buf.free;
-  SetLength(Result, destBuf.Size);
-  destBuf.Position := 0;
-  destBuf.Read(Result[1], destBuf.Size);
+//  SetLength(Result, destBuf.Size);
+//  destBuf.Position := 0;
+//  destBuf.Read(Result[1], destBuf.Size);
+  Result := destbuf.DataString;
   destBuf.free;
 end;
 
 function ZDecompressStr(const sa: RawByteString): RawByteString;
 var
-  buf, destBuf: TMemoryStream;
+//  buf, destBuf: TMemoryStream;
+  buf, destbuf: TRawByteStringStream;
 begin
   if sa = '' then
     Exit('');
-  Buf := TMemoryStream.create;
-  destBuf := TMemoryStream.create;
-  buf.Write(sa[1], Length(sa));
+  buf := TRawByteStringStream.Create(sa);
+  destBuf := TRawByteStringStream.Create;
   buf.Position := 0;
   ZlibDecompressStream(buf, destBuf);
   buf.free;
-  setLength(Result, destBuf.Size);
-  destBuf.Position := 0;
-  CopyMemory(@Result[1], destBuf.Memory, destBuf.Size);
+  Result := destbuf.DataString;
+  destBuf.free;
+end;
+
+function ZDecompressStream(const s: TStream): RawByteString;
+var
+  destbuf: TRawByteStringStream;
+begin
+  if not Assigned(s) or (s.Size = 0) then
+    Exit('');
+  destBuf := TRawByteStringStream.Create;
+  if s.Position <> 0 then
+    s.Position := 0;
+  ZlibDecompressStream(s, destBuf);
+  Result := destbuf.DataString;
   destBuf.free;
 end;
 
